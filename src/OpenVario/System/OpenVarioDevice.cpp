@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#include "OpenVario/System/System.hpp"
+#include "OpenVario/System/OpenVarioDevice.hpp"
 #ifdef DBUS_FUNCTIONS
 #include "lib/dbus/Connection.hxx"
 #include "lib/dbus/ScopeMatch.hxx"
@@ -25,8 +25,6 @@
 
 #include "LogFile.hpp"
 #include "LocalPath.hpp"
-
-#include "OpenVario/System/System.hpp"
 
 #ifndef _WIN32
 #include <unistd.h>

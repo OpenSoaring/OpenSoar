@@ -14,7 +14,7 @@
 
 
 #define DEBUG_OPENVARIO  1
-#if !defined(_WIN32) && 0
+#if __linux__ &&  __has_include("dbus/dbus.h>")
 # define DBUS_FUNCTIONS 1
 #endif
 
