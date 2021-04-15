@@ -4,6 +4,8 @@
 #include "MultipleDevices.hpp"
 #include "Atmosphere/Pressure.hpp"
 #include "Descriptor.hpp"
+#include "NMEA/Info.hpp"
+#include "Device/DataEditor.hpp"
 #include "Dispatcher.hpp"
 
 #include <algorithm> // for std::any_of()
@@ -11,6 +13,7 @@
 MultipleDevices::MultipleDevices(DeviceBlackboard &blackboard,
                                  NMEALogger *nmea_logger,
                                  DeviceFactory &factory) noexcept
+  : blackboard(blackboard)
 {
   for (unsigned i = 0; i < NUMDEV; ++i) {
     DeviceDispatcher *dispatcher = dispatchers[i] =
@@ -131,6 +134,17 @@ MultipleDevices::PutStandbyFrequency(RadioFrequency frequency,
 }
 
 void
+MultipleDevices::ExchangeRadioFrequencies(OperationEnvironment &env) noexcept
+{
+  for (DeviceDescriptor *i : devices) {
+    NMEAInfo basic = i->GetData();
+    if (i->ExchangeRadioFrequencies(env, basic)) {
+      blackboard.LockSetDeviceDataScheduleMerge(i->GetIndex(), basic);
+    }
+  }
+}
+
+void
 MultipleDevices::PutTransponderCode(TransponderCode code,
                                     OperationEnvironment &env) noexcept
 {
@@ -196,36 +210,3 @@ MultipleDevices::PortError(const char *msg) noexcept
   for (auto *listener : listeners)
     listener->PortError(msg);
 }
-
-#ifdef  _WIN32
-void 
-MultipleDevices::DetectedPort(std::string_view portname,
-  OperationEnvironment &env) noexcept
-{
-  for (DeviceDescriptor *device : devices) {
-    if (device == nullptr)
-      continue;
-
-    if (device->GetConfig().path == portname) {
-      device->Reopen(env);  // device->Open(env);
-    }
-  }
-}
-void 
-MultipleDevices::RemovedPort(std::string_view portname,
-  OperationEnvironment &env) noexcept
-{
-  for (DeviceDescriptor *device : devices) {
-    if (device == nullptr)
-      continue;
-    if (device->GetDevice() == nullptr)
-      continue;
-
-    if (device->GetConfig().path == portname) {
-      Beep(440,300);
-      device->Close();  // ?
-    }
-  }
-}
-
-#endif  // _WIN32

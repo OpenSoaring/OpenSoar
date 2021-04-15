@@ -11,12 +11,11 @@
 #include "Features.hpp"
 #include "Device/Port/Listener.hpp"
 #include "thread/Mutex.hxx"
+#include "Blackboard/DeviceBlackboard.hpp"
 
 #include <array>
 #include <list>
-#ifdef _WIN32
-# include <string>
-#endif
+#include <string>
 
 class DeviceBlackboard;
 class NMEALogger;
@@ -37,13 +36,15 @@ class MultipleDevices final : PortListener {
   std::array<DeviceDescriptor *, NUMDEV> devices;
   std::array<DeviceDispatcher *, NUMDEV> dispatchers;
 
+  DeviceBlackboard &blackboard;
+
   Mutex listeners_mutex;
   std::list<PortListener *> listeners;
 
 public:
   MultipleDevices(DeviceBlackboard &blackboard,
-                  NMEALogger *nmea_logger,
-                  DeviceFactory &factory) noexcept;
+    NMEALogger *nmea_logger,
+    DeviceFactory &factory) noexcept;
   ~MultipleDevices() noexcept;
 
   DeviceDescriptor &operator[](unsigned i) const noexcept {
@@ -84,6 +85,7 @@ public:
                           OperationEnvironment &env) noexcept;
   void PutStandbyFrequency(RadioFrequency frequency, const char *name,
                            OperationEnvironment &env) noexcept;
+  void ExchangeRadioFrequencies(OperationEnvironment &env) noexcept;
   void PutTransponderCode(TransponderCode code, OperationEnvironment &env) noexcept;
   void PutQNH(AtmosphericPressure pres, OperationEnvironment &env) noexcept;
   void NotifySensorUpdate(const MoreData &basic) noexcept;
@@ -92,11 +94,6 @@ public:
 
   void AddPortListener(PortListener &listener) noexcept;
   void RemovePortListener(PortListener &listener) noexcept;
-
-#ifdef _WIN32
-  void DetectedPort(std::string_view portname, OperationEnvironment &env) noexcept;
-  void RemovedPort(std::string_view portname, OperationEnvironment &env) noexcept;
-#endif  // _WIN32
 
 private:
   /* virtual methods from class PortListener */

@@ -544,6 +544,8 @@ public:
   bool PutActiveFrequency(RadioFrequency frequency,
                           const char *name,
                           OperationEnvironment &env) noexcept;
+  bool ExchangeRadioFrequencies(OperationEnvironment &env,
+                                NMEAInfo &info) noexcept;
   bool PutStandbyFrequency(RadioFrequency frequency,
                            const char *name,
                            OperationEnvironment &env) noexcept;
