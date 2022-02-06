@@ -130,6 +130,7 @@ void eventBallast(const char *misc);
 void eventBugs(const char *misc);
 void eventCalculator(const char *misc);
 void eventChecklist(const char *misc);
+void eventFrequencyCard(const char *misc);
 void eventClearAirspaceWarnings(const char *misc);
 void eventClearStatusMessages(const char *misc);
 void eventLogger(const char *misc);

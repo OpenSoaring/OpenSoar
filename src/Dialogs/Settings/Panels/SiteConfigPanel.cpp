@@ -13,7 +13,6 @@
 #include "system/Path.hpp"
 
 #define RASP_FILE_SETTING 0
-#define FLARM_FILE2_SETTING 0
 
 enum ControlIndex {
   DataPath,
@@ -25,13 +24,10 @@ enum ControlIndex {
   AdditionalAirspaceFile,
   AirfieldFile,
   FlarmFile,
-#if  FLARM_FILE2_SETTING  
-  // GLB-FLARM-DeviceDatabase-UNITED is solving this merge
-  FlarmFile2,
-#endif
 #if RASP_FILE_SETTING
   RaspFile,
 #endif
+  FrequenciesFile
 };
 
 class SiteConfigPanel final : public RowFormWidget {
@@ -107,14 +103,6 @@ SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent,
           ProfileKeys::FlarmFile, "*.fln\0",
           FileType::FLARMNET);
 
-#if 0 // GLB-FLARM-DeviceDatabase-UNITED is solving this merge
-  AddFile(_("Alt. FLARM Device Database"),
-          _("The name of the file containing information about alternative "
-            "registered FLARM devices."),
-          ProfileKeys::FlarmFile2, "*.fln\0",
-          FileType::FLARMNET);
-#endif  // GLB-FLARM-DeviceDatabase-UNITED is solving this merge
-
 #if RASP_FILE_SETTING
   /* TODO(August2111) : remove RASP setting - personally I cannot see any input
    * on weather page */
@@ -122,6 +110,10 @@ SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent,
           ProfileKeys::RaspFile, "*-rasp*.dat\0",
           FileType::RASP);
 #endif
+  AddFile(_("Radio Frequency Database"),
+          _("Radio frequencies file."),
+          ProfileKeys::FrequenciesFile, "*.frq\0",
+          FileType::FREQUENCIES);
 }
 
 bool
@@ -146,27 +138,22 @@ SiteConfigPanel::Save(bool &_changed) noexcept
 
   FlarmFileChanged = SaveValueFileReader(FlarmFile,
     ProfileKeys::FlarmFile);
-#if FLARM_FILE2_SETTING
-  // GLB-FLARM-DeviceDatabase-UNITED is solving this merge
-  FlarmFile2Changed = SaveValueFileReader(FlarmFile2,
-    ProfileKeys::FlarmFile2);
-#endif
   AirfieldFileChanged = SaveValueFileReader(AirfieldFile,
     ProfileKeys::AirfieldFile);
 
+  FrequenciesFileChanged = SaveValueFileReader(FrequenciesFile, ProfileKeys::FrequenciesFile);
 #if RASP_FILE_SETTING
   RaspFileChanged = SaveValueFileReader(RaspFile, ProfileKeys::RaspFile);
 #endif
 
   changed = WaypointFileChanged || AirfieldFileChanged || MapFileChanged ||
     FlarmFileChanged
-#if  FLARM_FILE2_SETTING
-    || FlarmFile2Changed
-#endif
+    || FrequenciesFileChanged;
 #if  RASP_FILE_SETTING
     || RaspFileChanged
 #endif
   ;
+
   _changed |= changed;
 
   return true;
