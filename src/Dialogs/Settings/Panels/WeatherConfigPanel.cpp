@@ -60,7 +60,7 @@ FillRegionControl(WndProperty &wp, const TCHAR *setting)
     df->addEnumText(i.first.c_str(), i.second.c_str());
 
   // if old region doesn't exist any more this will fall back to first element
-  df->Set(setting);
+  df->SetValue(setting);
   wp.RefreshDisplay();
 }
 
