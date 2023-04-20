@@ -5,44 +5,25 @@
 #include "Dialogs/Message.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Dialogs/ProcessDialog.hpp"
-#include "Dialogs/Error.hpp"
-#include "Widget/DrawWidget.hpp"
 #include "Widget/RowFormWidget.hpp"
-#include "Renderer/FlightListRenderer.hpp"
 #include "UIGlobals.hpp"
 #include "Look/DialogLook.hpp"
 #include "Screen/Layout.hpp"
 #include "../test/src/Fonts.hpp"
-#include "ui/canvas/Canvas.hpp"
 #include "ui/window/Init.hpp"
 #include "ui/window/SingleWindow.hpp"
 #include "ui/event/Queue.hpp"
 #include "ui/event/Timer.hpp"
-#include "Logger/FlightParser.hpp"
 #include "Language/Language.hpp"
-#include "lib/dbus/Connection.hxx"
-#include "lib/dbus/ScopeMatch.hxx"
-#include "lib/dbus/Systemd.hxx"
 #include "system/Process.hpp"
-#include "io/FileLineReader.hpp"
-#include "util/PrintException.hxx"
 #include "util/ScopeExit.hxx"
-#include "LocalPath.hpp"
-#include "OV/System.hpp"
-#include "OV/Settings.hpp"
 
 #include <cassert>
-#include <cstdio>
-#include <thread>
-#include <filesystem>
 
 enum Buttons {
   LAUNCH_SHELL = 100,
 };
 
-static bool have_data_path = false;
-
-#if !OV_SETTINGS
 static DialogSettings dialog_settings;
 static UI::SingleWindow *global_main_window;
 static DialogLook *global_dialog_look;
@@ -68,8 +49,6 @@ UIGlobals::GetMainWindow()
 
   return *global_main_window;
 }
-#endif
-
 
 class FileMenuWidget final
   : public RowFormWidget
@@ -109,9 +88,9 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                      "Downloading files", argv);
   });
 
-  AddButton("Upload files from USB to OpenSoar", [](){
+  AddButton("Upload files from USB to XCSoar", [](){
     static constexpr const char *argv[] = {
-      "/usr/bin/transfers.sh upload-data OpenSoar", nullptr
+      "/usr/bin/upload-xcsoar.sh", nullptr
     };
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
@@ -120,7 +99,6 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 }
 
-#if !OV_SETTINGS
 class SystemMenuWidget final
   : public RowFormWidget
 {
@@ -138,30 +116,32 @@ private:
   void Prepare(ContainerWindow &parent,
                const PixelRect &rc) noexcept override;
 };
-#endif
 
 static void
 CalibrateSensors() noexcept
-try {
+{
   /* make sure sensord is stopped while calibrating sensors */
-  auto connection = ODBus::Connection::GetSystem();
-  const ODBus::ScopeMatch job_removed_match{connection, Systemd::job_removed_match};
+  static constexpr const char *start_sensord[] = {
+    "/bin/systemctl", "start", "sensord.service", nullptr
+  };
+  static constexpr const char *stop_sensord[] = {
+    "/bin/systemctl", "stop", "sensord.service", nullptr
+  };
 
-  bool has_sensord = false;
+  RunProcessDialog(UIGlobals::GetMainWindow(),
+                   UIGlobals::GetDialogLook(),
+                   "Calibrate Sensors", stop_sensord,
+                   [](int status){
+                     return status == EXIT_SUCCESS ? mrOK : 0;
+                   });
 
-  if (Systemd::IsUnitActive(connection, "sensord.socket")) {
-    has_sensord = true;
-
-    try {
-      Systemd::StopUnit(connection, "sensord.socket");
-    } catch (...) {
-      std::throw_with_nested(std::runtime_error{"Failed to stop sensord"});
-    }
-  }
-
-  AtScopeExit(&connection, has_sensord){
-    if (has_sensord)
-      Systemd::StartUnit(connection, "sensord.socket");
+  AtScopeExit(){
+    RunProcessDialog(UIGlobals::GetMainWindow(),
+                     UIGlobals::GetDialogLook(),
+                     "Calibrate Sensors", start_sensord,
+                     [](int status){
+                       return status == EXIT_SUCCESS ? mrOK : 0;
+                     });
   };
 
   /* calibrate the sensors */
@@ -211,25 +191,12 @@ try {
                        ? RESULT_BOARD_NOT_INITIALISED
                        : 0;
                    });
-} catch (...) {
-  ShowError(std::current_exception(), "Calibrate Sensors");
 }
 
-#if !OV_SETTINGS
 void
 SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                           [[maybe_unused]] const PixelRect &rc) noexcept
 {
-  AddButton("Upgrade Firmware", [](){
-    static constexpr const char *argv[] = {
-      "/usr/bin/fw-upgrade.sh", nullptr
-    };
-
-    RunProcessDialog(UIGlobals::GetMainWindow(),
-                     UIGlobals::GetDialogLook(),
-                     "Upgrade Firmware", argv);
-  });
-
   AddButton("Update System", [](){
     static constexpr const char *argv[] = {
       "/usr/bin/update-system.sh", nullptr
@@ -240,15 +207,15 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                      "Update System", argv);
   });
 
-//  AddButton("Update Maps", [](){
-//    static constexpr const char *argv[] = {
-//      "/usr/bin/update-maps.sh", nullptr
-//    };
-//
-//    RunProcessDialog(UIGlobals::GetMainWindow(),
-//                     UIGlobals::GetDialogLook(),
-//                     "Update Maps", argv);
-//  });
+  AddButton("Update Maps", [](){
+    static constexpr const char *argv[] = {
+      "/usr/bin/update-maps.sh", nullptr
+    };
+
+    RunProcessDialog(UIGlobals::GetMainWindow(),
+                     UIGlobals::GetDialogLook(),
+                     "Update Maps", argv);
+  });
 
   AddButton("Calibrate Sensors", CalibrateSensors);
   AddButton("Calibrate Touch", [this](){
@@ -266,20 +233,15 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddButton("System Info", [this](){
     const UI::ScopeDropMaster drop_master{display};
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
-    // Run("/usr/lib/openvario/libexec/system_info.sh");
-    Run("/usr/bin/system_info.sh");
+    Run("/usr/lib/openvario/libexec/system_info.sh");
   });
 }
-#endif
 
 class MainMenuWidget final
   : public RowFormWidget
 {
   enum Controls {
-    OPENSOAR_CLUB,
-    OPENSOAR,
     XCSOAR,
-    LOGBOOK,
     FILE,
     SYSTEM,
     SHELL,
@@ -296,8 +258,7 @@ class MainMenuWidget final
   UI::Timer timer{[this](){
     if (--remaining_seconds == 0) {
       HideRow(Controls::TIMER);
-      // StartXCSoar();
-      StartOpenSoar();
+      StartXCSoar();
     } else {
       ScheduleTimer();
     }
@@ -317,12 +278,6 @@ private:
     const UI::ScopeDropMaster drop_master{display};
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
     Run("/usr/bin/xcsoar", "-fly");
-  }
-  void StartOpenSoar() noexcept {
-    const UI::ScopeDropMaster drop_master{display};
-    const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
-    // Run("/usr/bin/OpenSoar", "-fly");
-    Run("/usr/bin/OpenSoar", "-fly", "-datapath=/home/root/data/OpenSoarData");
   }
 
   void ScheduleTimer() noexcept {
@@ -364,69 +319,21 @@ private:
   }
 };
 
-static void
-ShowLogbook() noexcept
-{
-  const auto &look = UIGlobals::GetDialogLook();
-  FlightListRenderer renderer{look.text_font, look.bold_font};
-
-  try {
-    FileLineReaderA file(LocalPath("flights.log"));
-
-    FlightParser parser{file};
-    FlightInfo flight;
-    while (parser.Read(flight))
-      renderer.AddFlight(flight);
-  } catch (...) {
-    ShowError(std::current_exception(), "Logbook");
-    return;
-  }
-
-  TWidgetDialog<DrawWidget>
-    sub_dialog(WidgetDialog::Full{}, UIGlobals::GetMainWindow(),
-               look, "Logbook");
-
-  sub_dialog.SetWidget([&renderer](Canvas &canvas, const PixelRect &rc){
-    renderer.Draw(canvas, rc);
-  });
-
-  sub_dialog.AddButton(_("Close"), mrOK);
-  sub_dialog.ShowModal();
-}
-
 void
 MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 			[[maybe_unused]] const PixelRect &rc) noexcept
 {
-  AddButton("Start OpenSoar (Club)", [this]() {
-    CancelTimer();
-    StartOpenSoar();
-  });
-
-  AddButton("Start OpenSoar", [this]() {
-    CancelTimer();
-    StartOpenSoar();
-  });
-
   AddButton("Start XCSoar", [this](){
     CancelTimer();
     StartXCSoar();
   });
 
-  if (have_data_path)
-      AddButton("Logbook", [this](){
-        CancelTimer();
-        ShowLogbook();
-      });
-  else
-    AddDummy();
-
-  AddButton("Files", [this](){
+  AddButton("File", [this](){
     CancelTimer();
 
     TWidgetDialog<FileMenuWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), "OpenVario Files");
+                 GetLook(), "OpenVario File");
     sub_dialog.SetWidget(display, event_queue, GetLook());
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
@@ -456,8 +363,6 @@ MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   AddReadOnly("");
-
-  HideRow(Controls::OPENSOAR_CLUB);
 }
 
 static int
@@ -487,14 +392,8 @@ Main()
   UI::TopWindowStyle main_style;
   main_style.Resizable();
 
-  DisplayOrientation orientation = DisplayOrientation::DEFAULT;
-  try {
-    orientation = OpenvarioGetRotation();
-  } catch (...) {}
-  main_style.InitialOrientation(orientation);
-
   UI::SingleWindow main_window{screen_init.GetDisplay()};
-  main_window.Create(_T("XCSoar/OpenVarioMenu"), {600, 800}, main_style);
+  main_window.Create(_T("XCSoar/KoboMenu"), {600, 800}, main_style);
   main_window.Show();
 
   global_dialog_look = &dialog_look;
@@ -511,23 +410,6 @@ Main()
 
 int main()
 {
-  std::filesystem::current_path("/home/root"); // setting path
-  /*the x-menu is waiting a second to solve timing problem with display rotation */
-  std::this_thread::sleep_for(std::chrono::seconds(1));
-
-  try {
-    InitialiseDataPath();
-    have_data_path = true;
-  } catch (...) {
-    fprintf(stderr, "Failed to locate data path: ");
-    PrintException(std::current_exception());
-  }
-
-  AtScopeExit() {
-    if (have_data_path)
-      DeinitialiseDataPath();
-  };
-
   int action = Main();
 
   switch (action) {
