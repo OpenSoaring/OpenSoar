@@ -32,6 +32,7 @@
 
 #include <cassert>
 #include <cstdio>
+#include <thread>
 
 enum Buttons {
   LAUNCH_SHELL = 100,
@@ -480,6 +481,9 @@ Main()
 
 int main()
 {
+  /*the x-menu is waiting a second to solve timing problem with display rotation */
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+
   try {
     InitialiseDataPath();
     have_data_path = true;
