@@ -25,6 +25,7 @@
 #include "Hardware/DisplayGlue.hpp"
 #include "Hardware/DisplayDPI.hpp"
 #include "Hardware/RotateDisplay.hpp"
+#include "FileMenuWidget.h"
 
 #include <cassert>
 #include <string>
@@ -103,90 +104,6 @@ UIGlobals::GetMainWindow()
   return *global_main_window;
 }
 
-class FileMenuWidget final
-  : public RowFormWidget
-{
-  UI::Display &display;
-  UI::EventQueue &event_queue;
-
-public:
-  FileMenuWidget(UI::Display &_display, UI::EventQueue &_event_queue,
-                 const DialogLook &look) noexcept
-    :RowFormWidget(look),
-     display(_display), event_queue(_event_queue) {}
-
-private:
-  /* virtual methods from class Widget */
-  void Prepare(ContainerWindow &parent,
-               const PixelRect &rc) noexcept override;
-
-};
-
-void
-FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
-                        [[maybe_unused]] const PixelRect &rc) noexcept
-{
-  AddButton("Download XCSoar IGC files to USB", [](){
-    static constexpr const char *argv[] = {
-      "/usr/bin/download-igc.sh", nullptr
-    };
-    RunProcessDialog(UIGlobals::GetMainWindow(),
-                     UIGlobals::GetDialogLook(),
-                     "Download IGC Files", argv);
-  });
-
-  AddButton("Update Maps", [](){
-    static constexpr const char *argv[] = {
-      "/usr/bin/update-maps.sh", nullptr
-    };
-
-    RunProcessDialog(UIGlobals::GetMainWindow(),
-                     UIGlobals::GetDialogLook(),
-                     "Update Maps", argv);
-  });
-
-  AddButton("Update or upload XCSoar files from USB", [](){
-    static constexpr const char *argv[] = {
-      "/usr/bin/upload-xcsoar.sh", nullptr
-    };
-
-    RunProcessDialog(UIGlobals::GetMainWindow(),
-                     UIGlobals::GetDialogLook(),
-                     "Update/Upload files", argv);
-  });
-
-  AddButton("System Backup: OpenVario and XCSoar settings to USB", [](){
-    static constexpr const char *argv[] = {
-      "/usr/bin/backup-system.sh", nullptr
-    };
-
-    RunProcessDialog(UIGlobals::GetMainWindow(),
-                     UIGlobals::GetDialogLook(),
-                     "Backup System", argv);
-  });
-
-  AddButton("System Restore: OpenVario and XCSoar settings from USB", [](){
-    static constexpr const char *argv[] = {
-      "/usr/bin/restore-system.sh", nullptr
-    };
-
-    RunProcessDialog(UIGlobals::GetMainWindow(),
-                     UIGlobals::GetDialogLook(),
-                     "Restore XCSoar and System", argv);
-    Display::Rotate(Display::DetectInitialOrientation());
-  });
-
-  AddButton("XCSoar Restore: Only XCSoar settings from USB", [](){
-    static constexpr const char *argv[] = {
-      "/usr/bin/restore-xcsoar.sh", nullptr
-    };
-
-    RunProcessDialog(UIGlobals::GetMainWindow(),
-                     UIGlobals::GetDialogLook(),
-                     "Restore XCSoar", argv);
-  });
-}
-
 class ScreenRotationWidget final
   : public RowFormWidget
 {
@@ -238,7 +155,7 @@ ScreenRotationWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
  AddButton("Portrait (270°)", [this](){
    SaveRotation("3");
    Display::Rotate(DisplayOrientation::PORTRAIT);
- });  
+ });
 }
 
 class ScreenBrightnessWidget final
