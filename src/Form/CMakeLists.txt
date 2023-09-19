@@ -48,7 +48,7 @@ add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
 target_link_libraries(${TARGET_NAME} PUBLIC Dialogs Renderer UIUtil)
 
 # message(FATAL_ERROR "Stop!")
-set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)
+set_target_properties(${TARGET_NAME} PROPERTIES FOLDER FrontEnd)
 
 add_dependencies(${TARGET_NAME} util)
 
