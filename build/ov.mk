@@ -8,6 +8,7 @@ OV_MENU_SOURCES = \
 	$(SRC)/Hardware/CPU.cpp \
 	$(SRC)/Hardware/DisplayDPI.cpp \
 	$(SRC)/Hardware/RotateDisplay.cpp \
+	$(SRC)/Hardware/DisplayGlue.cpp \
 	$(SRC)/Screen/Layout.cpp \
 	$(SRC)/ui/control/TerminalWindow.cpp \
 	$(SRC)/Look/TerminalLook.cpp \
@@ -27,6 +28,9 @@ OV_MENU_SOURCES = \
 	$(SRC)/Dialogs/KnobTextEntry.cpp \
 	$(SRC)/Dialogs/TouchTextEntry.cpp \
 	$(SRC)/Dialogs/ProcessDialog.cpp \
+	$(SRC)/Profile/Map.cpp \
+	$(SRC)/Profile/File.cpp \
+	$(SRC)/Profile/NumericValue.cpp \
 	$(SRC)/Dialogs/Error.cpp \
 	$(TEST_SRC_DIR)/Fonts.cpp \
 	$(TEST_SRC_DIR)/FakeLanguage.cpp \
