@@ -244,10 +244,8 @@ FreeVarioDevice::OnSensorUpdate(const MoreData &basic)
      PortWriteNMEA(port, nmeaOutbuffer, env);
    }
 
-   if (basic.netto_vario_available.IsValid()){
      sprintf(nmeaOutbuffer,"PFV,VAN,%f", basic.netto_vario);
      PortWriteNMEA(port, nmeaOutbuffer, env);
-   }
 }
 
 
