@@ -300,7 +300,6 @@ set(TEST_LIST
 set(GUI_TEST_LIST
     ${SRC_DIR}/RunWindArrowRenderer.cpp
     ${SRC_DIR}/DebugDisplay.cpp
-    ${SRC_DIR}/TestAllocatedGrid.cpp
 )
 
 set(SCRIPT_FILES
