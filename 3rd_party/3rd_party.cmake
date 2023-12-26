@@ -4,7 +4,8 @@
 
 set(BOOST_VERSION       "1.84.0")
 set(CARES_VERSION       "1.24.0")  # not valid!
-# 25.12.23 set(CARES_VERSION       "1.17.1")  # old version necessary...
+# 25.12.23 
+set(CARES_VERSION       "1.17.1")  # old version necessary...
 set(CURL_VERSION        "8.5.0")
 set(PNG_VERSION         "1.6.40")
 set(SODIUM_VERSION      "1.0.18")
