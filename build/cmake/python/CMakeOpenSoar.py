@@ -3,7 +3,7 @@
 import os, sys, subprocess
 
 Configuration = 'Release'
-Configuration = 'Debug'
+# Configuration = 'Debug'
 
 # Am 19.03.2020 aktuell!
 # Am 16.04.2020 cmd2py angefangen!
@@ -378,6 +378,7 @@ def create_opensoar(args):
     if toolchain.startswith('msvc'):
       build_dir = build_dir + '/'+ Configuration
       opensoar_app = project_name + '-MSVC.exe'
+      opensoar_app = project_name + '.exe'  #  jetzt so...
     elif toolchain.startswith('mgw'):
       opensoar_app = project_name + '-MinGW.exe'
       opensoar_app = 'XCSoarAug-MinGW.exe'
