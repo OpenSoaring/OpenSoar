@@ -128,9 +128,8 @@ openssh = AutotoolsProject(
 )
 
 libfmt = CmakeProject(
-    ('https://github.com/fmtlib/fmt/archive/10.0.0.tar.gz',
-     'https://github.com/fmtlib/fmt/archive/10.0.0.tar.gz'),
-    'ede1b6b42188163a3f2e0f25ad5c0637eca564bd8df74d02e31a311dd6b37ad8',
+    'https://github.com/fmtlib/fmt/archive/10.1.1.tar.gz',
+    '78b8c0a72b1c35e4443a7e308df52498252d1cefc2b08c9a97bc9ee6cfe61f8b',
     'lib/libfmt.a',
     [
         '-DBUILD_SHARED_LIBS=OFF',
@@ -138,8 +137,8 @@ libfmt = CmakeProject(
         '-DFMT_TEST=OFF',
     ],
     name='fmt',
-    version='10.0.0',
-    base='fmt-10.0.0',
+    version='10.1.1',
+    base='fmt-10.1.1',
 )
 
 libsodium = AutotoolsProject(
@@ -186,28 +185,24 @@ freetype = MesonProject(
     ],
 )
 
-# 'https://c-ares.haxx.se/download/c-ares-1.18.1.tar.gz', '1a7d52a8a84a9fbffb1be9133c0f6e17217d91ea5a6fa61f6b4729cda78ebbcf',
-# 'https://c-ares.haxx.se/download/c-ares-1.19.1.tar.gz', '321700399b72ed0e037d0074c629e7741f6b2ec2dda92956abe3e9671d3e268e',
-# 'https://c-ares.haxx.se/download/c-ares-1.20.1.tar.gz', 'de24a314844cb157909730828560628704f4f896d167dd7da0fa2fb93ea18b10',
-# 'https://c-ares.haxx.se/download/c-ares-1.21.0.tar.gz', 'cd7aa3af1d3ee780d6437039a7ddb7f1ec029f9c4f7aabb0197e384eb5bc2f2d',
-# 'https://c-ares.haxx.se/download/c-ares-1.22.0.tar.gz', 'ad2e205088083317147c9f9eab5f24b82c3d50927c381a7c963deeb1182dbc21',
-# 'https://c-ares.haxx.se/download/c-ares-1.23.0.tar.gz', 'cb614ecf78b477d35963ebffcf486fc9d55cc3d3216f00700e71b7d4868f79f5',
 cares = CmakeProject(
-    'https://c-ares.haxx.se/download/c-ares-1.21.0.tar.gz',
-    'cd7aa3af1d3ee780d6437039a7ddb7f1ec029f9c4f7aabb0197e384eb5bc2f2d',
+    'https://c-ares.haxx.se/download/c-ares-1.24.0.tar.gz',
+    'c517de6d5ac9cd55a9b72c1541c3e25b84588421817b5f092850ac09a8df5103',
     'lib/libcares.a',
     [
         '-DCARES_STATIC=ON',
         '-DCARES_SHARED=OFF',
         '-DCARES_STATIC_PIC=ON',
         '-DCARES_BUILD_TOOLS=OFF',
+        '-DCARES_THREADS=OFF',
     ],
+    patches=abspath('lib/c-ares/patches'),
 )
 
 curl = CmakeProject(
-    ('https://curl.se/download/curl-8.4.0.tar.xz',
-     'https://github.com/curl/curl/releases/download/curl-8_4_0/curl-8.4.0.tar.xz'),
-    '16c62a9c4af0f703d28bda6d7bbf37ba47055ad3414d70dec63e2e6336f2a82d',
+    ('https://curl.se/download/curl-8.5.0.tar.xz',
+     'https://github.com/curl/curl/releases/download/curl-8_5_0/curl-8.5.0.tar.xz'),
+    '42ab8db9e20d8290a3b633e7fbb3cec15db34df65fd1015ef8ac1e4723750eeb',
     'lib/libcurl.a',
     [
         '-DBUILD_CURL_EXE=OFF',
@@ -227,7 +222,6 @@ curl = CmakeProject(
         '-DCURL_DISABLE_GOPHER=ON',
         '-DCURL_DISABLE_COOKIES=ON',
         '-DCURL_DISABLE_CRYPTO_AUTH=ON',
-        '-DCURL_DISABLE_IMAP=ON',
         '-DCMAKE_USE_LIBSSH2=OFF',
         '-DBUILD_TESTING=OFF',
         '-DHAVE_FSEEKO=0',
@@ -253,9 +247,9 @@ sqlite3 = AutotoolsProject(
 )
 
 proj = CmakeProject(
-    ('http://download.osgeo.org/proj/proj-9.3.0.tar.gz',
-     'https://fossies.org/linux/privat/proj-9.3.0.tar.gz'),
-    'f1d70cb8873bb4429a03c437c65c41c4',
+    ('http://download.osgeo.org/proj/proj-9.3.1.tar.gz',
+     'https://fossies.org/linux/privat/proj-9.3.1.tar.gz'),
+    'b0f919cb9e1f42f803a3e616c2b63a78e4d81ecfaed80978d570d3a5e29d10bc',
     'lib/libproj.a',
     [
         '-DBUILD_TESTING=OFF',
@@ -386,9 +380,9 @@ libgeotiff = CmakeProject(
 )
 
 sdl2 = CmakeProject(
-    ('http://www.libsdl.org/release/SDL2-2.28.4.tar.gz',
-     'https://fossies.org/linux/misc/SDL2-2.28.4.tar.gz'),
-    '888b8c39f36ae2035d023d1b14ab0191eb1d26403c3cf4d4d5ede30e66a4942c',
+    ('http://www.libsdl.org/release/SDL2-2.28.5.tar.gz',
+     'https://fossies.org/linux/misc/SDL2-2.28.5.tar.gz'),
+    '332cb37d0be20cb9541739c61f79bae5a477427d79ae85e352089afdaf6666e4',
     'lib/libSDL2.a',
     [
         '-DBUILD_SHARED_LIBS=OFF',

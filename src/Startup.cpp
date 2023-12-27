@@ -4,6 +4,7 @@
 #include "Startup.hpp"
 #include "Interface.hpp"
 #include "Components.hpp"
+#include "NetComponents.hpp"
 #include "BackendComponents.hpp"
 #include "DataComponents.hpp"
 #include "DataGlobals.hpp"
@@ -569,20 +570,16 @@ Startup(UI::Display &display)
 
   PageActions::Update();
 
-#ifdef HAVE_TRACKING
-  tracking = new TrackingGlue(*asio_thread, *Net::curl);
-  tracking->SetSettings(computer_settings.tracking);
-
+  net_components = new NetComponents(*asio_thread, *Net::curl,
+                                     computer_settings.tracking);
 #ifdef HAVE_SKYLINES_TRACKING
   if (map_window != nullptr)
-    map_window->SetSkyLinesData(&tracking->GetSkyLinesData());
-#endif
+    map_window->SetSkyLinesData(&net_components->tracking->GetSkyLinesData());
 #endif
 
 #ifdef HAVE_HTTP
-  tim_glue = new TIM::Glue(*Net::curl);
   if (map_window != nullptr)
-    map_window->SetThermalInfoMap(tim_glue);
+    map_window->SetThermalInfoMap(net_components->tim.get());
 #endif
 
   assert(!global_running);
@@ -619,8 +616,9 @@ Shutdown()
   global_running = false;
 
   // Stop logger and save igc file
-  operation.SetText(_("Shutdown, saving logs..."));
-  if (backend_components->igc_logger != nullptr) {
+  if (backend_components != nullptr && backend_components->igc_logger != nullptr) {
+    operation.SetText(_("Shutdown, saving logs..."));
+
     try {
       backend_components->igc_logger->GUIStopLogger(CommonInterface::Basic(), true);
     } catch (...) {
@@ -646,7 +644,7 @@ Shutdown()
   operation.SetText(_("Shutdown, please wait..."));
 
   // Close any device connections
-  if (backend_components->devices != nullptr) {
+  if (backend_components != nullptr && backend_components->devices != nullptr) {
     LogString("Stop devices");
     backend_components->devices->Close();
   }
@@ -661,23 +659,25 @@ Shutdown()
     draw_thread->BeginStop();
 #endif
 
-  if (backend_components->calculation_thread)
-    backend_components->calculation_thread->BeginStop();
+  if (backend_components != nullptr) {
+    if (backend_components->calculation_thread)
+      backend_components->calculation_thread->BeginStop();
 
-  if (backend_components->merge_thread)
-    backend_components->merge_thread->BeginStop();
+    if (backend_components->merge_thread)
+      backend_components->merge_thread->BeginStop();
 
-  // Wait for the calculations thread to finish
-  LogString("Waiting for calculation thread");
+    // Wait for the calculations thread to finish
+    LogString("Waiting for calculation thread");
 
-  if (backend_components->merge_thread) {
-    backend_components->merge_thread->Join();
-    backend_components->merge_thread.reset();
-  }
+    if (backend_components->merge_thread) {
+      backend_components->merge_thread->Join();
+      backend_components->merge_thread.reset();
+    }
 
-  if (backend_components->calculation_thread) {
-    backend_components->calculation_thread->Join();
-    backend_components->calculation_thread.reset();
+    if (backend_components->calculation_thread) {
+      backend_components->calculation_thread->Join();
+      backend_components->calculation_thread.reset();
+    }
   }
 
   //  Wait for the drawing thread to finish
@@ -698,10 +698,10 @@ Shutdown()
   AudioVarioGlue::Deinitialise();
 
   // Save the task for the next time
-  operation.SetText(_("Shutdown, saving task..."));
+  if (backend_components != nullptr && backend_components->protected_task_manager) {
+    operation.SetText(_("Shutdown, saving task..."));
+    LogString("Save default task");
 
-  LogString("Save default task");
-  if (backend_components->protected_task_manager) {
     try {
       backend_components->protected_task_manager->TaskSaveDefault();
     } catch (...) {
@@ -716,15 +716,19 @@ Shutdown()
   delete terrain_loader;
   terrain_loader = nullptr;
 
-  backend_components->devices.reset();
+  if (backend_components != nullptr)
+    backend_components->devices.reset();
+
   delete device_factory;
   device_factory = nullptr;
 
-  backend_components->nmea_logger.reset();
+  if (backend_components != nullptr) {
+    backend_components->nmea_logger.reset();
 
-  if (backend_components->protected_task_manager) {
-    backend_components->protected_task_manager->SetRoutePlanner(nullptr);
-    backend_components->protected_task_manager.reset();
+    if (backend_components->protected_task_manager) {
+      backend_components->protected_task_manager->SetRoutePlanner(nullptr);
+      backend_components->protected_task_manager.reset();
+    }
   }
 
   delete task_manager;
@@ -735,15 +739,8 @@ Shutdown()
   noaa_store = nullptr;
 #endif
 
-#ifdef HAVE_HTTP
-  delete tim_glue;
-  tim_glue = nullptr;
-#endif
-
-#ifdef HAVE_TRACKING
-  delete tracking;
-  tracking = nullptr;
-#endif
+  delete net_components;
+  net_components = nullptr;
 
 #ifdef HAVE_DOWNLOAD_MANAGER
   Net::DownloadManager::Deinitialise();
