@@ -7,15 +7,17 @@ on:
       - '.github/workflows/build-docs.yml'
     branches:
       - master
+      - dev-branch
   pull_request:
     paths:
       - 'doc/**'
       - '.github/workflows/build-docs.yml'
     branches:
       - master
+      - dev-branch
 env:
   TARGET: manual
-  TARGET_FINAL: XCSoar-docs
+  TARGET_FINAL: OpenSoar-docs
   TARGET_EXT: pdf
 jobs:
   xcsoar-compile:
@@ -35,10 +37,10 @@ jobs:
      - name: XCSoar generate Docs
        uses: addnab/docker-run-action@v3
        with:
-         image: ghcr.io/${{ steps.repository.outputs.lowercase }}/xcsoar-build:latest
-         options: -v ${{ github.workspace }}:/opt/xcsoar
+         image: ghcr.io/${{ steps.repository.outputs.lowercase }}/opensoar-build:latest
+         options: -v ${{ github.workspace }}:/opt/opensoar
          run: |
-           cd /opt/xcsoar
+           cd /opt/xopensoar
            make manual V=2
      - name: upload artifact
        uses: actions/upload-artifact@v3
