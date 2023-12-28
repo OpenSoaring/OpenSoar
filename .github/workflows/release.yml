@@ -18,6 +18,8 @@ jobs:
           echo 'CHANGELOGENTRY<<EOF' >> $GITHUB_ENV
           ./tools/changelog.sh $TAG >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
+          echo $GITHUB_ENV
+          echo '-----------------'
         id: changelogentry
       - name: Create release
         id: create_release
