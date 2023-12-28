@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 #include <span>
 
 constexpr std::byte
