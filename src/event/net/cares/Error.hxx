@@ -6,7 +6,7 @@
 
 #include <stdexcept>
 
-#if defined(__AUGUST__)  // TODO(August2111): Tis isn't correct for make...
+#if defined(__AUGUST__)  // TODO(August2111): This isn't correct for make...
 #ifdef SSIZE_T
 typedef SSIZE_T ssize_t;
 #else   // SSIZE_T
