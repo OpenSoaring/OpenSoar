@@ -1,3 +1,22 @@
+OpenSoar Version 7.41.21 - 2023/12/28
+---------------
+* (xcsoar-)bugfix with dead QuickMenu button solved
+* CMake
+  - reenable MinGW
+  - update Clang (but not succesful) 
+
+#### XCSoar Version 7.41 - 2023/12/21
+* merge xcsoar 7.41 '96457465d0'
+* data files
+  - fix crash with empty user.cup
+* Android
+  - fix BLE/HM10 data corruption
+  - fix crash if IOIO connect was canceled quickly
+  - fix crash if not allowed to start service in foreground
+* Kobo
+  - fix Wifi setup (7.40 breakage)
+  - hide all pseudo tty ports
+
 OpenSoar Version 7.40.20.2 - 2023/12/12
 ---------------
 * CMake
@@ -19,10 +38,20 @@ OpenSoar Version 7.40.20.1 - 2023/11/28
 * Wind Display
   - bugfix with doubled vector
 * remove a lot of compile errors
+* merge xcsoar 7.40 '1164801fe9' from 2023/11/02
 
 #### XCSoar Version 7.40 - 2023/11/02
 * merge xcsoar commit  '1164801f' from 2023/11/02
 * merge xcsoar commit  '32147e1e' from 2023/08/24
+* user interface
+  - Added infobox that combines ETA with AAT dT
+  - FLARM: Add 100m zoom option.
+  - hide mouse cursor after 10 seconds of inactivity
+  - Move glider icon on thermal assist according to 30s average.
+* Linux
+  - fix the /etc/xcsoar data directory
+* Android
+  - raise targetSdkVersion to 33
 
 OpenSoar Version 7.39.19 - 2023/08/13
 ---------------
