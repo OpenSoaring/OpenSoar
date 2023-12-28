@@ -64,7 +64,9 @@ set(Boost_RELEASE_ABI_TAG        "")
 set(Boost_USE_DEBUG_LIBS          OFF)
 set(Boost_DEBUG                   OFF) # Debugging more info in the find_package-process!
 set(BOOST_LIBRARYDIR              "${BOOST_ROOT}/lib/${TOOLCHAIN}")
-set(BOOST_COMPONENTS system regex filesystem thread chrono date_time) # headers) 
+# set(BOOST_COMPONENTS system regex filesystem thread chrono date_time) # headers) 
+set(BOOST_COMPONENTS system regex filesystem chrono date_time) # headers) 
+# thread make a lot of problems (2023-12-28): list(APPEND BOOST_COMPONENTS thread) 
 if(NOT ${TOOLCHAIN} MATCHES "mgw122")
     list(APPEND BOOST_COMPONENTS json)  # headers) 
 endif()
@@ -120,8 +122,16 @@ else()
 ###    message(FATAL_ERROR "Stop!") 
 endif()
 
+
+if (CLANG)
+  set(BOOST_CXX_FLAGS "cxxflags=-fms-runtime-lib=\"static\"" )
+  set(BOOST_LINK_FLAGS "linkflags=-fms-runtime-lib=\"static\"")
+elseif()
+  set(BOOST_CXX_FLAGS )
+  set(BOOST_LINK_FLAGS )
+endif()
 # variant=release 
-set(_BUILD_CMD ./b2 -j4 toolset=${_TOOLSET} link=static runtime-link=shared threading=multi address-model=64 --layout=versioned --prefix=${BOOST_INSTALL_DIR} --build-dir=${BOOST_PREFIX}/build/${TOOLCHAIN} ${BOOST_BUILD_COMPONENTS} --includedir=${BOOST_INSTALL_DIR}/include --libdir=${BOOST_INSTALL_DIR}/lib/${TOOLCHAIN} install)
+set(_BUILD_CMD ./b2 -j4 toolset=${_TOOLSET} link=static runtime-link=shared threading=multi address-model=64 --layout=versioned ${BOOST_CXX_FLAGS} ${BOOST_LINK_FLAGS} --prefix=${BOOST_INSTALL_DIR} --build-dir=${BOOST_PREFIX}/build/${TOOLCHAIN} ${BOOST_BUILD_COMPONENTS} --includedir=${BOOST_INSTALL_DIR}/include --libdir=${BOOST_INSTALL_DIR}/lib/${TOOLCHAIN} install)
 
 set(_INSTALL_DIR "${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_BOOST_VERSION}")
 
