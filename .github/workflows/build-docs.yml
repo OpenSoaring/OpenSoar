@@ -20,7 +20,7 @@ env:
   TARGET_FINAL: OpenSoar-docs
   TARGET_EXT: pdf
 jobs:
-  xcsoar-compile:
+  opensoar-compile:
     runs-on: ubuntu-latest
     steps:
      - id: checkout
@@ -40,7 +40,7 @@ jobs:
          image: ghcr.io/${{ steps.repository.outputs.lowercase }}/opensoar-build:latest
          options: -v ${{ github.workspace }}:/opt/opensoar
          run: |
-           cd /opt/xopensoar
+           cd /opt/opensoar
            make manual V=2
      - name: upload artifact
        uses: actions/upload-artifact@v3
