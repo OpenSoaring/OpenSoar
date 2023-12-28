@@ -143,7 +143,9 @@ FillPortTypes(DataFieldEnum &df, const DeviceConfig &config) noexcept
   }
 }
 
-void
+// this function is only used inside this source file.
+// maybe this is to check with the tests!
+static void
 SetPort(DataFieldEnum &df, DeviceConfig::PortType type,
         const TCHAR *value) noexcept
 {
@@ -249,8 +251,14 @@ UpdatePortEntry(DataFieldEnum &df, DeviceConfig::PortType type,
   AddPort(df, type, value, name);
 }
 
+/*
+with some compiler and constellations the function name 'SetPort' makes
+problems during the linking:
+SetPort(DataFieldEnum&, const DeviceConfig&) not found...
+After renaming to SetDevicePort this problem disappears.
+*/
 void
-SetPort(DataFieldEnum &df, const DeviceConfig &config) noexcept
+SetDevicePort(DataFieldEnum &df, const DeviceConfig &config) noexcept
 {
   switch (config.port_type) {
   case DeviceConfig::PortType::DISABLED:

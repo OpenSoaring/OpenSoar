@@ -17,15 +17,11 @@ UpdatePortEntry(DataFieldEnum &df, DeviceConfig::PortType type,
                 const TCHAR *value, const TCHAR *name) noexcept;
 
 void
-SetPort(DataFieldEnum &df, DeviceConfig::PortType type,
-        const TCHAR *value) noexcept;
-
-void
 SetBluetoothPort(DataFieldEnum &df, DeviceConfig::PortType type,
                  const TCHAR *bluetooth_mac) noexcept;
 
 void
-SetPort(DataFieldEnum &df, const DeviceConfig &config) noexcept;
+SetDevicePort(DataFieldEnum &df, const DeviceConfig &config) noexcept;
 
 [[gnu::pure]]
 DeviceConfig::PortType

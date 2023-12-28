@@ -19,9 +19,10 @@ CheckTTYName(const char *name) noexcept
       /* ignore /dev/tty */
       return false;
 
-    /* ignore virtual internal ports on Mac OS X (and probably other
-       BSDs) */
-    if (*t >= 'p' && *t <= 'w')
+    /* ignore pseudo tty slaves (found on Kobo, macOS and probably
+       many others) */
+    if (((*t >= 'a' && *t <= 'e') || (*t >= 'p' && *t <= 'z')) &&
+        IsLowerHexDigit(t[1]) && t[2] == 0)
       return false;
 
     /* filter out "/dev/tty0", ... (valid integer after "tty") */

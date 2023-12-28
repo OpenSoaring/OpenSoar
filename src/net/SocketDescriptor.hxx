@@ -16,7 +16,7 @@
 
 #ifdef _WIN32
 #include <winsock2.h> // for SOCKET, INVALID_SOCKET
-# ifdef __MSVC__  // not defined in MSVC only
+#if defined(__MSVC__) || defined(__clang__) // not defined in MSVC only
   typedef SSIZE_T ssize_t;
 # endif
 #endif
@@ -102,6 +102,15 @@ public:
 	 */
 	[[gnu::pure]]
 	bool IsStream() const noexcept;
+
+#ifdef __linux__
+	/**
+	 * Determine the socket protocol (SO_PROTOCOL),
+	 * e.g. IPPROTO_SCTP.  Returns -1 on error.
+	 */
+	[[gnu::pure]]
+	int GetProtocol() const noexcept;
+#endif // __linux__
 
 	static constexpr SocketDescriptor Undefined() noexcept {
 #ifdef _WIN32
@@ -189,6 +198,9 @@ public:
 	 */
 	std::size_t GetOption(int level, int name,
 			      void *value, std::size_t size) const noexcept;
+
+	[[gnu::pure]]
+	int GetIntOption(int level, int name, int fallback) const noexcept;
 
 #ifdef HAVE_STRUCT_UCRED
 	/**

@@ -8,14 +8,14 @@ set(_LIB_NAME fmt)   # "liblibfmt.a"
 Prepare_3rdParty(fmt ${_LIB_NAME})
 
 
-string(REPLACE "/" "\\" _INSTALL_DIR ${FMT_INSTALL_DIR})
-string(REPLACE "/" "\\" _SOURCE_DIR  ${FMT_PREFIX}/src/${LIB_TARGET_NAME})
+string(REPLACE "\\" "/" _INSTALL_DIR ${FMT_INSTALL_DIR})
+string(REPLACE "\\" "/" _SOURCE_DIR  ${FMT_PREFIX}/src/${LIB_TARGET_NAME})
 
 if (WIN32 AND MSVC)
-      set(BUILD_COMMAND devenv ${_SOURCE_DIR}\\libfmt.sln /Build Release|x64)
+      set(BUILD_COMMAND devenv ${_SOURCE_DIR}/libfmt.sln /Build Release|x64)
       set(CONFIGURE_COMMAND  echo ${BUILD_COMMAND})
       # set(INSTALL_COMMAND xcopy ${_SOURCE_DIR}\\Build\\Release\\x64\\*.lib ${_INSTALL_DIR}\\lib\\${TOOLCHAIN}\\* /Y /T)
-      set(INSTALL_COMMAND xcopy ${_SOURCE_DIR}\\src\\libfmt\\include\\*.h ${_INSTALL_DIR}\\include\\* /Y /I /S /E)
+      set(INSTALL_COMMAND xcopy ${_SOURCE_DIR}/src/libfmt/include/*.h ${_INSTALL_DIR}/include/* /Y /I /S /E)
 elseif (WIN32 AND MINGW AND NOT CLANG)
       find_program(MAKE_EXECUTABLE NAMES gmake make mingw32-make REQUIRED)
 endif()

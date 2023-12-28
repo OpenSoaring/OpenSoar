@@ -76,6 +76,7 @@ add_compile_definitions(_CRT_NONSTDC_NO_DEPRECATE)
 #********************************************************************************
 if(AUGUST_SPECIAL)
     add_compile_definitions(_AUG_CLANG)
+    add_compile_definitions(__AUGUST__)
 endif()
 #********************************************************************************
 set(CMAKE_C_FLAGS    "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")

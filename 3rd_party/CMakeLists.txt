@@ -80,8 +80,6 @@ macro(prepare_3rdparty target_name lib_name)
     endif()
 
     set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")  ## D:/Project/link_libs...
-    string(REPLACE "/" "\\" _INSTALL_DIR ${${TARGET_CNAME}_INSTALL_DIR})
-    string(REPLACE "/" "\\" _SOURCE_DIR  ${${TARGET_CNAME}_SOURCE_DIR})
     string(REPLACE "\\" "/" _PREFIX_DIR  ${${TARGET_CNAME}_PREFIX})
 
     set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS})  ## for internal use
