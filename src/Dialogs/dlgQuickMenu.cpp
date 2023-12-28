@@ -211,6 +211,10 @@ QuickMenu::SetFocus() noexcept
   if (centerPos >= buttons.size())
     return false;
 
+  while ((centerPos > 0) &&
+         !(buttons[centerPos].IsDefined() && buttons[centerPos].IsEnabled()))
+    centerPos--;
+
   buttons[centerPos].SetFocus();
   grid_view.RefreshLayout();
   return true;
