@@ -2,19 +2,20 @@
 # ./3rd_party/3rd_party.cmake
 # =================================================================
 
-set(BOOST_VERSION       "1.82.0")
-set(CARES_VERSION       "1.18.1")  # not valid!
+set(BOOST_VERSION       "1.84.0")
+set(CARES_VERSION       "1.24.0")  # not valid!
+# 25.12.23 
 set(CARES_VERSION       "1.17.1")  # old version necessary...
-set(CURL_VERSION        "8.2.1")
+set(CURL_VERSION        "8.5.0")
 set(PNG_VERSION         "1.6.40")
 set(SODIUM_VERSION      "1.0.18")
 set(LUA_VERSION         "5.4.6")
-set(FMT_VERSION         "10.0.0")
+set(FMT_VERSION         "10.1.1")
 
 if (NO_MSVC)
     set(TIFF_VERSION        "4.5.1")
     set(JPEG_VERSION        "3.0.0")
-    set(PROJ_VERSION        "9.2.1")
+    set(PROJ_VERSION        "9.3.1")
     set(FREETYPE_VERSION    "2.13.1")
     set(OPENSSL_VERSION     "3.1.2")
     set(UPSTREAM_VERSION    "8.0.1")
@@ -26,7 +27,7 @@ endif()
 set(ZLIB_VERSION        "1.3")
 set(INKSCAPE_VERSION    "1.2.1")
 set(FREEGLUT_VERSION    "3.2.2")
-set(SDL_VERSION         "2.28.2")  # for OpenGL...
+set(SDL_VERSION         "2.28.5")  # for OpenGL...
 set(GLM_VERSION         "0.9.9.8")  # GL Mathematics for OpenGL...
 # set(RSVG_VERSION        "2.55.1")
 if (NO_MSVC)

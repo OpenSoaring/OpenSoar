@@ -9,6 +9,12 @@
 
 #include <type_traits>
 
+#if defined(__MSVC__) || defined(__clang__) // TODO(Augustr2111): make it ok
+# define USE_LIST_ITERATOR  1
+#else
+#define USE_LIST_ITERATOR 0
+#endif
+
 /**
  * This class keeps track of the traffic objects received from a
  * FLARM.
@@ -200,11 +206,11 @@ struct TrafficList {
   const FlarmTraffic *FindMaximumAlert() const noexcept;
 
   constexpr unsigned TrafficIndex(const FlarmTraffic *t) const noexcept {
-#ifdef __MSVC__  // TODO(Augustr2111): make it ok
-  #if 0
+#if USE_LIST_ITERATOR  // TODO(August2111): make it ok
+  #ifdef __clang__
     unsigned int i = 0;
     for (const auto &traffic : list) {
-      if (traffic == t)
+      if (traffic.id == t->id)
         return i;
       i++;
     }

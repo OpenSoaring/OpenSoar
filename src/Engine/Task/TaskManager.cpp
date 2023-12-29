@@ -111,15 +111,6 @@ TaskManager::IncrementActiveTaskPoint(int offset) noexcept
   }
 }
 
-TaskWaypoint*
-TaskManager::GetActiveTaskPoint() const noexcept
-{
-  if (active_task)
-    return active_task->GetActiveTaskPoint();
-
-  return NULL;
-}
-
 void
 TaskManager::UpdateCommonStatsTimes(const AircraftState &state) noexcept
 {
@@ -375,15 +366,6 @@ TaskManager::Reset() noexcept
   abort_task->Reset();
   common_stats.Reset();
   glide_polar.SetCruiseEfficiency(1);
-}
-
-unsigned
-TaskManager::TaskSize() const noexcept
-{
-  if (active_task)
-    return active_task->TaskSize();
-
-  return 0;
 }
 
 GeoPoint

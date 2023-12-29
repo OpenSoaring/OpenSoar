@@ -11,7 +11,7 @@
 std::optional<double>
 ParseDecimal(std::string_view src) noexcept
 {
-#ifdef __MSVC__
+#if defined(__MSVC__) || defined(__clang__)
   // MSVC cannot (change) the iterator to const char* automatically?
   const char *first = src.data(), *const last = first + src.size();
 #else

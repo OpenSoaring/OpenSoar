@@ -23,14 +23,7 @@
 int
 SocketDescriptor::GetType() const noexcept
 {
-	assert(IsDefined());
-
-	int type;
-	socklen_t size = sizeof(type);
-	return getsockopt(fd, SOL_SOCKET, SO_TYPE,
-			  (char *)&type, &size) == 0
-		? type
-		: -1;
+	return GetIntOption(SOL_SOCKET, SO_TYPE, -1);
 }
 
 bool
@@ -38,6 +31,16 @@ SocketDescriptor::IsStream() const noexcept
 {
 	return GetType() == SOCK_STREAM;
 }
+
+#ifdef  __linux__
+
+int
+SocketDescriptor::GetProtocol() const noexcept
+{
+	return GetIntOption(SOL_SOCKET, SO_PROTOCOL, -1);
+}
+
+#endif // __linux__
 
 #ifdef _WIN32
 
@@ -188,12 +191,9 @@ SocketDescriptor::CreateSocketPairNonBlock(int domain, int type, int protocol,
 int
 SocketDescriptor::GetError() const noexcept
 {
-	assert(IsDefined());
-
 	int s_err = 0;
-	socklen_t s_err_size = sizeof(s_err);
-	return getsockopt(fd, SOL_SOCKET, SO_ERROR,
-			  (char *)&s_err, &s_err_size) == 0
+	return GetOption(SOL_SOCKET, SO_ERROR,
+			 &s_err, sizeof(s_err)) == sizeof(s_err)
 		? s_err
 		: errno;
 }
@@ -208,6 +208,14 @@ SocketDescriptor::GetOption(int level, int name,
 	return getsockopt(fd, level, name, (char *)value, &size2) == 0
 		? size2
 		: 0;
+}
+
+int
+SocketDescriptor::GetIntOption(int level, int name, int fallback) const noexcept
+{
+	int value = fallback;
+	GetOption(level, name, &value, sizeof(value));
+	return value;
 }
 
 #ifdef HAVE_STRUCT_UCRED

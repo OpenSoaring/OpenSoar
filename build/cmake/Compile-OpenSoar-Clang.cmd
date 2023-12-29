@@ -13,7 +13,7 @@ cd /D %~dp0../..
 
 
 ::=======================
-set CLANG_VERSION=clang16
+set CLANG_VERSION=clang15
 ::=======================
 
 echo %CD%

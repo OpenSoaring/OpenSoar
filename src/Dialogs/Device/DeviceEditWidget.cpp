@@ -117,7 +117,7 @@ DeviceEditWidget::SetConfig(const DeviceConfig &_config) noexcept
 
   WndProperty &port_control = GetControl(Port);
   DataFieldEnum &port_df = *(DataFieldEnum *)port_control.GetDataField();
-  SetPort(port_df, config);
+  SetDevicePort(port_df, config);
   port_control.RefreshDisplay();
 
   LoadValueEnum(BaudRate, config.baud_rate);

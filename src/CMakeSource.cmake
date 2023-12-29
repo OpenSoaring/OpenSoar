@@ -16,6 +16,8 @@ set(BASIC_SOURCES
     ${SRC}/Components.cpp
     ${SRC}/CommandLine.cpp
     ${SRC}/DataGlobals.cpp
+    ${SRC}/NetComponents.cpp
+
     ${SRC}/FlightStatistics.cpp
     ${SRC}/HorizonWidget.cpp
     ${SRC}/Interface.cpp
