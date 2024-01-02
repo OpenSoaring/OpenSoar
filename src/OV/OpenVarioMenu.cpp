@@ -293,6 +293,12 @@ private:
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
     Run("/usr/bin/xcsoar", "-fly");
   }
+  void StartOpenSoar() noexcept {
+    const UI::ScopeDropMaster drop_master{display};
+    const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
+    Run("/usr/bin/OpenSoar", "-fly");
+    // Run("/usr/bin/OpenSoar", "-fly", "-datapath=/home/root/data/OpenSoarData");
+  }
 
   void ScheduleTimer() noexcept {
     assert(remaining_seconds > 0);
@@ -367,6 +373,11 @@ void
 MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 			[[maybe_unused]] const PixelRect &rc) noexcept
 {
+  AddButton("Start OpenSoar", [this](){
+    CancelTimer();
+    StartOpenSoar();
+  });
+
   AddButton("Start XCSoar", [this](){
     CancelTimer();
     StartXCSoar();
