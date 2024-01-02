@@ -256,6 +256,7 @@ class MainMenuWidget final
   : public RowFormWidget
 {
   enum Controls {
+    OPENSOAR,
     XCSOAR,
     LOGBOOK,
     FILE,
