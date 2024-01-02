@@ -504,10 +504,7 @@ int main()
 
   switch (action) {
   case LAUNCH_SHELL:
-    execl("/bin/bash", "bash", "--login", nullptr);
-    execl("/bin/ash", "-ash", nullptr);
-    execl("/bin/ash", "-sh", nullptr);
-    perror("Failed to launch shell");
+    exit(100);
     return EXIT_FAILURE;
   }
 
