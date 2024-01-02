@@ -33,6 +33,7 @@
 #include <cassert>
 #include <cstdio>
 #include <thread>
+#include <filesystem>
 
 enum Buttons {
   LAUNCH_SHELL = 100,
@@ -482,6 +483,7 @@ Main()
 
 int main()
 {
+  std::filesystem::current_path("/home/root"); // setting path
   /*the x-menu is waiting a second to solve timing problem with display rotation */
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
