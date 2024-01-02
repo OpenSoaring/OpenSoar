@@ -258,6 +258,8 @@ class MainMenuWidget final
 {
   enum Controls {
     OPENSOAR,
+    OPENSOAR_CLUB,
+    OPENSOAR_CLUB2,
     XCSOAR,
     LOGBOOK,
     FILE,
@@ -276,7 +278,8 @@ class MainMenuWidget final
   UI::Timer timer{[this](){
     if (--remaining_seconds == 0) {
       HideRow(Controls::TIMER);
-      StartXCSoar();
+      // StartXCSoar();
+      StartOpenSoar();
     } else {
       ScheduleTimer();
     }
@@ -300,8 +303,8 @@ private:
   void StartOpenSoar() noexcept {
     const UI::ScopeDropMaster drop_master{display};
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
-    Run("/usr/bin/OpenSoar", "-fly");
-    // Run("/usr/bin/OpenSoar", "-fly", "-datapath=/home/root/data/OpenSoarData");
+    // Run("/usr/bin/OpenSoar", "-fly");
+    Run("/usr/bin/OpenSoar", "-fly", "-datapath=/home/root/data/OpenSoarData");
   }
 
   void ScheduleTimer() noexcept {
@@ -382,6 +385,16 @@ MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     StartOpenSoar();
   });
 
+  AddButton("Start OpenSoar (Club)", [this](){
+    CancelTimer();
+    StartOpenSoar();
+  });
+
+  AddButton("Start OpenSoar (Club2)", [this](){
+    CancelTimer();
+    StartOpenSoar();
+  });
+
   AddButton("Start XCSoar", [this](){
     CancelTimer();
     StartXCSoar();
@@ -430,6 +443,8 @@ MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   AddReadOnly("");
+
+  HideRow(Controls::OPENSOAR_CLUB);
 }
 
 static int
