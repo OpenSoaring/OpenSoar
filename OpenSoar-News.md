@@ -1,6 +1,10 @@
+OpenSoar Version 7.41.21.1 - not yet released
+---------------
+* start with OpenVarioMenu
+
 OpenSoar Version 7.41.21 - 2023/12/28
 ---------------
-* (xcsoar-)bugfix with dead QuickMenu button solved
+* (xcsoar-)bugfix with dead QuickMenu button
 * CMake
   - reenable MinGW
   - update Clang (but not succesful) 
