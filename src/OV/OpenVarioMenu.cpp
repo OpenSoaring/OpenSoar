@@ -28,7 +28,8 @@
 #include "util/PrintException.hxx"
 #include "util/ScopeExit.hxx"
 #include "LocalPath.hpp"
-#include "System.hpp"
+#include "OV/System.hpp"
+#include "OV/Settings.hpp"
 
 #include <cassert>
 #include <cstdio>
@@ -41,31 +42,6 @@ enum Buttons {
 
 static bool have_data_path = false;
 
-static DialogSettings dialog_settings;
-static UI::SingleWindow *global_main_window;
-static DialogLook *global_dialog_look;
-
-const DialogSettings &
-UIGlobals::GetDialogSettings()
-{
-  return dialog_settings;
-}
-
-const DialogLook &
-UIGlobals::GetDialogLook()
-{
-  assert(global_dialog_look != nullptr);
-
-  return *global_dialog_look;
-}
-
-UI::SingleWindow &
-UIGlobals::GetMainWindow()
-{
-  assert(global_main_window != nullptr);
-
-  return *global_main_window;
-}
 
 class FileMenuWidget final
   : public RowFormWidget
@@ -116,23 +92,23 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 }
 
-class SystemMenuWidget final
-  : public RowFormWidget
-{
-  UI::Display &display;
-  UI::EventQueue &event_queue;
-
-public:
-  SystemMenuWidget(UI::Display &_display, UI::EventQueue &_event_queue,
-                   const DialogLook &look) noexcept
-    :RowFormWidget(look),
-     display(_display), event_queue(_event_queue) {}
-
-private:
-  /* virtual methods from class Widget */
-  void Prepare(ContainerWindow &parent,
-               const PixelRect &rc) noexcept override;
-};
+// class SystemMenuWidget final
+//   : public RowFormWidget
+// {
+//   UI::Display &display;
+//   UI::EventQueue &event_queue;
+// 
+// public:
+//   SystemMenuWidget(UI::Display &_display, UI::EventQueue &_event_queue,
+//                    const DialogLook &look) noexcept
+//     :RowFormWidget(look),
+//      display(_display), event_queue(_event_queue) {}
+// 
+// private:
+//   /* virtual methods from class Widget */
+//   void Prepare(ContainerWindow &parent,
+//                const PixelRect &rc) noexcept override;
+// };
 
 static void
 CalibrateSensors() noexcept
@@ -209,6 +185,7 @@ try {
   ShowError(std::current_exception(), "Calibrate Sensors");
 }
 
+#if 0
 void
 SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                           [[maybe_unused]] const PixelRect &rc) noexcept
@@ -252,6 +229,7 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     Run("/usr/lib/openvario/libexec/system_info.sh");
   });
 }
+#endif
 
 class MainMenuWidget final
   : public RowFormWidget
@@ -259,7 +237,6 @@ class MainMenuWidget final
   enum Controls {
     OPENSOAR,
     OPENSOAR_CLUB,
-    OPENSOAR_CLUB2,
     XCSOAR,
     LOGBOOK,
     FILE,
@@ -386,11 +363,6 @@ MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   AddButton("Start OpenSoar (Club)", [this](){
-    CancelTimer();
-    StartOpenSoar();
-  });
-
-  AddButton("Start OpenSoar (Club2)", [this](){
     CancelTimer();
     StartOpenSoar();
   });
