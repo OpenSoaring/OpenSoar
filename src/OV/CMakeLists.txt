@@ -49,4 +49,5 @@ target_link_libraries(${TARGET_NAME} PUBLIC Logger)
  # message(FATAL_ERROR "Stop!")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER OpenVario)
 
-add_dependencies(${TARGET_NAME} util)
+target_link_libraries(${TARGET_NAME} PUBLIC Dialogs Math ${XCSOAR_LINK_LIBRARIES})
+add_dependencies(${TARGET_NAME} util Data)
