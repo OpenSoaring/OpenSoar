@@ -908,7 +908,6 @@ class MainMenuWidget final
     SHELL,
     REBOOT,
     SHUTDOWN,
-       UPGRADE,
     TIMER,
   };
 
@@ -946,7 +945,7 @@ private:
   void StartXCSoar() noexcept {
     const UI::ScopeDropMaster drop_master{display};
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
-    Run("/usr/bin/xcsoar", "-fly");
+    Run("/usr/bin/xcsoar", "-fly", "-datapath=/home/root/data/XCSoarData");
   }
 
   void ScheduleTimer() noexcept {
@@ -1052,10 +1051,6 @@ MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
   AddButton("Power off", [](){
     Run("/sbin/poweroff");
-  });
-
-  AddButton("Upgrade Firmware", [this](){
-    dialog.SetModalResult(START_UPGRADE);
   });
 
   AddReadOnly("");
