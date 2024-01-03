@@ -48,11 +48,13 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
                      dialog_title, argv);
   });
-#if 0
+
+  AddReadOnly(_T("System:"));
+
   title.Format(_("System Backup: OpenVario and %s settings to USB"), main_app);
   AddButton(title, []() {
     static constexpr const char *argv[] = {
-            "/usr/bin/backup-system.sh", nullptr
+            "/usr/bin/transfer-system.sh", "backup", main_app, nullptr
     };
     
     RunProcessDialog(UIGlobals::GetMainWindow(),
@@ -64,13 +66,12 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                main_app);
   AddButton(title, []() {
      static constexpr const char *argv[] = {
-             "/usr/bin/restore-system.sh", nullptr
+             "/usr/bin/transfer-system.sh", "restore", main_app, nullptr
      };
      
      RunProcessDialog(UIGlobals::GetMainWindow(),
              UIGlobals::GetDialogLook(),
-             _("Restore XCSoar and System"), argv);
+             _("Restore System"), argv);
              Display::Rotate(Display::DetectInitialOrientation());
    });
-#endif
 }
