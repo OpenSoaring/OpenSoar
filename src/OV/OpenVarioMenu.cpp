@@ -220,6 +220,16 @@ void
 SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                           [[maybe_unused]] const PixelRect &rc) noexcept
 {
+  AddButton("Upgrade Firmware", [](){
+    static constexpr const char *argv[] = {
+      "/usr/bin/fw-upgrade.sh", nullptr
+    };
+
+    RunProcessDialog(UIGlobals::GetMainWindow(),
+                     UIGlobals::GetDialogLook(),
+                     "Upgrade Firmware", argv);
+  });
+
   AddButton("Update System", [](){
     static constexpr const char *argv[] = {
       "/usr/bin/update-system.sh", nullptr
@@ -266,8 +276,8 @@ class MainMenuWidget final
   : public RowFormWidget
 {
   enum Controls {
-    OPENSOAR,
     OPENSOAR_CLUB,
+    OPENSOAR,
     XCSOAR,
     LOGBOOK,
     FILE,
@@ -388,12 +398,12 @@ void
 MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 			[[maybe_unused]] const PixelRect &rc) noexcept
 {
-  AddButton("Start OpenSoar", [this](){
+  AddButton("Start OpenSoar (Club)", [this]() {
     CancelTimer();
     StartOpenSoar();
   });
 
-  AddButton("Start OpenSoar (Club)", [this](){
+  AddButton("Start OpenSoar", [this]() {
     CancelTimer();
     StartOpenSoar();
   });
