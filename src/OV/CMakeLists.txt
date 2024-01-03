@@ -39,7 +39,7 @@ endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
-add_executable(${TARGET_NAME} # ${XCSOAR_LIB_TYPE}
+add_executable(${TARGET_NAME} 
     ${SOURCE_FILES}
     ${HEADER_FILES}
     ${SCRIPT_FILES}
