@@ -76,6 +76,7 @@ static void ChangeConfigString(const string &keyvalue, T value, const string &pa
 
 enum Buttons {
   LAUNCH_SHELL = 100,
+  START_UPGRADE = 111,
 };
 
 static DialogSettings dialog_settings;
@@ -858,6 +859,11 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                      "WiFi Settings", argv);
   });
 
+
+  AddButton("Upgrade Firmware", [this](){
+    dialog.SetModalResult(START_UPGRADE);
+  });
+
   AddButton("Update System", [](){
     static constexpr const char *argv[] = {
       "/usr/bin/update-system.sh", nullptr
@@ -902,6 +908,8 @@ class MainMenuWidget final
   unsigned remaining_seconds = 3;
 
   enum Controls {
+    OPENSOAR_CLUB,
+    OPENSOAR,
     XCSOAR,
     FILE,
     SYSTEM,
@@ -919,7 +927,8 @@ class MainMenuWidget final
   UI::Timer timer{[this](){
     if (--remaining_seconds == 0) {
       HideRow(Controls::TIMER);
-      StartXCSoar();
+      StartOpenSoar();
+      // StartXCSoar();
     } else {
       ScheduleTimer();
     }
@@ -935,6 +944,12 @@ public:
      }
 
 private:
+  void StartOpenSoar() noexcept {
+    const UI::ScopeDropMaster drop_master{display};
+    const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
+    Run("/usr/bin/OpenSoar", "-fly", "-datapath=/home/root/data/OpenSoarData");
+  }
+
   void StartXCSoar() noexcept {
     const UI::ScopeDropMaster drop_master{display};
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
@@ -970,7 +985,8 @@ private:
     }
     else {
       HideRow(Controls::TIMER);
-      StartXCSoar();
+      StartOpenSoar();
+      // StartXCSoar();
     }
   }
 
@@ -996,7 +1012,17 @@ void
 MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 			[[maybe_unused]] const PixelRect &rc) noexcept
 {
-  AddButton("Start XCSoar", [this](){
+  AddButton("Start OpenSoar (Club)", [this]() {
+    CancelTimer();
+    StartOpenSoar();
+  });
+
+  AddButton("Start OpenSoar", [this]() {
+    CancelTimer();
+    StartOpenSoar();
+  });
+
+  AddButton("Start XCSoar", [this]() {
     CancelTimer();
     StartXCSoar();
   });
@@ -1036,6 +1062,8 @@ MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   AddReadOnly("");
+
+  HideRow(Controls::OPENSOAR_CLUB);
 }
 
 static int
@@ -1088,12 +1116,6 @@ int main()
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
   int action = Main();
-
-  switch (action) {
-  case LAUNCH_SHELL:
-    exit(100);
-    return EXIT_FAILURE;
-  }
-
+  // save in LogFormat?
   return action;
 }
