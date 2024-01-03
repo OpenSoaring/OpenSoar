@@ -725,10 +725,12 @@ class MainMenuWidget final
     XCSOAR,
     FILE,
     SYSTEM,
+      READONLY_1,
     SHELL,
     REBOOT,
     SHUTDOWN,
     TIMER,
+       READONLY_2,
   };
 
   UI::Display &display;
@@ -861,7 +863,7 @@ MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     return sub_dialog.ShowModal();
   });
 
-  AddReadOnly(_T("System"));
+  AddReadOnly(_T(""));
 
   AddButton(_T("Shell"), [this]() { 
     dialog.SetModalResult(LAUNCH_SHELL);
@@ -875,7 +877,7 @@ MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     Run("/sbin/poweroff");
   });
 
-  AddReadOnly(_T(""));
+  AddReadOnly(_T(""));  // Timer-Progress
 
   HideRow(Controls::OPENSOAR_CLUB);
 }
