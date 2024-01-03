@@ -54,7 +54,7 @@ OpenvarioGetBrightness() noexcept
   char line[4];
   int result = 10;
 
-  if (File::ReadString(Path("/sys/class/backlight/lcd/brightness"), line, sizeof(line))) {
+  if (File::ReadString(Path(_T("/sys/class/backlight/lcd/brightness")), line, sizeof(line))) {
     result = atoi(line);
   }
 
@@ -67,14 +67,14 @@ OpenvarioSetBrightness(uint_least8_t value) noexcept
   if (value < 1) { value = 1; }
   if (value > 10) { value = 10; }
 
-  File::WriteExisting(Path("/sys/class/backlight/lcd/brightness"), fmt::format_int{value}.c_str());
+  File::WriteExisting(Path(_T("/sys/class/backlight/lcd/brightness")), fmt::format_int{value}.c_str());
 }
 
 DisplayOrientation
 OpenvarioGetRotation()
 {
   std::map<std::string, std::string, std::less<>> map;
-  LoadConfigFile(map, Path("/boot/config.uEnv"));
+  LoadConfigFile(map, Path(_T("/boot/config.uEnv")));
 
   uint_least8_t result;
   result = map.contains("rotation") ? std::stoi(map.find("rotation")->second) : 0;
@@ -111,13 +111,14 @@ OpenvarioSetRotation(DisplayOrientation orientation)
     break;
   };
 
-  File::WriteExisting(Path("/sys/class/graphics/fbcon/rotate"), fmt::format_int{rotation}.c_str());
+  File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")), fmt::format_int{rotation}.c_str());
 
-  LoadConfigFile(map, Path("/boot/config.uEnv"));
+  LoadConfigFile(map, Path(_T("/boot/config.uEnv")));
   map.insert_or_assign("rotation", fmt::format_int{rotation}.c_str());
-  WriteConfigFile(map, Path("/boot/config.uEnv"));
+  WriteConfigFile(map, Path(_T("/boot/config.uEnv")));
 }
 
+#ifndef _WIN32
 SSHStatus
 OpenvarioGetSSHStatus()
 {
@@ -155,3 +156,4 @@ OpenvarioDisableSSH()
   Systemd::DisableUnitFile(connection, "dropbear.socket");
   Systemd::StopUnit(connection, "dropbear.socket");
 }
+#endif  // _WIN32
