@@ -109,9 +109,9 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                      "Downloading files", argv);
   });
 
-  AddButton("Upload files from USB to XCSoar", [](){
+  AddButton("Upload files from USB to OpenSoar", [](){
     static constexpr const char *argv[] = {
-      "/usr/bin/upload-xcsoar.sh", nullptr
+      "/usr/bin/transfers.sh upload-data OpenSoar", nullptr
     };
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
