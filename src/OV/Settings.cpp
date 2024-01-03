@@ -40,6 +40,16 @@ void
 SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                           [[maybe_unused]] const PixelRect &rc) noexcept
 {
+  AddButton("Upgrade Firmware", [](){
+    static constexpr const char *argv[] = {
+      "/usr/bin/fw-upgrade.sh", nullptr
+    };
+
+    RunProcessDialog(UIGlobals::GetMainWindow(),
+                     UIGlobals::GetDialogLook(),
+                     "Upgrade Firmware", argv);
+  });
+
   AddButton("Update System", [](){
     static constexpr const char *argv[] = {
       "/usr/bin/update-system.sh", nullptr
@@ -48,16 +58,6 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
                      "Update System", argv);
-  });
-
-  AddButton("Update Maps", [](){
-    static constexpr const char *argv[] = {
-      "/usr/bin/update-maps.sh", nullptr
-    };
-
-    RunProcessDialog(UIGlobals::GetMainWindow(),
-                     UIGlobals::GetDialogLook(),
-                     "Update Maps", argv);
   });
 
   AddButton("Calibrate Sensors", CalibrateSensors);
