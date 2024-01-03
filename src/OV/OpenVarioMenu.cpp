@@ -32,26 +32,24 @@
 #include <iostream>
 #include <thread>
 
-using namespace std;
-
-static void GetConfigInt(const string &keyvalue, unsigned &value, const string &path)
-{
-  const Path ConfigPath(path.c_str());
+static void GetConfigInt(const std::string &keyvalue, unsigned &value,
+                         const TCHAR* path) {
+  const Path ConfigPath(path);
 
   ProfileMap configuration;
   Profile::LoadFile(configuration, ConfigPath);
   configuration.Get(keyvalue.c_str(), value);
 }
 
-static void ChangeConfigInt(const string &keyvalue, int value, const string &path)
-{
-  const Path ConfigPath(path.c_str());
+static void ChangeConfigInt(const std::string &keyvalue, int value,
+                            const TCHAR *path) {
+  const Path ConfigPath(path);
 
   ProfileMap configuration;
 
   try {
     Profile::LoadFile(configuration, ConfigPath);
-  } catch (exception &e) {
+  } catch (std::exception &e) {
     Profile::SaveFile(configuration, ConfigPath);
   }
   configuration.Set(keyvalue.c_str(), value);
@@ -59,15 +57,15 @@ static void ChangeConfigInt(const string &keyvalue, int value, const string &pat
 }
 
 template<typename T>
-static void ChangeConfigString(const string &keyvalue, T value, const string &path)
-{
+static void ChangeConfigString(const std::string &keyvalue, T value,
+                               const std::string &path) {
   const Path ConfigPath(path.c_str());
 
   ProfileMap configuration;
 
   try {
     Profile::LoadFile(configuration, ConfigPath);
-  } catch (exception &e) {
+  } catch (std::exception &e) {
     Profile::SaveFile(configuration, ConfigPath);
   }
   configuration.Set(keyvalue.c_str(), value);
@@ -121,39 +119,39 @@ private:
   /* virtual methods from class Widget */
   void Prepare(ContainerWindow &parent,
                const PixelRect &rc) noexcept override;
-  void SaveRotation(const string &rotationvalue);
+  void SaveRotation(const std::string &rotationvalue);
 };
 
 /* x-menu writes the value for the display rotation to /sys because the value is also required for the console in the OpenVario.
 In addition, the display rotation is saved in /boot/config.uEnv so that the Openvario sets the correct rotation again when it is restarted.*/
 void
-ScreenRotationWidget::SaveRotation(const string &rotationString)
+ScreenRotationWidget::SaveRotation(const std::string &rotationString)
 {
-   File::WriteExisting(Path("/sys/class/graphics/fbcon/rotate"), (rotationString).c_str());
+   File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")), (rotationString).c_str());
    int rotationInt = stoi(rotationString);
-   ChangeConfigInt("rotation", rotationInt, "/boot/config.uEnv");
+   ChangeConfigInt("rotation", rotationInt, _T("/boot/config.uEnv"));
 }
 
 void
 ScreenRotationWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                              [[maybe_unused]] const PixelRect &rc) noexcept
 {
- AddButton("Landscape", [this](){
+ AddButton(_T("Landscape"), [this](){
 	SaveRotation("0");
    Display::Rotate(DisplayOrientation::LANDSCAPE);
  });
 
- AddButton("Portrait (90°)", [this](){
+ AddButton(_T("Portrait (90°)"), [this](){
    SaveRotation("1");
    Display::Rotate(DisplayOrientation::REVERSE_PORTRAIT);
  });
 
- AddButton("Landscape (180°)", [this](){
+ AddButton(_T("Landscape (180°)"), [this](){
    SaveRotation("2");
    Display::Rotate(DisplayOrientation::REVERSE_LANDSCAPE);
  });
 
- AddButton("Portrait (270°)", [this](){
+ AddButton(_T("Portrait (270°)"), [this](){
    SaveRotation("3");
    Display::Rotate(DisplayOrientation::PORTRAIT);
  });
@@ -176,52 +174,53 @@ private:
   void Prepare(ContainerWindow &parent,
                const PixelRect &rc) noexcept override;
 
-void SaveBrightness(const string &brightness);
+void SaveBrightness(const std::string &brightness);
 };
 
 void
-ScreenBrightnessWidget::SaveBrightness(const string &brightness)
+ScreenBrightnessWidget::SaveBrightness(const std::string &brightness)
 {
-  File::WriteExisting(Path("/sys/class/backlight/lcd/brightness"), (brightness).c_str());
+File::WriteExisting(Path(_T("/sys/class/backlight/lcd/brightness")),
+                    (brightness).c_str());
 }
 
 void
 ScreenBrightnessWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                                 [[maybe_unused]] const PixelRect &rc) noexcept
 {
-  AddButton("20", [this](){
+  AddButton(_T("20"), [this](){
     SaveBrightness("2");
   });
 
-  AddButton("30", [this](){
+  AddButton(_T("30"), [this](){
     SaveBrightness("3");
   });
 
-  AddButton("40", [this](){
+  AddButton(_T("40"), [this](){
     SaveBrightness("4");
   });
 
-  AddButton("50", [this](){
+  AddButton(_T("50"), [this](){
     SaveBrightness("5");
   });
 
-  AddButton("60", [this](){
+  AddButton(_T("60"), [this](){
     SaveBrightness("6");
   });
 
-  AddButton("70", [this](){
+  AddButton(_T("70"), [this](){
     SaveBrightness("7");
   });
 
-  AddButton("80", [this](){
+  AddButton(_T("80"), [this](){
     SaveBrightness("8");
   });
 
-  AddButton("90", [this](){
+  AddButton(_T("90"), [this](){
     SaveBrightness("9");
   });
 
-  AddButton("100", [this](){
+  AddButton(_T("100"), [this](){
     SaveBrightness("10");
   });
 }
@@ -249,7 +248,7 @@ private:
 void
 ScreenTimeoutWidget::SaveTimeout(int timeoutInt)
 {
-   ChangeConfigInt("timeout", timeoutInt, "/boot/config.uEnv");
+   ChangeConfigInt("timeout", timeoutInt, _T("/boot/config.uEnv"));
 }
 
 void
@@ -257,7 +256,7 @@ ScreenTimeoutWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                              [[maybe_unused]] const PixelRect &rc) noexcept
 
 {
-  AddButton("immediately", [this](){
+  AddButton(_T("immediately"), [this](){
     SaveTimeout(0);
         static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
@@ -267,10 +266,10 @@ ScreenTimeoutWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "immediately", argv);
+                     _T("immediately"), argv);
   });
 
-  AddButton("1s", [this](){
+  AddButton(_T("1s"), [this](){
     SaveTimeout(1);
     static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
@@ -280,10 +279,10 @@ ScreenTimeoutWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "1s", argv);
+                     _T("1s"), argv);
   });
 
-  AddButton("3s", [this](){
+  AddButton(_T("3s"), [this](){
     SaveTimeout(3);
     static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
@@ -293,10 +292,10 @@ ScreenTimeoutWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "3s", argv);
+                     _T("3s"), argv);
   });
 
-  AddButton("5s", [this](){
+  AddButton(_T("5s"), [this](){
     SaveTimeout(5);
     static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
@@ -306,10 +305,10 @@ ScreenTimeoutWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "5s", argv);
+                     _T("5s"), argv);
   });
 
-  AddButton("10s", [this](){
+  AddButton(_T("10s"), [this](){
     SaveTimeout(10);
     static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
@@ -319,10 +318,10 @@ ScreenTimeoutWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "10s", argv);
+                     _T("10s"), argv);
   });
 
-  AddButton("30s", [this](){
+  AddButton(_T("30s"), [this](){
     SaveTimeout(30);
     static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
@@ -332,7 +331,7 @@ ScreenTimeoutWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "30s", argv);
+                     _T("30s"), argv);
   });
 }
 
@@ -358,7 +357,7 @@ void
 ScreenSSHWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                          [[maybe_unused]] const PixelRect &rc) noexcept
 {
-  AddButton("Enable", [](){
+  AddButton(_T("Enable") , [](){
     static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
       "systemctl enable dropbear.socket && printf '\nSSH has been enabled'", 
@@ -368,10 +367,10 @@ ScreenSSHWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "Enable", argv);
+                     _T("Enable"), argv);
   });
 
-  AddButton("Disable", [](){
+  AddButton(_T("Disable") , [](){
     static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
       "systemctl disable dropbear.socket && printf '\nSSH has been disabled'", 
@@ -380,7 +379,7 @@ ScreenSSHWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "Disable", argv);
+                     _T("Disable"), argv);
   });
 }
 
@@ -406,7 +405,7 @@ void
 ScreenVariodWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                             [[maybe_unused]] const PixelRect &rc) noexcept
 {
-  AddButton("Enable", [](){
+  AddButton(_T("Enable") , [](){
     static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
       "systemctl enable variod && printf '\nvariod has been enabled'", 
@@ -415,10 +414,10 @@ ScreenVariodWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "Enable", argv);
+                     _T("Enable"), argv);
   });
 
-  AddButton("Disable", [](){
+  AddButton(_T("Disable"), [](){
     static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
       "systemctl disable variod && printf '\nvariod has been disabled'", 
@@ -427,7 +426,7 @@ ScreenVariodWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "Disable", argv);
+                     _T("Disable"), argv);
   });
 }
 
@@ -453,7 +452,7 @@ void
 ScreenSensordWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                              [[maybe_unused]] const PixelRect &rc) noexcept
 {
-  AddButton("Enable", [](){
+  AddButton(_T("Enable"), [](){
     static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
       "systemctl enable sensord && printf '\nsensord has been enabled'", 
@@ -462,10 +461,10 @@ ScreenSensordWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "Enable", argv);
+                     _T("Enable"), argv);
   });
 
-  AddButton("Disable", [](){
+  AddButton(_T("Disable"), [](){
     static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
       "systemctl disable sensord && printf '\nsensord has been disabled'", 
@@ -474,7 +473,7 @@ ScreenSensordWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "Disable", argv);
+                     _T("Disable"), argv);
   });
 }
 
@@ -503,55 +502,55 @@ void
 SystemSettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                               [[maybe_unused]] const PixelRect &rc) noexcept
 {
-  AddButton("Screen Rotation", [this](){
+  AddButton(_("Screen Rotation"), [this](){
     TWidgetDialog<ScreenRotationWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), "Display Rotation Settings");
+                 GetLook(), _T("Display Rotation Settings"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
   });
 
-  AddButton("Screen Brightness", [this](){
+  AddButton(_("Screen Brightness"), [this](){
     TWidgetDialog<ScreenBrightnessWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), "Display Brightness Settings");
+                 GetLook(), _T("Display Brightness Settings"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
   });
 
-  AddButton("Autostart Timeout", [this](){
+  AddButton(_("Autostart Timeout"), [this](){
     TWidgetDialog<ScreenTimeoutWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), "Autostart Timeout");
+                 GetLook(), _T("Autostart Timeout"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
   });
 
-  AddButton("SSH", [this](){
+  AddButton(_("SSH"), [this](){
     TWidgetDialog<ScreenSSHWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), "Enable or Disable SSH");
+                 GetLook(), _T("Enable or Disable SSH"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
   });
 
-  AddButton("Variod", [this](){
+  AddButton(_("Variod"), [this](){
     TWidgetDialog<ScreenVariodWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), "Enable or Disable Variod");
+                 GetLook(), _T("Enable or Disable Variod"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
   });
 
-  AddButton("Sensord", [this](){
+  AddButton(_("Sensord"), [this](){
     TWidgetDialog<ScreenSensordWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), "Enable or Disable Sensord");
+                 GetLook(), _T("Enable or Disable Sensord"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
@@ -592,7 +591,7 @@ CalibrateSensors() noexcept
 
   RunProcessDialog(UIGlobals::GetMainWindow(),
                    UIGlobals::GetDialogLook(),
-                   "Calibrate Sensors", stop_sensord,
+                   _T("Calibrate Sensors"), stop_sensord,
                    [](int status){
                      return status == EXIT_SUCCESS ? mrOK : 0;
                    });
@@ -600,7 +599,7 @@ CalibrateSensors() noexcept
   AtScopeExit(){
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "Calibrate Sensors", start_sensord,
+                     _T("Calibrate Sensors"), start_sensord,
                      [](int status){
                        return status == EXIT_SUCCESS ? mrOK : 0;
                      });
@@ -615,7 +614,7 @@ CalibrateSensors() noexcept
   static constexpr int RESULT_BOARD_NOT_INITIALISED = 100;
   int result = RunProcessDialog(UIGlobals::GetMainWindow(),
                                 UIGlobals::GetDialogLook(),
-                                "Calibrate Sensors", calibrate_sensors,
+                                _T("Calibrate Sensors"), calibrate_sensors,
                                 [](int status){
                                   return status == STATUS_BOARD_NOT_INITIALISED
                                     ? RESULT_BOARD_NOT_INITIALISED
@@ -625,8 +624,8 @@ CalibrateSensors() noexcept
     return;
 
   /* initialise the sensors? */
-  if (ShowMessageBox("Sensorboard is virgin. Do you want to initialise it?",
-                     "Calibrate Sensors", MB_YESNO) != IDYES)
+  if (ShowMessageBox(_T("Sensorboard is virgin. Do you want to initialise it?"),
+                     _T("Calibrate Sensors"), MB_YESNO) != IDYES)
     return;
 
   static constexpr const char *init_sensors[] = {
@@ -635,7 +634,7 @@ CalibrateSensors() noexcept
 
   result = RunProcessDialog(UIGlobals::GetMainWindow(),
                             UIGlobals::GetDialogLook(),
-                            "Calibrate Sensors", init_sensors,
+                            _T("Calibrate Sensors"), init_sensors,
                             [](int status){
                               return status == EXIT_SUCCESS
                                 ? mrOK
@@ -647,7 +646,7 @@ CalibrateSensors() noexcept
   /* calibrate again */
   RunProcessDialog(UIGlobals::GetMainWindow(),
                    UIGlobals::GetDialogLook(),
-                   "Calibrate Sensors", calibrate_sensors,
+                   _T("Calibrate Sensors"), calibrate_sensors,
                    [](int status){
                      return status == STATUS_BOARD_NOT_INITIALISED
                        ? RESULT_BOARD_NOT_INITIALISED
@@ -659,7 +658,7 @@ void
 SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                           [[maybe_unused]] const PixelRect &rc) noexcept
 {
-  AddButton("WiFi Settings", [](){
+  AddButton(_("WiFi Settings"), [](){
     static constexpr const char *argv[] = {
       "/bin/sh", "-c", 
       "printf '\nWiFi-Settings are not implemented, yet!! \n\nIf you are interessted to help with this, write me an email: dirk@freevario.de'", 
@@ -668,50 +667,50 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "WiFi Settings", argv);
+                     _T("WiFi Settings"), argv);
   });
 
 
-  AddButton("Upgrade Firmware", [this](){
+  AddButton(_("Upgrade Firmware"), [this](){
     // dialog.SetModalResult(START_UPGRADE);
     exit(START_UPGRADE);
   });
 
-  AddButton("Update System", [](){
+  AddButton(_("Update System"), [](){
     static constexpr const char *argv[] = {
       "/usr/bin/update-system.sh", nullptr
     };
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "Update System", argv);
+                     _T("Update System"), argv);
   });
 
-  AddButton("Calibrate Sensors", CalibrateSensors);
-  AddButton("Calibrate Touch", [this](){
+  AddButton(_("Calibrate Sensors"), CalibrateSensors);
+  AddButton(_("Calibrate Touch"), [this](){
     const UI::ScopeDropMaster drop_master{display};
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
     Run("/usr/bin/ov-calibrate-ts.sh");
   });
 
-  AddButton("System Settings", [this](){
+  AddButton(_("System Settings"), [this](){
       
     TWidgetDialog<SystemSettingsWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), "OpenVario System Settings");
+                 GetLook(), _T("OpenVario System Settings"));
     sub_dialog.SetWidget(display, event_queue, sub_dialog); 
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
   });  
 
-  AddButton("System Info", [](){
+  AddButton(_("System Info"), [](){
     static constexpr const char *argv[] = {
       "/usr/bin/system-info.sh", nullptr
     };
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     "System Info", argv);
+                     _T("System Info"), argv);
   });
 }
 
@@ -753,7 +752,7 @@ public:
     :RowFormWidget(_dialog.GetLook()),
      display(_display), event_queue(_event_queue),
      dialog(_dialog) {
-       GetConfigInt("timeout", remaining_seconds, "/boot/config.uEnv");
+       GetConfigInt("timeout", remaining_seconds, _T("/boot/config.uEnv"));
      }
 
 private:
@@ -774,8 +773,8 @@ private:
 
     timer.Schedule(std::chrono::seconds{1});
 
-    char buffer[256];
-    snprintf(buffer, sizeof(buffer), "Starting XCSoar in %u seconds (press any key to cancel)",
+    StaticString<256> buffer;
+    buffer.Format(_T("Starting XCSoar in %u seconds (press any key to cancel)"),
              remaining_seconds);
     SetText(Controls::TIMER, buffer);
   }
@@ -825,56 +824,58 @@ void
 MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 			[[maybe_unused]] const PixelRect &rc) noexcept
 {
-  AddButton("Start OpenSoar (Club)", [this]() {
+  AddButton(_("Start OpenSoar (Club)"), [this]() {
     CancelTimer();
     StartOpenSoar();
   });
 
-  AddButton("Start OpenSoar", [this]() {
+  AddButton(_("Start OpenSoar"), [this]() {
     CancelTimer();
     StartOpenSoar();
   });
 
-  AddButton("Start XCSoar", [this]() {
+  AddButton(_("Start XCSoar"), [this]() {
     CancelTimer();
     StartXCSoar();
   });
 
-  AddButton("Files", [this](){
+  AddButton(_("Files"), [this](){
     CancelTimer();
 
     TWidgetDialog<FileMenuWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), "OpenVario Files");
+                 GetLook(), _T("OpenVario Files"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
   });
 
-  AddButton("System", [this](){
+  AddButton(_("System"), [this](){
     CancelTimer();
 
     TWidgetDialog<SystemMenuWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), "OpenVario System Settings");
+                 GetLook(), _T("OpenVario System Settings"));
     sub_dialog.SetWidget(display, event_queue, sub_dialog); 
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
   });
 
-  AddButton("Shell", [this](){ 
+  AddReadOnly(_T("System"));
+
+  AddButton(_T("Shell"), [this]() { 
     dialog.SetModalResult(LAUNCH_SHELL);
   });
 
-  AddButton("Reboot", [](){
+  AddButton(_T("Reboot"), [](){
     Run("/sbin/reboot");
   });
 
-  AddButton("Power off", [](){
+  AddButton(_T("Power off") , [](){
     Run("/sbin/poweroff");
   });
 
-  AddReadOnly("");
+  AddReadOnly(_T(""));
 
   HideRow(Controls::OPENSOAR_CLUB);
 }
@@ -885,7 +886,7 @@ Main(UI::EventQueue &event_queue, UI::SingleWindow &main_window,
 {
   TWidgetDialog<MainMenuWidget>
     dialog(WidgetDialog::Full{}, main_window,
-           dialog_look, "OpenVario");
+           dialog_look, _T("OpenVario"));
   dialog.SetWidget(main_window.GetDisplay(), event_queue, dialog);
 
   return dialog.ShowModal();
@@ -905,7 +906,9 @@ Main()
 
   UI::TopWindowStyle main_style;
   main_style.Resizable();
+  #ifndef _WIN32
   main_style.InitialOrientation(Display::DetectInitialOrientation());
+  #endif
 
   UI::SingleWindow main_window{screen_init.GetDisplay()};
   main_window.Create(_T("XCSoar/KoboMenu"), {600, 800}, main_style);
