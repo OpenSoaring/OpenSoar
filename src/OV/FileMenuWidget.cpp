@@ -3,58 +3,75 @@
 #include "FileMenuWidget.h"
 #include "Dialogs/ProcessDialog.hpp"
 #include "Hardware/DisplayGlue.hpp"
+#include "Language/Language.hpp"
 
-void
+#include <string>
+
+constexpr const char *opensoar = "OpenSoar";
+constexpr const char *xcsoar   = "XCSoar";
+// std::string 
+constexpr const char *main_app = opensoar;
+
+    void
 FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                         [[maybe_unused]] const PixelRect &rc) noexcept
 {
-  AddButton("Download XCSoar IGC files to USB", [](){
+  StaticString<60> title;
+  title.Format(_("Download %s IGC files to USB"),main_app);
+  AddButton(title, [](){
     static constexpr const char *argv[] = {
             "/usr/bin/download-igc.sh", nullptr
     };
     RunProcessDialog(UIGlobals::GetMainWindow(),
             UIGlobals::GetDialogLook(),
-            "Download IGC Files", argv);
+            _("Download IGC Files"), argv);
   });
 
-  AddButton("Update or upload XCSoar files from USB", [](){
+
+  title.Format(_("Update or upload %s files from USB"), main_app);
+  AddButton(title, []() {
     static constexpr const char *argv[] = {
-            "/usr/bin/upload-xcsoar.sh", nullptr
+            "/usr/bin/transfers.sh", "download-data", "main_app.c_str()", nullptr
     };
     
     RunProcessDialog(UIGlobals::GetMainWindow(),
             UIGlobals::GetDialogLook(),
-            "Update/Upload files", argv);
+            _("Update/Upload files"), argv);
   });
 
-  AddButton("System Backup: OpenVario and XCSoar settings to USB", [](){
+  title.Format(_("System Backup: OpenVario and %s settings to USB"),  main_app);
+  AddButton(title, []() {
     static constexpr const char *argv[] = {
             "/usr/bin/backup-system.sh", nullptr
     };
     
     RunProcessDialog(UIGlobals::GetMainWindow(),
             UIGlobals::GetDialogLook(),
-            "Backup System", argv);
+            _("Backup System"), argv);
   });
   
-  AddButton("System Restore: OpenVario and XCSoar settings from USB", [](){
+  title.Format(_("System Restore: OpenVario and %s settings from USB"),
+               main_app);
+  AddButton(title, []() {
      static constexpr const char *argv[] = {
              "/usr/bin/restore-system.sh", nullptr
      };
      
      RunProcessDialog(UIGlobals::GetMainWindow(),
              UIGlobals::GetDialogLook(),
-             "Restore XCSoar and System", argv);
+             _("Restore XCSoar and System"), argv);
              Display::Rotate(Display::DetectInitialOrientation());
    });
   
-  AddButton("XCSoar Restore: Only XCSoar settings from USB", [](){
+  title.Format(_("%s Restore: Only %s settings from USB"), main_app,
+                 main_app );
+  AddButton(title, []() {
     static constexpr const char *argv[] = {
-            "/usr/bin/restore-xcsoar.sh", nullptr
+             "/usr/bin/transfers.sh", "upload-data", main_app, nullptr
     };
     
     RunProcessDialog(UIGlobals::GetMainWindow(),
             UIGlobals::GetDialogLook(),
-            "Restore XCSoar", argv);
-    });
+            _("Restore XCSoar"), argv);
+  });
 }
