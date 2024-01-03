@@ -700,15 +700,6 @@ SystemSettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     return sub_dialog.ShowModal();
   });
 
-  AddButton("Language", [this](){
-    TWidgetDialog<ScreenLanguageWidget>
-      sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), "Language Settings");
-    sub_dialog.SetWidget(display, event_queue, GetLook());
-    sub_dialog.AddButton(_("Close"), mrOK);
-    return sub_dialog.ShowModal();
-  });
-
   AddButton("Autostart Timeout", [this](){
     TWidgetDialog<ScreenTimeoutWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
@@ -861,7 +852,8 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
 
   AddButton("Upgrade Firmware", [this](){
-    dialog.SetModalResult(START_UPGRADE);
+    // dialog.SetModalResult(START_UPGRADE);
+    exit(START_UPGRADE);
   });
 
   AddButton("Update System", [](){
@@ -916,6 +908,7 @@ class MainMenuWidget final
     SHELL,
     REBOOT,
     SHUTDOWN,
+       UPGRADE,
     TIMER,
   };
 
@@ -1049,7 +1042,7 @@ MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     return sub_dialog.ShowModal();
   });
 
-  AddButton("Shell", [this](){
+  AddButton("Shell", [this](){ 
     dialog.SetModalResult(LAUNCH_SHELL);
   });
 
@@ -1059,6 +1052,10 @@ MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
   AddButton("Power off", [](){
     Run("/sbin/poweroff");
+  });
+
+  AddButton("Upgrade Firmware", [this](){
+    dialog.SetModalResult(START_UPGRADE);
   });
 
   AddReadOnly("");
