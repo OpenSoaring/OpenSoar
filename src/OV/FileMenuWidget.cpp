@@ -49,7 +49,7 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                      dialog_title, argv);
   });
 
-  AddReadOnly(_T("System:"));
+  AddReadOnly(_T("--- System: ---"));
 
   title.Format(_("System Backup: OpenVario and %s settings to USB"), main_app);
   AddButton(title, []() {
