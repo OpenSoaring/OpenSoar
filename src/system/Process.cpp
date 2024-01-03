@@ -11,6 +11,29 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <exception>
+#endif
+
+#include "LogFile.hpp"
+#include "system/FileUtil.hpp"
+
+#include <stdarg.h>
+
+#include <sstream>
+#include <tchar.h>
+#include <filesystem>
+
+// static std::filesystem::path output;
+// static Path output = Path(_T(""));
+static Path output;
+
+#include <fcntl.h>
+#include <iostream>
+
+#ifdef HAVE_POSIX
 static bool
 UnblockAllSignals() noexcept
 {
@@ -22,36 +45,54 @@ UnblockAllSignals() noexcept
 static pid_t
 ForkExec(const char *const*argv) noexcept
 {
+  LogFormat("ForkExec: Call '%s'", argv[0]);
   const pid_t pid = fork();
   if (pid == 0) {
     UnblockAllSignals();
+    if (!output.empty()) {
+      auto fd = open(output.ToUTF8().c_str(), O_WRONLY | O_CREAT,
+                     0666);  // open the file
+      dup2(fd, STDOUT_FILENO);  // replace standard output with output file
+    }
+    // exec or die:
     execv(argv[0], const_cast<char **>(argv));
-    _exit(1);
+    // ...die:
+    LogFormat("ForkExec: After execv => FAIL?");
+    _exit(EXIT_FAILURE);
   }
-
+  LogFormat("ForkExec: pid = %d > 0", pid);
   return pid;
-
 }
 
-static bool
+static int
 Wait(pid_t pid) noexcept
 {
+  LogFormat("Process.cpp - Wait: pid = %d (for assert)", pid);
   assert(pid > 0);
 
   int status;
   pid_t pid2 = waitpid(pid, &status, 0);
+  LogFormat("Process.cpp - Wait: pid2 = %d ", pid2);
   if (pid2 <= 0)
-    return false;
+    return -1;
 
-  if (WIFSIGNALED(status) || !WIFEXITED(status) || WEXITSTATUS(status) != 0)
-    return false;
+  if (WIFSIGNALED(status) || !WIFEXITED(status))
+    return -1;
 
-  return true;
+  if (!output.empty()) {
+    auto fd = dup(STDOUT_FILENO);
+    close(fd);
+  }
+  int ret_value = WEXITSTATUS(status);
+  LogFormat("Process.cpp - Wait: return %d", ret_value);
+  return ret_value;
 }
+#endif
 
 bool
-Start(const char *const*argv) noexcept
+Start(const char *const *argv) noexcept
 {
+#ifdef HAVE_POSIX
   /* double fork to detach from this process */
   const pid_t pid = fork();
   if (pid < 0) [[unlikely]]
@@ -60,14 +101,83 @@ Start(const char *const*argv) noexcept
   if (pid == 0)
     _exit(ForkExec(argv) ? 0 : 1);
 
-  return Wait(pid);
+  return Wait(pid) == 0;
+#elif defined(_WIN32)
+  return false;
+#else
+  error "Unknown system"
+#endif
 }
 
-bool
-Run(const char *const*argv) noexcept
-{
+int Run(const char *const *argv) noexcept;
+
+int
+Run(const char *const *argv) noexcept
+try {
+#if 1 // def DEBUG_OPENVARIO
+  std::cout << "Start Run with:" << std::endl;
+  if (!output.empty())
+    LogFormat(_T("Process.cpp - Run with output: %s"), output.c_str());
+  else 
+    LogFormat("Process.cpp - Run w/o output");
+  std::stringstream ss;
+
+  for (unsigned count = 0; argv[count] != nullptr; count++) {
+    ss << argv[count] << ' ';
+    std::cout << argv[count] << ' ';
+  }
+  std::cout << '!' << std::endl;
+  LogFormat("Process.cpp: %s", ss.str().c_str());
+#endif
+
+  int ret_value = -1;
+#ifdef HAVE_POSIX
   const pid_t pid = ForkExec(argv);
-  return pid > 0 && Wait(pid);
+  if (pid > 0)
+     ret_value = Wait(pid);
+#elif defined(_WIN32)
+  ret_value = system(ss.str().c_str());
+#else
+  error "Unknown system"
+#endif
+  if (!output.empty())
+     output = Path(); // for the next call..
+  return ret_value;
+} catch (std::exception &e) {
+  LogFormat("Process.cpp - exception: %s", e.what());
+  return -1;
 }
 
+#if 0 
+int 
+// Run(std::filesystem::path output_path, const char *const *argv) noexcept {
+// Run(const Path &output_path, const char *argv, ...) noexcept {
+Run(const Path &output_path, const char *argv, ...) noexcept {
+  output = output_path;
+#if 1
+  const char *arglist[0x10];
+  va_list argptr;
+  const char *arg = argv;
+  va_start(argptr, argv);
+  unsigned idx = 0;
+  while (arg != nullptr) {
+     arglist[idx++] = arg;
+     arg = va_arg(argptr, const char *);
+  }
+  // _Result = _vfprintf_l(stdout, argv, nullptr, _ArgList);
+  va_end(argptr);
+  arglist[idx] = nullptr; // finally
+#else
+  const char *const arglist[]{argv, nullptr};
+#endif
+  return Run(arglist);
+
+}
+#else
+int 
+Run(const Path &output_path, const char *const *argv) noexcept
+{
+  output = output_path;
+  return Run(argv);
+}
 #endif
