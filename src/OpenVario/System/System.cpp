@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#if !defined(_WIN32) && 0
-# define DBUS_FUNCTIONS 1
-#endif
-
 #include "OpenVario/System/System.hpp"
 #ifdef DBUS_FUNCTIONS
 #include "lib/dbus/Connection.hxx"

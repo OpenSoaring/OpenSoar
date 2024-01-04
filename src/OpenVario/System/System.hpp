@@ -12,6 +12,10 @@
 #include <string>
 
 
+#if !defined(_WIN32) && 1
+# define DBUS_FUNCTIONS 1
+#endif
+
 class Path;
 
 enum class SSHStatus {
@@ -48,6 +52,7 @@ OpenvarioGetRotation();
 void
 OpenvarioSetRotation(DisplayOrientation orientation);
 
+#ifdef  DBUS_FUNCTIONS
 SSHStatus
 OpenvarioGetSSHStatus();
 
@@ -56,6 +61,7 @@ OpenvarioEnableSSH(bool temporary);
 
 void
 OpenvarioDisableSSH();
+#endif
 
 void 
 GetConfigInt(const std::string &keyvalue, unsigned &value,
