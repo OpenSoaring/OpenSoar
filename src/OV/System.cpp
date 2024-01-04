@@ -166,7 +166,8 @@ OpenvarioSetRotation(DisplayOrientation orientation)
   WriteConfigFile(map, Path(_T("/boot/config.uEnv")));
 }
 
-#ifndef _WIN32
+// #ifndef _WIN32
+#if 0 
 SSHStatus
 OpenvarioGetSSHStatus()
 {
