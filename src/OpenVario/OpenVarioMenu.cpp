@@ -27,8 +27,9 @@
 #include "Hardware/DisplayDPI.hpp"
 #include "Hardware/RotateDisplay.hpp"
 
-#include "OV/FileMenuWidget.h"
-#include "OV/System.hpp"
+#include "OpenVario/System/System.hpp"
+#include "OpenVario/FileMenuWidget.h"
+#include "OpenVario/System/SystemMenuWidget.hpp"
 
 #include <cassert>
 #include <string>
