@@ -1,13 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#include "System.hpp"
-#ifndef _WIN32
-# include "lib/dbus/Connection.hxx"
-# include "lib/dbus/ScopeMatch.hxx"
-# include "lib/dbus/Systemd.hxx"
-#endif
-
 #include "Dialogs/DialogSettings.hpp"
 #include "Dialogs/Message.hpp"
 #include "Dialogs/ProcessDialog.hpp"
@@ -28,7 +21,6 @@
 // #include "ui/event/Queue.hpp"
 #include "ui/event/Timer.hpp"
 #include "ui/window/Init.hpp"
-// #include "ui/window/SingleWindow.hpp"
 
 #include "Language/Language.hpp"
 
@@ -37,10 +29,15 @@
 #include "io/BufferedOutputStream.hxx"
 #include "io/FileLineReader.hpp"
 
-#include "OpenVario/FileMenuWidget.h"
 #include "OpenVario/System/System.hpp"
 #include "OpenVario/System/SystemSettingsWidget.hpp"
-#include "OpenVario/System/SystemMenuWidget.hpp"
+#include "OpenVario/System/Setting/RotationWidget.hpp"
+#include "OpenVario/System/Setting/BrightnessWidget.hpp"
+#include "OpenVario/System/Setting/TimeoutWidget.hpp"
+#include "OpenVario/System/Setting/SSHWidget.hpp"
+#include "OpenVario/System/Setting/SensordWidget.hpp"
+#include "OpenVario/System/Setting/VariodWidget.hpp"
+#include "OpenVario/System/Setting/WifiWidget.hpp"
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -54,7 +51,7 @@
 //----------------------------------------------------------
 //----------------------------------------------------------
 //----------------------------------------------------------
-
+#if 0
 class ScreenRotationWidget final
   : public RowFormWidget
 {
@@ -428,6 +425,7 @@ ScreenSensordWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                      _T("Disable"), argv);
   });
 }
+#endif
 //----------------------------------------------------------
 //----------------------------------------------------------
 //----------------------------------------------------------
@@ -437,7 +435,7 @@ SystemSettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                               [[maybe_unused]] const PixelRect &rc) noexcept
 {
   AddButton(_("Screen Rotation"), [this](){
-    TWidgetDialog<ScreenRotationWidget>
+    TWidgetDialog<SettingRotationWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
                  GetLook(), _T("Display Rotation Settings"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
@@ -445,8 +443,8 @@ SystemSettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     return sub_dialog.ShowModal();
   });
 
-  AddButton(_("Screen Brightness"), [this](){
-    TWidgetDialog<ScreenBrightnessWidget>
+  AddButton(_("Setting Brightness"), [this](){
+    TWidgetDialog<SettingBrightnessWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
                  GetLook(), _T("Display Brightness Settings"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
@@ -455,7 +453,7 @@ SystemSettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   AddButton(_("Autostart Timeout"), [this](){
-    TWidgetDialog<ScreenTimeoutWidget>
+    TWidgetDialog<SettingTimeoutWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
                  GetLook(), _T("Autostart Timeout"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
@@ -464,7 +462,7 @@ SystemSettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   AddButton(_("SSH"), [this](){
-    TWidgetDialog<ScreenSSHWidget>
+    TWidgetDialog<SettingSSHWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
                  GetLook(), _T("Enable or Disable SSH"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
@@ -473,7 +471,7 @@ SystemSettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   AddButton(_("Variod"), [this](){
-    TWidgetDialog<ScreenVariodWidget>
+    TWidgetDialog<SettingVariodWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
                  GetLook(), _T("Enable or Disable Variod"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
@@ -482,7 +480,7 @@ SystemSettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   AddButton(_("Sensord"), [this](){
-    TWidgetDialog<ScreenSensordWidget>
+    TWidgetDialog<SettingSensordWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
                  GetLook(), _T("Enable or Disable Sensord"));
     sub_dialog.SetWidget(display, event_queue, GetLook());

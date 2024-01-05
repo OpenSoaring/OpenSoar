@@ -40,7 +40,6 @@
 
 #include <map>
 
-// constexpr const Path ConfigFile(_T("/boot/config.uEnv"));
 Path ConfigFile(_T("/boot/config.uEnv"));
 //----------------------------------------------------------
 void

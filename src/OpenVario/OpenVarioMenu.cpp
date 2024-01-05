@@ -11,11 +11,13 @@
 #include "Screen/Layout.hpp"
 // #include "../test/src/Fonts.hpp"
 // #include "Fonts.hpp"
+
 #include "ui/window/Init.hpp"
 #include "ui/window/SingleWindow.hpp"
 // #include "ui/event/Queue.hpp"
 #include "ui/event/Timer.hpp"
 #include "ui/event/KeyCode.hpp"
+
 #include "Language/Language.hpp"
 #include "system/Process.hpp"
 // #include "util/ScopeExit.hxx"
@@ -26,6 +28,7 @@
 #include "Hardware/DisplayGlue.hpp"
 #include "Hardware/DisplayDPI.hpp"
 #include "Hardware/RotateDisplay.hpp"
+#include "util/StaticString.hxx"
 
 #include "OpenVario/System/System.hpp"
 #include "OpenVario/FileMenuWidget.h"
@@ -35,35 +38,44 @@
 #include <string>
 #include <iostream>
 #include <thread>
+#include <filesystem>
 
-#include "util/StaticString.hxx"
+
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
+
+// #include "System/System.cpp"
+
 
 bool IsOpenVarioDevice = true;
-
-template<typename T>
-static void ChangeConfigString(const std::string &keyvalue, T value,
-                               const std::string &path) {
-  const Path ConfigPath(path.c_str());
-
-  ProfileMap configuration;
-
-  try {
-    Profile::LoadFile(configuration, ConfigPath);
-  } catch (std::exception &e) {
-    Profile::SaveFile(configuration, ConfigPath);
-  }
-  configuration.Set(keyvalue.c_str(), value);
-  Profile::SaveFile(configuration, ConfigPath);
-}
-
-// enum Buttons {
-//   LAUNCH_SHELL = 100,
-//   START_UPGRADE = 111,
-// };
 
 static DialogSettings dialog_settings;
 static UI::SingleWindow *global_main_window;
 static DialogLook *global_dialog_look;
+
+
+// #ifdef  OPENVARIO_DEVICE // remove this after OpenVarioMenu is ready
+// Path ConfigFile(_T("/boot/config.uEnv"));
+// #endif
+
+// #ifndef OPENVARIO_DEVICE // remove this after OpenVarioMenu is ready
+// 
+// template <typename T>
+// static void ChangeConfigString(const std::string &keyvalue, T value,
+//                                const std::string &path) {
+//   const Path ConfigPath(path.c_str());
+// 
+//   ProfileMap configuration;
+// 
+//   try {
+//     Profile::LoadFile(configuration, ConfigPath);
+//   } catch (std::exception &e) {
+//     Profile::SaveFile(configuration, ConfigPath);
+//   }
+//   configuration.Set(keyvalue.c_str(), value);
+//   Profile::SaveFile(configuration, ConfigPath);
+// }
+// #else
 
 const DialogSettings &
 UIGlobals::GetDialogSettings()
@@ -135,10 +147,35 @@ private:
   void StartOpenSoar() noexcept {
     const UI::ScopeDropMaster drop_master{display};
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
+#ifdef _WIN32
+    // namespace fs = ;
+
+    boost::filesystem::path ExePathBoost(boost::filesystem::initial_path());
+    // std::cout << ExePath.native_file_string() << endl;
+    std::filesystem::path ExePath(std::filesystem::current_path());
+    ExePath.append("OpenSoar.exe");
+    ExePath = "D:/Projects/Binaries/OpenSoar/dev-branch/msvc2022/Release/"
+              "OpenSoar.exe";
+//    for (unsigned int i = 0; i < 2; i++) {
+//      auto arg = args[i];
+//      printf(arg);
+//    }
+    char buf[0x200];
+
+    snprintf(buf, sizeof(buf) - 1, "%s -fly -datapath=%s -profile=%s",
+      ExePath.generic_string().c_str(),
+      "D:/Data/XCSoarData",
+      "D:/Data/XCSoarData/August.prf"
+      );
+
+    Run(buf);
+                         // , "-datapath=/home/root/data/OpenSoarData");
+#else
     if (File::Exists(Path(_T("/usr/bin/OpenSoar"))))
       Run("/usr/bin/OpenSoar", "-fly", "-datapath=/home/root/data/OpenSoarData");
     else
       Run("./output/UNIX/bin/OpenSoar", "-fly");
+#endif
   }
 
   void StartXCSoar() noexcept {
@@ -201,6 +238,7 @@ private:
 
 void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                              [[maybe_unused]] const PixelRect &rc) noexcept {
+  
   AddButton(_("Start OpenSoar (Club)"), [this]() {
     CancelTimer();
     StartOpenSoar();
@@ -240,7 +278,7 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
   AddReadOnly(_T(""));
 
-  AddButton(_T("Shell"), [this]() { dialog.SetModalResult(LAUNCH_SHELL); });
+  auto Btn_Shell = AddButton(_T("Shell"), [this]() { dialog.SetModalResult(LAUNCH_SHELL); });
 
   auto Btn_Reboot = AddButton(_T("Reboot"), []() { Run("/sbin/reboot"); });
 
@@ -250,12 +288,14 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddReadOnly(_T("")); // Timer-Progress
 
   if (!IsOpenVarioDevice) {
+    Btn_Shell->SetCaption(_T("Exit"));
     Btn_XCSoar->SetEnabled(false);
     Btn_Reboot->SetEnabled(false);
     Btn_Shutdown->SetEnabled(false);
   }
   HideRow(Controls::OPENSOAR_CLUB);
 }
+// #endif // OPENVARIO_DEVICE // remove this after OpenVarioMenu is ready
 
 static int
 Main(UI::EventQueue &event_queue, UI::SingleWindow &main_window,
@@ -270,8 +310,15 @@ Main(UI::EventQueue &event_queue, UI::SingleWindow &main_window,
 }
 
 #include <stdarg.h>
-#define MAX_PATH 0x100
-void debugln(const char *fmt, ...) noexcept {
+
+void debugln(const char *fmt, ...) noexcept;
+
+#ifndef MAX_PATH
+# define MAX_PATH 0x100
+#endif
+void 
+debugln(const char *fmt, ...) noexcept
+{
   char buf[MAX_PATH];
   va_list ap;
 
@@ -292,6 +339,9 @@ Main()
   ScreenGlobalInit screen_init;
   Layout::Initialise(screen_init.GetDisplay(), {600, 800});
   // InitialiseFonts();
+  
+  // AllowLanguage is not in FalkLanguage
+  // AllowLanguage();
 
   DialogLook dialog_look;
   dialog_look.Initialise();
@@ -310,10 +360,11 @@ Main()
   global_main_window = &main_window;
 
   if (!IsOpenVarioDevice) {
-    // StaticString<0x100> Home;
-    //Home.SetUTF8(getenv("HOME"));
+    StaticString<0x100> Home;
+    Home.SetUTF8(getenv("HOME"));
     // Home = _T("/home/august2111");
-    debugln("HOME = %s", getenv("HOME"));
+    debugln("HOME(1) = %s", getenv("HOME"));
+    debugln("HOME(2) = %s", Home.c_str());
 
     ConfigFile = Path(_T("./config.uEnv"));
         // AllocatedPath::Build(Path(Home), Path(_T("/config.uEnv")));

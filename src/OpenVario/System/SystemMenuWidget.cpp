@@ -14,7 +14,10 @@
 #include "UIGlobals.hpp"
 // #include "Widget/RowFormWidget.hpp"
 #include "system/FileUtil.hpp"
-#include "system/Process.hpp"
+
+#if !defined(_WIN32)
+# include "system/Process.hpp"
+#endif
 #include "ui/event/KeyCode.hpp"
 // #include "ui/event/Queue.hpp"
 #include "ui/event/Timer.hpp"
@@ -132,7 +135,11 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddButton(_("Calibrate Touch"), [this](){
     const UI::ScopeDropMaster drop_master{display};
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
+#if !defined(_WIN32)
+    // RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
+    //                 _T("System Info"), "/usr/bin/ov-calibrate-ts.sh");
     Run("/usr/bin/ov-calibrate-ts.sh");
+#endif
   });
 
   AddButton(_("System Settings"), [this](){

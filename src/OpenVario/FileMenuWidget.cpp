@@ -5,11 +5,13 @@
 #include "Hardware/DisplayGlue.hpp"
 #include "Language/Language.hpp"
 
+#include <tchar.h>
 #include <string>
 
-constexpr const char *opensoar = "OpenSoar";
-constexpr const char *xcsoar   = "XCSoar";
-constexpr const char *main_app = opensoar;
+constexpr const TCHAR *opensoar = _T("OpenSoar");
+constexpr const TCHAR *xcsoar = _T("XCSoar");
+constexpr const TCHAR *main_app = opensoar;
+constexpr const char *_main_app = "OpenSoar";  // only temporarily
 
     void
 FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
@@ -30,7 +32,7 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   title.Format(_("Download %s data files from OV to USB"), main_app);
   AddButton(title, []() {
     static constexpr const char *argv[] = {
-            "/usr/bin/transfers.sh", "download-data", "main_app.c_str()", nullptr
+            "/usr/bin/transfers.sh", "download-data", _main_app, nullptr
     };
     
     RunProcessDialog(UIGlobals::GetMainWindow(),
@@ -41,7 +43,7 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   title.Format(_("Restore %s data files from USB"), main_app);
   AddButton(title, []() {
     static constexpr const char *argv[] = {"/usr/bin/transfers.sh",
-                                           "upload-data", main_app, nullptr};
+                                           "upload-data", _main_app, nullptr};
 
     StaticString<32> dialog_title;
     dialog_title.Format(_("Restore %s"), main_app);
@@ -53,8 +55,8 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
   title.Format(_("System Backup: OpenVario and %s settings to USB"), main_app);
   AddButton(title, []() {
-    static constexpr const char *argv[] = {
-            "/usr/bin/transfer-system.sh", "backup", main_app, nullptr
+    static constexpr const char *argv[] = {"/usr/bin/transfer-system.sh",
+                                           "backup", _main_app, nullptr
     };
     
     RunProcessDialog(UIGlobals::GetMainWindow(),
@@ -65,8 +67,8 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   title.Format(_("System Restore: OpenVario and %s settings from USB"),
                main_app);
   AddButton(title, []() {
-     static constexpr const char *argv[] = {
-             "/usr/bin/transfer-system.sh", "restore", main_app, nullptr
+     static constexpr const char *argv[] = {"/usr/bin/transfer-system.sh",
+                                           "restore", _main_app, nullptr
      };
      
      RunProcessDialog(UIGlobals::GetMainWindow(),
