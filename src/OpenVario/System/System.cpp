@@ -10,7 +10,6 @@
 
 #include "system/Process.hpp"
 #include "system/FileUtil.hpp"
-#include "system/Path.hpp"
 #include "io/KeyValueFileReader.hpp"
 #include "io/FileOutputStream.hxx"
 #include "io/BufferedOutputStream.hxx"
@@ -41,6 +40,7 @@
 
 #include <map>
 
+// constexpr const Path ConfigFile(_T("/boot/config.uEnv"));
 //----------------------------------------------------------
 void
 LoadConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path)
@@ -69,28 +69,33 @@ WriteConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path)
 //----------------------------------------------------------
 void 
 GetConfigInt(const std::string &keyvalue, unsigned &value,
-                         const TCHAR* path)
+                            const Path &ConfigPath)
 {
-  const Path ConfigPath(path);
-
-  ProfileMap configuration;
-  Profile::LoadFile(configuration, ConfigPath);
-  configuration.Get(keyvalue.c_str(), value);
+  if (File::Exists(ConfigFile)) {
+    ProfileMap configuration;
+    Profile::LoadFile(configuration, ConfigPath);
+    configuration.Get(keyvalue.c_str(), value);
+  } else {
+    printf("ConfigFile '%s' does not exist!", "/boot/config.uEnv");
+  }
 }
 
-void ChangeConfigInt(const std::string &keyvalue, int value,
-                            const TCHAR *path) {
-  const Path ConfigPath(path);
-
-  ProfileMap configuration;
-
-  try {
-    Profile::LoadFile(configuration, ConfigPath);
-  } catch (std::exception &e) {
+void 
+ChangeConfigInt(const std::string &keyvalue, int value,
+                            const Path &ConfigPath)
+{
+  if (File::Exists(ConfigFile)) {
+    ProfileMap configuration;
+    try {
+      Profile::LoadFile(configuration, ConfigPath);
+    } catch (std::exception &e) {
+      Profile::SaveFile(configuration, ConfigPath);
+    }
+    configuration.Set(keyvalue.c_str(), value);
     Profile::SaveFile(configuration, ConfigPath);
+  } else {
+    printf("ConfigFile '%s' does not exist!", "/boot/config.uEnv");
   }
-  configuration.Set(keyvalue.c_str(), value);
-  Profile::SaveFile(configuration, ConfigPath);
 }
 
 

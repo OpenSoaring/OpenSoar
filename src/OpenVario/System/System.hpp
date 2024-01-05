@@ -5,11 +5,16 @@
 
 #include "DisplayOrientation.hpp"
 #include "Language/Language.hpp"
+#include "system/Path.hpp"
 
 #include <tchar.h>
 
 #include <map>
 #include <string>
+
+
+// extern constexpr const Path ConfigFile;
+constexpr const Path ConfigFile(_T("/boot/config.uEnv"));
 
 
 #if !defined(_WIN32) && 1
@@ -65,9 +70,9 @@ OpenvarioDisableSSH();
 
 void 
 GetConfigInt(const std::string &keyvalue, unsigned &value,
-                  const TCHAR *path);
+             const Path &ConfigPath);
 
 void 
 ChangeConfigInt(const std::string &keyvalue, int value,
-                  const TCHAR *path);
+                const Path &ConfigPath);
 

@@ -124,7 +124,7 @@ public:
     :RowFormWidget(_dialog.GetLook()),
      display(_display), event_queue(_event_queue),
      dialog(_dialog) {
-       GetConfigInt("timeout", remaining_seconds, _T("/boot/config.uEnv"));
+       GetConfigInt("timeout", remaining_seconds, ConfigFile);
      }
 
 private:
