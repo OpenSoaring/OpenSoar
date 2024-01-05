@@ -36,6 +36,10 @@
 #include <iostream>
 #include <thread>
 
+#include "util/StaticString.hxx"
+
+bool IsOpenVarioDevice = true;
+
 template<typename T>
 static void ChangeConfigString(const std::string &keyvalue, T value,
                                const std::string &path) {
@@ -131,7 +135,10 @@ private:
   void StartOpenSoar() noexcept {
     const UI::ScopeDropMaster drop_master{display};
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
-    Run("/usr/bin/OpenSoar", "-fly", "-datapath=/home/root/data/OpenSoarData");
+    if (File::Exists(Path(_T("/usr/bin/OpenSoar"))))
+      Run("/usr/bin/OpenSoar", "-fly", "-datapath=/home/root/data/OpenSoarData");
+    else
+      Run("./output/UNIX/bin/OpenSoar", "-fly");
   }
 
   void StartXCSoar() noexcept {
@@ -192,10 +199,8 @@ private:
   }
 };
 
-void
-MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
-			[[maybe_unused]] const PixelRect &rc) noexcept
-{
+void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
+                             [[maybe_unused]] const PixelRect &rc) noexcept {
   AddButton(_("Start OpenSoar (Club)"), [this]() {
     CancelTimer();
     StartOpenSoar();
@@ -206,49 +211,49 @@ MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     StartOpenSoar();
   });
 
-  AddButton(_("Start XCSoar"), [this]() {
+  auto Btn_XCSoar = AddButton(_("Start XCSoar"), [this]() {
     CancelTimer();
     StartXCSoar();
   });
 
-  AddButton(_("Files"), [this](){
+  AddButton(_("Files"), [this]() {
     CancelTimer();
 
-    TWidgetDialog<FileMenuWidget>
-      sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), _T("OpenVario Files"));
+    TWidgetDialog<FileMenuWidget> sub_dialog(WidgetDialog::Full{},
+                                             dialog.GetMainWindow(), GetLook(),
+                                             _T("OpenVario Files"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
   });
 
-  AddButton(_("System"), [this](){
+  AddButton(_("System"), [this]() {
     CancelTimer();
 
-    TWidgetDialog<SystemMenuWidget>
-      sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), _T("OpenVario System Settings"));
-    sub_dialog.SetWidget(display, event_queue, sub_dialog); 
+    TWidgetDialog<SystemMenuWidget> sub_dialog(
+        WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
+        _T("OpenVario System Settings"));
+    sub_dialog.SetWidget(display, event_queue, sub_dialog);
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
   });
 
   AddReadOnly(_T(""));
 
-  AddButton(_T("Shell"), [this]() { 
-    dialog.SetModalResult(LAUNCH_SHELL);
-  });
+  AddButton(_T("Shell"), [this]() { dialog.SetModalResult(LAUNCH_SHELL); });
 
-  AddButton(_T("Reboot"), [](){
-    Run("/sbin/reboot");
-  });
+  auto Btn_Reboot = AddButton(_T("Reboot"), []() { Run("/sbin/reboot"); });
 
-  AddButton(_T("Power off") , [](){
-    Run("/sbin/poweroff");
-  });
+  auto Btn_Shutdown =
+      AddButton(_T("Power off"), []() { Run("/sbin/poweroff"); });
 
-  AddReadOnly(_T(""));  // Timer-Progress
+  AddReadOnly(_T("")); // Timer-Progress
 
+  if (!IsOpenVarioDevice) {
+    Btn_XCSoar->SetEnabled(false);
+    Btn_Reboot->SetEnabled(false);
+    Btn_Shutdown->SetEnabled(false);
+  }
   HideRow(Controls::OPENSOAR_CLUB);
 }
 
@@ -264,9 +269,24 @@ Main(UI::EventQueue &event_queue, UI::SingleWindow &main_window,
   return dialog.ShowModal();
 }
 
+#include <stdarg.h>
+#define MAX_PATH 0x100
+void debugln(const char *fmt, ...) noexcept {
+  char buf[MAX_PATH];
+  va_list ap;
+
+  va_start(ap, fmt);
+  vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
+  va_end(ap);
+
+  strcat(buf, "\n");
+  printf(buf);
+}
+
 static int
 Main()
 {
+  IsOpenVarioDevice = File::Exists(ConfigFile);
   dialog_settings.SetDefaults();
 
   ScreenGlobalInit screen_init;
@@ -278,16 +298,36 @@ Main()
 
   UI::TopWindowStyle main_style;
   main_style.Resizable();
-  #ifndef _WIN32
+#ifndef _WIN32
   main_style.InitialOrientation(Display::DetectInitialOrientation());
-  #endif
+#endif
 
   UI::SingleWindow main_window{screen_init.GetDisplay()};
-  main_window.Create(_T("XCSoar/KoboMenu"), {600, 800}, main_style);
+  main_window.Create(_T("XCSoar/OpenVarioMenu"), {600, 800}, main_style);
   main_window.Show();
 
   global_dialog_look = &dialog_look;
   global_main_window = &main_window;
+
+  if (!IsOpenVarioDevice) {
+    // StaticString<0x100> Home;
+    //Home.SetUTF8(getenv("HOME"));
+    // Home = _T("/home/august2111");
+    debugln("HOME = %s", getenv("HOME"));
+
+    ConfigFile = Path(_T("./config.uEnv"));
+        // AllocatedPath::Build(Path(Home), Path(_T("/config.uEnv")));
+        // AllocatedPath::Build(Path(_T("/home/august2111")), Path(_T("/config.uEnv")));
+        // AllocatedPath::Build(Path(), Path(_T("/config.uEnv")));
+    debugln("ConfigFile: %s", ConfigFile.c_str());
+    // #endif
+    if (!File::Exists(ConfigFile)) {
+        debugln("ConfigFile does not exist", ConfigFile.c_str());
+        File::CreateExclusive(ConfigFile);
+        if (!File::Exists(ConfigFile))
+          debugln("still ConfigFile does not exist", ConfigFile.c_str());
+     }
+  }
 
   int action = Main(screen_init.GetEventQueue(), main_window, dialog_look);
 
@@ -307,3 +347,12 @@ int main()
   // save in LogFormat?
   return action;
 }
+
+#ifdef _WIN32
+int RunProcessDialog(UI::SingleWindow &parent, const DialogLook &dialog_look,
+                     const TCHAR *caption, const char *const *argv,
+                     std::function<int(int)> on_exit = {}) noexcept
+{
+  return 0;
+}
+#endif // _WIN32

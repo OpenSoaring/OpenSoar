@@ -41,6 +41,7 @@
 #include <map>
 
 // constexpr const Path ConfigFile(_T("/boot/config.uEnv"));
+Path ConfigFile(_T("/boot/config.uEnv"));
 //----------------------------------------------------------
 void
 LoadConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path)
@@ -210,4 +211,3 @@ OpenvarioDisableSSH()
 }
 #endif  // _WIN32
 //----------------------------------------------------------
-

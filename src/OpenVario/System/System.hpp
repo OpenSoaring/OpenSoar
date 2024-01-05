@@ -14,7 +14,8 @@
 
 
 // extern constexpr const Path ConfigFile;
-constexpr const Path ConfigFile(_T("/boot/config.uEnv"));
+// constexpr const Path ConfigFile(_T("/boot/config.uEnv"));
+extern Path ConfigFile;
 
 
 #if !defined(_WIN32) && 1
