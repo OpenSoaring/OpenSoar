@@ -38,6 +38,9 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+add_compile_definitions("OPENVARIO_DEVICE")
+# remeve this definition after  
+
 # add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
 add_executable(${TARGET_NAME} 
     ${SOURCE_FILES}
@@ -49,11 +52,16 @@ target_link_libraries(${TARGET_NAME} PUBLIC Logger)
  # message(FATAL_ERROR "Stop!")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER OpenVario)
 
-target_link_libraries(${TARGET_NAME} PUBLIC Dialogs Math Language Profile  net co Blackboard util system io Look Widget Renderer
-   gdiplus 
+target_link_libraries(${TARGET_NAME} PUBLIC Math Language Profile  net co Blackboard util system io
+   ui Dialogs Look Widget Renderer MapWindow
    ${FMT_LIB} ${CURL_TARGET} ${CARES_TARGET} ${ZLIB_TARGET}
    ${SODIUM_TARGET}  # new at 06/2020
    ${SSL_LIB}  # new at 03/2021
    ${CRYPTO_LIB}  # new at 03/2021
+
+   msimg32
+   winmm
+   ws2_32
+   gdiplus
 )
 add_dependencies(${TARGET_NAME} util Data)
