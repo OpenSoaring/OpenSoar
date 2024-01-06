@@ -52,7 +52,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC Logger)
  # message(FATAL_ERROR "Stop!")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER OpenVario)
 
-target_link_libraries(${TARGET_NAME} PUBLIC Math Language Profile  net co Blackboard util system io
+target_link_libraries(${TARGET_NAME} PUBLIC Math Profile  net co Blackboard util system io # Language 
    ui Dialogs Look Widget Renderer MapWindow
    ${FMT_LIB} ${CURL_TARGET} ${CARES_TARGET} ${ZLIB_TARGET}
    ${SODIUM_TARGET}  # new at 06/2020

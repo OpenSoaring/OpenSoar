@@ -1,3 +1,5 @@
+set(TEST_SRC_DIR "${PROJECTGROUP_SOURCE_DIR}/test/src")
+
 set(_SOURCES
         OpenVario/OpenVarioMenu.cpp
 
@@ -25,7 +27,8 @@ set(_SOURCES
         ${SRC}/Hardware/DisplayDPI.cpp
         ${SRC}/Hardware/RotateDisplay.cpp
         ${SRC}/Hardware/DisplayGlue.cpp
-        ${SRC}/LogFile.cpp
+# FakeLogFile        ${SRC}/LogFile.cpp
+    ${TEST_SRC_DIR}/FakeLogFile.cpp
         ${SRC}/LocalPath.cpp
         ${SRC}/Look/TerminalLook.cpp
         ${SRC}/Look/DialogLook.cpp
@@ -65,7 +68,11 @@ set(_SOURCES
 
         ${SRC}/Interface.cpp
         ${SRC}/Blackboard/InterfaceBlackboard.cpp
-        ${SRC}/MainWindow.cpp
+    ${TEST_SRC_DIR}/Fonts.cpp
+    ${TEST_SRC_DIR}/FakeLanguage.cpp
+    ${SRC}/Kobo/FakeSymbols.cpp
+
+##        ${SRC}/MainWindow.cpp
 )
 
 set(SCRIPT_FILES
