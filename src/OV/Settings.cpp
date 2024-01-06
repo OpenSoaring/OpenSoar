@@ -1,7 +1,15 @@
 
-#include "OV/Settings.hpp"
-#include "OV/System.hpp"
+#include "Dialogs/DialogSettings.hpp"
+#include "Dialogs/Message.hpp"
+#include "Dialogs/WidgetDialog.hpp"
+#include "Dialogs/ProcessDialog.hpp"
 #include "Widget/RowFormWidget.hpp"
+// #include "UIGlobals.hpp"
+// #include "Look/DialogLook.hpp"
+// #include "Screen/Layout.hpp"
+
+#include "OV/System.hpp"
+#include "OV/Settings.hpp"
 
 #include <string>
 #include <fmt/format.h>
