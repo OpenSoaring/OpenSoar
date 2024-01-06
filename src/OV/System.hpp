@@ -3,7 +3,31 @@
 
 #pragma once
 
+#include "Dialogs/DialogSettings.hpp"
+#include "Dialogs/Message.hpp"
+#include "Dialogs/ProcessDialog.hpp"
+#include "Dialogs/WidgetDialog.hpp"
 #include "DisplayOrientation.hpp"
+#include "FileMenuWidget.h"
+#include "Hardware/DisplayDPI.hpp"
+#include "Hardware/DisplayGlue.hpp"
+#include "Hardware/RotateDisplay.hpp"
+#include "Look/DialogLook.hpp"
+#include "Profile/File.hpp"
+#include "Profile/Map.hpp"
+#include "Screen/Layout.hpp"
+#include "UIGlobals.hpp"
+#include "Widget/RowFormWidget.hpp"
+#include "system/FileUtil.hpp"
+#include "system/Process.hpp"
+#include "ui/event/KeyCode.hpp"
+#include "ui/event/Queue.hpp"
+#include "ui/event/Timer.hpp"
+#include "ui/window/Init.hpp"
+#include "ui/window/SingleWindow.hpp"
+
+#include "Language/Language.hpp"
+
 
 #include <map>
 #include <string>
@@ -15,6 +39,12 @@ enum class SSHStatus {
   DISABLED,
   TEMPORARY,
 };
+
+enum Buttons {
+  LAUNCH_SHELL = 100,
+  START_UPGRADE = 111,
+};
+
 /**
  * Load a system config file and put its variables into a map
 */
@@ -46,3 +76,54 @@ OpenvarioEnableSSH(bool temporary);
 
 void
 OpenvarioDisableSSH();
+
+void GetConfigInt(const std::string &keyvalue, unsigned &value,
+                  const TCHAR *path);
+
+void ChangeConfigInt(const std::string &keyvalue, int value,
+                  const TCHAR *path);
+
+
+class SystemMenuWidget final
+  : public RowFormWidget
+{
+  UI::Display &display;
+  UI::EventQueue &event_queue;
+
+  WndForm &dialog;
+
+public:
+  SystemMenuWidget(UI::Display &_display, UI::EventQueue &_event_queue,
+          WndForm &_dialog) noexcept
+    :RowFormWidget(_dialog.GetLook()),
+     display(_display), event_queue(_event_queue),
+     dialog(_dialog) {}
+
+private:
+  /* virtual methods from class Widget */
+  void Prepare(ContainerWindow &parent,
+               const PixelRect &rc) noexcept override;
+};
+
+
+class SystemSettingsWidget final
+  : public RowFormWidget
+{
+  UI::Display &display;
+  UI::EventQueue &event_queue;
+
+  WndForm &dialog;
+
+public:
+  SystemSettingsWidget(UI::Display &_display, UI::EventQueue &_event_queue,
+                 WndForm &_dialog) noexcept 
+    :RowFormWidget(_dialog.GetLook()),
+     display(_display), event_queue(_event_queue),
+     dialog(_dialog) {}
+
+private:
+  /* virtual methods from class Widget */
+  void Prepare(ContainerWindow &parent,
+               const PixelRect &rc) noexcept override;
+};
+
