@@ -31,10 +31,11 @@ OV_MENU_SOURCES = \
 	$(TEST_SRC_DIR)/FakeLanguage.cpp \
 	$(TEST_SRC_DIR)/FakeLogFile.cpp \
 	$(SRC)/Kobo/FakeSymbols.cpp \
-	$(SRC)/OV/FileMenuWidget.cpp\
-	$(SRC)/OV/Settings.cpp\
-	$(SRC)/OV/System.cpp\
-	$(SRC)/OV/OpenVarioMenu.cpp
+	$(SRC)/OpenVario/FileMenuWidget.cpp\
+	$(SRC)/OpenVario/System/System.cpp\
+	$(SRC)/OpenVario/System/SystemMenuWidget.cpp\
+	$(SRC)/OpenVario/System/SystemSettingsWidget.cpp\
+	$(SRC)/OpenVario/OpenVarioMenu.cpp
 OV_MENU_DEPENDS = WIDGET FORM DATA_FIELD SCREEN EVENT RESOURCE ASYNC LIBNET OS IO THREAD TIME MATH UTIL
 OV_MENU_STRIP = y
 
