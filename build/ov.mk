@@ -1,4 +1,17 @@
 OV_MENU_SOURCES = \
+	$(SRC)/OpenVario/OpenVarioMenu.cpp \
+	$(SRC)/OpenVario/System/System.cpp \
+	$(SRC)/OpenVario/FileMenuWidget.cpp \
+	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
+	$(SRC)/OpenVario/System/SystemSettingsWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/RotationWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/BrightnessWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/TimeoutWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/SSHWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/VariodWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/SensordWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/WifiWidget.cpp \
+	\
 	$(SRC)/Version.cpp \
 	$(SRC)/Asset.cpp \
 	$(SRC)/Formatter/HexColor.cpp \
@@ -30,19 +43,7 @@ OV_MENU_SOURCES = \
 	$(TEST_SRC_DIR)/Fonts.cpp \
 	$(TEST_SRC_DIR)/FakeLanguage.cpp \
 	$(TEST_SRC_DIR)/FakeLogFile.cpp \
-	$(SRC)/Kobo/FakeSymbols.cpp \
-	$(SRC)/OpenVario/FileMenuWidget.cpp\
-	$(SRC)/OpenVario/System/System.cpp\
-	$(SRC)/OpenVario/System/SystemMenuWidget.cpp\
-	$(SRC)/OpenVario/System/SystemSettingsWidget.cpp\
-	$(SRC)/OpenVario/System/Setting/RotationWidget.cpp\
-	$(SRC)/OpenVario/System/Setting/BrightnessWidget.cpp\
-	$(SRC)/OpenVario/System/Setting/TimeoutWidget.cpp\
-	$(SRC)/OpenVario/System/Setting/SSHWidget.cpp\
-	$(SRC)/OpenVario/System/Setting/VariodWidget.cpp\
-	$(SRC)/OpenVario/System/Setting/SensordWidget.cpp\
-	$(SRC)/OpenVario/System/Setting/WifiWidget.cpp\
-	$(SRC)/OpenVario/OpenVarioMenu.cpp
+	$(SRC)/Kobo/FakeSymbols.cpp
 OV_MENU_DEPENDS = WIDGET FORM DATA_FIELD SCREEN EVENT RESOURCE ASYNC LIBNET OS IO THREAD TIME MATH UTIL
 OV_MENU_STRIP = y
 
