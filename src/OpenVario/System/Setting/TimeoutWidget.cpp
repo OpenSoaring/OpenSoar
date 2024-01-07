@@ -1,12 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#if   0   // ndef __MSVC__
-#include "lib/dbus/Connection.hxx"
-#include "lib/dbus/ScopeMatch.hxx"
-#include "lib/dbus/Systemd.hxx"
-#endif
-
 #include "Dialogs/DialogSettings.hpp"
 #include "Dialogs/Message.hpp"
 #include "Dialogs/ProcessDialog.hpp"

@@ -324,8 +324,9 @@ debugln(const char *fmt, ...) noexcept
   vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
   va_end(ap);
 
-  strcat(buf, "\n");
-  printf(buf);
+//  strcat(buf, "\n");
+  std::cout << buf << std::endl;
+//  printf(buf);
 }
 
 static int
