@@ -103,9 +103,9 @@ OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
              _("Brightness ???."), _T("%d"), _T("%d%%"), 10,
               100, 10, iBrightness);
 
-   auto Btn_Shell = AddButton(
+   // auto Btn_Shell = 
+   AddButton(
        _T("Shell"), [this]() { 
-         // dialog.SetModalResult(mrOK);
          ShowMessageBox(_("Button pressed"), _("OV-Button"),
                         MB_OK | MB_ICONERROR);
      });
@@ -140,10 +140,9 @@ OpenVarioConfigPanel::Save([[maybe_unused]] bool &_changed) noexcept
  
   #endif
   changed |= SaveValue(OVBooleanTest, "OVBooleanTest",
-                              bTest);
+                              bTest, this);
 
-  changed |= SaveValueInteger(OVIntegerTest, "OVIntegerTest",
-                              iTest);
+  changed |= SaveValueInteger(OVIntegerTest, "OVIntegerTest", iTest);
 
   changed |= SaveValueInteger(OVBrightness, "OVBrightness", iBrightness);
 

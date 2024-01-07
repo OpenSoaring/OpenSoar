@@ -360,10 +360,11 @@ Main()
   global_main_window = &main_window;
 
   if (!IsOpenVarioDevice) {
+    /*
     StaticString<0x100> Home;
     Home.SetUTF8(getenv("HOME"));
     auto HomePath = Path(Home);
-    // Home = _T("/home/august2111");
+
     debugln("HOME(1) = %s", getenv("HOME"));
     debugln("HOME(2) = %s", ConvertWideToACP(Home.c_str()).c_str());
     debugln("HOME(3) = %s", ConvertWideToACP(HomePath.c_str()).c_str());
@@ -379,8 +380,10 @@ Main()
             ConvertWideToACP(ovdevice.GetConfigFile().c_str()).c_str());
     // debugln("ConfigFile: %s", ConvertWideToACP(path.c_str()).c_str());
     // #endif
+ */
+    auto ConfigFile = ovdevice.GetConfigFile();
     if (!File::Exists(ConfigFile)) {
-        debugln("ConfigFile does not exist", ConfigFile.c_str());
+      debugln("ConfigFile does not exist", ConfigFile.c_str());
         File::CreateExclusive(ConfigFile);
         if (!File::Exists(ConfigFile))
           debugln("still ConfigFile does not exist", ConfigFile.c_str());

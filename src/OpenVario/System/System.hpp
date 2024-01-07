@@ -24,7 +24,7 @@ public:
   {
     return ConfigFile;
   }
-  Path SetConfigFile(Path _ConfigFile) noexcept 
+  void SetConfigFile(Path _ConfigFile) noexcept 
   {
     ConfigFile = _ConfigFile;
   }
