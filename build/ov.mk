@@ -1,5 +1,5 @@
 OV_MENU_SOURCES = \
-	$(SRC)/OpenVario/OpenVarioMenu.cpp \
+	$(SRC)/OpenVario/OpenVarioBaseMenu.cpp \
 	$(SRC)/OpenVario/System/System.cpp \
 	$(SRC)/OpenVario/FileMenuWidget.cpp \
 	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
@@ -47,7 +47,7 @@ OV_MENU_SOURCES = \
 OV_MENU_DEPENDS = WIDGET FORM DATA_FIELD SCREEN EVENT RESOURCE ASYNC LIBNET OS IO THREAD TIME MATH UTIL
 OV_MENU_STRIP = y
 
-$(eval $(call link-program,OpenVarioMenu,OV_MENU))
+$(eval $(call link-program,OpenVarioBaseMenu,OV_MENU))
 
 ifeq ($(TARGET),UNIX)
 OPTIONAL_OUTPUTS += $(OV_MENU_BIN)
