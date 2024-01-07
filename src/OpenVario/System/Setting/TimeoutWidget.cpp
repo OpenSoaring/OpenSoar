@@ -49,7 +49,7 @@
 void
 SettingTimeoutWidget::SaveTimeout(int timeoutInt)
 {
-  ChangeConfigInt("timeout", timeoutInt, ConfigFile);
+  ChangeConfigInt("timeout", timeoutInt, ovdevice.GetConfigFile());
 }
 
 void

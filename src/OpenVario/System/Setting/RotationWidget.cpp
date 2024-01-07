@@ -14,14 +14,11 @@
 #include "Profile/Map.hpp"
 #include "Screen/Layout.hpp"
 #include "UIGlobals.hpp"
-// #include "Widget/RowFormWidget.hpp"
 #include "system/FileUtil.hpp"
 #include "system/Process.hpp"
 #include "ui/event/KeyCode.hpp"
-// #include "ui/event/Queue.hpp"
 #include "ui/event/Timer.hpp"
 #include "ui/window/Init.hpp"
-// #include "ui/window/SingleWindow.hpp"
 
 #include "Language/Language.hpp"
 
@@ -53,7 +50,7 @@ SettingRotationWidget::SaveRotation(const std::string &rotationString)
 {
    File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")), (rotationString).c_str());
    int rotationInt = stoi(rotationString);
-   ChangeConfigInt("rotation", rotationInt, ConfigFile);
+   ChangeConfigInt("rotation", rotationInt, ovdevice.GetConfigFile());
 }
 
 void

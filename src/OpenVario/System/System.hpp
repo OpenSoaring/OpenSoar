@@ -13,9 +13,7 @@
 #include <string>
 
 
-// extern constexpr const Path ConfigFile;
-// constexpr const Path ConfigFile(_T("/boot/config.uEnv"));
-extern Path ConfigFile;
+void debugln(const char *fmt, ...) noexcept;
 
 class OpenVarioDevice {
 public:

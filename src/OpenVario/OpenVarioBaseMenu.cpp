@@ -2,25 +2,19 @@
 // Copyright The XCSoar Project
 
 #include "Dialogs/DialogSettings.hpp"
-// #include "Dialogs/Message.hpp"
 #include "Dialogs/WidgetDialog.hpp"
-// #include "Dialogs/ProcessDialog.hpp"
 #include "Widget/RowFormWidget.hpp"
 #include "UIGlobals.hpp"
 #include "Look/DialogLook.hpp"
 #include "Screen/Layout.hpp"
-// #include "../test/src/Fonts.hpp"
-// #include "Fonts.hpp"
 
 #include "ui/window/Init.hpp"
 #include "ui/window/SingleWindow.hpp"
-// #include "ui/event/Queue.hpp"
 #include "ui/event/Timer.hpp"
 #include "ui/event/KeyCode.hpp"
 
 #include "Language/Language.hpp"
 #include "system/Process.hpp"
-// #include "util/ScopeExit.hxx"
 #include "system/FileUtil.hpp"
 #include "Profile/Profile.hpp"
 #include "Profile/File.hpp"
@@ -117,7 +111,7 @@ public:
     :RowFormWidget(_dialog.GetLook()),
      display(_display), event_queue(_event_queue),
      dialog(_dialog) {
-       GetConfigInt("timeout", remaining_seconds, ConfigFile);
+       GetConfigInt("timeout", remaining_seconds, ovdevice.GetConfigFile());
      }
 
 private:
@@ -307,34 +301,12 @@ Main(UI::EventQueue &event_queue, UI::SingleWindow &main_window,
   return dialog.ShowModal();
 }
 
-#include <stdarg.h>
-
-void debugln(const char *fmt, ...) noexcept;
-
-#ifndef MAX_PATH
-# define MAX_PATH 0x100
-#endif
-void 
-debugln(const char *fmt, ...) noexcept
-{
-  char buf[MAX_PATH];
-  va_list ap;
-
-  va_start(ap, fmt);
-  vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
-  va_end(ap);
-
-//  strcat(buf, "\n");
-  std::cout << buf << std::endl;
-//  printf(buf);
-}
-
 static int
 Main()
 {
   InitialiseDataPath();
 
-  IsOpenVarioDevice = File::Exists(ConfigFile);
+  IsOpenVarioDevice = File::Exists(ovdevice.GetConfigFile());
   dialog_settings.SetDefaults();
 
   ScreenGlobalInit screen_init;
@@ -361,34 +333,7 @@ Main()
   global_main_window = &main_window;
 
   if (!IsOpenVarioDevice) {
-    /*
-    StaticString<0x100> Home;
-    Home.SetUTF8(getenv("HOME"));
-    auto HomePath = Path(Home);
-
-    debugln("HOME(1) = %s", getenv("HOME"));
-    debugln("HOME(2) = %s", ConvertWideToACP(Home.c_str()).c_str());
-    debugln("HOME(3) = %s", ConvertWideToACP(HomePath.c_str()).c_str());
-
-    ConfigFile = Path(_T("./config.uEnv"));
-    debugln("ConfigFile: %s", ConvertWideToACP(ConfigFile.c_str()).c_str());
-    // AllocatedPath::Build(Path(Home), Path(_T("/config.uEnv")));
-    auto ConfigFile2 =
-        AllocatedPath::Build(Path(Home), Path(_T("config.uEnv")));
-        // AllocatedPath::Build(Path(), Path(_T("/config.uEnv")));
-    debugln("ConfigFile: %s", ConvertWideToACP(ConfigFile2.c_str()).c_str());
-    debugln("ConfigFile: %s",
-            ConvertWideToACP(ovdevice.GetConfigFile().c_str()).c_str());
-    // debugln("ConfigFile: %s", ConvertWideToACP(path.c_str()).c_str());
-    // #endif
- */
-    auto ConfigFile = ovdevice.GetConfigFile();
-    if (!File::Exists(ConfigFile)) {
-      debugln("ConfigFile does not exist", ConfigFile.c_str());
-        File::CreateExclusive(ConfigFile);
-        if (!File::Exists(ConfigFile))
-          debugln("still ConfigFile does not exist", ConfigFile.c_str());
-     }
+    assert(File::Exists(ovdevice.GetConfigFile()));
   }
 
   int action = Main(screen_init.GetEventQueue(), main_window, dialog_look);

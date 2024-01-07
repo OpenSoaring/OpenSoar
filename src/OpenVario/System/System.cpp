@@ -31,9 +31,11 @@
 #endif
 #include <fmt/format.h>
 
+#include <stdarg.h>
+
 #include <map>
 #include <string>
-
+#include <iostream>
 
 #ifndef __MSVC__
 #include <unistd.h>
@@ -43,10 +45,6 @@
 
 #include <map>
 
-Path ConfigFile(_T("/boot/config.uEnv"));
-
-
-// Path OpenVarioDevice::ConfigFile;
 OpenVarioDevice ovdevice;
 
 OpenVarioDevice::OpenVarioDevice() {
@@ -65,13 +63,16 @@ OpenVarioDevice::OpenVarioDevice() {
     ConfigFile = AllocatedPath::Build(HomePath, Path(_T("openvario.cfg")));
   }
 #else
-  if (Directory::Exists(Path(_T("/boot/config.uEnv")))) {
-    ConfigFile = AllocatedPath::Build(Path(_T("/boot/config.uEnv")),
-                                      Path(_T("openvario.cfg")));
-  } else {
+  ConfigFile =
+      AllocatedPath::Build(Path(_T("/boot")), Path(_T("openvario.cfg")));
+  if (!File::Exists(ConfigFile)) {
     ConfigFile = AllocatedPath::Build(HomePath, Path(_T("openvario.cfg")));
   }
 #endif
+  if (!File::Exists(ConfigFile))
+    File::CreateExclusive(ConfigFile);
+
+  assert(File::Exists(ConfigFile));
 }
   //----------------------------------------------------------
 void
@@ -101,32 +102,32 @@ WriteConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path)
 //----------------------------------------------------------
 void 
 GetConfigInt(const std::string &keyvalue, unsigned &value,
-                            const Path &ConfigPath)
+                            const Path &config)
 {
-  if (File::Exists(ConfigFile)) {
+  if (File::Exists(config)) {
     ProfileMap configuration;
-    Profile::LoadFile(configuration, ConfigPath);
+    Profile::LoadFile(configuration, config);
     configuration.Get(keyvalue.c_str(), value);
   } else {
-    printf("ConfigFile '%s' does not exist!", "/boot/config.uEnv");
+    debugln("ConfigFile '%s' does not exist!", config.c_str());
   }
 }
 
 void 
 ChangeConfigInt(const std::string &keyvalue, int value,
-                            const Path &ConfigPath)
+                            const Path &config)
 {
-  if (File::Exists(ConfigFile)) {
+  if (File::Exists(config)) {
     ProfileMap configuration;
     try {
-      Profile::LoadFile(configuration, ConfigPath);
+      Profile::LoadFile(configuration, config);
     } catch (std::exception &e) {
-      Profile::SaveFile(configuration, ConfigPath);
+      Profile::SaveFile(configuration, config);
     }
     configuration.Set(keyvalue.c_str(), value);
-    Profile::SaveFile(configuration, ConfigPath);
+    Profile::SaveFile(configuration, config);
   } else {
-    printf("ConfigFile '%s' does not exist!", "/boot/config.uEnv");
+    debugln("ConfigFile '%s' does not exist!", config.c_str());
   }
 }
 
@@ -241,4 +242,22 @@ OpenvarioDisableSSH()
   Systemd::StopUnit(connection, "dropbear.socket");
 }
 #endif  // _WIN32
+
+
+#ifndef MAX_PATH
+#define MAX_PATH 0x100
+#endif
+void debugln(const char *fmt, ...) noexcept {
+  char buf[MAX_PATH];
+  va_list ap;
+
+  va_start(ap, fmt);
+  vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
+  va_end(ap);
+
+  //  strcat(buf, "\n");
+  std::cout << buf << std::endl;
+  //  printf(buf);
+}
+
 //----------------------------------------------------------

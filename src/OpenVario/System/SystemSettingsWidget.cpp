@@ -78,7 +78,7 @@ ScreenRotationWidget::SaveRotation(const std::string &rotationString)
 {
    File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")), (rotationString).c_str());
    int rotationInt = stoi(rotationString);
-   ChangeConfigInt("rotation", rotationInt, ConfigFile);
+   ChangeConfigInt("rotation", rotationInt, ovdevice.GetConfigFile());
 }
 
 void
@@ -197,7 +197,7 @@ private:
 void
 ScreenTimeoutWidget::SaveTimeout(int timeoutInt)
 {
-  ChangeConfigInt("timeout", timeoutInt, ConfigFile);
+  ChangeConfigInt("timeout", timeoutInt, ovdevice.GetConfigFile());
 }
 
 void
