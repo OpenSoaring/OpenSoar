@@ -434,7 +434,7 @@ endif
 
 ifeq ($(TARGET_IS_OPENVARIO),y)
   TARGET_CPPFLAGS += -DIS_OPENVARIO
-  TARGET_CPPFLAGS += -isystem /usr/include/dbus-1.0  -isystem /usr/lib/x86_64-linux-gnu/dbus-1.0/include
+  # TARGET_CPPFLAGS += -isystem /usr/include/dbus-1.0  -isystem /usr/lib/x86_64-linux-gnu/dbus-1.0/include
 endif
 
 ifeq ($(HAVE_MSVCRT),y)
