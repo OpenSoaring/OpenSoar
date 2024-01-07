@@ -36,7 +36,7 @@ private:
 };
 extern OpenVarioDevice ovdevice;
 
-#if !defined(_WIN32) && 1
+#if !defined(_WIN32) && 0
 # define DBUS_FUNCTIONS 1
 #endif
 
