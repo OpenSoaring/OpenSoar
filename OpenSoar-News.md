@@ -1,6 +1,6 @@
 OpenSoar Version 7.41.21.1 - not yet released
 ---------------
-* start with OpenVarioMenu
+* start with OpenVarioBaseMenu
 
 OpenSoar Version 7.41.21 - 2023/12/28
 ---------------

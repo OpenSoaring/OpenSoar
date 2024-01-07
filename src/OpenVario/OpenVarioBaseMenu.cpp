@@ -22,6 +22,7 @@
 #include "system/Process.hpp"
 // #include "util/ScopeExit.hxx"
 #include "system/FileUtil.hpp"
+#include "Profile/Profile.hpp"
 #include "Profile/File.hpp"
 #include "Profile/Map.hpp"
 #include "DisplayOrientation.hpp"
@@ -34,48 +35,24 @@
 #include "OpenVario/FileMenuWidget.h"
 #include "OpenVario/System/SystemMenuWidget.hpp"
 
+
+#include "Form/DataField/Listener.hpp"
+#include "Dialogs/Settings/Panels/OpenVarioConfigPanel.hpp"
+#include "LocalPath.hpp"
+
 #include <cassert>
 #include <string>
 #include <iostream>
 #include <thread>
 #include <filesystem>
 
-
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/path.hpp"
-
-// #include "System/System.cpp"
-
+#include "util/ConvertString.hpp"
 
 bool IsOpenVarioDevice = true;
 
 static DialogSettings dialog_settings;
 static UI::SingleWindow *global_main_window;
 static DialogLook *global_dialog_look;
-
-
-// #ifdef  OPENVARIO_DEVICE // remove this after OpenVarioMenu is ready
-// Path ConfigFile(_T("/boot/config.uEnv"));
-// #endif
-
-// #ifndef OPENVARIO_DEVICE // remove this after OpenVarioMenu is ready
-// 
-// template <typename T>
-// static void ChangeConfigString(const std::string &keyvalue, T value,
-//                                const std::string &path) {
-//   const Path ConfigPath(path.c_str());
-// 
-//   ProfileMap configuration;
-// 
-//   try {
-//     Profile::LoadFile(configuration, ConfigPath);
-//   } catch (std::exception &e) {
-//     Profile::SaveFile(configuration, ConfigPath);
-//   }
-//   configuration.Set(keyvalue.c_str(), value);
-//   Profile::SaveFile(configuration, ConfigPath);
-// }
-// #else
 
 const DialogSettings &
 UIGlobals::GetDialogSettings()
@@ -110,6 +87,7 @@ class MainMenuWidget final
     OPENSOAR,
     XCSOAR,
     FILE,
+      TEST,
     SYSTEM,
       READONLY_1,
     SHELL,
@@ -127,8 +105,7 @@ class MainMenuWidget final
   UI::Timer timer{[this](){
     if (--remaining_seconds == 0) {
       HideRow(Controls::TIMER);
-      StartOpenSoar();
-      // StartXCSoar();
+      StartOpenSoar();  // StartXCSoar();
     } else {
       ScheduleTimer();
     }
@@ -148,18 +125,10 @@ private:
     const UI::ScopeDropMaster drop_master{display};
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
 #ifdef _WIN32
-    // namespace fs = ;
-
-    boost::filesystem::path ExePathBoost(boost::filesystem::initial_path());
-    // std::cout << ExePath.native_file_string() << endl;
     std::filesystem::path ExePath(std::filesystem::current_path());
     ExePath.append("OpenSoar.exe");
     ExePath = "D:/Projects/Binaries/OpenSoar/dev-branch/msvc2022/Release/"
               "OpenSoar.exe";
-//    for (unsigned int i = 0; i < 2; i++) {
-//      auto arg = args[i];
-//      printf(arg);
-//    }
     char buf[0x200];
 
     snprintf(buf, sizeof(buf) - 1, "%s -fly -datapath=%s -profile=%s",
@@ -169,7 +138,6 @@ private:
       );
 
     Run(buf);
-                         // , "-datapath=/home/root/data/OpenSoarData");
 #else
     if (File::Exists(Path(_T("/usr/bin/OpenSoar"))))
       Run("/usr/bin/OpenSoar", "-fly", "-datapath=/home/root/data/OpenSoarData");
@@ -213,8 +181,7 @@ private:
     }
     else {
       HideRow(Controls::TIMER);
-      StartOpenSoar();
-      // StartXCSoar();
+      StartOpenSoar();  // StartXCSoar();
     }
   }
 
@@ -234,6 +201,21 @@ private:
         return true;
     }
   }
+};
+
+class OpenVarioConfigPanel final : public RowFormWidget, DataFieldListener {
+public:
+  OpenVarioConfigPanel() noexcept : RowFormWidget(UIGlobals::GetDialogLook()) {}
+
+  void SetEnabled(bool enabled) noexcept;
+
+  /* virtual methods from class Widget */
+  void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
+  bool Save(bool &changed) noexcept override;
+
+private:
+  /* methods from DataFieldListener */
+  void OnModified(DataField &df) noexcept override;
 };
 
 void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
@@ -263,6 +245,23 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     sub_dialog.SetWidget(display, event_queue, GetLook());
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
+  });
+  
+  AddButton(_("Test"), [this]() {
+    CancelTimer();
+    std::unique_ptr<Widget> widget = CreateOpenVarioConfigPanel();
+    Profile::LoadFile(ovdevice.GetConfigFile());
+    TWidgetDialog<OpenVarioConfigPanel> sub_dialog(
+        WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
+        _T("OpenVario Test"));
+    sub_dialog.SetWidget();
+    sub_dialog.AddButton(_("Close"), mrOK);
+    auto ret_value = sub_dialog.ShowModal();
+
+    if (sub_dialog.GetChanged()) {
+      Profile::SaveFile(ovdevice.GetConfigFile());
+    }
+    return ret_value;
   });
 
   AddButton(_("System"), [this]() {
@@ -295,7 +294,6 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   }
   HideRow(Controls::OPENSOAR_CLUB);
 }
-// #endif // OPENVARIO_DEVICE // remove this after OpenVarioMenu is ready
 
 static int
 Main(UI::EventQueue &event_queue, UI::SingleWindow &main_window,
@@ -303,7 +301,7 @@ Main(UI::EventQueue &event_queue, UI::SingleWindow &main_window,
 {
   TWidgetDialog<MainMenuWidget>
     dialog(WidgetDialog::Full{}, main_window,
-           dialog_look, _T("OpenVario"));
+           dialog_look, _T("OpenVario Base Menu"));
   dialog.SetWidget(main_window.GetDisplay(), event_queue, dialog);
 
   return dialog.ShowModal();
@@ -333,6 +331,8 @@ debugln(const char *fmt, ...) noexcept
 static int
 Main()
 {
+  InitialiseDataPath();
+
   IsOpenVarioDevice = File::Exists(ConfigFile);
   dialog_settings.SetDefaults();
 
@@ -353,7 +353,7 @@ Main()
 #endif
 
   UI::SingleWindow main_window{screen_init.GetDisplay()};
-  main_window.Create(_T("XCSoar/OpenVarioMenu"), {600, 800}, main_style);
+  main_window.Create(_T("OpenSoar/OpenVarioBaseMenu"), {600, 800}, main_style);
   main_window.Show();
 
   global_dialog_look = &dialog_look;
@@ -362,15 +362,22 @@ Main()
   if (!IsOpenVarioDevice) {
     StaticString<0x100> Home;
     Home.SetUTF8(getenv("HOME"));
+    auto HomePath = Path(Home);
     // Home = _T("/home/august2111");
     debugln("HOME(1) = %s", getenv("HOME"));
-    debugln("HOME(2) = %s", Home.c_str());
+    debugln("HOME(2) = %s", ConvertWideToACP(Home.c_str()).c_str());
+    debugln("HOME(3) = %s", ConvertWideToACP(HomePath.c_str()).c_str());
 
     ConfigFile = Path(_T("./config.uEnv"));
-        // AllocatedPath::Build(Path(Home), Path(_T("/config.uEnv")));
-        // AllocatedPath::Build(Path(_T("/home/august2111")), Path(_T("/config.uEnv")));
+    debugln("ConfigFile: %s", ConvertWideToACP(ConfigFile.c_str()).c_str());
+    // AllocatedPath::Build(Path(Home), Path(_T("/config.uEnv")));
+    auto ConfigFile2 =
+        AllocatedPath::Build(Path(Home), Path(_T("config.uEnv")));
         // AllocatedPath::Build(Path(), Path(_T("/config.uEnv")));
-    debugln("ConfigFile: %s", ConfigFile.c_str());
+    debugln("ConfigFile: %s", ConvertWideToACP(ConfigFile2.c_str()).c_str());
+    debugln("ConfigFile: %s",
+            ConvertWideToACP(ovdevice.GetConfigFile().c_str()).c_str());
+    // debugln("ConfigFile: %s", ConvertWideToACP(path.c_str()).c_str());
     // #endif
     if (!File::Exists(ConfigFile)) {
         debugln("ConfigFile does not exist", ConfigFile.c_str());
@@ -385,6 +392,7 @@ Main()
   main_window.Destroy();
 
   // DeinitialiseFonts();
+  DeinitialiseDataPath();
 
   return action;
 }

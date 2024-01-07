@@ -17,6 +17,24 @@
 // constexpr const Path ConfigFile(_T("/boot/config.uEnv"));
 extern Path ConfigFile;
 
+class OpenVarioDevice {
+public:
+  OpenVarioDevice();
+  Path GetConfigFile() noexcept 
+  {
+    return ConfigFile;
+  }
+  Path SetConfigFile(Path _ConfigFile) noexcept 
+  {
+    ConfigFile = _ConfigFile;
+  }
+
+private:
+  AllocatedPath ConfigFile;
+  AllocatedPath HomePath;
+  AllocatedPath DataPath;
+};
+extern OpenVarioDevice ovdevice;
 
 #if !defined(_WIN32) && 1
 # define DBUS_FUNCTIONS 1

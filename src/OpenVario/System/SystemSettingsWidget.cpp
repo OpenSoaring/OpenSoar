@@ -452,6 +452,11 @@ SystemSettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     return sub_dialog.ShowModal();
   });
 
+  uint32_t iTest = 0;
+  AddInteger(_("Brightness Test"), _("Setting Brightness."), _T("%d"), _T("%d"), 1,
+             10, 1, iTest);
+
+
   AddButton(_("Autostart Timeout"), [this](){
     TWidgetDialog<SettingTimeoutWidget>
       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),

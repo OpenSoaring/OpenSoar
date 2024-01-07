@@ -32,6 +32,8 @@ Profile::GetPath() noexcept
 void
 Profile::Load() noexcept
 {
+  if (startProfileFile == nullptr)
+    SetFiles(nullptr);
   assert(startProfileFile != nullptr);
 
   LogString("Loading profiles");

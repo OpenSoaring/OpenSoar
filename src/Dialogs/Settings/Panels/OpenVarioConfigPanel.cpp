@@ -12,9 +12,25 @@
 #include "Interface.hpp"
 #include "UIGlobals.hpp"
 
+#include "Dialogs/Message.hpp"
+
+
 #include <stdio.h>
 
+
+bool bTest = true;
+unsigned iTest = 0;
+unsigned iBrightness = 80;
+
 // #define HAVE_WEGLIDE_PILOTNAME
+enum ControlIndex {
+  OVFirmware,
+  OVBooleanTest,
+  OVIntegerTest,
+  OVBrightness,
+  OVButtonShell,
+};
+
 
 class OpenVarioConfigPanel final
   : public RowFormWidget, DataFieldListener {
@@ -42,6 +58,9 @@ OpenVarioConfigPanel::SetEnabled([[maybe_unused]] bool enabled) noexcept
   SetRowEnabled(WeGlidePilotBirthDate, enabled);
   SetRowEnabled(WeGlidePilotID, enabled);
 #endif
+  // this disabled itself: SetRowEnabled(OVBooleanTest, enabled);
+  SetRowEnabled(OVIntegerTest, enabled);
+  SetRowEnabled(OVBrightness, enabled);
 }
 
 void
@@ -54,6 +73,10 @@ OpenVarioConfigPanel::OnModified([[maybe_unused]] DataField &df) noexcept
     SetEnabled(dfb.GetValue());
   }
 #endif
+  if (IsDataField(OVBooleanTest, df)) {
+    const DataFieldBoolean &dfb = (const DataFieldBoolean &)df;
+    SetEnabled(dfb.GetValue());
+  }
 }
 
 void
@@ -64,11 +87,8 @@ OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
 
   RowFormWidget::Prepare(parent, rc);
 
-  bool bTest = false;
-  unsigned iTest = 0;
-
   // void AddReadOnly(label, help,text;
-  auto version = _("3.2.20");
+  auto version = _T("3.2.20");
   AddReadOnly(_("OV-Firmware-Version"), _("Current firmware version of OpenVario"), version);
   AddBoolean(
       _("Boolean Test"),
@@ -79,15 +99,27 @@ OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
              _("Integer Test."),
              _T("%d"), _T("%d"), 1, 99999, 1, iTest);
 
+   AddInteger(_("Brightness Test"),
+             _("Brightness ???."), _T("%d"), _T("%d%%"), 10,
+              100, 10, iBrightness);
+
+   auto Btn_Shell = AddButton(
+       _T("Shell"), [this]() { 
+         // dialog.SetModalResult(mrOK);
+         ShowMessageBox(_("Button pressed"), _("OV-Button"),
+                        MB_OK | MB_ICONERROR);
+     });
+
+
   SetEnabled(bTest);
 }
 
 bool
 OpenVarioConfigPanel::Save([[maybe_unused]] bool &_changed) noexcept
 {
+  bool changed = false;
 #ifdef OPENVARIO_CONFIG
   // out commented currently:
-  bool changed = false;
 
   auto &weglide = CommonInterface::SetComputerSettings().weglide;
 
@@ -105,9 +137,17 @@ OpenVarioConfigPanel::Save([[maybe_unused]] bool &_changed) noexcept
   changed |= SaveValue(WeGlideEnabled, ProfileKeys::WeGlideEnabled,
                        weglide.enabled);
 
-  _changed |= changed;
  
   #endif
+  changed |= SaveValue(OVBooleanTest, "OVBooleanTest",
+                              bTest);
+
+  changed |= SaveValueInteger(OVIntegerTest, "OVIntegerTest",
+                              iTest);
+
+  changed |= SaveValueInteger(OVBrightness, "OVBrightness", iBrightness);
+
+  _changed |= changed;
   return true;
 }
 

@@ -19,7 +19,7 @@ struct Event {
     TIMER,
 #endif
 
-    CALLBACK,
+    CALLBACK_,
 
     KEY_DOWN,
     KEY_UP,
@@ -111,7 +111,7 @@ struct Event {
     :type(_type), param(_param), ptr(_ptr) {}
   Event(Type _type, void *_ptr):type(_type), ptr(_ptr) {}
   Event(Callback _callback, void *_ptr)
-    :type(CALLBACK), ptr(_ptr), callback(_callback) {}
+    :type(CALLBACK_), ptr(_ptr), callback(_callback) {}
   Event(Type _type, PixelPoint _point)
     :type(_type), point(_point) {}
 

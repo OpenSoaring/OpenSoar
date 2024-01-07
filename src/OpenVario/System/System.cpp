@@ -20,6 +20,9 @@
 #include "Profile/File.hpp"
 #include "Profile/Map.hpp"
 
+#include "util/StaticString.hxx"
+#include "util/ConvertString.hpp"
+
 #include "OpenVario/System/System.hpp"
 
 #ifndef _WIN32
@@ -41,7 +44,36 @@
 #include <map>
 
 Path ConfigFile(_T("/boot/config.uEnv"));
-//----------------------------------------------------------
+
+
+// Path OpenVarioDevice::ConfigFile;
+OpenVarioDevice ovdevice;
+
+OpenVarioDevice::OpenVarioDevice() {
+  StaticString<0x100> home;
+  home.SetUTF8(getenv("HOME"));
+  HomePath = Path(home);
+#ifdef _WIN32
+//  DataPath = Path(_T("D:/Data/OpenSoarData"));
+//  DataPath = Path(_T("D:/Data/XCSoarData"));
+  DataPath = Path(_T("D:\\Data\\XCSoarData"));
+
+  if (Directory::Exists(DataPath)) {
+    auto config = AllocatedPath::Build(DataPath, Path(_T("openvario.cfg")));
+    ConfigFile = AllocatedPath::Build(DataPath, Path(_T("openvario.cfg")));
+  } else {
+    ConfigFile = AllocatedPath::Build(HomePath, Path(_T("openvario.cfg")));
+  }
+#else
+  if (Directory::Exists(Path(_T("/boot/config.uEnv")))) {
+    ConfigFile = AllocatedPath::Build(Path(_T("/boot/config.uEnv")),
+                                      Path(_T("openvario.cfg")));
+  } else {
+    ConfigFile = AllocatedPath::Build(HomePath, Path(_T("openvario.cfg")));
+  }
+#endif
+}
+  //----------------------------------------------------------
 void
 LoadConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path)
 {

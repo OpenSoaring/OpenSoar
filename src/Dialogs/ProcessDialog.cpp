@@ -6,8 +6,8 @@
 #include "Widget/LargeTextWidget.hpp"
 #include "ui/event/poll/Queue.hpp"
 #include "ui/event/Globals.hpp"
-#include "Language/Language.hpp"
 #include "event/PipeEvent.hxx"
+#include "Language/Language.hpp"
 #include "io/Open.hxx"
 #include "io/UniqueFileDescriptor.hxx"
 #include "system/Error.hxx"
@@ -17,7 +17,13 @@
 #include <errno.h>
 #include <signal.h>
 #include <string.h>
+#ifdef _WIN32
+  // TODO(August2111): needs work!
+#include "util/ConvertString.hpp"
+typedef size_t pid_t;
+#else
 #include <sys/wait.h>
+#endif
 
 class ProcessWidget final : public LargeTextWidget {
   const char *const*const argv;
@@ -63,9 +69,14 @@ private:
 static bool
 UnblockAllSignals() noexcept
 {
+#ifdef _WIN32
+  // TODO(August2111): needs work!
+  return false;
+#else
   sigset_t ss;
   sigemptyset(&ss);
   return sigprocmask(SIG_SETMASK, &ss, nullptr) == 0;
+#endif
 }
 
 void
@@ -76,6 +87,10 @@ ProcessWidget::Start()
   UniqueFileDescriptor r, w;
   if (!UniqueFileDescriptor::CreatePipe(r, w))
     throw MakeErrno("Failed to create pipe");
+
+#ifdef _WIN32
+    // TODO(August2111): needs work!
+#else
 
   pid = fork();
   if (pid < 0)
@@ -92,6 +107,7 @@ ProcessWidget::Start()
     fprintf(stderr, "Failed to execute %s: %s\n", argv[0], strerror(errno));
     _exit(EXIT_FAILURE);
   }
+#endif
 
   fd.Open(r.Release());
   fd.ScheduleRead();
@@ -102,12 +118,16 @@ ProcessWidget::Cancel() noexcept
 {
   fd.Close();
 
+#ifdef _WIN32
+  // TODO(August2111): needs work!
+#else
   if (pid > 0) {
     kill(pid, SIGTERM);
 
     int status;
     waitpid(pid, &status, 0);
   }
+#endif 
 }
 
 bool
@@ -138,7 +158,11 @@ ProcessWidget::OnPipeReady(unsigned) noexcept
       return;
 
     text.append("\nFailed to read from pipe");
+#ifdef _WIN32
+    SetText(ConvertACPToWide(text.c_str()).c_str());
+#else
     SetText(text.c_str());
+#endif
 
     cancel_button->SetCaption(_("Close"));
 
@@ -151,6 +175,10 @@ ProcessWidget::OnPipeReady(unsigned) noexcept
     fd.Close();
 
     int status;
+#ifdef _WIN32
+    // TODO(August2111): needs work!
+    status = 0;
+#else
     if (waitpid(pid, &status, 0) == pid) {
       pid = 0;
 
@@ -160,7 +188,7 @@ ProcessWidget::OnPipeReady(unsigned) noexcept
         status = EXIT_FAILURE;
     } else
       status = EXIT_FAILURE;
-
+#endif
     if (OnExit(status))
       return;
 
@@ -175,7 +203,11 @@ ProcessWidget::OnPipeReady(unsigned) noexcept
   if (text.length() > 16384)
     text.erase(0, 4096);
 
+#ifdef _WIN32
+  SetText(ConvertACPToWide(text.c_str()).c_str());
+#else
   SetText(text.c_str());
+#endif
   // make sure the EventLoop gets interrupted so the UI gets redrawn
   UI::event_queue->Interrupt();
 }
@@ -189,7 +221,11 @@ ProcessWidget::Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept
     Start();
   } catch (...) {
     text = GetFullMessage(std::current_exception());
+#ifdef _WIN32
+    SetText(ConvertACPToWide(text.c_str()).c_str());
+#else
     SetText(text.c_str());
+#endif
   }
 }
 
