@@ -6,6 +6,7 @@ set(LIB_SUFFIX ".lib")    # "a")
 
 # only in DEBUG-Version---
 #add_definitions(-DIS_OPENVARIO)  # add special OpenVario functions
+add_compile_definitions(IS_OPENVARIO)  # add special OpenVario functions
 #-------------------------------
 add_compile_definitions(__MSVC__)
 #********************************************************************************

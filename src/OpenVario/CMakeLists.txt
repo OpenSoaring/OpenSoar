@@ -3,13 +3,15 @@ if (SHOW_SUBPROJECTS)
     message(STATUS "+++ Start CMake ${CMAKE_CURRENT_SOURCE_DIR}!")
 endif()
 
-  get_filename_component(TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
+  get_filename_component(TARGET_FOLDER ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
+  set(TARGET_NAME OpenVarioBaseMenu)
 
 include(CMakeSource.cmake)
 # organize the files in subdirectories
 set(SOURCE_FILES )
 foreach(source_file ${_SOURCES})
-    string(REPLACE "${TARGET_NAME}/" "" source_file ${source_file})
+    string(REPLACE "${TARGET_FOLDER}/" "" source_file ${source_file})
+    string(REPLACE "${PROJECTGROUP_SOURCE_DIR}/" "../../" source_file ${source_file})
     list(APPEND SOURCE_FILES ${source_file})
     get_filename_component(src_path ${source_file} DIRECTORY)
     if (src_path)
@@ -39,29 +41,20 @@ endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_compile_definitions("OPENVARIO_DEVICE")
+add_compile_definitions("IS_OPENVARIO")
+
+# add_compile_definitions("USE_LIBINPUT")
 # remeve this definition after  
 
-# add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
 add_executable(${TARGET_NAME} 
     ${SOURCE_FILES}
     ${HEADER_FILES}
     ${SCRIPT_FILES}
 )
-target_link_libraries(${TARGET_NAME} PUBLIC Logger)
+## target_link_libraries(${TARGET_NAME} PUBLIC Logger)
 
  # message(FATAL_ERROR "Stop!")
-set_target_properties(${TARGET_NAME} PROPERTIES FOLDER OpenVario)
+set_target_properties(${TARGET_NAME} PROPERTIES FOLDER OpenVarioBaseMenu)
 
-target_link_libraries(${TARGET_NAME} PUBLIC Math Profile  net co Blackboard util system io # Language 
-   ui Dialogs Look Widget Renderer MapWindow
-   ${FMT_LIB} ${CURL_TARGET} ${CARES_TARGET} ${ZLIB_TARGET}
-   ${SODIUM_TARGET}  # new at 06/2020
-   ${SSL_LIB}  # new at 03/2021
-   ${CRYPTO_LIB}  # new at 03/2021
-
-   msimg32
-   winmm
-   ws2_32
-   gdiplus
-)
+target_link_libraries(${TARGET_NAME} PUBLIC ${OPENVARIOBASEMENU_LIBS})
 add_dependencies(${TARGET_NAME} util Data)
