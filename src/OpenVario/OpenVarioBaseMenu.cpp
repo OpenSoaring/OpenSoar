@@ -306,7 +306,8 @@ Main()
 {
   InitialiseDataPath();
 
-  IsOpenVarioDevice = File::Exists(ovdevice.GetConfigFile());
+  // check if this config file exists as indicator of a real OpenVario-Device:
+  IsOpenVarioDevice = File::Exists(Path(_T("/boot/config.uEnv")));
   dialog_settings.SetDefaults();
 
   ScreenGlobalInit screen_init;
