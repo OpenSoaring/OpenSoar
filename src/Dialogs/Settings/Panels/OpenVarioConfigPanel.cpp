@@ -14,6 +14,8 @@
 
 #include "Dialogs/Message.hpp"
 
+#include "OpenVario/System/WifiDialogOV.hpp"
+
 
 #include <stdio.h>
 
@@ -108,6 +110,11 @@ OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
        _T("Shell"), [this]() { 
          ShowMessageBox(_("Button pressed"), _("OV-Button"),
                         MB_OK | MB_ICONERROR);
+     });
+
+   AddButton(
+       _T("Settings Wifi"), [this]() { 
+         ShowWifiDialog();
      });
 
 
