@@ -8,8 +8,16 @@ set(_SOURCES
 
         OpenVario/System/SystemMenuWidget.cpp
         OpenVario/System/SystemSettingsWidget.cpp
+        OpenVario/System/Setting/RotationWidget.cpp 
+        OpenVario/System/Setting/BrightnessWidget.cpp 
+        OpenVario/System/Setting/TimeoutWidget.cpp 
+        OpenVario/System/Setting/SSHWidget.cpp
+        OpenVario/System/Setting/VariodWidget.cpp
+        OpenVario/System/Setting/SensordWidget.cpp
+        OpenVario/System/Setting/WifiWidget.cpp
 
-        OpenVario/WifiDialogOV.cpp 
+        OpenVario/System/WifiDialogOV.cpp 
+        OpenVario/System/WifiSupplicantOV.cpp 
 
         ${SRC}/Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp
 
@@ -37,6 +45,7 @@ set(_SOURCES
         ${SRC}/Dialogs/TextEntry.cpp
         ${SRC}/Dialogs/KnobTextEntry.cpp
         ${SRC}/Dialogs/TouchTextEntry.cpp
+        # ov.mk:   ${SRC}/Dialogs/ProcessDialog.cpp
         ${SRC}/Profile/Map.cpp
         ${SRC}/Profile/File.cpp
         ${SRC}/Profile/NumericValue.cpp
@@ -90,6 +99,10 @@ list(APPEND _SOURCES
         ${SRC}/Units/Descriptor.cpp
 
         ${SRC}/ResourceLoader.cpp
+
+###     ${SRC}/Dialogs/ProcessDialog.cpp
+###	    ${SRC}/Kobo/FakeSymbols.cpp
+###	    ${SRC}/ui/control/TerminalWindow.cpp
 
         ${SRC}/Interface.cpp
         ${SRC}/Blackboard/InterfaceBlackboard.cpp
