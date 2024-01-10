@@ -24,7 +24,7 @@ public:
     return system_config; 
    }
 
-  Path SetSystemConfig(Path configfile) noexcept 
+  void SetSystemConfig(Path configfile) noexcept 
   {
     system_config = configfile;
   }
