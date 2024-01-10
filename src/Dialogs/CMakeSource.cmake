@@ -156,6 +156,15 @@ set(_SOURCES
 
         Dialogs/CoDialog.cpp
 )
+
+
+if(ON)  # IS_OPENVARIO
+  list(APPEND _SOURCES
+        ../OpenVario/System/WifiDialogOV.cpp 
+        ../OpenVario/System/WifiSupplicantOV.cpp 
+  )
+endif() 
+
 if(UNIX)
   list(APPEND _SOURCES
         Dialogs/Settings/Panels/AudioVarioConfigPanel.cpp
