@@ -29,22 +29,32 @@ public:
     system_config = configfile;
   }
 
-  Path GetSettingsConfig() noexcept 
+  Path 
+  GetSettingsConfig() noexcept 
   {
     return settings_config;
   }
-  void SetSettingsConfig(Path configfile) noexcept 
+  void 
+  SetSettingsConfig(Path configfile) noexcept 
   {
     settings_config = configfile;
   }
 
-  Path GetUpgradeConfig() noexcept 
+  Path 
+  GetUpgradeConfig() noexcept 
   {
     return upgrade_config;
   }
-  void SetUpgradeConfig(Path configfile) noexcept 
+  void 
+  SetUpgradeConfig(Path configfile) noexcept 
   {
     upgrade_config = configfile;
+  }
+
+  bool
+  IsReal() noexcept 
+  {
+    return is_real;
   }
 
 private:
@@ -55,6 +65,8 @@ private:
                                 // the OpenVarioBaseMenu
   AllocatedPath home_path;
   AllocatedPath data_path;
+
+  bool is_real = false;
 };
 extern OpenVarioDevice ovdevice;
 

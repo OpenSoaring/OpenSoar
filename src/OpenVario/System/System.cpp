@@ -60,6 +60,7 @@ OpenVarioDevice::OpenVarioDevice() {
 
   system_config =
       AllocatedPath::Build(Path(_T("/boot")), Path(_T("config.uEnf")));
+  is_real = File::Exists(system_config);
 #endif
   if (Directory::Exists(data_path)) {
     // auto config = AllocatedPath::Build(data_path, Path(_T("openvario.cfg")));

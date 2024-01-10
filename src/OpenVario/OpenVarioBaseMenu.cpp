@@ -42,8 +42,6 @@
 
 #include "util/ConvertString.hpp"
 
-bool IsOpenVarioDevice = true;
-
 static DialogSettings dialog_settings;
 static UI::SingleWindow *global_main_window;
 static DialogLook *global_dialog_look;
@@ -280,7 +278,7 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
   AddReadOnly(_T("")); // Timer-Progress
 
-  if (!IsOpenVarioDevice) {
+  if (!ovdevice.IsReal()) {
     Btn_Shell->SetCaption(_T("Exit"));
     Btn_XCSoar->SetEnabled(false);
     Btn_Reboot->SetEnabled(false);
@@ -306,9 +304,6 @@ Main()
 {
   InitialiseDataPath();
 
-  // check if this config file exists as indicator of a real OpenVario-Device:
-  // SystemConfig is only available on real OpenVario Device
-  IsOpenVarioDevice = File::Exists(ovdevice.GetSystemConfig());
   dialog_settings.SetDefaults();
 
   ScreenGlobalInit screen_init;
@@ -334,7 +329,7 @@ Main()
   global_dialog_look = &dialog_look;
   global_main_window = &main_window;
 
-  if (!IsOpenVarioDevice) {
+  if (!ovdevice.IsReal()) {
     assert(File::Exists(ovdevice.GetSettingsConfig()));
   }
 
