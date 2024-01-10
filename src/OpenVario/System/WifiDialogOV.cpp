@@ -18,6 +18,7 @@
 #include "ui/event/PeriodicTimer.hpp"
 #include "util/HexFormat.hxx"
 #include "util/StaticString.hxx"
+#include "util/ConvertString.hpp"
 
 
 #ifdef KOBO
@@ -178,8 +179,10 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
   row_renderer.DrawFirstRow(canvas, rc, info.ssid);
   row_renderer.DrawSecondRow(canvas, rc, info.bssid);
 #else
-  row_renderer.DrawFirstRow(canvas, rc, L"info.ssid");  // TODO(August2111)
-  row_renderer.DrawSecondRow(canvas, rc, L"info.bssid");  // TODO(August2111)
+  row_renderer.DrawFirstRow(
+    canvas, rc, UTF8ToWideConverter(info.ssid).c_str()); // TODO(August2111)
+  row_renderer.DrawSecondRow(
+    canvas, rc, UTF8ToWideConverter(info.bssid).c_str());  // TODO(August2111)
 #endif // WithWPA
 
   const TCHAR *state = nullptr;
