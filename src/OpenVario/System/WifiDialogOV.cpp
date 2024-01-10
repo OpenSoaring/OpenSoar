@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#include "WifiDialogOV.hpp"
+#include "OpenVario/System/WifiDialogOV.hpp"
+#include "OpenVario/System/WifiSupplicantOV.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Dialogs/Message.hpp"
 #include "Dialogs/Error.hpp"
@@ -13,13 +14,11 @@
 #include "Renderer/TwoTextRowsRenderer.hpp"
 #include "Language/Language.hpp"
 #include "Widget/ListWidget.hpp"
-#ifdef Kobo
-#include "WPASupplicant.hpp"
-#endif  // Kobo
 #include "net/IPv4Address.hxx"
 #include "ui/event/PeriodicTimer.hpp"
 #include "util/HexFormat.hxx"
 #include "util/StaticString.hxx"
+
 
 #ifdef KOBO
 #include "Model.hpp"
@@ -33,13 +32,13 @@ GetKoboWifiInterface() noexcept
 }
 #endif
 
-#ifdef Kobo
+#ifdef WithWPA
 /* workaround because OpenSSL has a typedef called "UI", which clashes
    with our "UI" namespace */
 #define UI OPENSSL_UI
 #include <openssl/evp.h> // for PKCS5_PBKDF2_HMAC_SHA1()
 #undef UI
-#endif // Kobo
+#endif // WithWPA
 
 class WifiListWidget final
   : public ListWidget {
@@ -58,13 +57,12 @@ class WifiListWidget final
   Button *connect_button;
 
   WifiStatus status;
+
   TrivialArray<NetworkInfo, 64> networks;
 
   TwoTextRowsRenderer row_renderer;
 
-#ifdef Kobo
   WPASupplicant wpa_supplicant;
-#endif  // Kobo
 
   UI::PeriodicTimer update_timer{[this]{ UpdateList(); }};
 
@@ -73,9 +71,7 @@ public:
     dialog.AddButton(_("Scan"), [this](){
       try {
         EnsureConnected();
-#ifdef Kobo
         wpa_supplicant.Scan();
-#endif // Kobo
         UpdateList();
       } catch (...) {
         ShowError(std::current_exception(), _("Error"));
@@ -131,7 +127,6 @@ private:
   [[gnu::pure]]
   NetworkInfo *FindVisibleBySSID(const char *ssid) noexcept;
 
-#ifdef Kobo
   [[gnu::pure]]
   NetworkInfo *Find(const WifiConfiguredNetworkInfo &c) noexcept;
 
@@ -139,7 +134,6 @@ private:
   void Append(const WifiConfiguredNetworkInfo &src);
   void Merge(const WifiConfiguredNetworkInfo &c);
   void MergeList(const WifiConfiguredNetworkInfo *p, unsigned n);
-#endif // Kobo
   void UpdateScanResults();
   void UpdateConfigured();
   void SweepList();
@@ -180,8 +174,13 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
     "Open",
   };
 
+#ifdef WithWPA
   row_renderer.DrawFirstRow(canvas, rc, info.ssid);
   row_renderer.DrawSecondRow(canvas, rc, info.bssid);
+#else
+  row_renderer.DrawFirstRow(canvas, rc, L"info.ssid");  // TODO(August2111)
+  row_renderer.DrawSecondRow(canvas, rc, L"info.bssid");  // TODO(August2111)
+#endif // WithWPA
 
   const TCHAR *state = nullptr;
   StaticString<40> state_buffer;
@@ -191,7 +190,7 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
     state = _("Connected");
 
     /* look up ip address for wlan0 or eth0 */
-#ifdef Kobo
+#ifdef WithWPA
     const auto addr = IPv4Address::GetDeviceAddress(GetKoboWifiInterface());
     if (addr.IsDefined()) { /* valid address? */
       StaticString<40> addr_str;
@@ -200,7 +199,7 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
         state = state_buffer;
       }
     }
-#endif // Kobo
+#endif // WithWPA
   }
   else if (info.id >= 0)
     state = info.signal_level >= 0
@@ -218,8 +217,8 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
     row_renderer.DrawRightSecondRow(canvas, rc, text);
   }
 }
+// #endif
 
-#ifdef Kobo
 static void
 WifiConnect(enum WifiSecurity security, WPASupplicant &wpa_supplicant, const char *ssid, const char *psk)
 {
@@ -229,6 +228,7 @@ WifiConnect(enum WifiSecurity security, WPASupplicant &wpa_supplicant, const cha
   wpa_supplicant.SetNetworkSSID(id, ssid);
 
   if (security == WPA_SECURITY) {
+#ifdef WithWPA
     std::array<std::byte, 32> pmk;
     PKCS5_PBKDF2_HMAC_SHA1(psk, strlen(psk),
                            (const unsigned char *)ssid, strlen(ssid),
@@ -239,6 +239,7 @@ WifiConnect(enum WifiSecurity security, WPASupplicant &wpa_supplicant, const cha
     *HexFormat(hex.data(), pmk) = 0;
 
     wpa_supplicant.SetNetworkPSK(id, hex.data());
+#endif // WithWPA
   } else if (security == WEP_SECURITY) {
     wpa_supplicant.SetNetworkID(id, "key_mgmt", "NONE");
 
@@ -265,14 +266,12 @@ WifiConnect(enum WifiSecurity security, WPASupplicant &wpa_supplicant, const cha
   wpa_supplicant.EnableNetwork(id);
   wpa_supplicant.SaveConfig();
 }
-#endif // Kobo
 
 inline void
 WifiListWidget::Connect()
 {
   EnsureConnected();
 
-#ifdef Kobo
   const unsigned i = GetList().GetCursorIndex();
   if (i >= networks.size())
     return;
@@ -291,11 +290,15 @@ WifiListWidget::Connect()
     else if (!TextEntryDialog(passphrase, caption, false))
       return;
 
+#ifdef WithWPA
     WifiConnect(info.security, wpa_supplicant, info.ssid, passphrase);
+#else // WithWPA
+    WifiConnect(info.security, wpa_supplicant, info.ssid,
+                "ConvertWideToUTF8(passphrase.c_str()).c_str()");  // TODO(August2111)
+#endif // WithWPA
   } else {
     wpa_supplicant.RemoveNetwork(info.id);
     wpa_supplicant.SaveConfig();
-#endif // Kobo
   }
 
   UpdateList();
@@ -304,17 +307,16 @@ WifiListWidget::Connect()
 void
 WifiListWidget::EnsureConnected()
 {
-#ifdef Kobo
   char path[64];
   sprintf(path, "/var/run/wpa_supplicant/%s", GetKoboWifiInterface());
   wpa_supplicant.EnsureConnected(path);
-#endif // Kobo
 }
 
 inline WifiListWidget::NetworkInfo *
 WifiListWidget::FindByID(int id) noexcept
 {
-  auto f = std::find_if(networks.begin(), networks.end(),
+#ifdef WithWPA  // TODO(August2111)
+  auto f = std::find_if(networks.begin(), networks.end()
                         [id](const NetworkInfo &info) {
                           return info.id == id;
                         });
@@ -322,11 +324,16 @@ WifiListWidget::FindByID(int id) noexcept
     return nullptr;
 
   return f;
+#else  // WithWPA
+  WifiListWidget::NetworkInfo f; 
+  return &f;
+#endif // WithWPA
 }
 
 WifiListWidget::NetworkInfo *
 WifiListWidget::FindByBSSID(const char *bssid) noexcept
 {
+#ifdef WithWPA  // TODO(August2111)
   auto f = std::find_if(networks.begin(), networks.end(),
                         [bssid](const NetworkInfo &info) {
                           return info.bssid == bssid;
@@ -335,11 +342,16 @@ WifiListWidget::FindByBSSID(const char *bssid) noexcept
     return nullptr;
 
   return f;
+#else  // WithWPA
+  WifiListWidget::NetworkInfo f;
+  return &f;
+#endif // WithWPA
 }
 
 WifiListWidget::NetworkInfo *
 WifiListWidget::FindVisibleBySSID(const char *ssid) noexcept
 {
+#ifdef WithWPA // TODO(August2111)
   auto f = std::find_if(networks.begin(), networks.end(),
                         [ssid](const NetworkInfo &info) {
                           return info.signal_level >= 0 && info.ssid == ssid;
@@ -348,6 +360,10 @@ WifiListWidget::FindVisibleBySSID(const char *ssid) noexcept
     return nullptr;
 
   return f;
+#else  // WithWPA
+  WifiListWidget::NetworkInfo f;
+  return &f;
+#endif // WithWPA
 }
 
 inline void
@@ -375,11 +391,9 @@ WifiListWidget::UpdateScanResults()
 {
   WifiVisibleNetwork *buffer = new WifiVisibleNetwork[networks.capacity()];
 
-#ifdef Kobo
   int n = wpa_supplicant.ScanResults(buffer, networks.capacity());
   if (n >= 0)
     MergeList(buffer, n);
-#endif // Kobo
 
   delete[] buffer;
 }
@@ -430,11 +444,9 @@ WifiListWidget::UpdateConfigured()
 {
   WifiConfiguredNetworkInfo *buffer =
     new WifiConfiguredNetworkInfo[networks.capacity()];
-#ifdef Kobo
   int n = wpa_supplicant.ListNetworks(buffer, networks.capacity());
   if (n >= 0)
     MergeList(buffer, n);
-#endif // Kobo
 
   delete[] buffer;
 }
@@ -470,9 +482,7 @@ WifiListWidget::UpdateList()
 
   try {
     EnsureConnected();
-#ifdef Kobo
     wpa_supplicant.Status(status);
-#endif // Kobo
 
     for (auto &i : networks)
       i.old_visible = i.old_configured = true;
