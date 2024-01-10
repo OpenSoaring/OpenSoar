@@ -147,7 +147,7 @@ ParseLogbookContent(const char *_line, RecordedFlightInfo &info)
 
   unsigned n;
   return line.ReadChecked(n) &&
-    ReadFilename(line, info) > 0 &&
+    ReadFilename(line, info) &&
     ReadDate(line, info.date) &&
     ReadTime(line, info.start_time) &&
     ReadTime(line, info.end_time);
