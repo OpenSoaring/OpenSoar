@@ -111,7 +111,7 @@ public:
     :RowFormWidget(_dialog.GetLook()),
      display(_display), event_queue(_event_queue),
      dialog(_dialog) {
-       GetConfigInt("timeout", remaining_seconds, ovdevice.GetConfigFile());
+       GetConfigInt("timeout", remaining_seconds, ovdevice.GetSettingsConfig());
      }
 
 private:
@@ -244,7 +244,7 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddButton(_("Test"), [this]() {
     CancelTimer();
     std::unique_ptr<Widget> widget = CreateOpenVarioConfigPanel();
-    Profile::LoadFile(ovdevice.GetConfigFile());
+    Profile::LoadFile(ovdevice.GetSettingsConfig());
     TWidgetDialog<OpenVarioConfigPanel> sub_dialog(
         WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
         _T("OpenVario Test"));
@@ -253,7 +253,7 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     auto ret_value = sub_dialog.ShowModal();
 
     if (sub_dialog.GetChanged()) {
-      Profile::SaveFile(ovdevice.GetConfigFile());
+      Profile::SaveFile(ovdevice.GetSettingsConfig());
     }
     return ret_value;
   });
@@ -334,7 +334,7 @@ Main()
   global_main_window = &main_window;
 
   if (!IsOpenVarioDevice) {
-    assert(File::Exists(ovdevice.GetConfigFile()));
+    assert(File::Exists(ovdevice.GetSettingsConfig()));
   }
 
   int action = Main(screen_init.GetEventQueue(), main_window, dialog_look);

@@ -50,7 +50,7 @@ SettingRotationWidget::SaveRotation(const std::string &rotationString)
 {
    File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")), (rotationString).c_str());
    int rotationInt = stoi(rotationString);
-   ChangeConfigInt("rotation", rotationInt, ovdevice.GetConfigFile());
+   ChangeConfigInt("rotation", rotationInt, ovdevice.GetSettingsConfig());
 }
 
 void

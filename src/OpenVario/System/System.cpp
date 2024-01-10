@@ -50,29 +50,34 @@ OpenVarioDevice ovdevice;
 OpenVarioDevice::OpenVarioDevice() {
   StaticString<0x100> home;
   home.SetUTF8(getenv("HOME"));
-  HomePath = Path(home);
+  home_path = Path(home);
 #ifdef _WIN32
 //  DataPath = Path(_T("D:/Data/OpenSoarData"));
-//  DataPath = Path(_T("D:/Data/XCSoarData"));
-  DataPath = Path(_T("D:\\Data\\XCSoarData"));
+  data_path = Path(_T("D:\\Data\\XCSoarData"));
 
-  if (Directory::Exists(DataPath)) {
-    auto config = AllocatedPath::Build(DataPath, Path(_T("openvario.cfg")));
-    ConfigFile = AllocatedPath::Build(DataPath, Path(_T("openvario.cfg")));
-  } else {
-    ConfigFile = AllocatedPath::Build(HomePath, Path(_T("openvario.cfg")));
-  }
 #else
-  ConfigFile =
-      AllocatedPath::Build(Path(_T("/boot")), Path(_T("openvario.cfg")));
-  if (!File::Exists(ConfigFile)) {
-    ConfigFile = AllocatedPath::Build(HomePath, Path(_T("openvario.cfg")));
-  }
-#endif
-  if (!File::Exists(ConfigFile))
-    File::CreateExclusive(ConfigFile);
+  data_path = Path(_T("data"));
 
-  assert(File::Exists(ConfigFile));
+  system_config =
+      AllocatedPath::Build(Path(_T("/boot")), Path(_T("config.uEnf")));
+#endif
+  if (Directory::Exists(data_path)) {
+    // auto config = AllocatedPath::Build(data_path, Path(_T("openvario.cfg")));
+    settings_config =
+        AllocatedPath::Build(data_path, Path(_T("openvario.cfg")));
+    upgrade_config =
+        AllocatedPath::Build(data_path, Path(_T("upgrade.cfg")));
+  } else {
+    settings_config =
+        AllocatedPath::Build(home_path, Path(_T("openvario.cfg")));
+    upgrade_config =
+        AllocatedPath::Build(home_path, Path(_T("upgrade.cfg")));
+  }
+
+  if (!File::Exists(settings_config))
+    File::CreateExclusive(settings_config);
+
+  assert(File::Exists(settings_config));
 }
   //----------------------------------------------------------
 void

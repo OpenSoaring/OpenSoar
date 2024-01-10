@@ -18,19 +18,43 @@ void debugln(const char *fmt, ...) noexcept;
 class OpenVarioDevice {
 public:
   OpenVarioDevice();
-  Path GetConfigFile() noexcept 
+
+  Path GetSystemConfig() noexcept 
+  { 
+    return system_config; 
+   }
+
+  Path SetSystemConfig(Path configfile) noexcept 
   {
-    return ConfigFile;
+    system_config = configfile;
   }
-  void SetConfigFile(Path _ConfigFile) noexcept 
+
+  Path GetSettingsConfig() noexcept 
   {
-    ConfigFile = _ConfigFile;
+    return settings_config;
+  }
+  void SetSettingsConfig(Path configfile) noexcept 
+  {
+    settings_config = configfile;
+  }
+
+  Path GetUpgradeConfig() noexcept 
+  {
+    return upgrade_config;
+  }
+  void SetUpgradeConfig(Path configfile) noexcept 
+  {
+    upgrade_config = configfile;
   }
 
 private:
-  AllocatedPath ConfigFile;
-  AllocatedPath HomePath;
-  AllocatedPath DataPath;
+  AllocatedPath system_config;    // system config file, in the OV the
+                                  // /boot/config.uEnf
+  AllocatedPath upgrade_config;   // the config file for upgrading OV
+  AllocatedPath settings_config;  // the config file for settings inside
+                                // the OpenVarioBaseMenu
+  AllocatedPath home_path;
+  AllocatedPath data_path;
 };
 extern OpenVarioDevice ovdevice;
 
