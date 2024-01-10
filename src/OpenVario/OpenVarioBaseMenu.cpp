@@ -228,24 +228,24 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     StartXCSoar();
   });
 
-  AddButton(_("Files"), [this]() {
+  AddButton(_("File Transfers"), [this]() {
     CancelTimer();
 
     TWidgetDialog<FileMenuWidget> sub_dialog(WidgetDialog::Full{},
                                              dialog.GetMainWindow(), GetLook(),
-                                             _T("OpenVario Files"));
+                                             _T("OpenVario File Transfers"));
     sub_dialog.SetWidget(display, event_queue, GetLook());
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
   });
   
-  AddButton(_("Test"), [this]() {
+  AddButton(_("System Settings"), [this]() {
     CancelTimer();
     std::unique_ptr<Widget> widget = CreateOpenVarioConfigPanel();
     Profile::LoadFile(ovdevice.GetSettingsConfig());
     TWidgetDialog<OpenVarioConfigPanel> sub_dialog(
         WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
-        _T("OpenVario Test"));
+        _T("OpenVario System Settings"));
     sub_dialog.SetWidget();
     sub_dialog.AddButton(_("Close"), mrOK);
     auto ret_value = sub_dialog.ShowModal();
@@ -256,12 +256,12 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     return ret_value;
   });
 
-  AddButton(_("System"), [this]() {
+  AddButton(_("System (Blaubart)"), [this]() {
     CancelTimer();
 
     TWidgetDialog<SystemMenuWidget> sub_dialog(
         WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
-        _T("OpenVario System Settings"));
+        _T("OpenVario System Settings (Blaubart)"));
     sub_dialog.SetWidget(display, event_queue, sub_dialog);
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
