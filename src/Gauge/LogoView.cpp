@@ -17,6 +17,8 @@ LogoView::LogoView() noexcept try
 {
 #ifndef USE_GDI
   font.Load(FontDescription(Layout::FontScale(10)));
+#else
+  font.Load(FontDescription(Layout::FontScale(10)));
 #endif
 } catch (...) {
   /* ignore Bitmap/Font loader exceptions */
@@ -144,6 +146,11 @@ LogoView::draw(Canvas &canvas, const PixelRect &rc) noexcept
   // Draw full XCSoar version number
 
 #ifndef USE_GDI
+  if (!font.IsDefined())
+    return;
+
+  canvas.Select(font);
+#else
   if (!font.IsDefined())
     return;
 

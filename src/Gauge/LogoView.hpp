@@ -12,9 +12,9 @@ class Canvas;
 class LogoView {
   Bitmap logo, big_logo, title, big_title;
 
-#ifndef USE_GDI
+// #ifndef USE_GDI
   Font font;
-#endif
+// #endif
 
 public:
   LogoView() noexcept;
