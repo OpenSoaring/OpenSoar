@@ -50,7 +50,12 @@ SettingRotationWidget::SaveRotation(const std::string &rotationString)
 {
    File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")), (rotationString).c_str());
    int rotationInt = stoi(rotationString);
-   ChangeConfigInt("rotation", rotationInt, ovdevice.GetSettingsConfig());
+   // ChangeConfigInt("rotation", rotationInt, ovdevice.GetSettingsConfig());
+   // TODO(August2111):  move the from ovdevice.settings to ovdevice.sysetm
+   LoadConfigFile(ovdevice.system_map, ovdevice.GetSystemConfig());  // -> OpenVarioBaseMenu->StartUp!
+   ovdevice.rotation = stoi(rotationString);
+   ovdevice.system_map.insert_or_assign("Rotation", std::to_string(ovdevice.rotation));
+   WriteConfigFile(ovdevice.system_map, ovdevice.GetSystemConfig());
 }
 
 void

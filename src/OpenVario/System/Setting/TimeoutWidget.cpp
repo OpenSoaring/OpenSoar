@@ -49,7 +49,10 @@
 void
 SettingTimeoutWidget::SaveTimeout(int timeoutInt)
 {
-  ChangeConfigInt("timeout", timeoutInt, ovdevice.GetSettingsConfig());
+  ovdevice.timeout = timeoutInt;
+  ovdevice.settings.insert_or_assign("Timeout",
+                                     std::to_string(ovdevice.timeout));
+  WriteConfigFile(ovdevice.settings, ovdevice.GetSettingsConfig());
 }
 
 void
