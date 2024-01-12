@@ -95,7 +95,9 @@ class MainMenuWidget final
   WndForm &dialog;
 
   UI::Timer timer{[this](){
-    if (--remaining_seconds == 0) {
+    if (remaining_seconds == (unsigned)-1)
+      CancelTimer();
+    else if (--remaining_seconds == 0) {
       HideRow(Controls::TIMER);
       StartOpenSoar();  // StartXCSoar();
     } else {
@@ -109,42 +111,61 @@ public:
     :RowFormWidget(_dialog.GetLook()),
      display(_display), event_queue(_event_queue),
      dialog(_dialog) {
-       GetConfigInt("timeout", remaining_seconds, ovdevice.GetSettingsConfig());
+       ovdevice.LoadSettings();
+       remaining_seconds = ovdevice.timeout;
      }
 
 private:
-  void StartOpenSoar() noexcept {
+    void StartSoarExe(std::string_view exe,
+                    std::filesystem::path _datapath = "") noexcept {
     const UI::ScopeDropMaster drop_master{display};
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
-#ifdef _WIN32
     std::filesystem::path ExePath(std::filesystem::current_path());
-    ExePath.append("OpenSoar.exe");
-    ExePath = "D:/Projects/Binaries/OpenSoar/dev-branch/msvc2022/Release/"
-              "OpenSoar.exe";
-    char buf[0x200];
+    ExePath.append(exe);
 
-    snprintf(buf, sizeof(buf) - 1, "%s -fly -datapath=%s -profile=%s",
-      ExePath.generic_string().c_str(),
-      "D:/Data/XCSoarData",
-      "D:/Data/XCSoarData/August.prf"
-      );
+    if (_datapath.empty()) {
+      _datapath = GetPrimaryDataPath().c_str();
+    }
+    NarrowString<0x200> datapath("-datapath=");
+    datapath.append(_datapath.generic_string());
 
-    Run(buf);
-#else
-    if (File::Exists(Path(_T("/usr/bin/OpenSoar"))))
-      Run("/usr/bin/OpenSoar", "-fly", "-datapath=/home/root/data/OpenSoarData");
-    else
-      Run("./output/UNIX/bin/OpenSoar", "-fly");
+    NarrowString<0x80> profile("");
+    if (ovdevice.settings.find("MainProfile") != ovdevice.settings.end())
+      profile  = "-profile=";
+      std::string str = ovdevice.settings.find("MainProfile")->second;
+      profile += ovdevice.settings.find("MainProfile")->second;
+
+    NarrowString<0x10> format("");
+#ifdef _WIN32
+    if (ovdevice.settings.find("Format") != ovdevice.settings.end()) {
+      format = "-";
+      format += ovdevice.settings.find("Format")->second;
+    }
+    else 
+      format = "-1400x700";
 #endif
+    Run(ExePath.generic_string().c_str(), "-fly", datapath, profile,
+        format);
+  }
+
+  void StartOpenSoar() noexcept {
+    std::filesystem::path datapath = "";
+    if (ovdevice.settings.find("OpenSoarData") != ovdevice.settings.end())
+      datapath = ovdevice.settings.find("OpenSoarData")->second;
+    StartSoarExe("OpenSoar.exe", datapath);
+
+    // after OpenSoar the settings can be changed
+    ovdevice.LoadSettings();
   }
 
   void StartXCSoar() noexcept {
-    const UI::ScopeDropMaster drop_master{display};
-    const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
-    Run("/usr/bin/xcsoar", "-fly", "-datapath=/home/root/data/XCSoarData");
+    std::filesystem::path datapath = "";
+    if (ovdevice.settings.find("XCSoarData") != ovdevice.settings.end())
+      datapath = ovdevice.settings.find("XCSoarData")->second;
+    StartSoarExe("XCSoar.exe", datapath);
   }
 
-  void ScheduleTimer() noexcept {
+    void ScheduleTimer() noexcept {
     assert(remaining_seconds > 0);
 
     timer.Schedule(std::chrono::seconds{1});
@@ -168,12 +189,17 @@ private:
   void Show(const PixelRect &rc) noexcept override {
     RowFormWidget::Show(rc);
 
-    if (remaining_seconds > 0) {
-      ScheduleTimer();
-    }
-    else {
+    switch (remaining_seconds) {
+    case (unsigned)-1:
       HideRow(Controls::TIMER);
-      StartOpenSoar();  // StartXCSoar();
+      break; // Do Nothing !  
+    case 0:
+      HideRow(Controls::TIMER);
+      StartOpenSoar(); // StartXCSoar();
+      break;
+    default:
+      ScheduleTimer();
+      break;
     }
   }
 
@@ -242,18 +268,13 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddButton(_("System Settings"), [this]() {
     CancelTimer();
     std::unique_ptr<Widget> widget = CreateOpenVarioConfigPanel();
-    Profile::LoadFile(ovdevice.GetSettingsConfig());
+
     TWidgetDialog<OpenVarioConfigPanel> sub_dialog(
         WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
         _T("OpenVario System Settings"));
     sub_dialog.SetWidget();
     sub_dialog.AddButton(_("Close"), mrOK);
-    auto ret_value = sub_dialog.ShowModal();
-
-    if (sub_dialog.GetChanged()) {
-      Profile::SaveFile(ovdevice.GetSettingsConfig());
-    }
-    return ret_value;
+    return sub_dialog.ShowModal();
   });
 
   AddButton(_("System (Blaubart)"), [this]() {
@@ -272,7 +293,7 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   auto Btn_Shell = AddButton(_T("Shell"), [this]() { dialog.SetModalResult(LAUNCH_SHELL); });
 
   auto Btn_Reboot = AddButton(_T("Reboot"), []() { Run("/sbin/reboot"); });
-
+  
   auto Btn_Shutdown =
       AddButton(_T("Power off"), []() { Run("/sbin/poweroff"); });
 
@@ -280,10 +301,11 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
   if (!ovdevice.IsReal()) {
     Btn_Shell->SetCaption(_T("Exit"));
-    Btn_XCSoar->SetEnabled(false);
     Btn_Reboot->SetEnabled(false);
     Btn_Shutdown->SetEnabled(false);
   }
+  // Btn_XCSoar->SetEnabled(File::Exists);
+
   HideRow(Controls::OPENSOAR_CLUB);
 }
 

@@ -53,7 +53,7 @@ OpenVarioDevice::OpenVarioDevice() {
   home_path = Path(home);
 #ifdef _WIN32
 //  DataPath = Path(_T("D:/Data/OpenSoarData"));
-  data_path = Path(_T("D:\\Data\\XCSoarData"));
+  data_path = Path(_T("D:/Data/XCSoarData"));
 
 #else
   data_path = Path(_T("data"));
@@ -66,29 +66,58 @@ OpenVarioDevice::OpenVarioDevice() {
     // auto config = AllocatedPath::Build(data_path, Path(_T("openvario.cfg")));
     settings_config =
         AllocatedPath::Build(data_path, Path(_T("openvario.cfg")));
-    upgrade_config =
-        AllocatedPath::Build(data_path, Path(_T("upgrade.cfg")));
+    upgrade_config = AllocatedPath::Build(data_path, Path(_T("upgrade.cfg")));
   } else {
     settings_config =
         AllocatedPath::Build(home_path, Path(_T("openvario.cfg")));
-    upgrade_config =
-        AllocatedPath::Build(home_path, Path(_T("upgrade.cfg")));
+    upgrade_config = AllocatedPath::Build(home_path, Path(_T("upgrade.cfg")));
   }
+  system_config = AllocatedPath::Build(home_path, Path(_T("config.uEnv")));
 
   if (!File::Exists(settings_config))
     File::CreateExclusive(settings_config);
 
   assert(File::Exists(settings_config));
 }
-  //----------------------------------------------------------
+//----------------------------------------------------------
+void ReadBool(std::map<std::string, std::string, std::less<>> &map,
+              std::string_view name, bool &value) noexcept {
+  if (map.find(name) != map.end())
+    value = map.find(name)->second != "False";
+}
+//----------------------------------------------------------
+void ReadInteger(std::map<std::string, std::string, std::less<>> &map,
+                 std::string_view name, unsigned &value) noexcept {
+  if (map.find(name) != map.end())
+    value = std::stoul(map.find(name)->second);
+}
+//----------------------------------------------------------
+void 
+OpenVarioDevice::LoadSettings() noexcept
+{
+  LoadConfigFile(system_map, GetSystemConfig());
+  LoadConfigFile(settings, GetSettingsConfig());
+  LoadConfigFile(upgrade_map, GetUpgradeConfig());
+
+  ReadInteger(system_map, "rotation", rotation);
+
+  ReadBool(settings, "Enabled", enabled);
+  ReadInteger(settings, "iTest", iTest);
+  ReadInteger(settings, "Timeout", timeout);
+  ReadInteger(settings, "Brightness", brightness);
+
+}
+//----------------------------------------------------------
 void
 LoadConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path)
 {
-  FileLineReaderA reader(path);
-  KeyValueFileReader kvreader(reader);
-  KeyValuePair pair;
-  while (kvreader.Read(pair))
-    map.emplace(pair.key, pair.value);
+  if (File::Exists(path)) {
+    FileLineReaderA reader(path);
+    KeyValueFileReader kvreader(reader);
+    KeyValuePair pair;
+    while (kvreader.Read(pair))
+      map.emplace(pair.key, pair.value);
+  }
 }
 
 //----------------------------------------------------------
@@ -106,6 +135,7 @@ WriteConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path)
 }
 
 //----------------------------------------------------------
+/*/
 void 
 GetConfigInt(const std::string &keyvalue, unsigned &value,
                             const Path &config)
@@ -136,7 +166,7 @@ ChangeConfigInt(const std::string &keyvalue, int value,
     debugln("ConfigFile '%s' does not exist!", config.c_str());
   }
 }
-
+*/
 
 //----------------------------------------------------------
 uint_least8_t

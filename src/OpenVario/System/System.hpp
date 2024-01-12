@@ -19,43 +19,36 @@ class OpenVarioDevice {
 public:
   OpenVarioDevice();
 
-  Path GetSystemConfig() noexcept 
-  { 
-    return system_config; 
-   }
+  void LoadSettings() noexcept;
+  Path GetSystemConfig() noexcept { return system_config; }
+  void SetSystemConfig(Path configfile) noexcept { system_config = configfile; }
+  std::map<std::string, std::string, std::less<>> system_map;
 
-  void SetSystemConfig(Path configfile) noexcept 
-  {
-    system_config = configfile;
-  }
-
-  Path 
-  GetSettingsConfig() noexcept 
-  {
-    return settings_config;
-  }
-  void 
-  SetSettingsConfig(Path configfile) noexcept 
-  {
+  Path GetSettingsConfig() noexcept { return settings_config; }
+  void SetSettingsConfig(Path configfile) noexcept {
     settings_config = configfile;
   }
+  std::map<std::string, std::string, std::less<>> settings;
 
-  Path 
-  GetUpgradeConfig() noexcept 
-  {
-    return upgrade_config;
-  }
-  void 
-  SetUpgradeConfig(Path configfile) noexcept 
-  {
+  Path GetUpgradeConfig() noexcept { return upgrade_config; }
+  void SetUpgradeConfig(Path configfile) noexcept {
     upgrade_config = configfile;
   }
+  std::map<std::string, std::string, std::less<>> upgrade_map;
 
   bool
   IsReal() noexcept 
   {
     return is_real;
   }
+
+  struct {
+    bool enabled = true;
+    unsigned brightness = 100;
+    unsigned timeout = 5;
+    unsigned rotation = 0;
+    unsigned iTest = 0;
+  };
 
 private:
   AllocatedPath system_config;    // system config file, in the OV the
@@ -121,6 +114,7 @@ void
 OpenvarioDisableSSH();
 #endif
 
+/*/
 void 
 GetConfigInt(const std::string &keyvalue, unsigned &value,
              const Path &ConfigPath);
@@ -129,3 +123,4 @@ void
 ChangeConfigInt(const std::string &keyvalue, int value,
                 const Path &ConfigPath);
 
+*/
