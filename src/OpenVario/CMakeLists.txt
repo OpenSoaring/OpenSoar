@@ -46,7 +46,10 @@ add_compile_definitions("IS_OPENVARIO")
 # add_compile_definitions("USE_LIBINPUT")
 # remeve this definition after  
 
-set(RUNTIME_OUTPUT_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}/$<CONFIG>)
+if(MSVC)
+  SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECTGROUP_BINARY_DIR}")
+endif()
+
 add_executable(${TARGET_NAME} 
     ${SOURCE_FILES}
     ${HEADER_FILES}
