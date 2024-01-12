@@ -92,6 +92,12 @@ void ReadInteger(std::map<std::string, std::string, std::less<>> &map,
     value = std::stoul(map.find(name)->second);
 }
 //----------------------------------------------------------
+void ReadString(std::map<std::string, std::string, std::less<>> &map,
+                std::string_view name, std::string_view &value) noexcept {
+  if (map.find(name) != map.end())
+    value = map.find(name)->second;
+}
+//----------------------------------------------------------
 void 
 OpenVarioDevice::LoadSettings() noexcept
 {
@@ -100,6 +106,10 @@ OpenVarioDevice::LoadSettings() noexcept
   LoadConfigFile(upgrade_map, GetUpgradeConfig());
 
   ReadInteger(system_map, "rotation", rotation);
+#ifdef _DEBUG
+  std::string_view fdtfile;
+  ReadString(system_map, "fdtfile", fdtfile);
+#endif
 
   ReadBool(settings, "Enabled", enabled);
   ReadInteger(settings, "iTest", iTest);
