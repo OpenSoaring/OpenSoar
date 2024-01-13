@@ -155,8 +155,23 @@ DIALOG_SOURCES = \
 	$(SRC)/Dialogs/dlgQuickMenu.cpp \
 
 ifeq ($(TARGET_IS_OPENVARIO),y)
+	# $(SRC)/OpenVario/OpenVarioBaseMenu.cpp
 DIALOG_SOURCES += \
-	$(SRC)/Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp
+	$(SRC)/Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp \
+	$(SRC)/OpenVario/System/System.cpp \
+	$(SRC)/OpenVario/FileMenuWidget.cpp \
+	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
+	$(SRC)/OpenVario/System/SystemSettingsWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/RotationWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/BrightnessWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/TimeoutWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/SSHWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/VariodWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/SensordWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/WifiWidget.cpp \
+	\
+	$(SRC)/OpenVario/System/WifiDialogOV.cpp \
+	$(SRC)/OpenVario/System/WifiSupplicantOV.cpp
 endif
 
 ifeq ($(HAVE_PCM_PLAYER),y)
