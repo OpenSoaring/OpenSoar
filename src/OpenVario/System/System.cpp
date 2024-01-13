@@ -45,16 +45,15 @@
 
 #include <map>
 
-OpenVarioDevice ovdevice;
+OpenVario_Device ovdevice;
 
-OpenVarioDevice::OpenVarioDevice() {
+OpenVario_Device::OpenVario_Device() {
   StaticString<0x100> home;
   home.SetUTF8(getenv("HOME"));
   home_path = Path(home);
 #ifdef _WIN32
 //  DataPath = Path(_T("D:/Data/OpenSoarData"));
   data_path = Path(_T("D:/Data/XCSoarData"));
-
 #else
   data_path = Path(_T("data"));
 
@@ -99,7 +98,7 @@ void ReadString(std::map<std::string, std::string, std::less<>> &map,
 }
 //----------------------------------------------------------
 void 
-OpenVarioDevice::LoadSettings() noexcept
+OpenVario_Device::LoadSettings() noexcept
 {
   LoadConfigFile(system_map, GetSystemConfig());
   LoadConfigFile(settings, GetSettingsConfig());
@@ -287,7 +286,7 @@ OpenvarioDisableSSH()
   Systemd::DisableUnitFile(connection, "dropbear.socket");
   Systemd::StopUnit(connection, "dropbear.socket");
 }
-#endif  // _WIN32
+#endif  // DBUS_FUNCTIONS
 
 
 #ifndef MAX_PATH
@@ -301,9 +300,7 @@ void debugln(const char *fmt, ...) noexcept {
   vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
   va_end(ap);
 
-  //  strcat(buf, "\n");
   std::cout << buf << std::endl;
-  //  printf(buf);
 }
 
 //----------------------------------------------------------

@@ -15,27 +15,42 @@
 
 void debugln(const char *fmt, ...) noexcept;
 
-class OpenVarioDevice {
+enum class SSHStatus {
+  ENABLED,
+  DISABLED,
+  TEMPORARY,
+};
+
+enum Buttons {
+  LAUNCH_SHELL = 100,
+  START_UPGRADE = 111,
+};
+
+class OpenVario_Device {
 public:
-  OpenVarioDevice();
+  OpenVario_Device();
 
   void LoadSettings() noexcept;
   Path GetSystemConfig() noexcept { return system_config; }
-  void SetSystemConfig(Path configfile) noexcept { system_config = configfile; }
+  // void SetSystemConfig(Path configfile) noexcept { system_config = configfile; }
   std::map<std::string, std::string, std::less<>> system_map;
 
   Path GetSettingsConfig() noexcept { return settings_config; }
-  void SetSettingsConfig(Path configfile) noexcept {
-    settings_config = configfile;
-  }
+  // void SetSettingsConfig(Path configfile) noexcept {
+  //   settings_config = configfile;
+  // }
   std::map<std::string, std::string, std::less<>> settings;
 
   Path GetUpgradeConfig() noexcept { return upgrade_config; }
-  void SetUpgradeConfig(Path configfile) noexcept {
-    upgrade_config = configfile;
-  }
+  // void SetUpgradeConfig(Path configfile) noexcept {
+  //   upgrade_config = configfile;
+  // }
   std::map<std::string, std::string, std::less<>> upgrade_map;
-
+#ifdef _WIN32
+  // This map is only for Debug purposes on Non-OpenVario systems
+  std::map<std::string, std::string, std::less<>> internal_map;
+  Path GetInternalConfig() noexcept { return internal_config; }
+#endif
   bool
   IsReal() noexcept 
   {
@@ -47,8 +62,16 @@ public:
     unsigned brightness = 100;
     unsigned timeout = 5;
     unsigned rotation = 0;
+
     unsigned iTest = 0;
   };
+
+  struct { // internal data
+    bool sensord = false;
+    bool variod = false;
+    unsigned ssh = (unsigned) SSHStatus::DISABLED;
+  };
+
 
 private:
   AllocatedPath system_config;    // system config file, in the OV the
@@ -56,29 +79,23 @@ private:
   AllocatedPath upgrade_config;   // the config file for upgrading OV
   AllocatedPath settings_config;  // the config file for settings inside
                                 // the OpenVarioBaseMenu
+#ifdef _WIN32
+  // This path is only for Debug purposes on Non-OpenVario systems
+  AllocatedPath internal_config;
+#endif
+
   AllocatedPath home_path;
   AllocatedPath data_path;
 
   bool is_real = false;
 };
-extern OpenVarioDevice ovdevice;
+extern OpenVario_Device ovdevice;
 
 #if !defined(_WIN32) && 0
 # define DBUS_FUNCTIONS 1
 #endif
 
 class Path;
-
-enum class SSHStatus {
-  ENABLED,
-  DISABLED,
-  TEMPORARY,
-};
-
-enum Buttons {
-  LAUNCH_SHELL = 100,
-  START_UPGRADE = 111,
-};
 
 /**
  * Load a system config file and put its variables into a map
@@ -103,24 +120,9 @@ OpenvarioGetRotation();
 void
 OpenvarioSetRotation(DisplayOrientation orientation);
 
-#ifdef  DBUS_FUNCTIONS
-SSHStatus
-OpenvarioGetSSHStatus();
-
-void
-OpenvarioEnableSSH(bool temporary);
-
-void
-OpenvarioDisableSSH();
-#endif
-
-/*/
-void 
-GetConfigInt(const std::string &keyvalue, unsigned &value,
-             const Path &ConfigPath);
-
-void 
-ChangeConfigInt(const std::string &keyvalue, int value,
-                const Path &ConfigPath);
-
-*/
+SSHStatus OpenvarioGetSSHStatus();
+void OpenvarioSetSSHStatus(SSHStatus state);
+bool OpenvarioGetSensordStatus() noexcept;
+bool OpenvarioGetVariodStatus() noexcept;
+void OpenvarioSetSensordStatus(bool value) noexcept;
+void OpenvarioSetVariodStatus(bool value) noexcept;
