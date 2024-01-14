@@ -23,6 +23,9 @@
 #include "util/StaticString.hxx"
 #include "util/ConvertString.hpp"
 
+#include "LogFile.hpp"
+#include "LocalPath.hpp"
+
 #include "OpenVario/System/System.hpp"
 
 #ifndef _WIN32
@@ -47,39 +50,61 @@
 
 OpenVario_Device ovdevice;
 
-OpenVario_Device::OpenVario_Device() {
-  StaticString<0x100> home;
-  home.SetUTF8(getenv("HOME"));
-  home_path = Path(home);
+void
+OpenVario_Device::Initialise() noexcept {
+  if (!initialised) {
+    InitialiseDataPath();
+    StaticString<0x100> home;
+    home.SetUTF8(getenv("HOME"));
+    home_path = Path(home);
 #ifdef _WIN32
-//  DataPath = Path(_T("D:/Data/OpenSoarData"));
-  data_path = Path(_T("D:/Data/XCSoarData"));
+    data_path = Path(_T("D:/Data/OpenSoarData"));
 #else
-  data_path = Path(_T("data"));
+    data_path = Path(_T("data"));
 
-  system_config =
-      AllocatedPath::Build(Path(_T("/boot")), Path(_T("config.uEnf")));
-  is_real = File::Exists(system_config);
+    system_config =
+        AllocatedPath::Build(Path(_T("/boot")), Path(_T("config.uEnf")));
+    is_real = File::Exists(system_config);
 #endif
-  if (Directory::Exists(data_path)) {
-    // auto config = AllocatedPath::Build(data_path, Path(_T("openvario.cfg")));
-    settings_config =
-        AllocatedPath::Build(data_path, Path(_T("openvario.cfg")));
-    upgrade_config = AllocatedPath::Build(data_path, Path(_T("upgrade.cfg")));
-  } else {
-    settings_config =
-        AllocatedPath::Build(home_path, Path(_T("openvario.cfg")));
-    upgrade_config = AllocatedPath::Build(home_path, Path(_T("upgrade.cfg")));
-  }
-  system_config = AllocatedPath::Build(home_path, Path(_T("config.uEnv")));
+    if (Directory::Exists(data_path)) {
+      // auto config = AllocatedPath::Build(data_path,
+      // Path(_T("openvario.cfg")));
+      settings_config =
+          AllocatedPath::Build(data_path, Path(_T("openvario.cfg")));
+      upgrade_config = AllocatedPath::Build(data_path, Path(_T("upgrade.cfg")));
+    } else {
+      settings_config =
+          AllocatedPath::Build(home_path, Path(_T("openvario.cfg")));
+      upgrade_config = AllocatedPath::Build(home_path, Path(_T("upgrade.cfg")));
+    }
+    system_config = AllocatedPath::Build(home_path, Path(_T("config.uEnv")));
 
-  if (!File::Exists(settings_config))
-    File::CreateExclusive(settings_config);
+    if (!File::Exists(settings_config))
+      File::CreateExclusive(settings_config);
 
-  assert(File::Exists(settings_config));
+    assert(File::Exists(settings_config));
+
+    internal_config =
+        AllocatedPath::Build(data_path, Path(_T("ov-internal.cfg")));
+
+    SetPrimaryDataPath(data_path);
+    //----------------------------
+    LogFormat("data_path = %s", data_path.ToUTF8().c_str());
+#ifdef DEBUG_OPENVARIO
+    LogFormat("home_path = %s", home_path.ToUTF8().c_str());
+    LogFormat("settings_config = %s", settings_config.ToUTF8().c_str());
+    LogFormat("system_config = %s", system_config.ToUTF8().c_str());
+    LogFormat("upgrade_config = %s", upgrade_config.ToUTF8().c_str());
+    // the same...: LogFormat(_T("upgrade_config = %s"), upgrade_config.c_str());
+    LogFormat("is_real = %s", is_real ? "True" : "False");
+#endif
+    //----------------------------
+    initialised = true;
+  } 
 }
+void OpenVario_Device::Deinitialise() noexcept {}
 //----------------------------------------------------------
-void ReadBool(std::map<std::string, std::string, std::less<>> &map,
+  void ReadBool(std::map<std::string, std::string, std::less<>> &map,
               std::string_view name, bool &value) noexcept {
   if (map.find(name) != map.end())
     value = map.find(name)->second != "False";
@@ -103,7 +128,9 @@ OpenVario_Device::LoadSettings() noexcept
   LoadConfigFile(system_map, GetSystemConfig());
   LoadConfigFile(settings, GetSettingsConfig());
   LoadConfigFile(upgrade_map, GetUpgradeConfig());
-
+#ifdef _WIN32
+  LoadConfigFile(internal_map, GetInternalConfig());
+#endif
   ReadInteger(system_map, "rotation", rotation);
 #ifdef _DEBUG
   std::string_view fdtfile;
@@ -142,40 +169,6 @@ WriteConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path)
   buffered.Flush();
   file.Commit();
 }
-
-//----------------------------------------------------------
-/*/
-void 
-GetConfigInt(const std::string &keyvalue, unsigned &value,
-                            const Path &config)
-{
-  if (File::Exists(config)) {
-    ProfileMap configuration;
-    Profile::LoadFile(configuration, config);
-    configuration.Get(keyvalue.c_str(), value);
-  } else {
-    debugln("ConfigFile '%s' does not exist!", config.c_str());
-  }
-}
-
-void 
-ChangeConfigInt(const std::string &keyvalue, int value,
-                            const Path &config)
-{
-  if (File::Exists(config)) {
-    ProfileMap configuration;
-    try {
-      Profile::LoadFile(configuration, config);
-    } catch (std::exception &e) {
-      Profile::SaveFile(configuration, config);
-    }
-    configuration.Set(keyvalue.c_str(), value);
-    Profile::SaveFile(configuration, config);
-  } else {
-    debugln("ConfigFile '%s' does not exist!", config.c_str());
-  }
-}
-*/
 
 //----------------------------------------------------------
 uint_least8_t
@@ -263,44 +256,86 @@ OpenvarioGetSSHStatus()
   }
 }
 
-void
-OpenvarioEnableSSH(bool temporary)
-{
+void OpenvarioSetSSHStatus(SSHStatus state) {
   auto connection = ODBus::Connection::GetSystem();
-  const ODBus::ScopeMatch job_removed_match{connection, Systemd::job_removed_match};
-
-  if (temporary)
-    Systemd::DisableUnitFile(connection, "dropbear.socket");
-  else
+  const ODBus::ScopeMatch job_removed_match{connection,
+                                            Systemd::job_removed_match};
+  switch (state) {
+  case SSHStatus::ENABLED:
     Systemd::EnableUnitFile(connection, "dropbear.socket");
-
-  Systemd::StartUnit(connection, "dropbear.socket");
+    Systemd::StartUnit(connection, "dropbear.socket");
+    break;
+  case SSHStatus::TEMPORARY:
+    Systemd::DisableUnitFile(connection, "dropbear.socket");
+    Systemd::StartUnit(connection, "dropbear.socket");
+    break;
+  case SSHStatus::DISABLED:
+    Systemd::DisableUnitFile(connection, "dropbear.socket");
+    Systemd::StopUnit(connection, "dropbear.socket");
+    break;
+  }
+}
+#else  // DBUS_FUNCTIONS
+bool OpenvarioGetSensordStatus() noexcept {
+  bool value;
+  ReadBool(ovdevice.internal_map, "SensorD", value);
+  return value;
+}
+bool OpenvarioGetVariodStatus() noexcept {
+  bool value;
+  ReadBool(ovdevice.internal_map, "VarioD", value);
+  return value;
+}
+void OpenvarioSetSensordStatus(bool value) noexcept {
+  ovdevice.internal_map.insert_or_assign("SensorD", value ? "True" : "False");
+  WriteConfigFile(ovdevice.internal_map, ovdevice.GetInternalConfig());
+}
+void OpenvarioSetVariodStatus(bool value) noexcept {
+  ovdevice.internal_map.insert_or_assign("VarioD", value ? "True" : "False");
+  WriteConfigFile(ovdevice.internal_map, ovdevice.GetInternalConfig());
 }
 
-void
-OpenvarioDisableSSH()
-{
-  auto connection = ODBus::Connection::GetSystem();
-  const ODBus::ScopeMatch job_removed_match{connection, Systemd::job_removed_match};
+SSHStatus
+OpenvarioGetSSHStatus()
+{  
+  unsigned ssh;
+  ReadInteger(ovdevice.internal_map, "SSH", ssh);
 
-  Systemd::DisableUnitFile(connection, "dropbear.socket");
-  Systemd::StopUnit(connection, "dropbear.socket");
+  if (ssh == 0) {
+    return SSHStatus::ENABLED;
+  } else if (ssh == 1) {
+    return SSHStatus::DISABLED;
+  } else {
+    return SSHStatus::TEMPORARY;
+  }
+}
+
+void OpenvarioSetSSHStatus(SSHStatus state) {
+  switch (state) {
+  case SSHStatus::DISABLED:
+  case SSHStatus::ENABLED:
+  case SSHStatus::TEMPORARY:
+    ovdevice.internal_map.insert_or_assign("SSH",
+                                           std::to_string((unsigned)state));
+    WriteConfigFile(ovdevice.internal_map, ovdevice.GetInternalConfig());
+    break;
+  }
 }
 #endif  // DBUS_FUNCTIONS
 
 
-#ifndef MAX_PATH
-#define MAX_PATH 0x100
-#endif
-void debugln(const char *fmt, ...) noexcept {
-  char buf[MAX_PATH];
-  va_list ap;
-
-  va_start(ap, fmt);
-  vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
-  va_end(ap);
-
-  std::cout << buf << std::endl;
-}
+// #ifndef MAX_PATH
+// #define MAX_PATH 0x100
+// #endif
+// void debugln(const char *fmt, ...) noexcept {
+//   char buf[MAX_PATH];
+//   va_list ap;
+// 
+//   va_start(ap, fmt);
+//   vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
+//   va_end(ap);
+// 
+//   std::cout << buf << std::endl;
+// }
 
 //----------------------------------------------------------

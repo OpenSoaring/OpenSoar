@@ -29,7 +29,11 @@
 enum ControlIndex {
   FIRMWARE,
   ENABLED,
+  ROTATION,
   BRIGHTNESS,
+  SENSORD,
+  VARIOD,
+  SSH,
   TIMEOUT,
   SHELL_BUTTON,
   WIFI_BUTTON,
@@ -55,7 +59,7 @@ private:
   void OnModified(DataField &df) noexcept override;
 
   static constexpr StaticEnumChoice timeout_list[] = {
-    { 0,  _T("imm."), },
+    { 0,  _T("immediately"), },
     { 1,  _T("1s"), },
     { 3,  _T("3s"), },
     { 5,  _T("5s"), },
@@ -63,6 +67,13 @@ private:
     { 30, _T("30s"), },
     { 60, _T("1min"), },
     { -1, _T("never"), },
+    nullptr
+  };
+
+  static constexpr StaticEnumChoice enable_list[] = {
+    { SSHStatus::ENABLED,   _T("enabled"), },
+    { SSHStatus::DISABLED,  _T("disabled"), },
+    { SSHStatus::TEMPORARY, _T("temporary"), },
     nullptr
   };
 };
@@ -90,6 +101,11 @@ OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
 {
   RowFormWidget::Prepare(parent, rc);
 
+  ovdevice.sensord = OpenvarioGetSensordStatus();
+  ovdevice.variod = OpenvarioGetVariodStatus();
+  ovdevice.ssh = (unsigned) OpenvarioGetSSHStatus();
+  
+
   const TCHAR version[] = _T(PROGRAM_VERSION);
 
 //   auto version = _T("3.2.20 (hard coded)");
@@ -98,13 +114,17 @@ OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
       _("Settings Enabled"),
       _("Enable the Settings Page"), ovdevice.enabled, this);
 
+   AddInteger(_("Rotation"),
+             _("Rotation Display OpenVario"), _T("%d"), _T("%d%%"), 0,
+              3, 1, ovdevice.rotation);
+
    AddInteger(_("Brightness"),
              _("Brightness Display OpenVario"), _T("%d"), _T("%d%%"), 10,
               100, 10, ovdevice.brightness);
-
-//    AddInteger(_("Program Timeout"),
-//              _("Timeout for Program Start."), _T("%d"), _T("%d"), 0,
-//               30, 1, ovdevice.timeout);
+   AddBoolean(_("SensorD"), _("Enable the SensorD"), ovdevice.sensord, this);
+   AddBoolean(_("VarioD"), _("Enable the VarioD"), ovdevice.variod, this);
+   AddEnum(_("SSH"), _("Enable the SSH Connection"), enable_list,
+           ovdevice.ssh);
 
    AddEnum(_("Program Timeout"), _("Timeout for Program Start."), timeout_list, ovdevice.timeout);
 
@@ -123,6 +143,9 @@ OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
    AddInteger(_("IntegerTest"),
                _("IntegerTest."), _T("%d"), _T("%d"), 0,
                   99999, 1, ovdevice.iTest);
+
+  AddReadOnly(_("OV-Firmware-Version"),
+               _("Current firmware version of OpenVario"), version);
 
   SetEnabled(ovdevice.enabled);
 }
@@ -163,12 +186,17 @@ OpenVarioConfigPanel::Save([[maybe_unused]] bool &_changed) noexcept
 
   if (changed) {
     WriteConfigFile(ovdevice.settings, ovdevice.GetSettingsConfig());
-
-    // Profile::SaveFile(ovdevice.GetSettingsConfig());
-    // the parent dialog don't need to save this values because we have an own
-    // config file ('openvario.cfg'):
-    //    _changed |= changed;
   }
+
+  if (SaveValueEnum(SSH, ovdevice.ssh))
+    OpenvarioSetSSHStatus((SSHStatus) ovdevice.ssh); 
+
+  if (SaveValue(SENSORD, ovdevice.sensord))
+    OpenvarioSetSensordStatus(ovdevice.sensord); 
+
+  if (SaveValue(VARIOD, ovdevice.variod)) 
+    OpenvarioSetSensordStatus(ovdevice.variod); 
+
 
   return true;
 }

@@ -29,9 +29,6 @@
 #include "OpenVario/FileMenuWidget.h"
 #include "OpenVario/System/SystemMenuWidget.hpp"
 
-
-#include "Form/DataField/Listener.hpp"
-#include "Dialogs/Settings/Panels/OpenVarioConfigPanel.hpp"
 #include "LocalPath.hpp"
 
 #include <cassert>
@@ -79,7 +76,7 @@ class MainMenuWidget final
     OPENSOAR,
     XCSOAR,
     FILE,
-      TEST,
+    //  TEST,
     SYSTEM,
       READONLY_1,
     SHELL,
@@ -221,21 +218,6 @@ private:
   }
 };
 
-class OpenVarioConfigPanel final : public RowFormWidget, DataFieldListener {
-public:
-  OpenVarioConfigPanel() noexcept : RowFormWidget(UIGlobals::GetDialogLook()) {}
-
-  void SetEnabled(bool enabled) noexcept;
-
-  /* virtual methods from class Widget */
-  void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
-  bool Save(bool &changed) noexcept override;
-
-private:
-  /* methods from DataFieldListener */
-  void OnModified(DataField &df) noexcept override;
-};
-
 void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                              [[maybe_unused]] const PixelRect &rc) noexcept {
   
@@ -265,24 +247,12 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     return sub_dialog.ShowModal();
   });
   
-  AddButton(_("System Settings"), [this]() {
-    CancelTimer();
-    std::unique_ptr<Widget> widget = CreateOpenVarioConfigPanel();
-
-    TWidgetDialog<OpenVarioConfigPanel> sub_dialog(
-        WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
-        _T("OpenVario System Settings"));
-    sub_dialog.SetWidget();
-    sub_dialog.AddButton(_("Close"), mrOK);
-    return sub_dialog.ShowModal();
-  });
-
-  AddButton(_("System (Blaubart)"), [this]() {
+  AddButton(_("OpenVario settings"), [this]() {
     CancelTimer();
 
     TWidgetDialog<SystemMenuWidget> sub_dialog(
         WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
-        _T("OpenVario System Settings (Blaubart)"));
+        _T("OpenVario System Settings"));
     sub_dialog.SetWidget(display, event_queue, sub_dialog);
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
@@ -325,6 +295,7 @@ static int
 Main()
 {
   InitialiseDataPath();
+  ovdevice.Initialise();
 
   dialog_settings.SetDefaults();
 
@@ -333,7 +304,7 @@ Main()
   // InitialiseFonts();
   
   // AllowLanguage is not in FalkLanguage
-  // AllowLanguage();
+  AllowLanguage();
 
   DialogLook dialog_look;
   dialog_look.Initialise();

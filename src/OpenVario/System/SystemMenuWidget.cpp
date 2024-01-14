@@ -29,6 +29,7 @@
 #include "OpenVario/System/System.hpp"
 #include "OpenVario/System/SystemSettingsWidget.hpp"
 #include "OpenVario/System/SystemMenuWidget.hpp"
+#include "Dialogs/Settings/Panels/OpenVarioConfigPanel.hpp"
 
 #include <string>
 #include <fmt/format.h>
@@ -152,7 +153,18 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     return sub_dialog.ShowModal();
   });  
 
-  AddButton(_("System Info"), [](){
+  AddButton(_("Device Settings"), [this]() {
+    std::unique_ptr<Widget> widget = CreateOpenVarioConfigPanel();
+
+    TWidgetDialog<OpenVarioConfigPanel> sub_dialog(
+        WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
+        _T("OpenVario System Settings"));
+    sub_dialog.SetWidget();
+    sub_dialog.AddButton(_("Close"), mrOK);
+    return sub_dialog.ShowModal();
+  });
+
+  AddButton(_("System Info"), []() {
     static constexpr const char *argv[] = {
       "/usr/bin/system-info.sh", nullptr
     };

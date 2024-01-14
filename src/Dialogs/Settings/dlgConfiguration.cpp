@@ -65,6 +65,10 @@
 
 #include "Panels/WeGlideConfigPanel.hpp"
 
+#if defined(IS_OPENVARIO)
+#include "OpenVario/System/System.hpp"
+#endif
+
 #include <cassert>
 
 static unsigned current_page;
@@ -342,6 +346,11 @@ void dlgConfigurationShowModal()
     _menu->Create(parent, rc, style);
     return std::move(_menu);
   }));
+
+
+#ifdef IS_OPENVARIO
+  ovdevice.Initialise();
+#endif
 
   menu.InitMenu(main_menu_captions, ARRAY_SIZE(main_menu_captions));
 

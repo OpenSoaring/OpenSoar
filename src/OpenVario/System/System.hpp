@@ -13,7 +13,7 @@
 #include <string>
 
 
-void debugln(const char *fmt, ...) noexcept;
+#define DEBUG_OPENVARIO  1
 
 enum class SSHStatus {
   ENABLED,
@@ -28,8 +28,10 @@ enum Buttons {
 
 class OpenVario_Device {
 public:
-  OpenVario_Device();
+  OpenVario_Device() {}
 
+  void Initialise() noexcept;
+  void Deinitialise() noexcept;
   void LoadSettings() noexcept;
   Path GetSystemConfig() noexcept { return system_config; }
   // void SetSystemConfig(Path configfile) noexcept { system_config = configfile; }
@@ -88,6 +90,7 @@ private:
   AllocatedPath data_path;
 
   bool is_real = false;
+  bool initialised = false;
 };
 extern OpenVario_Device ovdevice;
 
