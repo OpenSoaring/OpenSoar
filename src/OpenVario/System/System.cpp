@@ -84,8 +84,11 @@ OpenVario_Device::Initialise() noexcept {
 
     assert(File::Exists(settings_config));
 
+#ifndef DBUS_FUNCTIONS
+    // This path is only for Debug purposes on Non-OpenVario systems
     internal_config =
         AllocatedPath::Build(data_path, Path(_T("ov-internal.cfg")));
+#endif
 
     SetPrimaryDataPath(data_path);
     //----------------------------
@@ -128,7 +131,7 @@ OpenVario_Device::LoadSettings() noexcept
   LoadConfigFile(system_map, GetSystemConfig());
   LoadConfigFile(settings, GetSettingsConfig());
   LoadConfigFile(upgrade_map, GetUpgradeConfig());
-#ifdef _WIN32
+#ifndef DBUS_FUNCTIONS
   LoadConfigFile(internal_map, GetInternalConfig());
 #endif
   ReadInteger(system_map, "rotation", rotation);

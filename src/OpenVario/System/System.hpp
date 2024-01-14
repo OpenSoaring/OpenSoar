@@ -14,6 +14,9 @@
 
 
 #define DEBUG_OPENVARIO  1
+#if !defined(_WIN32) && 0
+# define DBUS_FUNCTIONS 1
+#endif
 
 enum class SSHStatus {
   ENABLED,
@@ -48,7 +51,7 @@ public:
   //   upgrade_config = configfile;
   // }
   std::map<std::string, std::string, std::less<>> upgrade_map;
-#ifdef _WIN32
+#ifndef DBUS_FUNCTIONS
   // This map is only for Debug purposes on Non-OpenVario systems
   std::map<std::string, std::string, std::less<>> internal_map;
   Path GetInternalConfig() noexcept { return internal_config; }
@@ -81,7 +84,7 @@ private:
   AllocatedPath upgrade_config;   // the config file for upgrading OV
   AllocatedPath settings_config;  // the config file for settings inside
                                 // the OpenVarioBaseMenu
-#ifdef _WIN32
+#ifndef DBUS_FUNCTIONS
   // This path is only for Debug purposes on Non-OpenVario systems
   AllocatedPath internal_config;
 #endif
@@ -93,10 +96,6 @@ private:
   bool initialised = false;
 };
 extern OpenVario_Device ovdevice;
-
-#if !defined(_WIN32) && 0
-# define DBUS_FUNCTIONS 1
-#endif
 
 class Path;
 
