@@ -229,8 +229,8 @@ OV_MENU_SOURCES = \
 	$(SRC)/Profile/File.cpp \
 	$(SRC)/Profile/NumericValue.cpp \
 	                             # $(TEST_SRC_DIR)/Fonts.cpp \
-	# $(SRC)/Language/Language.cpp # $(TEST_SRC_DIR)/FakeLanguage.cpp\
-	$(SRC)/LogFile.cpp           # $(TEST_SRC_DIR)/FakeLogFile.cpp\
+	# $(SRC)/Language/Language.cpp # $(TEST_SRC_DIR)/FakeLanguage.cpp \
+	$(SRC)/LogFile.cpp           # $(TEST_SRC_DIR)/FakeLogFile.cpp \
     \
     $(SRC)/LocalPath.cpp \
     $(SRC)/Form/DigitEntry.cpp \
