@@ -9,11 +9,6 @@ set(_SOURCES
         OpenVario/System/SystemMenuWidget.cpp
         OpenVario/System/SystemSettingsWidget.cpp
         OpenVario/System/Setting/RotationWidget.cpp 
-        # OpenVario/System/Setting/BrightnessWidget.cpp 
-        # OpenVario/System/Setting/TimeoutWidget.cpp 
-        # OpenVario/System/Setting/SSHWidget.cpp
-        # OpenVario/System/Setting/VariodWidget.cpp
-        # OpenVario/System/Setting/SensordWidget.cpp
         OpenVario/System/Setting/WifiWidget.cpp
 
         OpenVario/System/WifiDialogOV.cpp 
@@ -49,6 +44,7 @@ set(_SOURCES
         ${SRC}/Profile/Map.cpp
         ${SRC}/Profile/File.cpp
         ${SRC}/Profile/NumericValue.cpp
+        ${SRC}/LocalPath.cpp
     # ${TEST_SRC_DIR}/Fonts.cpp
     # ${SRC}/Language/Language.cpp  # ${TEST_SRC_DIR}/FakeLanguage.cpp
     ${SRC}/LogFile.cpp   # ${TEST_SRC_DIR}/FakeLogFile.cpp
@@ -86,7 +82,6 @@ if(WIN32)
 endif()
 list(APPEND _SOURCES
 # FakeLogFile        ${SRC}/LogFile.cpp
-        ${SRC}/LocalPath.cpp
 
         ${SRC}/ProgressGlue.cpp
         ${SRC}/ProgressWindow.cpp
