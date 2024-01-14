@@ -188,11 +188,6 @@ OV_MENU_SOURCES = \
 	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
 	$(SRC)/OpenVario/System/SystemSettingsWidget.cpp \
 	$(SRC)/OpenVario/System/Setting/RotationWidget.cpp \
-	$(SRC)/OpenVario/System/Setting/BrightnessWidget.cpp \
-	$(SRC)/OpenVario/System/Setting/TimeoutWidget.cpp \
-	$(SRC)/OpenVario/System/Setting/SSHWidget.cpp \
-	$(SRC)/OpenVario/System/Setting/VariodWidget.cpp \
-	$(SRC)/OpenVario/System/Setting/SensordWidget.cpp \
 	$(SRC)/OpenVario/System/Setting/WifiWidget.cpp \
 	\
 	$(SRC)/OpenVario/System/WifiDialogOV.cpp \
@@ -228,11 +223,11 @@ OV_MENU_SOURCES = \
 	$(SRC)/Profile/Map.cpp \
 	$(SRC)/Profile/File.cpp \
 	$(SRC)/Profile/NumericValue.cpp \
-	                             # $(TEST_SRC_DIR)/Fonts.cpp \
-	# $(SRC)/Language/Language.cpp # $(TEST_SRC_DIR)/FakeLanguage.cpp \
-	$(SRC)/LogFile.cpp           # $(TEST_SRC_DIR)/FakeLogFile.cpp \
+	$(TEST_SRC_DIR)/Fonts.cpp \
+	$(SRC)/Language/Language.cpp \
     \
     $(SRC)/LocalPath.cpp \
+	$(SRC)/LogFile.cpp \
     $(SRC)/Form/DigitEntry.cpp \
     $(SRC)/Renderer/TextRowRenderer.cpp \
     $(SRC)/net/http/DownloadManager.cpp \
@@ -250,6 +245,7 @@ OV_MENU_SOURCES = \
 	$(SRC)/event/Call.cxx \
 	$(SRC)/Math/FastTrig.cpp \
 	$(SRC)/ui/window/ContainerWindow.cpp \
+	\
 
 
 
@@ -260,7 +256,13 @@ OV_MENU_DEPENDS = WIDGET FORM DATA_FIELD SCREEN EVENT RESOURCE ASYNC LIBNET OS I
     PROFILE \
 	LOOK \
     LIBHTTP \
-    CO OPERATION UNITS
+    CO OPERATION UNITS \
+    DBUS
+
+# $(TEST_SRC_DIR)/Fonts.cpp
+# $(SRC)/Language/Language.cpp # $(TEST_SRC_DIR)/FakeLanguage.cpp
+# $(SRC)/LocalPath.cpp 
+# $(SRC)/LogFile.cpp           # $(TEST_SRC_DIR)/FakeLogFile.cpp 
 
 
 ###     $(SRC)/Profile/Profile.cpp \
