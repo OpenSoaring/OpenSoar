@@ -278,7 +278,32 @@ void OpenvarioSetSSHStatus(SSHStatus state) {
     break;
   }
 }
-#else  // DBUS_FUNCTIONS
+
+// TODO(August2111): This has be filled!!!!
+bool OpenvarioGetSensordStatus() noexcept {
+  auto connection = ODBus::Connection::GetSystem();
+  return Systemd::IsUnitEnabled(connection, "sensord");
+}
+bool OpenvarioGetVariodStatus() noexcept {
+  auto connection = ODBus::Connection::GetSystem();
+  return Systemd::IsUnitEnabled(connection, "variod");
+}
+void OpenvarioSetSensordStatus(bool value) noexcept {
+  auto connection = ODBus::Connection::GetSystem();
+  if (value)
+    Systemd::EnableUnitFile(connection, "sensord");
+  else
+    Systemd::DisableUnitFile(connection, "sensord");
+}
+void OpenvarioSetVariodStatus(bool value) noexcept {
+  auto connection = ODBus::Connection::GetSystem();
+  if (value)
+    Systemd::EnableUnitFile(connection, "variodd");
+  else
+    Systemd::DisableUnitFile(connection, "variod");
+}
+
+#else   // DBUS_FUNCTIONS
 bool OpenvarioGetSensordStatus() noexcept {
   bool value;
   ReadBool(ovdevice.internal_map, "SensorD", value);
