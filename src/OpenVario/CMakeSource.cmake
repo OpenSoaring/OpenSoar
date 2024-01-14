@@ -49,9 +49,9 @@ set(_SOURCES
         ${SRC}/Profile/Map.cpp
         ${SRC}/Profile/File.cpp
         ${SRC}/Profile/NumericValue.cpp
-    ${TEST_SRC_DIR}/Fonts.cpp
-    ${TEST_SRC_DIR}/FakeLanguage.cpp
-    ${TEST_SRC_DIR}/FakeLogFile.cpp
+    # ${TEST_SRC_DIR}/Fonts.cpp
+    # ${SRC}/Language/Language.cpp  # ${TEST_SRC_DIR}/FakeLanguage.cpp
+    ${SRC}/LogFile.cpp   # ${TEST_SRC_DIR}/FakeLogFile.cpp
     # ${SRC}/Kobo/FakeSymbols.cpp
     ${SRC}/Dialogs/DataField.cpp
 )
@@ -60,7 +60,7 @@ set(OPENVARIOBASEMENU_LIBS
 # ov.mk: OV_MENU_DEPENDS = WIDGET FORM DATA_FIELD SCREEN EVENT RESOURCE ASYNC LIBNET OS IO THREAD TIME MATH UTIL
 # ov.mk: OV_MENU_STRIP = y
    Profile Widget Form Renderer ui event net system io  thread time Math util 
-   co Blackboard # Language 
+   co Blackboard Language 
    Dialogs Look MapWindow
 
    ${FMT_LIB} ${CURL_TARGET} ${CARES_TARGET} ${ZLIB_TARGET}
