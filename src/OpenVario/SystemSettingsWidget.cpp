@@ -4,7 +4,7 @@
 #ifdef IS_OPENVARIO
 // don't use (and compile) this code outside an OpenVario project!
 
-#include "Dialogs/Settings/Panels/OpenVarioConfigPanel.hpp"
+#include "OpenVario/SystemSettingsWidget.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Widget/RowFormWidget.hpp"
 #include "Look/DialogLook.hpp"
@@ -45,10 +45,10 @@ enum ControlIndex {
 
 
 #if 0
-class OpenVarioConfigPanel final
+class SystemSettingsWidget final
   : public RowFormWidget, DataFieldListener {
 public:
-  OpenVarioConfigPanel() noexcept
+  SystemSettingsWidget() noexcept
     :RowFormWidget(UIGlobals::GetDialogLook()) {}
 
   void SetEnabled(bool enabled) noexcept;
@@ -84,7 +84,7 @@ private:
   };
 
 void
-OpenVarioConfigPanel::SetEnabled([[maybe_unused]] bool enabled) noexcept
+SystemSettingsWidget::SetEnabled([[maybe_unused]] bool enabled) noexcept
 {
   // this disabled itself: SetRowEnabled(ENABLED, enabled);
   SetRowEnabled(BRIGHTNESS, enabled);
@@ -92,7 +92,7 @@ OpenVarioConfigPanel::SetEnabled([[maybe_unused]] bool enabled) noexcept
 }
 
 void
-OpenVarioConfigPanel::OnModified([[maybe_unused]] DataField &df) noexcept
+SystemSettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
 {
   if (IsDataField(ENABLED, df)) {
     const DataFieldBoolean &dfb = (const DataFieldBoolean &)df;
@@ -101,7 +101,7 @@ OpenVarioConfigPanel::OnModified([[maybe_unused]] DataField &df) noexcept
 }
 
 void
-OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
+SystemSettingsWidget::Prepare(ContainerWindow &parent,
                             const PixelRect &rc) noexcept
 {
   RowFormWidget::Prepare(parent, rc);
@@ -156,7 +156,7 @@ OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
 }
 
 bool
-OpenVarioConfigPanel::Save([[maybe_unused]] bool &_changed) noexcept
+SystemSettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept
 {
   bool changed = false;
   changed |= SaveValue(ENABLED, "Enabled", ovdevice.enabled, false);
@@ -207,10 +207,10 @@ OpenVarioConfigPanel::Save([[maybe_unused]] bool &_changed) noexcept
 }
 
 int 
-OpenVarioConfigPanel::OnShow([[maybe_unused]] const UI::SingleWindow &parent)
+SystemSettingsWidget::OnShow([[maybe_unused]] const UI::SingleWindow &parent)
                              noexcept {
 #if 0
-  TWidgetDialog<OpenVarioConfigPanel> sub_dialog(
+  TWidgetDialog<SystemSettingsWidget> sub_dialog(
       WidgetDialog::Full{}, parent, GetLook(),
       _T("OpenVario System Settings"));
   sub_dialog.SetWidget();
@@ -222,9 +222,9 @@ OpenVarioConfigPanel::OnShow([[maybe_unused]] const UI::SingleWindow &parent)
 }
 
 std::unique_ptr<Widget>
-CreateOpenVarioConfigPanel() noexcept
+CreateSystemSettingsWidget() noexcept
 {
-  return std::make_unique<OpenVarioConfigPanel>();
+  return std::make_unique<SystemSettingsWidget>();
 }
 
 #endif

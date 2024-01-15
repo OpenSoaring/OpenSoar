@@ -12,24 +12,19 @@
 #include "Profile/Map.hpp"
 #include "Screen/Layout.hpp"
 #include "UIGlobals.hpp"
-// #include "Widget/RowFormWidget.hpp"
 #include "system/FileUtil.hpp"
 
 #if !defined(_WIN32)
 # include "system/Process.hpp"
 #endif
 #include "ui/event/KeyCode.hpp"
-// #include "ui/event/Queue.hpp"
 #include "ui/event/Timer.hpp"
 #include "ui/window/Init.hpp"
-// #include "ui/window/SingleWindow.hpp"
 #include "util/ScopeExit.hxx"
 
-#include "OpenVario/FileMenuWidget.h"
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/SystemSettingsWidget.hpp"
 #include "OpenVario/System/SystemMenuWidget.hpp"
-#include "Dialogs/Settings/Panels/OpenVarioConfigPanel.hpp"
 
 #include <string>
 #include <fmt/format.h>
@@ -141,27 +136,6 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     //                 _T("System Info"), "/usr/bin/ov-calibrate-ts.sh");
     Run("/usr/bin/ov-calibrate-ts.sh");
 #endif
-  });
-
-  AddButton(_("System Settings"), [this](){
-      
-    TWidgetDialog<SystemSettingsWidget>
-      sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), _T("OpenVario System Settings"));
-    sub_dialog.SetWidget(display, event_queue, sub_dialog); 
-    sub_dialog.AddButton(_("Close"), mrOK);
-    return sub_dialog.ShowModal();
-  });  
-
-  AddButton(_("Device Settings"), [this]() {
-    std::unique_ptr<Widget> widget = CreateOpenVarioConfigPanel();
-
-    TWidgetDialog<OpenVarioConfigPanel> sub_dialog(
-        WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
-        _T("OpenVario System Settings"));
-    sub_dialog.SetWidget();
-    sub_dialog.AddButton(_("Close"), mrOK);
-    return sub_dialog.ShowModal();
   });
 
   AddButton(_("System Info"), []() {

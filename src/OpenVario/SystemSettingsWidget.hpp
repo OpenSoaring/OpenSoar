@@ -16,9 +16,9 @@ class Widget;
 #if 1
 #include "UIGlobals.hpp"
 // -------------------------------------------
-class OpenVarioConfigPanel final : public RowFormWidget, DataFieldListener {
+class SystemSettingsWidget final : public RowFormWidget, DataFieldListener {
 public:
-  OpenVarioConfigPanel() noexcept : RowFormWidget(UIGlobals::GetDialogLook()) {}
+  SystemSettingsWidget() noexcept : RowFormWidget(UIGlobals::GetDialogLook()) {}
 
   void SetEnabled(bool enabled) noexcept;
 
@@ -35,6 +35,6 @@ private:
 // ---------------------------------------------
 #endif 
 std::unique_ptr<Widget>
-CreateOpenVarioConfigPanel() noexcept;
+CreateSystemSettingsWidget() noexcept;
 
 #endif

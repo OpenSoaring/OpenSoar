@@ -38,7 +38,6 @@
 #include "Panels/TaskDefaultsConfigPanel.hpp"
 #include "Panels/ScoringConfigPanel.hpp"
 #include "Panels/InfoBoxesConfigPanel.hpp"
-#include "Panels/OpenVarioConfigPanel.hpp"
 #include "Interface.hpp"
 #include "Language/Language.hpp"
 #include "Audio/Features.hpp"
@@ -66,6 +65,7 @@
 #include "Panels/WeGlideConfigPanel.hpp"
 
 #if defined(IS_OPENVARIO)
+#include "OpenVario/SystemSettingsWidget.hpp"
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #endif
 
@@ -146,7 +146,7 @@ static constexpr TabMenuPage setup_pages[] = {
 
 #ifdef IS_OPENVARIO
 static constexpr TabMenuPage openvario_pages[] = {
-  { N_("OpenVario Device"), CreateOpenVarioConfigPanel },
+    {N_("OpenVario System Settings"), CreateSystemSettingsWidget},
   { nullptr, nullptr }
 };
 #endif
