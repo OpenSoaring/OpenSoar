@@ -19,6 +19,7 @@
 #include "ui/window/SingleWindow.hpp"
 
 #include "Dialogs/Message.hpp"
+#include "./LogFile.hpp"
 
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/WifiDialogOV.hpp"
@@ -134,9 +135,9 @@ OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
 
    // auto Btn_Shell = 
    AddButton(
-       _T("Shell"), [this]() { 
-         ShowMessageBox(_("Button pressed"), _("OV-Button"),
-                        MB_OK | MB_ICONERROR);
+       _T("Exit to Shell"), [this]() {
+         LogFormat("Exit to Shell");
+         exit(111); // without cleaning up????
      });
 
    AddButton(
