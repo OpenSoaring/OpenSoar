@@ -160,7 +160,7 @@ set(_SOURCES
 
 if(ON)  # IS_OPENVARIO
   list(APPEND _SOURCES
-        ../OpenVario/System/System.cpp
+        ../OpenVario/System/OpenVarioDevice.cpp
         ../OpenVario/FileMenuWidget.cpp
 
         ../OpenVario/System/SystemMenuWidget.cpp

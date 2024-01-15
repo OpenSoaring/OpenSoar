@@ -3,7 +3,7 @@ set(TEST_SRC_DIR "${PROJECTGROUP_SOURCE_DIR}/test/src")
 set(_SOURCES
         OpenVario/OpenVarioBaseMenu.cpp
 
-        OpenVario/System/System.cpp
+        OpenVario/System/OpenVarioDevice.cpp
         OpenVario/FileMenuWidget.cpp
 
         OpenVario/System/SystemMenuWidget.cpp
