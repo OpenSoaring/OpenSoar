@@ -7,7 +7,7 @@
 #include "ui/event/Queue.hpp"
 #include "ui/window/SingleWindow.hpp"
 
-class SystemSettingsWidget final
+class DisplaySettingsWidget final
   : public RowFormWidget
 {
   UI::Display &display;
@@ -16,7 +16,7 @@ class SystemSettingsWidget final
   WndForm &dialog;
 
 public:
-  SystemSettingsWidget(UI::Display &_display, UI::EventQueue &_event_queue,
+  DisplaySettingsWidget(UI::Display &_display, UI::EventQueue &_event_queue,
                  WndForm &_dialog) noexcept 
     :RowFormWidget(_dialog.GetLook()),
      display(_display), event_queue(_event_queue),

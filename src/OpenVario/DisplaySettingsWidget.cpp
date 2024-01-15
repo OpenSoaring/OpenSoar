@@ -28,11 +28,8 @@
 #include "io/FileLineReader.hpp"
 
 #include "OpenVario/System/OpenVarioDevice.hpp"
-#include "OpenVario/System/SystemSettingsWidget.hpp"
+#include "OpenVario/DisplaySettingsWidget.hpp"
 #include "OpenVario/System/Setting/RotationWidget.hpp"
-// #include "OpenVario/System/Setting/SSHWidget.hpp"
-// #include "OpenVario/System/Setting/SensordWidget.hpp"
-// #include "OpenVario/System/Setting/VariodWidget.hpp"
 #include "OpenVario/System/Setting/WifiWidget.hpp"
 
 #ifndef _WIN32
@@ -45,7 +42,7 @@
 #include <string>
 
 void
-SystemSettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
+DisplaySettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                               [[maybe_unused]] const PixelRect &rc) noexcept
 {
   AddButton(_("Screen Rotation"), [this](){
