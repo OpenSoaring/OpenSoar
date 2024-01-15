@@ -63,7 +63,7 @@ OpenVario_Device::Initialise() noexcept {
     data_path = Path(_T("data"));
 
     system_config =
-        AllocatedPath::Build(Path(_T("/boot")), Path(_T("config.uEnf")));
+        AllocatedPath::Build(Path(_T("/boot")), Path(_T("config.uEnv")));
     is_real = File::Exists(system_config);
 #endif
     if (Directory::Exists(data_path)) {
@@ -77,8 +77,6 @@ OpenVario_Device::Initialise() noexcept {
           AllocatedPath::Build(home_path, Path(_T("openvario.cfg")));
       upgrade_config = AllocatedPath::Build(home_path, Path(_T("upgrade.cfg")));
     }
-    system_config = AllocatedPath::Build(home_path, Path(_T("config.uEnv")));
-
     if (!File::Exists(settings_config))
       File::CreateExclusive(settings_config);
 
@@ -96,6 +94,10 @@ OpenVario_Device::Initialise() noexcept {
 #ifdef DEBUG_OPENVARIO
     LogFormat("home_path = %s", home_path.ToUTF8().c_str());
     LogFormat("settings_config = %s", settings_config.ToUTF8().c_str());
+    LogFormat("system_config = %s", system_config.ToUTF8().c_str());
+    if (!is_real)
+      system_config = AllocatedPath::Build(home_path, Path(_T("config.uEnv")));
+
     LogFormat("system_config = %s", system_config.ToUTF8().c_str());
     LogFormat("upgrade_config = %s", upgrade_config.ToUTF8().c_str());
     // the same...: LogFormat(_T("upgrade_config = %s"), upgrade_config.c_str());
@@ -350,20 +352,5 @@ void OpenvarioSetSSHStatus(SSHStatus state) {
   }
 }
 #endif  // DBUS_FUNCTIONS
-
-
-// #ifndef MAX_PATH
-// #define MAX_PATH 0x100
-// #endif
-// void debugln(const char *fmt, ...) noexcept {
-//   char buf[MAX_PATH];
-//   va_list ap;
-// 
-//   va_start(ap, fmt);
-//   vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
-//   va_end(ap);
-// 
-//   std::cout << buf << std::endl;
-// }
 
 //----------------------------------------------------------

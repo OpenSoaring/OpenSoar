@@ -26,7 +26,7 @@
 #include "util/ScopeExit.hxx"
 
 #include "OpenVario/FileMenuWidget.h"
-#include "OpenVario/System/System.hpp"
+#include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/SystemSettingsWidget.hpp"
 #include "OpenVario/System/SystemMenuWidget.hpp"
 #include "Dialogs/Settings/Panels/OpenVarioConfigPanel.hpp"

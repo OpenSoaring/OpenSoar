@@ -27,7 +27,7 @@
 #include "io/BufferedOutputStream.hxx"
 #include "io/FileLineReader.hpp"
 
-#include "OpenVario/System/System.hpp"
+#include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/SystemSettingsWidget.hpp"
 #include "OpenVario/System/Setting/RotationWidget.hpp"
 // #include "OpenVario/System/Setting/SSHWidget.hpp"

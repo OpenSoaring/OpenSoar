@@ -14,14 +14,11 @@
 #include "Profile/Map.hpp"
 #include "Screen/Layout.hpp"
 #include "UIGlobals.hpp"
-// #include "Widget/RowFormWidget.hpp"
 #include "system/FileUtil.hpp"
 #include "system/Process.hpp"
 #include "ui/event/KeyCode.hpp"
-// #include "ui/event/Queue.hpp"
 #include "ui/event/Timer.hpp"
 #include "ui/window/Init.hpp"
-// #include "ui/window/SingleWindow.hpp"
 
 #include "Language/Language.hpp"
 
@@ -30,7 +27,7 @@
 #include "io/BufferedOutputStream.hxx"
 #include "io/FileLineReader.hpp"
 
-#include "OpenVario/System/System.hpp"
+#include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/Setting/WifiWidget.hpp"
 
 #ifndef __MSVC__

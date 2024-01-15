@@ -66,7 +66,7 @@
 #include "Panels/WeGlideConfigPanel.hpp"
 
 #if defined(IS_OPENVARIO)
-#include "OpenVario/System/System.hpp"
+#include "OpenVario/System/OpenVarioDevice.hpp"
 #endif
 
 #include <cassert>

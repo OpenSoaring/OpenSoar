@@ -19,7 +19,7 @@
 
 #include "Dialogs/Message.hpp"
 
-#include "OpenVario/System/System.hpp"
+#include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/WifiDialogOV.hpp"
 
 
