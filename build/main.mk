@@ -158,7 +158,7 @@ ifeq ($(TARGET_IS_OPENVARIO),y)
 	# $(SRC)/OpenVario/OpenVarioBaseMenu.cpp
 DIALOG_SOURCES += \
 	$(SRC)/Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp \
-	$(SRC)/OpenVario/System/System.cpp \
+	$(SRC)/OpenVario/System/OpenVarioDevice.cpp \
 	$(SRC)/OpenVario/FileMenuWidget.cpp \
 	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
 	$(SRC)/OpenVario/System/SystemSettingsWidget.cpp \

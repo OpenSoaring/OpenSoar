@@ -183,7 +183,7 @@ DIALOG_SOURCES += \
 OV_MENU_SOURCES = \
 	$(DIALOG_SOURCES) \
 	$(SRC)/OpenVario/OpenVarioBaseMenu.cpp \
-	$(SRC)/OpenVario/System/System.cpp \
+	$(SRC)/OpenVario/System/OpenVarioDevice.cpp \
 	$(SRC)/OpenVario/FileMenuWidget.cpp \
 	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
 	$(SRC)/OpenVario/System/SystemSettingsWidget.cpp \
