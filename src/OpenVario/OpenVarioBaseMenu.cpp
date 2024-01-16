@@ -69,44 +69,10 @@ UIGlobals::GetMainWindow()
   return *global_main_window;
 }
 
-// #if __linux__
-// std::filesystem::path getExecutableDir() {
-//   std::string executablePath = getExecutablePath();
-//   char *executablePathStr = new char[executablePath.length() + 1];
-//   strcpy(executablePathStr, executablePath.c_str());
-//   char *executableDir = dirname(executablePathStr);
-//   delete[] executablePathStr;
-//   return std::string(executableDir);
-// }
-// #else 
-// std::filesystem::path getExecutableDir() {
-//   // TODO(August2111): This is only correct in case of CurrentDir == ExeDir
-//   return std::filesystem::current_path();
-// }
-// #endif
-
 class MainMenuWidget final
   : public RowFormWidget
 {
   unsigned remaining_seconds = 3;
-
-  enum Controls {
-    OPENSOAR_CLUB,
-    OPENSOAR,
-    XCSOAR,
-      READONLY_1,
-    FILE,
-    //  TEST,
-    DISPLAY,
-    SYSTEM,
-    PLACEHOLDER,
-      READONLY_2,
-    SHELL,
-    REBOOT,
-    SHUTDOWN,
-    TIMER,
-       READONLY_3,
-  };
 
   UI::Display &display;
   UI::EventQueue &event_queue;
@@ -117,7 +83,7 @@ class MainMenuWidget final
     if (remaining_seconds == (unsigned)-1)
       CancelTimer();
     else if (--remaining_seconds == 0) {
-      HideRow(Controls::TIMER);
+      progress_timer->Hide();
       StartOpenSoar();  // StartXCSoar();
     } else {
       ScheduleTimer();
@@ -156,7 +122,7 @@ private:
       datapath = ovdevice.settings.find("XCSoarData")->second;
     else 
       datapath = ovdevice.GetDataPath().ToUTF8() + "/XCSoarData";
-    StartSoarExe("XCSoar", datapath);
+    StartSoarExe("xcsoar", datapath);
   }
 
     void ScheduleTimer() noexcept {
@@ -167,13 +133,13 @@ private:
     StaticString<256> buffer;
     buffer.Format(_T("Starting XCSoar in %u seconds (press any key to cancel)"),
              remaining_seconds);
-    SetText(Controls::TIMER, buffer);
+    progress_timer->SetText(buffer);
   }
 
   void CancelTimer() noexcept {
     timer.Cancel();
     remaining_seconds = 0;
-    HideRow(Controls::TIMER);
+    progress_timer->Hide();
   }
 
   /* virtual methods from class Widget */
@@ -185,10 +151,10 @@ private:
 
     switch (remaining_seconds) {
     case (unsigned)-1:
-      HideRow(Controls::TIMER);
+      progress_timer->Hide();
       break; // Do Nothing !  
     case 0:
-      HideRow(Controls::TIMER);
+      progress_timer->Hide();
       StartOpenSoar(); // StartXCSoar();
       break;
     default:
@@ -222,63 +188,61 @@ void MainMenuWidget::StartSoarExe(std::string_view _exe,
   const UI::ScopeDropMaster drop_master{display};
   const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
 
-#if _WIN32
-  std::filesystem::path ExePath =
-      ovdevice.GetBinPath().append(std::string(_exe) + ".exe");
-#else
   std::filesystem::path ExePath = ovdevice.GetBinPath().append(_exe);
+#ifdef _WIN32
+  ExePath += ".exe";
 #endif
-  LogFormat("ExePath = %s", ExePath.c_str());
+  // std::string for memory storage reasons
+  std::string exe = ExePath.string().c_str();
+  LogFormat("ExePath = %s", exe.c_str());
+  printf("ExePath = %s\n", exe.c_str());
   if (File::Exists(Path(ExePath.c_str()))) {
+    std::vector<const char *> ArgList;
+    ArgList.reserve(10);
+    ArgList = {exe.c_str(), "-fly"};
 
+    //=============== Datapath =======================
     NarrowString<0x200> datapath("-datapath=");
     if (_datapath.empty()) {
         _datapath = GetPrimaryDataPath().c_str();
     } else {
         datapath.append(_datapath.generic_string());
     }
-    LogFormat("datapath = %s / %", datapath.c_str(), _datapath.c_str());
+    if (!datapath.empty())
+      ArgList.push_back(datapath.c_str());
 
-    NarrowString<0x80> profile("");
+    //=============== Profile =======================
     if (ovdevice.settings.find("MainProfile") != ovdevice.settings.end()) {
-        profile = "-profile=";
-        std::string str = ovdevice.settings.find("MainProfile")->second;
-        profile += ovdevice.settings.find("MainProfile")->second;
+      NarrowString<0x80> profile("");
+      profile = "-profile=";
+      std::string str = ovdevice.settings.find("MainProfile")->second;
+      profile += ovdevice.settings.find("MainProfile")->second;
+      ArgList.push_back(profile.c_str());
     }
-    LogFormat("profile = %s", profile.c_str());
-    NarrowString<0x10> format("");
-#ifdef _WIN32
+
+    //=============== Profile =======================
+#ifdef _WIN32  // OpenVario needs no format field!
     if (ovdevice.settings.find("Format") != ovdevice.settings.end()) {
-        format = "-";
-        format += ovdevice.settings.find("Format")->second;
+      NarrowString<0x10> format("");
+      format = "-";
+      format += ovdevice.settings.find("Format")->second;
+      ArgList.push_back(format.c_str());
+      //    LogFormat("format = %s", format.c_str());
     } else {
-        format = "-1400x700";
+      ArgList.push_back("-1400x700");
     }
-    LogFormat("format = %s", format.c_str());
 #endif
-#if 1 // TODO(August2111): only Debug Purpose
-    NarrowString<0x200> test(ExePath.string().c_str());
-    test.AppendFormat(" %s", "-fly");
-    test.AppendFormat(" %s", datapath.c_str());
-    test.AppendFormat(" %s", profile.c_str());
-    test.AppendFormat(" %s", format.c_str());
-    LogFormat("TEST = %s", test.c_str());
-#if _UNICODE
-    ShowMessageBox(ConvertACPToWide(test.c_str()).c_str(), _T("Run"),
-                   MB_OK | MB_ICONEXCLAMATION);
-#else // _UNICODE
-    ShowMessageBox((TCHAR *)test.c_str(), _T("Run"),
-                   MB_OK | MB_ICONEXCLAMATION);
-    // Run(test.c_str());
-#endif
-    // Run(ExePath.generic_string().c_str(), "-fly", datapath, profile, format);
-#else
-#endif
-    Run(ExePath.generic_string().c_str(), "-fly", datapath, profile, format, nullptr);
+    //=============== End of Parameter =======================
+    ArgList.push_back(nullptr);
+    //========================================================
+    Run(&ArgList[0]);
   } else { // ExePath doesnt exist!
+    LogFormat("Program file '%s' doesnt exist!", ExePath.c_str());
+#ifdef _WIN32
+    // with Linux ShowMessageBox -> crash!
     ShowMessageBox(_("Program file doesnt exist!"), _T("Run"),
                    MB_OK | MB_ICONEXCLAMATION);
-    
+#endif
   }
 }
 
@@ -373,7 +337,6 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   // Btn_XCSoar->SetEnabled(File::Exists);
   
   progress_timer->Hide();
-  // HideRow(Controls::OPENSOAR_CLUB);
 }
 
 static int
@@ -436,25 +399,13 @@ Main()
 int 
 main(int argc, char *argv[])
 {
-//  StaticString<0x200> exepath;
-//  exepath.SetASCII(argv[0]);
-//  ovdevice.SetBinPath(exepath.c_str());
   if (argc > 0)
     ovdevice.SetBinPath(argv[0]);
-  /*the x-menu is waiting a second to solve timing problem with display rotation
-   */
+  /* the OpenVarioBaseMenu is waiting a second to solve timing problem with
+     display rotation */
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
   int action = Main();
   // save in LogFormat?
   return action;
 }
-
-#ifdef _WIN32
-int RunProcessDialog(UI::SingleWindow &parent, const DialogLook &dialog_look,
-                     const TCHAR *caption, const char *const *argv,
-                     std::function<int(int)> on_exit = {}) noexcept
-{
-  return 0;
-}
-#endif // _WIN32
