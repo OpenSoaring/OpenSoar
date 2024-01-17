@@ -12,6 +12,7 @@
 #include "system/FileUtil.hpp"
 #include "io/UniqueFileDescriptor.hxx"
 #include "util/Exception.hxx"
+#include "util/StaticString.hxx"
 
 #include <fmt/format.h>
 
@@ -26,6 +27,10 @@
 #include <fcntl.h>
 #endif
 
+#ifdef IS_OPENVARIO
+# include "OpenVario/System/OpenVarioDevice.hpp"
+#endif
+
 static FileOutputStream
 OpenLog()
 {
@@ -36,18 +41,15 @@ OpenLog()
     initialised = true;
 
 #ifdef IS_OPENVARIO
-    /* delete the obsolete log file */
-    File::Delete(LocalPath(_T("opensoar-startup.log")));
-    path = LocalPath(_T("opensoar.log"));
-    File::Replace(path, LocalPath(_T("opensoar-old.log")));
+    path = LocalPath(ovdevice.GetExeName().c_str());
 #else
-    /* delete the obsolete log file */
-    File::Delete(LocalPath(_T("xcsoar-startup.log")));
-
     path = LocalPath(_T("xcsoar.log"));
-
-    File::Replace(path, LocalPath(_T("xcsoar-old.log")));
 #endif
+    /* delete the obsolete log file */
+    File::Delete(path + _T("-startup.log"));
+    auto back_path = path + _T("-old.log");
+    path = path + _T(".log");
+    File::Replace(path, back_path);
 
 #ifdef ANDROID
     /* redirect stdout/stderr to xcsoar-startup.log on Android so we
