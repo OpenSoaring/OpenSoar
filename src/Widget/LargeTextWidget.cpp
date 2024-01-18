@@ -5,12 +5,30 @@
 #include "ui/control/LargeTextWindow.hpp"
 #include "Look/DialogLook.hpp"
 
+#if _UNICODE
+# include "util/ConvertString.hpp"
+#endif
 void
 LargeTextWidget::SetText(const TCHAR *text) noexcept
 {
   LargeTextWindow &w = (LargeTextWindow &)GetWindow();
   w.SetText(text);
 }
+
+#if _UNICODE
+// Maybe this is against MaxK XCSoar rules, but this makes the life much easier
+void
+LargeTextWidget::SetText(const char *text) noexcept
+{
+  SetText(ConvertACPToWide(text).c_str());
+}
+
+void
+LargeTextWidget::SetText(std::string_view text) noexcept
+{
+  SetText(text.data());
+}
+#endif
 
 void
 LargeTextWidget::Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept
