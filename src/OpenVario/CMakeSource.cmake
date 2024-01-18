@@ -40,7 +40,7 @@ set(_SOURCES
         ${SRC}/Dialogs/TextEntry.cpp
         ${SRC}/Dialogs/KnobTextEntry.cpp
         ${SRC}/Dialogs/TouchTextEntry.cpp
-        # ov.mk:   ${SRC}/Dialogs/ProcessDialog.cpp
+        ${SRC}/Dialogs/ProcessDialog.cpp
         ${SRC}/Profile/Map.cpp
         ${SRC}/Profile/File.cpp
         ${SRC}/Profile/NumericValue.cpp
