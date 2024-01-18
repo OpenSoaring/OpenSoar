@@ -21,6 +21,7 @@
   // TODO(August2111): needs work!
 #include "util/ConvertString.hpp"
 typedef size_t pid_t;
+#include <sstream>
 #else
 #include <sys/wait.h>
 #endif
@@ -82,15 +83,25 @@ UnblockAllSignals() noexcept
 void
 ProcessWidget::Start()
 {
+#ifdef _WIN32
+    // TODO(August2111): needs work!
+  std::stringstream ss;
+  ss << "Call Linux Command:" << std::endl;
+  ss << "=================" << std::endl << std::endl;
+
+  unsigned int i = 0;
+  for (auto arg = argv[0]; arg != nullptr; arg = argv[++i]) {
+    printf("%s\n", arg);
+    ss << arg << ' ';
+  }
+  SetText(ss.str());
+  // system(ss.str().c_str());
+#else
   auto dev_null = OpenReadOnly("/dev/null");
 
   UniqueFileDescriptor r, w;
   if (!UniqueFileDescriptor::CreatePipe(r, w))
     throw MakeErrno("Failed to create pipe");
-
-#ifdef _WIN32
-    // TODO(August2111): needs work!
-#else
 
   pid = fork();
   if (pid < 0)
@@ -107,10 +118,10 @@ ProcessWidget::Start()
     fprintf(stderr, "Failed to execute %s: %s\n", argv[0], strerror(errno));
     _exit(EXIT_FAILURE);
   }
-#endif
 
   fd.Open(r.Release());
   fd.ScheduleRead();
+#endif
 }
 
 void
@@ -141,7 +152,9 @@ ProcessWidget::OnExit(int code) noexcept
     return false;
 
   dialog->SetModalResult(result);
+#ifndef _WIN32
   UI::event_queue->Interrupt();
+#endif
   return true;
 }
 
@@ -158,16 +171,14 @@ ProcessWidget::OnPipeReady(unsigned) noexcept
       return;
 
     text.append("\nFailed to read from pipe");
-#ifdef _WIN32
-    SetText(ConvertACPToWide(text.c_str()).c_str());
-#else
     SetText(text.c_str());
-#endif
 
     cancel_button->SetCaption(_("Close"));
 
     // make sure the EventLoop gets interrupted so the UI gets redrawn
+#ifndef _WIN32
     UI::event_queue->Interrupt();
+#endif
     return;
   }
 
@@ -195,7 +206,9 @@ ProcessWidget::OnPipeReady(unsigned) noexcept
     cancel_button->SetCaption(_("Close"));
 
     // make sure the EventLoop gets interrupted so the UI gets redrawn
+#ifndef _WIN32
     UI::event_queue->Interrupt();
+#endif
     return;
   }
 
@@ -203,13 +216,11 @@ ProcessWidget::OnPipeReady(unsigned) noexcept
   if (text.length() > 16384)
     text.erase(0, 4096);
 
-#ifdef _WIN32
-  SetText(ConvertACPToWide(text.c_str()).c_str());
-#else
   SetText(text.c_str());
-#endif
   // make sure the EventLoop gets interrupted so the UI gets redrawn
+#ifndef _WIN32
   UI::event_queue->Interrupt();
+#endif
 }
 
 void
@@ -221,11 +232,7 @@ ProcessWidget::Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept
     Start();
   } catch (...) {
     text = GetFullMessage(std::current_exception());
-#ifdef _WIN32
-    SetText(ConvertACPToWide(text.c_str()).c_str());
-#else
     SetText(text.c_str());
-#endif
   }
 }
 
