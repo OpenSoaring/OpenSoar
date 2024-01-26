@@ -106,10 +106,10 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
 {
   RowFormWidget::Prepare(parent, rc);
 
-  ovdevice.sensord = OpenvarioGetSensordStatus();
-  ovdevice.variod = OpenvarioGetVariodStatus();
-  ovdevice.ssh = (unsigned) OpenvarioGetSSHStatus();
-  
+  ovdevice.ssh = (unsigned)ovdevice.GetSSHStatus();
+  ovdevice.sensord = ovdevice.GetSystemStatus("sensord");
+  ovdevice.variod = ovdevice.GetSystemStatus("variod");
+
 
   const TCHAR version[] = _T(PROGRAM_VERSION);
 
@@ -194,14 +194,13 @@ SystemSettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept
   }
 
   if (SaveValueEnum(SSH, ovdevice.ssh))
-    OpenvarioSetSSHStatus((SSHStatus) ovdevice.ssh); 
+    ovdevice.SetSSHStatus((SSHStatus)ovdevice.ssh); 
 
   if (SaveValue(SENSORD, ovdevice.sensord))
-    OpenvarioSetSensordStatus(ovdevice.sensord); 
+    ovdevice.SetSystemStatus("sensord",  ovdevice.sensord); 
 
   if (SaveValue(VARIOD, ovdevice.variod)) 
-    OpenvarioSetSensordStatus(ovdevice.variod); 
-
+    ovdevice.SetSystemStatus("variod", ovdevice.variod); 
 
   return true;
 }
