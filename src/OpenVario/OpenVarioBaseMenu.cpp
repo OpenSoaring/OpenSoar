@@ -25,7 +25,7 @@
 #include "Hardware/RotateDisplay.hpp"
 #include "util/StaticString.hxx"
 
-#include "OpenVario/System/System.hpp"
+#include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/FileMenuWidget.h"
 #include "OpenVario/System/SystemMenuWidget.hpp"
 
