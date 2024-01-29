@@ -42,13 +42,20 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #endif
-#include <fmt/format.h>
 
 #include <map>
 
 OpenVario_Device ovdevice;
 
-void
+
+void ReadBool(std::map<std::string, std::string, std::less<>> &map,
+              std::string_view name, bool &value) noexcept;
+void ReadInteger(std::map<std::string, std::string, std::less<>> &map,
+                 std::string_view name, unsigned &value) noexcept;
+void ReadString(std::map<std::string, std::string, std::less<>> &map,
+                std::string_view name, std::string_view &value) noexcept;
+
+  void
 OpenVario_Device::Initialise() noexcept {
   if (!initialised) {
     InitialiseDataPath();
@@ -83,7 +90,7 @@ OpenVario_Device::Initialise() noexcept {
 #ifndef DBUS_FUNCTIONS
     // This path is only for Debug purposes on Non-OpenVario systems
     internal_config =
-        AllocatedPath::Build(data_path, Path(_T("ov-internal.cfg")));
+        AllocatedPath::Build(home_path, Path(_T("ov-internal.cfg")));
 #endif
 
     SetPrimaryDataPath(data_path);
@@ -100,14 +107,20 @@ OpenVario_Device::Initialise() noexcept {
     LogFormat("upgrade_config = %s", upgrade_config.ToUTF8().c_str());
     // the same...: LogFormat(_T("upgrade_config = %s"), upgrade_config.c_str());
     LogFormat("is_real = %s", is_real ? "True" : "False");
+
+    LogFormat("exe_path = %s", exe_path.c_str());
+    LogFormat("bin_path = %s", bin_path.c_str());
 #endif
     //----------------------------
+    // StaticString<0x200> str;
+    // str.Format(_T("%s/%s"), home_path, _T("process.txt"));
+    run_output_file = AllocatedPath::Build(home_path, Path(_T("tmp.txt")));
     initialised = true;
   } 
 }
 void OpenVario_Device::Deinitialise() noexcept {}
 //----------------------------------------------------------
-  void ReadBool(std::map<std::string, std::string, std::less<>> &map,
+void ReadBool(std::map<std::string, std::string, std::less<>> &map,
               std::string_view name, bool &value) noexcept {
   if (map.find(name) != map.end())
     value = map.find(name)->second != "False";
@@ -174,8 +187,8 @@ WriteConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path)
 }
 
 //----------------------------------------------------------
-uint_least8_t
-OpenvarioGetBrightness() noexcept
+uint_least8_t 
+OpenVario_Device::GetBrightness() noexcept
 {
   char line[4];
   int result = 10;
@@ -187,8 +200,8 @@ OpenvarioGetBrightness() noexcept
   return result;
 }
 
-void
-OpenvarioSetBrightness(uint_least8_t value) noexcept
+void 
+OpenVario_Device::SetBrightness(uint_least8_t value) noexcept
 {
   if (value < 1) { value = 1; }
   if (value > 10) { value = 10; }
@@ -197,7 +210,7 @@ OpenvarioSetBrightness(uint_least8_t value) noexcept
 }
 
 DisplayOrientation
-OpenvarioGetRotation()
+OpenVario_Device::GetRotation()
 {
   std::map<std::string, std::string, std::less<>> map;
   LoadConfigFile(map, Path(_T("/boot/config.uEnv")));
@@ -215,7 +228,7 @@ OpenvarioGetRotation()
 }
 
 void
-OpenvarioSetRotation(DisplayOrientation orientation)
+OpenVario_Device::SetRotation(DisplayOrientation orientation)
 {
   std::map<std::string, std::string, std::less<>> map;
 
@@ -246,8 +259,9 @@ OpenvarioSetRotation(DisplayOrientation orientation)
 
 #ifdef DBUS_FUNCTIONS
 SSHStatus
-OpenvarioGetSSHStatus()
+OpenVario_Device::GetSSHStatus()  noexcept
 {
+#if 0
   auto connection = ODBus::Connection::GetSystem();
 
   if (Systemd::IsUnitEnabled(connection, "dropbear.socket")) {
@@ -257,9 +271,17 @@ OpenvarioGetSSHStatus()
   } else {
     return SSHStatus::DISABLED;
   }
+#else
+  if (GetSystemStatus("dropbear.socket") == 0)
+    return SSHStatus::ENABLED;
+  else
+    return SSHStatus::DISABLED;
+#endif
 }
 
-void OpenvarioSetSSHStatus(SSHStatus state) {
+void 
+OpenVario_Device::SetSSHStatus(SSHStatus state) noexcept
+{
   auto connection = ODBus::Connection::GetSystem();
   const ODBus::ScopeMatch job_removed_match{connection,
                                             Systemd::job_removed_match};
@@ -279,52 +301,97 @@ void OpenvarioSetSSHStatus(SSHStatus state) {
   }
 }
 
-// TODO(August2111): This has be filled!!!!
-bool OpenvarioGetSensordStatus() noexcept {
+bool
+OpenVario_Device::GetSystemStatus(std::string_view system) noexcept
+{
+#ifdef WITH_NEW_DBUS
   auto connection = ODBus::Connection::GetSystem();
-  return Systemd::IsUnitEnabled(connection, "sensord");
+  return Systemd::IsUnitEnabled(connection, system.data());
+#else
+  // StaticString
+ 
+  std::cout << "  0: " << system << std::endl;
+  StaticString<0x20> file;
+/////  std::string home = std::string("/home/root/");
+/////  home += system;
+/////
+/////  // AllocatedPath run_tmp_file = AllocatedPath::Build(home, system);
+/////  AllocatedPath run_tmp_file(home); //, system);
+/////                                    // AllocatedPath::Build(home_path, system);
+/////
+/////
+/////  std::string filename = system;
+/////  filename += ".txt"; 
+/////  AllocatedPath run_tmp_file =
+/////      AllocatedPath::Build(home_path, Path(_T(filename.c_str())));
+
+  std::string_view _dirname("/home/august2111");
+  //Path run_tmp_file("/home/august2111/test.txt");
+  Path run_tmp_file(_dirname.data());
+
+  if (system == "sensord")
+    file = _T("SensorD.txt");
+  else if (system == "variod")
+    file = _T("VarioD.txt");
+  else if (system == "dropbear.socket")
+    file = _T("SSH.txt");
+  AllocatedPath _tmp_file = AllocatedPath::Build(home_path, Path(file));
+
+  Path tmp_file = _tmp_file;
+
+  std::cout << "  1: " << tmp_file.ToUTF8()
+                                            << ", " << system << std::endl;
+  auto run_value = Run(tmp_file, "/bin/systemctl", "is-enabled", system.data());
+  std::cout << "  2: " << tmp_file.ToUTF8() << ", " << std::endl;
+  char buffer[0x20]; 
+  File::ReadString(tmp_file, buffer, sizeof(buffer));
+  std::cout << "  3: " << buffer << ", " << std::endl;
+  switch (run_value) {
+  case 0:
+    return std::string_view("enabled") == buffer;
+    break;
+  case 1:
+    if (std::string_view("disabled") == buffer)
+      std::strncat(buffer, " -> ok", sizeof(buffer)); 
+      File::WriteExisting(tmp_file, buffer);
+    return false;
+  default:
+    std::strncat(buffer, " Wrong!", sizeof(buffer));
+    File::WriteExisting(tmp_file, buffer);
+    return false;
+  }
+#endif
 }
-bool OpenvarioGetVariodStatus() noexcept {
-  auto connection = ODBus::Connection::GetSystem();
-  return Systemd::IsUnitEnabled(connection, "variod");
-}
-void OpenvarioSetSensordStatus(bool value) noexcept {
+void
+OpenVario_Device::SetSystemStatus(std::string_view system, bool value) noexcept
+{
+#ifdef WITH_NEW_DBUS
   auto connection = ODBus::Connection::GetSystem();
   if (value)
-    Systemd::EnableUnitFile(connection, "sensord");
+    Systemd::EnableUnitFile(connection, system.data());
   else
-    Systemd::DisableUnitFile(connection, "sensord");
-}
-void OpenvarioSetVariodStatus(bool value) noexcept {
-  auto connection = ODBus::Connection::GetSystem();
-  if (value)
-    Systemd::EnableUnitFile(connection, "variodd");
-  else
-    Systemd::DisableUnitFile(connection, "variod");
+    Systemd::DisableUnitFile(connection, system.data());
+#else
+  Run("/bin/systemctl", value ? "enable" : "disable", system.data());
+#endif
 }
 
 #else   // DBUS_FUNCTIONS
-bool OpenvarioGetSensordStatus() noexcept {
+bool 
+OpenVario_Device::GetSystemStatus(std::string_view system) noexcept {
   bool value;
-  ReadBool(ovdevice.internal_map, "SensorD", value);
+  ReadBool(internal_map, system.data(), value);
   return value;
 }
-bool OpenvarioGetVariodStatus() noexcept {
-  bool value;
-  ReadBool(ovdevice.internal_map, "VarioD", value);
-  return value;
-}
-void OpenvarioSetSensordStatus(bool value) noexcept {
-  ovdevice.internal_map.insert_or_assign("SensorD", value ? "True" : "False");
-  WriteConfigFile(ovdevice.internal_map, ovdevice.GetInternalConfig());
-}
-void OpenvarioSetVariodStatus(bool value) noexcept {
-  ovdevice.internal_map.insert_or_assign("VarioD", value ? "True" : "False");
-  WriteConfigFile(ovdevice.internal_map, ovdevice.GetInternalConfig());
+void 
+OpenVario_Device::SetSystemStatus(std::string_view system, bool value) noexcept {
+  internal_map.insert_or_assign(system.data(),
+                                         value ? "True" : "False");
+  WriteConfigFile(internal_map, GetInternalConfig());
 }
 
 SSHStatus
-OpenvarioGetSSHStatus()
+OpenVario_Device::GetSSHStatus() noexcept
 {  
   unsigned ssh;
   ReadInteger(ovdevice.internal_map, "SSH", ssh);
@@ -338,7 +405,9 @@ OpenvarioGetSSHStatus()
   }
 }
 
-void OpenvarioSetSSHStatus(SSHStatus state) {
+void 
+OpenVario_Device::SetSSHStatus(SSHStatus state) noexcept
+{
   switch (state) {
   case SSHStatus::DISABLED:
   case SSHStatus::ENABLED:
@@ -350,5 +419,4 @@ void OpenvarioSetSSHStatus(SSHStatus state) {
   }
 }
 #endif  // DBUS_FUNCTIONS
-
 //----------------------------------------------------------

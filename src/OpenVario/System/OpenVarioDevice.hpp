@@ -6,11 +6,13 @@
 #include "DisplayOrientation.hpp"
 #include "Language/Language.hpp"
 #include "system/Path.hpp"
+// #include "LogFile.hpp"
 
 #include <tchar.h>
 
 #include <map>
 #include <string>
+#include <filesystem>
 
 
 #define DEBUG_OPENVARIO  1
@@ -61,6 +63,19 @@ public:
   {
     return is_real;
   }
+  Path GetDataPath() noexcept { return data_path; }
+  Path GetHomePath() noexcept { return home_path; }
+  std::filesystem::path GetBinPath() noexcept { return bin_path; }
+  std::filesystem::path GetExePath() noexcept { return exe_path; }
+  std::filesystem::path GetExeName() noexcept {
+    return exe_path.filename().replace_extension();
+  }
+  void SetBinPath(const char *path) noexcept {
+    exe_path = path;
+    // std::filesystem::path::path 
+    bin_path = exe_path.parent_path();
+  }
+  Path GetRunTempFile() noexcept { return run_output_file; }
 
   struct {
     bool enabled = true;
@@ -78,12 +93,24 @@ public:
   };
 
 
-private:
+  uint_least8_t GetBrightness() noexcept;
+  void SetBrightness(uint_least8_t value) noexcept;
+  DisplayOrientation GetRotation();
+  void SetRotation(DisplayOrientation orientation);
+
+  bool GetSystemStatus(std::string_view system) noexcept;
+  void SetSystemStatus(std::string_view system, bool value) noexcept;
+  SSHStatus GetSSHStatus() noexcept;
+  void SetSSHStatus(SSHStatus state) noexcept;
+
+  private:
   AllocatedPath system_config;    // system config file, in the OV the
                                   // /boot/config.uEnf
   AllocatedPath upgrade_config;   // the config file for upgrading OV
   AllocatedPath settings_config;  // the config file for settings inside
                                 // the OpenVarioBaseMenu
+  AllocatedPath run_output_file; // the temp file in Run() processes
+//  AllocatedPath run_output_file;     // the temp file in Run() processes
 #ifndef DBUS_FUNCTIONS
   // This path is only for Debug purposes on Non-OpenVario systems
   AllocatedPath internal_config;
@@ -94,6 +121,13 @@ private:
 
   bool is_real = false;
   bool initialised = false;
+#if 1  // test with filesystem
+  std::filesystem::path exe_path; 
+  std::filesystem::path bin_path;
+#else
+  AllocatedPath exe_path;
+  AllocatedPath bin_path;
+#endif
 };
 extern OpenVario_Device ovdevice;
 
@@ -109,22 +143,3 @@ LoadConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path);
 */
 void
 WriteConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path);
-
-uint_least8_t
-OpenvarioGetBrightness() noexcept;
-
-void
-OpenvarioSetBrightness(uint_least8_t value) noexcept;
-
-DisplayOrientation
-OpenvarioGetRotation();
-
-void
-OpenvarioSetRotation(DisplayOrientation orientation);
-
-SSHStatus OpenvarioGetSSHStatus();
-void OpenvarioSetSSHStatus(SSHStatus state);
-bool OpenvarioGetSensordStatus() noexcept;
-bool OpenvarioGetVariodStatus() noexcept;
-void OpenvarioSetSensordStatus(bool value) noexcept;
-void OpenvarioSetVariodStatus(bool value) noexcept;
