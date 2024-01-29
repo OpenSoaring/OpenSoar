@@ -3,9 +3,9 @@
 
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #ifdef DBUS_FUNCTIONS
-#include "lib/dbus/Connection.hxx"
-#include "lib/dbus/ScopeMatch.hxx"
-#include "lib/dbus/Systemd.hxx"
+# include "lib/dbus/Connection.hxx"
+# include "lib/dbus/ScopeMatch.hxx"
+# include "lib/dbus/Systemd.hxx"
 #endif
 
 #include "system/Process.hpp"
