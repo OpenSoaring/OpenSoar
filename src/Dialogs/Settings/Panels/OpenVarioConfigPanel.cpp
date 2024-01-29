@@ -4,6 +4,7 @@
 #ifdef IS_OPENVARIO
 // don't use (and compile) this code outside an OpenVario project!
 
+#include "Dialogs/Settings/Panels/OpenVarioConfigPanel.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Widget/RowFormWidget.hpp"
 #include "Look/DialogLook.hpp"
@@ -20,7 +21,6 @@
 #include "Dialogs/Message.hpp"
 
 #include "OpenVario/System/OpenVarioDevice.hpp"
-#include "OpenVario/System/OpenVarioConfigPanel.hpp"
 #include "OpenVario/System/WifiDialogOV.hpp"
 
 
@@ -43,6 +43,7 @@ enum ControlIndex {
 };
 
 
+#if 0
 class OpenVarioConfigPanel final
   : public RowFormWidget, DataFieldListener {
 public:
@@ -55,10 +56,13 @@ public:
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
 
+  int OnShow(const UI::SingleWindow &parent) noexcept;
+
 private:
   /* methods from DataFieldListener */
   void OnModified(DataField &df) noexcept override;
-
+};
+#endif
   static constexpr StaticEnumChoice timeout_list[] = {
     { 0,  _T("immediately"), },
     { 1,  _T("1s"), },
@@ -77,7 +81,6 @@ private:
     { SSHStatus::TEMPORARY, _T("temporary"), },
     nullptr
   };
-};
 
 void
 OpenVarioConfigPanel::SetEnabled([[maybe_unused]] bool enabled) noexcept
@@ -200,6 +203,21 @@ OpenVarioConfigPanel::Save([[maybe_unused]] bool &_changed) noexcept
 
 
   return true;
+}
+
+int 
+OpenVarioConfigPanel::OnShow([[maybe_unused]] const UI::SingleWindow &parent)
+                             noexcept {
+#if 0
+  TWidgetDialog<OpenVarioConfigPanel> sub_dialog(
+      WidgetDialog::Full{}, parent, GetLook(),
+      _T("OpenVario System Settings"));
+  sub_dialog.SetWidget();
+  sub_dialog.AddButton(_("Close"), mrOK);
+  return sub_dialog.ShowModal();
+#else
+  return 0;
+#endif
 }
 
 std::unique_ptr<Widget>

@@ -13,6 +13,8 @@
 
 class Widget;
 
+#if 1
+#include "UIGlobals.hpp"
 // -------------------------------------------
 class OpenVarioConfigPanel final : public RowFormWidget, DataFieldListener {
 public:
@@ -24,13 +26,15 @@ public:
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
 
+  int OnShow(const UI::SingleWindow &parent) noexcept;
+
 private:
   /* methods from DataFieldListener */
   void OnModified(DataField &df) noexcept override;
 };
 // ---------------------------------------------
-
+#endif 
 std::unique_ptr<Widget>
-CreateOpenVarioConfigPanel();
+CreateOpenVarioConfigPanel() noexcept;
 
 #endif
