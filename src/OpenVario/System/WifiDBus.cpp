@@ -1,3 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright The XCSoar Project
+
+
+// #ifdef __GNUC__
+#if 1
+#ifdef DBUS_FUNCTIONS
+#include "lib/dbus/Conn ection.hxx"
+#include "lib/dbus/ScopeMatch.hxx"
+#include "lib/dbus/Systemd.hxx"
+#endif
+
+#if 0
+
 WiFiAgent::WiFiAgent(GDBusConnection *inputConnection, Poco::JSON::Object::Ptr credentials)
 : connection(inputConnection), parameters(std::move(credentials)) {
     static const GDBusInterfaceVTable vtable = {
@@ -78,7 +92,15 @@ void DBusManipulator::connectToTheNetwork(GDBusProxy *network) {
     std::cout << "Connected to the network successfully." << std::endl;
 }
 //-----------------------------------------------------------------------------
-GDBusProxy* network = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM,G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START, nullptr, "net.connman", servicePath, "net.connman.Service", nullptr, &error);
-if(network == nullptr || error != nullptr)
+void TestDBus() {
+  // GDBusProxy *network = g_dbus_proxy_new_for_bus_sync(
+  ODBus::Proxy *network = g_dbus_proxy_new_for_bus_sync(
+      G_BUS_TYPE_SYSTEM, G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START, nullptr,
+      "net.connman", servicePath, "net.connman.Service", nullptr, &error);
+  if (network == nullptr || error != nullptr)
     throw GlibException("Get network by name", error);
+}
+
+#endif 0
 //-----------------------------------------------------------------------------
+#endif  // __GNUC__
