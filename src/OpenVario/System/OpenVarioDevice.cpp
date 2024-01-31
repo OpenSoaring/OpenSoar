@@ -45,6 +45,8 @@
 
 #include <map>
 
+using std::string_view_literals::operator""sv;
+
 OpenVario_Device ovdevice;
 
 
@@ -261,7 +263,6 @@ OpenVario_Device::SetRotation(DisplayOrientation orientation)
 SSHStatus
 OpenVario_Device::GetSSHStatus()  noexcept
 {
-#if 0
   auto connection = ODBus::Connection::GetSystem();
 
   if (Systemd::IsUnitEnabled(connection, "dropbear.socket")) {
@@ -271,12 +272,6 @@ OpenVario_Device::GetSSHStatus()  noexcept
   } else {
     return SSHStatus::DISABLED;
   }
-#else
-  if (GetSystemStatus("dropbear.socket") == 0)
-    return SSHStatus::ENABLED;
-  else
-    return SSHStatus::DISABLED;
-#endif
 }
 
 void 
@@ -312,18 +307,6 @@ OpenVario_Device::GetSystemStatus(std::string_view system) noexcept
  
   std::cout << "  0: " << system << std::endl;
   StaticString<0x20> file;
-/////  std::string home = std::string("/home/root/");
-/////  home += system;
-/////
-/////  // AllocatedPath run_tmp_file = AllocatedPath::Build(home, system);
-/////  AllocatedPath run_tmp_file(home); //, system);
-/////                                    // AllocatedPath::Build(home_path, system);
-/////
-/////
-/////  std::string filename = system;
-/////  filename += ".txt"; 
-/////  AllocatedPath run_tmp_file =
-/////      AllocatedPath::Build(home_path, Path(_T(filename.c_str())));
 
   std::string_view _dirname("/home/august2111");
   //Path run_tmp_file("/home/august2111/test.txt");
@@ -339,8 +322,9 @@ OpenVario_Device::GetSystemStatus(std::string_view system) noexcept
 
   Path tmp_file = _tmp_file;
 
-  std::cout << "  1: " << tmp_file.ToUTF8()
-                                            << ", " << system << std::endl;
+  std::cout << "  1: " << tmp_file.ToUTF8() << ", " << system << std::endl;
+  if (File::Exists(tmp_file))
+    File::Delete(tmp_file);  // remove, if exists
   auto run_value = Run(tmp_file, "/bin/systemctl", "is-enabled", system.data());
   std::cout << "  2: " << tmp_file.ToUTF8() << ", " << std::endl;
   char buffer[0x20]; 
@@ -348,16 +332,21 @@ OpenVario_Device::GetSystemStatus(std::string_view system) noexcept
   std::cout << "  3: " << buffer << ", " << std::endl;
   switch (run_value) {
   case 0:
-    return std::string_view("enabled") == buffer;
-    break;
+    if (std::string_view(buffer).starts_with("enabled"))
+      std::strncpy(buffer, "enabled -> ok!", sizeof(buffer));
+    else
+      std::strncpy(buffer, "enabled -> not ok???", sizeof(buffer));
+    std::cout << "  4: " << system << ": " << buffer << std::endl;
+    return true;
   case 1:
-    if (std::string_view("disabled") == buffer)
-      std::strncat(buffer, " -> ok", sizeof(buffer)); 
-      File::WriteExisting(tmp_file, buffer);
+    if (std::string_view(buffer).starts_with("enabled"))
+      std::strncpy(buffer, "disabled -> ok!", sizeof(buffer));
+    else
+      std::strncpy(buffer, "disabled -> not ok???", sizeof(buffer));
+    std::cout << "  4: " << system << ": " << buffer << std::endl;
     return false;
   default:
-    std::strncat(buffer, " Wrong!", sizeof(buffer));
-    File::WriteExisting(tmp_file, buffer);
+    std::cout << "  4: " << system << " = Wrong" << std::endl;
     return false;
   }
 #endif
