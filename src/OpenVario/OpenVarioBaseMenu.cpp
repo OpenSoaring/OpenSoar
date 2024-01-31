@@ -46,6 +46,7 @@
 static DialogSettings dialog_settings;
 static UI::SingleWindow *global_main_window;
 static DialogLook *global_dialog_look;
+static unsigned StartTimeout = 1;
 
 const DialogSettings &
 UIGlobals::GetDialogSettings()
@@ -97,7 +98,7 @@ public:
      display(_display), event_queue(_event_queue),
      dialog(_dialog) {
        ovdevice.LoadSettings();
-       remaining_seconds = ovdevice.timeout;
+       remaining_seconds = StartTimeout == 0 ? 0 : ovdevice.timeout;
      }
 
 private:
@@ -319,6 +320,11 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   auto Btn_Shell = AddButton(_T("Exit to Shell"),
                              [this]() { dialog.SetModalResult(LAUNCH_SHELL); });
 
+#ifndef RELEASE_VERSION
+  AddButton(_T("Exit to Shell (with Wait)"),
+                             [this]() { dialog.SetModalResult(LAUNCH_SHELL+1); });
+#endif
+
   auto Btn_Reboot = AddButton(_T("Reboot"), []() { Run("/sbin/reboot"); });
   
   auto Btn_Shutdown =
@@ -401,6 +407,8 @@ main(int argc, char *argv[])
 {
   if (argc > 0)
     ovdevice.SetBinPath(argv[0]);
+  if (argc > 1)
+    StartTimeout = std::strtoul(argv[1], nullptr, 10);
   /* the OpenVarioBaseMenu is waiting a second to solve timing problem with
      display rotation */
   std::this_thread::sleep_for(std::chrono::seconds(1));
