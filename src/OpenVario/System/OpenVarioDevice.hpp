@@ -15,6 +15,12 @@
 #include <filesystem>
 
 
+#define DEBUG_TEST_VERSION 1
+#if !DEBUG_TEST_VERSION
+#define RELEASE_VERSION
+#endif
+
+
 #define DEBUG_OPENVARIO  1
 #if __GNUC__ &&  __has_include("dbus/dbus.h")
 # define DBUS_FUNCTIONS 1
