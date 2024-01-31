@@ -370,7 +370,7 @@ bool
 OpenVario_Device::GetSystemStatus(std::string_view system) noexcept {
   bool value;
   ReadBool(internal_map, system.data(), value);
-  return value;
+  return value != 0;
 }
 void 
 OpenVario_Device::SetSystemStatus(std::string_view system, bool value) noexcept {
