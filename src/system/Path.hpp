@@ -49,7 +49,7 @@ public:
   AllocatedPath operator+(const_pointer other) const noexcept;
 
   bool empty() const noexcept {
-    return value.empty();
+    return (value == 0) || value.empty();
   }
 
   constexpr const_pointer c_str() const noexcept {
