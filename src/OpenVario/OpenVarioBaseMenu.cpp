@@ -325,10 +325,16 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                              [this]() { dialog.SetModalResult(LAUNCH_SHELL+1); });
 #endif
 
-  auto Btn_Reboot = AddButton(_T("Reboot"), []() { Run("/sbin/reboot"); });
+  // const Path TestPath = Path();
+  // const std::filesystem::path TestPath = "test.txt";
+  // const std::filesystem::path TestPath = "test.txt";
+  auto Btn_Reboot =
+      AddButton(_T("Reboot"), []() { Run("/sbin/reboot"); });
+  // auto Btn_Reboot = AddButton(_T("Reboot"), []() { Run("/sbin/reboot"); });
   
   auto Btn_Shutdown =
       AddButton(_T("Power off"), []() { Run("/sbin/poweroff"); });
+      // AddButton(_T("Power off"), []() { "/sbin/poweroff"); });
 
   //----------------------------------------------------------
   progress_timer = RowFormWidget::Add(_T(""), _T(""), true);
