@@ -339,7 +339,7 @@ OpenVario_Device::GetSystemStatus(std::string_view system) noexcept
     std::cout << "  4: " << system << ": " << buffer << std::endl;
     return true;
   case 1:
-    if (std::string_view(buffer).starts_with("enabled"))
+    if (std::string_view(buffer).starts_with("disabled"))
       std::strncpy(buffer, "disabled -> ok!", sizeof(buffer));
     else
       std::strncpy(buffer, "disabled -> not ok???", sizeof(buffer));
