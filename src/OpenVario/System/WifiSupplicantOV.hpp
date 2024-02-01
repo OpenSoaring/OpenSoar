@@ -17,7 +17,7 @@ enum WifiSecurity {
 };
 
 struct WifiStatus {
-  NarrowString<32> bssid;
+  NarrowString<64> bssid;
   NarrowString<256> ssid;
 
   void Clear() {
@@ -27,7 +27,8 @@ struct WifiStatus {
 };
 
 struct WifiVisibleNetwork {
-  NarrowString<32> bssid;
+  NarrowString<64> mac_id;
+  NarrowString<64> bssid;
   NarrowString<256> ssid;
   unsigned signal_level;
   enum WifiSecurity security;
@@ -35,7 +36,7 @@ struct WifiVisibleNetwork {
 
 struct WifiConfiguredNetworkInfo {
   int id;
-  NarrowString<32> bssid;
+  NarrowString<64> bssid;
   NarrowString<256> ssid;
 };
 
