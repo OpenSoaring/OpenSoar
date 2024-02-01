@@ -282,6 +282,8 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
   
   AddButton(_("Display Settings"), [this]() {
+    CancelTimer();
+
     TWidgetDialog<DisplaySettingsWidget> sub_dialog(
         WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
         _T("OpenVario Display Settings"));
@@ -291,15 +293,15 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   AddButton(_("System Settings"), [this]() {
+    CancelTimer();
+
     std::unique_ptr<Widget> widget = CreateSystemSettingsWidget();
-#if 1
     TWidgetDialog<SystemSettingsWidget> sub_dialog(
         WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
         _T("OpenVario System Settings"));
     sub_dialog.SetWidget();
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
-#endif
   });
 
   AddButton(_("OpenVario Placeholder"), [this]() {
