@@ -242,9 +242,10 @@ OV_MENU_SOURCES = \
 	$(SRC)/event/Call.cxx \
 	$(SRC)/Math/FastTrig.cpp \
 	$(SRC)/ui/window/ContainerWindow.cpp \
+    $(SRC)/Operation/Operation.cpp \
 	\
 
-
+#    $(SRC)/Operation/ConsoleOperationEnvironment.cpp
 
 OV_MENU_DEPENDS = WIDGET FORM DATA_FIELD SCREEN EVENT RESOURCE ASYNC LIBNET OS IO THREAD TIME MATH UTIL \
 	LANGUAGE \
