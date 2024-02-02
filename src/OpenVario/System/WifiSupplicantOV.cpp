@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
+#if 0
 #include "OpenVario/System/WifiSupplicantOV.hpp"
 #include "lib/fmt/ToBuffer.hxx"
 #include "lib/fmt/SystemError.hxx"
@@ -379,3 +380,5 @@ WPASupplicant::ExpectLineTimeout(std::span<char> buffer, int timeout_ms)
   result.remove_suffix(1);
   return result;
 }
+
+#endif
