@@ -22,13 +22,14 @@
 
 
 #define DEBUG_OPENVARIO  1
-#if __GNUC__ &&  __has_include("dbus/dbus.h")
+#if defined(IS_OPENVARIO_CB2) 
+  // && __has_include("dbus/dbus.h")
 # define DBUS_FUNCTIONS 1
 # warning (Attention: DBUS is enabled)
 #elif __GNUC__
-# warning (Attention: No DBUS!)
+// # warning (Attention: No DBUS!)
 #else
-#pragma message("Attention: No DBUS!")
+// #pragma message("Attention: No DBUS!")
 #endif
 
 enum class SSHStatus {
