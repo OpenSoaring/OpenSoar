@@ -45,6 +45,7 @@ struct WifiConfiguredNetworkInfo {
   NarrowString<256> ssid;
 };
 
+#if 0
 /**
  * All methods that are not `noexcept` throw on error.
  */
@@ -139,3 +140,5 @@ private:
 
   std::string_view ExpectLineTimeout(std::span<char> buffer, int timeout_ms=2000);
 };
+
+#endif
