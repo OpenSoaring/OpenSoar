@@ -30,8 +30,13 @@ struct WifiVisibleNetwork {
   NarrowString<64> mac_id;
   NarrowString<64> bssid;
   NarrowString<256> ssid;
+  NarrowString<256> base_id;
   unsigned signal_level;
   enum WifiSecurity security;
+
+  bool enabled = false;  // '*' - 1st char
+  bool coupled = false; // 'A' - 2nd char
+  bool connected  = false;  // 'R' - 3rd char;
 };
 
 struct WifiConfiguredNetworkInfo {
