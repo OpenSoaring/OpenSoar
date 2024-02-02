@@ -3,19 +3,30 @@ TARGETS = PC WIN64 \
 	WAYLAND \
 	FUZZER \
 	PI PI2 CUBIE KOBO NEON \
-    OPENVARIO_CB2 \
+    OPENVARIO OPENVARIO_CB2 \
 	ANDROID ANDROID7 ANDROID86 \
 	ANDROIDAARCH64 ANDROIDX64 \
 	ANDROIDFAT \
 	OSX64 IOS32 IOS64
 
-ifeq ($(TARGET),OPENVARIO_CB2)
+ifeq ($(TARGET),OPENVARIO)
   # the OpenVario is a linux target
   # but has special functions, menus,...
   override TARGET = UNIX
   TARGET_IS_OPENVARIO = y
 else
   TARGET_IS_OPENVARIO = n
+endif
+
+ifeq ($(TARGET),OPENVARIO_CB2)
+  # the OpenVario is a linux target
+  # but has special functions, menus,...
+  # in difference to OPENVARIO it is really compiled for OpenVario device
+  override TARGET = UNIX
+  TARGET_IS_OPENVARIO = y
+  TARGET_IS_OVDEVICE = y
+else
+  TARGET_IS_OVDEVICE = n
 endif
 
 
@@ -435,6 +446,10 @@ endif
 ifeq ($(TARGET_IS_OPENVARIO),y)
   TARGET_CPPFLAGS += -DIS_OPENVARIO
   # TARGET_CPPFLAGS += -isystem /usr/include/dbus-1.0  -isystem /usr/lib/x86_64-linux-gnu/dbus-1.0/include
+endif
+
+ifeq ($(TARGET_IS_OVDEVICE),y)
+  TARGET_CPPFLAGS += -DIS_OPENVARIO_CB2
 endif
 
 ifeq ($(HAVE_MSVCRT),y)
