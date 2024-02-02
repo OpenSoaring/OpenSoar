@@ -208,6 +208,7 @@ void MainMenuWidget::StartSoarExe(std::string_view _exe,
         _datapath = GetPrimaryDataPath().c_str();
     } else {
         datapath.append(_datapath.generic_string());
+        datapath.append("/");  // last delimiter
     }
     if (!datapath.empty())
       ArgList.push_back(datapath.c_str());
