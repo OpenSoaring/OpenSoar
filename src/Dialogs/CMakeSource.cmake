@@ -171,6 +171,7 @@ if(ON)  # IS_OPENVARIO
         ../OpenVario/System/WifiDialogOV.cpp 
         ../OpenVario/System/WifiSupplicantOV.cpp 
         
+        Dialogs/ProcessDialog.cpp
   )
 endif() 
 
