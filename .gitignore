@@ -36,3 +36,4 @@ build/local-config.mk
 
 .idea
 /VERSION.txt
+/src/OpenVario/_DustBin
