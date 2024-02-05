@@ -30,6 +30,7 @@ Copyright_License {
 
 #include "Device/Driver/Larus.hpp"
 #include "Device/Driver.hpp"
+#include "Device/Port/Port.hpp"
 #include "Device/Util/NMEAWriter.hpp"
 #include "NMEA/Checksum.hpp"
 #include "NMEA/Info.hpp"
@@ -38,28 +39,42 @@ Copyright_License {
 #include "Units/System.hpp"
 #include "Operation/Operation.hpp"
 #include "LogFile.hpp"
+#include "util/StaticString.hxx"
+
+#include <span>
 
 using std::string_view_literals::operator""sv;
 
 class LarusDevice : public AbstractDevice {
-  // unused up to now: Port &port;
+  Port &port;
 
 public:
-  LarusDevice([[maybe_unused]] Port &_port) {}
+  LarusDevice(Port &_port) : port(_port) {}
 
   /* virtual methods from class Device */
   bool ParseNMEA(const char *line, NMEAInfo &info) override;
-//  void OnCalculatedUpdate(const MoreData &basic,
-//                  const DerivedInfo &calculated) override;
+  //  void OnCalculatedUpdate(const MoreData &basic,
+  //                  const DerivedInfo &calculated) override;
+  bool PutMacCready(double mc, OperationEnvironment &env) override;
+  bool PutBugs(double bugs, OperationEnvironment &env) override;
+  bool PutBallast(double fraction, double overload,
+                  OperationEnvironment &env) override;
+  bool PutQNH(const AtmosphericPressure &pres,
+              OperationEnvironment &env) override;
+
 private:
   static bool PLARA(NMEAInputLine &line, NMEAInfo &info);
   static bool PLARB(NMEAInputLine &line, NMEAInfo &info);
   static bool PLARD(NMEAInputLine &line, NMEAInfo &info);
   static bool PLARV(NMEAInputLine &line, NMEAInfo &info);
+  static bool PLARS(NMEAInputLine &line, NMEAInfo &info);
   static bool PLARW(NMEAInputLine &line, NMEAInfo &info);
   static bool HCHDT(NMEAInputLine &line, NMEAInfo &info);
+
+  bool SendCmd(const char *cmd, double value, OperationEnvironment &env);
 };
 
+//-----------------------------------------------------------------------------
 /**
  * Parses non-negative floating-point angle value in degrees.
  */
@@ -77,7 +92,10 @@ ReadBearing(NMEAInputLine &line, Angle &value_r)
     return true;
 }
 
-bool LarusDevice::ParseNMEA(const char *_line, NMEAInfo &info) {
+//-----------------------------------------------------------------------------
+bool
+LarusDevice::ParseNMEA(const char *_line, NMEAInfo &info)
+{
   if (!VerifyNMEAChecksum(_line))
     return false;
 
@@ -95,6 +113,8 @@ bool LarusDevice::ParseNMEA(const char *_line, NMEAInfo &info) {
       return PLARV(line, info);
     case 'W':
       return PLARW(line, info);
+    case 'S':
+      return PLARS(line, info);
     default:
       break;
     }
@@ -105,6 +125,7 @@ bool LarusDevice::ParseNMEA(const char *_line, NMEAInfo &info) {
   return false;
 }
 
+//-----------------------------------------------------------------------------
 bool
 LarusDevice::HCHDT(NMEAInputLine &line, NMEAInfo &info)
 {
@@ -139,6 +160,7 @@ LarusDevice::HCHDT(NMEAInputLine &line, NMEAInfo &info)
   return false;
 }
 
+//-----------------------------------------------------------------------------
 bool
 LarusDevice::PLARA(NMEAInputLine &line, NMEAInfo &info)
 {
@@ -180,6 +202,7 @@ LarusDevice::PLARA(NMEAInputLine &line, NMEAInfo &info)
     return true;
 }
 
+//-----------------------------------------------------------------------------
 bool
 LarusDevice::PLARB(NMEAInputLine &line, NMEAInfo &info)
 {
@@ -206,6 +229,7 @@ LarusDevice::PLARB(NMEAInputLine &line, NMEAInfo &info)
   return true;
 }
 
+//-----------------------------------------------------------------------------
 bool
 LarusDevice::PLARD(NMEAInputLine &line, [[maybe_unused]] NMEAInfo &info)
 {
@@ -243,6 +267,7 @@ LarusDevice::PLARD(NMEAInputLine &line, [[maybe_unused]] NMEAInfo &info)
   return true;
 }
 
+//-----------------------------------------------------------------------------
 bool
 LarusDevice::PLARV(NMEAInputLine &line, NMEAInfo &info)
 {
@@ -288,6 +313,7 @@ LarusDevice::PLARV(NMEAInputLine &line, NMEAInfo &info)
   return true;
 }
 
+//-----------------------------------------------------------------------------
 bool
 LarusDevice::PLARW(NMEAInputLine &line, NMEAInfo &info)
 {
@@ -325,15 +351,127 @@ LarusDevice::PLARW(NMEAInputLine &line, NMEAInfo &info)
   return true;
 }
 
+//-----------------------------------------------------------------------------
+/*
+$PLARS Settings parameters bidirectional
+
+       1 2 3   4
+       | | |   |
+$PLARS,a,a,xxx*hh<CR><LF>
+
+Examples:
+$PLARS,L,MC,1.3*1E
+$PLARS,L,BAL,1.25*6B
+$PLARS,L,BUGS,15*3B
+$PLARS,L,QNH,1013.2*74
+
+$PLARS,H,MC,2.1*1B
+$PLARS,H,BAL,1.00*68
+$PLARS,H,BUGS,0*0B
+$PLARS,H,QNH,1031.4*76
+
+The $PLARS record is intended for exchanging setting values between Larus and a host system such as XCSoar. The record can be used in both directions: from host to Larus or from Larus to host.
+
+These records should not be sent cyclically, but only when needed during initialization and when changes are made.
+
+    Data source (L: Larus, H: Host)
+    Settings parameter
+        MC MacCready (0.0 - 9.9)
+        BAL Ballast (1.00 - 1.60)
+        BUGS Bugs in % (0 - 30)
+        QNH QNH in hPa
+    Value (format depends on settings parameter, see examples)
+    Checksum
+*/
+bool
+LarusDevice::PLARS(NMEAInputLine &line, NMEAInfo &info)
+{ // the line starts with the host indicator
+  if (line.ReadOneChar() == 'L') {
+    double value;
+    auto field = line.ReadView();
+    if (line.ReadChecked(value)) {
+      if (field == "MC"sv) {
+        // - value is MacCReady in m/s [0.0 .. 9.9]
+        return info.settings.ProvideMacCready(value, info.clock);
+      } else if (field == "BUGS"sv) {
+        // - value is bugs in % [0-30], OpenSoar wants [0.5 .. 1.00]
+        return info.settings.ProvideBugs((1.0 - value)/100.0, info.clock);
+      } else if (field == "BAL"sv) {
+        // - value is ballast overload [1.00..1.60]
+        return info.settings.ProvideBallastOverload(value, info.clock);
+      } else if (field == "QNH"sv) {
+        // - value is pressure in hPa
+        return info.settings.ProvideQNH(AtmosphericPressure::HectoPascal(value),
+                                        info.clock);
+      }
+    }
+  }
+  return false;
+}
+
+//-----------------------------------------------------------------------------
+bool
+LarusDevice::PutBugs(double bugs, OperationEnvironment &env)
+{
+  // $PLARS,H,BUGS,0*0B
+  // OpenSoar/XCSoar has values between [0.5 ..1.0]
+  if ((bugs < 0.7) || (bugs > 1.0))
+    return false;
+  return SendCmd("BUGS,%u", uround((1.0-bugs) * 100), env);
+}
+
+//-----------------------------------------------------------------------------
+bool
+LarusDevice::PutMacCready(double mc, OperationEnvironment &env)
+{
+  // $PLARS,H,MC,2.1*1B
+  return SendCmd("MC,%0.1f", mc, env);
+}
+
+//-----------------------------------------------------------------------------
+bool
+LarusDevice::PutBallast([[maybe_unused]] double fraction, double overload, 
+                        OperationEnvironment &env)
+{ 
+  // $PLARS,H,BAL,1.00*68
+  if ((overload < 1.0) || (overload > 1.60))
+    return false;
+  return SendCmd("BAL,%0.2f", overload, env);
+}
+
+//-----------------------------------------------------------------------------
+bool
+LarusDevice::PutQNH(const AtmosphericPressure &pres,
+                          OperationEnvironment &env) 
+{ 
+  // $PLARS,H,QNH,1031.4*76
+  return SendCmd("QNH,%0.1f", pres.GetHectoPascal(), env);
+}
+
+//-----------------------------------------------------------------------------
+bool
+LarusDevice::SendCmd(const char *cmd, double value, 
+                              OperationEnvironment &env) {
+  NarrowString<80> buffer("PLARS,H,");
+  buffer.AppendFormat(cmd, value);
+
+  PortWriteNMEA(port, buffer.c_str(), env);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
 static Device *
 LarusCreateOnPort([[maybe_unused]] const DeviceConfig &config, Port &com_port)
 {
   return new LarusDevice(com_port);
 }
 
+//-----------------------------------------------------------------------------
 const struct DeviceRegister larus_driver = {
   _T("Larus"),
   _T("Larus"),
   DeviceRegister::SEND_SETTINGS,
   LarusCreateOnPort,
 };
+//-----------------------------------------------------------------------------
