@@ -17,6 +17,7 @@
 #include "Profile/Map.hpp"
 #include "Screen/Layout.hpp"
 #include "UIGlobals.hpp"
+// #include "UIActions.hpp"
 #include "system/FileUtil.hpp"
 
 #include "Widget/RowFormWidget.hpp"
@@ -27,6 +28,7 @@
 #include "ui/event/KeyCode.hpp"
 #include "ui/event/Timer.hpp"
 #include "ui/window/Init.hpp"
+#include "ui/window/ContainerWindow.hpp"
 #include "util/ScopeExit.hxx"
 
 #include "OpenVario/SystemSettingsWidget.hpp"
@@ -224,6 +226,14 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddButton(_("Calibrate Sensors"), CalibrateSensors);
 
   AddButton(_("Calibrate Touch"), [this]() {
+    // dialog.SetModalResult(LAUNCH_TOUCH_CALIBRATE);
+    // dialog.SetModalResult(LAUNCH_TOUCH_CALIBRATE);
+    ContainerWindow::SetExitValue(LAUNCH_TOUCH_CALIBRATE);
+//    UIActions::SignalShutdown(false);
+
+
+    exit(LAUNCH_TOUCH_CALIBRATE);
+#if 0
 #if defined(_WIN32)
     static constexpr const char *argv[] = { "/usr/bin/ov-calibrate-ts.sh",
           nullptr};
@@ -237,7 +247,8 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
         // RunProcessDialog(UIGlobals::GetMainWindow(),
         // UIGlobals::GetDialogLook(),
     //                 _T("System Info"), "/usr/bin/ov-calibrate-ts.sh");
-    Run("/usr/bin/ov-calibrate-ts.sh");
+//    Run("/usr/bin/ov-calibrate-ts.sh");
+#endif
 #endif
   });
 
