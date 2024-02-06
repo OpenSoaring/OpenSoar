@@ -41,6 +41,7 @@ enum class SSHStatus {
 enum Buttons {
   LAUNCH_SHELL = 100,
   START_UPGRADE = 111,
+  LAUNCH_TOUCH_CALIBRATE = 112,
 };
 
 class OpenVario_Device {
