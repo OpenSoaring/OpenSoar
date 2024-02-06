@@ -8,5 +8,6 @@
 void
 TerminalLook::Initialise()
 {
-  font.Load(FontDescription(Layout::FontScale(11), false, false, true));
+//  font.Load(FontDescription(Layout::FontScale(11), false, false, true));
+  font.Load(FontDescription(Layout::FastScale(6), false, false, true));
 }
