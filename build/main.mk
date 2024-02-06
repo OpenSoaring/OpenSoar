@@ -157,6 +157,8 @@ DIALOG_SOURCES = \
 ifeq ($(TARGET_IS_OPENVARIO),y)
 	# $(SRC)/OpenVario/OpenVarioBaseMenu.cpp
 DIALOG_SOURCES += \
+	$(SRC)/Dialogs/ProcessDialog.cpp \
+	\
 	$(SRC)/OpenVario/SystemSettingsWidget.cpp \
 	$(SRC)/OpenVario/System/OpenVarioDevice.cpp \
 	$(SRC)/OpenVario/FileMenuWidget.cpp \
