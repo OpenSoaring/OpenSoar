@@ -51,7 +51,7 @@ public:
 private:
   void OnNotification() noexcept {
     while (true) {
-      std::array<std::byte, 64> data;
+      std::array<std::byte, 96> data;
       size_t length;
 
       {
