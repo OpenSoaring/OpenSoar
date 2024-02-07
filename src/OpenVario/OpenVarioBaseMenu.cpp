@@ -26,6 +26,7 @@
 #include "util/StaticString.hxx"
 
 #include "OpenVario/FileMenuWidget.hpp"
+#include "OpenVario/ExtraWidget.hpp"
 #include "OpenVario/DisplaySettingsWidget.hpp"
 #include "OpenVario/SystemSettingsWidget.hpp"
 
@@ -284,6 +285,11 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddButton(_("System Settings"), [this]() {
     CancelTimer();
     return ShowSystemSettingsWidget(UIGlobals::GetMainWindow(), GetLook());
+  });
+
+  AddButton(_("OpenVario Extra menu "), [this]() {
+    CancelTimer();
+    return ShowExtraWidget(UIGlobals::GetMainWindow(), GetLook());
   });
 
   AddButton(_("OpenVario Placeholder"), [this]() {
