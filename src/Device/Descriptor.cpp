@@ -390,7 +390,7 @@ try {
     TCHAR name_buffer[64];
     const TCHAR *name = config.GetPortName(name_buffer, 64);
 
-    LogError(e, WideToUTF8Converter(name));
+    LogError(e, _A(name));
 
     const auto _msg = GetFullMessage(e);
     if (const UTF8ToWideConverter what{_msg.c_str()}; what.IsValid()) {
