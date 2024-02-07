@@ -8,6 +8,9 @@
 void
 TerminalLook::Initialise()
 {
-//  font.Load(FontDescription(Layout::FontScale(11), false, false, true));
+#ifdef IS_OPENVARIO_CB2
   font.Load(FontDescription(Layout::FastScale(6), false, false, true));
+#else
+  font.Load(FontDescription(Layout::FontScale(8), false, false, true));
+#endif
 }
