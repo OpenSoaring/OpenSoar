@@ -103,28 +103,45 @@ public:
      }
 
 private:
-  void StartSoarExe(std::string_view exe,
+  int StartSoarExe(std::string_view exe,
                     std::filesystem::path _datapath = "") noexcept;
 
-  void StartOpenSoar() noexcept {
+  int StartOpenSoar() noexcept {
     std::filesystem::path datapath = "";
     if (ovdevice.settings.find("OpenSoarData") != ovdevice.settings.end())
       datapath = ovdevice.settings.find("OpenSoarData")->second;
     else
       datapath = ovdevice.GetDataPath().ToUTF8() + "/OpenSoarData";
-    StartSoarExe("OpenSoar", datapath);
+    int ret_value = StartSoarExe("OpenSoar", datapath);
 
     // after OpenSoar the settings can be changed
     ovdevice.LoadSettings();
+    switch (ret_value) { 
+    case 200:
+      exit(LAUNCH_SHELL);
+    case 201:
+      Run("/sbin/reboot");
+      break;
+    case 202:
+      Run("/sbin/poweroff");
+      break;
+    case START_UPGRADE:
+    case LAUNCH_SHELL:
+    case LAUNCH_TOUCH_CALIBRATE:
+      exit(ret_value);
+    default:
+      break;
+    }
+    return ret_value;
   }
 
-  void StartXCSoar() noexcept {
+  int StartXCSoar() noexcept {
     std::filesystem::path datapath = "";
     if (ovdevice.settings.find("XCSoarData") != ovdevice.settings.end())
       datapath = ovdevice.settings.find("XCSoarData")->second;
     else 
       datapath = ovdevice.GetDataPath().ToUTF8() + "/XCSoarData";
-    StartSoarExe("xcsoar", datapath);
+    return StartSoarExe("xcsoar", datapath);
   }
 
     void ScheduleTimer() noexcept {
@@ -185,8 +202,10 @@ private:
   WndProperty *progress_timer = nullptr;
 };
 
-void MainMenuWidget::StartSoarExe(std::string_view _exe,
+int
+MainMenuWidget::StartSoarExe(std::string_view _exe,
                   std::filesystem::path _datapath) noexcept {
+  int ret_value = 0;
   const UI::ScopeDropMaster drop_master{display};
   const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
 
@@ -238,7 +257,7 @@ void MainMenuWidget::StartSoarExe(std::string_view _exe,
     //=============== End of Parameter =======================
     ArgList.push_back(nullptr);
     //========================================================
-    Run(&ArgList[0]);
+    ret_value = Run(&ArgList[0]);
   } else { // ExePath doesnt exist!
     LogFormat("Program file '%s' doesnt exist!", ExePath.c_str());
 #ifdef _WIN32
@@ -247,6 +266,7 @@ void MainMenuWidget::StartSoarExe(std::string_view _exe,
                    MB_OK | MB_ICONEXCLAMATION);
 #endif
   }
+  return ret_value;
 }
 
 void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
