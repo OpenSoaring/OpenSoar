@@ -9,6 +9,7 @@ endif
 EXTRA_CPPFLAGS+= -DPROGRAM_VERSION=\"$(PROGRAM_VERSION)\" 
 
 EXTRA_CPPFLAGS += -DIS_OPENVARIO 
+EXTRA_CPPFLAGS += -DOPENVARIO_BASEMENU
 ifeq ($(TARGET_IS_OVDEVICE),y)
   EXTRA_CPPFLAGS+= -DIS_OPENVARIO_CB2 
 endif
@@ -159,7 +160,7 @@ DIALOG_SOURCES = \
 	$(SRC)/Dialogs/Weather/RASPDialog.cpp \
 	$(SRC)/Dialogs/dlgCredits.cpp \
 	$(SRC)/Dialogs/dlgQuickMenu.cpp \
-    \
+	\
 	$(SRC)/Dialogs/DownloadFilePicker.cpp \
 
 ## ifeq ($(HAVE_HTTP),y)
