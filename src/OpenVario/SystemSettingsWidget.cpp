@@ -10,7 +10,6 @@
 #include "Look/DialogLook.hpp"
 
 #include "Language/Language.hpp"
-#include "Widget/RowFormWidget.hpp"
 #include "Form/DataField/Boolean.hpp"
 #include "Form/DataField/Listener.hpp"
 #include "Form/DataField/Enum.hpp"
@@ -44,12 +43,12 @@ enum ControlIndex {
 };
 
 
-#if 0
-class SystemSettingsWidget final
-  : public RowFormWidget, DataFieldListener {
+#if 1
+#include "UIGlobals.hpp"
+// -------------------------------------------
+class SystemSettingsWidget final : public RowFormWidget, DataFieldListener {
 public:
-  SystemSettingsWidget() noexcept
-    :RowFormWidget(UIGlobals::GetDialogLook()) {}
+  SystemSettingsWidget() noexcept : RowFormWidget(UIGlobals::GetDialogLook()) {}
 
   void SetEnabled(bool enabled) noexcept;
 
@@ -57,7 +56,7 @@ public:
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
 
-  int OnShow(const UI::SingleWindow &parent) noexcept;
+  //  int OnShow(const UI::SingleWindow &parent) noexcept;
 
 private:
   /* methods from DataFieldListener */
@@ -205,19 +204,16 @@ SystemSettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept
   return true;
 }
 
-int 
-SystemSettingsWidget::OnShow([[maybe_unused]] const UI::SingleWindow &parent)
-                             noexcept {
-#if 0
+bool
+ShowSystemSettingsWidget(ContainerWindow  &parent,
+  const DialogLook &look) noexcept
+{
   TWidgetDialog<SystemSettingsWidget> sub_dialog(
-      WidgetDialog::Full{}, parent, GetLook(),
+      WidgetDialog::Full{}, (UI::SingleWindow &) parent, look,
       _T("OpenVario System Settings"));
   sub_dialog.SetWidget();
   sub_dialog.AddButton(_("Close"), mrOK);
   return sub_dialog.ShowModal();
-#else
-  return 0;
-#endif
 }
 
 std::unique_ptr<Widget>

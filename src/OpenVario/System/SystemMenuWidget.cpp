@@ -1,3 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright The XCSoar Project
+
+#ifdef IS_OPENVARIO
+// don't use (and compile) this code outside an OpenVario project!
 
 #include "Dialogs/DialogSettings.hpp"
 #include "Dialogs/Message.hpp"
@@ -13,6 +18,8 @@
 #include "Screen/Layout.hpp"
 #include "UIGlobals.hpp"
 #include "system/FileUtil.hpp"
+
+#include "Widget/RowFormWidget.hpp"
 
 #if !defined(_WIN32)
 # include "system/Process.hpp"
@@ -32,7 +39,17 @@
 #include <string>
 #include <fmt/format.h>
 
-// void 
+class SystemMenuWidget final : public RowFormWidget {
+public:
+  SystemMenuWidget() noexcept : RowFormWidget(UIGlobals::GetDialogLook()) {}
+
+private:
+  /* virtual methods from class Widget */
+  void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
+  // void CalibrateSensors() noexcept;
+};
+
+// void
 // SystemMenuWidget::CalibrateSensors() noexcept
 static void 
 CalibrateSensors() noexcept
@@ -98,13 +115,9 @@ CalibrateSensors() noexcept
 
 //-----------------------------------------------------------------------------
 class ScreenSSHWidget final : public RowFormWidget {
-  UI::Display &display;
-  UI::EventQueue &event_queue;
 
 public:
-  ScreenSSHWidget(UI::Display &_display, UI::EventQueue &_event_queue,
-                  const DialogLook &look) noexcept
-      : RowFormWidget(look), display(_display), event_queue(_event_queue) {}
+  ScreenSSHWidget() noexcept : RowFormWidget(UIGlobals::GetDialogLook()) {}
 
 private:
   /* virtual methods from class Widget */
@@ -184,28 +197,19 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     exit(START_UPGRADE);
   });
 
+#if 1
+  // the variant with command line...
+  // UI::SingleWindow main_window = 
   AddButton(_T("SSH"), [this]() {
     TWidgetDialog<ScreenSSHWidget> sub_dialog(WidgetDialog::Full{},
-                                              dialog.GetMainWindow(), GetLook(),
+                                              // dialog.GetMainWindow(), GetLook(),
+                  UIGlobals::GetMainWindow(), GetLook(),
                                               _T("Enable or Disable SSH"));
-    sub_dialog.SetWidget(display, event_queue, GetLook());
+    sub_dialog.SetWidget();
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
   });
-
-  AddButton(_("WiFi Settings"), []() {
-    static constexpr const char *argv[] = {
-      "/bin/sh", "-c", 
-      "printf '\\nWiFi-Settings are not implemented, yet!! \\n\\nIf you are "
-      "interessted to help with this, write me an email: dirk@freevario.de'", 
-      nullptr
-    };
-
-    RunProcessDialog(UIGlobals::GetMainWindow(),
-                     UIGlobals::GetDialogLook(),
-                     _T("WiFi Settings"), argv);
-  });
-
+#endif
 
   AddButton(_("Update System"), [](){
     static constexpr const char *argv[] = {
@@ -218,11 +222,20 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   AddButton(_("Calibrate Sensors"), CalibrateSensors);
-  AddButton(_("Calibrate Touch"), [this](){
-    const UI::ScopeDropMaster drop_master{display};
-    const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
-#if !defined(_WIN32)
-    // RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
+
+  AddButton(_("Calibrate Touch"), [this]() {
+#if defined(_WIN32)
+    static constexpr const char *argv[] = { "/usr/bin/ov-calibrate-ts.sh",
+          nullptr};
+
+    RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
+                       _T("Calibrate Touch"), argv);
+#else
+//    const UI::ScopeDropMaster drop_master{display};
+//    const UI::ScopeSuspendEventQueue
+        // suspend_event_queue{event_queue};
+        // RunProcessDialog(UIGlobals::GetMainWindow(),
+        // UIGlobals::GetDialogLook(),
     //                 _T("System Info"), "/usr/bin/ov-calibrate-ts.sh");
     Run("/usr/bin/ov-calibrate-ts.sh");
 #endif
@@ -237,14 +250,13 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                      UIGlobals::GetDialogLook(),
                      _T("System Info"), argv);
   });
-  AddButton(_("Test-Process"), []() {
-    static constexpr const char *argv[] = {
-      "/bin/ls", nullptr
-    };
+
+  AddButton(_("List Dir"), []() {
+    static constexpr const char *argv[] = {"/bin/ls", "-l", nullptr};
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     _T("Test-Process"), argv);
+                     _T("List Dir"), argv);
   });
 
   AddButton(_("Test-Process 2"), [this]() {
@@ -266,3 +278,22 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     });
 }
 
+bool
+ShowSystemMenuWidget(ContainerWindow  &parent,
+  const DialogLook &look) noexcept
+{
+  TWidgetDialog<SystemMenuWidget> sub_dialog(
+      WidgetDialog::Full{}, (UI::SingleWindow &) parent, look,
+      _T("OpenVario System Menu"));
+  sub_dialog.SetWidget();
+  sub_dialog.AddButton(_("Close"), mrOK);
+  return sub_dialog.ShowModal();
+}
+
+std::unique_ptr<Widget>
+CreateSystemMenuWidget() noexcept
+{
+  return std::make_unique<SystemMenuWidget>();
+}
+
+#endif

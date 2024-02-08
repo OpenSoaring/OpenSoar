@@ -25,7 +25,7 @@
 #include "Hardware/RotateDisplay.hpp"
 #include "util/StaticString.hxx"
 
-#include "OpenVario/FileMenuWidget.h"
+#include "OpenVario/FileMenuWidget.hpp"
 #include "OpenVario/DisplaySettingsWidget.hpp"
 #include "OpenVario/SystemSettingsWidget.hpp"
 
@@ -273,47 +273,30 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
   AddButton(_("File Transfers"), [this]() {
     CancelTimer();
-
-    TWidgetDialog<FileMenuWidget> sub_dialog(WidgetDialog::Full{},
-                                             dialog.GetMainWindow(), GetLook(),
-                                             _T("OpenVario File Transfers"));
-    sub_dialog.SetWidget(display, event_queue, GetLook());
-    sub_dialog.AddButton(_("Close"), mrOK);
-    return sub_dialog.ShowModal();
+    return ShowFileMenuWidget(UIGlobals::GetMainWindow(), GetLook());
   });
   
   AddButton(_("Display Settings"), [this]() {
     CancelTimer();
-
-    TWidgetDialog<DisplaySettingsWidget> sub_dialog(
-        WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
-        _T("OpenVario Display Settings"));
-    sub_dialog.SetWidget(display, event_queue, sub_dialog);
-    sub_dialog.AddButton(_("Close"), mrOK);
-    return sub_dialog.ShowModal();
+    return ShowDisplaySettingsWidget(UIGlobals::GetMainWindow(), GetLook());
   });
 
   AddButton(_("System Settings"), [this]() {
     CancelTimer();
-
-    std::unique_ptr<Widget> widget = CreateSystemSettingsWidget();
-    TWidgetDialog<SystemSettingsWidget> sub_dialog(
-        WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
-        _T("OpenVario System Settings"));
-    sub_dialog.SetWidget();
-    sub_dialog.AddButton(_("Close"), mrOK);
-    return sub_dialog.ShowModal();
+    return ShowSystemSettingsWidget(UIGlobals::GetMainWindow(), GetLook());
   });
 
   AddButton(_("OpenVario Placeholder"), [this]() {
     CancelTimer();
+    return ShowSystemMenuWidget(UIGlobals::GetMainWindow(), GetLook());
 
-    TWidgetDialog<SystemMenuWidget> sub_dialog(
-        WidgetDialog::Full{}, dialog.GetMainWindow(), GetLook(),
-        _T("OpenVario Placeholder Settings"));
-    sub_dialog.SetWidget(display, event_queue, sub_dialog);
-    sub_dialog.AddButton(_("Close"), mrOK);
-    return sub_dialog.ShowModal();
+//    TWidgetDialog<SystemMenuWidget> sub_dialog(
+//        WidgetDialog::Full{}, UIGlobals::GetMainWindow(), GetLook(),
+//        _T("OpenVario Placeholder Settings"));
+//    sub_dialog.SetWidget(display, event_queue, sub_dialog);
+//    // sub_dialog.SetWidget();
+//    sub_dialog.AddButton(_("Close"), mrOK);
+//    return sub_dialog.ShowModal();
   });
 
   //----------------------------------------------------------

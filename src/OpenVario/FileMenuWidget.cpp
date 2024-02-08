@@ -1,9 +1,21 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
-#include "FileMenuWidget.h"
+
+#ifdef IS_OPENVARIO
+
+#include "FileMenuWidget.hpp"
 #include "Dialogs/ProcessDialog.hpp"
+#include "Dialogs/WidgetDialog.hpp"
+#include "Form/Form.hpp"
 #include "Hardware/DisplayGlue.hpp"
+#include "Hardware/RotateDisplay.hpp"
 #include "Language/Language.hpp"
+#include "Widget/RowFormWidget.hpp"
+
+#include "UIGlobals.hpp"
+
+// #include "ui/event/Globals.hpp"
+// #include "ui/display/Display.hpp"
 
 #include <tchar.h>
 #include <string>
@@ -13,8 +25,16 @@ constexpr const TCHAR *xcsoar = _T("XCSoar");
 constexpr const TCHAR *main_app = opensoar;
 constexpr const char *_main_app = "OpenSoar";  // only temporarily
 
-    void
-FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
+class FileMenuWidget final : public RowFormWidget {
+public:
+  FileMenuWidget() noexcept : RowFormWidget(UIGlobals::GetDialogLook()) {}
+
+private:
+  /* virtual methods from class Widget */
+  void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
+};
+
+void FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                         [[maybe_unused]] const PixelRect &rc) noexcept
 {
   StaticString<60> title;
@@ -70,10 +90,27 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
      static constexpr const char *argv[] = {"/usr/bin/transfer-system.sh",
                                            "restore", _main_app, nullptr
      };
-     
      RunProcessDialog(UIGlobals::GetMainWindow(),
              UIGlobals::GetDialogLook(),
              _("Restore System"), argv);
              Display::Rotate(Display::DetectInitialOrientation());
    });
 }
+
+bool 
+ShowFileMenuWidget(ContainerWindow &parent,
+  const DialogLook &look) noexcept
+{
+  TWidgetDialog<FileMenuWidget> sub_dialog(
+      WidgetDialog::Full{}, (UI::SingleWindow &)parent, look,
+      _("OpenVario File Transfers"));
+  sub_dialog.SetWidget();
+  sub_dialog.AddButton(_("Close"), mrOK);
+  return sub_dialog.ShowModal();
+}
+
+std::unique_ptr<Widget>
+CreateFileMenuWidget() noexcept {
+  return std::make_unique<FileMenuWidget>();
+}
+#endif

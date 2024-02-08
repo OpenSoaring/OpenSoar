@@ -27,6 +27,9 @@
 #include "io/BufferedOutputStream.hxx"
 #include "io/FileLineReader.hpp"
 
+#include "Widget/RowFormWidget.hpp"
+
+
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/Setting/RotationWidget.hpp"
 
@@ -45,6 +48,19 @@
 
 /* x-menu writes the value for the display rotation to /sys because the value is also required for the console in the OpenVario.
 In addition, the display rotation is saved in /boot/config.uEnv so that the Openvario sets the correct rotation again when it is restarted.*/
+
+class SettingRotationWidget final : public RowFormWidget {
+
+public:
+  SettingRotationWidget() noexcept
+      : RowFormWidget(UIGlobals::GetDialogLook()) {}
+
+private:
+  /* virtual methods from class Widget */
+  void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
+  void SaveRotation(const std::string &rotationvalue);
+};
+
 void
 SettingRotationWidget::SaveRotation(const std::string &rotationString)
 {
@@ -83,3 +99,19 @@ SettingRotationWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
  });
 }
 
+bool 
+ShowRotationSettingsWidget(ContainerWindow &parent,
+                               const DialogLook &look) noexcept {
+ TWidgetDialog<SettingRotationWidget> sub_dialog(
+     WidgetDialog::Full{}, (UI::SingleWindow &)parent, look,
+     _T("OpenVario Rotation Settings"));
+ sub_dialog.SetWidget();
+ sub_dialog.AddButton(_("Close"), mrOK);
+ return sub_dialog.ShowModal();
+}
+
+// std::unique_ptr<Widget>
+// CreateSettingRotationWidget() noexcept
+// {
+//   return std::make_unique<SettingRotationWidget>();
+// }
