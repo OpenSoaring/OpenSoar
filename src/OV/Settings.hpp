@@ -3,6 +3,10 @@
 
 #pragma once
 
+#define OV_SETTINGS 0
+
+#if OV_SETTINGS 
+
 #include "Widget/RowFormWidget.hpp"
 #include "UIGlobals.hpp"
 #include "ui/event/Queue.hpp"
@@ -32,3 +36,5 @@ private:
   /* virtual methods from class Widget */
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
 };
+
+#endif

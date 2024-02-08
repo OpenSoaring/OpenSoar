@@ -42,6 +42,34 @@ enum Buttons {
 
 static bool have_data_path = false;
 
+#if !OV_SETTINGS
+static DialogSettings dialog_settings;
+static UI::SingleWindow *global_main_window;
+static DialogLook *global_dialog_look;
+
+const DialogSettings &
+UIGlobals::GetDialogSettings()
+{
+  return dialog_settings;
+}
+
+const DialogLook &
+UIGlobals::GetDialogLook()
+{
+  assert(global_dialog_look != nullptr);
+
+  return *global_dialog_look;
+}
+
+UI::SingleWindow &
+UIGlobals::GetMainWindow()
+{
+  assert(global_main_window != nullptr);
+
+  return *global_main_window;
+}
+#endif
+
 
 class FileMenuWidget final
   : public RowFormWidget
@@ -92,23 +120,25 @@ FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 }
 
-// class SystemMenuWidget final
-//   : public RowFormWidget
-// {
-//   UI::Display &display;
-//   UI::EventQueue &event_queue;
-// 
-// public:
-//   SystemMenuWidget(UI::Display &_display, UI::EventQueue &_event_queue,
-//                    const DialogLook &look) noexcept
-//     :RowFormWidget(look),
-//      display(_display), event_queue(_event_queue) {}
-// 
-// private:
-//   /* virtual methods from class Widget */
-//   void Prepare(ContainerWindow &parent,
-//                const PixelRect &rc) noexcept override;
-// };
+#if !OV_SETTINGS
+class SystemMenuWidget final
+  : public RowFormWidget
+{
+  UI::Display &display;
+  UI::EventQueue &event_queue;
+
+public:
+  SystemMenuWidget(UI::Display &_display, UI::EventQueue &_event_queue,
+                   const DialogLook &look) noexcept
+    :RowFormWidget(look),
+     display(_display), event_queue(_event_queue) {}
+
+private:
+  /* virtual methods from class Widget */
+  void Prepare(ContainerWindow &parent,
+               const PixelRect &rc) noexcept override;
+};
+#endif
 
 static void
 CalibrateSensors() noexcept
@@ -185,7 +215,7 @@ try {
   ShowError(std::current_exception(), "Calibrate Sensors");
 }
 
-#if 0
+#if !OV_SETTINGS
 void
 SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                           [[maybe_unused]] const PixelRect &rc) noexcept
@@ -200,15 +230,15 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                      "Update System", argv);
   });
 
-  AddButton("Update Maps", [](){
-    static constexpr const char *argv[] = {
-      "/usr/bin/update-maps.sh", nullptr
-    };
-
-    RunProcessDialog(UIGlobals::GetMainWindow(),
-                     UIGlobals::GetDialogLook(),
-                     "Update Maps", argv);
-  });
+//  AddButton("Update Maps", [](){
+//    static constexpr const char *argv[] = {
+//      "/usr/bin/update-maps.sh", nullptr
+//    };
+//
+//    RunProcessDialog(UIGlobals::GetMainWindow(),
+//                     UIGlobals::GetDialogLook(),
+//                     "Update Maps", argv);
+//  });
 
   AddButton("Calibrate Sensors", CalibrateSensors);
   AddButton("Calibrate Touch", [this](){
@@ -226,7 +256,8 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddButton("System Info", [this](){
     const UI::ScopeDropMaster drop_master{display};
     const UI::ScopeSuspendEventQueue suspend_event_queue{event_queue};
-    Run("/usr/lib/openvario/libexec/system_info.sh");
+    // Run("/usr/lib/openvario/libexec/system_info.sh");
+    Run("/usr/bin/system_info.sh");
   });
 }
 #endif

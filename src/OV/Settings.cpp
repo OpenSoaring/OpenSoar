@@ -1,5 +1,12 @@
 
 #include "OV/Settings.hpp"
+#include "OV/System.hpp"
+#include "Widget/RowFormWidget.hpp"
+
+#include <string>
+#include <fmt/format.h>
+
+#if OV_SETTINGS
 
 static DialogSettings dialog_settings;
 static UI::SingleWindow *global_main_window;
@@ -72,3 +79,91 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     Run("/usr/lib/openvario/libexec/system_info.sh");
   });
 }
+
+#endif
+
+#if OV_SETTINGS
+
+#include "Profile/File.hpp"
+#include "system/FileUtil.hpp"
+
+class ScreenBrightnessWidget final
+  : public RowFormWidget
+{
+  UI::Display &display;
+  UI::EventQueue &event_queue;
+
+public:
+  ScreenBrightnessWidget(UI::Display &_display, UI::EventQueue &_event_queue,
+                 const DialogLook &look) noexcept
+    :RowFormWidget(look),
+     display(_display), event_queue(_event_queue) {}
+
+private:
+  /* virtual methods from class Widget */
+  void Prepare(ContainerWindow &parent,
+               const PixelRect &rc) noexcept override;
+
+  uint_least8_t brightness = 10;
+  void SaveBrightness(const string &brightness);
+};
+
+void
+ScreenBrightnessWidget::SaveBrightness(const string &brightness)
+{
+  File::WriteExisting(Path("/sys/class/backlight/lcd/brightness"), (brightness).c_str());
+}
+
+void
+ScreenBrightnessWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
+                                [[maybe_unused]] const PixelRect &rc) noexcept
+{
+#if 0
+  for (unsigned i = 1; i <= 10; i++) {
+    // char buffer[10];
+    // sprintf // (buffer, "%d", i * 10);
+    brightness = i;    
+    AddButton(fmt::format_int{i*10}.c_str(), [this]() {
+      OpenvarioSetBrightness(brightness);  // i);
+        // SaveBrightness("2");
+    });
+  }
+#else
+  AddButton("20", [this](){
+    SaveBrightness("2");
+  });
+
+  AddButton("30", [this](){
+    SaveBrightness("3");
+  });
+
+  AddButton("40", [this](){
+    SaveBrightness("4");
+  });
+
+  AddButton("50", [this](){
+    SaveBrightness("5");
+  });
+
+  AddButton("60", [this](){
+    SaveBrightness("6");
+  });
+
+  AddButton("70", [this](){
+    SaveBrightness("7");
+  });
+
+  AddButton("80", [this](){
+    SaveBrightness("8");
+  });
+
+  AddButton("90", [this](){
+    SaveBrightness("9");
+  });
+
+  AddButton("100", [this](){
+    SaveBrightness("10");
+  });
+#endif
+}
+#endif
