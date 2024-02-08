@@ -81,8 +81,11 @@ static unsigned current_page;
 // TODO: eliminate global variables
 static ArrowPagerWidget *pager;
 
-static constexpr TabMenuPage files_pages[] = {
+static constexpr TabMenuPage basic_pages[] = {
   { N_("Site Files"), CreateSiteConfigPanel },
+#ifdef IS_OPENVARIO
+  { N_("TestOpenVario"), CreateSystemMenuWidget},
+#endif
   { nullptr, nullptr }
 };
 
@@ -155,13 +158,13 @@ static constexpr TabMenuPage openvario_pages[] = {
     {N_("Display Settings"), CreateDisplaySettingsWidget},
     {N_("File Transfer"), CreateFileMenuWidget},
     {N_("Advanced Menu (temp)"), CreateExtraWidget},
-    {N_("Advanced Settings (temp)"), CreateSystemMenuWidget},
+    // {N_("Advanced Settings (temp)"), CreateSystemMenuWidget},
   { nullptr, nullptr }
 };
 #endif
 
 static constexpr TabMenuGroup main_menu_captions[] = {
-  { N_("Site Files"), files_pages },
+    {N_("Basic Settings"), basic_pages},
   { N_("Map Display"), map_pages },
   { N_("Glide Computer"), computer_pages },
   { N_("Gauges"), gauge_pages },
