@@ -71,6 +71,7 @@
 #include "OpenVario/DisplaySettingsWidget.hpp"
 #include "OpenVario/ExtraWidget.hpp"
 #include "OpenVario/System/OpenVarioDevice.hpp"
+#include "UIActions.hpp"
 #endif
 
 #include <cassert>
@@ -269,6 +270,20 @@ protected:
     expert.FastHide();
     button2.FastHide();
     button1.FastHide();
+  #ifdef IS_OPENVARIO
+    // this is a workaround: the 1st SignalShutdown closed the Setup window
+    // the 2nd one here close the executable
+    // a directly exit isn't possible
+    switch (ContainerWindow::GetExitValue()) {
+    case LAUNCH_SHELL:           // 100,
+    case START_UPGRADE:          // 111
+    case LAUNCH_TOUCH_CALIBRATE: // 112,
+      UIActions::SignalShutdown(true);
+      break;
+    default:
+      break;
+    }
+  #endif
   }
 
   void Move(const PixelRect &rc) noexcept override {
