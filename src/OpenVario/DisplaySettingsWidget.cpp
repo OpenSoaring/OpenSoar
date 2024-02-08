@@ -41,67 +41,45 @@
 #include <map>
 #include <string>
 
+class DisplaySettingsWidget final : public RowFormWidget {
+public:
+  DisplaySettingsWidget() noexcept
+      : RowFormWidget(UIGlobals::GetDialogLook()) {}
+
+private:
+  /* virtual methods from class Widget */
+  void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
+};
+
 void
 DisplaySettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                               [[maybe_unused]] const PixelRect &rc) noexcept
 {
   AddButton(_("Screen Rotation"), [this](){
-    TWidgetDialog<SettingRotationWidget>
-      sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-                 GetLook(), _T("Display Rotation Settings"));
-    sub_dialog.SetWidget(display, event_queue, GetLook());
-    sub_dialog.AddButton(_("Close"), mrOK);
-    return sub_dialog.ShowModal();
+    return ShowRotationSettingsWidget(UIGlobals::GetMainWindow(), GetLook());
   });
 
-//   AddButton(_("Setting Brightness"), [this](){
-//     TWidgetDialog<SettingBrightnessWidget>
-//       sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-//                  GetLook(), _T("Display Brightness Settings"));
-//     sub_dialog.SetWidget(display, event_queue, GetLook());
-//     sub_dialog.AddButton(_("Close"), mrOK);
-//     return sub_dialog.ShowModal();
-//   });
-//
+// AddButton(_("Setting Brightness"), [this](){
+//   return ShowSettingBrightnessWidget(UIGlobals::GetMainWindow(), GetLook());
+// });
+
 //  uint32_t iTest = 0;
 //  AddInteger(_("Brightness Test"), _("Setting Brightness."), _T("%d"), _T("%d"), 1,
 //             10, 1, iTest);
-
-
-//  AddButton(_("Autostart Timeout"), [this](){
-//    TWidgetDialog<SettingTimeoutWidget>
-//      sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-//                 GetLook(), _T("Autostart Timeout"));
-//    sub_dialog.SetWidget(display, event_queue, GetLook());
-//    sub_dialog.AddButton(_("Close"), mrOK);
-//    return sub_dialog.ShowModal();
-//  });
-
-//  AddButton(_("SSH"), [this](){
-//    TWidgetDialog<SettingSSHWidget>
-//      sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-//                 GetLook(), _T("Enable or Disable SSH"));
-//    sub_dialog.SetWidget(display, event_queue, GetLook());
-//    sub_dialog.AddButton(_("Close"), mrOK);
-//    return sub_dialog.ShowModal();
-//  });
-//
-//  AddButton(_("Variod"), [this](){
-//    TWidgetDialog<SettingVariodWidget>
-//      sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-//                 GetLook(), _T("Enable or Disable Variod"));
-//    sub_dialog.SetWidget(display, event_queue, GetLook());
-//    sub_dialog.AddButton(_("Close"), mrOK);
-//    return sub_dialog.ShowModal();
-//  });
-//
-//  AddButton(_("Sensord"), [this](){
-//    TWidgetDialog<SettingSensordWidget>
-//      sub_dialog(WidgetDialog::Full{}, dialog.GetMainWindow(),
-//                 GetLook(), _T("Enable or Disable Sensord"));
-//    sub_dialog.SetWidget(display, event_queue, GetLook());
-//    sub_dialog.AddButton(_("Close"), mrOK);
-//    return sub_dialog.ShowModal();
-//  });
 }
 
+bool 
+ShowDisplaySettingsWidget(ContainerWindow &parent,
+                              const DialogLook &look) noexcept {
+  TWidgetDialog<DisplaySettingsWidget> sub_dialog(
+      WidgetDialog::Full{}, (UI::SingleWindow &)parent, look,
+      _T("OpenVario Display Settings"));
+  sub_dialog.SetWidget();
+  sub_dialog.AddButton(_("Close"), mrOK);
+  return sub_dialog.ShowModal();
+}
+
+std::unique_ptr<Widget> 
+CreateDisplaySettingsWidget() noexcept {
+  return std::make_unique<DisplaySettingsWidget>();
+}

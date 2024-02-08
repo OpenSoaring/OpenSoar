@@ -3,26 +3,15 @@
 
 #pragma once
 
-#include "Widget/RowFormWidget.hpp"
-#include "ui/event/Queue.hpp"
-#include "ui/window/SingleWindow.hpp"
+#include <memory>
 
-class SettingRotationWidget final
-  : public RowFormWidget
-{
-  UI::Display &display;
-  UI::EventQueue &event_queue;
+// class Widget;
+class ContainerWindow;
+class DialogLook;
 
-public:
-  SettingRotationWidget(UI::Display &_display, UI::EventQueue &_event_queue,
-                 const DialogLook &look) noexcept
-    :RowFormWidget(look),
-     display(_display), event_queue(_event_queue) {}
+bool 
+ShowRotationSettingsWidget(ContainerWindow &parent,
+                               const DialogLook &look) noexcept;
 
-private:
-  /* virtual methods from class Widget */
-  void Prepare(ContainerWindow &parent,
-               const PixelRect &rc) noexcept override;
-  void SaveRotation(const std::string &rotationvalue);
-};
 
+// std::unique_ptr<Widget> CreateSettingRotationWidget() noexcept;
