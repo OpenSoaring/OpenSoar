@@ -4,6 +4,8 @@
 #include "PagerWidget.hpp"
 
 #include <cassert>
+#include <iostream>
+
 
 PagerWidget::Child::~Child() noexcept
 {
@@ -26,6 +28,12 @@ PagerWidget::Add(std::unique_ptr<Widget> w) noexcept
   } else {
     assert(current < children.size());
   }
+  // current is always 0
+  if (children.size() >= children.capacity()) 
+    std::cout << "PagerWidget::Add - children-limit is reached:" << children.size()
+              << ", capacity: " << children.capacity() << std::endl;
+
+  assert(children.size() < children.capacity());
 
   auto &child = children.emplace_back(std::move(w));
 
