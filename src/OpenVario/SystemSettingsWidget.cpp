@@ -30,6 +30,7 @@
 enum ControlIndex {
   FIRMWARE,
   ENABLED,
+  FW_IMAGE,
   ROTATION,
   BRIGHTNESS,
   SENSORD,
@@ -148,10 +149,7 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
                _("IntegerTest."), _T("%d"), _T("%d"), 0,
                   99999, 1, ovdevice.iTest);
 
-  AddReadOnly(_("OV-Firmware-Version"),
-               _("Current firmware version of OpenVario"), version);
-
-  SetEnabled(ovdevice.enabled);
+   SetEnabled(ovdevice.enabled);
 }
 
 bool
