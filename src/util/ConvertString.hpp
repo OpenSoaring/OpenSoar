@@ -6,6 +6,16 @@
 #include "UTF8.hpp"
 
 #ifdef _UNICODE
+# define _W(text) (UTF8ToWideConverter(text).c_str())
+# define _A(text) (WideToUTF8Converter(text).c_str())
+#else
+# define _W(text) (text)
+# define _A(text) (text)
+#endif
+
+
+
+#ifdef _UNICODE
 #include "AllocatedString.hxx"
 #else
 #include "StringPointer.hxx"
