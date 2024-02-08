@@ -65,7 +65,11 @@
 #include "Panels/WeGlideConfigPanel.hpp"
 
 #if defined(IS_OPENVARIO)
+#include "OpenVario/FileMenuWidget.hpp"
 #include "OpenVario/SystemSettingsWidget.hpp"
+#include "OpenVario/System/SystemMenuWidget.hpp"
+#include "OpenVario/DisplaySettingsWidget.hpp"
+#include "OpenVario/ExtraWidget.hpp"
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #endif
 
@@ -146,7 +150,11 @@ static constexpr TabMenuPage setup_pages[] = {
 
 #ifdef IS_OPENVARIO
 static constexpr TabMenuPage openvario_pages[] = {
-    {N_("OpenVario System Settings"), CreateSystemSettingsWidget},
+    {N_("System Settings"), CreateSystemSettingsWidget},
+    {N_("Display Settings"), CreateDisplaySettingsWidget},
+    {N_("File Transfer"), CreateFileMenuWidget},
+    {N_("Advanced Menu (temp)"), CreateExtraWidget},
+    {N_("Advanced Settings (temp)"), CreateSystemMenuWidget},
   { nullptr, nullptr }
 };
 #endif
