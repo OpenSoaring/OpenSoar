@@ -19,6 +19,7 @@ class TabMenuDisplay final : public PaintWindow
 #else
   static constexpr unsigned MAX_MAIN_MENU_ITEMS = 7;
 #endif
+  static constexpr unsigned SUB_MAIN_MENU_BUTTOMS = 40;
 
   /**
    * The offset from a page number in the #TabMenuDisplay to a page
@@ -120,8 +121,7 @@ class TabMenuDisplay final : public PaintWindow
   PagerWidget &pager;
   const DialogLook &look;
 
-//  StaticArray<SubMenuButton, 32> buttons;
-  StaticArray<SubMenuButton, 40> buttons;
+  StaticArray<SubMenuButton, SUB_MAIN_MENU_BUTTOMS> buttons;
 
   /* holds info and buttons for the main menu.  not on child menus */
   StaticArray<MainMenuButton, MAX_MAIN_MENU_ITEMS> main_menu_buttons;
