@@ -2,9 +2,11 @@
 // Copyright The XCSoar Project
 
 #include "System.hpp"
+#ifndef _WIN32
 #include "lib/dbus/Connection.hxx"
 #include "lib/dbus/ScopeMatch.hxx"
 #include "lib/dbus/Systemd.hxx"
+#endif
 #include "system/FileUtil.hpp"
 #include "system/Path.hpp"
 #include "io/KeyValueFileReader.hpp"
@@ -15,8 +17,10 @@
 #include "DisplayOrientation.hpp"
 #include "Hardware/RotateDisplay.hpp"
 
+#ifndef _WIN32
 #include <unistd.h>
 #include <sys/stat.h>
+#endif
 #include <fmt/format.h>
 
 #include <map>
