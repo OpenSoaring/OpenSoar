@@ -120,7 +120,8 @@ class TabMenuDisplay final : public PaintWindow
   PagerWidget &pager;
   const DialogLook &look;
 
-  StaticArray<SubMenuButton, 32> buttons;
+//  StaticArray<SubMenuButton, 32> buttons;
+  StaticArray<SubMenuButton, 40> buttons;
 
   /* holds info and buttons for the main menu.  not on child menus */
   StaticArray<MainMenuButton, MAX_MAIN_MENU_ITEMS> main_menu_buttons;
