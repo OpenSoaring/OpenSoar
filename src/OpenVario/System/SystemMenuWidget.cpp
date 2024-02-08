@@ -17,103 +17,48 @@
 #include "Profile/Map.hpp"
 #include "Screen/Layout.hpp"
 #include "UIGlobals.hpp"
-// #include "UIActions.hpp"
 #include "system/FileUtil.hpp"
 
 #include "Widget/RowFormWidget.hpp"
 
-#if !defined(_WIN32)
 # include "system/Process.hpp"
-#endif
 #include "ui/event/KeyCode.hpp"
 #include "ui/event/Timer.hpp"
 #include "ui/window/Init.hpp"
-#include "ui/window/ContainerWindow.hpp"
 #include "util/ScopeExit.hxx"
+#include "util/ConvertString.hpp"
 
 #include "OpenVario/SystemSettingsWidget.hpp"
+
 #include "OpenVario/System/OpenVarioDevice.hpp"
+#include "OpenVario/System/OpenVarioTools.hpp"
+
 #include "OpenVario/System/SystemMenuWidget.hpp"
 
 #include "system/Process.hpp"
 
-#include <iostream>
+#include <iostream>  // for std::cout << ...
 #include <string>
 #include <fmt/format.h>
+
+#ifndef OPENVARIO_BASEMENU
+# include "ui/window/ContainerWindow.hpp"
+# include "UIActions.hpp"
+#endif
 
 class SystemMenuWidget final : public RowFormWidget {
 public:
   SystemMenuWidget() noexcept : RowFormWidget(UIGlobals::GetDialogLook()) {}
 
-private:
+  void SetEnabled([[maybe_unused]]bool enabled) noexcept {}
+
   /* virtual methods from class Widget */
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
-  // void CalibrateSensors() noexcept;
+  bool Save(bool &changed) noexcept override { return true; }
+
+private:
+
 };
-
-// void
-// SystemMenuWidget::CalibrateSensors() noexcept
-static void 
-CalibrateSensors() noexcept
-{
-  /* make sure sensord is stopped while calibrating sensors */
-  static constexpr const char *start_sensord[] = {"/bin/systemctl", "start",
-                                                  "sensord.service", nullptr};
-  static constexpr const char *stop_sensord[] = {"/bin/systemctl", "stop",
-                                                 "sensord.service", nullptr};
-
-  RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                   _T("Calibrate Sensors"), stop_sensord, [](int status) {
-                     return status == EXIT_SUCCESS ? mrOK : 0;
-                   });
-
-  AtScopeExit() {
-    RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                     _T("Calibrate Sensors"), start_sensord, [](int status) {
-                       return status == EXIT_SUCCESS ? mrOK : 0;
-                     });
-  };
-
-  /* calibrate the sensors */
-  static constexpr const char *calibrate_sensors[] = {"/opt/bin/sensorcal",
-                                                      "-c", nullptr};
-
-  static constexpr int STATUS_BOARD_NOT_INITIALISED = 2;
-  static constexpr int RESULT_BOARD_NOT_INITIALISED = 100;
-  int result = RunProcessDialog(
-      UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-      _T("Calibrate Sensors"), calibrate_sensors, [](int status) {
-        return status == STATUS_BOARD_NOT_INITIALISED
-                   ? RESULT_BOARD_NOT_INITIALISED
-                   : 0;
-      });
-  if (result != RESULT_BOARD_NOT_INITIALISED)
-    return;
-
-  /* initialise the sensors? */
-  if (ShowMessageBox(_T("Sensorboard is virgin. Do you want to initialise it?"),
-                     _T("Calibrate Sensors"), MB_YESNO) != IDYES)
-    return;
-
-  static constexpr const char *init_sensors[] = {"/opt/bin/sensorcal", "-i",
-                                                 nullptr};
-
-  result =
-      RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                       _T("Calibrate Sensors"), init_sensors, [](int status) {
-                         return status == EXIT_SUCCESS ? mrOK : 0;
-                       });
-  if (result != mrOK)
-    return;
-
-  /* calibrate again */
-  RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                   _T("Calibrate Sensors"), calibrate_sensors, [](int status) {
-                     return status == STATUS_BOARD_NOT_INITIALISED
-                                ? RESULT_BOARD_NOT_INITIALISED
-                                : 0;
-                   });
-}
 
 //-----------------------------------------------------------------------------
 class ScreenSSHWidget final : public RowFormWidget {
@@ -195,8 +140,13 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                           [[maybe_unused]] const PixelRect &rc) noexcept
 {
   AddButton(_("Upgrade Firmware"), [this]() {
-    // dialog.SetModalResult(START_UPGRADE);
+#ifdef OPENVARIO_BASEMENU
     exit(START_UPGRADE);
+#else // OPENVARIO_BASEMENU
+    ContainerWindow::SetExitValue(START_UPGRADE);
+    UIActions::SignalShutdown(true);
+    return START_UPGRADE;
+#endif
   });
 
 #if 1
@@ -226,13 +176,17 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddButton(_("Calibrate Sensors"), CalibrateSensors);
 
   AddButton(_("Calibrate Touch"), [this]() {
-    // dialog.SetModalResult(LAUNCH_TOUCH_CALIBRATE);
-    // dialog.SetModalResult(LAUNCH_TOUCH_CALIBRATE);
-    ContainerWindow::SetExitValue(LAUNCH_TOUCH_CALIBRATE);
-//    UIActions::SignalShutdown(false);
-
-
+// the programm exit in OpenSoar looks complete different fro OpenVarioBaseMenu
+#ifdef OPENVARIO_BASEMENU
     exit(LAUNCH_TOUCH_CALIBRATE);
+#else // OPENVARIO_BASEMENU
+    ContainerWindow::SetExitValue(LAUNCH_TOUCH_CALIBRATE);
+    UIActions::SignalShutdown(true);
+    return mrOK;
+    //        InputEvents::eventExit(_T("reboot"));
+    // dialog.SetModalResult(LAUNCH_TOUCH_CALIBRATE);
+    // dialog.SetModalResult(LAUNCH_TOUCH_CALIBRATE);
+
 #if 0
 #if defined(_WIN32)
     static constexpr const char *argv[] = { "/usr/bin/ov-calibrate-ts.sh",
@@ -250,7 +204,8 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 //    Run("/usr/bin/ov-calibrate-ts.sh");
 #endif
 #endif
-  });
+#endif  // OPENVARIO_BASEMENU
+      });
 
   AddButton(_("System Info"), []() {
     static constexpr const char *argv[] = {
@@ -274,7 +229,6 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     StaticString<0x200> str;
     str.Format(_T("%s/%s"), ovdevice.GetHomePath().c_str(), _T("process.txt"));
     Path output = Path(str);
-    std::cout << "FileName: " << output.ToUTF8() << std::endl;
 
     auto ret_value = Run(
       output,
