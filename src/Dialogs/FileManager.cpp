@@ -143,7 +143,7 @@ class ManagedFileListWidget
   TwoTextRowsRenderer row_renderer;
 
 #ifdef HAVE_DOWNLOAD_MANAGER
-  Button *download_button, *add_button, *cancel_button, *update_button;
+  Button *download_button, *add_button, *cancel_button, *update_button, *delete_button;
 
   /**
   * Whether at least one file is out of date.
@@ -252,6 +252,7 @@ protected:
   void UpdateButtons();
 
   void Download();
+  void Delete();
   void Add();
   void Cancel();
   void UpdateFiles();
@@ -396,8 +397,10 @@ ManagedFileListWidget::CreateButtons(WidgetDialog &dialog) noexcept
 {
 #ifdef HAVE_DOWNLOAD_MANAGER
   if (Net::DownloadManager::IsAvailable()) {
-    download_button = dialog.AddButton(_("Download"), [this](){ Download(); });
+    // download_button = dialog.AddButton(_("Download"), [this](){ Download(); });
+    download_button = dialog.AddButton(_("Update"), [this](){ Download(); });
     add_button = dialog.AddButton(_("Add"), [this](){ Add(); });
+    delete_button = dialog.AddButton(_("Delete"), [this](){ Delete(); });
     cancel_button = dialog.AddButton(_("Cancel"), [this](){ Cancel(); });
     update_button = dialog.AddButton(_("Update all"), [this](){
       UpdateFiles();
@@ -462,6 +465,28 @@ void
 ManagedFileListWidget::OnCursorMoved([[maybe_unused]] unsigned index) noexcept
 {
   UpdateButtons();
+}
+
+void
+ManagedFileListWidget::Delete()
+{
+#ifdef HAVE_DOWNLOAD_MANAGER
+  assert(Net::DownloadManager::IsAvailable());
+
+  if (items.empty())
+    return;
+
+  const unsigned current = GetList().GetCursorIndex();
+  assert(current < items.size());
+
+  auto path = LocalPath(items[current].name);
+  // TODO(aug):
+  // Please delete only w/o asking if the file in no profile inserted
+  auto r = File::Delete(path);
+  if (r)
+    RefreshList();
+  // else not deleted???
+#endif
 }
 
 void
