@@ -112,21 +112,23 @@ private:
       datapath = ovdevice.settings.find("OpenSoarData")->second;
     else
       datapath = ovdevice.GetDataPath().ToUTF8() + "/OpenSoarData";
+
     int ret_value = StartSoarExe("OpenSoar", datapath);
 
     // after OpenSoar the settings can be changed
     ovdevice.LoadSettings();
     switch (ret_value) { 
-    case 200:
-      exit(LAUNCH_SHELL);
+    case 200:  // simple exit from OpenSoar, go in menu
+      break;
     case 201:
       Run("/sbin/reboot");
       break;
     case 202:
       Run("/sbin/poweroff");
       break;
+    case LAUNCH_SHELL: // "Exit to shell'
+      exit(100);
     case START_UPGRADE:
-    case LAUNCH_SHELL:
     case LAUNCH_TOUCH_CALIBRATE:
       exit(ret_value);
     default:
@@ -334,7 +336,7 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
 #ifndef RELEASE_VERSION
   AddButton(_T("Exit to Shell (with Wait)"),
-                             [this]() { dialog.SetModalResult(LAUNCH_SHELL+1); });
+            [this]() { dialog.SetModalResult(LAUNCH_SHELL_STOP); });
 #endif
 
   auto Btn_Reboot =
