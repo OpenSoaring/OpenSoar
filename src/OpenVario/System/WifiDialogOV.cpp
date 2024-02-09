@@ -87,6 +87,8 @@ class WifiListWidget final
     bool connected = false; // 'R' - 3rd char;
   };
 
+  Button *scan_button;
+  Button *reconnect_button;
   Button *connect_button;
 
   WifiStatus status;
@@ -101,7 +103,7 @@ class WifiListWidget final
 
 public:
   void CreateButtons(WidgetDialog &dialog) {
-    dialog.AddButton(_("Scan"), [this](){
+    scan_button = dialog.AddButton(_("Scan"), [this](){
       try {
         EnsureConnected();
         // wpa_supplicant.Scan();
@@ -112,7 +114,15 @@ public:
       }
     });
 
-    connect_button = dialog.AddButton(_("Connect"), [this](){
+    reconnect_button = dialog.AddButton(_("Re-Connect"), [this]() {
+      try {
+        ReConnect();
+      } catch (...) {
+        ShowError(std::current_exception(), _("Error"));
+      }
+    });
+
+    connect_button = dialog.AddButton(_("Connect"), [this]() {
       try {
         Connect();
       } catch (...) {
@@ -184,33 +194,8 @@ public:
   void UpdateList();
 
   void Connect();
+  void ReConnect();
 };
-
-
-#if 0 //DEBUG_TEST_VERSION
-const char *TestArray[5][2] = {
-  {
-      "SSID-1",
-      "bssid-1",
-  },
-  {
-      "SSID-2",
-      "bssid-2",
-  },
-  {
-      "SSID-3",
-      "bssid-3",
-  },
-  {
-      "SSID-4",
-      "bssid-4",
-  },
-  {
-      "SSID-5",
-      "bssid-5",
-  }
-};
-#endif
 
 void 
 WifiListWidget::ScanWifi()
@@ -477,6 +462,32 @@ void WifiListWidget::WifiConnect(enum WifiSecurity security,
   wpa_supplicant.EnableNetwork(id);
   wpa_supplicant.SaveConfig();
 #endif // WithWPA
+}
+
+inline void
+WifiListWidget::ReConnect()
+{
+  EnsureConnected();
+
+  const unsigned i = GetList().GetCursorIndex();
+  if (i >= networks.size())
+    return;
+
+#if defined(IS_OPENVARIO_CB2)
+  // disable wifi
+  Run(Path(_T("wifi-disable.txt")), connmanctl, "disable", "wifi");
+  // wait a second
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  // enable wifi again for AutoConnect
+  Run(Path(_T("wifi-enable.txt")), connmanctl, "enable", "wifi");
+  // wait a second after wifi enabling (?)
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+//  // ask state of the wifi connection
+//  Run(Path(_T("wifi-connect.txt")), connmanctl, "services",
+//      network->base_id.c_str());
+#endif
+
+  UpdateList();
 }
 
 inline void
