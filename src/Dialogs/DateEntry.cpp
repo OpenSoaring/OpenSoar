@@ -38,15 +38,20 @@ DateEntryDialog(const TCHAR *caption, BrokenDate &value,
   entry->SetCallback(dialog.MakeModalResultCallback(mrOK));
 
   /* create buttons */
-  dialog.AddButton(_("OK"), mrOK);
+  dialog.first_button = dialog.AddButton(_("OK"), mrOK);
   dialog.AddButton(_("Cancel"), mrCancel);
 
-  dialog.AddButton(_("Reset"), [&entry = *entry, start_value = value](){
+  // dialog.AddButton(_("OK"), mrOK);
+  // dialog.AddButton(_("Cancel"), mrCancel);
+
+  dialog.last_button =
+      dialog.AddButton(_("Reset"), [&entry = *entry, start_value = value]() {
     entry.SetValue(start_value);  // the start value
   });
 
   if (nullable)
-    dialog.AddButton(_("Clear"), [&entry=*entry](){
+    dialog.last_button = dialog.AddButton(
+        _("Clear"), [&entry = *entry]() {
       entry.SetInvalid();
     });
 
