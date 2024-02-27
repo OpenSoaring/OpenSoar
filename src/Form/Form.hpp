@@ -6,6 +6,7 @@
 #include "ui/window/ContainerWindow.hpp"
 #include "ui/window/SolidContainerWindow.hpp"
 #include "util/tstring.hpp"
+#include "Form/Button.hpp"
 
 #include <functional>
 #include <tchar.h>
@@ -27,6 +28,9 @@ class WndForm : public ContainerWindow
 public:
   typedef std::function<bool(unsigned)> KeyDownFunction;
   typedef std::function<bool(unsigned)> CharacterFunction;
+
+  Button *first_button = nullptr;
+  Button *last_button = nullptr;
 
 protected:
   const DialogLook &look;
@@ -134,6 +138,13 @@ public:
   auto MakeModalResultCallback(int value) noexcept {
     return [this, value](){
       SetModalResult(value);
+    };
+  }
+
+  auto SetFocusButtonCallback(Button *button) noexcept {
+    return [this, button]() {
+      if (button)
+        button->SetFocus();
     };
   }
 
