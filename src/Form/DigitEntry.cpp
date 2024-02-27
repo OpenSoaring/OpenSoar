@@ -901,15 +901,18 @@ bool
 DigitEntry::OnKeyCheck(unsigned key_code) const noexcept
 {
   switch (key_code) {
-  case KEY_UP:
-  case KEY_DOWN:
+  case KEY_UP:  // 38
+  case KEY_DOWN:  // 40
     return true;
 
-  case KEY_LEFT:
+  case KEY_LEFT:  // 37
     return cursor > 0;
 
-  case KEY_RIGHT:
+  case KEY_RIGHT:  // 39
     return cursor < length - 1;
+
+  // case KEY_RETURN:   // 13
+  // case KEY_ESCAPE:   // 27
 
   default:
     return PaintWindow::OnKeyCheck(key_code);
@@ -934,14 +937,22 @@ DigitEntry::OnKeyDown(unsigned key_code) noexcept
 
   case KEY_LEFT:
     i = FindEditableLeft(cursor - 1);
-    if (i >= 0)
+    if (i >= 0) {
       SetCursor(i);
+    } else if (left_overflow) {
+      left_overflow();
+      cursor = length - 1;
+    }
     return true;
 
   case KEY_RIGHT:
     i = FindEditableRight(cursor + 1);
-    if (i >= 0)
+    if (i >= 0) {
       SetCursor(i);
+    } else if (right_overflow) {
+      right_overflow();
+      cursor = 0;
+    }
     return true;
 
   case KEY_RETURN:

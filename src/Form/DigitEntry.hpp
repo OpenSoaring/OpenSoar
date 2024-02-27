@@ -151,6 +151,9 @@ class DigitEntry : public PaintWindow {
 
   std::function<void()> callback;
 
+  std::function<void()> left_overflow;
+  std::function<void()> right_overflow;
+
   /**
    * Total number of columns.
    */
@@ -213,6 +216,12 @@ public:
    */
   void SetCallback(std::function<void()> _callback) noexcept {
     callback = std::move(_callback);
+  }
+  void SetLeftOverflow(std::function<void()> _callback) noexcept {
+    left_overflow = std::move(_callback);
+  }
+  void SetRightOverflow(std::function<void()> _callback) noexcept {
+    right_overflow = std::move(_callback);
   }
 
   void SetCursor(unsigned cursor);
