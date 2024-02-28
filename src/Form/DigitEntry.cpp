@@ -901,18 +901,13 @@ bool
 DigitEntry::OnKeyCheck(unsigned key_code) const noexcept
 {
   switch (key_code) {
-  case KEY_UP:  // 38
-  case KEY_DOWN:  // 40
+  case KEY_UP:
+  case KEY_DOWN:
+  case KEY_LEFT:
+  case KEY_RIGHT:
+  case KEY_RETURN:
     return true;
 
-  case KEY_LEFT:  // 37
-    return cursor > 0;
-
-  case KEY_RIGHT:  // 39
-    return cursor < length - 1;
-
-  // case KEY_RETURN:   // 13
-  // case KEY_ESCAPE:   // 27
 
   default:
     return PaintWindow::OnKeyCheck(key_code);
