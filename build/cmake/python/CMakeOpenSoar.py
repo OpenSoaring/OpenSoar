@@ -385,8 +385,7 @@ def create_opensoar(args):
     elif toolchain.startswith('clang'):
       opensoar_app = project_name + '-Clang.exe'
 
-    arguments = [build_dir + '/' + opensoar_app, '-1400x700', '-fly', '-profile=D:/Data/XCSoarData/August.prf', '-datapath=D:/Data/XCSoarData']
-    # arguments = [build_dir + '/' + opensoar_app, '-1400x700', '-fly', '-profile=August5.prf']
+    arguments = [build_dir + '/' + opensoar_app, '-1400x700', '-fly', '-profile=D:/Data/OpenSoarData/August.prf', '-datapath=D:/Data/OpenSoarData']
     if not os.path.exists(arguments[0]):
         print("App '", arguments[0], "' doesn't exist!")
         creation = 0

@@ -485,6 +485,11 @@ add_dependencies(${TARGET_NAME} util libOpenSoar)
 # isn't possible: set_target_properties(ALL_BUILD PROPERTIES FOLDER _CMake)
 # isn't possible: set_target_properties(ZERO_CHECK PROPERTIES FOLDER _CMake)
 if (MSVC)
+    if (EXISTS D:/Data/OpenSoarData/August.prf)
+      set(OPENSOARDATA D:/Data/OpenSoarData)  # this is only valid for August/Flaps6!
+    else ()
+      set(OPENSOARDATA C:/OpenSoarData)
+    endif ()
     message(STATUS "Configure:     ${PROJECTGROUP_BINARY_DIR}/${TARGET_NAME}.vcxproj.user")
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/ide/msvc/OpenSoar.vcxproj.user.in"

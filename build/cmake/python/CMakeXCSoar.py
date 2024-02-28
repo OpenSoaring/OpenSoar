@@ -367,8 +367,8 @@ def create_xcsoar(args):
       xcsoar_app = project_name + '-Clang.exe'
 
     # XCSoarAug-MinGW.exe -1400x700' -fly -profile=D:\Data\XCSoarData\August.prf -datapath=D:/XCSoarData/Data
-    arguments = [build_dir + '/' + xcsoar_app, '-1400x700', '-fly', '-profile=D:/Data/XCSoarData/August.prf', '-datapath=D:/Data/XCSoarData']
-    # arguments = [build_dir + '/' + xcsoar_app, '-1400x700', '-fly', '-profile=D:/Data/XCSoarData/August2.prf', '-datapath=D:/Data/XCSoarData']
+    arguments = [build_dir + '/' + xcsoar_app, '-1400x700', '-fly', '-profile=D:/Data/OpenSoarData/August.prf', '-datapath=D:/Data/OpenSoarData']
+    # arguments = [build_dir + '/' + xcsoar_app, '-1400x700', '-fly', '-profile=D:/Data/OpenSoarData/August2.prf', '-datapath=D:/Data/OpenSoarData']
     # arguments = [build_dir + '/' + xcsoar_app, '-1400x700', '-fly', '-profile=August5.prf']
     if not os.path.exists(arguments[0]):
         print("App 'arguments[0]' doesn't exist!")
