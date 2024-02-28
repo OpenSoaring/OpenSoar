@@ -13,8 +13,7 @@ bool
 DateEntryDialog(const TCHAR *caption, BrokenDate &value,
                 bool nullable)
 {
-  /* create the dialog */
-
+  // create the dialog
   const DialogLook &look = UIGlobals::GetDialogLook();
 
   TWidgetDialog<FixedWindowWidget> dialog(WidgetDialog::Auto{},
@@ -23,8 +22,7 @@ DateEntryDialog(const TCHAR *caption, BrokenDate &value,
 
   ContainerWindow &client_area = dialog.GetClientAreaWindow();
 
-  /* create the input control */
-
+  // create the input control
   WindowStyle control_style;
   control_style.Hide();
   control_style.TabStop();
@@ -37,12 +35,9 @@ DateEntryDialog(const TCHAR *caption, BrokenDate &value,
   entry->SetValue(value);
   entry->SetCallback(dialog.MakeModalResultCallback(mrOK));
 
-  /* create buttons */
+  // create buttons
   dialog.first_button = dialog.AddButton(_("OK"), mrOK);
   dialog.AddButton(_("Cancel"), mrCancel);
-
-  // dialog.AddButton(_("OK"), mrOK);
-  // dialog.AddButton(_("Cancel"), mrCancel);
 
   dialog.last_button =
       dialog.AddButton(_("Reset"), [&entry = *entry, start_value = value]() {
@@ -55,8 +50,11 @@ DateEntryDialog(const TCHAR *caption, BrokenDate &value,
       entry.SetInvalid();
     });
 
-  /* run it */
+  // set handler for cursor overflow
+  entry->SetLeftOverflow(dialog.SetFocusButtonCallback(dialog.last_button));
+  entry->SetRightOverflow(dialog.SetFocusButtonCallback(dialog.first_button));
 
+  // ... and run it
   dialog.SetWidget(std::move(entry));
 
   if (dialog.ShowModal() != mrOK)
