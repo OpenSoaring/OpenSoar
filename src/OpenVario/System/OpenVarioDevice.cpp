@@ -94,10 +94,8 @@ OpenVario_Device::Initialise() noexcept {
     internal_config =
         AllocatedPath::Build(home_path, Path(_T("ov-internal.cfg")));
 #endif
-
-    SetPrimaryDataPath(data_path);
     //----------------------------
-    LogFormat("data_path = %s", data_path.ToUTF8().c_str());
+    LogFormat("data_path (base) = %s", data_path.ToUTF8().c_str());
 #ifdef DEBUG_OPENVARIO
     LogFormat("home_path = %s", home_path.ToUTF8().c_str());
     LogFormat("settings_config = %s", settings_config.ToUTF8().c_str());
