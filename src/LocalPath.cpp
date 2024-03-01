@@ -39,7 +39,7 @@
 #include <unistd.h>
 #endif
 
-#define XCSDATADIR "XCSoarData"
+#define OPENSOAR_DATADIR "OpenSoarData"
 
 /**
  * This is the partition that the Kobo software mounts on PCs
@@ -47,7 +47,7 @@
 #define KOBO_USER_DATA "/mnt/onboard"
 
 /**
- * A list of XCSoarData directories.  The first one is the primary
+ * A list of OpenSoarData directories.  The first one is the primary
  * one, where "%LOCAL_PATH%\\" refers to.
  */
 static std::list<AllocatedPath> data_paths;
@@ -174,7 +174,7 @@ ContractLocalPath(Path src) noexcept
 #ifdef _WIN32
 
 /**
- * Find a XCSoarData folder in the same location as the executable.
+ * Find a OpenSoarData folder in the same location as the executable.
  */
 [[gnu::pure]]
 static AllocatedPath
@@ -184,7 +184,7 @@ FindDataPathAtModule(HMODULE hModule) noexcept
   if (GetModuleFileName(hModule, buffer, MAX_PATH) <= 0)
     return nullptr;
 
-  ReplaceBaseName(buffer, _T(XCSDATADIR));
+  ReplaceBaseName(buffer, _T(OPENSOAR_DATADIR));
   return Directory::Exists(Path(buffer))
     ? AllocatedPath(buffer)
     : nullptr;
@@ -197,9 +197,9 @@ FindDataPaths() noexcept
 {
   std::list<AllocatedPath> result;
 
-  /* Kobo: hard-coded XCSoarData path */
+  /* Kobo: hard-coded OpenSoarData path */
   if constexpr (IsKobo()) {
-    result.emplace_back(_T(KOBO_USER_DATA DIR_SEPARATOR_S XCSDATADIR));
+    result.emplace_back(_T(KOBO_USER_DATA DIR_SEPARATOR_S OPENSOAR_DATADIR));
     return result;
   }
 
@@ -209,18 +209,18 @@ FindDataPaths() noexcept
     const auto env = Java::GetEnv();
 
     for (auto &path : context->GetExternalFilesDirs(env)) {
-      __android_log_print(ANDROID_LOG_DEBUG, "XCSoar",
+      __android_log_print(ANDROID_LOG_DEBUG, "OpenSoar",
                           "Context.getExternalFilesDirs()='%s'",
                           path.c_str());
       result.emplace_back(std::move(path));
     }
 
     if (auto path = Environment::GetExternalStoragePublicDirectory(env,
-                                                                   "XCSoarData");
+                                                                   "OpenSoarData");
         path != nullptr) {
       const bool writable = access(path.c_str(), W_OK) == 0;
 
-      __android_log_print(ANDROID_LOG_DEBUG, "XCSoar",
+      __android_log_print(ANDROID_LOG_DEBUG, "OpenSoar",
                           "Environment.getExternalStoragePublicDirectory()='%s'%s",
                           path.c_str(),
                           writable ? "" : " (not accessible)");
@@ -238,22 +238,22 @@ FindDataPaths() noexcept
   }
 
 #ifdef _WIN32
-  /* look for a XCSoarData directory in the same directory as
-     XCSoar.exe */
+  /* look for a OpenSoarData directory in the same directory as
+     OpenSoar.exe */
   if (auto path = FindDataPathAtModule(nullptr); path != nullptr)
     result.emplace_back(std::move(path));
 
-  /* Windows: use "My Documents\XCSoarData" */
+  /* Windows: use "My Documents\OpenSoarData" */
   {
     TCHAR buffer[MAX_PATH];
     if (SHGetSpecialFolderPath(nullptr, buffer, CSIDL_PERSONAL,
                                result.empty()))
-      result.emplace_back(AllocatedPath::Build(buffer, _T(XCSDATADIR)));
+      result.emplace_back(AllocatedPath::Build(buffer, _T(OPENSOAR_DATADIR)));
   }
 #endif // _WIN32
 
 #ifdef HAVE_POSIX
-  /* on Unix, use ~/.xcsoar */
+  /* on Unix, use ~/OpenSoarData too */
   if (const char *home = getenv("HOME"); home != nullptr) {
 #ifdef __APPLE__
     /* Mac OS X users are not used to dot-files in their home
@@ -263,21 +263,21 @@ FindDataPaths() noexcept
        folder can also be accessed via iTunes, if
        UIFileSharingEnabled is set to YES in Info.plist */
 #if (TARGET_OS_IPHONE)
-    constexpr const char *in_home = "Documents" XCSDATADIR;
+    constexpr const char *in_home = "Documents" OPENSOAR_DATADIR;
 #else
-    constexpr const char *in_home = XCSDATADIR;
+    constexpr const char *in_home = OPENSOAR_DATADIR;
 #endif
 #else // !APPLE
-    constexpr const char *in_home = ".xcsoar";
+    constexpr const char *in_home = OPENSOAR_DATADIR;
 #endif
 
     result.emplace_back(AllocatedPath::Build(Path(home), in_home));
   }
 
 #ifndef __APPLE__
-  /* Linux (and others): allow global configuration in /etc/xcsoar */
-  if (Directory::Exists(Path{"/etc/xcsoar"}))
-    result.emplace_back(Path{"/etc/xcsoar"});
+  /* Linux (and others): allow global configuration in /etc/opensoar */
+  if (Directory::Exists(Path{"/etc/opensoar"}))
+    result.emplace_back(Path{"/etc/opensoar"});
 #endif // !APPLE
 #endif // HAVE_POSIX
 
@@ -309,16 +309,17 @@ MakeCacheDirectory(const TCHAR *name) noexcept
 void
 InitialiseDataPath()
 {
-  data_paths = FindDataPaths();
-  if (data_paths.empty())
-    throw std::runtime_error("No data path found");
-
+  if (data_paths.empty()) {
+    data_paths = FindDataPaths();
+    if (data_paths.empty())
+      throw std::runtime_error("No data path found");
+  }
 #ifdef ANDROID
   cache_path = context->GetExternalCacheDir(Java::GetEnv());
   if (cache_path == nullptr)
     throw std::runtime_error("No Android cache directory");
 
-  // TODO: delete the old cache directory in XCSoarData?
+  // TODO: delete the old cache directory in OpenSoarData?
 #else
   cache_path = LocalPath(_T("cache"));
 #endif
