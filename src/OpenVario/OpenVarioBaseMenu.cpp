@@ -111,7 +111,7 @@ private:
     if (ovdevice.settings.find("OpenSoarData") != ovdevice.settings.end())
       datapath = ovdevice.settings.find("OpenSoarData")->second;
     else
-      datapath = ovdevice.GetDataPath().ToUTF8() + "/OpenSoarData";
+      datapath = ovdevice.GetDataPath().ToUTF8() + "/OpenSoarData/";
 
     int ret_value = StartSoarExe("OpenSoar", datapath);
 
@@ -142,7 +142,7 @@ private:
     if (ovdevice.settings.find("XCSoarData") != ovdevice.settings.end())
       datapath = ovdevice.settings.find("XCSoarData")->second;
     else 
-      datapath = ovdevice.GetDataPath().ToUTF8() + "/XCSoarData";
+      datapath = ovdevice.GetDataPath().ToUTF8() + "/XCSoarData/";
     return StartSoarExe("xcsoar", datapath);
   }
 
