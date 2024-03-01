@@ -142,15 +142,6 @@ WinMain(HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance,
         [[maybe_unused]] int nCmdShow)
 #endif
 try {
-#ifdef USE_WIN32_RESOURCES
-  ResourceLoader::Init(hInstance);
-#endif
-
-  InitialiseDataPath();
-
-  // Write startup note + version to logfile
-  LogFormat(_T("Starting OpenSoar %s"), OpenSoar_ProductToken);
-
   // Read options from the command line
   {
 #ifdef _WIN32
@@ -160,6 +151,14 @@ try {
 #endif
     CommandLine::Parse(args);
   }
+
+  InitialiseDataPath();
+
+#ifdef USE_WIN32_RESOURCES
+  ResourceLoader::Init(hInstance);
+#endif
+  // Write startup note + version to logfile
+  LogFormat(_T("Starting OpenSoar %s"), OpenSoar_ProductToken);
 
   int ret = Main();
 
