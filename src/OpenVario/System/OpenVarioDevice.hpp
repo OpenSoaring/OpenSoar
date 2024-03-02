@@ -88,7 +88,7 @@ public:
     bool enabled = true;
     unsigned brightness = 100;
     unsigned timeout = 5;
-    unsigned rotation = 0;
+    DisplayOrientation rotation = DisplayOrientation::DEFAULT;
 
     unsigned iTest = 0;
   };
