@@ -69,8 +69,8 @@ SettingRotationWidget::SaveRotation(const std::string &rotationString)
    // ChangeConfigInt("rotation", rotationInt, ovdevice.GetSettingsConfig());
    // TODO(August2111):  move the from ovdevice.settings to ovdevice.sysetm
    LoadConfigFile(ovdevice.system_map, ovdevice.GetSystemConfig());  // -> OpenVarioBaseMenu->StartUp!
-   ovdevice.rotation = stoi(rotationString);
-   ovdevice.system_map.insert_or_assign("Rotation", std::to_string(ovdevice.rotation));
+   ovdevice.rotation = (DisplayOrientation) stoi(rotationString);
+   ovdevice.system_map.insert_or_assign("Rotation", std::to_string((unsigned) ovdevice.rotation));
    WriteConfigFile(ovdevice.system_map, ovdevice.GetSystemConfig());
 }
 

@@ -83,6 +83,15 @@ private:
     nullptr
   };
 
+  static constexpr StaticEnumChoice rotation_list[] = {
+  // { DisplayOrientation::DEFAULT,  _T("default") }, 
+  { DisplayOrientation::LANDSCAPE, _T("Landscape (0°)") },
+  { DisplayOrientation::PORTRAIT, _T("Portrait (90°)") },
+  { DisplayOrientation::REVERSE_LANDSCAPE, _T("Rev. Landscape (180°)") },
+  { DisplayOrientation::REVERSE_PORTRAIT, _T("rev. Portrait (270°)")},
+  nullptr
+  };
+
 void
 SystemSettingsWidget::SetEnabled([[maybe_unused]] bool enabled) noexcept
 {
@@ -119,9 +128,8 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
       _("Settings Enabled"),
       _("Enable the Settings Page"), ovdevice.enabled, this);
 
-   AddInteger(_("Rotation"),
-             _("Rotation Display OpenVario"), _T("%d"), _T("%d%%"), 0,
-              3, 1, ovdevice.rotation);
+   AddEnum(_("Rotation"), _("Rotation Display OpenVario"),
+           rotation_list, (unsigned)ovdevice.rotation);
 
    AddInteger(_("Brightness"),
              _("Brightness Display OpenVario"), _T("%d"), _T("%d%%"), 10,
@@ -189,6 +197,9 @@ SystemSettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept
   if (changed) {
     WriteConfigFile(ovdevice.settings, ovdevice.GetSettingsConfig());
   }
+
+  if (SaveValueEnum(ROTATION, ovdevice.rotation))
+    ovdevice.SetRotation(ovdevice.rotation); 
 
   if (SaveValueEnum(SSH, ovdevice.ssh))
     ovdevice.SetSSHStatus((SSHStatus)ovdevice.ssh); 

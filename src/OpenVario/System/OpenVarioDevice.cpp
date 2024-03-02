@@ -73,6 +73,9 @@ OpenVario_Device::Initialise() noexcept {
         AllocatedPath::Build(Path(_T("/boot")), Path(_T("config.uEnv")));
     is_real = File::Exists(system_config);
 #endif
+    if (!is_real)  // a pseudo 'config' file in home_path
+      system_config = AllocatedPath::Build(home_path, Path(_T("config.uEnv")));
+
     if (Directory::Exists(data_path)) {
       // auto config = AllocatedPath::Build(data_path,
       // Path(_T("openvario.cfg")));
@@ -99,10 +102,6 @@ OpenVario_Device::Initialise() noexcept {
 #ifdef DEBUG_OPENVARIO
     LogFormat("home_path = %s", home_path.ToUTF8().c_str());
     LogFormat("settings_config = %s", settings_config.ToUTF8().c_str());
-    LogFormat("system_config = %s", system_config.ToUTF8().c_str());
-    if (!is_real)
-      system_config = AllocatedPath::Build(home_path, Path(_T("config.uEnv")));
-
     LogFormat("system_config = %s", system_config.ToUTF8().c_str());
     LogFormat("upgrade_config = %s", upgrade_config.ToUTF8().c_str());
     // the same...: LogFormat(_T("upgrade_config = %s"), upgrade_config.c_str());
@@ -147,7 +146,9 @@ OpenVario_Device::LoadSettings() noexcept
 #ifndef DBUS_FUNCTIONS
   LoadConfigFile(internal_map, GetInternalConfig());
 #endif
-  ReadInteger(system_map, "rotation", rotation);
+  unsigned i_rot = 0;
+  ReadInteger(system_map, "rotation", i_rot);
+  rotation = (DisplayOrientation) i_rot;
 #ifdef _DEBUG
   std::string_view fdtfile;
   ReadString(system_map, "fdtfile", fdtfile);
@@ -213,7 +214,7 @@ DisplayOrientation
 OpenVario_Device::GetRotation()
 {
   std::map<std::string, std::string, std::less<>> map;
-  LoadConfigFile(map, Path(_T("/boot/config.uEnv")));
+  LoadConfigFile(map, system_config);  // Path(_T("/boot/config.uEnv")));
 
   uint_least8_t result;
   result = map.contains("rotation") ? std::stoi(map.find("rotation")->second) : 0;
@@ -252,9 +253,9 @@ OpenVario_Device::SetRotation(DisplayOrientation orientation)
 
   File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")), fmt::format_int{rotation}.c_str());
 
-  LoadConfigFile(map, Path(_T("/boot/config.uEnv")));
+  LoadConfigFile(map, system_config);  // Path(_T("/boot/config.uEnv")));
   map.insert_or_assign("rotation", fmt::format_int{rotation}.c_str());
-  WriteConfigFile(map, Path(_T("/boot/config.uEnv")));
+  WriteConfigFile(map, system_config); // Path(_T("/boot/config.uEnv")));
 }
 
 #ifdef DBUS_FUNCTIONS
