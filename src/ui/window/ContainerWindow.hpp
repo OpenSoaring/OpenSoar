@@ -15,6 +15,23 @@ class Brush;
 class WindowReference;
 #endif
 
+enum ExitValues {
+  EXIT_NORMAL = 100,   // 20002);
+  EXIT_SYSTEM = 200,   // 20002);
+  EXIT_REBOOT = 201,   // 20002);
+  EXIT_SHUTDOWN = 202, // 20002);
+
+  LAUNCH_SHELL = 203,
+  LAUNCH_SHELL_STOP = 204,
+  START_UPGRADE = 205,
+  LAUNCH_TOUCH_CALIBRATE = 206,
+
+#ifdef IS_OPENVARIO
+  EXIT_BASE_MENU = 207,
+#endif
+  EXIT_RESTART = 208,
+};
+
 /**
  * A container for more #Window objects.  It is also derived from
  * #PaintWindow, because you might want to paint a border between the

@@ -628,11 +628,13 @@ InputEvents::eventExit([[maybe_unused]] const TCHAR *misc)
   if (UI::TopWindow::GetExitValue() == 0) {
     if (StringIsEqual(misc, _T("system"))) {
       // return value on UNIX(32) is only a Byte?
-      UI::TopWindow::SetExitValue(200);  // 20000); 
+      UI::TopWindow::SetExitValue(EXIT_SYSTEM); // 20000); 
     } else if (StringIsEqual(misc, _T("reboot"))) {
-      UI::TopWindow::SetExitValue(201);  // 20001);
+      UI::TopWindow::SetExitValue(EXIT_REBOOT); // 20001);
     } else if (StringIsEqual(misc, _T("shutdown"))) {
-      UI::TopWindow::SetExitValue(202);  // 20002);
+      UI::TopWindow::SetExitValue(EXIT_SHUTDOWN); // 20002);
+    } else if (StringIsEqual(misc, _T("restart"))) {
+      UI::TopWindow::SetExitValue(EXIT_RESTART);
     }
   }
   UIActions::SignalShutdown(false);
