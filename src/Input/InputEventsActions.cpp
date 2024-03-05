@@ -625,7 +625,6 @@ InputEvents::eventBrightness([[maybe_unused]] const TCHAR *misc)
 void 
 InputEvents::eventExit([[maybe_unused]] const TCHAR *misc)
 {
-#ifdef IS_OPENVARIO
   if (UI::TopWindow::GetExitValue() == 0) {
     if (StringIsEqual(misc, _T("system"))) {
       // return value on UNIX(32) is only a Byte?
@@ -636,7 +635,6 @@ InputEvents::eventExit([[maybe_unused]] const TCHAR *misc)
       UI::TopWindow::SetExitValue(202);  // 20002);
     }
   }
-#endif
   UIActions::SignalShutdown(false);
 }
 
