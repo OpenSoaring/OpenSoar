@@ -41,8 +41,22 @@ EventQueue::Wait(Event &event)
 
     /* check for WIN32 event */
 
-    if (::PeekMessage(&event.msg, nullptr, 0, 0, PM_REMOVE))
+    if (::PeekMessage(&event.msg, nullptr, 0, 0, PM_REMOVE)) {
+    #ifdef  __AUGUST__
+      /* TODO(August2111):
+         On Windows: if 'Restart' is selected a wrong (?) WM_QUIT is in the
+         event_loop - and closes the app immediately... ;-(
+         Bugfix/Workaround: With this handling the restart is OK
+      */ 
+      static unsigned count = 0;
+      if (event.msg.message != WM_QUIT)
+        return true;
+      else
+        return (count++ & 1);        
+#else  // __AUGUST__
       return event.msg.message != WM_QUIT;
+#endif  // __AUGUST__
+    }
 
     const DWORD n = 1;
     const LPHANDLE handles = &trigger;
