@@ -119,6 +119,18 @@ public class OpenSoar extends Activity implements PermissionManager {
     setContentView(tv);
 
     finish();
+    {
+      // This is only possible if Android is rooted!
+      Log.d(TAG, "ShutDown/Reboot Android?");
+      try {
+        Process proc =
+            Runtime.getRuntime().exec(new String[]{"su", "-c", "reboot -p"});
+        proc.waitFor();
+      } catch (Exception ex) {
+        // Log.d(TAG, "Exception");
+        ex.printStackTrace();
+      }
+    }  
   }
 
   final Handler quitHandler = new Handler() {
