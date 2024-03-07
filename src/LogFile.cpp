@@ -70,7 +70,7 @@ void
 LogString(std::string_view s) noexcept
 {
 #ifdef ANDROID
-  __android_log_print(ANDROID_LOG_INFO, "XCSoar", "%.*s",
+  __android_log_print(ANDROID_LOG_INFO, "OpenSoar", "%.*s",
                       int(s.size()), s.data());
 #elif defined(HAVE_POSIX) && !defined(NDEBUG)
   fprintf(stderr, "%.*s\n",
