@@ -296,6 +296,7 @@ Net::DownloadManager::Deinitialise() noexcept
   assert(thread != nullptr);
 
   delete thread;
+  thread = nullptr;
 }
 
 bool
