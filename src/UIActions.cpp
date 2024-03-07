@@ -34,9 +34,22 @@ UIActions::CheckShutdown()
   if (force_shutdown)
     return true;
 
-  return ShowMessageBox(_("Quit program?"), _T("OpenSoar"),
-                     MB_YESNO | MB_ICONQUESTION) == IDYES;
+  switch (UI::TopWindow::GetExitValue()) {
+  case EXIT_REBOOT:
+    return ShowMessageBox(_("Reboot System?"), _T("OpenSoar"),
+                          MB_YESNO | MB_ICONQUESTION) == IDYES;
+  case EXIT_SHUTDOWN:
+    return ShowMessageBox(_("Shutdown System?"), _T("OpenSoar"),
+                          MB_YESNO | MB_ICONQUESTION) == IDYES;
+  case EXIT_RESTART:
+    return ShowMessageBox(_("Short Restart?"), _T("OpenSoar"),
+                          MB_YESNO | MB_ICONQUESTION) == IDYES;
 
+  case EXIT_SYSTEM:
+  default:
+    return ShowMessageBox(_("Quit program?"), _T("OpenSoar"),
+                          MB_YESNO | MB_ICONQUESTION) == IDYES;
+  }
 }
 
 void
