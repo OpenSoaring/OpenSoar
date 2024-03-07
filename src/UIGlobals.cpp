@@ -75,3 +75,6 @@ UIGlobals::GetMapLook()
 
   return CommonInterface::main_window->GetLook().map;
 }
+
+
+const TCHAR *UIGlobals::CommandLine = nullptr;

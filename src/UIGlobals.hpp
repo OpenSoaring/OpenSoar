@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <tchar.h>
+
 namespace UI { class SingleWindow; }
 class GlueMapWindow;
 struct DialogSettings;
@@ -50,4 +52,7 @@ namespace UIGlobals {
 
   [[gnu::const]]
   const MapLook &GetMapLook();
-};
+
+  extern const TCHAR *CommandLine;
+  
+  };
