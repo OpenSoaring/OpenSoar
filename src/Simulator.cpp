@@ -5,6 +5,6 @@
 
 #ifdef SIMULATOR_AVAILABLE
 
-bool global_simulator_flag;
-bool sim_set_in_cmd_line_flag;
+bool global_simulator_flag = false;
+bool sim_set_in_cmd_line_flag = true;
 #endif
