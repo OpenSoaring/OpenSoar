@@ -48,6 +48,9 @@ Copyright_License {
 #include "io/async/AsioThread.hpp"
 #include "util/PrintException.hxx"
 
+#include "UIGlobals.hpp"
+#include "system/Process.hpp"
+
 #ifdef ENABLE_SDL
 /* this is necessary on Mac OS X, to let libSDL bootstrap Quartz
    before entering our main() */
@@ -130,6 +133,29 @@ Main()
   return ret;
 }
 
+int 
+Finishing(int ret) {
+  LogString("Finishing");
+  switch (ret) {
+  case EXIT_REBOOT:
+#ifdef IS_OPENVARIO
+    Run("/sbin/reboot");
+    break;
+#endif
+    return ret;
+  case EXIT_SHUTDOWN:
+#ifdef IS_OPENVARIO
+    Run("/sbin/poweroff");
+    break;
+#endif
+    return ret;
+  case EXIT_SYSTEM:
+  default:
+    break;
+  }
+  return ret;
+}
+
 /**
  * Main entry point for the whole OpenSoar application
  */
@@ -143,37 +169,48 @@ WinMain(HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance,
 #endif
 try {
   // Read options from the command line
-  {
+  int ret = -1;
+  bool rerun = false;
+  do {
+    {
+      rerun = false;
 #ifdef _WIN32
-    Args args(GetCommandLine(), Usage);
+      if (UIGlobals::CommandLine == nullptr)
+        UIGlobals::CommandLine = GetCommandLine();
+      Args args(UIGlobals::CommandLine, Usage);
 #else
-    Args args(argc, argv, Usage);
+      Args args(argc, argv, Usage);
 #endif
-    CommandLine::Parse(args);
-  }
+      CommandLine::Parse(args);
+    }
 
-  InitialiseDataPath();
+    InitialiseDataPath();
 
 #ifdef USE_WIN32_RESOURCES
-  ResourceLoader::Init(hInstance);
+    if (!ResourceLoader::Initialized())
+       ResourceLoader::Init(hInstance);
 #endif
-  // Write startup note + version to logfile
-  LogFormat(_T("Starting OpenSoar %s"), OpenSoar_ProductToken);
+    // Write startup note + version to logfile
+    LogFormat(_T("Starting OpenSoar %s"), OpenSoar_ProductToken);
 
-  int ret = Main();
+    ret = Main();
 
 #if defined(__APPLE__) && TARGET_OS_IPHONE
-  /* For some reason, the app process does not exit on iOS, but a black
-   * screen remains, if the process is not explicitly terminated */
-  exit(ret);
+    /* For some reason, the app process does not exit on iOS, but a black
+     * screen remains, if the process is not explicitly terminated */
+    exit(ret);
 #endif
 
 #ifdef IS_OPENVARIO
-  if (ret == 0)
-    ret = UI::TopWindow::GetExitValue();
+    if (ret == 0)
+      ret = UI::TopWindow::GetExitValue();
 #endif
+    rerun = (ret == EXIT_RESTART);
+    if (rerun)
+      UI::TopWindow::SetExitValue(0);
+  } while (rerun);
 
-  return ret;
+  return Finishing(ret);
 } catch (...) {
   PrintException(std::current_exception());
   return EXIT_FAILURE;
