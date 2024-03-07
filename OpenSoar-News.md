@@ -1,6 +1,10 @@
 OpenSoar Version 7.41.21.1 - not yet released
 ---------------
-* start with OpenVarioBaseMenu
+* End of program with (short) restart, reboot, shutdown and normal program end 
+* OpenVario menu inserted
+* OpenVario:
+  - WiFi selection
+* start with OpenVarioBaseMenu, but hidden for normal user only
 
 OpenSoar Version 7.41.21 - 2023/12/28
 ---------------
