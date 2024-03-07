@@ -16,6 +16,8 @@ class ResourceId;
 namespace ResourceLoader {
 
 #ifdef _WIN32
+bool Initialized();
+
 void
 Init(HINSTANCE hInstance);
 #endif

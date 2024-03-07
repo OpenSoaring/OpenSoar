@@ -13,8 +13,13 @@
 
 static HINSTANCE ResourceLoaderInstance;
 
-void
-ResourceLoader::Init(HINSTANCE hInstance)
+bool
+ResourceLoader::Initialized() 
+{ 
+  return ResourceLoaderInstance != nullptr;
+}
+
+void ResourceLoader::Init(HINSTANCE hInstance)
 {
   assert(ResourceLoaderInstance == nullptr);
 
