@@ -207,7 +207,8 @@ class RowFormWidget : public WindowWidget {
 
     [[gnu::pure]]
     WndProperty &GetControl() noexcept {
-      assert(type == Type::EDIT);
+      // aug(2024-03-08): Type::BUTTON is also ok?
+      assert(type == Type::EDIT || type == Type::BUTTON);
       assert(window != nullptr);
 
       return (WndProperty &)*window;
@@ -215,7 +216,8 @@ class RowFormWidget : public WindowWidget {
 
     [[gnu::pure]]
     const WndProperty &GetControl() const noexcept {
-      assert(type == Type::EDIT);
+      // aug(2024-03-08): Type::BUTTON is also ok?
+      assert(type == Type::EDIT || type == Type::BUTTON);
       assert(window != nullptr);
 
       return (WndProperty &)*window;
