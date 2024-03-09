@@ -1,3 +1,28 @@
+Version 7.43 - not yet released
+* windows
+ - black text color in airspace list like all other systems
+* Kobo
+  - fix Wifi configuration
+
+Version 7.42 - 2024/03/01
+* ui
+  - new terrain ramp High Contrast
+  - fix unreadable icons in task manager and status dialog
+  - render icons at 300 dpi
+* data files
+  - fix bogus "Latin-1 to UTF-8 conversion failed" error
+  - parse elevations in feet correctly in cup files
+  - ignore unit for radio frequency in airspace files
+* devices
+  - validate wind direction
+* Kobo
+  - Wifi setup, display signal level in dBm for new models
+  - scale icons on hi-dpi displays (e.g. Clara HD)
+* user interface
+  - new mountain pass and bridge icons
+* Android
+  - update 'white list' of USB devices with more PIDs for SoftRF Academy
+
 Version 7.41 - 2023/12/21
 * data files
   - fix crash with empty user.cup
