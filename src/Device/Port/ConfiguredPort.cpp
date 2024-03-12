@@ -63,6 +63,20 @@ WrapPort(const DeviceConfig &config, PortListener *listener,
   return port;
 }
 
+#if defined(_WIN32)
+//void 
+const TCHAR *
+WindowsPort(TCHAR buffer[], const DeviceConfig &config) {
+  if (config.path.empty())
+    throw std::runtime_error("No port path configured");
+
+  // the usual windows style of device names:
+  _tcscpy(buffer, _T("\\\\.\\"));
+  _tcscat(buffer, config.path.c_str());
+  return buffer;
+}
+#endif
+
 static std::unique_ptr<Port>
 OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
 #ifdef ANDROID
@@ -85,10 +99,7 @@ OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
       throw std::runtime_error("No port path configured");
 
 #ifdef _WIN32
-    // the usual windows style of device names:
-    _tcscpy(buffer, _T("\\\\.\\"));
-    _tcscat(buffer, config.path.c_str());
-    path = buffer;
+    path = WindowsPort(buffer, config);
 #else
     path = config.path.c_str();
 #endif
@@ -105,10 +116,14 @@ OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
     return OpenAndroidBleHm10Port(*bluetooth_helper,
                                   config.bluetooth_mac,
                                   listener, handler);
+#elif defined (_WIN32)
+    path = WindowsPort(buffer, config);
+    break;
 #else
     throw std::runtime_error("Bluetooth not available");
 #endif
 
+  case DeviceConfig::PortType::BLE_SENSOR:
   case DeviceConfig::PortType::RFCOMM:
 #ifdef ANDROID
     if (config.bluetooth_mac.empty())
@@ -120,13 +135,7 @@ OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
     return OpenAndroidBluetoothPort(*bluetooth_helper, config.bluetooth_mac,
                                     listener, handler);
 #elif defined(_WIN32)
-    if (config.path.empty())
-      throw std::runtime_error("No port path configured");
-
-    // the usual windows style of device names:
-    _tcscpy(buffer, _T("\\\\.\\"));
-    _tcscat(buffer, config.path.c_str());
-    path = buffer;
+    path = WindowsPort(buffer, config);
     break;
 #else
     throw std::runtime_error("Bluetooth not available");
@@ -167,7 +176,7 @@ OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
     break;
 
   case DeviceConfig::PortType::INTERNAL:
-  case DeviceConfig::PortType::BLE_SENSOR:
+//  case DeviceConfig::PortType::BLE_SENSOR:
   case DeviceConfig::PortType::DROIDSOAR_V2:
   case DeviceConfig::PortType::NUNCHUCK:
   case DeviceConfig::PortType::I2CPRESSURESENSOR:
