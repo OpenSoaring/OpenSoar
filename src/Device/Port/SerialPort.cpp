@@ -50,8 +50,12 @@ SerialPort::Open(const TCHAR *path, unsigned _baud_rate)
                      nullptr); // Handle to port with attribute to copy
 
   // If it fails to open the port, return false.
-  if (hPort == INVALID_HANDLE_VALUE)
+  if (hPort == INVALID_HANDLE_VALUE) {
+#ifdef _DEBUG
+    auto error = GetLastError();
+#endif
     throw MakeLastError("Failed to open serial port");
+  }
 
   baud_rate = _baud_rate;
 
