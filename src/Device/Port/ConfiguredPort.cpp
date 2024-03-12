@@ -119,6 +119,15 @@ OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
 
     return OpenAndroidBluetoothPort(*bluetooth_helper, config.bluetooth_mac,
                                     listener, handler);
+#elif defined(_WIN32)
+    if (config.path.empty())
+      throw std::runtime_error("No port path configured");
+
+    // the usual windows style of device names:
+    _tcscpy(buffer, _T("\\\\.\\"));
+    _tcscat(buffer, config.path.c_str());
+    path = buffer;
+    break;
 #else
     throw std::runtime_error("Bluetooth not available");
 #endif
@@ -208,7 +217,7 @@ OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
 #endif
   }
 
-  case DeviceConfig::PortType::ANDROID_USB_SERIAL:
+  case DeviceConfig::PortType::USB_SERIAL:
 #ifdef ANDROID
     if (config.path.empty())
       throw std::runtime_error("No name configured");
@@ -219,6 +228,14 @@ OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
     return OpenAndroidUsbSerialPort(*usb_serial_helper,
                                     config.path.c_str(), config.baud_rate,
                                     listener, handler);
+#elif defined(_WIN32)
+    if (config.path.empty())
+      throw std::runtime_error("No port path configured");
+
+    // the usual windows style of device names:
+    _tcscpy(buffer, _T("\\\\.\\"));
+    _tcscat(buffer, config.path.c_str());
+    path = buffer;
 #else
     throw std::runtime_error("Android USB serial not available");
 #endif
