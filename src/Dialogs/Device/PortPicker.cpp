@@ -55,7 +55,7 @@ private:
     case DeviceConfig::PortType::BLE_SENSOR:
       return _("BLE sensor");
 
-    case DeviceConfig::PortType::ANDROID_USB_SERIAL:
+    case DeviceConfig::PortType::USB_SERIAL:
       return _("USB serial");
 
     default:
@@ -245,7 +245,7 @@ PortPickerWidget::OnDeviceDetected(Type type, const char *address,
     break;
 
   case Type::USB_SERIAL:
-    port_type = DeviceConfig::PortType::ANDROID_USB_SERIAL;
+    port_type = DeviceConfig::PortType::USB_SERIAL;
     break;
   }
 
