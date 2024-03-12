@@ -192,6 +192,9 @@ void eventRunLuaFile(const TCHAR *misc);
 void eventResetTask(const TCHAR *misc);
 void eventLockScreen(const TCHAR *misc);
 void eventExchangeFrequencies(const TCHAR *misc);
+#ifdef IS_OPENVARIO
+void eventShutdown(const TCHAR *misc);
+#endif
 void eventUploadIGCFile(const TCHAR *misc);
 // -------
 
