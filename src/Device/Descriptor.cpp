@@ -341,6 +341,8 @@ DeviceDescriptor::OpenBluetoothSensor()
 
   java_sensor = new Java::GlobalCloseable(factory.OpenBluetoothSensor(config, *this));
   return true;
+#elif defined(_WIN32)
+  return true;
 #else
   return false;
 #endif
@@ -355,27 +357,24 @@ try {
     const std::lock_guard lock{mutex};
     error_message.clear();
   }
-
-  if (config.port_type == DeviceConfig::PortType::INTERNAL)
+  switch (config.port_type) {
+  case DeviceConfig::PortType::INTERNAL:
     return OpenInternalSensors();
-
-  if (config.port_type == DeviceConfig::PortType::DROIDSOAR_V2)
+  case DeviceConfig::PortType::DROIDSOAR_V2:
     return OpenDroidSoarV2();
-
-  if (config.port_type == DeviceConfig::PortType::I2CPRESSURESENSOR)
-    return OpenI2Cbaro();
-
-  if (config.port_type == DeviceConfig::PortType::NUNCHUCK)
-    return OpenNunchuck();
-
-  if (config.port_type == DeviceConfig::PortType::IOIOVOLTAGE)
-    return OpenVoltage();
-
-  if (config.port_type == DeviceConfig::PortType::GLIDER_LINK)
-    return OpenGliderLink();
-
-  if (config.port_type == DeviceConfig::PortType::BLE_SENSOR)
-    return OpenBluetoothSensor();
+  case DeviceConfig::PortType::I2CPRESSURESENSOR:
+      return OpenI2Cbaro();
+  case DeviceConfig::PortType::NUNCHUCK:
+      return OpenNunchuck();
+  case DeviceConfig::PortType::IOIOVOLTAGE:
+      return OpenVoltage();
+  case DeviceConfig::PortType::GLIDER_LINK:
+      return OpenGliderLink();
+#ifndef _WIN32
+  case DeviceConfig::PortType::BLE_SENSOR:
+      return OpenBluetoothSensor();
+#endif
+  }
 
   reopen_clock.Update();
 
