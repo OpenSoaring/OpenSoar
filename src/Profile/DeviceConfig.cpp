@@ -14,6 +14,8 @@
 
 #include <stdio.h>
 
+using std::string_view_literals::operator""sv;
+
 static const char *const port_type_strings[] = {
   "disabled",
   "serial",
@@ -33,7 +35,8 @@ static const char *const port_type_strings[] = {
   "ble_sensor",
   "ble_hm10",
   "glider_link",
-  "android_usb_serial",
+//  "android_usb_serial",
+  "usb_serial",
   NULL
 };
 
@@ -54,6 +57,8 @@ MakeDeviceSettingName(char *buffer, const char *prefix, unsigned n,
 static bool
 StringToPortType(const char *value, DeviceConfig::PortType &type)
 {
+  if (value == "android_usb_serial"sv)
+    value = "usb_serial";  // avoid the old name
   for (auto i = port_type_strings; *i != NULL; ++i) {
     if (StringIsEqual(value, *i)) {
       type = (DeviceConfig::PortType)std::distance(port_type_strings, i);
@@ -117,6 +122,9 @@ Profile::GetDeviceConfig(const ProfileMap &map, unsigned n,
   MakeDeviceSettingName(buffer, "Port", n, "BluetoothMAC");
   map.Get(buffer, config.bluetooth_mac);
 
+  MakeDeviceSettingName(buffer, "Port", n, "PortName");
+  map.Get(buffer, config.port_name);
+
   MakeDeviceSettingName(buffer, "Port", n, "IOIOUartID");
   map.Get(buffer, config.ioio_uart_id);
 
@@ -130,10 +138,16 @@ Profile::GetDeviceConfig(const ProfileMap &map, unsigned n,
 
   config.path.clear();
   if ((!have_port_type ||
-       config.port_type == DeviceConfig::PortType::ANDROID_USB_SERIAL ||
+       config.port_type == DeviceConfig::PortType::USB_SERIAL ||
+#ifdef _WIN32
+       config.port_type == DeviceConfig::PortType::BLE_HM10 ||
+       config.port_type == DeviceConfig::PortType::BLE_SENSOR ||
+#endif
+       config.port_type == DeviceConfig::PortType::RFCOMM || 
        config.port_type == DeviceConfig::PortType::SERIAL) &&
        !LoadPath(map, config, n))
     config.port_type = DeviceConfig::PortType::SERIAL;
+    // config.port_type = DeviceConfig::PortType::BLE_HM10;
 
   MakeDeviceSettingName(buffer, "Port", n, "BaudRate");
   if (!map.Get(buffer, config.baud_rate)) {
@@ -215,6 +229,9 @@ Profile::SetDeviceConfig(ProfileMap &map,
   char buffer[64];
 
   WritePortType(map, n, config.port_type);
+
+  MakeDeviceSettingName(buffer, "Port", n, "PortName");
+  map.Set(buffer, config.port_name);
 
   MakeDeviceSettingName(buffer, "Port", n, "BluetoothMAC");
   map.Set(buffer, config.bluetooth_mac);
