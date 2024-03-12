@@ -14,6 +14,8 @@
 #ifdef _WIN32
 # include "system/WindowsRegistry.hpp"
 # include "util/StringFormat.hpp"
+# include <boost/algorithm/string.hpp>
+# include <map>
 #endif
 
 #ifdef ANDROID
@@ -103,12 +105,63 @@ DetectSerialPorts(DataFieldEnum &df) noexcept
 static void
 DetectSerialPorts(DataFieldEnum &df) noexcept
 try {
+//-------------------------------
+  RegistryKey bthenums{HKEY_LOCAL_MACHINE, _T("SYSTEM\\CurrentControlSet\\"
+                                              "Enum\\BthEnum")};
+  std::map<const std::wstring, std::wstring> bthmap;
+  for (unsigned k = 0;; ++k) {
+    TCHAR dev_name[128];
+    TCHAR name[128];
+    TCHAR friendly_name[128];
+
+    if (!bthenums.EnumKey(k, std::span{dev_name}))
+      break;
+    std::wstring map_name(dev_name);
+    if (!map_name.starts_with(_T("Dev_")))
+      continue;
+    RegistryKey bthenum_dev{bthenums, dev_name};
+    // only one is possible...
+    if (!bthenum_dev.EnumKey(0, std::span{name}))
+      break;
+    RegistryKey bthenum_key{bthenum_dev, name};
+    if (!bthenum_key.GetValue(_T("FriendlyName"), friendly_name))
+      break;
+    map_name = map_name.substr(4);
+    for (std::wstring::iterator it = map_name.begin(); it != map_name.end();
+         ++it)
+      *it = towlower(*it);
+    bthmap[map_name] = friendly_name; // Left "Dev_"
+  }
+  RegistryKey bthle{HKEY_LOCAL_MACHINE, _T("SYSTEM\\CurrentControlSet\\"
+                                              "Enum\\BthLE")};
+  std::map<const std::wstring, std::wstring> blemap;
+  for (unsigned k = 0;; ++k) {
+    TCHAR dev_name[128];
+    TCHAR name[128];
+    TCHAR friendly_name[128];
+
+    if (!bthle.EnumKey(k, std::span{dev_name}))
+      break;
+    std::wstring map_name(dev_name);
+    if (!map_name.starts_with(_T("Dev_")))
+      continue;
+    RegistryKey bthle_dev{bthle, dev_name};
+    // only one is possible...
+    if (!bthle_dev.EnumKey(0, std::span{name}))
+      break;
+    RegistryKey bthle_key{bthle_dev, name};
+    if (!bthle_key.GetValue(_T("FriendlyName"), friendly_name))
+      break;
+    map_name = map_name.substr(4);
+    for (std::wstring::iterator it = map_name.begin(); it != map_name.end();
+         ++it)
+      *it = towlower(*it);
+    blemap[map_name] = friendly_name; // Left "Dev_"
+  }
+
   /* the registry key HKEY_LOCAL_MACHINE/Hardware/DEVICEMAP/SERIALCOMM
      is the best way to discover serial ports on Windows */
-
-  RegistryKey hardware{HKEY_LOCAL_MACHINE, _T("Hardware")};
-  RegistryKey devicemap{hardware, _T("DEVICEMAP")};
-  RegistryKey serialcomm{devicemap, _T("SERIALCOMM")};
+  RegistryKey serialcomm{HKEY_LOCAL_MACHINE, _T("Hardware\\DeviceMap\\SerialComm")};
 
   for (unsigned i = 0;; ++i) {
     TCHAR name[128];
@@ -123,7 +176,72 @@ try {
       // weird
       continue;
 
-    AddPort(df, DeviceConfig::PortType::SERIAL, value, name);
+    RegistryKey devices {HKEY_LOCAL_MACHINE, _T("SYSTEM\\CurrentControlSet\\"
+            "Control\\COM Name Arbiter\\Devices")};
+    TCHAR name1[0x200];
+
+    DWORD type1;
+    if (!devices.GetValue(value, name1))
+      break;
+
+    // Registry "COM Name Arbiter\Devices" starts with
+    // BlueTooth: "\\?\bthenum#"
+    // USB:       "\\?\usb#"
+    // Normal:    "\\?\acpi#"   - an Kupschis Rechner!
+#ifdef UNICODE
+    std::wstring dev = name1;
+#else
+    std::string dev = name1;
+#endif
+    if (dev.starts_with(_T("\\\\?\\usb#"))) {
+#ifdef UNICODE
+      std::vector<std::wstring> strs;
+      std::wstring port_name;
+#else
+      std::vector<std::string> strs;
+      std::string port_name;
+#endif
+      boost::split(strs, name, boost::is_any_of("\\"));
+      port_name = value;
+      port_name += _T(" (");
+      port_name += strs[2];
+      port_name += _T(")");
+
+      AddPort(df, DeviceConfig::PortType::USB_SERIAL, value, port_name.c_str());
+    } else if (dev.starts_with(_T("\\\\?\\bthenum#"))) {
+#ifdef UNICODE
+      std::vector<std::wstring> strs;
+      std::wstring port_name;
+#else
+      std::vector<std::string> strs;
+      std::string port_name;
+#endif
+      boost::split(strs, name1, boost::is_any_of("#"));
+      boost::split(strs, strs[2], boost::is_any_of("_"));
+      if (strs[1] == _T("c00000000")) {
+        boost::split(strs, strs[0], boost::is_any_of("&"));
+        if (strs[3] != _T("000000000000")) {
+          DeviceConfig::PortType port_type = DeviceConfig::PortType::DISABLED;
+          port_name = value;
+          port_name += _T(" (");
+          if (blemap.find(strs[3]) != blemap.end()) {
+            port_type = DeviceConfig::PortType::RFCOMM;
+            port_type = DeviceConfig::PortType::BLE_HM10;
+            // port_type = DeviceConfig::PortType::BLE_SENSOR;
+            port_name += blemap[strs[3]];
+          } else if (bthmap.find(strs[3]) != bthmap.end()) {
+            port_type = DeviceConfig::PortType::RFCOMM;
+            port_name += bthmap[strs[3]];
+          } 
+
+          port_name += _T(")");
+          if (port_type != DeviceConfig::PortType::DISABLED)
+            AddPort(df, port_type, value,
+                   port_name.c_str());
+        }
+      }
+    } else //  if (dev.starts_with(_T("\\\\?\\acpi#")))
+      AddPort(df, DeviceConfig::PortType::SERIAL, value, name);
   }
 } catch (const std::system_error &) {
   // silently ignore registry errors
@@ -155,15 +273,22 @@ SetPort(DataFieldEnum &df, DeviceConfig::PortType type,
     df.SetValue(AddPort(df, type, value));
 }
 
-static void
-FillSerialPorts(DataFieldEnum &df, const DeviceConfig &config) noexcept
-{
+static void FillSerialPorts(DataFieldEnum &df,
+                            const DeviceConfig &config) noexcept {
 #if defined(HAVE_POSIX) || defined(_WIN32)
   DetectSerialPorts(df);
 #endif
 
-  if (config.port_type == DeviceConfig::PortType::SERIAL)
+  switch (config.port_type) {
+  case DeviceConfig::PortType::SERIAL:
+  case DeviceConfig::PortType::RFCOMM:
+  case DeviceConfig::PortType::BLE_HM10:
+  case DeviceConfig::PortType::BLE_SENSOR:
+  case DeviceConfig::PortType::USB_SERIAL:
     SetPort(df, config.port_type, config.path);
+  default:
+    break;
+  }
 }
 
 void
@@ -197,9 +322,9 @@ FillAndroidUsbSerialPorts([[maybe_unused]] DataFieldEnum &df,
                           [[maybe_unused]] const DeviceConfig &config) noexcept
 {
 #ifdef ANDROID
-  if (config.port_type == DeviceConfig::PortType::ANDROID_USB_SERIAL &&
+  if (config.port_type == DeviceConfig::PortType::USB_SERIAL &&
       !config.path.empty())
-    SetPort(df, DeviceConfig::PortType::ANDROID_USB_SERIAL, config.path);
+    SetPort(df, DeviceConfig::PortType::USB_SERIAL, config.path);
 #endif
 }
 
@@ -277,7 +402,7 @@ SetDevicePort(DataFieldEnum &df, const DeviceConfig &config) noexcept
     break;
 
   case DeviceConfig::PortType::SERIAL:
-  case DeviceConfig::PortType::ANDROID_USB_SERIAL:
+  case DeviceConfig::PortType::USB_SERIAL:
     SetPort(df, config.port_type, config.path);
     return;
 
