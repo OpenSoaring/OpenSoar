@@ -375,7 +375,7 @@ FinishPortField(DeviceConfig &config, const DataFieldEnum &df) noexcept
 
   case DeviceConfig::PortType::SERIAL:
   case DeviceConfig::PortType::PTY:
-  case DeviceConfig::PortType::ANDROID_USB_SERIAL:
+  case DeviceConfig::PortType::USB_SERIAL:
     /* Serial Port */
     if (new_type == config.port_type &&
         StringIsEqual(config.path, df.GetAsString()))
@@ -383,11 +383,24 @@ FinishPortField(DeviceConfig &config, const DataFieldEnum &df) noexcept
 
     config.port_type = new_type;
     config.path = df.GetAsString();
+    config.port_name = df.GetAsDisplayString();
     return true;
 
   case DeviceConfig::PortType::RFCOMM:
   case DeviceConfig::PortType::BLE_HM10:
   case DeviceConfig::PortType::BLE_SENSOR:
+    /* Bluetooth */
+#if _WIN32
+    // identical with Serial Port
+    if (new_type == config.port_type &&
+        StringIsEqual(config.path, df.GetAsString()))
+      return false;
+
+    config.port_type = new_type;
+    config.path = df.GetAsString();
+    config.port_name = df.GetAsDisplayString();
+    return true;
+#else
     /* Bluetooth */
     if (new_type == config.port_type &&
         StringIsEqual(config.bluetooth_mac, df.GetAsString()))
@@ -396,7 +409,7 @@ FinishPortField(DeviceConfig &config, const DataFieldEnum &df) noexcept
     config.port_type = new_type;
     config.bluetooth_mac = df.GetAsString();
     return true;
-
+#endif
   case DeviceConfig::PortType::IOIOUART:
     /* IOIO UART */
     if (new_type == config.port_type &&
