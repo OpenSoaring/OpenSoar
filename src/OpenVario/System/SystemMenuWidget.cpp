@@ -183,7 +183,7 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     ContainerWindow::SetExitValue(LAUNCH_TOUCH_CALIBRATE);
     UIActions::SignalShutdown(true);
     return mrOK;
-    //        InputEvents::eventExit(_T("reboot"));
+    //        InputEvents::eventShutdown(_T("reboot"));
     // dialog.SetModalResult(LAUNCH_TOUCH_CALIBRATE);
     // dialog.SetModalResult(LAUNCH_TOUCH_CALIBRATE);
 

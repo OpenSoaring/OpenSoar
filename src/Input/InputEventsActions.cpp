@@ -622,6 +622,7 @@ InputEvents::eventBrightness([[maybe_unused]] const TCHAR *misc)
   // not implemented (was only implemented on Altair)
 }
 
+// Exits for general systems
 void 
 InputEvents::eventExit([[maybe_unused]] const TCHAR *misc)
 {
@@ -629,16 +630,28 @@ InputEvents::eventExit([[maybe_unused]] const TCHAR *misc)
     if (StringIsEqual(misc, _T("system"))) {
       // return value on UNIX(32) is only a Byte?
       UI::TopWindow::SetExitValue(EXIT_SYSTEM); // 20000); 
-    } else if (StringIsEqual(misc, _T("reboot"))) {
-      UI::TopWindow::SetExitValue(EXIT_REBOOT); // 20001);
-    } else if (StringIsEqual(misc, _T("shutdown"))) {
-      UI::TopWindow::SetExitValue(EXIT_SHUTDOWN); // 20002);
     } else if (StringIsEqual(misc, _T("restart"))) {
       UI::TopWindow::SetExitValue(EXIT_RESTART);
     }
   }
   UIActions::SignalShutdown(false);
 }
+
+#ifdef IS_OPENVARIO
+// Exits with real Shutdown only in systems where this is possible
+void 
+InputEvents::eventShutdown([[maybe_unused]] const TCHAR *misc)
+{
+  if (UI::TopWindow::GetExitValue() == 0) {
+    if (StringIsEqual(misc, _T("reboot"))) {
+      UI::TopWindow::SetExitValue(EXIT_REBOOT); // 20001);
+    } else if (StringIsEqual(misc, _T("shutdown"))) {
+      UI::TopWindow::SetExitValue(EXIT_SHUTDOWN); // 20002);
+    }
+  }
+  UIActions::SignalShutdown(false);
+}
+#endif
 
 void
 InputEvents::eventUserDisplayModeForce(const TCHAR *misc)
