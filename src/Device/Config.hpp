@@ -101,7 +101,7 @@ struct DeviceConfig {
     /**
      * USB serial port on Android.
      */
-    ANDROID_USB_SERIAL,
+    USB_SERIAL,
   };
 
   /**
@@ -124,9 +124,14 @@ struct DeviceConfig {
   unsigned bulk_baud_rate;
 
   /**
-   * The path name of the serial port, e.g. "COM4:" or "/dev/ttyUSB0".
+   * The path name of the serial port, e.g. "COM4" or "/dev/ttyUSB0".
    */
   StaticString<64> path;
+
+  /**
+   * The path name of the bluetooth port, e.g. "COM15 (Larus1234)".
+   */
+  StaticString<128> port_name;
 
   /**
    * The Bluetooth MAC address of the peer.
@@ -259,7 +264,7 @@ struct DeviceConfig {
    */
   static constexpr bool UsesSpeed(PortType port_type) noexcept {
     return port_type == PortType::SERIAL || port_type == PortType::AUTO ||
-      port_type == PortType::ANDROID_USB_SERIAL ||
+      port_type == PortType::USB_SERIAL ||
       port_type == PortType::IOIOUART;
   }
 
@@ -309,7 +314,7 @@ struct DeviceConfig {
     case PortType::IOIOUART:
     case PortType::PTY:
     case PortType::UDP_LISTENER:
-    case PortType::ANDROID_USB_SERIAL:
+    case PortType::USB_SERIAL:
       break;
     }
 
@@ -345,7 +350,6 @@ struct DeviceConfig {
   static constexpr bool UsesDriver(PortType port_type) noexcept {
     switch (port_type) {
     case PortType::DISABLED:
-    case PortType::BLE_SENSOR:
     case PortType::GLIDER_LINK:
     case PortType::DROIDSOAR_V2:
     case PortType::NUNCHUCK:
@@ -353,6 +357,13 @@ struct DeviceConfig {
     case PortType::IOIOVOLTAGE:
     case PortType::INTERNAL:
       return false;
+
+    case PortType::BLE_SENSOR:
+#ifdef _WIN32
+      return true;
+#else
+      return false;
+#endif
 
     case PortType::SERIAL:
     case PortType::BLE_HM10:
@@ -364,7 +375,7 @@ struct DeviceConfig {
     case PortType::IOIOUART:
     case PortType::PTY:
     case PortType::UDP_LISTENER:
-    case PortType::ANDROID_USB_SERIAL:
+    case PortType::USB_SERIAL:
       return true;
     }
 
