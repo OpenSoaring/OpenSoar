@@ -33,13 +33,17 @@ DeviceConfigOverlaps(const DeviceConfig &a, const DeviceConfig &b)
   switch (a.port_type) {
   case DeviceConfig::PortType::SERIAL:
   case DeviceConfig::PortType::PTY:
-  case DeviceConfig::PortType::ANDROID_USB_SERIAL:
     return a.path.equals(b.path);
 
+  case DeviceConfig::PortType::USB_SERIAL:
   case DeviceConfig::PortType::RFCOMM:
   case DeviceConfig::PortType::BLE_HM10:
   case DeviceConfig::PortType::BLE_SENSOR:
+#ifdef _WIN32
+    return a.port_name.equals(b.port_name);
+#else
     return a.bluetooth_mac.equals(b.bluetooth_mac);
+#endif
 
   case DeviceConfig::PortType::IOIOUART:
     return a.ioio_uart_id == b.ioio_uart_id;
