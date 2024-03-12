@@ -29,9 +29,10 @@ DeviceConfig::IsAvailable() const noexcept
   case PortType::RFCOMM:
   case PortType::BLE_HM10:
   case PortType::BLE_SENSOR:
+  case PortType::USB_SERIAL:
+    return IsAndroid() || true; // IsWindows()
   case PortType::RFCOMM_SERVER:
   case PortType::GLIDER_LINK:
-  case PortType::ANDROID_USB_SERIAL:
     return IsAndroid();
 
   case PortType::IOIOUART:
@@ -82,7 +83,7 @@ DeviceConfig::ShouldReopenOnTimeout() const noexcept
   case PortType::BLE_SENSOR:
   case PortType::BLE_HM10:
   case PortType::RFCOMM_SERVER:
-  case PortType::ANDROID_USB_SERIAL:
+  case PortType::USB_SERIAL:
   case PortType::IOIOUART:
   case PortType::DROIDSOAR_V2:
   case PortType::NUNCHUCK:
@@ -177,6 +178,7 @@ DeviceConfig::Clear() noexcept
   i2c_addr = 0;
   press_use = PressureUse::STATIC_ONLY;
   path.clear();
+  port_name.clear();
   bluetooth_mac.clear();
   driver_name.clear();
   enabled = true;
@@ -209,6 +211,8 @@ DeviceConfig::GetPortName(TCHAR *buffer, size_t max_size) const noexcept
       if (name2 != nullptr)
         name = name2;
     }
+#elif defined(_WIN32)
+    name = port_name;
 #endif
 
     StringFormat(buffer, max_size, _T("%s: %s"),
@@ -225,6 +229,8 @@ DeviceConfig::GetPortName(TCHAR *buffer, size_t max_size) const noexcept
       if (name2 != nullptr)
         name = name2;
     }
+#elif defined(_WIN32)
+    name = port_name;
 #endif
 
     StringFormat(buffer, max_size, _T("%s: %s"),
@@ -241,6 +247,8 @@ DeviceConfig::GetPortName(TCHAR *buffer, size_t max_size) const noexcept
       if (name2 != nullptr)
         name = name2;
     }
+#elif defined(_WIN32)
+    name = port_name;
 #endif
 
     StringFormat(buffer, max_size, _T("Bluetooth %s"), name);
@@ -292,9 +300,9 @@ DeviceConfig::GetPortName(TCHAR *buffer, size_t max_size) const noexcept
     StringFormat(buffer, max_size, _T("Pseudo-terminal %s"), path.c_str());
     return buffer;
 
-  case PortType::ANDROID_USB_SERIAL:
+  case PortType::USB_SERIAL:
     StringFormat(buffer, max_size, _T("%s: %s"),
-                 _("USB serial"), path.c_str());
+                 _("USB serial"), port_name.c_str());
     return buffer;
   }
 
