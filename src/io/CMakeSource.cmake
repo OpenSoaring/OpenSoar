@@ -23,6 +23,7 @@ set(_SOURCES
         io/ZipArchive.cpp
         io/ZipReader.cpp
         io/Reader.cxx
+        io/BufferedCsvReader.cpp
 )
 # if(UNIX)
 #   list(APPEND _SOURCES

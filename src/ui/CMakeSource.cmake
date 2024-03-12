@@ -12,7 +12,6 @@ set(SCREEN_SOURCES
     ${CANVAS_SRC_DIR}/Ramp.cpp
     ${CANVAS_SRC_DIR}/Util.cpp
     ${CANVAS_SRC_DIR}/Icon.cpp
-    ${CANVAS_SRC_DIR}/Canvas.cpp
     ${CANVAS_SRC_DIR}/Color.cpp
     ${CANVAS_SRC_DIR}/BufferCanvas.cpp
     ${WINDOW_SRC_DIR}/Window.cpp
@@ -339,8 +338,6 @@ set(SCREEN_HEADERS
         ${CANVAS_SRC_DIR}/Brush.hpp
         ${CANVAS_SRC_DIR}/BufferCanvas.cpp
         ${CANVAS_SRC_DIR}/BufferCanvas.hpp
-        ${CANVAS_SRC_DIR}/Canvas.cpp
-        ${CANVAS_SRC_DIR}/Canvas.hpp
         ${CANVAS_SRC_DIR}/Color.cpp
         ${CANVAS_SRC_DIR}/Color.hpp
         ${CANVAS_SRC_DIR}/Font.hpp  # neu 2021

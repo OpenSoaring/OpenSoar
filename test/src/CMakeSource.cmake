@@ -171,6 +171,7 @@ ${SRC_DIR}/TestRoughTime.cpp
 ${SRC_DIR}/TestStrings.cpp
 ${SRC_DIR}/TestSunEphemeris.cpp
 ${SRC_DIR}/TestTaskPoint.cpp
+${SRC_DIR}/TestTaskSave.cpp
 ${SRC_DIR}/TestTaskWaypoint.cpp
 ${SRC_DIR}/TestTeamCode.cpp
 ${SRC_DIR}/TestThermalBand.cpp
