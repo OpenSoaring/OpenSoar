@@ -32,9 +32,9 @@ Data
 Load(ResourceId id);
 #endif
 
-#ifdef _WIN32
+#ifdef USE_WIN32_RESOURCES
 HBITMAP
-LoadBitmap2(ResourceId id);
+LoadResBitmap(ResourceId id);
 #endif
 
 } // namespace ResourceLoader

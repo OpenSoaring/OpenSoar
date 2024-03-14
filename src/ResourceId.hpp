@@ -5,6 +5,9 @@
 
 #include <span>
 
+#ifdef USE_WIN32_RESOURCES
+#include <string>
+#endif
 /**
  * The identifier for a resource to be passed to
  * ResourceLoader::Load() or other resource-loading functions.
@@ -12,6 +15,7 @@
 class ResourceId {
 #ifdef USE_WIN32_RESOURCES
   unsigned id;
+  const char *name;
 #elif defined(ANDROID)
   const char *name;
 #else
@@ -23,8 +27,13 @@ public:
   ResourceId() = default;
 
 #ifdef USE_WIN32_RESOURCES
-  constexpr explicit ResourceId(unsigned _id) noexcept
-    :id(_id) {}
+//  constexpr explicit ResourceId(unsigned _id, const char* _res_name) noexcept
+  constexpr explicit ResourceId(unsigned _id) noexcept : id(_id) {
+    name = nullptr;
+  }
+  constexpr explicit ResourceId(unsigned _id, const char *_name) noexcept : id(_id) {
+    name = _name;
+  }
 #elif defined(ANDROID)
   constexpr explicit ResourceId(const char *_name) noexcept
     :name(_name) {}
@@ -76,6 +85,14 @@ public:
     return begin == other.begin;
 #endif
   }
+
+#ifdef USE_WIN32_RESOURCES
+std::string_view
+GetName() 
+{
+  return name;
+}
+#endif
 
   constexpr bool operator!=(ResourceId other) const noexcept {
 #ifdef USE_WIN32_RESOURCES
