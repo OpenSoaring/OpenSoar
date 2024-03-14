@@ -80,10 +80,11 @@ ResourceLoader::Load(ResourceId id)
 
 #endif
 
+#include <string>
 #ifdef USE_WIN32_RESOURCES
 HBITMAP
-ResourceLoader::LoadBitmap2(ResourceId id)
+ResourceLoader::LoadResBitmap(ResourceId id)
 {
-  return ::LoadBitmap(ResourceLoaderInstance, MAKEINTRESOURCE((unsigned)id));
+  return LoadBitmapA(ResourceLoaderInstance, id.GetName().data());
 }
 #endif

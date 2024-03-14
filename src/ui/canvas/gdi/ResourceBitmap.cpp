@@ -20,7 +20,7 @@ Bitmap::Load(ResourceId id, [[maybe_unused]] Type type)
 {
   Reset();
 
-  bitmap = ResourceLoader::LoadBitmap2(id);
+  bitmap = ResourceLoader::LoadResBitmap(id);
   return bitmap != nullptr;
 }
 

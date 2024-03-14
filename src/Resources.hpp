@@ -4,9 +4,10 @@
 #include "ResourceId.hpp"
 
 #ifdef USE_WIN32_RESOURCES
+#include <string>
 
 #define MAKE_RESOURCE(name, file, id) \
-  static constexpr ResourceId name(id);
+  static constexpr ResourceId name(id, #name)
 
 #elif defined(ANDROID)
 
