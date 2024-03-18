@@ -28,6 +28,7 @@ struct DialogSettings {
    * Show the "expert" settings?
    */
   bool expert;
+  bool xcsoar_style;
 
   void SetDefaults() noexcept;
 };
