@@ -637,7 +637,7 @@ InputEvents::eventExit([[maybe_unused]] const TCHAR *misc)
   UIActions::SignalShutdown(false);
 }
 
-#ifdef IS_OPENVARIO
+#if 1  // def IS_OPENVARIO
 // Exits with real Shutdown only in systems where this is possible
 void 
 InputEvents::eventShutdown([[maybe_unused]] const TCHAR *misc)
