@@ -1,3 +1,6 @@
+#ifdef TEST
+
+#endif
 /* This file contains definitions of all resources used by XCSoar.
    Various Perl scripts convert it to a C header and target-specific
    files (e.g. the Windows RC format). */
