@@ -22,5 +22,6 @@ set(_SOURCES
 
 set(SCRIPT_FILES
     ../../Data/Input/default.xci
+    ../../Data/Input/defaultOV.xci
     CMakeSource.cmake
 )

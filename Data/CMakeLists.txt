@@ -108,7 +108,7 @@ add_custom_command(OUTPUT ${_TEMP_OUTPUT}/title.svg
   WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
 )
 # ============================================================================   
-if (1)  # NOT MINGW) # geht bei MinGW nicht???
+if (0)  # NOT MINGW) # geht bei MinGW nicht???
 # create the resource file (for all targets )
 # add_custom_command(OUTPUT ${_DATA_OUTPUT}/${PROGRAM_NAME}.rc
 add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
@@ -125,6 +125,16 @@ add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
 ) # add_custom_command
 endif()
 
+add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
+  COMMENT "Create Resource File!"
+  COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_resource.py 
+          # ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc  # Input
+          ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt  # Input
+          ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc                               # Output
+          ${_DATA_INPUT}
+          ${_DATA_OUTPUT}
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt
+)
 # message(FATAL_ERROR "!!!!!! ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc")
 # if (_COMPLETE_INSTALL)
 set(GRAPHIC_BITMAPS
@@ -160,8 +170,9 @@ add_custom_command(OUTPUT ${GRAPHIC_BITMAPS}
 # endif()
 
 set(ICON_BITMAPS ) # set to empty
-file(GLOB ICON_FILES  ${_DATA_INPUT}/icons/*.svg)
-if(OFF) # ==>  for test it only with few icons!
+if(ON) # ==>  for test it only with few icons!
+  file(GLOB ICON_FILES  ${_DATA_INPUT}/icons/*.svg)
+else()
   set (ICON_FILES  
     ${_DATA_INPUT}/icons/map_bridge.svg
     ${_DATA_INPUT}/icons/map_castle.svg
@@ -171,12 +182,14 @@ endif()
 foreach(icon_file ${ICON_FILES})
   get_filename_component(_filename ${icon_file} NAME_WE)
   set(icon_file_out ${_ICONS_OUTPUT}/${_filename})
-  set(icon_file_160 ${_ICONS_OUTPUT}/${_filename}_160)
+  set(icon_file_std ${_ICONS_OUTPUT}/${_filename}_96)
+  set(icon_file_hd  ${_ICONS_OUTPUT}/${_filename}_160)
+  set(icon_file_uhd ${_ICONS_OUTPUT}/${_filename}_300)
   set(tmp_file ${_TEMP_OUTPUT}/icons/${_filename})
   set(BMP_CONVERT_PARAM +dither -compress none -type optimize -colors 256 )
   set(BMP_BACKGROUND white)  # original gray! 
   # if (_COMPLETE_INSTALL)
-    list(APPEND ICON_BITMAPS ${icon_file_out}.bmp  ${icon_file_160}.bmp)
+    list(APPEND ICON_BITMAPS ${icon_file_std}.bmp  ${icon_file_hd}.bmp ${icon_file_uhd}.bmp)
     if (WITH_REMOVE)
        set (REMOVE_CMD
          COMMAND ${CMAKE_COMMAND} -E remove -f ${tmp_file}_alpha.png
@@ -193,23 +206,26 @@ foreach(icon_file ${ICON_FILES})
      )
    else()
      set (COPY_CMD
-       COMMAND ${INKSCAPE_APP} ${icon_file_out}.svg --export-dpi=124 --export-type=PNG --export-overwrite --export-filename=${icon_file_out}.png
-       COMMAND ${INKSCAPE_APP} ${icon_file_out}.svg --export-dpi=200 --export-type=PNG --export-overwrite --export-filename=${icon_file_160}.png
+       COMMAND ${INKSCAPE_APP} ${icon_file_out}.svg --export-dpi=124 --export-type=PNG --export-overwrite --export-filename=${icon_file_std}.png
+       COMMAND ${INKSCAPE_APP} ${icon_file_out}.svg --export-dpi=200 --export-type=PNG --export-overwrite --export-filename=${icon_file_hd}.png
+       COMMAND ${INKSCAPE_APP} ${icon_file_out}.svg --export-dpi=300 --export-type=PNG --export-overwrite --export-filename=${icon_file_uhd}.png
      )
    endif()
    # =========================================================================
-   add_custom_command(OUTPUT ${icon_file_out}.bmp  ${icon_file_160}.bmp
-     COMMENT File aus 'icons': ${icon_file_160}.bmp
+   add_custom_command(OUTPUT ${icon_file_std}.bmp  ${icon_file_hd}.bmp ${icon_file_uhd}.bmp
+     COMMENT File aus 'icons': ${icon_file_uhd}.bmp
      COMMAND ${CMAKE_COMMAND} -E make_directory ${_ICONS_OUTPUT}
      COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}/icons
      COMMAND ${CMAKE_COMMAND} -E copy ${icon_file} ${icon_file_out}.svg
      ${COPY_CMD}
-     COMMAND ${BMP_CONVERT_APP} ${icon_file_160}.png -alpha Extract -colors 8 ${tmp_file}_alpha.png
+     COMMAND ${BMP_CONVERT_APP} ${icon_file_uhd}.png -alpha Extract -colors 8 ${tmp_file}_alpha.png
      # "-alpha Off" == "+matte"
-     COMMAND ${BMP_CONVERT_APP} ${icon_file_160}.png -background ${BMP_BACKGROUND} -flatten -alpha Off +dither -colors 64  ${tmp_file}_rgb.png
+     COMMAND ${BMP_CONVERT_APP} ${icon_file_uhd}.png -background ${BMP_BACKGROUND} -flatten -alpha Off +dither -colors 64  ${tmp_file}_rgb.png
      COMMAND ${BMP_MONTAGE_APP} -tile 2x1 -geometry +0+0 ${tmp_file}_alpha.png ${tmp_file}_rgb.png -depth 8 ${tmp_file}.png
-     COMMAND ${BMP_CONVERT_APP} ${tmp_file}.png  -resize 44x22 -colors 64 BMP3:${icon_file_160}.bmp
-     COMMAND ${BMP_CONVERT_APP} ${tmp_file}.png  -resize 20x10 -colors 64 BMP3:${icon_file_out}.bmp
+     COMMAND ${BMP_CONVERT_APP} ${tmp_file}.png  -resize 132x66 -colors 64 BMP3:${icon_file_uhd}.bmp
+     COMMAND ${BMP_CONVERT_APP} ${tmp_file}.png  -resize  44x22 -colors 64 BMP3:${icon_file_hd}.bmp
+     COMMAND ${BMP_CONVERT_APP} ${tmp_file}.png  -resize  44x22 -colors 64 BMP3:${icon_file_std}.bmp
+     # COMMAND ${BMP_CONVERT_APP} ${tmp_file}.png  -resize 20x10 -colors 64 BMP3:${icon_file_std}.bmp
      ${REMOVE_CMD}
      MAIN_DEPENDENCY ${icon_file}
      DEPENDS ${icon_file}
