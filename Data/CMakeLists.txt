@@ -266,6 +266,12 @@ endif()
                ${_INCLUDE_OUTPUT}/InputEvents_Text2NE.cpp
                ${_INCLUDE_OUTPUT}/InputEvents_default.cpp
     )
+
+if (1)
+set(DEFAULT_XCI   ${_DATA_INPUT}/Input/defaultOV.xci)
+else()
+set(DEFAULT_XCI   ${_DATA_INPUT}/Input/default.xci)
+endif()
     add_custom_command(OUTPUT  ${_INCLUDE_OUTPUT}/InputCppFiles.txt
            COMMENT Create InputEvents_*.cpp!
            COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT} 
@@ -274,11 +280,11 @@ endif()
            COMMAND perl tools/Text2Event.pl  src/Input/InputEvents.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2Event.cpp
            COMMAND perl tools/Text2GCE.pl    src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2GCE.cpp
            COMMAND perl tools/Text2NE.pl     src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2NE.cpp
-           COMMAND perl tools/xci2cpp.pl     Data/Input/default.xci  >${_INCLUDE_OUTPUT}/InputEvents_default.cpp
-           COMMAND perl tools/xci2cpp.pl     Data/Input/default.xci  >${_INCLUDE_OUTPUT}/InputCppFiles.txt
+           COMMAND perl tools/xci2cpp.pl     ${DEFAULT_XCI}           >${_INCLUDE_OUTPUT}/InputEvents_default.cpp
+           COMMAND perl tools/xci2cpp.pl     ${DEFAULT_XCI}           >${_INCLUDE_OUTPUT}/InputCppFiles.txt
            DEPENDS ${PROJECTGROUP_SOURCE_DIR}/src/Input/InputQueue.hpp 
                    ${PROJECTGROUP_SOURCE_DIR}/src/Input/InputEvents.hpp
-                   ${_DATA_INPUT}/Input/default.xci
+                   ${DEFAULT_XCI}
            WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
     )
     
