@@ -2,11 +2,14 @@
 // Copyright The XCSoar Project
 
 #include "AudioVarioConfigPanel.hpp"
+#include "Dialogs/Message.hpp"
 #include "Profile/Keys.hpp"
 #include "Language/Language.hpp"
 #include "Interface.hpp"
 #include "Widget/RowFormWidget.hpp"
+#include "Form/DataField/Boolean.hpp"
 #include "Form/DataField/Float.hpp"
+#include "Form/DataField/Listener.hpp"
 #include "UIGlobals.hpp"
 #include "Audio/Features.hpp"
 #include "Audio/VarioGlue.hpp"
@@ -14,8 +17,8 @@
 #include "Formatter/UserUnits.hpp"
 
 enum ControlIndex {
-  Enabled,
-  Volume,
+  ENABLED,
+  VOLUME,
   DEAD_BAND_ENABLED,
   SPACER,
   MIN_FREQUENCY,
@@ -27,7 +30,7 @@ enum ControlIndex {
 };
 
 
-class AudioVarioConfigPanel final : public RowFormWidget {
+class AudioVarioConfigPanel final : public RowFormWidget, DataFieldListener {
 public:
   AudioVarioConfigPanel()
     :RowFormWidget(UIGlobals::GetDialogLook()) {}
@@ -35,7 +38,22 @@ public:
 public:
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
+
+private:
+  /* methods from DataFieldListener */
+  void OnModified(DataField &df) noexcept override;
 };
+
+void 
+AudioVarioConfigPanel::OnModified([[maybe_unused]] DataField &df) noexcept
+{
+  if (IsDataField(ENABLED, df)) {
+    bool enabled = ((const DataFieldBoolean &)df).GetValue();
+    // SetEnabled(((const DataFieldBoolean &)df).GetValue());
+    ShowMessageBox(enabled ? _T("Audio enabled") : _T("disabled"), 
+      _T("Audio-Enable"), 0);  //MB_OK);
+  }
+}
 
 void
 AudioVarioConfigPanel::Prepare(ContainerWindow &parent,
@@ -50,7 +68,7 @@ AudioVarioConfigPanel::Prepare(ContainerWindow &parent,
 
   AddBoolean(_("Audio vario"),
              _("Emulate the sound of an electronic vario."),
-             settings.enabled);
+             settings.enabled, this);
 
   AddInteger(_("Volume"), nullptr, _T("%u %%"), _T("%u"),
              0, 100, 1, settings.volume);
@@ -112,10 +130,10 @@ AudioVarioConfigPanel::Save(bool &changed) noexcept
 
   auto &settings = CommonInterface::SetUISettings().sound.vario;
 
-  changed |= SaveValue(Enabled, ProfileKeys::SoundAudioVario,
+  changed |= SaveValue(ENABLED, ProfileKeys::SoundAudioVario,
                        settings.enabled);
 
-  changed |= SaveValueInteger(Volume, ProfileKeys::SoundVolume,
+  changed |= SaveValueInteger(VOLUME, ProfileKeys::SoundVolume,
                               settings.volume);
 
   changed |= SaveValue(DEAD_BAND_ENABLED, ProfileKeys::VarioDeadBandEnabled,
