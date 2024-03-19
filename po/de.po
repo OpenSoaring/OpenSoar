@@ -9702,7 +9702,7 @@ msgstr "Contest Durchschnittsgeschwindigkeit"
 #: src/InfoBoxes/Content/Factory.cpp:995
 #, no-c-format
 msgid "Cont Speed"
-msgstr "Const Geschw"
+msgstr "Cont Geschw"
 
 #: src/InfoBoxes/Content/Factory.cpp:996
 #, no-c-format
@@ -9879,7 +9879,7 @@ msgstr "Alternative 2 - Gleitzahl"
 #: src/InfoBoxes/Content/Factory.cpp:1078
 #, no-c-format
 msgid "Altn2 GR"
-msgstr "Altn1 benö GZ"
+msgstr "Altn2 benö GZ"
 
 #: src/InfoBoxes/Content/Factory.cpp:1079
 #, no-c-format
