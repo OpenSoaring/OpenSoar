@@ -2,6 +2,8 @@ set(_SOURCES
         Audio/Settings.cpp
         Audio/Sound.cpp
         Audio/VarioSettings.cpp
+
+        Audio/GlobalPCMMixer.cpp
 )
 
 
