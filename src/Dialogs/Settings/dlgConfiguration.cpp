@@ -476,10 +476,18 @@ void dlgConfigurationShowModal()
   if (dialog.GetChanged()) {
     Profile::Save();
     if (require_restart)
-      ShowMessageBox(_("Changes to configuration saved.  Restart XCSoar to apply changes."),
-                  _T(""), MB_OK);
-       UI::TopWindow::SetExitValue(EXIT_RESTART);
-       UIActions::SignalShutdown(true);
-
+#if defined(IS_OPENVARIO)
+      if (ShowMessageBox(
+              _("Changes to configuration saved.  Restart OpenSoar "
+                "is needed to apply changes. Do you want restart immediately?"),
+              _T(""), MB_YESNO | MB_ICONQUESTION) == IDYES) {
+        UI::TopWindow::SetExitValue(EXIT_RESTART);
+        UIActions::SignalShutdown(true);
+      }
+#else
+      ShowMessageBox(_("Changes to configuration saved.  Restart XCSoar to "
+                        "apply changes."),
+                      _T(""), MB_OK);
+#endif
   }
 }
