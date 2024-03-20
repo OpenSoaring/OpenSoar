@@ -174,6 +174,7 @@ try {
   do {
     {
       rerun = false;
+      UI::TopWindow::SetExitValue(0);
 #ifdef _WIN32
       if (UIGlobals::CommandLine == nullptr)
         UIGlobals::CommandLine = GetCommandLine();
@@ -206,8 +207,6 @@ try {
       ret = UI::TopWindow::GetExitValue();
 #endif
     rerun = (ret == EXIT_RESTART);
-    if (rerun)
-      UI::TopWindow::SetExitValue(0);
   } while (rerun);
 
   return Finishing(ret);
