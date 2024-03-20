@@ -5,7 +5,7 @@
 #include "ui/control/LargeTextWindow.hpp"
 #include "Look/DialogLook.hpp"
 
-#if _UNICODE
+#ifdef _UNICODE
 # include "util/ConvertString.hpp"
 #endif
 void
@@ -15,7 +15,7 @@ LargeTextWidget::SetText(const TCHAR *text) noexcept
   w.SetText(text);
 }
 
-#if _UNICODE
+#ifdef _UNICODE
 // Maybe this is against MaxK XCSoar rules, but this makes the life much easier
 void
 LargeTextWidget::SetText(const char *text) noexcept
