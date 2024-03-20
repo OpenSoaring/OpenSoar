@@ -53,7 +53,7 @@ bool FlarmFileChanged = false;
 bool RaspFileChanged = false;
 bool InputFileChanged = false;
 bool LanguageChanged = false;
-bool require_restart;
+bool require_restart = false;
 
 static void
 SettingsEnter()
