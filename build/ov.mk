@@ -250,6 +250,8 @@ OV_MENU_SOURCES = \
 	$(SRC)/Math/FastTrig.cpp \
 	$(SRC)/ui/window/ContainerWindow.cpp \
     $(SRC)/Operation/Operation.cpp \
+    \
+    $(SRC)/UtilsSettings.cpp \
 	\
 
 #    $(SRC)/Operation/ConsoleOperationEnvironment.cpp
