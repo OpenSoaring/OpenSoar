@@ -60,6 +60,9 @@
 #include "NunchuckDevice.hpp"
 #include "VoltageDevice.hpp"
 
+#include "UIGlobals.hpp"
+
+
 #include <cassert>
 #include <mutex>
 
@@ -183,6 +186,20 @@ try {
   return env->NewStringUTF(GetFullMessage(std::current_exception()).c_str());
 }
 
+#define ANDROID_RERUN
+/** ReRun hat 2 grosse Probleme zur Zeit:
+* - startet man OpenSoar mit einer SD-Card, befindet sich der Data-Ordner (und
+*   auch der Cache) dort, bei einem ReRun vesucht er aber, z.B. die Maps und
+*   Wegpunkte(oder Airspaces) von Data-Ordner des Android zu lesen, der ist
+*   aber leer...
+* - Bei Start Von OpenSoar werden die Log-Files auf dem Telefon angelegt,
+*   nicht wie alles andere auf der SD-Card... (das ist ein ähnliches Verhalten
+*   wie bei einem 'Umlegen' des datapath bei anderen Systemen
+* - Das Quickmenü hat im 1.Fall 12 Zeilen, im 2.Fall nur noch 11 - als ob das
+*   Fenster ein wenig kleiner geworden ist
+* - Ich habe noch keine Moeglichkeit gefunden, auf die 2.Seite des Quickmenus
+*   zu gelangen -> mit Touch geht es leider (noch) nicht!!!
+*/
 gcc_visibility_default
 JNIEXPORT void JNICALL
 Java_de_opensoar_NativeView_runNative(JNIEnv *env, jobject obj,
@@ -192,117 +209,134 @@ Java_de_opensoar_NativeView_runNative(JNIEnv *env, jobject obj,
                                      jint xdpi, jint ydpi,
                                      jstring product)
 try {
-  const std::scoped_lock shutdown_lock{shutdown_mutex};
+#ifdef ANDROID_RERUN
+  bool rerun = false;
 
-  InitThreadDebug();
+  do {
+    rerun = false;
+    UI::TopWindow::SetExitValue(0);
+#endif
+    const std::scoped_lock shutdown_lock{shutdown_mutex};
 
-  const bool have_bluetooth = BluetoothHelper::Initialise(env);
-  const bool have_usb_serial = UsbSerialHelper::Initialise(env);
-  const bool have_ioio = IOIOHelper::Initialise(env);
+    InitThreadDebug();
 
-  context = new Context(env, _context);
-  AtScopeExit() {
-    delete context;
-    context = nullptr;
-  };
+    const bool have_bluetooth = BluetoothHelper::Initialise(env);
+    const bool have_usb_serial = UsbSerialHelper::Initialise(env);
+    const bool have_ioio = IOIOHelper::Initialise(env);
 
-  permission_manager = env->NewGlobalRef(_permission_manager);
-  AtScopeExit(env) { env->DeleteGlobalRef(permission_manager); };
+    context = new Context(env, _context);
+    AtScopeExit() {
+      delete context;
+      context = nullptr;
+    };
 
-  const ScopeGlobalAsioThread global_asio_thread;
-  const Net::ScopeInit net_init(asio_thread->GetEventLoop());
+    permission_manager = env->NewGlobalRef(_permission_manager);
+    AtScopeExit(env) { env->DeleteGlobalRef(permission_manager); };
 
-  InitialiseDataPath();
-  AtScopeExit() { DeinitialiseDataPath(); };
+    const ScopeGlobalAsioThread global_asio_thread;
+    const Net::ScopeInit net_init(asio_thread->GetEventLoop());
 
-  LogFormat(_T("Starting OpenSoar %s"), OpenSoar_ProductToken);
+    InitialiseDataPath();
+    AtScopeExit() { DeinitialiseDataPath(); };
 
-  TextUtil::Initialise(env);
-  AtScopeExit(env) { TextUtil::Deinitialise(env); };
+    LogFormat(_T("Starting OpenSoar %s"), OpenSoar_ProductToken);
 
-  assert(native_view == nullptr);
-  native_view = new NativeView(env, obj, width, height, xdpi, ydpi,
-                               product);
-  AtScopeExit() {
-    delete native_view;
-    native_view = nullptr;
-  };
+    TextUtil::Initialise(env);
+    AtScopeExit(env) { TextUtil::Deinitialise(env); };
 
-  SoundUtil::Initialise(env);
-  AtScopeExit(env) { SoundUtil::Deinitialise(env); };
+    assert(native_view == nullptr);
+    native_view = new NativeView(env, obj, width, height, xdpi, ydpi, product);
+    AtScopeExit() {
+      delete native_view;
+      native_view = nullptr;
+    };
 
-  Vibrator::Initialise(env);
-  vibrator = Vibrator::Create(env, *context);
+    SoundUtil::Initialise(env);
+    AtScopeExit(env) { SoundUtil::Deinitialise(env); };
 
-  AtScopeExit() {
-    delete vibrator;
-    vibrator = nullptr;
-  };
+    Vibrator::Initialise(env);
+    vibrator = Vibrator::Create(env, *context);
 
-  if (have_bluetooth) {
-    try {
-      bluetooth_helper = new BluetoothHelper(env, *context,
-                                             permission_manager);
-    } catch (...) {
-      LogError(std::current_exception(), "Failed to initialise Bluetooth");
+    AtScopeExit() {
+      delete vibrator;
+      vibrator = nullptr;
+    };
+
+    if (have_bluetooth) {
+      try {
+        bluetooth_helper =
+            new BluetoothHelper(env, *context, permission_manager);
+      } catch (...) {
+        LogError(std::current_exception(), "Failed to initialise Bluetooth");
+      }
     }
-  }
 
-  AtScopeExit() {
-    delete bluetooth_helper;
-    bluetooth_helper = nullptr;
-  };
+    AtScopeExit() {
+      delete bluetooth_helper;
+      bluetooth_helper = nullptr;
+    };
 
-  if (have_usb_serial) {
-    try {
-      usb_serial_helper = new UsbSerialHelper(env, *context);
-    } catch (...) {
-      LogError(std::current_exception(), "Failed to initialise USB serial support");
+    if (have_usb_serial) {
+      try {
+        usb_serial_helper = new UsbSerialHelper(env, *context);
+      } catch (...) {
+        LogError(std::current_exception(),
+                 "Failed to initialise USB serial support");
+      }
     }
-  }
 
-  AtScopeExit() {
-    delete usb_serial_helper;
-    usb_serial_helper = nullptr;
-  };
+    AtScopeExit() {
+      delete usb_serial_helper;
+      usb_serial_helper = nullptr;
+    };
 
-  if (have_ioio) {
-    try {
-      ioio_helper = new IOIOHelper(env);
-    } catch (...) {
-      LogError(std::current_exception(), "Failed to initialise IOIO");
+    if (have_ioio) {
+      try {
+        ioio_helper = new IOIOHelper(env);
+      } catch (...) {
+        LogError(std::current_exception(), "Failed to initialise IOIO");
+      }
     }
-  }
 
-  AtScopeExit() {
-    delete ioio_helper;
-    ioio_helper = nullptr;
-  };
+    AtScopeExit() {
+      delete ioio_helper;
+      ioio_helper = nullptr;
+    };
 
-  ScreenGlobalInit screen_init;
-  AtScopeExit() { Fonts::Deinitialize(); };
+    ScreenGlobalInit screen_init;
+    AtScopeExit() { Fonts::Deinitialize(); };
 
-  AllowLanguage();
-  AtScopeExit() { DisallowLanguage(); };
+    AllowLanguage();
+    AtScopeExit() { DisallowLanguage(); };
 
-  InitLanguage();
+    InitLanguage();
 
-  AtScopeExit() {
-    if (CommonInterface::main_window != nullptr) {
-      CommonInterface::main_window->Destroy();
-      delete CommonInterface::main_window;
-      CommonInterface::main_window = nullptr;
+    AtScopeExit() {
+      if (CommonInterface::main_window != nullptr) {
+        CommonInterface::main_window->Destroy();
+        delete CommonInterface::main_window;
+        CommonInterface::main_window = nullptr;
+      }
+    };
+
+    {
+      const ScopeUnlock shutdown_unlock{shutdown_mutex};
+
+      if (Startup(screen_init.GetDisplay()))
+        CommonInterface::main_window->RunEventLoop();
     }
-  };
 
-  {
-    const ScopeUnlock shutdown_unlock{shutdown_mutex};
+#ifdef ANDROID_RERUN
+    unsigned ret = UI::TopWindow::GetExitValue();
+    rerun = (ret == EXIT_RESTART);
+    if (rerun) {
+      env->DeleteGlobalRef(permission_manager);
+      DeinitialiseDataPath();
+    }
+  } while (rerun);
+#endif
 
-    if (Startup(screen_init.GetDisplay()))
-      CommonInterface::main_window->RunEventLoop();
-  }
-
-  Shutdown();
+    Shutdown();
 } catch (...) {
   /* if an error occurs, rethrow the C++ exception as Java exception,
      to be displayed by the Java glue code */
