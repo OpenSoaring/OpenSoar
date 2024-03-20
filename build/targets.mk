@@ -444,6 +444,7 @@ ifeq ($(HAVE_POSIX),y)
 endif
 
 ifeq ($(TARGET_IS_OPENVARIO),y)
+  override TARGET_FLAVOR = OPENVARIO
   TARGET_CPPFLAGS += -DIS_OPENVARIO
   # TARGET_CPPFLAGS += -isystem /usr/include/dbus-1.0  -isystem /usr/lib/x86_64-linux-gnu/dbus-1.0/include
 endif
