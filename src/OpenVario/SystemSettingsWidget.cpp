@@ -135,14 +135,12 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
 
   brightness = ovdevice.brightness * 10; 
 
-
   AddReadOnly(_("Current FW"), _("Current firmware version of OpenVario"),
 #if defined(PROGRAM_VERSION)
               _T(PROGRAM_VERSION));
 #else
               _T("7.42.21.3"));
 #endif
-  //  std::string_view version = PROGRAM_VERSION;
   AddFile(_("OV-Firmware"), _("Current firmware file version of OpenVario"),
           "OVImage", _T("*.img.gz\0"), FileType::IMAGE);  // no callback... , this);
   
