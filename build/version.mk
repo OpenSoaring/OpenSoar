@@ -23,10 +23,11 @@ $(info GIT_COMMIT_ID     is $(GIT_COMMIT_ID) )
 $(info RELEASE_COMMIT_ID is $(RELEASE_COMMIT_ID) )
 
 # only append the commit id for unreleased builds (no release tag)
+VERSION_CPPFLAGS += -DGIT_COMMIT_ID=\"$(GIT_COMMIT_ID)\"
+FULL_VERSION := $(FULL_VERSION)~$(GIT_COMMIT_ID)
 ifneq ($(GIT_COMMIT_ID),$(RELEASE_COMMIT_ID) )
     $(info Git commits: HEAD = $(GIT_COMMIT_ID) vs. RELEASE = $(RELEASE_COMMIT_ID) )
-    VERSION_CPPFLAGS += -DGIT_COMMIT_ID=\"$(GIT_COMMIT_ID)\"
-    FULL_VERSION := $(FULL_VERSION)~$(GIT_COMMIT_ID)
+    VERSION_CPPFLAGS += -DRELEASE_COMMIT_ID=\"$(RELEASE_COMMIT_ID)\"
 endif
 
 $(call SRC_TO_OBJ,$(SRC)/Version.cpp): $(topdir)/VERSION.txt
