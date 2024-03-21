@@ -34,9 +34,9 @@
 #define VERSION_SUFFIX ""
 
 #ifdef GIT_COMMIT_ID
-#define GIT_SUFFIX "~git#" GIT_COMMIT_ID
+# define GIT_SUFFIX "~git#" GIT_COMMIT_ID
 #else
-#define GIT_SUFFIX
+# define GIT_SUFFIX
 #endif
 
 const TCHAR OpenSoar_Version[] = _T(VERSION);
