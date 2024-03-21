@@ -22,6 +22,7 @@
 #include "./LogFile.hpp"
 #include "UIActions.hpp"
 #include "UtilsSettings.hpp"
+#include "ProgramVersion.h"
 
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/WifiDialogOV.hpp"
