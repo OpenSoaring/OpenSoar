@@ -274,6 +274,12 @@ ifeq ($(TARGET_IS_KOBO),y)
 include $(topdir)/build/kobo.mk
 endif
 
+# ifeq ($(TARGET_IS_OPENVARIO),y)
+# ifeq ($(USE_POLL_EVENT),y)
+# include $(topdir)/build/ov.mk
+# endif
+# endif
+
 include $(topdir)/build/hot.mk
 include $(topdir)/build/nolto.mk
 
