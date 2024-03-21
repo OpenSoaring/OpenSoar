@@ -43,6 +43,13 @@ private:
 void ExtraWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                         [[maybe_unused]] const PixelRect &rc) noexcept
 {
+#if 0
+  std::string ImageFile = "";
+  AddFile(_("Upgrade Firmware"),
+          _("Upgrade Firmware (.img.gz) "),
+          ImageFile, _T("*.img.gz\0"), FileType::IMAGE);
+
+#else
   AddButton(_("Upgrade Firmware"), [this]() {
 #if  0 // Segmentation fault? def OPENVARIO_BASEMENU
     exit(START_UPGRADE);
@@ -52,10 +59,10 @@ void ExtraWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     return mrOK;  //    START_UPGRADE;
 #endif
   });
+#endif
+  /* deprecated: */ AddButton(_("Calibrate Sensors"), CalibrateSensors);
 
-  AddButton(_("Calibrate Sensors"), CalibrateSensors);
-
-  AddButton(_("Calibrate Touch"), [this]() {
+  /* deprecated: */ AddButton(_("Calibrate Touch"), [this]() {
 // the programm exit in OpenSoar looks complete different fro OpenVarioBaseMenu
 #if 0 // Segmentation fault? def OPENVARIO_BASEMENU
     exit(LAUNCH_TOUCH_CALIBRATE);
