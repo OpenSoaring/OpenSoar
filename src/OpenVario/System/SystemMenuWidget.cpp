@@ -41,7 +41,7 @@
 #include <string>
 #include <fmt/format.h>
 
-#ifndef OPENVARIO_BASEMENU
+#if  1 // Segmentation fault? def OPENVARIO_BASEMENU
 # include "ui/window/ContainerWindow.hpp"
 # include "UIActions.hpp"
 #endif
@@ -140,7 +140,7 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                           [[maybe_unused]] const PixelRect &rc) noexcept
 {
   AddButton(_("Upgrade Firmware"), [this]() {
-#ifdef OPENVARIO_BASEMENU
+#if 0 // Segmentation fault? def OPENVARIO_BASEMENU
     exit(START_UPGRADE);
 #else // OPENVARIO_BASEMENU
     ContainerWindow::SetExitValue(START_UPGRADE);
@@ -177,7 +177,7 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
   AddButton(_("Calibrate Touch"), [this]() {
 // the programm exit in OpenSoar looks complete different fro OpenVarioBaseMenu
-#ifdef OPENVARIO_BASEMENU
+#if 0 // Segmentation fault? def OPENVARIO_BASEMENU
     exit(LAUNCH_TOUCH_CALIBRATE);
 #else // OPENVARIO_BASEMENU
     ContainerWindow::SetExitValue(LAUNCH_TOUCH_CALIBRATE);
