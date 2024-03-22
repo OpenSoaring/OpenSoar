@@ -76,8 +76,11 @@ AudioVarioGlue::Configure(const VarioSoundSettings &settings)
     synthesiser->SetPeriods(settings.min_period_ms, settings.max_period_ms);
     synthesiser->SetDeadBandRange(settings.min_dead, settings.max_dead);
     player->Start(*synthesiser);
-  } else
-    player->Stop();
+  } else {
+    synthesiser->SetVolume(0);
+    player->Start(*synthesiser);
+    // player->Stop();
+  }
 }
 
 void
