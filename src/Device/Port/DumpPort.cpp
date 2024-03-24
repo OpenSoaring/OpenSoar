@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <stdio.h>
 
+using std::string_view_literals::operator""sv;
+
 #ifdef __clang__
 /* true, the nullptr cast below is a bad kludge */
 #pragma GCC diagnostic ignored "-Wnull-dereference"
@@ -58,10 +60,15 @@ DumpPort::Write(std::span<const std::byte> src)
   std::size_t nbytes;
   try {
     nbytes = port->Write(src);
-  } catch (...) {
-    if (enabled)
-      LogFmt("Write({})=error", src.size());
-    throw;
+//  } catch (...) {
+  } catch (std::exception &e) {
+    if (e.what() == "Port is closed"sv) {
+      return 0;
+  } else {
+      if (enabled)
+        LogFmt("Write({})=error", src.size());
+      throw;
+    }
   }
 
   if (enabled) {
