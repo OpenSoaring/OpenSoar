@@ -314,12 +314,12 @@ InitialiseDataPath()
     if (data_paths.empty())
       throw std::runtime_error("No data path found");
   }
+  // TODO: delete the old cache directory in OpenSoarData?
 #ifdef ANDROID
   cache_path = context->GetExternalCacheDir(Java::GetEnv());
   if (cache_path == nullptr)
     throw std::runtime_error("No Android cache directory");
 
-  // TODO: delete the old cache directory in OpenSoarData?
 #else
   cache_path = LocalPath(_T("cache"));
 #endif
