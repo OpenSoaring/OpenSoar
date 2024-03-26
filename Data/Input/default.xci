@@ -82,6 +82,12 @@ type=key
 data=ESCAPE
 event=Mode default
 
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
+type=key
+data=X
+event=Shutdown shutdown
+event=Mode default
+
 mode=default pan
 type=key
 data=ESCAPE
