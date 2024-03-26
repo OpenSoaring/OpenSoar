@@ -1,5 +1,7 @@
 OpenSoar Version 7.41.21.1 - not yet released
 ---------------
+* TCP Port - Bugfix on closing the TCP client as receiver on this port:
+  By closing the receiver OpenSoar crashed!  
 * End of program with (short) restart, reboot, shutdown and normal program end 
 * OpenVario menu inserted
 * OpenVario:
