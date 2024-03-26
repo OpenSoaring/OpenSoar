@@ -6,7 +6,7 @@
 #include "WindowWidget.hpp"
 
 #include <tchar.h>
-#if _UNICODE
+#ifdef _UNICODE
 #include <string>
 #endif
 
@@ -25,7 +25,7 @@ public:
     :look(_look), text(_text) {}
 
   void SetText(const TCHAR *text) noexcept;
-#if _UNICODE
+#ifdef _UNICODE
   void SetText(const char *text) noexcept;
   void SetText(const std::string_view text) noexcept;
 #endif
