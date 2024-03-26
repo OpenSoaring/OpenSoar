@@ -82,6 +82,12 @@ type=key
 data=ESCAPE
 event=Mode default
 
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
+type=key
+data=X
+event=Shutdown shutdown
+event=Mode default
+
 mode=default pan
 type=key
 data=ESCAPE
@@ -1299,10 +1305,18 @@ location=59
 mode=RemoteStick
 type=key
 data=0
+event=Exit system
+event=Mode default
+label=Quit
+location=63
+
+mode=RemoteStick
+type=key
+data=0
 event=Exit restart
 event=Mode default
 label=Restart
-location=60
+location=61
 
 # OpenVario only:
 mode=RemoteStick
@@ -1311,7 +1325,7 @@ data=0
 event=Shutdown reboot
 event=Mode default
 label=Reboot
-location=61
+location=62
 
 # OpenVario only:
 mode=RemoteStick
@@ -1320,13 +1334,4 @@ data=0
 event=Shutdown shutdown
 event=Mode default
 label=Shutdown
-location=62
-
-mode=RemoteStick
-type=key
-data=0
-event=Exit system
-event=Mode default
-label=Quit
 location=63
-
