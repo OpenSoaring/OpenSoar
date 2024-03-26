@@ -28,15 +28,25 @@ InputEvents::eventSounds(const TCHAR *misc)
 {
   SoundSettings &settings = CommonInterface::SetUISettings().sound;
  // bool OldEnableSoundVario = EnableSoundVario;
-
+  bool enabled = settings.vario.enabled;
   if (StringIsEqual(misc, _T("toggle")))
-    settings.vario.enabled = !settings.vario.enabled;
+    settings.vario.enabled = !enabled;
   else if (StringIsEqual(misc, _T("on")))
     settings.vario.enabled = true;
   else if (StringIsEqual(misc, _T("off")))
     settings.vario.enabled = false;
-  else if (StringIsEqual(misc, _T("show"))) {
-    if (settings.vario.enabled)
+  else if (StringIsEqual(misc, _T("quieter"))) {
+    settings.vario.volume = settings.vario.volume / 2;
+    if (settings.vario.volume < 1) // settings.vario.max_volume)
+      settings.vario.volume = 1;  // don't switch to off!
+    // settings.vario.enabled = false;
+  } else if (StringIsEqual(misc, _T("louder"))) {
+    settings.vario.volume = settings.vario.volume * 2;
+    if (settings.vario.volume > 100) // settings.vario.max_volume)
+      settings.vario.volume = 100;
+    // settings.vario.enabled = false;
+  } else if (StringIsEqual(misc, _T("show"))) {
+    if (enabled)
       Message::AddMessage(_("Vario sounds on"));
     else
       Message::AddMessage(_("Vario sounds off"));
@@ -44,7 +54,8 @@ InputEvents::eventSounds(const TCHAR *misc)
   }
 
   AudioVarioGlue::Configure(settings.vario);
-  Profile::Set(ProfileKeys::SoundAudioVario, settings.vario.enabled);
+  if (settings.vario.enabled != enabled)
+     Profile::Set(ProfileKeys::SoundAudioVario, settings.vario.enabled);
 }
 
 void
