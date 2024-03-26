@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <tchar.h>
+
 namespace UI { class SingleWindow; }
 
 void dlgBasicSettingsShowModal();
@@ -17,5 +19,5 @@ void dlgStatusShowModal(int page);
 
 void dlgCreditsShowModal(UI::SingleWindow &parent);
 
-void
-dlgQuickMenuShowModal(UI::SingleWindow &parent) noexcept;
+void dlgQuickMenuShowModal(UI::SingleWindow & parent,
+                        const TCHAR *mode) noexcept;

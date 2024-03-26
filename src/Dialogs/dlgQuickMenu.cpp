@@ -271,8 +271,8 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &menu) noexcept
   return dialog.GetWidget().clicked_event;
 }
 
-void
-dlgQuickMenuShowModal(UI::SingleWindow &parent) noexcept
+void dlgQuickMenuShowModal(UI::SingleWindow &parent,
+                           [[maybe_unused]] const TCHAR *mode) noexcept
 {
   const auto *menu = InputEvents::GetMenu(_T("RemoteStick"));
   if (menu == nullptr)
