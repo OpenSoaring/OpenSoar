@@ -16,7 +16,8 @@
 
 #include <fmt/format.h>
 
-#include <cwchar>
+#include <filesystem>
+#include <cwchar>  // UNICODE???
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -39,12 +40,14 @@ OpenLog()
 
   if (!initialised) {
     initialised = true;
+    
+    /* Unfortunately on program start the LocalPath pointed to the 'standard' 
+     * local path - and not to the user local path set with the caller argument
+     * '-datapath=' 
+     * A handler for this is possible but make the management much complicated!
+     */
+    path = LocalPath(_T("OpenSoar"));
 
-#ifdef IS_OPENVARIO
-    path = LocalPath(ovdevice.GetExeName().c_str());
-#else
-    path = LocalPath(_T("xcsoar.log"));
-#endif
     /* delete the obsolete log file */
     File::Delete(path + _T("-startup.log"));
     auto back_path = path + _T("-old.log");
