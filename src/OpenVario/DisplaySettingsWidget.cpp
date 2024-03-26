@@ -57,10 +57,10 @@ enum ControlIndex {
 
   static constexpr StaticEnumChoice rotation_list[] = {
     // { DisplayOrientation::DEFAULT,  _T("default") },
-    {DisplayOrientation::LANDSCAPE, _T("Landscape (0°)")},
-    {DisplayOrientation::PORTRAIT, _T("Portrait (90°)")},
-    {DisplayOrientation::REVERSE_LANDSCAPE, _T("Rev. Landscape (180°)")},
-    {DisplayOrientation::REVERSE_PORTRAIT, _T("rev. Portrait (270°)")},
+    {DisplayOrientation::LANDSCAPE, _T("Landscape (0Â°)")},
+    {DisplayOrientation::PORTRAIT, _T("Portrait (90Â°)")},
+    {DisplayOrientation::REVERSE_LANDSCAPE, _T("Rev. Landscape (180Â°)")},
+    {DisplayOrientation::REVERSE_PORTRAIT, _T("rev. Portrait (270Â°)")},
     nullptr};
 
 class DisplaySettingsWidget final : public RowFormWidget, DataFieldListener {
