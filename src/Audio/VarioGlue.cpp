@@ -75,12 +75,19 @@ AudioVarioGlue::Configure(const VarioSoundSettings &settings)
                                 settings.max_frequency);
     synthesiser->SetPeriods(settings.min_period_ms, settings.max_period_ms);
     synthesiser->SetDeadBandRange(settings.min_dead, settings.max_dead);
+#ifdef ANDROID
     player->Start(*synthesiser);
   } else {
-    synthesiser->SetVolume(0);
-    player->Start(*synthesiser);
-    // player->Stop();
+    player->Stop();
   }
+#else
+  } else {
+    /* WorkAround: don't stop the player on Linux: player->Stop();
+    * this never cannot switching on the sound! */
+    synthesiser->SetVolume(0);
+  }
+  player->Start(*synthesiser);
+#endif
 }
 
 void
