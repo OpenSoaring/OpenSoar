@@ -165,7 +165,7 @@ static constexpr TabMenuPage openvario_pages[] = {
 #endif
 
 static constexpr TabMenuGroup main_menu_captions[] = {
-    {N_("Basic Settings"), basic_pages},
+  { N_("Basic Settings"), basic_pages},
   { N_("Map Display"), map_pages },
   { N_("Glide Computer"), computer_pages },
   { N_("Gauges"), gauge_pages },
@@ -173,7 +173,7 @@ static constexpr TabMenuGroup main_menu_captions[] = {
   { N_("Look"), look_pages },
   { N_("Setup"), setup_pages },
 #ifdef IS_OPENVARIO
-    {N_("OpenVario"), openvario_pages},
+  { N_("OpenVario"), openvario_pages},
 #endif
 };
 
