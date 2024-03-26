@@ -390,7 +390,7 @@ FinishPortField(DeviceConfig &config, const DataFieldEnum &df) noexcept
   case DeviceConfig::PortType::BLE_HM10:
   case DeviceConfig::PortType::BLE_SENSOR:
     /* Bluetooth */
-#if _WIN32
+#ifdef _WIN32
     // identical with Serial Port
     if (new_type == config.port_type &&
         StringIsEqual(config.path, df.GetAsString()))
