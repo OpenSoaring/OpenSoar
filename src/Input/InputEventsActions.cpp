@@ -785,9 +785,9 @@ InputEvents::eventWeather(const TCHAR *misc)
 }
 
 void
-InputEvents::eventQuickMenu([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventQuickMenu(const TCHAR *misc)
 {
- dlgQuickMenuShowModal(*CommonInterface::main_window);
+ dlgQuickMenuShowModal(*CommonInterface::main_window, misc);
 }
 
 void
