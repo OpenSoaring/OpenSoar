@@ -71,6 +71,7 @@ if len(sys.argv) < 2:
 else:
     infile = io.open(sys.argv[1])
     outfile = io.open(sys.argv[2], 'w', newline='\n')
+    outfile2 = io.open(sys.argv[2]+'.h', 'w', newline='\n')
     
     for line in infile:
        write_line(outfile, line)
