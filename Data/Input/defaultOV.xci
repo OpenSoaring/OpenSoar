@@ -1309,17 +1309,17 @@ location=59
 mode=RemoteStick
 type=key
 data=0
-event=Exit system
+event=Exit restart
 event=Mode default
-label=Quit
-location=63
+label=Restart
+location=60
 
 mode=RemoteStick
 type=key
 data=0
-event=Exit restart
+event=Exit system
 event=Mode default
-label=Restart
+label=Quit
 location=61
 
 # OpenVario only:
@@ -1377,4 +1377,9 @@ mode=default RemoteStick
 type=key
 data=M
 event=Mode AudioMenu 
+
+mode=default
+type=key
+data=X
+event=Shutdown shutdown
 
