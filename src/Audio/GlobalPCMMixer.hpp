@@ -6,9 +6,12 @@
 #include "Features.hpp"
 
 class EventLoop;
+// #define EXTERNAL_AUDIO_INIT
 
+#ifdef EXTERNAL_AUDIO_INIT
 void InitAudio(EventLoop *loop);
 void ShutdownAudio();
+#endif
 
 #ifdef HAVE_PCM_MIXER
 class PCMMixer;
