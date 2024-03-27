@@ -1281,24 +1281,27 @@ location=34
 mode=RemoteStick
 type=key
 data=0
-event=Sounds quiter
-event=QuickMenu 58
+event=QuickMenu 57
+event=Mode default
+event=Sounds quieter
 label=Vario Audio Quieter
 location=57
 
 mode=RemoteStick
 type=key
 data=0
-event=Sounds toggle
 event=QuickMenu 58
+event=Mode default
+event=Sounds toggle
 label=Vario Audio On/Off
 location=58
 
 mode=RemoteStick
 type=key
 data=0
+event=QuickMenu 59
+event=Mode default
 event=Sounds louder
-event=QuickMenu 58
 label=Vario Audio Louder
 location=59
 
