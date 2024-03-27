@@ -1319,7 +1319,7 @@ data=0
 event=Exit system
 event=Mode default
 label=Quit
-location=63
+location=61
 
 
 # -------------
@@ -1359,4 +1359,11 @@ mode=default RemoteStick
 type=key
 data=M
 event=Mode AudioMenu 
+
+mode=default
+type=key
+data=X
+event=Exit system
+
+
 
