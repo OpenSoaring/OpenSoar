@@ -3,10 +3,12 @@
 
 #pragma once
 
-
 #include "Features.hpp"
 
 class EventLoop;
+
+void InitAudio(EventLoop *loop);
+void ShutdownAudio();
 
 #ifdef HAVE_PCM_MIXER
 class PCMMixer;
