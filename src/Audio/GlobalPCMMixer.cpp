@@ -6,18 +6,25 @@
 #ifndef _WIN32
 #include "PCMPlayerFactory.hpp"
 #endif
-#include "GlobalPCMResourcePlayer.hpp"
-#include "GlobalVolumeController.hpp"
 
-#include "event/Loop.hxx"
+// #define EXTERNAL_AUDIO_INIT
+
+#ifdef EXTERNAL_AUDIO_INIT 
+# include "GlobalPCMResourcePlayer.hpp"
+# include "GlobalVolumeController.hpp"
+
+# include "event/Loop.hxx"
+#endif
 
 #include <cassert>
 #include <memory>
 
 PCMMixer *pcm_mixer = nullptr;
-ScopeGlobalPCMMixer *global_pcm_mixer = nullptr;
-ScopeGlobalPCMResourcePlayer *global_pcm_resouce_player = nullptr;
-ScopeGlobalVolumeController *global_volume_controller = nullptr;
+#ifdef EXTERNAL_AUDIO_INIT
+  ScopeGlobalPCMMixer *global_pcm_mixer = nullptr;
+  ScopeGlobalPCMResourcePlayer *global_pcm_resouce_player = nullptr;
+  ScopeGlobalVolumeController *global_volume_controller = nullptr;
+#endif
 
 #ifndef _WIN32
 void
@@ -41,6 +48,7 @@ DeinitialisePCMMixer()
 
 #endif
 
+#ifdef EXTERNAL_AUDIO_INIT
 void InitAudio(EventLoop *_loop) {
   // How I get this variables to live up to the end?
   EventLoop *loop = _loop;
@@ -55,3 +63,4 @@ void ShutdownAudio() {
   delete global_pcm_resouce_player;
   delete global_volume_controller;
 }
+#endif
