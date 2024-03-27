@@ -1339,3 +1339,42 @@ event=Shutdown shutdown
 event=Mode default
 label=Shutdown
 location=63
+
+# -------------
+# Define AudioMenu buttons for Audio app 
+# - the PCM mixer controlled by OpenSoar 
+# -------------
+
+mode=AudioMenu
+type=key
+data=DOWN
+event=Sounds quieter
+label=VOLUME- (DOWN)
+location=1
+
+mode=AudioMenu
+type=key
+data=RETURN
+event=Sounds toggle
+label=VOLUME ON/OFF (ENTER)
+location=2
+
+mode=AudioMenu
+type=key
+data=UP
+event=Sounds louder
+label=VOLUME+ (UP)
+location=3
+
+mode=AudioMenu
+type=key
+data=ESCAPE
+event=Mode default
+label=BACK (ESC)
+location=5
+
+mode=default RemoteStick
+type=key
+data=M
+event=Mode AudioMenu 
+

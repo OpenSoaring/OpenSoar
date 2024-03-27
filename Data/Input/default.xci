@@ -1323,8 +1323,8 @@ location=63
 
 
 # -------------
-# Define AudioMenu buttons for 
-# Vario app must be connected as device A
+# Define AudioMenu buttons for Audio app 
+# - the PCM mixer controlled by OpenSoar 
 # -------------
 
 mode=AudioMenu
