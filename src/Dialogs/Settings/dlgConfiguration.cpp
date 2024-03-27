@@ -396,23 +396,20 @@ OnSaveClicked(WidgetDialog &dialog)
 /**
  * close dialog from menu page.  from content, goes to menu page
  */
-static void
-OnCloseClicked(WidgetDialog &dialog)
-{
-  if (pager->GetCurrentIndex() == 0)
+static void OnCloseClicked(WidgetDialog &dialog) {
+  if (pager->GetCurrentIndex() == 0) {
     dialog.SetModalResult(mrOK);
-  else {
-
-  CreateWindowWidget *w = &(CreateWindowWidget&)pager->GetCurrentWidget();
+  } else {
+  CreateWindowWidget *w = &(CreateWindowWidget &)pager->GetCurrentWidget();
   bool changed = false;
-  if (w->Save(changed))
+  if (w->Save(changed)) {
       //      if (w.prepared && !w.widget->Save(changed))
-      ;
-       //  return ;
+      //  return ;
 
-//  return true;
+      //  return true;
+  }
 
-    pager->ClickPage(0);
+  pager->ClickPage(0);
   }
 }
 
