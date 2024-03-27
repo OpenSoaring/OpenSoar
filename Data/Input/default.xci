@@ -1275,6 +1275,14 @@ location=34
 mode=RemoteStick
 type=key
 data=0
+event=Sounds toggle
+event=Mode default
+label=Audio On/Off
+location=59
+
+mode=RemoteStick
+type=key
+data=0
 event=Exit restart
 event=Mode default
 label=Restart
@@ -1305,4 +1313,43 @@ event=Exit system
 event=Mode default
 label=Quit
 location=63
+
+
+# -------------
+# Define AudioMenu buttons for 
+# Vario app must be connected as device A
+# -------------
+
+mode=AudioMenu
+type=key
+data=DOWN
+event=Sounds quieter
+label=VOLUME- (DOWN)
+location=1
+
+mode=AudioMenu
+type=key
+data=RETURN
+event=Sounds toggle
+label=VOLUME ON/OFF (ENTER)
+location=2
+
+mode=AudioMenu
+type=key
+data=UP
+event=Sounds louder
+label=VOLUME+ (UP)
+location=3
+
+mode=AudioMenu
+type=key
+data=ESCAPE
+event=Mode default
+label=BACK (ESC)
+location=5
+
+mode=default RemoteStick
+type=key
+data=M
+event=Mode AudioMenu 
 
