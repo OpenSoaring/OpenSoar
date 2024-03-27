@@ -92,9 +92,7 @@ static const char *const Usage = "\n"
 #endif
   ;
 
-static int
-Main()
-{
+static int Main() {
   ScreenGlobalInit screen_init;
 
 #if defined(__APPLE__) && !TARGET_OS_IPHONE
@@ -113,9 +111,14 @@ Main()
   ScopeGlobalAsioThread global_asio_thread;
   const Net::ScopeInit net_init(asio_thread->GetEventLoop());
 
+#ifdef EXTERNAL_AUDIO_INIT
+  InitAudio(&asio_thread->GetEventLoop());
+  // How I get this variables to live up to the end?
+#else
   ScopeGlobalPCMMixer global_pcm_mixer(asio_thread->GetEventLoop());
   ScopeGlobalPCMResourcePlayer global_pcm_resouce_player;
   ScopeGlobalVolumeController global_volume_controller;
+#endif
 
   // Perform application initialization and run loop
   int ret = EXIT_FAILURE;
@@ -123,6 +126,10 @@ Main()
     ret = CommonInterface::main_window->RunEventLoop();
 
   Shutdown();
+
+#ifdef EXTERNAL_AUDIO_INIT
+  ShutdownAudio();
+#endif
 
   DisallowLanguage();
 
@@ -133,7 +140,7 @@ Main()
   return ret;
 }
 
-int 
+static int 
 Finishing(int ret) {
   LogString("Finishing");
   switch (ret) {
@@ -174,7 +181,8 @@ try {
   do {
     {
       rerun = false;
-      UI::TopWindow::SetExitValue(0);
+      // UI::TopWindow::SetExitValue(0);
+
 #ifdef _WIN32
       if (UIGlobals::CommandLine == nullptr)
         UIGlobals::CommandLine = GetCommandLine();
@@ -194,6 +202,7 @@ try {
     // Write startup note + version to logfile
     LogFormat(_T("Starting OpenSoar %s"), OpenSoar_ProductToken);
 
+    // int
     ret = Main();
 
 #if defined(__APPLE__) && TARGET_OS_IPHONE
@@ -207,8 +216,9 @@ try {
       ret = UI::TopWindow::GetExitValue();
 #endif
     rerun = (ret == EXIT_RESTART);
+    if (rerun)
+      UI::TopWindow::SetExitValue(0);
   } while (rerun);
-
   return Finishing(ret);
 } catch (...) {
   PrintException(std::current_exception());
