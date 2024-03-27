@@ -374,6 +374,8 @@ try {
   case DeviceConfig::PortType::BLE_SENSOR:
       return OpenBluetoothSensor();
 #endif
+  default:
+      break;
   }
 
   reopen_clock.Update();
