@@ -10,6 +10,15 @@
 
 #include <algorithm>
 
+#include "util/UTF8Win.hpp"
+
+
+static bool UTF8TextOut(HDC hdc, const PixelPoint &p, unsigned options, const RECT *lprect,
+            tstring_view lpString, const int *lpDx) {
+  std::string text = FromUTF8(lpString.data());
+  return ::ExtTextOut(hdc, p.x, p.y, options, lprect, text.data(), text.size(), lpDx);
+}
+
 void
 Canvas::DrawLine(int ax, int ay, int bx, int by)
 {
@@ -87,9 +96,11 @@ Canvas::DrawArc(PixelPoint center, unsigned radius,
 }
 
 const PixelSize
-Canvas::CalcTextSize(tstring_view text) const noexcept
+Canvas::CalcTextSize(tstring_view _text) const noexcept
 {
   assert(IsDefined());
+
+  tstring_view text = FromUTF8(_text.data());
 
   SIZE size;
   ::GetTextExtentPoint(dc, text.data(), text.size(), &size);
@@ -111,7 +122,7 @@ Canvas::DrawText(PixelPoint p, tstring_view text) noexcept
 {
   assert(IsDefined());
 
-  ::ExtTextOut(dc, p.x, p.y, 0, nullptr, text.data(), text.size(), nullptr);
+  UTF8TextOut(dc, p, 0, nullptr, text, nullptr);
 }
 
 void
@@ -121,8 +132,7 @@ Canvas::DrawOpaqueText(PixelPoint p, const PixelRect &_rc,
   assert(IsDefined());
 
   RECT rc = _rc;
-  ::ExtTextOut(dc, p.x, p.y, ETO_OPAQUE, &rc,
-               text.data(), text.size(), nullptr);
+  UTF8TextOut(dc, p, ETO_OPAQUE, &rc, text,nullptr);
 }
 
 void
@@ -132,8 +142,7 @@ Canvas::DrawClippedText(PixelPoint p, const PixelRect &_rc,
   assert(IsDefined());
 
   RECT rc = _rc;
-  ::ExtTextOut(dc, p.x, p.y, ETO_CLIPPED, &rc,
-               text.data(), text.size(), nullptr);
+  UTF8TextOut(dc, p, ETO_CLIPPED, &rc, text, nullptr);
 }
 
 void
@@ -145,8 +154,7 @@ Canvas::DrawClippedText(PixelPoint p, unsigned width,
   RECT rc;
   ::SetRect(&rc, p.x, p.y,
             p.x + std::min(width, size.width), p.y + size.height);
-  ::ExtTextOut(dc, p.x, p.y, ETO_CLIPPED, &rc,
-               text.data(), text.size(), nullptr);
+  UTF8TextOut(dc, p, ETO_CLIPPED, &rc, text,nullptr);
 }
 
 void
@@ -324,3 +332,11 @@ Canvas::AlphaBlend(PixelPoint dest_position, PixelSize dest_size,
 }
 
 #endif
+
+unsigned 
+Canvas::DrawFormattedText(RECT rc, tstring_view _text, unsigned format) {
+  format |= DT_NOPREFIX | DT_WORDBREAK;
+  std::string text = FromUTF8(_text.data());
+  ::DrawText(dc, text.data(), text.size(), &rc, format);
+  return rc.bottom - rc.top;
+}
