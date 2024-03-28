@@ -227,7 +227,8 @@ public:
     const RECT rc = _rc;
 
     /* this hack allows filling a rectangle with a solid color,
-       without the need to create a HBRUSH */
+    * without the need to create a HBRUSH 
+    * Here is no need to use UTF8TextOut - because all strings are empty */
     ::SetBkColor(dc, color);
     ::ExtTextOut(dc, rc.left, rc.top, ETO_OPAQUE, &rc, _T(""), 0, nullptr);
   }
@@ -380,15 +381,11 @@ public:
   /**
    * Render text, clip it within the bounds of this Canvas.
    */
-  void TextAutoClipped(PixelPoint p, tstring_view t) noexcept {
-    DrawText(p, t);
+  void TextAutoClipped(PixelPoint p, tstring_view text) noexcept {
+    DrawText(p, text);
   }
 
-  unsigned DrawFormattedText(RECT rc, tstring_view text, unsigned format) {
-    format |= DT_NOPREFIX | DT_WORDBREAK;
-    ::DrawText(dc, text.data(), text.size(), &rc, format);
-    return rc.bottom - rc.top;
-  }
+  unsigned DrawFormattedText(RECT rc, tstring_view _text, unsigned format);
 
   void Copy(PixelPoint dest_position, PixelSize dest_size,
             HDC src, PixelPoint src_position,
