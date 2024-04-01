@@ -7,7 +7,6 @@ endif()
 
 #  project(${TARGET_NAME} CXX) # Your project name
 
-include(CMakeSource.cmake)
 # organize the files in subdirectories
 include(CMakeSource.cmake)
 set(SOURCE_FILES )
@@ -57,6 +56,9 @@ add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
 target_link_libraries(${TARGET_NAME} PUBLIC io Engine)
 
 # message(FATAL_ERROR "Stop!")
-set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)
+set_target_properties(${TARGET_NAME} PROPERTIES
+                FOLDER _Main
+                EXCLUDE_FROM_ALL TRUE
+)
 
-add_dependencies(${TARGET_NAME} util)
+# add_dependencies(${TARGET_NAME} _Main)

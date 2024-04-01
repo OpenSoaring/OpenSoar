@@ -1,50 +1,50 @@
 
 set(_SOURCES
-XCSOAR_SOURCES += \
-	java/Global.cxx \
-	java/Object.cxx \
-	java/String.cxx \
-	java/Exception.cxx \
-	java/File.cxx \
-	java/Path.cxx \
-	java/InputStream.cxx \
-	java/URL.cxx \
-	java/Closeable.cxx \
-	Device/AndroidSensors.cpp \
-	Device/Port/AndroidPort.cpp \
-	Device/Port/AndroidBluetoothPort.cpp \
-	Device/Port/AndroidIOIOUartPort.cpp \
-	Device/Port/AndroidUsbSerialPort.cpp \
-	Android/NativeView.cpp \
-	Android/Environment.cpp \
-	Android/Bitmap.cpp \
-	Android/Product.cpp \
-	Android/InternalSensors.cpp \
-	Android/SoundUtil.cpp \
-	Android/TextUtil.cpp \
-	Android/EventBridge.cpp \
-	Android/NativePortListener.cpp \
-	Android/NativeInputListener.cpp \
-	Android/PortBridge.cpp \
-	Android/Sensor.cpp \
-	Android/BluetoothHelper.cpp \
-	Android/NativeDetectDeviceListener.cpp \
-	Android/NativeSensorListener.cpp \
-	Android/Battery.cpp \
-	Android/GliderLink.cpp \
-	Android/DownloadManager.cpp \
-	Android/Vibrator.cpp \
-	Android/Context.cpp \
-	Android/BMP085Device.cpp \
-	Android/I2CbaroDevice.cpp \
-	Android/NunchuckDevice.cpp \
-	Android/VoltageDevice.cpp \
-	Android/IOIOHelper.cpp \
-	Android/UsbSerialHelper.cpp \
-	Android/TextEntryDialog.cpp \
-	Android/FileProvider.cpp \
-	Android/Main.cpp
-
+	${SRC}/java/Global.cxx
+	${SRC}/java/Object.cxx
+	${SRC}/java/String.cxx
+	${SRC}/java/Exception.cxx
+	${SRC}/java/File.cxx
+	${SRC}/java/Path.cxx
+	${SRC}/java/InputStream.cxx
+	${SRC}/java/URL.cxx
+	${SRC}/java/Closeable.cxx
+	
+    ${SRC}/Device/AndroidSensors.cpp
+	${SRC}/Device/Port/AndroidPort.cpp
+	${SRC}/Device/Port/AndroidBluetoothPort.cpp
+	${SRC}/Device/Port/AndroidIOIOUartPort.cpp
+	${SRC}/Device/Port/AndroidUsbSerialPort.cpp
+	
+    NativeView.cpp
+	Environment.cpp
+	Bitmap.cpp
+	Product.cpp
+	InternalSensors.cpp
+	SoundUtil.cpp
+	TextUtil.cpp
+	EventBridge.cpp
+	NativePortListener.cpp
+	NativeInputListener.cpp
+	PortBridge.cpp
+	Sensor.cpp
+	BluetoothHelper.cpp
+	NativeDetectDeviceListener.cpp
+	NativeSensorListener.cpp
+	Battery.cpp
+	GliderLink.cpp
+	DownloadManager.cpp
+	Vibrator.cpp
+	Context.cpp
+	BMP085Device.cpp
+	I2CbaroDevice.cpp
+	NunchuckDevice.cpp
+	VoltageDevice.cpp
+	IOIOHelper.cpp
+	UsbSerialHelper.cpp
+	TextEntryDialog.cpp
+	FileProvider.cpp
+	Main.cpp
 )
 
 set(SCRIPT_FILES
