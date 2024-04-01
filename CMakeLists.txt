@@ -360,6 +360,8 @@ add_subdirectory(src)   # libOpenSoar!
 
 add_subdirectory(src/OpenVario)   # libOpenSoar!
 
+add_subdirectory(src/Android)  # Android  -> EXCLUDE_FROM_ALL TRUE
+
 list(APPEND SOURCE_FILES "src/OpenSoar.cpp")
 # list(APPEND SOURCE_FILES "src/Version.cpp")
 ## configure_file(
