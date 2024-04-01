@@ -213,7 +213,7 @@ try {
   bool rerun = false;
 
   do {
-    rerun = false;
+    // rerun = false;
     UI::TopWindow::SetExitValue(0);
 #endif
     const std::scoped_lock shutdown_lock{shutdown_mutex};
@@ -326,17 +326,18 @@ try {
         CommonInterface::main_window->RunEventLoop();
     }
 
+    Shutdown();
 #ifdef ANDROID_RERUN
     unsigned ret = UI::TopWindow::GetExitValue();
     rerun = (ret == EXIT_RESTART);
-    if (rerun) {
-      env->DeleteGlobalRef(permission_manager);
-      DeinitialiseDataPath();
-    }
+    // if (rerun) {
+    //   env->DeleteGlobalRef(permission_manager);
+    //   DeinitialiseDataPath();
+    // }
   } while (rerun);
 #endif
 
-    Shutdown();
+//    Shutdown();
 } catch (...) {
   /* if an error occurs, rethrow the C++ exception as Java exception,
      to be displayed by the Java glue code */
