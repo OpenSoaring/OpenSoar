@@ -626,15 +626,18 @@ InputEvents::eventBrightness([[maybe_unused]] const TCHAR *misc)
 void 
 InputEvents::eventExit([[maybe_unused]] const TCHAR *misc)
 {
-  if (UI::TopWindow::GetExitValue() == 0) {
+  bool force = false;
     if (StringIsEqual(misc, _T("system"))) {
       // return value on UNIX(32) is only a Byte?
       UI::TopWindow::SetExitValue(EXIT_SYSTEM); // 20000); 
+    } else if (StringIsEqual(misc, _T("force"))) {
+      // return value on UNIX(32) is only a Byte?
+      UI::TopWindow::SetExitValue(EXIT_SYSTEM); // 20000); 
+      force = true;
     } else if (StringIsEqual(misc, _T("restart"))) {
       UI::TopWindow::SetExitValue(EXIT_RESTART);
     }
-  }
-  UIActions::SignalShutdown(false);
+  UIActions::SignalShutdown(force);
 }
 
 #if 1  // def IS_OPENVARIO
@@ -642,13 +645,11 @@ InputEvents::eventExit([[maybe_unused]] const TCHAR *misc)
 void 
 InputEvents::eventShutdown([[maybe_unused]] const TCHAR *misc)
 {
-  if (UI::TopWindow::GetExitValue() == 0) {
     if (StringIsEqual(misc, _T("reboot"))) {
       UI::TopWindow::SetExitValue(EXIT_REBOOT); // 20001);
     } else if (StringIsEqual(misc, _T("shutdown"))) {
       UI::TopWindow::SetExitValue(EXIT_SHUTDOWN); // 20002);
     }
-  }
   UIActions::SignalShutdown(false);
 }
 
