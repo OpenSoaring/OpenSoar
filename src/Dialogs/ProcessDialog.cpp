@@ -94,8 +94,7 @@ ProcessWidget::Start()
     printf("%s\n", arg);
     ss << arg << ' ';
   }
-  SetText(ss.str());
-  // system(ss.str().c_str());
+  system(ss.str().c_str());
 #else
   auto dev_null = OpenReadOnly("/dev/null");
 
