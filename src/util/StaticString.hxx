@@ -7,6 +7,7 @@
 #include "StringAPI.hxx"
 #include "StringUtil.hpp"
 #include "StringFormat.hpp"
+#include "StringCompare.hxx"
 #include "UTF8.hpp"
 #include "ASCII.hxx"
 
@@ -15,8 +16,7 @@
 #include <string_view>
 
 #ifdef _UNICODE
-#include <wchar.h>
-#include "WStringCompare.hxx"
+# include <wchar.h>
 #endif
 
 bool
