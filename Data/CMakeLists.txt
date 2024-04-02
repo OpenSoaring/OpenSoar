@@ -283,7 +283,8 @@ endif()
                ${_INCLUDE_OUTPUT}/InputEvents_default.cpp
     )
 
-    set(DEFAULT_XCI   ${_DATA_INPUT}/Input/${DEFAULT_XCI_FILE})
+    set(DEFAULT_XCI   ${_DATA_INPUT}/Input/defaultOV.xci)
+    # set(DEFAULT_XCI   ${_DATA_INPUT}/Input/${DEFAULT_XCI_FILE})
     add_custom_command(OUTPUT  ${_INCLUDE_OUTPUT}/InputCppFiles.txt
            COMMENT Create InputEvents_*.cpp!
            COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT} 
