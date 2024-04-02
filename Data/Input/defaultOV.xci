@@ -88,8 +88,7 @@ data=X
 event=Shutdown shutdown
 event=Mode default
 
-mode=default pan
-type=key
+mode=default pantype=key
 data=ESCAPE
 event=Page restore
 
@@ -1378,8 +1377,5 @@ type=key
 data=M
 event=Mode AudioMenu 
 
-mode=default
-type=key
-data=X
-event=Shutdown shutdown
+## Shutdown looks line 85
 
