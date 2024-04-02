@@ -112,9 +112,13 @@ gettext(const TCHAR* text)
   // Search for the english original string in the MO file
   const char *translation = mo_file->lookup(text);
   // Return either the translated string if found or the original
-  return translation != NULL && *translation != 0 && ValidateUTF8(translation)
-    ? translation
-    : text;
+#if defined(_WIN32)
+  return translation != nullptr && *translation != 0 ? 
+    translation : text;
+#else
+  return translation != nullptr && *translation != 0 && 
+    ValidateUTF8(translation) ? translation : text;
+#endif
 #endif
 }
 
