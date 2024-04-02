@@ -20,8 +20,13 @@ set(_SOURCES
         Input/TaskEventObserver.cpp
 )
 
+if (TARGET_IS_OPENVARIO)
+  set(DEFAULT_XCI_FILE   defaultOV.xci)
+else()
+  set(DEFAULT_XCI_FILE   default.xci)
+endif()
+
 set(SCRIPT_FILES
-    ../../Data/Input/default.xci
-    ../../Data/Input/defaultOV.xci
+    ../../Data/Input/${DEFAULT_XCI_FILE}
     CMakeSource.cmake
 )
