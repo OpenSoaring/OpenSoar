@@ -68,7 +68,7 @@ void SkysightAPIQueue::Process()
     case SkysightRequest::Status::Idle:
       //Provide the job with the very latest API key just prior to execution
       if ((*job)->GetType() == SkysightCallType::Login) {
-        (*job)->SetCredentials("XCSoar", email.c_str(), password.c_str());
+        (*job)->SetCredentials("XCSoar-JET", email.c_str(), password.c_str());
         (*job)->Process();
       } else {
         if (!IsLoggedIn()) {
