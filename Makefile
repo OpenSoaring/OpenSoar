@@ -267,6 +267,10 @@ endif
 
 ifeq ($(TARGET_IS_LINUX),y)
 include $(topdir)/build/cloud.mk
+# include $(topdir)/build/kobo.mk
+endif
+
+ifeq ($(TARGET_IS_KOBO),y)
 include $(topdir)/build/kobo.mk
 ifeq ($(USE_POLL_EVENT),y)
 include $(topdir)/build/ov.mk
