@@ -49,6 +49,7 @@ AsyncJobRunner::Wait()
   Thread::Join();
 
   delete env;
+  env = nullptr;
 
   if (exception)
     /* rethrow the exception that was thrown by Job::Run() in the
@@ -75,8 +76,7 @@ AsyncJobRunner::Run() noexcept
        the calling thread in Wait() */
     exception = std::current_exception();
   }
-
-  if (notify != NULL && !env->IsCancelled())
+  if (notify != nullptr && env != nullptr && !env->IsCancelled())
     notify->SendNotification();
 
   running.store(false, std::memory_order_relaxed);
