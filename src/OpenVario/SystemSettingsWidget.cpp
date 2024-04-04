@@ -13,34 +13,38 @@
 #include "Form/DataField/Boolean.hpp"
 #include "Form/DataField/Listener.hpp"
 #include "Form/DataField/Enum.hpp"
+#include "Form/DataField/Integer.hpp"
 #include "Interface.hpp"
 #include "UIGlobals.hpp"
 #include "ui/window/SingleWindow.hpp"
 
 #include "Dialogs/Message.hpp"
 #include "./LogFile.hpp"
+#include "UIActions.hpp"
+#include "UtilsSettings.hpp"
 
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/WifiDialogOV.hpp"
 
 
 #include <stdio.h>
-
+#include <tchar.h>
 
 enum ControlIndex {
+  FW_VERSION,
   FIRMWARE,
   ENABLED,
-  FW_IMAGE,
   ROTATION,
   BRIGHTNESS,
   SENSORD,
   VARIOD,
   SSH,
   TIMEOUT,
-  SHELL_BUTTON,
   WIFI_BUTTON,
 
+#ifdef _DEBUG
   INTEGERTEST,
+#endif
 };
 
 
@@ -56,12 +60,14 @@ public:
   /* virtual methods from class Widget */
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
+  bool CheckChanged(bool &changed) noexcept;
 
-  //  int OnShow(const UI::SingleWindow &parent) noexcept;
 
 private:
   /* methods from DataFieldListener */
   void OnModified(DataField &df) noexcept override;
+
+  unsigned brightness;
 };
 #endif
   static constexpr StaticEnumChoice timeout_list[] = {
@@ -104,9 +110,20 @@ void
 SystemSettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
 {
   if (IsDataField(ENABLED, df)) {
-    const DataFieldBoolean &dfb = (const DataFieldBoolean &)df;
-    SetEnabled(dfb.GetValue());
-  }
+    // const DataFieldBoolean &dfb = ;
+    SetEnabled(((const DataFieldBoolean &)df).GetValue());
+  } else if (IsDataField(ROTATION, df)) {
+    // ShowMessageBox(_T("Set Rotation"), _T("Rotation"), MB_OK);
+    // ovdevice.SetRotation((DisplayOrientation)((const DataFieldEnum &)df).GetValue());
+  } else if (IsDataField(BRIGHTNESS, df)) {
+    // const DataFieldInteger &dfi = (const DataFieldInteger &)df;
+    // (DataFieldInteger*)df)
+    ovdevice.SetBrightness(((const DataFieldInteger &)df).GetValue() / 10);
+  }  else if (IsDataField(FIRMWARE, df)) {
+    // (DataFieldInteger*)df)
+    // ConvertString
+    ShowMessageBox(_T("FirmWare-Selection"), _T("??File??"), MB_OKCANCEL);
+  } 
 }
 
 void
@@ -115,25 +132,29 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
 {
   RowFormWidget::Prepare(parent, rc);
 
-  ovdevice.ssh = (unsigned)ovdevice.GetSSHStatus();
-  ovdevice.sensord = ovdevice.GetSystemStatus("sensord");
-  ovdevice.variod = ovdevice.GetSystemStatus("variod");
+  brightness = ovdevice.brightness * 10; 
 
 
-  const TCHAR version[] = _T(PROGRAM_VERSION);
-
-//   auto version = _T("3.2.20 (hard coded)");
-  AddReadOnly(_("OV-Firmware-Version"), _("Current firmware version of OpenVario"), version);
+  AddReadOnly(_("Current FW"), _("Current firmware version of OpenVario"),
+#if defined(PROGRAM_VERSION)
+              _T(PROGRAM_VERSION));
+#else
+              _T("7.42.21.3"));
+#endif
+  //  std::string_view version = PROGRAM_VERSION;
+  AddFile(_("OV-Firmware"), _("Current firmware file version of OpenVario"),
+          "OVImage", _T("*.img.gz\0"), FileType::IMAGE);  // no callback... , this);
+  
   AddBoolean(
       _("Settings Enabled"),
       _("Enable the Settings Page"), ovdevice.enabled, this);
 
    AddEnum(_("Rotation"), _("Rotation Display OpenVario"),
-           rotation_list, (unsigned)ovdevice.rotation);
+           rotation_list, (unsigned)ovdevice.rotation, this);
 
    AddInteger(_("Brightness"),
-             _("Brightness Display OpenVario"), _T("%d"), _T("%d%%"), 10,
-              100, 10, ovdevice.brightness);
+             _("Brightness Display OpenVario"), _T("%d%%"), _T("%d%%"), 10,
+              100, 10, brightness, this);
    AddBoolean(_("SensorD"), _("Enable the SensorD"), ovdevice.sensord, this);
    AddBoolean(_("VarioD"), _("Enable the VarioD"), ovdevice.variod, this);
    AddEnum(_("SSH"), _("Enable the SSH Connection"), enable_list,
@@ -141,23 +162,23 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
 
    AddEnum(_("Program Timeout"), _("Timeout for Program Start."), timeout_list, ovdevice.timeout);
 
-   // auto Btn_Shell = 
-   AddButton(
-       _T("Exit to Shell"), [this]() {
-         LogFormat("Exit to Shell");
-         exit(111); // without cleaning up????
-     });
-
    AddButton(
        _T("Settings Wifi"), [this]() { 
          ShowWifiDialog();
      });
-
+#ifdef _DEBUG
    AddInteger(_("IntegerTest"),
                _("IntegerTest."), _T("%d"), _T("%d"), 0,
                   99999, 1, ovdevice.iTest);
+#endif
 
    SetEnabled(ovdevice.enabled);
+}
+
+bool 
+SystemSettingsWidget::CheckChanged([[maybe_unused]] bool &_changed) noexcept
+{
+   return false;
 }
 
 bool
@@ -178,17 +199,19 @@ SystemSettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept
     changed = true;
   }
 
-  if (SaveValueInteger(BRIGHTNESS, "Brightness", ovdevice.brightness)) {
-    ovdevice.settings.insert_or_assign(
-        "Brightness", std::to_string(ovdevice.brightness));
+  if (SaveValueInteger(BRIGHTNESS, "Brightness", brightness)) {
+    ovdevice.SetBrightness(brightness/10);
     changed = true;
   }
 
-  if (SaveValueInteger(INTEGERTEST, "iTest",ovdevice.iTest)) {
+#ifdef _DEBUG
+  if (SaveValueInteger(INTEGERTEST, "iTest", ovdevice.iTest)) {
     ovdevice.settings.insert_or_assign(
         "iTest", std::to_string(ovdevice.iTest));
     changed = true;
   }
+#endif
+
 #if 0 // TOD(August2111) Only Test
   ovdevice.settings.insert_or_assign("OpenSoarData",
                                      "D:/Data/OpenSoarData");
@@ -198,8 +221,11 @@ SystemSettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept
     WriteConfigFile(ovdevice.settings, ovdevice.GetSettingsConfig());
   }
 
-  if (SaveValueEnum(ROTATION, ovdevice.rotation))
-    ovdevice.SetRotation(ovdevice.rotation); 
+  if (SaveValueEnum(ROTATION, ovdevice.rotation)) {
+    // ovdevice.SetRotation(ovdevice.rotation);
+    // restart = true;
+    require_restart = changed = true;
+  }
 
   if (SaveValueEnum(SSH, ovdevice.ssh))
     ovdevice.SetSSHStatus((SSHStatus)ovdevice.ssh); 
@@ -210,6 +236,7 @@ SystemSettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept
   if (SaveValue(VARIOD, ovdevice.variod)) 
     ovdevice.SetSystemStatus("variod", ovdevice.variod); 
 
+  _changed = changed;
   return true;
 }
 
@@ -221,9 +248,11 @@ ShowSystemSettingsWidget(ContainerWindow  &parent,
       WidgetDialog::Full{}, (UI::SingleWindow &) parent, look,
       _T("OpenVario System Settings"));
   sub_dialog.SetWidget();
+  sub_dialog.AddButton(_("Save"), mrOK);
   sub_dialog.AddButton(_("Close"), mrOK);
   return sub_dialog.ShowModal();
 }
+#endif
 
 std::unique_ptr<Widget>
 CreateSystemSettingsWidget() noexcept
@@ -231,6 +260,5 @@ CreateSystemSettingsWidget() noexcept
   return std::make_unique<SystemSettingsWidget>();
 }
 
-#endif
 
 

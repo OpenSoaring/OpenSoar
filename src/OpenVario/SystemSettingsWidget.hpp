@@ -13,7 +13,7 @@ struct DialogLook;
 
 bool
 ShowSystemSettingsWidget(ContainerWindow &parent,
-                              const DialogLook &look) noexcept;
+                         const DialogLook &look) noexcept;
 
 std::unique_ptr<Widget>
 CreateSystemSettingsWidget() noexcept;
