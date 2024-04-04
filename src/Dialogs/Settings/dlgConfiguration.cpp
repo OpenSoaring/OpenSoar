@@ -43,6 +43,7 @@
 #include "Audio/Features.hpp"
 #include "UtilsSettings.hpp"
 #include "net/http/Features.hpp"
+#include "ui/window/SingleWindow.hpp"
 
 #ifdef HAVE_PCM_PLAYER
 #include "Panels/AudioVarioConfigPanel.hpp"
@@ -179,22 +180,42 @@ static constexpr TabMenuGroup main_menu_captions[] = {
 static void
 OnUserLevel(bool expert) noexcept;
 
+#ifdef __AUGUST__
+static void OnXCSoarStyle(bool expert) noexcept;
+#endif
+
 class ConfigurationExtraButtons final
   : public NullWidget {
   struct Layout {
+#ifdef __AUGUST__
+    PixelRect expert, xcsoar_style, button2, button1;
+
+    Layout(const PixelRect &rc)
+        : expert(rc), xcsoar_style(rc), button2(rc), button1(rc) {
+#else
     PixelRect expert, button2, button1;
 
-    Layout(const PixelRect &rc):expert(rc), button2(rc), button1(rc) {
+    Layout(const PixelRect &rc)
+        : expert(rc), button2(rc), button1(rc) {
+#endif
       const unsigned height = rc.GetHeight();
       const unsigned max_control_height = ::Layout::GetMaximumControlHeight();
 
       if (height >= 3 * max_control_height) {
         expert.bottom = expert.top + max_control_height;
 
+#ifdef __AUGUST__
+        xcsoar_style.top = expert.bottom;
+        xcsoar_style.bottom = xcsoar_style.top + max_control_height;
+#endif
+
         button1.top = button2.bottom = rc.bottom - max_control_height;
         button2.top = button2.bottom - max_control_height;
       } else {
         expert.right = button2.left = unsigned(rc.left * 2 + rc.right) / 3;
+#ifdef __AUGUST__
+        xcsoar_style.right = expert.right;
+#endif
         button2.right = button1.left = unsigned(rc.left + rc.right * 2) / 3;
       }
     }
@@ -203,6 +224,9 @@ class ConfigurationExtraButtons final
   const DialogLook &look;
 
   CheckBoxControl expert;
+#ifdef __AUGUST__
+  CheckBoxControl xcsoar_style;
+#endif
   Button button2, button1;
   bool borrowed2, borrowed1;
 
@@ -247,7 +271,11 @@ protected:
     expert.Create(parent, look, _("Expert"),
                   layout.expert, style,
                   [](bool value){ OnUserLevel(value); });
-
+#ifdef __AUGUST__
+    xcsoar_style.Create(parent, look, _("XCSoar"),
+                  layout.xcsoar_style, style,
+                  [](bool value){ OnXCSoarStyle(value); });
+#endif
     button2.Create(parent, look.button, _T(""), layout.button2, style);
     button1.Create(parent, look.button, _T(""), layout.button1, style);
   }
@@ -257,6 +285,10 @@ protected:
 
     expert.SetState(CommonInterface::GetUISettings().dialog.expert);
     expert.MoveAndShow(layout.expert);
+#ifdef __AUGUST__
+    xcsoar_style.SetState(CommonInterface::GetUISettings().dialog.xcsoar_style);
+    xcsoar_style.MoveAndShow(layout.xcsoar_style);
+#endif
 
     if (borrowed2)
       button2.MoveAndShow(layout.button2);
@@ -271,6 +303,9 @@ protected:
 
   void Hide() noexcept override {
     expert.FastHide();
+#ifdef __AUGUST__
+    xcsoar_style.FastHide();
+#endif
     button2.FastHide();
     button1.FastHide();
   #ifdef IS_OPENVARIO
@@ -292,6 +327,9 @@ protected:
   void Move(const PixelRect &rc) noexcept override {
     Layout layout(rc);
     expert.Move(layout.expert);
+#ifdef __AUGUST__
+    xcsoar_style.Move(layout.xcsoar_style);
+#endif
     button2.Move(layout.button2);
     button1.Move(layout.button1);
   }
@@ -328,6 +366,33 @@ OnUserLevel(bool expert) noexcept
   pager->PagerWidget::Move(pager->GetPosition());
 }
 
+#ifdef __AUGUST__
+static void
+OnXCSoarStyle(bool xcsoar_style) noexcept
+{
+  CommonInterface::SetUISettings().dialog.xcsoar_style = xcsoar_style;
+  Profile::Set(ProfileKeys::ExtendMenu, xcsoar_style);
+
+  /* force layout update */
+  pager->PagerWidget::Move(pager->GetPosition());
+}
+
+ /**
+ * save the settings in the dialog from menu page.
+ */
+static void
+OnSaveClicked(WidgetDialog &dialog)
+{
+  bool changed = false;
+
+  // PagerWidget
+//  PagerWidget current = (PagerWidget)dialog.GetWidget();
+  if (pager->SaveCurrent(changed))
+  // if ((PagerWidget) dialog.GetWidget()).SaveCurrent(changed))
+  ;
+}
+#endif
+
 /**
  * close dialog from menu page.  from content, goes to menu page
  */
@@ -336,8 +401,19 @@ OnCloseClicked(WidgetDialog &dialog)
 {
   if (pager->GetCurrentIndex() == 0)
     dialog.SetModalResult(mrOK);
-  else
+  else {
+
+  CreateWindowWidget *w = &(CreateWindowWidget&)pager->GetCurrentWidget();
+  bool changed = false;
+  if (w->Save(changed))
+      //      if (w.prepared && !w.widget->Save(changed))
+      ;
+       //  return ;
+
+//  return true;
+
     pager->ClickPage(0);
+  }
 }
 
 static void
@@ -360,6 +436,9 @@ void dlgConfigurationShowModal()
                       look, _("Configuration"));
 
   pager = new ArrowPagerWidget(look.button,
+#ifdef __AUGUST__
+                               [&dialog](){ OnSaveClicked(dialog); },
+#endif
                                [&dialog](){ OnCloseClicked(dialog); },
                                std::make_unique<ConfigurationExtraButtons>(look));
 
@@ -374,9 +453,9 @@ void dlgConfigurationShowModal()
   }));
 
 
-#ifdef IS_OPENVARIO
-  ovdevice.Initialise();
-#endif
+// #ifdef IS_OPENVARIO
+//  ovdevice.Initialise();
+// #endif
 
   menu.InitMenu(main_menu_captions, ARRAY_SIZE(main_menu_captions));
 
@@ -399,5 +478,8 @@ void dlgConfigurationShowModal()
     if (require_restart)
       ShowMessageBox(_("Changes to configuration saved.  Restart XCSoar to apply changes."),
                   _T(""), MB_OK);
+       UI::TopWindow::SetExitValue(EXIT_RESTART);
+       UIActions::SignalShutdown(true);
+
   }
 }
