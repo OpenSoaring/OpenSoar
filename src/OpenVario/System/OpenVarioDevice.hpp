@@ -40,11 +40,14 @@ enum class SSHStatus {
 
 class OpenVario_Device {
 public:
-  OpenVario_Device() {}
+  OpenVario_Device() { 
+    Initialise();
+  }
 
   void Initialise() noexcept;
   void Deinitialise() noexcept;
   void LoadSettings() noexcept;
+  void ReadSettings() noexcept;
   Path GetSystemConfig() noexcept { return system_config; }
   // void SetSystemConfig(Path configfile) noexcept { system_config = configfile; }
   std::map<std::string, std::string, std::less<>> system_map;

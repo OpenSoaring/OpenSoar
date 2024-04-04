@@ -22,9 +22,13 @@
 
 #include "util/StaticString.hxx"
 #include "util/ConvertString.hpp"
+#include "util/StringCompare.hxx"
 
 #include "LogFile.hpp"
 #include "LocalPath.hpp"
+
+#include <util/tstring.hpp>
+#include <iostream>"
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -36,7 +40,6 @@
 
 #include <map>
 #include <string>
-#include <iostream>
 
 #ifndef __MSVC__
 #include <unistd.h>
@@ -111,9 +114,8 @@ OpenVario_Device::Initialise() noexcept {
     LogFormat("bin_path = %s", bin_path.c_str());
 #endif
     //----------------------------
-    // StaticString<0x200> str;
-    // str.Format(_T("%s/%s"), home_path, _T("process.txt"));
     run_output_file = AllocatedPath::Build(home_path, Path(_T("tmp.txt")));
+    LoadSettings();
     initialised = true;
   } 
 }
@@ -125,10 +127,15 @@ void ReadBool(std::map<std::string, std::string, std::less<>> &map,
     value = map.find(name)->second != "False";
 }
 //----------------------------------------------------------
-void ReadInteger(std::map<std::string, std::string, std::less<>> &map,
-                 std::string_view name, unsigned &value) noexcept {
-  if (map.find(name) != map.end())
-    value = std::stoul(map.find(name)->second);
+void 
+ReadInteger(std::map<std::string, std::string, std::less<>> &map,
+                 std::string_view name, unsigned &value) noexcept try {
+  auto iter = map.find(name);
+  if (iter != map.end()) {
+    value = std::stoul(iter->second);
+  }
+} catch (std::exception &e) {
+    LogFormat("ReadInteger-Exception: %s", e.what());
 }
 //----------------------------------------------------------
 void ReadString(std::map<std::string, std::string, std::less<>> &map,
@@ -138,14 +145,18 @@ void ReadString(std::map<std::string, std::string, std::less<>> &map,
 }
 //----------------------------------------------------------
 void 
-OpenVario_Device::LoadSettings() noexcept
-{
+OpenVario_Device::LoadSettings() noexcept {
   LoadConfigFile(system_map, GetSystemConfig());
   LoadConfigFile(settings, GetSettingsConfig());
   LoadConfigFile(upgrade_map, GetUpgradeConfig());
 #ifndef DBUS_FUNCTIONS
   LoadConfigFile(internal_map, GetInternalConfig());
 #endif
+  ReadSettings();
+}
+
+//----------------------------------------------------------
+void OpenVario_Device::ReadSettings() noexcept {
   unsigned i_rot = 0;
   ReadInteger(system_map, "rotation", i_rot);
   rotation = (DisplayOrientation) i_rot;
@@ -155,9 +166,16 @@ OpenVario_Device::LoadSettings() noexcept
 #endif
 
   ReadBool(settings, "Enabled", enabled);
+#ifdef _DEBUG
   ReadInteger(settings, "iTest", iTest);
+#endif
   ReadInteger(settings, "Timeout", timeout);
-  ReadInteger(settings, "Brightness", brightness);
+
+  brightness = GetBrightness();
+  ssh = (unsigned)GetSSHStatus();
+  sensord = GetSystemStatus("sensord");
+  variod = GetSystemStatus("variod");
+  rotation = GetRotation();
 
 }
 //----------------------------------------------------------
@@ -168,8 +186,9 @@ LoadConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path)
     FileLineReaderA reader(path);
     KeyValueFileReader kvreader(reader);
     KeyValuePair pair;
-    while (kvreader.Read(pair))
+    while (kvreader.Read(pair)) {
       map.emplace(pair.key, pair.value);
+    }
   }
 }
 
@@ -207,6 +226,9 @@ OpenVario_Device::SetBrightness(uint_least8_t value) noexcept
   if (value < 1) { value = 1; }
   if (value > 10) { value = 10; }
 
+  brightness = value;
+  settings.insert_or_assign("Brightness",
+                                     std::to_string(value));
   File::WriteExisting(Path(_T("/sys/class/backlight/lcd/brightness")), fmt::format_int{value}.c_str());
 }
 
@@ -215,6 +237,8 @@ OpenVario_Device::GetRotation()
 {
   std::map<std::string, std::string, std::less<>> map;
   LoadConfigFile(map, system_config);  // Path(_T("/boot/config.uEnv")));
+  if (map.contains("Rotation"))       // this is wrong!!!
+    map.erase("Rotation");
 
   uint_least8_t result;
   result = map.contains("rotation") ? std::stoi(map.find("rotation")->second) : 0;
@@ -226,12 +250,17 @@ OpenVario_Device::GetRotation()
   case 3: return DisplayOrientation::PORTRAIT;
   default: return DisplayOrientation::DEFAULT;
   }
+
 }
 
 void
 OpenVario_Device::SetRotation(DisplayOrientation orientation)
 {
   std::map<std::string, std::string, std::less<>> map;
+
+  LoadConfigFile(map, system_config); // Path(_T("/boot/config.uEnv")));
+  if (map.contains("Rotation"))       // this is wrong!!!
+    map.erase("Rotation");
 
   Display::Rotate(orientation);
 
@@ -250,12 +279,22 @@ OpenVario_Device::SetRotation(DisplayOrientation orientation)
     rotation = 3;
     break;
   };
+  std::string rot_string = fmt::format_int{rotation}.c_str();
+  if (map["rotation"] != rot_string) {
+    LogFormat("Set Rotation '%s' vs. '%s' (%d)", map["rotation"].c_str(),
+      rot_string.c_str(), rotation);
+  }
 
-  File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")), fmt::format_int{rotation}.c_str());
 
-  LoadConfigFile(map, system_config);  // Path(_T("/boot/config.uEnv")));
-  map.insert_or_assign("rotation", fmt::format_int{rotation}.c_str());
-  WriteConfigFile(map, system_config); // Path(_T("/boot/config.uEnv")));
+  if (map["rotation"] != rot_string) {
+    File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")),
+                        rot_string.c_str());
+
+    map.insert_or_assign("rotation", rot_string);
+    WriteConfigFile(map, system_config);
+
+    // Restart???
+  }
 }
 
 #ifdef DBUS_FUNCTIONS
@@ -304,7 +343,6 @@ OpenVario_Device::GetSystemStatus(std::string_view system) noexcept
 #else
   // StaticString
  
-  std::cout << "  0: " << system << std::endl;
   StaticString<0x20> file;
 
   std::string_view _dirname("/home/august2111");
@@ -321,31 +359,25 @@ OpenVario_Device::GetSystemStatus(std::string_view system) noexcept
 
   Path tmp_file = _tmp_file;
 
-  std::cout << "  1: " << tmp_file.ToUTF8() << ", " << system << std::endl;
   if (File::Exists(tmp_file))
     File::Delete(tmp_file);  // remove, if exists
   auto run_value = Run(tmp_file, "/bin/systemctl", "is-enabled", system.data());
-  std::cout << "  2: " << tmp_file.ToUTF8() << ", " << std::endl;
   char buffer[0x20]; 
   File::ReadString(tmp_file, buffer, sizeof(buffer));
-  std::cout << "  3: " << buffer << ", " << std::endl;
   switch (run_value) {
   case 0:
     if (std::string_view(buffer).starts_with("enabled"))
       std::strncpy(buffer, "enabled -> ok!", sizeof(buffer));
     else
       std::strncpy(buffer, "enabled -> not ok???", sizeof(buffer));
-    std::cout << "  4: " << system << ": " << buffer << std::endl;
     return true;
   case 1:
     if (std::string_view(buffer).starts_with("disabled"))
       std::strncpy(buffer, "disabled -> ok!", sizeof(buffer));
     else
       std::strncpy(buffer, "disabled -> not ok???", sizeof(buffer));
-    std::cout << "  4: " << system << ": " << buffer << std::endl;
     return false;
   default:
-    std::cout << "  4: " << system << " = Wrong" << std::endl;
     return false;
   }
 #endif
