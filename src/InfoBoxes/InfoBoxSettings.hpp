@@ -107,6 +107,10 @@ struct InfoBoxSettings {
     /** 18 infoboxes 3X6 split bottom/top or left/right */
     SPLIT_3X6 = 26,
 
+    TOP_8_VARIO_BOTTOM_5 = 27,
+    TOP_8_VARIO_BOTTOM_10 = 28,
+    TOP_12_VARIO = 29,
+    TOP_16_VARIO = 30,
   } geometry;
 
   bool use_colors;
