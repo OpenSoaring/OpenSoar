@@ -12,11 +12,25 @@
 
 #include "util/UTF8Win.hpp"
 
+static bool UTF8TextOut(HDC hdc, const PixelPoint &p, unsigned options, const RECT *r,
+            tstring_view _text, const int *lpDx) {
+  auto text = UTF8ToWide(_text);
+#if 1
+  return ::ExtTextOutW(hdc, p.x, p.y, options, r, text.c_str(), text.size(),
+  lpDx);
+#else
+  unsigned format = DT_NOPREFIX | DT_WORDBREAK | DT_LEFT;
+  RECT rx = {p.x, p.y, 0, 0}; 
+  int h = 0;
+  if (r)
+    rx = {r->left + p.x, r->top + p.y, r->right - r->left, r->bottom - r->top}; 
 
-static bool UTF8TextOut(HDC hdc, const PixelPoint &p, unsigned options, const RECT *lprect,
-            tstring_view lpString, const int *lpDx) {
-  std::string text = FromUTF8(lpString.data());
-  return ::ExtTextOut(hdc, p.x, p.y, options, lprect, text.data(), text.size(), lpDx);
+  // calculate the rectangle...
+  h = ::DrawTextW(hdc, text.c_str(), text.size(), &rx, DT_CALCRECT); 
+  // and paint...
+  h = ::DrawTextW(hdc, text.c_str(), text.size(), &rx, format);
+  return true;
+#endif
 }
 
 void
@@ -100,10 +114,12 @@ Canvas::CalcTextSize(tstring_view _text) const noexcept
 {
   assert(IsDefined());
 
-  tstring_view text = FromUTF8(_text.data());
+  // tstring_view text = UTF8ToWide(_text.data());
+  auto text = UTF8ToWide(_text);
+  // std::wstring text = UTF8ToWide(_text.data());
 
   SIZE size;
-  ::GetTextExtentPoint(dc, text.data(), text.size(), &size);
+  ::GetTextExtentPointW(dc, text.c_str(), text.size(), &size);
   return PixelSize(size.cx, size.cy);
 }
 
@@ -336,7 +352,8 @@ Canvas::AlphaBlend(PixelPoint dest_position, PixelSize dest_size,
 unsigned 
 Canvas::DrawFormattedText(RECT rc, tstring_view _text, unsigned format) {
   format |= DT_NOPREFIX | DT_WORDBREAK;
-  std::string text = FromUTF8(_text.data());
-  ::DrawText(dc, text.data(), text.size(), &rc, format);
+  auto text = UTF8ToWide(_text);
+
+  ::DrawTextW(dc, text.data(), text.size(), &rc, format);
   return rc.bottom - rc.top;
 }
