@@ -2,35 +2,18 @@
 // Copyright The XCSoar Project
 
 #include "UTF8.hpp"
+#include "LogFile.hpp"
 
 #ifdef _WIN32
-/* ATTENTION : codevct is dprecated with C++ 17 (and C++ 20) - what is
-*              the replacement for? */
-# include <codecvt> 
-# include <string>
-# include <locale>
-#endif
+#include <stringapiset.h>
 
-#ifdef _WIN32
-
-std::string 
-ToUTF8(const std::string &str, const std::locale &loc)
+std::wstring 
+UTF8ToWide(const std::string_view s)
 {
-  using wcvt = std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>;
-  std::u32string wstr(str.size(), U'\0');
-  std::use_facet<std::ctype<char32_t>>(loc).widen(
-      str.data(), str.data() + str.size(), &wstr[0]);
-  return wcvt{}.to_bytes(wstr.data(), wstr.data() + wstr.size());
+  int length = MultiByteToWideChar(CP_UTF8, 0, s.data(), s.size() + 1, nullptr, 0);
+  std::wstring w(length + 1, L'\0');
+  MultiByteToWideChar(CP_UTF8, 0, s.data(), s.size() + 1, w.data(), length);
+  return w;
 }
 
-std::string 
-FromUTF8(const std::string &str, const std::locale &loc)
-{
-  using wcvt = std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>;
-  auto wstr = wcvt{}.from_bytes(str);
-  std::string result(wstr.size(), '0');
-  std::use_facet<std::ctype<char32_t>>(loc).narrow(
-      wstr.data(), wstr.data() + wstr.size(), '?', &result[0]);
-  return result;
-}
 #endif
