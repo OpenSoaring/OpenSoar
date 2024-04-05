@@ -20,6 +20,10 @@ static constexpr unsigned char geometry_counts[] = {
   12, // 3 rows X 4 boxes
   15, // 3 rows X 5 boxes
   18, // 3 rows X 6 boxes
+  13, // TOP_8_VARIO_BOTTOM_5:  2 rows X 4 + 1 row x 5 (= 8 +  5)
+  18, // TOP_8_VARIO_BOTTOM_10: 2 rows X 4 + 2 row x 5 (= 8 + 10)
+  12, // TOP_12_VARIO: 3 rows X 4 boxes (= 12 + 0)
+  16, // TOP_16_VARIO: 4 rows X 4 boxes (= 16 + 0)
 };
 
 namespace InfoBoxLayout {
@@ -232,6 +236,74 @@ InfoBoxLayout::Calculate(PixelRect rc, InfoBoxSettings::Geometry geometry) noexc
                              rc.left, rc.top, rc.bottom);
     break;
 
+//-----------------------------
+  case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_5:
+    layout.vario.left = rc.right - layout.control_size.width;
+    layout.vario.right = rc.right;
+    layout.vario.top = rc.top;
+    layout.vario.bottom = rc.top + layout.control_size.height * 2;
+
+    right = layout.vario.left;   
+    rc.top = MakeTopRow(layout, layout.positions, 4, rc.left, right, rc.top);
+    rc.top = MakeTopRow(layout, layout.positions + 4, 4, rc.left, right, rc.top);
+    // layout.control_size.height = layout.control_size.width * 0.9;
+
+    rc.bottom = MakeBottomRow(layout, layout.positions + 8, 5, rc.left,
+                              rc.right, rc.bottom);
+    break;
+//-----------------------------
+  case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_10:
+    layout.vario.left = rc.right - layout.control_size.width;
+    layout.vario.right = rc.right;
+    layout.vario.top = rc.top;
+    layout.vario.bottom = rc.top + layout.control_size.height * 2;
+
+    right = layout.vario.left;
+    rc.top = MakeTopRow(layout, layout.positions, 4, rc.left,
+                        right, rc.top);
+    rc.top = MakeTopRow(layout, layout.positions + 4, 4, rc.left,
+                        right, rc.top);
+
+    rc.bottom = MakeBottomRow(layout, layout.positions + 8, 5, rc.left,
+                              rc.right, rc.bottom);
+    rc.bottom = MakeBottomRow(layout, layout.positions + 13, 5, rc.left,
+                              rc.right, rc.bottom);
+    break;
+//-----------------------------
+  case InfoBoxSettings::Geometry::TOP_12_VARIO:
+    layout.vario.left = rc.right - (3 * layout.control_size.width) / 2;
+    layout.vario.right = rc.right;
+    layout.vario.top = rc.top;
+    layout.vario.bottom = rc.top + 4 * layout.control_size.height;
+
+    right = layout.vario.left;
+    rc.top = MakeTopRow(layout, layout.positions, 4, rc.left,
+                        right, rc.top);
+    rc.top = MakeTopRow(layout, layout.positions + 4, 4, rc.left,
+                        right, rc.top);
+    rc.top = MakeTopRow(layout, layout.positions + 8, 4, rc.left,
+                        right, rc.top);
+
+    break;
+//-----------------------------
+  case InfoBoxSettings::Geometry::TOP_16_VARIO:
+    layout.vario.left = rc.right - (3 * layout.control_size.width) / 2;
+    layout.vario.right = rc.right;
+    layout.vario.top = rc.top;
+    layout.vario.bottom = rc.top + 4 * layout.control_size.height;
+
+    right = layout.vario.left;
+    rc.top = MakeTopRow(layout, layout.positions, 4, rc.left,
+                        right, rc.top);
+    rc.top = MakeTopRow(layout, layout.positions + 4, 4, rc.left,
+                        right, rc.top);
+    rc.top = MakeTopRow(layout, layout.positions + 8, 4, rc.left,
+                        right, rc.top);
+    rc.top = MakeTopRow(layout, layout.positions + 12, 4, rc.left,
+                        right, rc.top);
+
+    break;
+//-----------------------------
   case InfoBoxSettings::Geometry::BOTTOM_RIGHT_12:
   case InfoBoxSettings::Geometry::OBSOLETE_BOTTOM_RIGHT_12:
     if (layout.landscape) {
@@ -459,6 +531,11 @@ InfoBoxLayout::ValidateGeometry(InfoBoxSettings::Geometry geometry,
 
     case InfoBoxSettings::Geometry::TOP_8_VARIO:
       return InfoBoxSettings::Geometry::LEFT_6_RIGHT_3_VARIO;
+    case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_5:
+    case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_10:
+    case InfoBoxSettings::Geometry::TOP_12_VARIO:
+    case InfoBoxSettings::Geometry::TOP_16_VARIO:
+      return InfoBoxSettings::Geometry::LEFT_12_RIGHT_3_VARIO;
     }
   } else {
     /* portrait and square */
@@ -505,6 +582,10 @@ InfoBoxLayout::ValidateGeometry(InfoBoxSettings::Geometry geometry,
     case InfoBoxSettings::Geometry::OBSOLETE_TOP_LEFT_4:
     case InfoBoxSettings::Geometry::OBSOLETE_BOTTOM_RIGHT_4:
     case InfoBoxSettings::Geometry::TOP_8_VARIO:
+    case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_5:
+    case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_10:
+    case InfoBoxSettings::Geometry::TOP_12_VARIO:
+    case InfoBoxSettings::Geometry::TOP_16_VARIO:
       break;
     }
   }
@@ -593,6 +674,12 @@ InfoBoxLayout::CalcInfoBoxSizes(Layout &layout, PixelSize screen_size,
                                                            layout.control_size.width);
     break;
 
+  case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_5:
+  case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_10:
+    layout.control_size.width = screen_size.width / 5;
+    // preserve relative shape
+    layout.control_size.height =  layout.control_size.width * 0.9;
+    break;
   case InfoBoxSettings::Geometry::TOP_8_VARIO:
     // calculate control dimensions
     layout.control_size.width = 2 * screen_size.width / (layout.count + 2);
@@ -600,6 +687,14 @@ InfoBoxLayout::CalcInfoBoxSizes(Layout &layout, PixelSize screen_size,
                                                            layout.control_size.width);
     break;
 
+  case InfoBoxSettings::Geometry::TOP_12_VARIO:
+  case InfoBoxSettings::Geometry::TOP_16_VARIO:
+    // calculate control dimensions
+    // layout.control_size.width = 2 * screen_size.width / (layout.count + 2);
+    layout.control_size.width = (2 * screen_size.width) / 11;
+    layout.control_size.height = CalculateInfoBoxRowHeight(
+        screen_size.height, layout.control_size.width);
+    break;
   case InfoBoxSettings::Geometry::RIGHT_9_VARIO:
   case InfoBoxSettings::Geometry::LEFT_6_RIGHT_3_VARIO:
     // calculate control dimensions
@@ -852,7 +947,19 @@ InfoBoxLayout::GetBorder(InfoBoxSettings::Geometry geometry, bool landscape,
     break;
 
   case InfoBoxSettings::Geometry::TOP_8_VARIO:
+  case InfoBoxSettings::Geometry::TOP_12_VARIO:
+  case InfoBoxSettings::Geometry::TOP_16_VARIO:
     border |= BORDERBOTTOM|BORDERRIGHT;
+    break;
+
+  case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_5:
+  case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_10:
+    if (!((i == 0) || (i == 4)))
+      border |= BORDERLEFT;
+    if (i < 8)
+      border |= BORDERTOP;
+    else
+      border |= BORDERBOTTOM;
     break;
 
   case InfoBoxSettings::Geometry::LEFT_6_RIGHT_3_VARIO:
