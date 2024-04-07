@@ -237,7 +237,7 @@ SkysightAsyncRequest::Done()
 bool
 SkysightRequest::RequestToFile()
 {
-  LogFormat("Connecting to %s for %s with key:%s user-agent:%s", args.url.c_str(), args.path.c_str(), key.c_str(), XCSoar_ProductToken);
+  LogFormat("Connecting to %s for %s with key:%s user-agent:%s", args.url.c_str(), args.path.c_str(), key.c_str(), OpenSoar_ProductToken);
 
   Path final_path = Path(args.path.c_str());
   AllocatedPath temp_path = final_path.WithSuffix(".dltemp");
@@ -257,7 +257,7 @@ SkysightRequest::RequestToFile()
   char api_key_buffer[4096];
   snprintf(api_key_buffer, sizeof(api_key_buffer), "%s: %s", "X-API-Key", key.c_str());
   request_headers.Append(api_key_buffer);
-  snprintf(api_key_buffer, sizeof(api_key_buffer), "%s: %s", "User-Agent", XCSoar_ProductToken);
+  snprintf(api_key_buffer, sizeof(api_key_buffer), "%s: %s", "User-Agent", OpenSoar_ProductToken);
   request_headers.Append(api_key_buffer);
 
   tstring pBody;
@@ -302,7 +302,7 @@ SkysightRequest::RequestToFile()
 bool
 SkysightRequest::RequestToBuffer(tstring &response)
 {
-  LogFormat("Connecting to %s for %s with key:%s user-agent:%s", args.url.c_str(), args.path.c_str(), key.c_str(), XCSoar_ProductToken);
+  LogFormat("Connecting to %s for %s with key:%s user-agent:%s", args.url.c_str(), args.path.c_str(), key.c_str(), OpenSoar_ProductToken);
 
   bool success = true;
 
@@ -314,7 +314,7 @@ SkysightRequest::RequestToBuffer(tstring &response)
   char api_key_buffer[4096];
   snprintf(api_key_buffer, sizeof(api_key_buffer), "%s: %s", "X-API-Key", key.c_str());
   request_headers.Append(api_key_buffer);
-  snprintf(api_key_buffer, sizeof(api_key_buffer), "%s: %s", "User-Agent", XCSoar_ProductToken);
+  snprintf(api_key_buffer, sizeof(api_key_buffer), "%s: %s", "User-Agent", OpenSoar_ProductToken);
   request_headers.Append(api_key_buffer);
 
   tstring pBody;
