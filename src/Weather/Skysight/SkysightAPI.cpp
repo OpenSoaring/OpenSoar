@@ -89,7 +89,12 @@ SkysightAPI::GetMetric(const TCHAR *const id)
       metric_exists = true;
       break;
     }
+#ifdef NDEBUG
+  if (!metric_exists)
+    return nullptr;
+#else
   assert(metric_exists);
+#endif
 
   return &(*i);
 }
@@ -184,7 +189,7 @@ BrokenDateTime
 SkysightAPI::FromUnixTime(uint64_t t)
 {
 #ifdef HAVE_POSIX
-  return BrokenDateTime::FromUnixTimeUTC(t);
+  return BrokenDateTime::FromUnixTime(t);
 #else
   // Only use for skysight-provided dates. 
   // (We can rely on their epoch being consistent)
