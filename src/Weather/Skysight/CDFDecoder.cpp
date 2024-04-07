@@ -19,6 +19,8 @@ Copyright_License {
 
 #include "CDFDecoder.hpp"
 
+#if defined(WIN_SKYSIGHT) || !defined(_WIN32)
+
 #ifdef ANDROID
 #include <netcdfcpp.h>
 #include <geotiffio.h>
@@ -252,3 +254,4 @@ void CDFDecoder::MakeCallback(bool result)
 			      data_varname.c_str(), time_index);
   }
 }
+#endif  // defined(WIN_SKYSIGHT) || !defined(_WIN32)
