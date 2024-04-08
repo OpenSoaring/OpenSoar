@@ -1,6 +1,12 @@
 # -------------------
 # GlideComputerEvents
 # -------------------
+### directly to SetupSystem after Switch On
+### mode=default
+### type=gce
+### data=STARTUP_REAL
+### # event=KeyPressed UP UP ENTER
+### event=Setup System
 
 mode=default
 type=gce
@@ -1391,4 +1397,17 @@ data=M
 event=Mode AudioMenu 
 
 ## Shutdown looks line 85
+
+### call SetupSystem with 'p'
+mode=default RemoteStick
+type=key
+data=P
+event=Setup System
+
+### check using KeyPressed event with 'z'
+mode=default RemoteStick
+type=key
+data=Z
+event=KeyPressed P
+
 
