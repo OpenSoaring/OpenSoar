@@ -17,6 +17,8 @@ if(AUGUST_SPECIAL)
     add_compile_definitions(_AUG_GCC=1)
 endif()
 #********************************************************************************
+set(TARGET_IS_OPENVARIO ON)
+
 set(ENABLE_OPENGL ON)  # better outside????
 set(ENABLE_SDL OFF)  # better outside????
 set(USE_MEMORY_CANVAS OFF)  # das ist hier auch falsch!!!!

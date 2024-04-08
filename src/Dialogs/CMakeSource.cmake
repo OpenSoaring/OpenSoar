@@ -150,6 +150,7 @@ set(_SOURCES
         Dialogs/Weather/PCMetDialog.cpp
         Dialogs/Weather/RASPDialog.cpp
         Dialogs/Weather/WeatherDialog.cpp
+        Dialogs/Weather/SkysightDialog.cpp
 
         Dialogs/WidgetDialog.cpp
 

@@ -59,7 +59,9 @@ set(XCSOAR_LIB_LISTS
     Dialogs
     MapWindow
     Tracking  
-    WeGlide  # subdirectory off: src/net/client
+    WeGlide 
+    # subdirectory off: src/net/client
+    # net/client
 
     time
 

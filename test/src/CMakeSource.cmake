@@ -63,6 +63,7 @@ ${SRC_DIR}/RunAirspaceWarningDialog.cpp
 ${SRC_DIR}/RunAnalysis.cpp
 ${SRC_DIR}/RunAngleEntry.cpp
 ${SRC_DIR}/RunCanvas.cpp
+${SRC_DIR}/RunMapWindow.cpp
 ${SRC_DIR}/RunChartRenderer.cpp
 ${SRC_DIR}/RunCirclingWind.cpp
 ${SRC_DIR}/RunContestAnalysis.cpp

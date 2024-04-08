@@ -5,6 +5,11 @@ message(STATUS "+++ System = WIN32 / MinGW (${TOOLCHAIN})  on ${CMAKE_HOST_SYSTE
 set(LIB_PREFIX "lib" )  # "lib")
 set(LIB_SUFFIX ".a")    # "a")
 
+set(TARGET_IS_OPENVARIO ON)
+if (TARGET_IS_OPENVARIO)
+  add_compile_definitions(IS_OPENVARIO) 
+endif()
+
 add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
 add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON)
 
@@ -12,7 +17,9 @@ add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON)
 add_compile_definitions(BOOST_JSON_HEADER_ONLY)
 add_compile_definitions(BOOST_JSON_STANDALONE)
 
-# add_compile_definitions(HAVE_MSVCRT)
+        # add_compile_definitions(HAVE_MSVCRT)
+# add_compile_definitions(UNICODE)  # ???
+# add_compile_definitions(_UNICODE)
 add_compile_definitions(STRICT)
 add_compile_definitions(_USE_MATH_DEFINES)   # necessary under C++17!
 add_compile_definitions(ZZIP_1_H)   # definition of uint32_t and Co.!

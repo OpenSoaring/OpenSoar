@@ -19,6 +19,16 @@ endif()
 list(APPEND CMAKE_FILES sodium.cmake)
 list(APPEND CMAKE_FILES fmt.cmake)
 
+if (1)  # SkySight!
+  list(APPEND CMAKE_FILES hdf5.cmake)
+  list(APPEND CMAKE_FILES proj.cmake)
+  # list(APPEND CMAKE_FILES sqlite3.cmake)
+  list(APPEND CMAKE_FILES tiff.cmake)
+  list(APPEND CMAKE_FILES geotiff.cmake)
+  list(APPEND CMAKE_FILES netcdf-c.cmake)
+  list(APPEND CMAKE_FILES netcdf-cxx.cmake)
+endif()
+
 if(0)  # MapServer
     list(APPEND CMAKE_FILES mapserver.cmake)
 endif()

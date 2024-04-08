@@ -10,6 +10,8 @@ set(TARGET_IS_OPENVARIO ON)
 if (TARGET_IS_OPENVARIO)
   add_compile_definitions(IS_OPENVARIO) 
 endif()
+
+add_compile_definitions(WIN_SKYSIGHT) 
 #-------------------------------
 add_compile_definitions(__MSVC__)
 #********************************************************************************
@@ -69,7 +71,14 @@ set(BASIC_LINK_LIBRARIES
         ws2_32.lib
         gdiplus
 )
+list(APPEND BASIC_LINK_LIBRARIES
+        shlwapi                                   # needed from hdf5
+        # D:\Projects\link_libs\
+        ${LINK_LIBS}/sqlite3/test/lib/sqlite3.lib # needed from netcdf ?
+        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_hl.lib # needed from netcdf
+        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_tools.lib # needed from netcdf
 
+)
 set(SSL_LIB )  # no ssl lib on windowsfor curl necessary!
 set(CRYPTO_LIB Crypt32.lib BCrypt.lib)
 

@@ -400,6 +400,13 @@ if(1)
   message(STATUS "ZLib:         ZLIB_LIB        =  ${ZLIB_LIB}      / ${ZLIB_TARGET} ")
   message(STATUS "ZZip:         ZZIP_LIB        =  ${ZZIP_LIB}      / ${ZZIP_TARGET} ")
   message(STATUS "Fmt:          FMT_LIB         =  ${FMT_LIB}       / ${FMT_TARGET} ")
+
+  message(STATUS "tiff:         TIFF_LIB        =  ${TIFF_LIB}      / ${TIFF_TARGET} ")
+  message(STATUS "geotiff:      GEOTIFF_LIB     =  ${GEOTIFF_LIB}   / ${GEOTIFF_TARGET} ")
+  message(STATUS "proj:         PROJ_LIB        =  ${PROJ_LIB}      / ${PROJ_TARGET} ")
+  message(STATUS "netcdf-c:     NETCDF_C_LIB    =  ${NETCDF_C_LIB}  / ${NETCDF_C_TARGET} ")
+  message(STATUS "netcdf-cxx:   NETCDF_CXX_LIB  =  ${NETCDF_CXX_LIB} / ${NETCDF_CXX_TARGET} ")
+  message(STATUS "hdf5:         HDF5_LIB        =  ${HDF5_LIB}      / ${HDF5_TARGET} ")
   # message(FATAL_ERROR "Stop: XCSOAR_LINK_LIBRARIES")
 endif()
 
@@ -416,6 +423,13 @@ list(APPEND XCSOAR_LINK_LIBRARIES
    ${SSL_LIB}  # new at 03/2021
    ${CRYPTO_LIB}  # new at 03/2021
    ${CARES_TARGET}  # new at 03/2021
+   
+   ${TIFF_TARGET}  # new at 06/2024
+   ${GEOTIFF_TARGET}  # new at 06/2024
+   ${PROJ_TARGET}  # new at 06/2024
+   ${NETCDF_C_TARGET}  # new at 06/2024
+   ${NETCDF_CXX_TARGET}  # new at 06/2024
+   ${HDF5_TARGET}  # new at 06/2024
    
    ${Boost_LIBRARIES}
 )

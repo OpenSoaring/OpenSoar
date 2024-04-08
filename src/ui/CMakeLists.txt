@@ -5,6 +5,8 @@ endif()
 
   get_filename_component(TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
 
+add_compile_definitions(USE_GEOTIFF)
+
 include(CMakeSource.cmake)
 # organize the files in subdirectories
 

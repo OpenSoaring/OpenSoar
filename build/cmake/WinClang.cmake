@@ -6,6 +6,13 @@ if(NOT TOOLCHAIN)
 #    set(TOOLCHAIN clang14)
 endif()
 
+set(TARGET_IS_OPENVARIO ON)
+if (TARGET_IS_OPENVARIO)
+  add_compile_definitions(IS_OPENVARIO) 
+endif()
+
+
+
 include_directories(D:/Programs/LLVM/${TOOLCHAIN}/include)
 
 # include_directories(D:/Programs/Android/android-ndk-r25b/sources/cxx-stl/llvm-libc++/include)
@@ -35,8 +42,8 @@ add_compile_definitions(_USE_MATH_DEFINES)   # necessary under C++17!
 # add_compile_options(-v)  # verbose compiler messages
 
 # 
-add_compile_options(-fcoroutines-ts)
-# add_compile_options(-fcoroutines)
+# add_compile_options(-fcoroutines-ts)
+add_compile_options(-fcoroutines)
 ## add_compile_options(-fconserve-space)
 ## add_compile_options(-fno-operator-names)
 

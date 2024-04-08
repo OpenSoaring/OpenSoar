@@ -83,6 +83,7 @@ macro(prepare_3rdparty target_name lib_name)
     string(REPLACE "\\" "/" _PREFIX_DIR  ${${TARGET_CNAME}_PREFIX})
 
     set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS})  ## for internal use
+# if (${lib_name} MATCHES "fmt" OR ${lib_name} MATCHES "netcdf-cxx4")
 if (${lib_name} MATCHES "fmt")
     set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}d${LIB_SUFFIX}")  ## D:/Project/link_libs...
     set(
@@ -91,6 +92,34 @@ if (${lib_name} MATCHES "fmt")
       debug "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}d${LIB_SUFFIX}"
       PARENT_SCOPE
     )   ## D:/Project/link_libs...
+elseif (${lib_name} MATCHES "netcdf-cxx4")
+    set(_BIN_3RD_PARTY D:/Projects/Binaries/OpenSoar/dev-branch/3rd_Party)  # only August2111
+    set(_TARGET_LIBS ${_BIN_3RD_PARTY}/netcdf_cxx/netcdf_cxx-4.3.1/build/${TOOLCHAIN}/cxx4/Debug/${LIB_PREFIX}${lib_name}${LIB_SUFFIX})
+    set(_TARGET_LIBS_DEBUG   "${_BIN_3RD_PARTY}/netcdf_cxx/netcdf_cxx-4.3.1/build/${TOOLCHAIN}/cxx4/Debug/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")
+    set(_TARGET_LIBS_RELEASE   "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}"
+)
+## if($<CONFIG:Debug>)
+## else()
+## endif()    # set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_d${LIB_SUFFIX}")  ## D:/Project/link_libs...
+    set(
+      ${TARGET_CNAME}_LIB
+      optimized "_TARGET_LIBS_RELEASE"
+      debug "_TARGET_LIBS_DEBUG"
+      PARENT_SCOPE
+    )   ## D:/Project/link_libs...
+elseif (${lib_name} MATCHES "proj")
+    set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_d${LIB_SUFFIX}")  ## D:/Project/link_libs...
+    set(
+      ${TARGET_CNAME}_LIB
+      optimized "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}"
+      debug "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_d${LIB_SUFFIX}"
+      PARENT_SCOPE
+    )   ## D:/Project/link_libs...
+elseif(${lib_name} MATCHES "hdf5")
+    # set(${TARGET_CNAME}_LIB  ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX} PARENT_SCOPE)  ## D:/Project/link_libs...
+    # in the moment without toolchain...!!!
+    set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")  ## D:/Project/link_libs...
+    set(${TARGET_CNAME}_LIB  ${_INSTALL_DIR}/lib/${LIB_PREFIX}${lib_name}${LIB_SUFFIX} PARENT_SCOPE)  ## D:/Project/link_libs...
 else()
     set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS} PARENT_SCOPE)  ## D:/Project/link_libs...
 endif()

@@ -13,6 +13,14 @@ set(_SOURCES
         Weather/Rasp/RaspStore.cpp
         Weather/Rasp/RaspStyle.cpp
         Weather/Rasp/Configured.cpp
+       # SkySight:
+        Weather/Skysight/Skysight.cpp
+        Weather/Skysight/SkysightAPI.cpp
+        Weather/Skysight/SkysightRegions.cpp
+
+        Weather/Skysight/Request.cpp
+        Weather/Skysight/CDFDecoder.cpp
+        Weather/Skysight/APIQueue.cpp
 )
 
 set(SCRIPT_FILES

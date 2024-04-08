@@ -237,6 +237,9 @@ elseif (WIN32)
         ${CANVAS_SRC_DIR}/gdi/Canvas.cpp
         ${CANVAS_SRC_DIR}/gdi/BufferCanvas.cpp
         ${CANVAS_SRC_DIR}/gdi/PaintCanvas.cpp
+
+        ${CANVAS_SRC_DIR}/custom/GeoBitmap.cpp
+        ${CANVAS_SRC_DIR}/custom/LibTiff.cpp
     )
     set(GDI_CPPFLAGS -DUSE_GDI)
     set(WINUSER_CPPFLAGS -DUSE_WINUSER)

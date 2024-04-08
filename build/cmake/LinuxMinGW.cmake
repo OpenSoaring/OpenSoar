@@ -5,6 +5,11 @@ message(STATUS "+++ System = WIN32 / MinGW (${TOOLCHAIN})! on ${CMAKE_HOST_SYSTE
 set(LIB_PREFIX "lib" )  # "lib")
 set(LIB_SUFFIX ".a")    # "a")
 
+set(TARGET_IS_OPENVARIO ON)
+if (TARGET_IS_OPENVARIO)
+  add_compile_definitions(IS_OPENVARIO) 
+endif()
+
 # August2111: warum? string(APPEND CMAKE_CXX_FLAGS " -U_REENTRANT")
 add_compile_definitions(BOOST_NO_IOSTREAM)
 add_compile_definitions(BOOST_MATH_NO_LEXICAL_CAST)
@@ -22,6 +27,8 @@ add_compile_definitions(WIN32_LEAN_AND_MEAN)
 add_compile_definitions(NOMINMAX)
 add_compile_definitions(HAVE_STRUCT_POLLFD)
 add_compile_definitions(HAVE_MSVCRT)
+# add_compile_definitions(UNICODE)  # ???
+# add_compile_definitions(_UNICODE)
 add_compile_definitions(STRICT)
 add_compile_definitions(EYE_CANDY)
 add_compile_definitions(USE_WIN32_RESOURCES)

@@ -12,8 +12,18 @@ set(SODIUM_VERSION      "1.0.18")
 set(LUA_VERSION         "5.4.6")
 set(FMT_VERSION         "10.1.1")
 
+if (1) # SkySight
+  set(TIFF_VERSION        "4.6.0")
+  set(GEOTIFF_VERSION     "1.7.1")  # oder 1.7.3 ??
+  set(PROJ_VERSION        "9.3.1")  # 9.3.1 ->  9.4.1
+  set(NETCDF_C_VERSION    "4.6.2")  # 4.6.2 -> 4.9.2 ??
+  set(NETCDF_CXX_VERSION  "4.3.1")  # 4.2.1 -> 4.3.1 ??
+
+  set(HDF5_VERSION        "1.14.4.3")  # ??
+endif() 
+
 if (NO_MSVC)
-    set(TIFF_VERSION        "4.5.1")
+##    set(TIFF_VERSION        "4.5.1")
     set(JPEG_VERSION        "3.0.0")
     set(PROJ_VERSION        "9.3.1")
     set(FREETYPE_VERSION    "2.13.1")
@@ -33,7 +43,7 @@ set(GLM_VERSION         "0.9.9.8")  # GL Mathematics for OpenGL...
 if (NO_MSVC)
     set(XLST_VERSION        "1.1.37")
     set(XML2_VERSION        "2.10.2")
-    set(ICONV_VERSION        "1.17")
+    set(ICONV_VERSION       "1.17")
 endif()
 
 # 3rd-party! 

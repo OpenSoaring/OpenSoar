@@ -4,7 +4,7 @@ cd /D %~dp0../..
 ::=======================
 :: Problem ???:  set MINGW_VERSION=mgw122
 :: but this don't solve the problem with DeviceEditWidget->SetPort (not seen on MSVC)
-set MINGW_VERSION=mgw112
+set MINGW_VERSION=mgw122
 ::=======================
 
 echo %CD%

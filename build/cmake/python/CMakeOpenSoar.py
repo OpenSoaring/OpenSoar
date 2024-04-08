@@ -91,6 +91,7 @@ generator = {
            'clang14' : 'Clang',
            'clang15' : 'Clang',
            'clang16' : 'Clang',
+           'clang17' : 'Clang',
            'msvc2015' : 'Visual Studio 14',
            'msvc2017' : 'Visual Studio 15',
            'msvc2019' : 'Visual Studio 16',
@@ -127,6 +128,7 @@ compiler_setup = {
            'clang14' : clang,
            'clang15' : clang,
            'clang16' : clang,
+           'clang17' : clang,
            'msvc2015' : visual_studio,
            'msvc2017' : visual_studio,
            'msvc2019' : visual_studio,
@@ -281,7 +283,7 @@ def create_opensoar(args):
     if is_windows and toolchain.startswith('clang'):
       compiler = toolchain
     if is_windows and toolchain == 'ninja':
-      toolchain = 'clang15'
+      toolchain = 'clang17'
       compiler = toolchain
 
     print('---')

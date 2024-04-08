@@ -1,13 +1,24 @@
+s
+
+
 set(TARGET_NAME "XCSoarAug-Clang")  # hardcoded
 
 message(STATUS "+++ System = WIN32 / Clang!")
 
 set(LIB_PREFIX "" )  # "lib")
 set(LIB_SUFFIX ".lib")    # "a")
+
+set(TARGET_IS_OPENVARIO ON)
+if (TARGET_IS_OPENVARIO)
+  add_compile_definitions(IS_OPENVARIO) 
+endif()
+
 # add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
 add_compile_definitions(__CLANG__)
 add_compile_definitions(_AUG_CLANG=1)
 # add_compile_definitions(HAVE_MSVCRT)
+# add_compile_definitions(_UNICODE)
+# add_compile_definitions(UNICODE)  # ???
 add_compile_definitions(STRICT)
 add_compile_definitions(_USE_MATH_DEFINES)   # necessary under C++17!
 

@@ -29,11 +29,11 @@ set(_SOURCES
         MapWindow/TargetMapWindowDrag.cpp
         MapWindow/TargetMapWindowEvents.cpp
 )
-if(UNIX)
-  list(APPEND MapWindow_SOURCES
+## if(UNIX) + WIN32!
+  list(APPEND _SOURCES
         MapWindow/OverlayBitmap.cpp
   )
-endif()
+## endif()
 
 set(SCRIPT_FILES
     CMakeSource.cmake
