@@ -185,9 +185,13 @@ endif
 ifeq ($(HAVE_HTTP),y)
 DIALOG_SOURCES += \
 	$(SRC)/Dialogs/Weather/PCMetDialog.cpp \
-	$(SRC)/Dialogs/Weather/SkysightDialog.cpp \
 	$(SRC)/Dialogs/Weather/NOAAList.cpp \
 	$(SRC)/Dialogs/Weather/NOAADetails.cpp
+    
+ifneq ($(HAVE_WIN32),y)
+DIALOG_SOURCES += \
+	$(SRC)/Dialogs/Weather/SkysightDialog.cpp
+endif
 endif
 
 XCSOAR_SOURCES := \
@@ -654,13 +658,17 @@ XCSOAR_SOURCES += \
 	$(SRC)/Weather/NOAAFormatter.cpp \
 	$(SRC)/Weather/NOAADownloader.cpp \
 	$(SRC)/Weather/NOAAStore.cpp \
-	$(SRC)/Weather/NOAAUpdater.cpp \
+	$(SRC)/Weather/NOAAUpdater.cpp
+
+ifneq ($(HAVE_WIN32),y)
+XCSOAR_SOURCES += \
 	$(SRC)/Weather/Skysight/Skysight.cpp \
 	$(SRC)/Weather/Skysight/CDFDecoder.cpp \
 	$(SRC)/Weather/Skysight/APIQueue.cpp \
 	$(SRC)/Weather/Skysight/SkysightAPI.cpp \
 	$(SRC)/Weather/Skysight/Request.cpp \
 	$(SRC)/Weather/Skysight/SkysightRegions.cpp
+endif
 
 XCSOAR_SOURCES += \
 	$(SRC)/Tracking/LiveTrack24/SessionID.cpp \
