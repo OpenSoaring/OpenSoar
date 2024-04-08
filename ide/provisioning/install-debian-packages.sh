@@ -70,8 +70,11 @@ install_linux() {
     imagemagick gettext \
     mesa-common-dev libgl1-mesa-dev libegl1-mesa-dev \
     fonts-dejavu \
-    xz-utils
-  echo
+    xz-utils \
+    netcdf-bin \
+    libnetcdf-c++4-dev \
+    libnetcdf-dev
+echo
 }
 
 install_wayland() {
