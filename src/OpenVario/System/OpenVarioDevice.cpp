@@ -28,7 +28,6 @@
 #include "LocalPath.hpp"
 
 #include <util/tstring.hpp>
-#include <iostream>"
 
 #ifndef _WIN32
 #include <unistd.h>
