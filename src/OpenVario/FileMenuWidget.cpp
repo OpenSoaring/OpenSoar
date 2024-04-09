@@ -38,8 +38,8 @@ void FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                         [[maybe_unused]] const PixelRect &rc) noexcept
 {
   StaticString<60> title;
-  title.Format(_("Download %s IGC files to USB (WIP)"),main_app);
-  AddButton(title, [](){
+
+  AddButton(_("Upload IGC Files to USB (WIP)"), []() {
     static constexpr const char *argv[] = {
             "/usr/bin/download-igc.sh", nullptr
     };
@@ -48,9 +48,11 @@ void FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
             _("Download IGC Files"), argv);
   });
 
+  //-----------------------------------------------------
+  title.Format(_(" - File Transfers %s Data"), main_app);
+  AddLabel(title);
 
-  title.Format(_("Download %s data files from OV to USB"), main_app);
-  AddButton(title, []() {
+  AddButton(_("Save: OpenVario -> USB"), []() {
     static constexpr const char *argv[] = {
             "/usr/bin/transfers.sh", "download-data", _main_app, nullptr
     };
@@ -60,8 +62,7 @@ void FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
             _("Download files"), argv);
   });
 
-  title.Format(_("Restore %s data files from USB"), main_app);
-  AddButton(title, []() {
+  AddButton(_("Restore: OpenVario <- USB"), []() {
     static constexpr const char *argv[] = {"/usr/bin/transfers.sh",
                                            "upload-data", _main_app, nullptr};
 
@@ -71,10 +72,11 @@ void FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                      dialog_title, argv);
   });
 
-  AddReadOnly(_T("--- System: ---"));
+  //-----------------------------------------------------
+  title.Format(_("- Complete System Data Transfers"), main_app);
+  AddLabel(title); // _T("---OpenSoar Data Files---"));
 
-  title.Format(_("System Backup: OpenVario and %s settings to USB"), main_app);
-  AddButton(title, []() {
+  AddButton(_("Backup: OpenVario System to USB"), []() {
     static constexpr const char *argv[] = {"/usr/bin/transfer-system.sh",
                                            "backup", _main_app, nullptr
     };
@@ -84,9 +86,7 @@ void FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
             _("Backup System"), argv);
   });
   
-  title.Format(_("System Restore: OpenVario and %s settings from USB"),
-               main_app);
-  AddButton(title, []() {
+  AddButton(_("Restore: OpenVario System from USB"), []() {
      static constexpr const char *argv[] = {"/usr/bin/transfer-system.sh",
                                            "restore", _main_app, nullptr
      };
@@ -95,6 +95,17 @@ void FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
              _("Restore System"), argv);
              Display::Rotate(Display::DetectInitialOrientation());
    });
+  
+  auto btn = AddButton(_("Image Backup to USB (WIP)"), []() {
+     static constexpr const char *argv[] = {"/usr/bin/transfer-system.sh",
+                                           "restore", _main_app, nullptr
+     };
+     RunProcessDialog(UIGlobals::GetMainWindow(),
+             UIGlobals::GetDialogLook(),
+             _("Backup Image"), argv);
+             Display::Rotate(Display::DetectInitialOrientation());
+   });
+  btn->SetEnabled(false);
 }
 
 bool 
@@ -113,4 +124,5 @@ std::unique_ptr<Widget>
 CreateFileMenuWidget() noexcept {
   return std::make_unique<FileMenuWidget>();
 }
-#endif
+
+#endif  // IS_OPENVARIO
