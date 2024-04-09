@@ -13,7 +13,12 @@ GETTEXT_SOURCES = $(XCSOAR_SOURCES) \
 	$(LIBCOMPUTER_SOURCES) \
 	$(wildcard $(SRC)/Dialogs/Device/Vega/*Parameters.hpp) \
 	$(SRC)/Weather/Rasp/RaspStore.cpp
-GETTEXT_EVENTS = Data/Input/default.xci
+
+ifeq ($(TARGET_IS_OPENVARIO),y)
+  GETTEXT_EVENTS = Data/Input/defaultOV.xci
+else
+  GETTEXT_EVENTS = Data/Input/default.xci
+endif
 
 $(OUT)/po/cpp.pot: $(GETTEXT_SOURCES) | $(OUT)/po/dirstamp
 	@$(NQ)echo "  GEN     $@"
