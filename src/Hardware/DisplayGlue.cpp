@@ -77,7 +77,10 @@ Display::DetectInitialOrientation()
 {
   auto orientation = DisplayOrientation::DEFAULT;
 
-#ifdef MESA_KMS
+#if defined(IS_OPENVARIO) // && !defined(IS_OPENVARIO_CB2)
+  // On OpenVario the (SW-)display orientation should be default always
+  orientation = DisplayOrientation::DEFAULT;
+#elif defined(MESA_KMS)
   // When running in DRM/KMS mode, infer the display orientation from the linux
   // console rotation.
   char buf[3];
