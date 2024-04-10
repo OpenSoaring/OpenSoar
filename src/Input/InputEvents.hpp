@@ -196,6 +196,7 @@ void eventExchangeFrequencies(const TCHAR *misc);
 void eventShutdown(const TCHAR *misc);
 #endif
 void eventUploadIGCFile(const TCHAR *misc);
+void eventKeyPressed(const TCHAR *misc);
 // -------
 
 } // namespace InputEvents
