@@ -77,6 +77,10 @@
 
 #include <cassert>
 
+#if defined(__AUGUST__)  // hide this code
+// # define SPLIT_XCSOAR_MENU
+#endif
+
 static unsigned current_page;
 
 // TODO: eliminate global variables
@@ -180,14 +184,14 @@ static constexpr TabMenuGroup main_menu_captions[] = {
 static void
 OnUserLevel(bool expert) noexcept;
 
-#ifdef __AUGUST__
+#ifdef SPLIT_XCSOAR_MENU
 static void OnXCSoarStyle(bool expert) noexcept;
 #endif
 
 class ConfigurationExtraButtons final
   : public NullWidget {
   struct Layout {
-#ifdef __AUGUST__
+#ifdef SPLIT_XCSOAR_MENU
     PixelRect expert, xcsoar_style, button2, button1;
 
     Layout(const PixelRect &rc)
@@ -204,7 +208,7 @@ class ConfigurationExtraButtons final
       if (height >= 3 * max_control_height) {
         expert.bottom = expert.top + max_control_height;
 
-#ifdef __AUGUST__
+#ifdef SPLIT_XCSOAR_MENU
         xcsoar_style.top = expert.bottom;
         xcsoar_style.bottom = xcsoar_style.top + max_control_height;
 #endif
@@ -213,7 +217,7 @@ class ConfigurationExtraButtons final
         button2.top = button2.bottom - max_control_height;
       } else {
         expert.right = button2.left = unsigned(rc.left * 2 + rc.right) / 3;
-#ifdef __AUGUST__
+#ifdef SPLIT_XCSOAR_MENU
         xcsoar_style.right = expert.right;
 #endif
         button2.right = button1.left = unsigned(rc.left + rc.right * 2) / 3;
@@ -224,7 +228,7 @@ class ConfigurationExtraButtons final
   const DialogLook &look;
 
   CheckBoxControl expert;
-#ifdef __AUGUST__
+#ifdef SPLIT_XCSOAR_MENU
   CheckBoxControl xcsoar_style;
 #endif
   Button button2, button1;
@@ -271,7 +275,7 @@ protected:
     expert.Create(parent, look, _("Expert"),
                   layout.expert, style,
                   [](bool value){ OnUserLevel(value); });
-#ifdef __AUGUST__
+#ifdef SPLIT_XCSOAR_MENU
     xcsoar_style.Create(parent, look, _("XCSoar"),
                   layout.xcsoar_style, style,
                   [](bool value){ OnXCSoarStyle(value); });
@@ -285,7 +289,7 @@ protected:
 
     expert.SetState(CommonInterface::GetUISettings().dialog.expert);
     expert.MoveAndShow(layout.expert);
-#ifdef __AUGUST__
+#ifdef SPLIT_XCSOAR_MENU
     xcsoar_style.SetState(CommonInterface::GetUISettings().dialog.xcsoar_style);
     xcsoar_style.MoveAndShow(layout.xcsoar_style);
 #endif
@@ -303,7 +307,7 @@ protected:
 
   void Hide() noexcept override {
     expert.FastHide();
-#ifdef __AUGUST__
+#ifdef SPLIT_XCSOAR_MENU
     xcsoar_style.FastHide();
 #endif
     button2.FastHide();
@@ -327,7 +331,7 @@ protected:
   void Move(const PixelRect &rc) noexcept override {
     Layout layout(rc);
     expert.Move(layout.expert);
-#ifdef __AUGUST__
+#ifdef SPLIT_XCSOAR_MENU
     xcsoar_style.Move(layout.xcsoar_style);
 #endif
     button2.Move(layout.button2);
@@ -366,7 +370,7 @@ OnUserLevel(bool expert) noexcept
   pager->PagerWidget::Move(pager->GetPosition());
 }
 
-#ifdef __AUGUST__
+#if defined(SPLIT_XCSOAR_MENU)
 static void
 OnXCSoarStyle(bool xcsoar_style) noexcept
 {
@@ -433,7 +437,7 @@ void dlgConfigurationShowModal()
                       look, _("Configuration"));
 
   pager = new ArrowPagerWidget(look.button,
-#ifdef __AUGUST__
+#ifdef SPLIT_XCSOAR_MENU
                                [&dialog](){ OnSaveClicked(dialog); },
 #endif
                                [&dialog](){ OnCloseClicked(dialog); },
