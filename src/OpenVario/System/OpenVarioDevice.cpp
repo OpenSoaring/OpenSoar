@@ -253,7 +253,7 @@ OpenVario_Device::GetRotation()
 }
 
 void
-OpenVario_Device::SetRotation(DisplayOrientation orientation)
+OpenVario_Device::SetRotation(DisplayOrientation orientation, int mode)
 {
   std::map<std::string, std::string, std::less<>> map;
 
@@ -261,7 +261,8 @@ OpenVario_Device::SetRotation(DisplayOrientation orientation)
   if (map.contains("Rotation"))       // this is wrong!!!
     map.erase("Rotation");
 
-  Display::Rotate(orientation);
+  if (mode & 1)
+    Display::Rotate(orientation);
 
   int rotation = 0; 
   switch (orientation) {
@@ -278,6 +279,7 @@ OpenVario_Device::SetRotation(DisplayOrientation orientation)
     rotation = 3;
     break;
   };
+
   std::string rot_string = fmt::format_int{rotation}.c_str();
   if (map["rotation"] != rot_string) {
     LogFormat("Set Rotation '%s' vs. '%s' (%d)", map["rotation"].c_str(),
@@ -286,13 +288,15 @@ OpenVario_Device::SetRotation(DisplayOrientation orientation)
 
 
   if (map["rotation"] != rot_string) {
-    File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")),
+    if (mode & 2) {
+      File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")),
                         rot_string.c_str());
+    }
 
-    map.insert_or_assign("rotation", rot_string);
-    WriteConfigFile(map, system_config);
-
-    // Restart???
+    if (mode & 4) {
+      map.insert_or_assign("rotation", rot_string);
+      WriteConfigFile(map, system_config);
+    }
   }
 }
 
