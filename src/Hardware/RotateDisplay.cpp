@@ -14,14 +14,19 @@
 #include "Kobo/Model.hpp"
 #endif
 
+#ifdef IS_OPENVARIO
+#include "system/FileUtil.hpp"
+#endif
+
 #ifdef ENABLE_OPENGL
 #include "ui/opengl/Features.hpp"
-#ifdef SOFTWARE_ROTATE_DISPLAY
-#include "UIGlobals.hpp"
-#include "ui/window/SingleWindow.hpp"
 #include "ui/canvas/opengl/Globals.hpp"
 #endif
-#endif
+
+#include "UIGlobals.hpp"
+#include "ui/window/SingleWindow.hpp"
+
+static DisplayOrientation _rotation = DisplayOrientation::DEFAULT;
 
 void
 Display::RotateInitialize()
@@ -46,6 +51,8 @@ Display::RotateSupported()
 bool
 Display::Rotate(DisplayOrientation orientation)
 {
+  _rotation = orientation;
+
 #if !defined(ANDROID) && !defined(KOBO)
   if (orientation == DisplayOrientation::DEFAULT)
     /* leave it as it is */
@@ -157,6 +164,7 @@ Display::Rotate(DisplayOrientation orientation)
 bool
 Display::RotateRestore()
 {
+  _rotation = DisplayOrientation::DEFAULT;
 #if defined(ANDROID)
   return native_view->SetRequestedOrientation(Java::GetEnv(),
                                               NativeView::ScreenOrientation::SENSOR);
@@ -165,4 +173,10 @@ Display::RotateRestore()
 #else
   return false;
 #endif
+}
+
+DisplayOrientation
+Display::GetRotation()
+{
+  return _rotation;
 }
