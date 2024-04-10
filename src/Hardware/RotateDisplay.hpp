@@ -11,7 +11,8 @@ namespace Display {
   void RotateInitialize();
 
   [[gnu::const]]
-  bool RotateSupported();
+  bool 
+  RotateSupported();
 
   /**
    * Change the orientation of the screen.
@@ -24,4 +25,10 @@ namespace Display {
    */
   bool
   RotateRestore();
-}
+
+  /**
+   * Get the display rotation setting.
+   */
+  DisplayOrientation GetRotation();
+  
+} // namespace Display
