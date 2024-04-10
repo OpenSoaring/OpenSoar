@@ -651,6 +651,43 @@ InputEvents::eventShutdown([[maybe_unused]] const TCHAR *misc)
   }
   UIActions::SignalShutdown(false);
 }
+
+#include "InputKeys.hpp"
+#include "ui/event/KeyCode.hpp"
+
+void 
+InputEvents::eventKeyPressed(const TCHAR *misc)
+{
+//  std::map<unsigned, const char> keys;
+  for (char *p = (char *)misc; *p != 0; p++) {
+      if (*p != ' ') {
+      char c[2] = {*p, 0};
+      if (!strncmp(p, "LEFT", strlen("LEFT"))) {
+        c[0] = KEY_LEFT;
+        p += strlen("LEFT") ;
+      } else if (!strncmp(p, "RIGHT", strlen("RIGHT"))) {
+        c[0] = KEY_RIGHT;
+        p += strlen("RIGHT") ;
+      } else if (!strncmp(p, "UP", strlen("UP"))) {
+        c[0] = KEY_UP;
+        p += strlen("UP") ;
+      } else if (!strncmp(p, "DOWN", strlen("DOWN"))) {
+        c[0] = KEY_DOWN;
+        p += strlen("DOWN") ;
+      } else if (!strncmp(p, "ESCAPE", strlen("ESCAPE"))) {
+        c[0] = KEY_ESCAPE;
+        p += strlen("ESCAPE") ;
+      } else if (!strncmp(p, "ENTER", strlen("ENTER"))) {
+        c[0] = KEY_RETURN;
+        p += strlen("ENTER") ;
+      } else if (!strncmp(p, "RETURN", strlen("RETURN"))) {
+        c[0] = KEY_RETURN;
+        p += strlen("RETURN") ;
+      }
+      ParseKeyCode(c);
+      }
+  }
+}
 #endif
 
 void
