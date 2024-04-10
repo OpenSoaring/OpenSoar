@@ -76,38 +76,46 @@ public:
 private:
   /* methods from DataFieldListener */
   void OnModified(DataField &df) noexcept override;
+  void RotateDisplay(DisplayOrientation orientation) noexcept;
 
   unsigned brightness;
+  ContainerWindow* parent;
 };
 
+void 
+DisplaySettingsWidget::RotateDisplay(
+    [[maybe_unused]] DisplayOrientation orientation) noexcept
+{
 
-void DisplaySettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept {
+  // ShowMessageBox(_T("Set Rotation"), _T("Rotation"), MB_OK);
+
+  // ovdevice.SetRotation(orientation);
+  
+  // UI::TopWindow::SetExitValue(EXIT_RESTART);
+  // UIActions::SignalShutdown(true);
+}
+
+
+void
+DisplaySettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
+{
   if (IsDataField(ROTATION, df)) {
-    // ShowMessageBox(_T("Set Rotation"), _T("Rotation"), MB_OK);
-    //    ovdevice.SetRotation((DisplayOrientation)((const DataFieldEnum
-    //    &)df).GetValue());
-    // UI::TopWindow::SetExitValue(EXIT_RESTART);
-    // UIActions::SignalShutdown(true);
+    RotateDisplay((DisplayOrientation)((const DataFieldEnum &)df).GetValue());
   } else if (IsDataField(BRIGHTNESS, df)) {
-    // const DataFieldInteger &dfi = (const DataFieldInteger &)df;
-    // (DataFieldInteger*)df)
-    ovdevice.SetBrightness(((const DataFieldInteger &)df).GetValue() / 10);
+    auto new_brightness = ((const DataFieldInteger &)df).GetValue();
+    if (new_brightness != brightness)
+        ovdevice.SetBrightness(new_brightness / 10);
   }
 }
 
 
 void
-DisplaySettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
+DisplaySettingsWidget::Prepare([[maybe_unused]] ContainerWindow &_parent,
                               [[maybe_unused]] const PixelRect &rc) noexcept
 {
-
+  parent = &_parent;
   brightness = ovdevice.brightness * 10;
 
-#ifdef ADD_ROTATION_BUTTON
-  AddButton(_("Screen Rotation"), [this](){
-     return ShowRotationSettingsWidget(UIGlobals::GetMainWindow(), GetLook());
-  });
-#endif
   AddEnum(_("Rotation"), _("Rotation Display OpenVario"), rotation_list,
           (unsigned)ovdevice.rotation, this);
 
@@ -115,45 +123,30 @@ DisplaySettingsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
              _T("%d%%"), 10, 100, 10, brightness, this);
 
   AddButton(_("Calibrate Touch"), [this]() {
-  // the programm exit in OpenSoar looks complete different fro OpenVarioBaseMenu
     ContainerWindow::SetExitValue(LAUNCH_TOUCH_CALIBRATE);
     UIActions::SignalShutdown(true);
     return mrOK;
   });  
-
-// AddButton(_("Setting Brightness"), [this](){
-  //   return ShowSettingBrightnessWidget(UIGlobals::GetMainWindow(), GetLook());
-// });
-
-//  uint32_t iTest = 0;
-//  AddInteger(_("Brightness Test"), _("Setting Brightness."), _T("%d"), _T("%d"), 1,
-//             10, 1, iTest);
 }
 
 bool 
-DisplaySettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept
-{
-bool changed = false;
-//  bool restart = false;
-if (SaveValueInteger(BRIGHTNESS, "Brightness", brightness)) {
-  ovdevice.SetBrightness(brightness / 10);
-  changed = true;
-}
-if (SaveValueEnum(ROTATION, ovdevice.rotation)) {
-  // ovdevice.SetRotation(
-  //     (DisplayOrientation)((const DataFieldEnum &)df).GetValue());
-  ovdevice.SetRotation(ovdevice.rotation);
-  // restart = true;
-#if 0 // defined(OPENVARIO_BASEMENU)
+DisplaySettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept {
+  bool changed = false;
+  //  bool restart = false;
+  if (SaveValueInteger(BRIGHTNESS, "Brightness", brightness)) {
+    ovdevice.SetBrightness(brightness / 10);
     changed = true;
-#else
-  require_restart = changed = true;
-#endif
+  }
+  if (SaveValueEnum(ROTATION, ovdevice.rotation)) {
+    ovdevice.SetRotation(ovdevice.rotation, 4);
+    require_restart = changed = true;
+    UI::TopWindow::SetExitValue(EXIT_RESTART);
+  }
+
+  _changed = changed;
+  return true;
 }
 
-_changed = changed;
-return true;
-}
 
 
 
