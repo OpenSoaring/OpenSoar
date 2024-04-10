@@ -106,7 +106,7 @@ public:
   uint_least8_t GetBrightness() noexcept;
   void SetBrightness(uint_least8_t value) noexcept;
   DisplayOrientation GetRotation();
-  void SetRotation(DisplayOrientation orientation);
+  void SetRotation(DisplayOrientation orientation, int mode=0);
 
   bool GetSystemStatus(std::string_view system) noexcept;
   void SetSystemStatus(std::string_view system, bool value) noexcept;
