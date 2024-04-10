@@ -44,6 +44,9 @@
 #include "UtilsSettings.hpp"
 #include "net/http/Features.hpp"
 #include "ui/window/SingleWindow.hpp"
+#include "UIActions.hpp"
+
+#include "Hardware/RotateDisplay.hpp"
 
 #ifdef HAVE_PCM_PLAYER
 #include "Panels/AudioVarioConfigPanel.hpp"
@@ -72,7 +75,6 @@
 #include "OpenVario/DisplaySettingsWidget.hpp"
 #include "OpenVario/ExtraWidget.hpp"
 #include "OpenVario/System/OpenVarioDevice.hpp"
-#include "UIActions.hpp"
 #endif
 
 #include <cassert>
@@ -453,11 +455,6 @@ void dlgConfigurationShowModal()
     return std::move(_menu);
   }));
 
-
-// #ifdef IS_OPENVARIO
-//  ovdevice.Initialise();
-// #endif
-
   menu.InitMenu(main_menu_captions, ARRAY_SIZE(main_menu_captions));
 
   /* restore last selected menu item */
@@ -474,6 +471,9 @@ void dlgConfigurationShowModal()
   /* save page number for next time this dialog is opened */
   current_page = menu.GetCursor();
 
+  if (UI::TopWindow::GetExitValue() == EXIT_RESTART)
+    UIActions::SignalShutdown(true);
+
   if (dialog.GetChanged()) {
     Profile::Save();
     if (require_restart)
@@ -484,6 +484,12 @@ void dlgConfigurationShowModal()
               _T(""), MB_YESNO | MB_ICONQUESTION) == IDYES) {
         UI::TopWindow::SetExitValue(EXIT_RESTART);
         UIActions::SignalShutdown(true);
+
+      /* OpenVario:
+        Rotation is stored in config.uEnv - and so you should use the default
+       * Rotation */
+        // Display::RotateRestore();
+        Display::Rotate(DisplayOrientation::DEFAULT);
       }
 #else
       ShowMessageBox(_("Changes to configuration saved.  Restart XCSoar to "
