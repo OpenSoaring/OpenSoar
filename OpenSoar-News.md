@@ -1,12 +1,57 @@
-OpenSoar Version 7.41.21.1 - not yet released
+OpenSoar Version 7.42.22 - not yet released
 ---------------
+
+OpenSoar Version 7.42.22.A - 2024/04/xx
+---------------
+* System: add possibility to restart OpenSoar without exit to system
 * TCP Port - Bugfix on closing the TCP client as receiver on this port:
   By closing the receiver OpenSoar crashed!  
-* End of program with (short) restart, reboot, shutdown and normal program end 
-* OpenVario menu inserted
+* End of program with (short) restart, newstart, reboot, shutdown and normal program end 
+* QuickMenu extended with
+  - Volume control
+  - several program ends (Reboot, Restart)
+* User interface
+  - create a (simple) audio volume control menu (similar to the OpenVario control)
+* Setup Menu
+  - add OpenVario menu (see next item)
+* NMEA Settings: Better shows which USB or Bluetooth device is in use for serial devices on Windows (similar to Android)
 * OpenVario:
-  - WiFi selection
-* start with OpenVarioBaseMenu, but hidden for normal user only
+  - WiFi selection, setting and enabling
+  - OpenVario menu inserted with
+    - (OpenVario) 'System Settings': Firmware, SensorD, VarioD, SSH, Wifi, Sensor Calibration
+    - 'Display Settings': (Device!) Rotation, Brightness, Touch Calibration
+    - 'File Transfer': IGC, OpenSoar data, system data
+  - split default.xci to defaultOV.xci
+* Simulator: remove SIM option from standard, further available with option '-simulator' only
+* Development
+  - rename src folder 'OV' in 'OpenVario'
+  - remove UNICODE define at Windows
+    - the 1st step before removing all UNICODE code parts, TCHAR, tstring
+    - all string handler works with UTF-8, also Windows too
+* Bugfix:
+  - Display rotation on OpenVario on setting
+* Open Issues
+  - Display rotation on Linux!
+
+#### XCSoar Version 7.42 - 2024/03/01
+* merge xcsoar 7.42 '9ee29aa606'
+* ui
+  - new terrain ramp High Contrast
+  - fix unreadable icons in task manager and status dialog
+  - render icons at 300 dpi
+* data files
+  - fix bogus "Latin-1 to UTF-8 conversion failed" error
+  - parse elevations in feet correctly in cup files
+  - ignore unit for radio frequency in airspace files
+* devices
+  - validate wind direction
+* Kobo
+  - Wifi setup, display signal level in dBm for new models
+  - scale icons on hi-dpi displays (e.g. Clara HD)
+* user interface
+  - new mountain pass and bridge icons
+* Android
+  - update 'white list' of USB devices with more PIDs for SoftRF Academy
 
 OpenSoar Version 7.41.21 - 2023/12/28
 ---------------
