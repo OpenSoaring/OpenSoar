@@ -35,14 +35,19 @@ UIActions::CheckShutdown()
     return true;
 
   switch (UI::TopWindow::GetExitValue()) {
+#if defined(IS_OPENVARIO)
   case EXIT_REBOOT:
     return ShowMessageBox(_("Reboot System?"), _T("OpenSoar"),
                           MB_YESNO | MB_ICONQUESTION) == IDYES;
   case EXIT_SHUTDOWN:
     return ShowMessageBox(_("Shutdown System?"), _T("OpenSoar"),
                           MB_YESNO | MB_ICONQUESTION) == IDYES;
+  case EXIT_NEWSTART:
+    return ShowMessageBox(_("Quit and Restart OpenSoar?"), _T("OpenSoar"),
+                          MB_YESNO | MB_ICONQUESTION) == IDYES;
+#endif
   case EXIT_RESTART:
-    return ShowMessageBox(_("Short Restart?"), _T("OpenSoar"),
+    return ShowMessageBox(_("Short Internal Restart?"), _T("OpenSoar"),
                           MB_YESNO | MB_ICONQUESTION) == IDYES;
 
   case EXIT_SYSTEM:
