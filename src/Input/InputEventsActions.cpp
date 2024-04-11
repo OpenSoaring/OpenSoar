@@ -628,29 +628,33 @@ InputEvents::eventExit([[maybe_unused]] const TCHAR *misc)
 {
   bool force = false;
     if (StringIsEqual(misc, _T("system"))) {
-      // return value on UNIX(32) is only a Byte?
-      UI::TopWindow::SetExitValue(EXIT_SYSTEM); // 20000); 
+      UI::TopWindow::SetExitValue(EXIT_SYSTEM);
     } else if (StringIsEqual(misc, _T("force"))) {
-      // return value on UNIX(32) is only a Byte?
-      UI::TopWindow::SetExitValue(EXIT_SYSTEM); // 20000); 
+      UI::TopWindow::SetExitValue(EXIT_SYSTEM);
       force = true;
     } else if (StringIsEqual(misc, _T("restart"))) {
       UI::TopWindow::SetExitValue(EXIT_RESTART);
+#if defined(IS_OPENVARIO)    
+    } else if (StringIsEqual(misc, _T("newstart"))) {
+      UI::TopWindow::SetExitValue(EXIT_NEWSTART);
+#endif
     }
-  UIActions::SignalShutdown(force);
+    UIActions::SignalShutdown(force);
 }
 
-#if 1  // def IS_OPENVARIO
+#if 1  // defined(IS_OPENVARIO)
 // Exits with real Shutdown only in systems where this is possible
 void 
 InputEvents::eventShutdown([[maybe_unused]] const TCHAR *misc)
 {
+#if defined(IS_OPENVARIO)
     if (StringIsEqual(misc, _T("reboot"))) {
       UI::TopWindow::SetExitValue(EXIT_REBOOT); // 20001);
     } else if (StringIsEqual(misc, _T("shutdown"))) {
       UI::TopWindow::SetExitValue(EXIT_SHUTDOWN); // 20002);
     }
-  UIActions::SignalShutdown(false);
+#endif
+    UIActions::SignalShutdown(false);
 }
 
 #include "InputKeys.hpp"
