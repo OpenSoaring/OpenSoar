@@ -196,11 +196,19 @@ LayoutConfigPanel::Prepare(ContainerWindow &parent,
              ui_settings.display.full_screen);
 #endif
 
+#if defined(IS_OPENVARIO)
+  /* moved to OpenVario->DisplaySettingsWidget!
+   *     at OpenVario the System orientation AND the OpenSoar orientation should
+   *     be equal always!
+   */
+  AddDummy();
+#else
   if (Display::RotateSupported())
     AddEnum(_("Display orientation"), _("Rotate the display on devices that support it."),
             display_orientation_list, (unsigned)ui_settings.display.orientation);
   else
     AddDummy();
+#endif
 
   AddEnum(_("Dark mode"), nullptr, dark_mode_list,
           (unsigned)ui_settings.dark_mode);
@@ -265,12 +273,14 @@ LayoutConfigPanel::Save(bool &_changed) noexcept
 
   bool orientation_changed = false;
 
+#if !defined(IS_OPENVARIO)
   if (Display::RotateSupported()) {
     orientation_changed =
       SaveValueEnum(MapOrientation, ProfileKeys::MapOrientation,
                     ui_settings.display.orientation);
     changed |= orientation_changed;
   }
+#endif
 
   changed |= SaveValueEnum(DarkMode, ProfileKeys::DarkMode,
                            ui_settings.dark_mode);
