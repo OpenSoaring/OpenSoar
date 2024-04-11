@@ -111,21 +111,24 @@ Start(const char *const *argv) noexcept
 
 int Run(const char *const *argv) noexcept;
 
+#define PROCESS_DEBUG_OUTPUT 0
 int
 Run(const char *const *argv) noexcept
 try {
-#if 1 // def DEBUG_OPENVARIO
+#if PROCESS_DEBUG_OUTPUT // def DEBUG_OPENVARIO
   std::cout << "Start Run with:" << std::endl;
   if (!output.empty())
     LogFormat(_T("Process.cpp - Run with output: %s"), output.c_str());
   else 
     LogFormat("Process.cpp - Run w/o output");
+#endif
   std::stringstream ss;
 
   for (unsigned count = 0; argv[count] != nullptr; count++) {
     ss << argv[count] << ' ';
     std::cout << argv[count] << ' ';
   }
+#if PROCESS_DEBUG_OUTPUT // def DEBUG_OPENVARIO
   std::cout << '!' << std::endl;
   LogFormat("Process.cpp: %s", ss.str().c_str());
 #endif
