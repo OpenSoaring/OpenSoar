@@ -1,20 +1,15 @@
-OpenSoar Version 7.42.22 - not yet released
----------------
-
-OpenSoar Version 7.42.22.A - 2024/04/xx
+OpenSoar Version 7.42.22.A - 2024/04/21 - PreRelease A to 7.42.22
 ---------------
 * System: add possibility to restart OpenSoar without exit to system
 * TCP Port - Bugfix on closing the TCP client as receiver on this port:
-  By closing the receiver OpenSoar crashed!  
 * End of program with (short) restart, newstart, reboot, shutdown and normal program end 
 * QuickMenu extended with
   - Volume control
   - several program ends (Reboot, Restart)
 * User interface
-  - create a (simple) audio volume control menu (similar to the OpenVario control)
+  - create a (simple) audio volume control menu (similar to the OpenVario control) in the default event file
 * Setup Menu
   - add OpenVario menu (see next item)
-* NMEA Settings: Better shows which USB or Bluetooth device is in use for serial devices on Windows (similar to Android)
 * OpenVario:
   - WiFi selection, setting and enabling
   - OpenVario menu inserted with
@@ -22,6 +17,8 @@ OpenSoar Version 7.42.22.A - 2024/04/xx
     - 'Display Settings': (Device!) Rotation, Brightness, Touch Calibration
     - 'File Transfer': IGC, OpenSoar data, system data
   - split default.xci to defaultOV.xci
+* NMEA Settings: Better shows which USB or Bluetooth device is in use for serial devices on Windows (similar to Android)
+* Driver/Larus - extend with bidirectional settings parameters $PLARS
 * Simulator: remove SIM option from standard, further available with option '-simulator' only
 * Development
   - rename src folder 'OV' in 'OpenVario'
@@ -31,7 +28,9 @@ OpenSoar Version 7.42.22.A - 2024/04/xx
 * Bugfix:
   - Display rotation on OpenVario on setting
 * Open Issues
-  - Display rotation on Linux!
+  - Display rotation on Linux behaves wrong!
+  - OV-Firmware Download don't work (SetupMenu->OpenVario->SystemSettings)
+  - OV-WiFi work only with one wifi connection and only with a Wifi access WITH password properly!
 
 #### XCSoar Version 7.42 - 2024/03/01
 * merge xcsoar 7.42 '9ee29aa606'
