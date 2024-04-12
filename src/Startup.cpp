@@ -112,6 +112,10 @@
 #include "Android/NativeView.hpp"
 #endif
 
+#ifdef IS_OPENVARIO
+# include "OpenVario/System/OpenVarioDevice.hpp"
+#endif
+
 static TaskManager *task_manager;
 static GlideComputerEvents *glide_computer_events;
 static AllMonitors *all_monitors;
@@ -252,7 +256,12 @@ Startup(UI::Display &display)
   style.Resizable();
 
 #ifdef SOFTWARE_ROTATE_DISPLAY
-  style.InitialOrientation(Display::DetectInitialOrientation());
+# ifdef IS_OPENVARIO
+    style.InitialOrientation(ovdevice.GetRotation());
+# else
+    style.InitialOrientation(Display::DetectInitialOrientation());
+# endif
+
 #endif
 
   MainWindow *const main_window = CommonInterface::main_window =
