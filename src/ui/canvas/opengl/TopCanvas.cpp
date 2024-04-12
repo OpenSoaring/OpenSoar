@@ -38,7 +38,14 @@ PixelSize
 TopCanvas::SetDisplayOrientation(DisplayOrientation orientation) noexcept
 {
   OpenGL::display_orientation = orientation;
+#if defined (IS_OPENVARIO) 
+  // Workaround: ask this one time .. and change it never
+  static const PixelSize _size(OpenGL::window_size.x,
+                                     OpenGL::window_size.y);
+  return SetupViewport(_size);
+#else
   return SetupViewport({OpenGL::window_size.x, OpenGL::window_size.y});
+#endif
 }
 
 #endif
