@@ -272,9 +272,6 @@ endif
 
 ifeq ($(TARGET_IS_KOBO),y)
 include $(topdir)/build/kobo.mk
-ifeq ($(USE_POLL_EVENT),y)
-include $(topdir)/build/ov.mk
-endif
 endif
 
 include $(topdir)/build/hot.mk
