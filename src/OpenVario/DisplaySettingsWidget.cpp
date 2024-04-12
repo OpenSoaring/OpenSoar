@@ -15,6 +15,7 @@
 #include "Look/DialogLook.hpp"
 #include "Profile/File.hpp"
 #include "Profile/Map.hpp"
+#include "Profile/Profile.hpp"
 #include "Screen/Layout.hpp"
 #include "UIGlobals.hpp"
 #include "UIActions.hpp"
@@ -24,6 +25,7 @@
 #include "ui/event/Timer.hpp"
 #include "ui/window/Init.hpp"
 #include "UtilsSettings.hpp"
+#include "LogFile.hpp"
 
 #include "Language/Language.hpp"
 
@@ -78,23 +80,16 @@ private:
   void OnModified(DataField &df) noexcept override;
   void RotateDisplay(DisplayOrientation orientation) noexcept;
 
-  unsigned brightness;
+  unsigned brightness = 0;
+  unsigned rotation = 0;
+
   ContainerWindow* parent;
 };
 
-void 
-DisplaySettingsWidget::RotateDisplay(
-    [[maybe_unused]] DisplayOrientation orientation) noexcept
-{
-
-  // ShowMessageBox(_T("Set Rotation"), _T("Rotation"), MB_OK);
-
-  // ovdevice.SetRotation(orientation);
-  
-  // UI::TopWindow::SetExitValue(EXIT_RESTART);
-  // UIActions::SignalShutdown(true);
+void DisplaySettingsWidget::RotateDisplay(
+    DisplayOrientation orientation) noexcept {
+  ovdevice.SetRotation(orientation, 1); // internal rotation only
 }
-
 
 void
 DisplaySettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
@@ -115,6 +110,10 @@ DisplaySettingsWidget::Prepare([[maybe_unused]] ContainerWindow &_parent,
 {
   parent = &_parent;
   brightness = ovdevice.brightness * 10;
+  ovdevice.rotation = ovdevice.GetRotation();
+  rotation = (unsigned)ovdevice.rotation;
+
+  LogFmt("Rotation-Init {}", rotation);
 
   AddEnum(_("Rotation"), _("Rotation Display OpenVario"), rotation_list,
           (unsigned)ovdevice.rotation, this);
@@ -132,23 +131,26 @@ DisplaySettingsWidget::Prepare([[maybe_unused]] ContainerWindow &_parent,
 bool 
 DisplaySettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept {
   bool changed = false;
-  //  bool restart = false;
+  if (SaveValueEnum(ROTATION, ovdevice.rotation)) {
+    /* On OpenVario never use another orientation as DEFAULT, because we set 
+	 * the correct value directly in the config.uEnv */
+    Profile::Set(ProfileKeys::MapOrientation,
+                 (unsigned)DisplayOrientation::DEFAULT);
+    ovdevice.SetRotation(ovdevice.rotation, 6); // fbcon and config.uEnv
+    // Now no restart necessary!
+	// UI::TopWindow::SetExitValue(EXIT_NEWSTART);
+    // require_restart = 
+	  changed = true;
+  }
+
   if (SaveValueInteger(BRIGHTNESS, "Brightness", brightness)) {
     ovdevice.SetBrightness(brightness / 10);
     changed = true;
-  }
-  if (SaveValueEnum(ROTATION, ovdevice.rotation)) {
-    ovdevice.SetRotation(ovdevice.rotation, 4);
-    require_restart = changed = true;
-    UI::TopWindow::SetExitValue(EXIT_RESTART);
   }
 
   _changed = changed;
   return true;
 }
-
-
-
 
 bool 
 ShowDisplaySettingsWidget(ContainerWindow &parent,
