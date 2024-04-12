@@ -45,6 +45,7 @@
 #include "net/http/Features.hpp"
 #include "ui/window/SingleWindow.hpp"
 #include "UIActions.hpp"
+#include "LogFile.hpp"
 
 #include "Hardware/RotateDisplay.hpp"
 
@@ -466,35 +467,24 @@ void dlgConfigurationShowModal()
 
   dialog.FinishPreliminary(pager);
 
-  dialog.ShowModal();
+  auto modal_value = dialog.ShowModal();
 
   /* save page number for next time this dialog is opened */
   current_page = menu.GetCursor();
 
-  if (UI::TopWindow::GetExitValue() == EXIT_RESTART)
-    UIActions::SignalShutdown(true);
-
+  if (modal_value != mrOK) {
+    // check of restoring ?
+  } 
   if (dialog.GetChanged()) {
     Profile::Save();
     if (require_restart)
-#if defined(IS_OPENVARIO)
       if (ShowMessageBox(
               _("Changes to configuration saved.  Restart OpenSoar "
                 "is needed to apply changes. Do you want restart immediately?"),
               _T(""), MB_YESNO | MB_ICONQUESTION) == IDYES) {
-        UI::TopWindow::SetExitValue(EXIT_RESTART);
+        if (UI::TopWindow::GetExitValue() == 0)
+            UI::TopWindow::SetExitValue(EXIT_RESTART);
         UIActions::SignalShutdown(true);
-
-      /* OpenVario:
-        Rotation is stored in config.uEnv - and so you should use the default
-       * Rotation */
-        // Display::RotateRestore();
-        Display::Rotate(DisplayOrientation::DEFAULT);
       }
-#else
-      ShowMessageBox(_("Changes to configuration saved.  Restart XCSoar to "
-                        "apply changes."),
-                      _T(""), MB_OK);
-#endif
   }
 }
