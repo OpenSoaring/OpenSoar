@@ -30,6 +30,8 @@
 #include "Screen/Layout.hpp"
 #endif
 
+#include "LogFile.hpp"
+
 namespace UI {
 
 TopWindow::~TopWindow() noexcept
@@ -84,6 +86,7 @@ TopWindow::SetDisplayOrientation(DisplayOrientation orientation) noexcept
   assert(screen != nullptr);
 
   Resize(screen->SetDisplayOrientation(orientation));
+  LogFmt("TopWindow::SetDisplayOrientation ({})", (unsigned) orientation);
 }
 
 #endif
