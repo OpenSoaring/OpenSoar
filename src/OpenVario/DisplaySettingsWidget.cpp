@@ -9,6 +9,7 @@
 #include "Form/DataField/Listener.hpp"
 #include "Form/DataField/Enum.hpp"
 #include "Form/DataField/Integer.hpp"
+#include "Form/DataField/Boolean.hpp"
 #include "Hardware/DisplayDPI.hpp"
 #include "Hardware/DisplayGlue.hpp"
 #include "Hardware/RotateDisplay.hpp"
@@ -52,6 +53,7 @@
 enum ControlIndex {
   ROTATION, 
   BRIGHTNESS,
+  TOUCH_SCREEN,
 
   TOUCH_CALIBRATION,
 
@@ -79,11 +81,13 @@ private:
   /* methods from DataFieldListener */
   void OnModified(DataField &df) noexcept override;
   void RotateDisplay(DisplayOrientation orientation) noexcept;
+  void SetEnabled(bool enabled) noexcept;
 
   unsigned brightness = 0;
   unsigned rotation = 0;
 
   ContainerWindow* parent;
+
 };
 
 void DisplaySettingsWidget::RotateDisplay(
@@ -91,8 +95,11 @@ void DisplaySettingsWidget::RotateDisplay(
   ovdevice.SetRotation(orientation, 1); // internal rotation only
 }
 
-void
-DisplaySettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
+void DisplaySettingsWidget::SetEnabled([[maybe_unused]] bool enabled) noexcept {
+  SetRowEnabled(TOUCH_CALIBRATION, enabled);
+}
+
+void DisplaySettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
 {
   if (IsDataField(ROTATION, df)) {
     RotateDisplay((DisplayOrientation)((const DataFieldEnum &)df).GetValue());
@@ -100,6 +107,8 @@ DisplaySettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
     auto new_brightness = ((const DataFieldInteger &)df).GetValue();
     if (new_brightness != brightness)
         ovdevice.SetBrightness(new_brightness / 10);
+  } else if (IsDataField(TOUCH_SCREEN, df)) {
+    SetEnabled(((const DataFieldBoolean &)df).GetValue());
   }
 }
 
@@ -121,11 +130,14 @@ DisplaySettingsWidget::Prepare([[maybe_unused]] ContainerWindow &_parent,
   AddInteger(_("Brightness"), _("Brightness Display OpenVario"), _T("%d%%"),
              _T("%d%%"), 10, 100, 10, brightness, this);
 
-  AddButton(_("Calibrate Touch"), [this]() {
+  AddBoolean(_("Touch enabled"), _("Enabling the tTouch Screen"), ovdevice.touch, this);
+
+  auto touchBtn = AddButton(_("Calibrate Touch"), [this]() {
     ContainerWindow::SetExitValue(LAUNCH_TOUCH_CALIBRATE);
     UIActions::SignalShutdown(true);
     return mrOK;
   });  
+  touchBtn->SetEnabled(ovdevice.touch);
 }
 
 bool 
@@ -140,7 +152,7 @@ DisplaySettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept {
     // Now no restart necessary!
 	// UI::TopWindow::SetExitValue(EXIT_NEWSTART);
     // require_restart = 
-	  changed = true;
+    changed = true;
   }
 
   if (SaveValueInteger(BRIGHTNESS, "Brightness", brightness)) {
@@ -148,6 +160,7 @@ DisplaySettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept {
     changed = true;
   }
 
+  changed |= SaveValue(TOUCH_SCREEN, "TouchScreen", ovdevice.touch, false);
   _changed = changed;
   return true;
 }
