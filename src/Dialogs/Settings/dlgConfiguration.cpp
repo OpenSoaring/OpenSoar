@@ -91,7 +91,7 @@ static ArrowPagerWidget *pager;
 
 static constexpr TabMenuPage basic_pages[] = {
   { N_("Site Files"), CreateSiteConfigPanel },
-#ifdef IS_OPENVARIO
+#if defined(IS_OPENVARIO) && 0  // defined (__AUGUST__)
   { N_("TestOpenVario"), CreateSystemMenuWidget},
 #endif
   { nullptr, nullptr }
@@ -165,8 +165,10 @@ static constexpr TabMenuPage openvario_pages[] = {
     {N_("System Settings"), CreateSystemSettingsWidget},
     {N_("Display Settings"), CreateDisplaySettingsWidget},
     {N_("File Transfer"), CreateFileMenuWidget},
+#if 1
+    // remove with better FW-Upgrade
     {N_("Advanced Menu (temp)"), CreateExtraWidget},
-    // {N_("Advanced Settings (temp)"), CreateSystemMenuWidget},
+#endif
   { nullptr, nullptr }
 };
 #endif
