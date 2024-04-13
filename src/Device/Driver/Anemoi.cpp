@@ -94,9 +94,11 @@ private:
   static bool ParseWind(const std::byte *data, struct NMEAInfo &info);
   static bool ParseData(const std::byte *data, struct NMEAInfo &info);
 
+  bool active;
+  ~AnemoiDevice() { active = false; }
 
 public:
-  AnemoiDevice([[maybe_unused]] Port &_port) {}
+  AnemoiDevice([[maybe_unused]] Port &_port) : active(true) {}
   // port is unused: AnemoiDevice(Port &_port) : port(_port) {}
   
   /* virtual methods from class Device */
@@ -109,8 +111,9 @@ AnemoiDevice::DataReceived(std::span<const std::byte> s,
                                   struct NMEAInfo &info) noexcept
 {
     assert(!s.empty());
-
-    const auto *data = s.data();
+  if (!active)
+    return false;
+  const auto *data = s.data();
     const auto *const end = data + s.size();
     do {
       // Append new data to the buffer, as much as fits in there
@@ -131,6 +134,8 @@ AnemoiDevice::DataReceived(std::span<const std::byte> s,
 
       for (;;) {
       // Read data from buffer to handle the messages
+        if (!active)
+          return false;
         range = rx_buf.Read();
         if (range.empty())
           break;
@@ -139,6 +144,8 @@ AnemoiDevice::DataReceived(std::span<const std::byte> s,
           break;
 
         expected_msg_length = ExpectedMsgLength(range.data(), range.size());
+        if (!active)
+          return false;
         if (range.size() >= expected_msg_length) {
           switch (*(const std::byte *)range.data()) {
           case StartByte: // Startbyte
