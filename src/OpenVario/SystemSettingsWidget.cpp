@@ -68,6 +68,8 @@ private:
   void OnModified(DataField &df) noexcept override;
 };
 #endif
+
+#ifdef OPENVARIOBASEMENU
   static constexpr StaticEnumChoice timeout_list[] = {
     { 0,  _T("immediately"), },
     { 1,  _T("1s"), },
@@ -79,6 +81,7 @@ private:
     { -1, _T("never"), },
     nullptr
   };
+#endif
 
   static constexpr StaticEnumChoice enable_list[] = {
     { SSHStatus::ENABLED,   _T("enabled"), },
@@ -92,7 +95,9 @@ SystemSettingsWidget::SetEnabled([[maybe_unused]] bool enabled) noexcept
 {
   // this disabled itself: SetRowEnabled(ENABLED, enabled);
   // SetRowEnabled(BRIGHTNESS, enabled);
+#ifdef OPENVARIOBASEMENU
   SetRowEnabled(TIMEOUT, enabled);
+#endif
 }
 
 void
@@ -132,13 +137,18 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
    AddEnum(_("SSH"), _("Enable the SSH Connection"), enable_list,
            ovdevice.ssh);
 
+#ifdef OPENVARIOBASEMENU
    AddEnum(_("Program Timeout"), _("Timeout for Program Start."), timeout_list, ovdevice.timeout);
+#else
+   AddDummy();  // Placeholder for enum enumeration
+#endif
 
-   AddButton(
+   auto btnWifi = AddButton(
        _T("Settings Wifi"), [this]() { 
          ShowWifiDialog();
      });
-   
+   btnWifi->SetEnabled(true);  // dependend on availability? Missing: 
+
    AddButton(_("Calibrate Sensors"), CalibrateSensors);
 
 
@@ -169,11 +179,13 @@ SystemSettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept
     changed = true;
   }
 
+#ifdef OPENVARIOBASEMENU
   if (SaveValueEnum(TIMEOUT, "Timeout", ovdevice.timeout)) {
     ovdevice.settings.insert_or_assign("Timeout",
       std::to_string(ovdevice.timeout));
     changed = true;
   }
+#endif
 
 #ifdef _DEBUG
   if (SaveValueInteger(INTEGERTEST, "iTest", ovdevice.iTest)) {
