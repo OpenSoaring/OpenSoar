@@ -41,7 +41,10 @@ InputEvents::eventSounds(const TCHAR *misc)
       settings.vario.volume = 1;  // don't switch to off!
     // settings.vario.enabled = false;
   } else if (StringIsEqual(misc, _T("louder"))) {
-    settings.vario.volume = settings.vario.volume * 2;
+    if (settings.vario.volume > 0)
+      settings.vario.volume *= 2;
+    else
+      settings.vario.volume = 2;
     if (settings.vario.volume > 100) // settings.vario.max_volume)
       settings.vario.volume = 100;
     // settings.vario.enabled = false;
