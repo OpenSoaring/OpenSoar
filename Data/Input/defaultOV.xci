@@ -1284,7 +1284,7 @@ data=0
 event=QuickMenu 57
 event=Mode default
 event=Sounds quieter
-label=Vario Audio Quieter
+label=Vario Audio Quieter$(CheckAudioQuiet)
 location=57
 
 mode=RemoteStick
@@ -1293,7 +1293,7 @@ data=0
 event=QuickMenu 58
 event=Mode default
 event=Sounds toggle
-label=Vario Audio On/Off
+label=Vario Audio\n$(AudioOnOff)
 location=58
 
 mode=RemoteStick
@@ -1302,7 +1302,7 @@ data=0
 event=QuickMenu 59
 event=Mode default
 event=Sounds louder
-label=Vario Audio Louder
+label=Vario Audio Louder$(CheckAudioLoud)
 location=59
 
 mode=RemoteStick
@@ -1348,21 +1348,21 @@ mode=AudioMenu
 type=key
 data=DOWN
 event=Sounds quieter
-label=VOLUME- (DOWN)
+label=VOLUME- (DOWN)$(CheckAudioQuiet)
 location=1
 
 mode=AudioMenu
 type=key
 data=RETURN
 event=Sounds toggle
-label=VOLUME ON/OFF (ENTER)
+label=VOLUME $(AudioOnOff)\n(ENTER)
 location=2
 
 mode=AudioMenu
 type=key
 data=UP
 event=Sounds louder
-label=VOLUME+ (UP)
+label=VOLUME+ (UP)$(CheckAudioLoud)
 location=3
 
 mode=AudioMenu

@@ -260,6 +260,8 @@ LookupMacro(tstring_view name, bool &invalid) noexcept
   if (value != nullptr)
     return value;
 
+  auto vario_sound = CommonInterface::SetUISettings().sound.vario;
+
   if (name ==_T("CheckFLARM")) {
     invalid |= !Basic().flarm.status.available;
     return nullptr;
@@ -290,6 +292,17 @@ LookupMacro(tstring_view name, bool &invalid) noexcept
     return nullptr;
   } else if (name == _T("CheckTerrain")) {
     invalid |= !Calculated().terrain_valid;
+    return nullptr;
+  } else if (name == _T("AudioOnOff")) {
+    StaticString<10> s; 
+    s.Format(_T("(%u/7)"),
+             vario_sound.volume > 0 ? 1 + (unsigned)log2(vario_sound.volume) : 0);
+    return vario_sound.enabled ? s.c_str() : _T("-");
+  } else if (name == _T("CheckAudioQuiet")) {
+    invalid |= !vario_sound.enabled || vario_sound.volume <= 1;
+    return nullptr;
+  } else if (name == _T("CheckAudioLoud")) {
+    invalid |= !vario_sound.enabled || vario_sound.volume >= 100;
     return nullptr;
   } else if (name == _T("LoggerActive")) {
     return backend_components->igc_logger != nullptr &&
