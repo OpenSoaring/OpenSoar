@@ -89,6 +89,7 @@ public:
 
   struct {
     bool enabled = true;
+    bool touch = false;
     unsigned brightness = 100;
     unsigned timeout = 5;
     DisplayOrientation rotation = DisplayOrientation::DEFAULT;

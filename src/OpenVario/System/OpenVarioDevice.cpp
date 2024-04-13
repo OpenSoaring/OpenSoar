@@ -165,6 +165,7 @@ void OpenVario_Device::ReadSettings() noexcept {
 #endif
 
   ReadBool(settings, "Enabled", enabled);
+  ReadBool(settings, "TouchScreen", touch);
 #ifdef _DEBUG
   ReadInteger(settings, "iTest", iTest);
 #endif
