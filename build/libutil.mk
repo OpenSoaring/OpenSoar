@@ -18,11 +18,10 @@ UTIL_SOURCES = \
 	$(UTIL_SRC_DIR)/StringStrip.cxx \
 	$(UTIL_SRC_DIR)/StringUtil.cpp
 
-
 ifeq ($(HAVE_MSVCRT),y)
 UTIL_SOURCES += \
 	$(UTIL_SRC_DIR)/UTF8Win.cpp \
-    \
+	\
 	$(UTIL_SRC_DIR)/WASCII.cxx \
 	$(UTIL_SRC_DIR)/WStringCompare.cpp \
 	$(UTIL_SRC_DIR)/WStringStrip.cxx \
