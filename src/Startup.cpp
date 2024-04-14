@@ -569,6 +569,9 @@ Startup(UI::Display &display)
     backend_components->nmea_logger->Enable();
 
   LogString("ProgramStarted");
+#if defined(IS_OPENVARIO)
+  LogFormat("LogFileTemp: " , LocalPath(ovdevice.GetExeName().generic_string().c_str()).c_str());
+#endif
 
   // Give focus to the map
   main_window->SetDefaultFocus();
