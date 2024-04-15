@@ -160,22 +160,17 @@ set(_SOURCES
 
 if(ON)  # IS_OPENVARIO
   list(APPEND _SOURCES
-        ../OpenVario/System/OpenVarioDevice.cpp
         ../OpenVario/FileMenuWidget.cpp
+        ../OpenVario/DisplaySettingsWidget.cpp
+        ../OpenVario/SystemSettingsWidget.cpp
 
+        ../OpenVario/System/OpenVarioDevice.cpp
         ../OpenVario/System/SystemMenuWidget.cpp
-        ../OpenVario/System/SystemSettingsWidget.cpp
-        ../OpenVario/System/Setting/RotationWidget.cpp 
-        # OpenVario/System/Setting/BrightnessWidget.cpp 
-        # OpenVario/System/Setting/TimeoutWidget.cpp 
-        # OpenVario/System/Setting/SSHWidget.cpp
-        # OpenVario/System/Setting/VariodWidget.cpp
-        # OpenVario/System/Setting/SensordWidget.cpp
 
+        ../OpenVario/System/Setting/RotationWidget.cpp 
         ../OpenVario/System/WifiDialogOV.cpp 
         ../OpenVario/System/WifiSupplicantOV.cpp 
         
-        Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp
   )
 endif() 
 

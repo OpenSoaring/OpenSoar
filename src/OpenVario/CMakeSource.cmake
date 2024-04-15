@@ -2,19 +2,19 @@ set(TEST_SRC_DIR "${PROJECTGROUP_SOURCE_DIR}/test/src")
 
 set(_SOURCES
         OpenVario/OpenVarioBaseMenu.cpp
+        OpenVario/FileMenuWidget.cpp
+        OpenVario/DisplaySettingsWidget.cpp
+        OpenVario/SystemSettingsWidget.cpp
 
         OpenVario/System/OpenVarioDevice.cpp
-        OpenVario/FileMenuWidget.cpp
 
         OpenVario/System/SystemMenuWidget.cpp
-        OpenVario/System/SystemSettingsWidget.cpp
         OpenVario/System/Setting/RotationWidget.cpp 
         OpenVario/System/Setting/WifiWidget.cpp
 
         OpenVario/System/WifiDialogOV.cpp 
         OpenVario/System/WifiSupplicantOV.cpp 
 
-        ${SRC}/Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp
 
         ${SRC}/Version.cpp
        	${SRC}/Asset.cpp
