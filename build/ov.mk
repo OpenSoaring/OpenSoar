@@ -175,25 +175,20 @@ DIALOG_SOURCES += \
 ##	$(SRC)/Weather/NOAAUpdater.cpp
 ## endif
 
-## ifeq ($(TARGET_IS_OPENVARIO),y)
-## DIALOG_SOURCES += \
-## 	$(SRC)/Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp
-## endif
-
 OV_MENU_SOURCES = \
 	$(DIALOG_SOURCES) \
 	$(SRC)/OpenVario/OpenVarioBaseMenu.cpp \
 	$(SRC)/OpenVario/System/OpenVarioDevice.cpp \
 	$(SRC)/OpenVario/FileMenuWidget.cpp \
 	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
-	$(SRC)/OpenVario/System/SystemSettingsWidget.cpp \
+	$(SRC)/OpenVario/DisplaySettingsWidget.cpp \
 	$(SRC)/OpenVario/System/Setting/RotationWidget.cpp \
 	$(SRC)/OpenVario/System/Setting/WifiWidget.cpp \
 	\
 	$(SRC)/OpenVario/System/WifiDialogOV.cpp \
 	$(SRC)/OpenVario/System/WifiSupplicantOV.cpp \
 	\
-	$(SRC)/Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp \
+	$(SRC)/OpenVario/SystemSettingsWidget.cpp \
 	\
 	$(SRC)/Version.cpp \
 	$(SRC)/Asset.cpp \
