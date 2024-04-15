@@ -187,6 +187,7 @@ OV_MENU_SOURCES = \
 	\
 	$(SRC)/OpenVario/System/WifiDialogOV.cpp \
 	$(SRC)/OpenVario/System/WifiSupplicantOV.cpp \
+	$(SRC)/OpenVario/System/WifiDBus.cpp \
 	\
 	$(SRC)/OpenVario/SystemSettingsWidget.cpp \
 	\
