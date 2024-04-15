@@ -12,9 +12,9 @@ set(_SOURCES
         OpenVario/System/Setting/RotationWidget.cpp 
         OpenVario/System/Setting/WifiWidget.cpp
 
-        OpenVario/System/WifiDialogOV.cpp 
-        OpenVario/System/WifiSupplicantOV.cpp 
-
+        OpenVario/System/WifiDialogOV.cpp
+        OpenVario/System/WifiSupplicantOV.cpp
+        OpenVario/System/WifiDBus.cpp
 
         ${SRC}/Version.cpp
        	${SRC}/Asset.cpp
