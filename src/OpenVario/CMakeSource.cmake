@@ -103,6 +103,9 @@ list(APPEND _SOURCES
         ${SRC}/Interface.cpp
         ${SRC}/Blackboard/InterfaceBlackboard.cpp
 
+        # ${SRC}/Operation/ConsoleOperationEnvironment.cpp
+        ${SRC}/Operation/Operation.cpp
+
 ##        ${SRC}/MainWindow.cpp
 )
 set(SCRIPT_FILES
