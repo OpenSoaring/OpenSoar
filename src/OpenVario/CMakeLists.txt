@@ -44,7 +44,9 @@ add_compile_definitions("OPENVARIO_DEVICE")
 add_compile_definitions("IS_OPENVARIO")
 
 # add_compile_definitions("USE_LIBINPUT")
-# remeve this definition after  
+# remove this definition after ???
+
+add_compile_definitions("OPENVARIO_BASEMENU")
 
 if(MSVC)
   SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECTGROUP_BINARY_DIR}")
