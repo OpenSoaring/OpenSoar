@@ -49,5 +49,11 @@ target_link_libraries(${TARGET_NAME} PUBLIC Logger)
  # message(FATAL_ERROR "Stop!")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER OpenVario)
 
-target_link_libraries(${TARGET_NAME} PUBLIC Dialogs Math Language ${XCSOAR_LINK_LIBRARIES})
+target_link_libraries(${TARGET_NAME} PUBLIC Dialogs Math Language Profile  net co Blackboard util system io Look Widget Renderer
+   gdiplus 
+   ${FMT_LIB} ${CURL_TARGET} ${CARES_TARGET} ${ZLIB_TARGET}
+   ${SODIUM_TARGET}  # new at 06/2020
+   ${SSL_LIB}  # new at 03/2021
+   ${CRYPTO_LIB}  # new at 03/2021
+)
 add_dependencies(${TARGET_NAME} util Data)

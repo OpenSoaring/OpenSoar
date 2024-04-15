@@ -4,6 +4,35 @@ set(_SOURCES
         OpenVario/System/SystemMenuWidget.cpp
         OpenVario/System/SystemSettingsWidget.cpp
         OpenVario/FileMenuWidget.cpp
+
+        ${SRC}/Version.cpp
+       	${SRC}/Asset.cpp
+        ${SRC}/Formatter/HexColor.cpp
+        ${SRC}/Formatter/TimeFormatter.cpp
+        ${SRC}/Hardware/CPU.cpp
+        ${SRC}/Hardware/DisplayDPI.cpp
+        ${SRC}/Hardware/RotateDisplay.cpp
+        ${SRC}/Hardware/DisplayGlue.cpp
+        ${SRC}/Screen/Layout.cpp
+        ${SRC}/ui/control/TerminalWindow.cpp
+        ${SRC}/Look/TerminalLook.cpp
+        ${SRC}/Look/DialogLook.cpp
+        ${SRC}/Look/ButtonLook.cpp
+        ${SRC}/Look/CheckBoxLook.cpp
+        ${SRC}/Renderer/TwoTextRowsRenderer.cpp
+        ${SRC}/Gauge/LogoView.cpp
+        ${SRC}/Dialogs/DialogSettings.cpp
+        ${SRC}/Dialogs/WidgetDialog.cpp
+        ${SRC}/Dialogs/HelpDialog.cpp
+        ${SRC}/Dialogs/Message.cpp
+        ${SRC}/Dialogs/LockScreen.cpp
+        ${SRC}/Dialogs/TextEntry.cpp
+        ${SRC}/Dialogs/KnobTextEntry.cpp
+        ${SRC}/Dialogs/TouchTextEntry.cpp
+        ${SRC}/Profile/Map.cpp
+        ${SRC}/Profile/File.cpp
+        ${SRC}/Profile/NumericValue.cpp
+
 )
 
 set(SCRIPT_FILES
