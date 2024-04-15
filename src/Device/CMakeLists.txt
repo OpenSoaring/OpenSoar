@@ -8,6 +8,11 @@ endif()
 include(CMakeSource.cmake)
 # organize the files in subdirectories
 
+if(MSVC)
+  # in device driver could be found characters f.e. fro german codepage
+  # (f.e. VOLKSLOGGER) - surpress this warnings:
+  add_compile_options(/wd4828)  #  "|": unsichere Kombination von Typ "bool" mit Typ "int" in einer Operation
+endif()
 
 set(SOURCE_FILES )
 foreach(source_file ${_SOURCES})
