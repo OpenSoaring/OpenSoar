@@ -9,6 +9,8 @@ set(_SOURCES
         OpenVario/System/SystemMenuWidget.cpp
         OpenVario/System/SystemSettingsWidget.cpp
 
+        OpenVario/WifiDialogOV.cpp 
+
         ${SRC}/Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp
 
         ${SRC}/Version.cpp
