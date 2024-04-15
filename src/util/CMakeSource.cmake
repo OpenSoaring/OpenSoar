@@ -22,6 +22,8 @@ if(WIN32)
         util/WStringCompare.cxx
         util/WStringStrip.cxx
         util/WStringUtil.cpp
+
+        util/UTF8Win.cpp
   )
 endif()
 
