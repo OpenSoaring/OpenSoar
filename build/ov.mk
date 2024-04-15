@@ -1,3 +1,13 @@
+CONFIG = $(topdir)/OpenSoar.config
+include $(CONFIG)
+
+# w/o VERSION.txt:
+ifeq ($(PROGRAM_VERSION),"")
+    # take the version from XCSoar VERSION.txt
+    PROGRAM_VERSION = $(strip $(shell cat $(topdir)/VERSION.txt))
+endif
+EXTRA_CPPFLAGS+= -DPROGRAM_VERSION=\"$(PROGRAM_VERSION)\" 
+
 EXTRA_CPPFLAGS+=-DIS_OPENVARIO
 
 DIALOG_SOURCES = \
@@ -185,8 +195,10 @@ OV_MENU_SOURCES = \
 	$(SRC)/OpenVario/System/Setting/SensordWidget.cpp \
 	$(SRC)/OpenVario/System/Setting/WifiWidget.cpp \
 	\
-    $(SRC)/Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp \
-    \
+	$(SRC)/OpenVario/WifiDialogOV.cpp \
+	\
+	$(SRC)/Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp \
+	\
 	$(SRC)/Version.cpp \
 	$(SRC)/Asset.cpp \
 	$(SRC)/Formatter/HexColor.cpp \
