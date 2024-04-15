@@ -13,7 +13,6 @@ on:
       - '.github/workflows/build-unix.yml'
     branches:
       - master
-      - dev-branch
 
   pull_request:
     paths-ignore:
@@ -27,7 +26,6 @@ on:
       - '.github/workflows/build-unix.yml'
     branches:
       - master
-      - dev-branch
 
 env:
   DEBUG: y
@@ -39,8 +37,8 @@ jobs:
 
     env:
       TARGET: UNIX
-      TARGET_BIN: opensoar
-      TARGET_FINAL: opensoar-debug
+      TARGET_BIN: xcsoar
+      TARGET_FINAL: xcsoar-debug
       TARGET_EXT: ''
 
     steps:
@@ -48,9 +46,9 @@ jobs:
         if: github.event_name == 'push'
         run: |
           echo "DEBUG=n" >> $GITHUB_ENV
-          echo "TARGET_FINAL=OpenSoar" >> $GITHUB_ENV
+          echo "TARGET_FINAL=xcsoar" >> $GITHUB_ENV
       - id: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - id: cache-ccache
@@ -59,7 +57,7 @@ jobs:
           key: ${{ env.TARGET }}
 
       - name: "Cache Boost"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{ env.BOOST }}-${{ hashFiles('lib/boost/patches/**') }}
           path: |
@@ -96,19 +94,19 @@ jobs:
             libasound2-dev \
             libgles2-mesa-dev libegl1-mesa-dev
 
-      - name: Compile OpenSoar
+      - name: Compile XCSoar
         run: |
           make -j$(nproc) TARGET=${{env.TARGET }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 everything check
 
       - name: upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.TARGET_FINAL }}-${{ env.git_hash }}${{ env.TARGET_EXT }}
           path: output/${{ env.TARGET }}/bin/${{ env.TARGET_BIN }}${{ env.TARGET_EXT }}
 
       - name: Deploy to Staging server
         if: |
-          github.repository == 'OpenSoaring/OpenSoar' &&
+          github.repository == 'XCSoar/XCSoar' &&
           github.ref == 'ref/head/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
@@ -131,7 +129,7 @@ jobs:
 
     steps:
       - id: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - id: cache-ccache
@@ -143,7 +141,7 @@ jobs:
           echo "git_hash=$(git rev-parse --short $GITHUB_SHA)" >> $GITHUB_ENV
 
       - name: "Cache Boost"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{ env.BOOST }}-${{ hashFiles('lib/boost/patches/**') }}
           path: |
@@ -175,7 +173,7 @@ jobs:
             libxml-parser-perl \
             libasound2-dev
 
-      - name: Compile OpenSoar
+      - name: Compile XCSoar
         run: |
           make -j$(nproc) TARGET=${{env.TARGET }} DEBUG=${{ env.DEBUG }} VFB=y SANITIZE=y DEBUG_GLIBCXX=y USE_CCACHE=y V=2 everything check
 
@@ -195,7 +193,7 @@ jobs:
           echo "DEBUG=n" >> $GITHUB_ENV
 
       - id: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -205,7 +203,7 @@ jobs:
           key: ${{ env.TARGET }}
 
       - name: "Cache Boost"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{ env.BOOST }}-${{ hashFiles('lib/boost/patches/**') }}
           path: |
@@ -214,7 +212,7 @@ jobs:
             ${{ github.workspace }}/output/src/${{ env.BOOST }}/boost
 
       - name: "Cache third-party libraries"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{ runner.os }}-libs-${{ env.TARGET }}-${{ hashFiles('build/**') }}
           path: |
@@ -241,7 +239,7 @@ jobs:
             cmake meson ninja-build \
             ttf-bitstream-vera
 
-      - name: Compile OpenSoar
+      - name: Compile XCSoar
         run: |
           make -j$(nproc) \
             TARGET=${{env.TARGET}} \
@@ -251,14 +249,14 @@ jobs:
             output/${{env.TARGET}}/${{ env.TARGET_BIN }}.${{ env.TARGET_EXT }}
 
       - name: upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.TARGET_FINAL }}-${{ env.git_hash }}.${{ env.TARGET_EXT }}
           path: output/${{env.TARGET}}/${{ env.TARGET_BIN }}.${{ env.TARGET_EXT }}
 
       - name: Deploy to Staging server
         if: |
-          github.repository == 'OpenSoaring/OpenSoar' &&
+          github.repository == 'XCSoar/XCSoar' &&
           github.ref == 'ref/head/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
@@ -275,20 +273,20 @@ jobs:
 
     env:
       TARGET: ANDROIDFAT
-      TARGET_BIN: OpenSoar-debug
-      TARGET_FINAL: OpenSoar-debug
+      TARGET_BIN: XCSoar-debug
+      TARGET_FINAL: XCSoar-debug
       TARGET_EXT: apk
-      NDK: r26b
+      NDK: r26c
 
     steps:
       - name: set vars for push
         if: github.event_name == 'push'
         run: |
           echo "DEBUG=n" >> $GITHUB_ENV
-          echo "TARGET_FINAL=OpenSoar" >> $GITHUB_ENV
+          echo "TARGET_FINAL=XCSoar" >> $GITHUB_ENV
 
       - id: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -298,7 +296,7 @@ jobs:
           key: ${{ env.TARGET }}
 
       - name: "Cache Boost"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{ env.BOOST }}-${{ hashFiles('lib/boost/patches/**') }}
           path: |
@@ -307,7 +305,7 @@ jobs:
             ${{ github.workspace }}/output/src/${{ env.BOOST }}/boost
 
       - name: "Cache third-party libraries"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{ runner.os }}-libs-${{ env.TARGET }}-${{ hashFiles('build/**') }}
           path: |
@@ -340,7 +338,7 @@ jobs:
           rm android-ndk-${{env.NDK}}-linux.zip
           echo ANDROID_NDK_LATEST_HOME=$PWD/android-ndk-${{env.NDK}} >> $GITHUB_ENV
 
-      - name: Compile OpenSoar
+      - name: Compile XCSoar
         run: |
           make -j$(nproc) \
             TARGET=${{env.TARGET}} \
@@ -351,14 +349,14 @@ jobs:
             V=2
 
       - name: upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.TARGET_FINAL }}-${{ env.git_hash }}.${{ env.TARGET_EXT }}
           path: output/ANDROID/bin/${{ env.TARGET_BIN }}.${{ env.TARGET_EXT }}
 
       - name: Deploy to Staging server
         if: |
-          github.repository == 'OpenSoaring/OpenSoar' &&
+          github.repository == 'XCSoar/XCSoar' &&
           github.ref == 'ref/head/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
@@ -372,11 +370,13 @@ jobs:
 
   build-windows:
     runs-on: ubuntu-22.04
+    container:
+      image: debian:bookworm-slim
 
     env:
       TARGET: WIN64
-      TARGET_BIN: OpenSoar
-      TARGET_FINAL: OpenSoar-debug
+      TARGET_BIN: XCSoar
+      TARGET_FINAL: XCSoar-debug
       TARGET_EXT: .exe
 
     steps:
@@ -384,11 +384,31 @@ jobs:
         if: github.event_name == 'push'
         run: |
           echo "DEBUG=n" >> $GITHUB_ENV
-          echo "TARGET_FINAL=OpenSoar" >> $GITHUB_ENV
+          echo "TARGET_FINAL=XCSoar" >> $GITHUB_ENV
+
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            git \
+            quilt \
+            make \
+            g++ \
+            g++-mingw-w64 \
+            ccache \
+            xz-utils \
+            pkgconf \
+            ca-certificates \
+            python3 \
+            librsvg2-bin xsltproc \
+            imagemagick gettext sox \
+            cmake ninja-build
+
       - id: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
+
       - id: cache-ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
@@ -404,7 +424,7 @@ jobs:
             ${{ github.workspace }}/output/src/${{ env.BOOST }}/boost
 
       - name: "Cache third-party libraries"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{ runner.os }}-libs-${{ env.TARGET }}-${{ hashFiles('build/**') }}
           path: |
@@ -415,33 +435,23 @@ jobs:
         run: |
           echo "git_hash=$(git rev-parse --short $GITHUB_SHA)" >> $GITHUB_ENV
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            make \
-            quilt \
-            g++ \
-            g++-mingw-w64 \
-            python3 \
-            librsvg2-bin xsltproc \
-            imagemagick gettext sox \
-            cmake ninja-build
+      - name: Patch mingw intrin.h (mingw64 v8 bug workaround)
+        run: sed -i -e '/extern.* __builtin/d' /usr/share/mingw-w64/include/intrin.h
 
-      - name: Compile OpenSoar
+      - name: Compile XCSoar
         run: |
           make -j$(nproc) TARGET=${{env.TARGET }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 everything
 
       - name: upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.TARGET_FINAL }}-${{ env.git_hash }}${{ env.TARGET_EXT }}
           path: output/${{ env.TARGET }}/bin/${{ env.TARGET_BIN }}${{ env.TARGET_EXT }}
 
       - name: store checks and compile artefacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: opensoar-${{ env.TARGET }}-artifact
+          name: xcsoar-${{ env.TARGET }}-artifact
           path: |
             ${{ github.workspace }}/output/${{ env.TARGET }}
             !${{ github.workspace }}/output/${{ env.TARGET }}/lib/build
@@ -450,7 +460,7 @@ jobs:
 
       - name: Deploy to Staging server
         if: |
-          github.repository == 'OpenSoaring/OpenSoar' &&
+          github.repository == 'XCSoar/XCSoar' &&
           github.ref == 'ref/head/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
@@ -471,13 +481,13 @@ jobs:
     needs: build-windows
     steps:
       - id: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: fetch artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: opensoar-${{ env.TARGET }}-artifact
+          name: xcsoar-${{ env.TARGET }}-artifact
           path: ${{ github.workspace }}/output/${{ env.TARGET }}
-      - name: OpenSoar run checks on ${{ env.TARGET }}
+      - name: XCSoar run checks on ${{ env.TARGET }}
         run: make check-no-build
         working-directory: ${{ github.workspace }}
 
@@ -489,7 +499,7 @@ jobs:
 
     steps:
       - id: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -524,13 +534,12 @@ jobs:
             curl \
             lua
 
-      - name: Compile OpenSoar
+      - name: Compile XCSoar
         # We use "-O0" instead of the default "-Og" to work around a
         # LLVM bug in Apple Xcode which crashes clang with "fatal
         # error: error in backend: Cannot select: intrinsic
         # %llvm.coro.size"
         run: |
-          clang --version &&
           gmake -j$(sysctl -n hw.logicalcpu) TARGET=${{env.TARGET }} USE_CCACHE=y \
             OPTIMIZE="-O0" \
             USE_HOMEBREW=y \
@@ -539,7 +548,7 @@ jobs:
 
       - name: Deploy to Staging server
         if: |
-          github.repository == 'OpenSoaring/OpenSoar' &&
+          github.repository == 'XCSoar/XCSoar' &&
           github.ref == 'ref/head/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
@@ -559,12 +568,12 @@ jobs:
 
     steps:
       - id: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
       - name: "Cache third-party libraries"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{ runner.os }}-libs-${{ env.TARGET }}-${{ hashFiles('build/**') }}
           path: |
@@ -595,7 +604,7 @@ jobs:
             imagemagick gettext sox \
             cmake ninja
 
-      - name: Compile OpenSoar
+      - name: Compile XCSoar
         # TODO: remove the "||true" as soon as the remaining SDL2
         # linker failure ("Undefined symbols: _SDL_IsIPad, _main") is
         # fixed.
@@ -606,7 +615,7 @@ jobs:
 
       - name: Deploy to Staging server
         if: |
-          github.repository == 'OpenSoaring/OpenSoar' &&
+          github.repository == 'XCSoar/XCSoar' &&
           github.ref == 'ref/head/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main

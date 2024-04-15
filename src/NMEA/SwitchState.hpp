@@ -12,13 +12,13 @@
  */
 struct SwitchState
 {
-  enum class FlightMode: uint8_t {
+  enum class FlightMode: uint_least8_t {
     UNKNOWN,
     CIRCLING,
     CRUISE,
   };
 
-  enum class FlapPosition : uint8_t {
+  enum class FlapPosition : uint_least8_t {
     UNKNOWN,
     POSITIVE,
     NEUTRAL,
@@ -26,14 +26,14 @@ struct SwitchState
     LANDING,
   };
 
-  enum class UserSwitch : uint8_t {
+  enum class UserSwitch : uint_least8_t {
     UNKNOWN,
     UP,
     MIDDLE,
     DOWN,
   };
 
-  enum class AirbrakeState : uint8_t {
+  enum class AirbrakeState : uint_least8_t {
     UNKNOWN,
     LOCKED,
     NOT_LOCKED,
@@ -46,7 +46,7 @@ struct SwitchState
 
   VegaSwitchState vega;
 
-  void Reset();
+  void Reset() noexcept;
 
-  void Complement(const SwitchState &add);
+  void Complement(const SwitchState &add) noexcept;
 };

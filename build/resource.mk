@@ -1,10 +1,6 @@
 include build/rsvg.mk
 include build/imagemagick.mk
 
-# TODO(August2111): what is with setting in main.mk?
-# PROGRAM_NAME = XCSoar
-# PROGRAM_NAME = OpenSoar
-
 USE_WIN32_RESOURCES = $(call bool_and,$(HAVE_WIN32),$(call bool_not,$(ENABLE_SDL)))
 
 ifeq ($(USE_WIN32_RESOURCES),y)
@@ -31,25 +27,32 @@ $(PNG_BITMAPS): $(DATA)/bitmaps/%.png: Data/bitmaps/%.bmp | $(DATA)/bitmaps/dirs
 
 SVG_ICONS = $(wildcard Data/icons/*.svg)
 SVG_NOALIAS_ICONS = $(patsubst Data/icons/%.svg,$(DATA)/icons/%.svg,$(SVG_ICONS))
-PNG_ICONS = $(patsubst Data/icons/%.svg,$(DATA)/icons/%.png,$(SVG_ICONS))
-BMP_ICONS = $(PNG_ICONS:.png=.bmp)
-PNG_ICONS_160 = $(patsubst Data/icons/%.svg,$(DATA)/icons/%_160.png,$(SVG_ICONS))
-BMP_ICONS_160 = $(PNG_ICONS_160:.png=.bmp)
+
+BMP_ICONS_ALL =
+
+define generate-icon-scale
+PNG_ICONS_$(1) = $$(patsubst Data/icons/%.svg,$$(DATA)/icons/%_$(1).png,$$(SVG_ICONS))
+BMP_ICONS_$(1) = $$(PNG_ICONS_$(1):.png=.bmp)
+BMP_ICONS_ALL += $$(BMP_ICONS_$(1))
+$$(eval $$(call rsvg-convert,$$(PNG_ICONS_$(1)),$$(DATA)/icons/%_$(1).png,$$(DATA)/icons/%.svg,--x-zoom=$2 --y-zoom=$2))
+endef
+
+# Default 100PPI (eg 320x240 4" display)
+$(eval $(call generate-icon-scale,96,1.0))
+
+#160PPI (eg 640x480 5" display)
+$(eval $(call generate-icon-scale,160,1.6316))
+
+# 300dpi
+$(eval $(call generate-icon-scale,300,3.0))
 
 # modify working copy of SVG to improve rendering
 $(SVG_NOALIAS_ICONS): $(DATA)/icons/%.svg: build/svg_preprocess.xsl Data/icons/%.svg | $(DATA)/icons/dirstamp
 	@$(NQ)echo "  XSLT    $@"
 	$(Q)xsltproc --nonet --stringparam DisableAA_Select "MASK_NOAA_" --output $@ $^
 
-# render from SVG to PNG
-# Default 100PPI (eg 320x240 4" display)
-$(eval $(call rsvg-convert,$(PNG_ICONS),$(DATA)/icons/%.png,$(DATA)/icons/%.svg,--width=13,height=13))
-
-#160PPI (eg 640x480 5" display)
-$(eval $(call rsvg-convert,$(PNG_ICONS_160),$(DATA)/icons/%_160.png,$(DATA)/icons/%.svg,--width=22,--height=22))
-
 # convert to uncompressed 8-bit BMP
-$(eval $(call convert-to-bmp,$(BMP_ICONS) $(BMP_ICONS_160),%.bmp,%_tile.png))
+$(eval $(call convert-to-bmp,$(BMP_ICONS_ALL),%.bmp,%_tile.png))
 
 ####### splash logo
 
@@ -79,24 +82,15 @@ $(ICNS_SPLASH_1024): %.icns: %.png
 
 ####### version
 
-SVG_TITLE = Data/graphics/title.svg 
-# Data/graphics/title_red.svg
-SVG_TMP_TITLE = $(DATA)/temp/graphics/title.svg $(DATA)/temp/graphics/title_red.svg
-# convert to title
-$(DATA)/temp/graphics/%.svg: $(SVG_TITLE) $(topdir)/OpenSoar.config
-	@$(NQ)echo "  TMP_SVG:   $< == $@"
-	$(Q)$(MKDIR) -p $(DATA)/temp/graphics
-	$(Q)$(MKDIR) -p $(OUT)/include
-	$(Q)python3 $(topdir)/tools/python/replace.py  $(topdir)/OpenSoar.config $< $@ $(OUT)/include/ProgramVersion.h
-
-PNG_TITLE_110 = $(patsubst $(DATA)/temp/graphics/%.svg,$(DATA)/graphics/%_110.png,$(SVG_TMP_TITLE))
+SVG_TITLE = Data/graphics/title.svg Data/graphics/title_red.svg
+PNG_TITLE_110 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_110.png,$(SVG_TITLE))
 BMP_TITLE_110 = $(PNG_TITLE_110:.png=.bmp)
-PNG_TITLE_320 = $(patsubst $(DATA)/temp/graphics/%.svg,$(DATA)/graphics/%_320.png,$(SVG_TMP_TITLE))
+PNG_TITLE_320 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_320.png,$(SVG_TITLE))
 BMP_TITLE_320 = $(PNG_TITLE_320:.png=.bmp)
 
 # render from SVG to PNG
-$(eval $(call rsvg-convert,$(PNG_TITLE_110),$(DATA)/graphics/%_110.png,$(DATA)/temp/graphics/%.svg,--width=110))
-$(eval $(call rsvg-convert,$(PNG_TITLE_320),$(DATA)/graphics/%_320.png,$(DATA)/temp/graphics/%.svg,--width=320))
+$(eval $(call rsvg-convert,$(PNG_TITLE_110),$(DATA)/graphics/%_110.png,Data/graphics/%.svg,--width=110))
+$(eval $(call rsvg-convert,$(PNG_TITLE_320),$(DATA)/graphics/%_320.png,Data/graphics/%.svg,--width=320))
 
 # convert to uncompressed 8-bit BMP
 $(eval $(call convert-to-bmp-white,$(BMP_TITLE_110) $(BMP_TITLE_320),%.bmp,%.png))
@@ -173,8 +167,7 @@ endif
 
 #######
 
-# TEXT_FILES = AUTHORS COPYING NEWS.txt
-TEXT_FILES = AUTHORS COPYING OpenSoar-News.md
+TEXT_FILES = AUTHORS COPYING NEWS.txt
 
 TEXT_COMPRESSED = $(patsubst %,$(DATA)/%.gz,$(TEXT_FILES))
 $(TEXT_COMPRESSED): $(DATA)/%.gz: % | $(DATA)/dirstamp
@@ -182,15 +175,18 @@ $(TEXT_COMPRESSED): $(DATA)/%.gz: % | $(DATA)/dirstamp
 	$(Q)gzip --best <$< >$@.tmp
 	$(Q)mv $@.tmp $@
 
-RESOURCE_FILES = $(TEXT_COMPRESSED)
+RESOURCE_FILES =
 
-ifeq ($(TARGET),ANDROID)
-RESOURCE_FILES += $(patsubst po/%.po,$(OUT)/po/%.mo,$(wildcard po/*.po))
-else
+$(TARGET_OUTPUT_DIR)/resources.txt: Data/resources.txt | $(TARGET_OUTPUT_DIR)/dirstamp $(BUILD_TOOLCHAIN_TARGET)
+	@$(NQ)echo "  CPP     $@"
+	$(Q)cat $< |$(CC) -E -o $@ -I$(OUT)/include $(TARGET_CPPFLAGS) $(OPENGL_CPPFLAGS) $(GDI_CPPFLAGS) -
 
-ifeq ($(TARGET_IS_KOBO),y)
-RESOURCE_FILES += $(patsubst po/%.po,$(OUT)/po/%.mo,$(wildcard po/*.po))
-endif
+$(TARGET_OUTPUT_DIR)/include/MakeResource.hpp: $(TARGET_OUTPUT_DIR)/resources.txt tools/GenerateMakeResource.pl | $(TARGET_OUTPUT_DIR)/include/dirstamp
+	@$(NQ)echo "  GEN     $@"
+	$(Q)$(PERL) tools/GenerateMakeResource.pl <$< >$@.tmp
+	$(Q)mv $@.tmp $@
+
+ifeq ($(TARGET_IS_ANDROID),n)
 
 ifeq ($(USE_WIN32_RESOURCES),y)
 RESOURCE_FILES += $(BMP_BITMAPS)
@@ -198,7 +194,7 @@ else
 RESOURCE_FILES += $(PNG_BITMAPS)
 endif
 
-RESOURCE_FILES += $(BMP_ICONS) $(BMP_ICONS_160) 
+RESOURCE_FILES += $(BMP_ICONS_ALL)
 RESOURCE_FILES += $(BMP_SPLASH_160) $(BMP_SPLASH_80)
 RESOURCE_FILES += $(BMP_DIALOG_TITLE) $(BMP_PROGRESS_BORDER)
 RESOURCE_FILES += $(BMP_TITLE_320) $(BMP_TITLE_110)
@@ -221,29 +217,40 @@ endif
 
 endif
 
-$(OUT)/include/resource.h: src/Resources.hpp | $(OUT)/include/dirstamp
-	@$(NQ)echo "  GEN     $@"
-	$(Q)$(PERL) -ne 'print "#define $$1 $$2\n" if /^MAKE_RESOURCE\((\w+), (\d+)\);/;' $< >$@.tmp
-	$(Q)mv $@.tmp $@
+ifeq ($(TARGET_IS_ANDROID),n)
 
 ifeq ($(USE_WIN32_RESOURCES),y)
 
-RESOURCE_TEXT = Data/$(PROGRAM_NAME).rc
-RESOURCE_BINARY = $(TARGET_OUTPUT_DIR)/$(notdir $(RESOURCE_TEXT:.rc=.rsc))
-RESOURCE_FILES += $(patsubst po/%.po,$(OUT)/po/%.mo,$(wildcard po/*.po))
-
-$(RESOURCE_BINARY): $(RESOURCE_TEXT) $(OUT)/include/resource.h $(RESOURCE_FILES) | $(TARGET_OUTPUT_DIR)/%/../dirstamp
-	@$(NQ)echo "  WINDRES $@"
-	$(Q)$(WINDRES) $(WINDRESFLAGS) -o $@ $<
-
-else
-
-$(TARGET_OUTPUT_DIR)/resources.c: $(TARGET_OUTPUT_DIR)/$(PROGRAM_NAME).rc $(OUT)/include/resource.h $(RESOURCE_FILES) tools/LinkResources.pl tools/BinToC.pm | $(TARGET_OUTPUT_DIR)/resources/dirstamp
+$(TARGET_OUTPUT_DIR)/XCSoar.rc: $(TARGET_OUTPUT_DIR)/resources.txt Data/XCSoar.rc tools/GenerateWindowsResources.pl
 	@$(NQ)echo "  GEN     $@"
-	$(Q)$(PERL) tools/LinkResources.pl $< $@
+	$(Q)cp Data/XCSoar.rc $@.tmp
+	$(Q)$(PERL) tools/GenerateWindowsResources.pl $< >>$@.tmp
+	$(Q)mv $@.tmp $@
+
+$(TARGET_OUTPUT_DIR)/include/resource.h: $(TARGET_OUTPUT_DIR)/include/MakeResource.hpp | $(OUT)/include/dirstamp
+	@$(NQ)echo "  GEN     $@"
+	$(Q)$(PERL) -ne 'print "#define $$1 $$2\n" if /^MAKE_RESOURCE\((\w+), \S+, (\d+)\);/;' $< >$@.tmp
+	$(Q)mv $@.tmp $@
+
+RESOURCE_BINARY = $(TARGET_OUTPUT_DIR)/XCSoar.rsc
+
+$(TARGET_OUTPUT_DIR)/XCSoar.rsc: %.rsc: %.rc $(TARGET_OUTPUT_DIR)/include/resource.h $(RESOURCE_FILES) | $(TARGET_OUTPUT_DIR)/%/../dirstamp $(BUILD_TOOLCHAIN_TARGET)
+	@$(NQ)echo "  WINDRES $@"
+	$(Q)$(WINDRES) $(WINDRESFLAGS) --include-dir output/data --include-dir Data -o $@ $<
+
+else # USE_WIN32_RESOURCES
+
+$(TARGET_OUTPUT_DIR)/resources.c: export TARGET_IS_ANDROID:=$(TARGET_IS_ANDROID)
+$(TARGET_OUTPUT_DIR)/resources.c: export ENABLE_OPENGL:=$(OPENGL)
+$(TARGET_OUTPUT_DIR)/resources.c: $(TARGET_OUTPUT_DIR)/resources.txt $(RESOURCE_FILES) tools/LinkResources.pl tools/BinToC.pm | $(TARGET_OUTPUT_DIR)/resources/dirstamp
+	@$(NQ)echo "  GEN     $@"
+	$(Q)$(PERL) tools/LinkResources.pl <$< >$@.tmp
+	$(Q)mv $@.tmp $@
 
 RESOURCES_SOURCES = $(TARGET_OUTPUT_DIR)/resources.c
 $(eval $(call link-library,resources,RESOURCES))
 RESOURCE_BINARY = $(RESOURCES_BIN)
 
 endif
+
+endif # !TARGET_IS_ANDROID

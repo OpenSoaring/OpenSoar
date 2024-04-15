@@ -107,9 +107,6 @@ public:
   TCHAR *Format(TCHAR *buffer, size_t max_size) const noexcept;
 
   [[gnu::pure]]
-  static RadioFrequency Parse(const TCHAR *p) noexcept;
-
-  [[gnu::pure]]
   static RadioFrequency Parse(std::string_view src) noexcept;
 
   [[gnu::pure]] 

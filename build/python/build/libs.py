@@ -11,9 +11,9 @@ from build.lua import LuaProject
 from .musl import MuslProject
 
 binutils = BinutilsProject(
-    ('https://ftp.gnu.org/gnu/binutils/binutils-2.41.tar.xz',
-     'https://fossies.org/linux/misc/binutils-2.41.tar.xz'),
-    'ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450',
+    ('https://ftp.gnu.org/gnu/binutils/binutils-2.42.tar.xz',
+     'https://fossies.org/linux/misc/binutils-2.42.tar.xz'),
+    'f6e4d41fd5fc778b06b7891457b3620da5ecea1006c6a4a41ae998109f85a800',
     'bin/as',
     [
         '--with-system-zlib',
@@ -92,9 +92,9 @@ musl = MuslProject(
 )
 
 openssl = OpenSSLProject(
-    ('https://www.openssl.org/source/openssl-3.1.4.tar.gz',
-     'https://artfiles.org/openssl.org/source/openssl-3.1.4.tar.gz'),
-    '840af5366ab9b522bde525826be3ef0fb0af81c6a9ebd84caa600fea1731eee3',
+    ('https://www.openssl.org/source/openssl-3.1.5.tar.gz',
+     'https://artfiles.org/openssl.org/source/openssl-3.1.5.tar.gz'),
+    '6ae015467dabf0469b139ada93319327be24b98251ffaeceda0221848dc09262',
     'include/openssl/ossl_typ.h',
 )
 
@@ -128,8 +128,8 @@ openssh = AutotoolsProject(
 )
 
 libfmt = CmakeProject(
-    'https://github.com/fmtlib/fmt/archive/10.1.1.tar.gz',
-    '78b8c0a72b1c35e4443a7e308df52498252d1cefc2b08c9a97bc9ee6cfe61f8b',
+    'https://github.com/fmtlib/fmt/archive/10.2.1.tar.gz',
+    '1250e4cc58bf06ee631567523f48848dc4596133e163f02615c97f78bab6c811',
     'lib/libfmt.a',
     [
         '-DBUILD_SHARED_LIBS=OFF',
@@ -137,8 +137,8 @@ libfmt = CmakeProject(
         '-DFMT_TEST=OFF',
     ],
     name='fmt',
-    version='10.1.1',
-    base='fmt-10.1.1',
+    version='10.2.1',
+    base='fmt-10.2.1',
 )
 
 libsodium = AutotoolsProject(
@@ -165,9 +165,9 @@ libsodium = AutotoolsProject(
 )
 
 zlib = ZlibProject(
-    ('http://zlib.net/zlib-1.3.tar.xz',
-     'https://github.com/madler/zlib/releases/download/v1.3/zlib-1.3.tar.xz'),
-    '8a9ba2898e1d0d774eca6ba5b4627a11e5588ba85c8851336eb38de4683050a7',
+    ('http://zlib.net/zlib-1.3.1.tar.xz',
+     'https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.xz'),
+    '38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32',
     'lib/libz.a',
 )
 
@@ -274,9 +274,9 @@ proj = CmakeProject(
 )
 
 libpng = CmakeProject(
-    ('ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.40.tar.xz',
-     'http://downloads.sourceforge.net/project/libpng/libpng16/1.6.40/libpng-1.6.40.tar.xz'),
-    '535b479b2467ff231a3ec6d92a525906fb8ef27978be4f66dbe05d3f3a01b3a1',
+    ('ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.43.tar.xz',
+     'http://downloads.sourceforge.net/project/libpng/libpng16/1.6.43/libpng-1.6.43.tar.xz'),
+    '6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c',
     'lib/libpng.a',
     [
         '-DPNG_SHARED=OFF',
@@ -380,9 +380,9 @@ libgeotiff = CmakeProject(
 )
 
 sdl2 = CmakeProject(
-    ('http://www.libsdl.org/release/SDL2-2.28.5.tar.gz',
-     'https://fossies.org/linux/misc/SDL2-2.28.5.tar.gz'),
-    '332cb37d0be20cb9541739c61f79bae5a477427d79ae85e352089afdaf6666e4',
+    ('http://www.libsdl.org/release/SDL2-2.30.0.tar.gz',
+     'https://fossies.org/linux/misc/SDL2-2.3.0.tar.gz'),
+    '36e2e41557e0fa4a1519315c0f5958a87ccb27e25c51776beb6f1239526447b0',
     'lib/libSDL2.a',
     [
         '-DBUILD_SHARED_LIBS=OFF',

@@ -3,14 +3,23 @@
 
 #pragma once
 
+#include <concepts>
+
+#if defined(__clang__) && __clang_major__ >= 18
+/* suppress clang 18 warning due to -ffast-math; we want to leave the
+   __builtin_isfinite() check, because it might be helpful with some
+   compilers or compiler versions, and it's only used as sanity
+   check */
+#pragma GCC diagnostic ignored "-Wnan-infinity-disabled"
+#endif
+
 /**
  * A constexpr wrapper for std::isfinite().  This uses the
  * non-standard __builtin_isfinite() function (specific to GCC and
  * clang) because the C++ standard library is not "constexpr".
  */
-template<typename T>
 constexpr bool
-IsFinite(T value) noexcept
+IsFinite(std::floating_point auto value) noexcept
 {
 #if defined _MSC_VER
   return std::isfinite(value);

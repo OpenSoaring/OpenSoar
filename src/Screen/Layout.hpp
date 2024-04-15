@@ -28,6 +28,13 @@ extern unsigned pen_width_scale;
 extern unsigned fine_pen_width_scale;
 
 /**
+ * The "virtual" dots-per-inch value.  For small screens, this is
+ * scaled to account for the assumption that the viewing distance of
+ * small screens is usually smaller.
+ */
+extern unsigned vdpi;
+
+/**
  * Fixed-point scaling factor to convert a point (1/72th inch) to
  * pixels.
  */
@@ -76,16 +83,6 @@ static constexpr bool
 ScaleSupported() noexcept
 {
   return true;
-}
-
-/**
- * Is scaling enabled currently?
- */
-[[gnu::const]]
-static inline bool
-ScaleEnabled() noexcept
-{
-  return ScaleSupported() && scale_1024 > 1024;
 }
 
 [[gnu::const]]

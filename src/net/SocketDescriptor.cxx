@@ -10,6 +10,8 @@
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #else
+#include "MsgHdr.hxx"
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -214,7 +216,7 @@ int
 SocketDescriptor::GetIntOption(int level, int name, int fallback) const noexcept
 {
 	int value = fallback;
-	GetOption(level, name, &value, sizeof(value));
+	(void)GetOption(level, name, &value, sizeof(value));
 	return value;
 }
 
@@ -417,6 +419,23 @@ SocketDescriptor::Receive(std::span<std::byte> dest, int flags) const noexcept
 	return ::recv(Get(), (char *)dest.data(), dest.size(), flags);
 }
 
+#ifndef _WIN32
+
+ssize_t
+SocketDescriptor::Receive(struct msghdr &msg, int flags) const noexcept
+{
+	return ::recvmsg(Get(), &msg, flags);
+}
+
+ssize_t
+SocketDescriptor::Receive(std::span<const struct iovec> v, int flags) const noexcept
+{
+	auto msg = MakeMsgHdr(v);
+	return Receive(msg, flags);
+}
+
+#endif // !_WIN32
+
 ssize_t
 SocketDescriptor::Send(std::span<const std::byte> src, int flags) const noexcept
 {
@@ -426,6 +445,26 @@ SocketDescriptor::Send(std::span<const std::byte> src, int flags) const noexcept
 
 	return ::send(Get(), (const char *)src.data(), src.size(), flags);
 }
+
+#ifndef _WIN32
+
+ssize_t
+SocketDescriptor::Send(const struct msghdr &msg, int flags) const noexcept
+{
+#ifdef __linux__
+	flags |= MSG_NOSIGNAL;
+#endif
+
+	return ::sendmsg(Get(), &msg, flags);
+}
+
+ssize_t
+SocketDescriptor::Send(std::span<const struct iovec> v, int flags) const noexcept
+{
+	return Send(MakeMsgHdr(v), flags);
+}
+
+#endif // !_WIN32
 
 ssize_t
 SocketDescriptor::ReadNoWait(std::span<std::byte> dest) const noexcept
@@ -492,8 +531,8 @@ SocketDescriptor::WaitWritable(int timeout_ms) const noexcept
 #endif
 
 ssize_t
-SocketDescriptor::Read(void *buffer, std::size_t length,
-		       StaticSocketAddress &address) const noexcept
+SocketDescriptor::ReadNoWait(std::span<std::byte> dest,
+			     StaticSocketAddress &address) const noexcept
 {
 	int flags = 0;
 #ifndef _WIN32
@@ -501,7 +540,9 @@ SocketDescriptor::Read(void *buffer, std::size_t length,
 #endif
 
 	socklen_t addrlen = address.GetCapacity();
-	ssize_t nbytes = ::recvfrom(Get(), (char *)buffer, length, flags,
+	ssize_t nbytes = ::recvfrom(Get(),
+				    reinterpret_cast<char *>(dest.data()),
+				    dest.size(), flags,
 				    address, &addrlen);
 	if (nbytes > 0)
 		address.SetSize(addrlen);
@@ -510,8 +551,8 @@ SocketDescriptor::Read(void *buffer, std::size_t length,
 }
 
 ssize_t
-SocketDescriptor::Write(const void *buffer, std::size_t length,
-			SocketAddress address) const noexcept
+SocketDescriptor::WriteNoWait(std::span<const std::byte> src,
+			      SocketAddress address) const noexcept
 {
 	int flags = 0;
 #ifndef _WIN32
@@ -521,7 +562,8 @@ SocketDescriptor::Write(const void *buffer, std::size_t length,
 	flags |= MSG_NOSIGNAL;
 #endif
 
-	return ::sendto(Get(), (const char *)buffer, length, flags,
+	return ::sendto(Get(), reinterpret_cast<const char *>(src.data()),
+			src.size(), flags,
 			address.GetAddress(), address.GetSize());
 }
 

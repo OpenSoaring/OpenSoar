@@ -3,7 +3,9 @@
 
 #include "Task/TaskFileSeeYou.hpp"
 #include "io/BufferedReader.hxx"
+#include "io/BufferedCsvReader.hpp"
 #include "io/FileReader.hxx"
+#include "io/StringConverter.hpp"
 #include "Engine/Waypoint/Waypoints.hpp"
 #include "Waypoint/CupParser.hpp"
 #include "Waypoint/WaypointReaderSeeYou.hpp"
@@ -65,27 +67,21 @@ ParseTaskTime(std::string_view src) noexcept
   if (src.size() < 2)
     return {};
 
-  if (auto value = ParseInteger<unsigned>(src.substr(0, 2)))
-    hh = *value;
-  else
+  if (!ParseIntegerTo(src.substr(0, 2), hh))
     return {};
 
   if (src.size() > 2) {
     if (src[2] != ':' || src.size() < 5)
       return {};
 
-    if (auto value = ParseInteger<unsigned>(src.substr(3, 2)))
-      mm = *value;
-    else
+    if (!ParseIntegerTo(src.substr(3, 2), mm))
       return {};
 
     if (src.size() > 5) {
       if (src[5] != ':' || src.size() != 8)
         return {};
 
-      if (auto value = ParseInteger<unsigned>(src.substr(6, 2)))
-        ss = *value;
-      else
+      if (!ParseIntegerTo(src.substr(6, 2), ss))
         return {};
     }
   }
@@ -216,9 +212,7 @@ ParseCUTaskDetails(BufferedReader &reader, SeeYouTaskInformation &task_info,
       auto [index_string, rest] = Split(src, ',');
 
       std::size_t index;
-      if (auto value = ParseInteger<std::size_t>(index_string))
-        index = *value;
-      else
+      if (!ParseIntegerTo(index_string, index))
         continue;
 
       if (index >= CUP_MAX_TPS)
@@ -425,18 +419,8 @@ static bool
 ParseSeeYouWaypoints(BufferedReader &reader, Waypoints &way_points)
 {
   const WaypointFactory factory(WaypointOrigin::NONE);
-  WaypointReaderSeeYou waypoint_file(factory);
 
-  while (true) {
-    char *line = reader.ReadLine();
-    if (line == nullptr)
-      return false;
-
-    if (StringIsEqualIgnoreCase(line, "-----Related Tasks-----"))
-      return true;
-
-    waypoint_file.ParseLine(line, way_points);
-  }
+  return ParseSeeYou(factory, way_points, reader);
 }
 
 static char *
