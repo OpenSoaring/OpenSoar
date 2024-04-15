@@ -5,8 +5,10 @@ set(_SOURCES
         OpenVario/FileMenuWidget.cpp
         OpenVario/DisplaySettingsWidget.cpp
         OpenVario/SystemSettingsWidget.cpp
+        OpenVario/ExtraWidget.cpp
 
         OpenVario/System/OpenVarioDevice.cpp
+        OpenVario/System/OpenVarioTools.cpp
 
         OpenVario/System/SystemMenuWidget.cpp
         OpenVario/System/Setting/RotationWidget.cpp 
