@@ -228,9 +228,9 @@ OV_MENU_SOURCES = \
 	$(SRC)/Profile/Map.cpp \
 	$(SRC)/Profile/File.cpp \
 	$(SRC)/Profile/NumericValue.cpp \
-	$(TEST_SRC_DIR)/Fonts.cpp \
-	$(TEST_SRC_DIR)/FakeLanguage.cpp \
-	$(TEST_SRC_DIR)/FakeLogFile.cpp \
+	                             # $(TEST_SRC_DIR)/Fonts.cpp \
+	# $(SRC)/Language/Language.cpp # $(TEST_SRC_DIR)/FakeLanguage.cpp\
+	$(SRC)/LogFile.cpp           # $(TEST_SRC_DIR)/FakeLogFile.cpp\
     \
     $(SRC)/LocalPath.cpp \
     $(SRC)/Form/DigitEntry.cpp \
@@ -254,6 +254,7 @@ OV_MENU_SOURCES = \
 
 
 OV_MENU_DEPENDS = WIDGET FORM DATA_FIELD SCREEN EVENT RESOURCE ASYNC LIBNET OS IO THREAD TIME MATH UTIL \
+	LANGUAGE \
 	LIBMAPWINDOW \
 	GETTEXT \
     PROFILE \
