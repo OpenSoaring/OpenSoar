@@ -181,19 +181,22 @@ DIALOG_SOURCES += \
 OV_MENU_SOURCES = \
 	$(DIALOG_SOURCES) \
 	$(SRC)/OpenVario/OpenVarioBaseMenu.cpp \
-	$(SRC)/OpenVario/System/OpenVarioDevice.cpp \
-	$(SRC)/OpenVario/FileMenuWidget.cpp \
-	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
+	\
+	$(SRC)/OpenVario/SystemSettingsWidget.cpp \
 	$(SRC)/OpenVario/DisplaySettingsWidget.cpp \
+	$(SRC)/OpenVario/FileMenuWidget.cpp \
+	$(SRC)/OpenVario/ExtraWidget.cpp \
+	\
+	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
+	\
+	$(SRC)/OpenVario/System/OpenVarioDevice.cpp \
+	$(SRC)/OpenVario/System/OpenVarioTools.cpp \
+	\
 	$(SRC)/OpenVario/System/Setting/RotationWidget.cpp \
 	$(SRC)/OpenVario/System/Setting/WifiWidget.cpp \
 	\
 	$(SRC)/OpenVario/System/WifiDialogOV.cpp \
 	$(SRC)/OpenVario/System/WifiSupplicantOV.cpp \
-	$(SRC)/OpenVario/System/WifiDBus.cpp \
-	$(SRC)/OpenVario/System/NMConnector.cpp \
-	\
-	$(SRC)/OpenVario/SystemSettingsWidget.cpp \
 	\
 	$(SRC)/Version.cpp \
 	$(SRC)/Asset.cpp \
