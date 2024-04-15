@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.xcsoar"
+          package="de.opensoar"
           android:installLocation="auto"
-          android:versionCode="163"
-          android:versionName="7.42">
+          android:versionCode="21"
+          android:versionName="7.42.21">
   <application
       android:requestLegacyExternalStorage="true"
       android:preserveLegacyExternalStorage="true"
@@ -11,7 +11,7 @@
       android:appCategory="maps"
       android:icon="@drawable/icon"
       android:label="@string/app_name">
-    <activity android:name=".XCSoar"
+    <activity android:name=".OpenSoar"
               android:exported="true"
               android:label="@string/app_name"
               android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale"
@@ -59,14 +59,14 @@
       </intent-filter>
     </activity>
 
-    <provider android:name="org.xcsoar.FileProvider"
-              android:authorities="org.xcsoar"
+    <provider android:name="de.opensoar.FileProvider"
+              android:authorities="de.opensoar"
               android:exported="false"
               android:grantUriPermissions="true"/>
 
     <provider
         android:name=".AllFilesDocumentsProvider"
-        android:authorities="org.xcsoar.allfiles"
+        android:authorities="de.opensoar.allfiles"
         android:exported="true"
         android:grantUriPermissions="true"
         android:permission="android.permission.MANAGE_DOCUMENTS">

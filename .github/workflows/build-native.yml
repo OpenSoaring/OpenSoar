@@ -13,6 +13,7 @@ on:
       - '.github/workflows/build-unix.yml'
     branches:
       - master
+      - dev-branch
 
   pull_request:
     paths-ignore:
@@ -26,6 +27,7 @@ on:
       - '.github/workflows/build-unix.yml'
     branches:
       - master
+      - dev-branch
 
 env:
   DEBUG: y
@@ -37,8 +39,8 @@ jobs:
 
     env:
       TARGET: UNIX
-      TARGET_BIN: xcsoar
-      TARGET_FINAL: xcsoar-debug
+      TARGET_BIN: opensoar
+      TARGET_FINAL: opensoar-debug
       TARGET_EXT: ''
 
     steps:
@@ -46,7 +48,7 @@ jobs:
         if: github.event_name == 'push'
         run: |
           echo "DEBUG=n" >> $GITHUB_ENV
-          echo "TARGET_FINAL=xcsoar" >> $GITHUB_ENV
+          echo "TARGET_FINAL=OpenSoar" >> $GITHUB_ENV
       - id: checkout
         uses: actions/checkout@v4
         with:
@@ -94,7 +96,7 @@ jobs:
             libasound2-dev \
             libgles2-mesa-dev libegl1-mesa-dev
 
-      - name: Compile XCSoar
+      - name: Compile OpenSoar
         run: |
           make -j$(nproc) TARGET=${{env.TARGET }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 everything check
 
@@ -106,7 +108,7 @@ jobs:
 
       - name: Deploy to Staging server
         if: |
-          github.repository == 'XCSoar/XCSoar' &&
+          github.repository == 'OpenSoaring/OpenSoar' &&
           github.ref == 'ref/head/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
@@ -173,7 +175,7 @@ jobs:
             libxml-parser-perl \
             libasound2-dev
 
-      - name: Compile XCSoar
+      - name: Compile OpenSoar
         run: |
           make -j$(nproc) TARGET=${{env.TARGET }} DEBUG=${{ env.DEBUG }} VFB=y SANITIZE=y DEBUG_GLIBCXX=y USE_CCACHE=y V=2 everything check
 
@@ -239,7 +241,7 @@ jobs:
             cmake meson ninja-build \
             ttf-bitstream-vera
 
-      - name: Compile XCSoar
+      - name: Compile OpenSoar
         run: |
           make -j$(nproc) \
             TARGET=${{env.TARGET}} \
@@ -256,7 +258,7 @@ jobs:
 
       - name: Deploy to Staging server
         if: |
-          github.repository == 'XCSoar/XCSoar' &&
+          github.repository == 'OpenSoaring/OpenSoar' &&
           github.ref == 'ref/head/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
@@ -273,8 +275,8 @@ jobs:
 
     env:
       TARGET: ANDROIDFAT
-      TARGET_BIN: XCSoar-debug
-      TARGET_FINAL: XCSoar-debug
+      TARGET_BIN: OpenSoar-debug
+      TARGET_FINAL: OpenSoar-debug
       TARGET_EXT: apk
       NDK: r26c
 
@@ -283,7 +285,7 @@ jobs:
         if: github.event_name == 'push'
         run: |
           echo "DEBUG=n" >> $GITHUB_ENV
-          echo "TARGET_FINAL=XCSoar" >> $GITHUB_ENV
+          echo "TARGET_FINAL=OpenSoar" >> $GITHUB_ENV
 
       - id: checkout
         uses: actions/checkout@v4
@@ -338,7 +340,7 @@ jobs:
           rm android-ndk-${{env.NDK}}-linux.zip
           echo ANDROID_NDK_LATEST_HOME=$PWD/android-ndk-${{env.NDK}} >> $GITHUB_ENV
 
-      - name: Compile XCSoar
+      - name: Compile OpenSoar
         run: |
           make -j$(nproc) \
             TARGET=${{env.TARGET}} \
@@ -356,7 +358,7 @@ jobs:
 
       - name: Deploy to Staging server
         if: |
-          github.repository == 'XCSoar/XCSoar' &&
+          github.repository == 'OpenSoaring/OpenSoar' &&
           github.ref == 'ref/head/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
@@ -375,8 +377,8 @@ jobs:
 
     env:
       TARGET: WIN64
-      TARGET_BIN: XCSoar
-      TARGET_FINAL: XCSoar-debug
+      TARGET_BIN: OpenSoar
+      TARGET_FINAL: OpenSoar-debug
       TARGET_EXT: .exe
 
     steps:
@@ -384,7 +386,7 @@ jobs:
         if: github.event_name == 'push'
         run: |
           echo "DEBUG=n" >> $GITHUB_ENV
-          echo "TARGET_FINAL=XCSoar" >> $GITHUB_ENV
+          echo "TARGET_FINAL=OpenSoar" >> $GITHUB_ENV
 
       - name: Install build dependencies
         run: |
@@ -438,7 +440,7 @@ jobs:
       - name: Patch mingw intrin.h (mingw64 v8 bug workaround)
         run: sed -i -e '/extern.* __builtin/d' /usr/share/mingw-w64/include/intrin.h
 
-      - name: Compile XCSoar
+      - name: Compile OpenSoar
         run: |
           make -j$(nproc) TARGET=${{env.TARGET }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 everything
 
@@ -451,7 +453,7 @@ jobs:
       - name: store checks and compile artefacts
         uses: actions/upload-artifact@v4
         with:
-          name: xcsoar-${{ env.TARGET }}-artifact
+          name: opensoar-${{ env.TARGET }}-artifact
           path: |
             ${{ github.workspace }}/output/${{ env.TARGET }}
             !${{ github.workspace }}/output/${{ env.TARGET }}/lib/build
@@ -460,7 +462,7 @@ jobs:
 
       - name: Deploy to Staging server
         if: |
-          github.repository == 'XCSoar/XCSoar' &&
+          github.repository == 'OpenSoaring/OpenSoar' &&
           github.ref == 'ref/head/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
@@ -485,9 +487,9 @@ jobs:
       - name: fetch artifacts
         uses: actions/download-artifact@v4
         with:
-          name: xcsoar-${{ env.TARGET }}-artifact
+          name: opensoar-${{ env.TARGET }}-artifact
           path: ${{ github.workspace }}/output/${{ env.TARGET }}
-      - name: XCSoar run checks on ${{ env.TARGET }}
+      - name: OpenSoar run checks on ${{ env.TARGET }}
         run: make check-no-build
         working-directory: ${{ github.workspace }}
 
@@ -534,12 +536,13 @@ jobs:
             curl \
             lua
 
-      - name: Compile XCSoar
+      - name: Compile OpenSoar
         # We use "-O0" instead of the default "-Og" to work around a
         # LLVM bug in Apple Xcode which crashes clang with "fatal
         # error: error in backend: Cannot select: intrinsic
         # %llvm.coro.size"
         run: |
+          clang --version &&
           gmake -j$(sysctl -n hw.logicalcpu) TARGET=${{env.TARGET }} USE_CCACHE=y \
             OPTIMIZE="-O0" \
             USE_HOMEBREW=y \
@@ -548,7 +551,7 @@ jobs:
 
       - name: Deploy to Staging server
         if: |
-          github.repository == 'XCSoar/XCSoar' &&
+          github.repository == 'OpenSoaring/OpenSoar' &&
           github.ref == 'ref/head/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
@@ -604,7 +607,7 @@ jobs:
             imagemagick gettext sox \
             cmake ninja
 
-      - name: Compile XCSoar
+      - name: Compile OpenSoar
         # TODO: remove the "||true" as soon as the remaining SDL2
         # linker failure ("Undefined symbols: _SDL_IsIPad, _main") is
         # fixed.
@@ -615,7 +618,7 @@ jobs:
 
       - name: Deploy to Staging server
         if: |
-          github.repository == 'XCSoar/XCSoar' &&
+          github.repository == 'OpenSoaring/OpenSoar' &&
           github.ref == 'ref/head/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main

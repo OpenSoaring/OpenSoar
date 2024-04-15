@@ -1,6 +1,10 @@
 include build/rsvg.mk
 include build/imagemagick.mk
 
+# TODO(August2111): what is with setting in main.mk?
+# PROGRAM_NAME = XCSoar
+# PROGRAM_NAME = OpenSoar
+
 USE_WIN32_RESOURCES = $(call bool_and,$(HAVE_WIN32),$(call bool_not,$(ENABLE_SDL)))
 
 ifeq ($(USE_WIN32_RESOURCES),y)
@@ -82,15 +86,24 @@ $(ICNS_SPLASH_1024): %.icns: %.png
 
 ####### version
 
-SVG_TITLE = Data/graphics/title.svg Data/graphics/title_red.svg
-PNG_TITLE_110 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_110.png,$(SVG_TITLE))
+SVG_TITLE = Data/graphics/title.svg 
+# Data/graphics/title_red.svg
+SVG_TMP_TITLE = $(DATA)/temp/graphics/title.svg $(DATA)/temp/graphics/title_red.svg
+# convert to title
+$(DATA)/temp/graphics/%.svg: $(SVG_TITLE) $(topdir)/OpenSoar.config
+	@$(NQ)echo "  TMP_SVG:   $< == $@"
+	$(Q)$(MKDIR) -p $(DATA)/temp/graphics
+	$(Q)$(MKDIR) -p $(OUT)/include
+	$(Q)python3 $(topdir)/tools/python/replace.py  $(topdir)/OpenSoar.config $< $@ $(OUT)/include/ProgramVersion.h
+
+PNG_TITLE_110 = $(patsubst $(DATA)/temp/graphics/%.svg,$(DATA)/graphics/%_110.png,$(SVG_TMP_TITLE))
 BMP_TITLE_110 = $(PNG_TITLE_110:.png=.bmp)
-PNG_TITLE_320 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_320.png,$(SVG_TITLE))
+PNG_TITLE_320 = $(patsubst $(DATA)/temp/graphics/%.svg,$(DATA)/graphics/%_320.png,$(SVG_TMP_TITLE))
 BMP_TITLE_320 = $(PNG_TITLE_320:.png=.bmp)
 
 # render from SVG to PNG
-$(eval $(call rsvg-convert,$(PNG_TITLE_110),$(DATA)/graphics/%_110.png,Data/graphics/%.svg,--width=110))
-$(eval $(call rsvg-convert,$(PNG_TITLE_320),$(DATA)/graphics/%_320.png,Data/graphics/%.svg,--width=320))
+$(eval $(call rsvg-convert,$(PNG_TITLE_110),$(DATA)/graphics/%_110.png,$(DATA)/temp/graphics/%.svg,--width=110))
+$(eval $(call rsvg-convert,$(PNG_TITLE_320),$(DATA)/graphics/%_320.png,$(DATA)/temp/graphics/%.svg,--width=320))
 
 # convert to uncompressed 8-bit BMP
 $(eval $(call convert-to-bmp-white,$(BMP_TITLE_110) $(BMP_TITLE_320),%.bmp,%.png))
@@ -167,7 +180,8 @@ endif
 
 #######
 
-TEXT_FILES = AUTHORS COPYING NEWS.txt
+# TEXT_FILES = AUTHORS COPYING NEWS.txt
+TEXT_FILES = AUTHORS COPYING OpenSoar-News.md
 
 TEXT_COMPRESSED = $(patsubst %,$(DATA)/%.gz,$(TEXT_FILES))
 $(TEXT_COMPRESSED): $(DATA)/%.gz: % | $(DATA)/dirstamp
@@ -221,9 +235,12 @@ ifeq ($(TARGET_IS_ANDROID),n)
 
 ifeq ($(USE_WIN32_RESOURCES),y)
 
-$(TARGET_OUTPUT_DIR)/XCSoar.rc: $(TARGET_OUTPUT_DIR)/resources.txt Data/XCSoar.rc tools/GenerateWindowsResources.pl
+# old (10.03.2024): RESOURCE_TEXT = Data/$(PROGRAM_NAME).rc
+# old (10.03.2024): RESOURCE_BINARY = $(TARGET_OUTPUT_DIR)/$(notdir $(RESOURCE_TEXT:.rc=.rsc))
+# old (10.03.2024): RESOURCE_FILES += $(patsubst po/%.po,$(OUT)/po/%.mo,$(wildcard po/*.po))
+$(TARGET_OUTPUT_DIR)/OpenSoar.rc: $(TARGET_OUTPUT_DIR)/resources.txt Data/OpenSoar.rc tools/GenerateWindowsResources.pl
 	@$(NQ)echo "  GEN     $@"
-	$(Q)cp Data/XCSoar.rc $@.tmp
+	$(Q)cp Data/OpenSoar.rc $@.tmp
 	$(Q)$(PERL) tools/GenerateWindowsResources.pl $< >>$@.tmp
 	$(Q)mv $@.tmp $@
 
@@ -232,14 +249,15 @@ $(TARGET_OUTPUT_DIR)/include/resource.h: $(TARGET_OUTPUT_DIR)/include/MakeResour
 	$(Q)$(PERL) -ne 'print "#define $$1 $$2\n" if /^MAKE_RESOURCE\((\w+), \S+, (\d+)\);/;' $< >$@.tmp
 	$(Q)mv $@.tmp $@
 
-RESOURCE_BINARY = $(TARGET_OUTPUT_DIR)/XCSoar.rsc
+RESOURCE_BINARY = $(TARGET_OUTPUT_DIR)/OpenSoar.rsc
 
-$(TARGET_OUTPUT_DIR)/XCSoar.rsc: %.rsc: %.rc $(TARGET_OUTPUT_DIR)/include/resource.h $(RESOURCE_FILES) | $(TARGET_OUTPUT_DIR)/%/../dirstamp $(BUILD_TOOLCHAIN_TARGET)
+$(TARGET_OUTPUT_DIR)/OpenSoar.rsc: %.rsc: %.rc $(TARGET_OUTPUT_DIR)/include/resource.h $(RESOURCE_FILES) | $(TARGET_OUTPUT_DIR)/%/../dirstamp $(BUILD_TOOLCHAIN_TARGET)
 	@$(NQ)echo "  WINDRES $@"
 	$(Q)$(WINDRES) $(WINDRESFLAGS) --include-dir output/data --include-dir Data -o $@ $<
 
 else # USE_WIN32_RESOURCES
 
+# old (10.03.2024): $(TARGET_OUTPUT_DIR)/resources.c: $(TARGET_OUTPUT_DIR)/$(PROGRAM_NAME).rc $(OUT)/include/resource.h $(RESOURCE_FILES) tools/LinkResources.pl tools/BinToC.pm | $(TARGET_OUTPUT_DIR)/resources/dirstamp
 $(TARGET_OUTPUT_DIR)/resources.c: export TARGET_IS_ANDROID:=$(TARGET_IS_ANDROID)
 $(TARGET_OUTPUT_DIR)/resources.c: export ENABLE_OPENGL:=$(OPENGL)
 $(TARGET_OUTPUT_DIR)/resources.c: $(TARGET_OUTPUT_DIR)/resources.txt $(RESOURCE_FILES) tools/LinkResources.pl tools/BinToC.pm | $(TARGET_OUTPUT_DIR)/resources/dirstamp

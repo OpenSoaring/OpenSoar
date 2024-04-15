@@ -425,6 +425,7 @@ ReadAltitude(StringParser<> &input)
     return altitude;
 
   default:
+    altitude = {0, 0, 0, AltitudeReference::STD};  // otherwise not initialized
     break;
   }
 
@@ -898,7 +899,8 @@ ParseLineTNP(Airspaces &airspace_database, unsigned line_number,
   } else if (input.SkipMatchIgnoreCase("BASE="sv)) {
     temp_area.base = ReadAltitude(input);
   } else if (input.SkipMatchIgnoreCase("RADIO="sv)) {
-    temp_area.radio_frequency = RadioFrequency::Parse(ReadRadioFrequency(input.c_str()));
+    temp_area.radio_frequency = RadioFrequency::
+                                Parse(ReadRadioFrequency(input.c_str()));
   } else if (input.SkipMatchIgnoreCase("ACTIVE="sv)) {
     if (input.MatchAllIgnoreCase("WEEKEND"))
       temp_area.days_of_operation.SetWeekend();
