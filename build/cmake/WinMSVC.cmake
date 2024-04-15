@@ -21,8 +21,9 @@ if(AUGUST_SPECIAL)
 endif()
 #********************************************************************************
 
-add_compile_definitions(_UNICODE)
-add_compile_definitions(UNICODE)  # ???
+## add_compile_definitions(_UNICODE)
+## add_compile_definitions(UNICODE)  # ???
+
 add_compile_definitions(NO_ERROR_CHECK)  # EnumBitSet funktioniert m.E. noch nicht korrekt!!!!
 add_compile_definitions(WIN32_LEAN_AND_MEAN)
  # warning C4996: 'xxx': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _wcsdup. See online help for details.
