@@ -15,6 +15,7 @@ set(_SOURCES
         OpenVario/System/WifiDialogOV.cpp
         OpenVario/System/WifiSupplicantOV.cpp
         OpenVario/System/WifiDBus.cpp
+        OpenVario/System/NMConnector.cpp
 
         ${SRC}/Version.cpp
        	${SRC}/Asset.cpp
