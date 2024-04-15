@@ -33,6 +33,7 @@ OV_MENU_SOURCES = \
 	$(TEST_SRC_DIR)/FakeLogFile.cpp \
 	$(SRC)/Kobo/FakeSymbols.cpp \
 	$(SRC)/OV/System.cpp \
+	$(SRC)/OV/Settings.cpp \
 	$(SRC)/OV/OpenVarioMenu.cpp
 OV_MENU_DEPENDS = DBUS WIDGET FORM DATA_FIELD SCREEN EVENT RESOURCE ASYNC LIBNET OS IO THREAD TIME MATH UTIL
 OV_MENU_STRIP = y
