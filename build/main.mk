@@ -155,15 +155,20 @@ DIALOG_SOURCES = \
 	$(SRC)/Dialogs/dlgQuickMenu.cpp \
 
 ifeq ($(TARGET_IS_OPENVARIO),y)
-	# $(SRC)/OpenVario/OpenVarioBaseMenu.cpp
+	# $(SRC)/OpenVario/OpenVarioBaseMenu.cpp  # for exe only...
 DIALOG_SOURCES += \
 	$(SRC)/Dialogs/ProcessDialog.cpp \
 	\
 	$(SRC)/OpenVario/SystemSettingsWidget.cpp \
-	$(SRC)/OpenVario/System/OpenVarioDevice.cpp \
-	$(SRC)/OpenVario/FileMenuWidget.cpp \
-	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
 	$(SRC)/OpenVario/DisplaySettingsWidget.cpp \
+	$(SRC)/OpenVario/FileMenuWidget.cpp \
+	$(SRC)/OpenVario/ExtraWidget.cpp \
+	\
+	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
+	\
+	$(SRC)/OpenVario/System/OpenVarioDevice.cpp \
+	$(SRC)/OpenVario/System/OpenVarioTools.cpp \
+	\
 	$(SRC)/OpenVario/System/Setting/RotationWidget.cpp \
 	$(SRC)/OpenVario/System/Setting/WifiWidget.cpp \
 	\
