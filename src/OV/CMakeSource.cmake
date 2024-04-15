@@ -1,6 +1,7 @@
 set(_SOURCES
-        OV/System.cpp
         OV/OpenVarioMenu.cpp
+        OV/System.cpp
+        OV/Settings.cpp
 )
 
 set(SCRIPT_FILES
