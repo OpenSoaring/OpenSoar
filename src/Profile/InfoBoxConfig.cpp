@@ -99,6 +99,7 @@ Profile::Load(const ProfileMap &map, InfoBoxSettings &settings)
   case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_5:
   case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_10:
   case InfoBoxSettings::Geometry::TOP_12_VARIO:
+  case InfoBoxSettings::Geometry::TOP_16_VARIO:
     break;
 
   case InfoBoxSettings::Geometry::OBSOLETE_TOP_LEFT_4:
