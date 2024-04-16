@@ -35,6 +35,7 @@ NumberEntryDialog(TWidgetDialog<FixedWindowWidget> &dialog,
     entry->CreateSigned(client_area, client_area.GetClientRect(), control_style,
                         length, 0);
     break;
+  case DATA_ANGLE:  // TODO(August2111): check of correctness
   case DATA_UNSIGNED:
       entry->CreateUnsigned(client_area, client_area.GetClientRect(),
                           control_style, length, 0);
