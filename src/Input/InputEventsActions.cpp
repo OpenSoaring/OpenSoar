@@ -689,7 +689,7 @@ InputEvents::eventKeyPressed(const TCHAR *misc)
         c[0] = (TCHAR) KEY_RETURN;
         p += strlen("RETURN") ;
       }
-      ParseKeyCode(c);
+      ProcessKey(MODE_MENU, ParseKeyCode((const TCHAR *)c));
     }
   }
 }
