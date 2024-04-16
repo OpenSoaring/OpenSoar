@@ -103,13 +103,17 @@ Start(const char *const *argv) noexcept
 
   return Wait(pid) == 0;
 #elif defined(_WIN32)
+  LogFormat("Process.cpp - on Windows no Start() function");
+  for (unsigned count = 0; argv[count] != nullptr; count++) {
+    LogFormat("Process.cpp - Start, Arg %u: %s", count, argv[count]);
+    std::cout << argv[count] << ' ';
+  }
+
   return false;
 #else
   error "Unknown system"
 #endif
 }
-
-int Run(const char *const *argv) noexcept;
 
 #define PROCESS_DEBUG_OUTPUT 0
 int
@@ -151,36 +155,10 @@ try {
   return -1;
 }
 
-#if 0 
-int 
-// Run(std::filesystem::path output_path, const char *const *argv) noexcept {
-// Run(const Path &output_path, const char *argv, ...) noexcept {
-Run(const Path &output_path, const char *argv, ...) noexcept {
-  output = output_path;
-#if 1
-  const char *arglist[0x10];
-  va_list argptr;
-  const char *arg = argv;
-  va_start(argptr, argv);
-  unsigned idx = 0;
-  while (arg != nullptr) {
-     arglist[idx++] = arg;
-     arg = va_arg(argptr, const char *);
-  }
-  // _Result = _vfprintf_l(stdout, argv, nullptr, _ArgList);
-  va_end(argptr);
-  arglist[idx] = nullptr; // finally
-#else
-  const char *const arglist[]{argv, nullptr};
-#endif
-  return Run(arglist);
 
-}
-#else
 int 
 Run(const Path &output_path, const char *const *argv) noexcept
 {
   output = output_path;
   return Run(argv);
 }
-#endif
