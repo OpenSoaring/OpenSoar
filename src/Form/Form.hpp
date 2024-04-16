@@ -143,7 +143,7 @@ public:
 
   auto SetFocusButtonCallback(Button *button) noexcept {
     return [this, button]() {
-      if (button)
+      if (this->IsDefined() && button != nullptr)
         button->SetFocus();
     };
   }
