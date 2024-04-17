@@ -25,7 +25,12 @@ NMEAChecksum(std::convertible_to<const char *> auto &&_src) noexcept
   if (*p == '$' || *p == '!')
     ++p;
 
+#if defined(__APPLE__) && (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
+  // MacOS workaround
+  while (*p != 0 && *p != '*')
+#else  // MACOS
   while (*p != 0)
+#endif // MACOS
     checksum ^= static_cast<uint8_t>(*p++);
 
   return checksum;
