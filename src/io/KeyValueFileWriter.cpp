@@ -8,10 +8,6 @@
 #include <cassert>
 #include <string.h>
 
-#ifdef _UNICODE
-#include <stringapiset.h>
-#endif
-
 void
 KeyValueFileWriter::Write(const char *key, const char *value)
 {
@@ -27,17 +23,3 @@ KeyValueFileWriter::Write(const char *key, const char *value)
   os.Fmt("{}=\"{}\"\n", key, value);
 }
 
-#ifdef _UNICODE
-
-void
-KeyValueFileWriter::Write(const char *key, const TCHAR *value)
-{
-  char buffer[1024];
-  int result = WideCharToMultiByte(CP_UTF8, 0, value, -1,
-                                   buffer, ARRAY_SIZE(buffer),
-                                   nullptr, nullptr);
-  if (result > 0)
-    Write(key, buffer);
-}
-
-#endif

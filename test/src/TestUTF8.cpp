@@ -89,8 +89,6 @@ MyValidateUTF8(const char *p)
   }
 }
 
-#ifndef _UNICODE
-
 static constexpr struct {
   const char *src;
   size_t truncate, dest_size;
@@ -125,7 +123,6 @@ TestTruncateString()
   }
 }
 
-#endif
 
 int main()
 {
@@ -134,9 +131,7 @@ int main()
              2 * ARRAY_SIZE(length) +
              4 * ARRAY_SIZE(crop) +
              ARRAY_SIZE(latin1_chars) +
-#ifndef _UNICODE
              ARRAY_SIZE(truncate_string_tests) +
-#endif
              9 + 27);
 
   for (auto i : valid) {
@@ -170,9 +165,7 @@ int main()
     ok1(end == buffer + strlen(buffer));
   }
 
-#ifndef _UNICODE
   TestTruncateString();
-#endif
 
   {
     const char *p = "foo\xe7\x9b\xae";

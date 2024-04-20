@@ -39,11 +39,7 @@ HBITMAP
 GdiLoadImage(const TCHAR* filename)
 {
   HBITMAP result = nullptr;
-#ifdef _UNICODE  // TCHAR has to be WCHAR in GdiPlus
-  Gdiplus::Bitmap bitmap(filename, false);
-#else
   Gdiplus::Bitmap bitmap(UTF8ToWide(filename).c_str(), false);
-#endif  // _UNICODE
   if (bitmap.GetLastStatus() != Gdiplus::Ok)
     return nullptr;
   const Gdiplus::Color color = Gdiplus::Color::White;
