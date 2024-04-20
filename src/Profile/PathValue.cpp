@@ -9,10 +9,6 @@
 #include "util/StringCompare.hxx"
 #include "util/StringPointer.hxx"
 
-#ifdef _UNICODE
-#include "util/AllocatedString.hxx"
-#endif
-
 #include <windef.h> /* for MAX_PATH */
 
 AllocatedPath
@@ -51,24 +47,6 @@ BackslashBaseName(const TCHAR *p) noexcept
   return Path(p).GetBase();
 }
 
-#ifdef _UNICODE
-
-BasicAllocatedString<TCHAR>
-ProfileMap::GetPathBase(std::string_view key) const noexcept
-{
-  TCHAR buffer[MAX_PATH];
-  if (!Get(key, std::span{buffer}))
-      return nullptr;
-
-  const TCHAR *base = BackslashBaseName(buffer).c_str();
-  if (base == nullptr)
-    return nullptr;
-
-  return BasicAllocatedString<TCHAR>(base);
-}
-
-#else
-
 StringPointer<TCHAR>
 ProfileMap::GetPathBase(std::string_view key) const noexcept
 {
@@ -78,8 +56,6 @@ ProfileMap::GetPathBase(std::string_view key) const noexcept
 
   return path;
 }
-
-#endif
 
 void
 ProfileMap::SetPath(std::string_view key, Path value) noexcept

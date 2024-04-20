@@ -16,11 +16,7 @@
 # include "util/StringFormat.hpp"
 # include <boost/algorithm/string.hpp>
 # include <map>
-#ifdef _UNICODE
-  typedef std::wstring tstring;
-#else
   typedef std::string tstring;
-#endif
 #endif
 
 #ifdef ANDROID

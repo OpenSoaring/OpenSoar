@@ -136,10 +136,10 @@ CopyTruncateStringUTF8(std::span<char> dest,
                        const char *src, std::size_t truncate) noexcept;
 
 /**
- * Decode the next UNICODE character.
+ * Decode the next UTF-8 character.
  *
  * @param p a null-terminated valid UTF-8 string
- * @return a pair containing the next UNICODE character code and a
+ * @return a pair containing the next UTF-8(?) character code and a
  * pointer to the first byte of the following character or 0 if
  * already at the end of the string
  */

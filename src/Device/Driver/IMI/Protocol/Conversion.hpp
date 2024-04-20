@@ -31,7 +31,7 @@ struct AngleConverter {
 };
 
 void
-ConvertToChar(const TCHAR* unicode, char* ascii, int outSize);
+ConvertToChar(const TCHAR* dest, char* ascii, int outSize);
 
 BrokenDateTime
 ConvertToDateTime(IMIDATETIMESEC in);
