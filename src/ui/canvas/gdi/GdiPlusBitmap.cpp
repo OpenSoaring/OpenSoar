@@ -9,6 +9,9 @@ using std::min;  // to avoid the missing 'min' in the gdiplush headers
 using std::max;  // to avoid the missing 'max' in the gdiplush headers
 #endif  // _MSC_VER
 
+// #include "util/UTF8.hpp"
+#include "util/UTF8Win.hpp"
+
 #include <assert.h>
 #include <unknwn.h>
 #include <gdiplus.h>
@@ -38,11 +41,13 @@ GdiLoadImage(const TCHAR* filename)
   HBITMAP result = nullptr;
 #ifdef _UNICODE  // TCHAR has to be WCHAR in GdiPlus
   Gdiplus::Bitmap bitmap(filename, false);
+#else
+  Gdiplus::Bitmap bitmap(UTF8ToWide(filename).c_str(), false);
+#endif  // _UNICODE
   if (bitmap.GetLastStatus() != Gdiplus::Ok)
     return nullptr;
   const Gdiplus::Color color = Gdiplus::Color::White;
   if (bitmap.GetHBITMAP(color, &result) != Gdiplus::Ok)
     return nullptr;
-#endif  // _UNICODE
   return result;
 }
