@@ -81,13 +81,7 @@ Client::StartTracking(SessionID session, const TCHAR *username,
     if (!username2.IsValid() || !password2.IsValid() || !vname2.IsValid())
       throw std::runtime_error("WideToUTF8Converter failed");
 
-#ifdef _UNICODE
-    NarrowString<32> version;
-    version.SetASCII(OpenSoar_VersionLong);
-#else
     const char *version = OpenSoar_VersionLong;
-#endif
-
     NarrowString<2048> url;
     url.Format("http://%s/track.php?leolive=2&sid=%u&pid=%u&"
                "client=%s&v=%s&user=%s&pass=%s&vtype=%u&vname=%s",

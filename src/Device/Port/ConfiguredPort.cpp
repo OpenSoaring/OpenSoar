@@ -71,8 +71,7 @@ WindowsPort(TCHAR buffer[], const DeviceConfig &config) {
 
   // the usual windows style of device names:
   _tcscpy(buffer, _T("\\\\.\\"));
-  _tcscat(buffer, config.path.c_str());
-  return buffer;
+  _tcscat(buffer, config.path.c_str());return buffer;
 }
 #endif
 

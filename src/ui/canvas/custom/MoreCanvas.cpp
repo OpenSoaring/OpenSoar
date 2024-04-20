@@ -40,10 +40,7 @@ unsigned
 Canvas::DrawFormattedText(const PixelRect r, const tstring_view text,
                           const unsigned format) noexcept
 {
-#ifndef UNICODE
   assert(ValidateUTF8(text));
-#endif
-
   if (font == nullptr)
     return 0;
 

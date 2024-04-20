@@ -6,10 +6,6 @@
 
 #include <algorithm>
 
-#ifdef _UNICODE
-#include <tchar.h>
-#endif
-
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -49,6 +45,3 @@ BasicStringBuilder<char>::Format(const_pointer fmt, ...)
 	Extend(n);
 }
 
-#ifdef _UNICODE
-template class BasicStringBuilder<TCHAR>;
-#endif

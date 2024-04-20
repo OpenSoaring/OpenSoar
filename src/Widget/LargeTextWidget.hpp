@@ -6,9 +6,6 @@
 #include "WindowWidget.hpp"
 
 #include <tchar.h>
-#ifdef _UNICODE
-#include <string>
-#endif
 
 struct DialogLook;
 
@@ -25,10 +22,6 @@ public:
     :look(_look), text(_text) {}
 
   void SetText(const TCHAR *text) noexcept;
-#ifdef _UNICODE
-  void SetText(const char *text) noexcept;
-  void SetText(const std::string_view text) noexcept;
-#endif
   /* virtual methods from class Widget */
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool SetFocus() noexcept override;
