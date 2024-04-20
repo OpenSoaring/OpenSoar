@@ -64,8 +64,7 @@ WrapPort(const DeviceConfig &config, PortListener *listener,
 }
 
 #if defined(_WIN32)
-//void 
-const TCHAR *
+static const TCHAR *
 WindowsPort(TCHAR buffer[], const DeviceConfig &config) {
   if (config.path.empty())
     throw std::runtime_error("No port path configured");
