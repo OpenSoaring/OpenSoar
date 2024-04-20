@@ -262,20 +262,18 @@ FreeVarioDevice::OnSensorUpdate(const MoreData &basic)
  }
    
  if (basic.external_wind_available.IsValid() && basic.attitude.heading_available){
-   double relWindDirection = basic.external_wind.bearing.Degrees() - basic.attitude.heading.Degrees() + 180;     
-   double norm = basic.external_wind.norm;
-   sprintf(nmeaOutbuffer,"PFV,AWD,%f", relWindDirection);
+   const Angle relWindDirection = (basic.external_wind.bearing - Angle::HalfCircle() - basic.attitude.heading).AsBearing();     
+   snprintf(nmeaOutbuffer,sizeof(nmeaOutbuffer),"PFV,AWD,%f", relWindDirection.Degrees());
    PortWriteNMEA(port, nmeaOutbuffer, env);
-   sprintf(nmeaOutbuffer,"PFV,AWS,%f", norm);
+   snprintf(nmeaOutbuffer,sizeof(nmeaOutbuffer),"PFV,AWS,%f", basic.external_wind.norm);
    PortWriteNMEA(port, nmeaOutbuffer, env);
  }
 
  if (basic.external_instantaneous_wind_available.IsValid() && basic.attitude.heading_available){
-   double relWindDirection = basic.external_instantaneous_wind.bearing.Degrees() - basic.attitude.heading.Degrees() + 180;
-   double norm =  basic.external_instantaneous_wind.norm;
-   sprintf(nmeaOutbuffer,"PFV,CWD,%f", relWindDirection);
+   const Angle relWindDirection = (basic.external_instantaneous_wind.bearing - Angle::HalfCircle() - basic.attitude.heading).AsBearing();     
+   snprintf(nmeaOutbuffer,sizeof(nmeaOutbuffer),"PFV,CWD,%f", relWindDirection.Degrees());
    PortWriteNMEA(port, nmeaOutbuffer, env);
-   sprintf(nmeaOutbuffer,"PFV,CWS,%f", norm);
+   snprintf(nmeaOutbuffer,sizeof(nmeaOutbuffer),"PFV,CWS,%f", basic.external_instantaneous_wind.norm);
    PortWriteNMEA(port, nmeaOutbuffer, env);
  }
 
@@ -298,11 +296,10 @@ FreeVarioDevice::OnCalculatedUpdate(const MoreData &basic,
 
   char nmeaOutbuffer[80];
  if (!basic.external_instantaneous_wind_available.IsValid() && calculated.wind.IsNonZero() && basic.track_available){
-   double relWindDirection = calculated.wind.bearing.Degrees() - basic.track.Degrees() + 180;
-   double norm =  calculated.wind.norm;
-   sprintf(nmeaOutbuffer,"PFV,AWD,%f", relWindDirection);
+   const Angle relWindDirection = (calculated.wind.bearing - Angle::HalfCircle() - basic.track).AsBearing();
+   snprintf(nmeaOutbuffer,sizeof(nmeaOutbuffer),"PFV,AWD,%f", relWindDirection.Degrees());
    PortWriteNMEA(port, nmeaOutbuffer, env);
-   sprintf(nmeaOutbuffer,"PFV,AWS,%f", norm);
+   snprintf(nmeaOutbuffer,sizeof(nmeaOutbuffer),"PFV,AWS,%f", calculated.wind.norm);
    PortWriteNMEA(port, nmeaOutbuffer, env);
  }
  
