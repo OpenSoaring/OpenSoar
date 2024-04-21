@@ -12,7 +12,7 @@ static constexpr unsigned IMI_SECONDS_IN_HOUR = 60*60;
 static constexpr unsigned IMI_SECONDS_IN_DAY = 24*60*60;
 
 void
-IMI::ConvertToChar(const TCHAR* dest, char* ascii, int outSize)
+IMI::ConvertToChar(const char* dest, char* ascii, int outSize)
 {
   // this is only a copy (n) function)
   strncpy(ascii, dest, outSize - 1);

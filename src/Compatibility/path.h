@@ -18,7 +18,7 @@
 #endif /* !_WIN32 */
 
 static inline bool
-IsDirSeparator(TCHAR ch)
+IsDirSeparator(char ch)
 {
 #ifdef _WIN32
   // at Windows both separators are possible!!!

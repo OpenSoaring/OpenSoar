@@ -6,12 +6,12 @@
 #include <tchar.h>
 
 /** 5.2.5 */
-extern const TCHAR OpenSoar_Version[];
+extern const char OpenSoar_Version[];
 /** 5.2.5F */
-extern const TCHAR OpenSoar_VersionLong[];
+extern const char OpenSoar_VersionLong[];
 /** 5.2.5F-PC */
-extern const TCHAR OpenSoar_VersionString[];
+extern const char OpenSoar_VersionString[];
 /** PC 5.2.5F 7. Oct 09 */
-extern const TCHAR OpenSoar_VersionStringOld[];
+extern const char OpenSoar_VersionStringOld[];
 /** XCSoar v5.2.5F-PC */
-extern const TCHAR OpenSoar_ProductToken[];
+extern const char OpenSoar_ProductToken[];

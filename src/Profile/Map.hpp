@@ -87,7 +87,7 @@ public:
 
   void Set(std::string_view key, const char *value) noexcept;
 
-  // TCHAR string values
+  // char string values
 
   /**
    * Reads a value from the profile map
@@ -95,11 +95,11 @@ public:
    * @param key name of the value that should be read
    * @param value Pointer to the output buffer
    */
-  bool Get(std::string_view key, std::span<TCHAR> value) const noexcept;
+  bool Get(std::string_view key, std::span<char> value) const noexcept;
 
   template<size_t max>
   bool Get(std::string_view key,
-           BasicStringBuffer<TCHAR, max> &value) const noexcept {
+           BasicStringBuffer<char, max> &value) const noexcept {
     return Get(key, std::span{value.data(), value.capacity()});
   }
 
@@ -174,7 +174,7 @@ public:
    * Gets a path from the profile and return its base name only.
    */
   [[gnu::pure]]
-  StringPointer<TCHAR> GetPathBase(std::string_view key) const noexcept;
+  StringPointer<char> GetPathBase(std::string_view key) const noexcept;
 
   void SetPath(std::string_view key, Path value) noexcept;
 

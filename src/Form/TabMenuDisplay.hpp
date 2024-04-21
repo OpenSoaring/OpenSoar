@@ -33,7 +33,7 @@ class TabMenuDisplay final : public PaintWindow
   struct SubMenuButton {
     //TODO MainMenuButton *group;
     unsigned main_menu_index;
-    const TCHAR *caption;
+    const char *caption;
 
     PixelRect rc;
 
@@ -50,7 +50,7 @@ class TabMenuDisplay final : public PaintWindow
    * class that holds the main menu button and info
    */
   struct MainMenuButton {
-    const TCHAR *caption;
+    const char *caption;
 
     PixelRect rc;
 
@@ -151,7 +151,7 @@ public:
    */
   void InitMenu(const TabMenuGroup groups[], unsigned n_groups) noexcept;
 
-  const TCHAR *GetCaption(TCHAR buffer[], size_t size) const noexcept;
+  const char *GetCaption(char buffer[], size_t size) const noexcept;
 
   /**
    * Call this from PagerWidget's OnPageFlipped callback.  It moves
@@ -181,7 +181,7 @@ private:
     return buttons.size();
   }
 
-  const TCHAR *GetPageParentCaption(unsigned page) const noexcept {
+  const char *GetPageParentCaption(unsigned page) const noexcept {
     assert(page < GetNumPages());
 
     return main_menu_buttons[buttons[page].main_menu_index].caption;

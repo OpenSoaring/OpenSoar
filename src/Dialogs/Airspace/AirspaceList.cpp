@@ -206,7 +206,7 @@ AirspaceListWidget::UpdateList()
   if (dialog_state.type != WILDCARD)
     data.cls = (AirspaceClass)dialog_state.type;
 
-  const TCHAR *name_filter = filter_widget.GetValueString(NAME);
+  const char *name_filter = filter_widget.GetValueString(NAME);
   if (!StringIsEmpty(name_filter))
     data.name_prefix = name_filter;
 
@@ -297,10 +297,10 @@ AirspaceListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
 }
 
 [[gnu::pure]]
-static const TCHAR *
-GetHeadingString(TCHAR *buffer)
+static const char *
+GetHeadingString(char *buffer)
 {
-  TCHAR heading[32];
+  char heading[32];
   FormatBearing(heading, ARRAY_SIZE(heading),
                 CommonInterface::Basic().attitude.heading);
 
@@ -330,7 +330,7 @@ AirspaceFilterWidget::Update()
   DataFieldEnum &direction_df = *(DataFieldEnum *)
     direction_control.GetDataField();
 
-  TCHAR buffer[64];
+  char buffer[64];
   direction_df.replaceEnumText(0, GetHeadingString(buffer));
   direction_control.RefreshDisplay();
 }
@@ -344,8 +344,8 @@ FillDistanceEnum(DataFieldEnum &df)
     25, 50, 75, 100, 150, 250, 500, 1000
   };
 
-  TCHAR buffer[64];
-  const TCHAR *unit = Units::GetDistanceName();
+  char buffer[64];
+  const char *unit = Units::GetDistanceName();
   for (unsigned i = 0; i < ARRAY_SIZE(distances); ++i) {
     StringFormatUnsafe(buffer, _T("%u %s"), distances[i], unit);
     df.AddChoice(distances[i], buffer);
@@ -357,7 +357,7 @@ FillDistanceEnum(DataFieldEnum &df)
 static void
 FillDirectionEnum(DataFieldEnum &df)
 {
-  TCHAR buffer[64];
+  char buffer[64];
 
   df.AddChoice(WILDCARD, _T("*"));
   df.AddChoice(0, GetHeadingString(buffer));

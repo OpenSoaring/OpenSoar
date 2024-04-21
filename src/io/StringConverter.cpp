@@ -52,7 +52,7 @@ StringConverter::DetectStrip(std::string_view src) noexcept
   return src;
 }
 
-TCHAR *
+char *
 StringConverter::Convert(char *narrow)
 {
   narrow = DetectStrip(narrow);

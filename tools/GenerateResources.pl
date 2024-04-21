@@ -29,10 +29,8 @@ while (<>) {
     }
 }
 
-print "#include <tchar.h>\n";
-
 print "static constexpr struct {\n";
-print "  const TCHAR *name;\n";
+print "  const char *name;\n";
 print "  std::span<const std::byte> data;\n";
 print "} named_resources[] = {";
 foreach my $i (@named) {

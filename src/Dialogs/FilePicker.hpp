@@ -9,8 +9,8 @@ class AllocatedPath;
 class FileDataField;
 
 bool
-FilePicker(const TCHAR *caption, FileDataField &df,
-           const TCHAR *help_text = nullptr);
+FilePicker(const char *caption, FileDataField &df,
+           const char *help_text = nullptr);
 
 /**
  * Ask the user to pick a file from the data directory.
@@ -21,4 +21,4 @@ FilePicker(const TCHAR *caption, FileDataField &df,
  * cancelled the dialog or if there are no matching files
  */
 AllocatedPath
-FilePicker(const TCHAR *caption, const TCHAR *patterns);
+FilePicker(const char *caption, const char *patterns);

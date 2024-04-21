@@ -103,7 +103,7 @@ GetDriverByIndex(unsigned i)
 }
 
 const struct DeviceRegister *
-FindDriverByName(const TCHAR *name)
+FindDriverByName(const char *name)
 {
   for (auto i = driver_list; *i != nullptr; ++i) {
     const DeviceRegister &driver = **i;
@@ -114,8 +114,8 @@ FindDriverByName(const TCHAR *name)
   return driver_list[0];
 }
 
-const TCHAR *
-FindDriverDisplayName(const TCHAR *name)
+const char *
+FindDriverDisplayName(const char *name)
 {
   assert(name != nullptr);
 

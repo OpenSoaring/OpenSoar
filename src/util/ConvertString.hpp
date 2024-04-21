@@ -13,7 +13,7 @@
 #include <cassert>
 
 /**
- * Convert a UTF-8 string to a TCHAR string.  The source buffer passed
+ * Convert a UTF-8 string to a char string.  The source buffer passed
  * to the constructor must be valid as long as this object is being
  * used.
  */
@@ -54,7 +54,7 @@ public:
 };
 
 /**
- * Convert a TCHAR string to UTF-8.  The source buffer passed to the
+ * Convert a char string to UTF-8.  The source buffer passed to the
  * constructor must be valid as long as this object is being used.
  */
 class WideToUTF8Converter {
@@ -94,7 +94,7 @@ public:
 };
 
 /**
- * Convert a TCHAR string to ACP (Windows ANSI code page).  The source
+ * Convert a char string to ACP (Windows ANSI code page).  The source
  * buffer passed to the constructor must be valid as long as this
  * object is being used.
  */

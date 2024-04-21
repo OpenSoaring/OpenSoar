@@ -144,7 +144,7 @@ TeamCodeWidget::OnSetWaypointClicked()
 inline void
 TeamCodeWidget::OnCodeClicked()
 {
-  TCHAR newTeammateCode[10];
+  char newTeammateCode[10];
 
   CopyTruncateString(newTeammateCode, ARRAY_SIZE(newTeammateCode),
                      CommonInterface::GetComputerSettings().team_code.team_code.GetCode());
@@ -166,7 +166,7 @@ TeamCodeWidget::OnFlarmLockClicked()
 {
   TeamCodeSettings &settings =
     CommonInterface::SetComputerSettings().team_code;
-  TCHAR newTeamFlarmCNTarget[decltype(settings.team_flarm_callsign)::capacity()];
+  char newTeamFlarmCNTarget[decltype(settings.team_flarm_callsign)::capacity()];
   strcpy(newTeamFlarmCNTarget, settings.team_flarm_callsign.c_str());
 
   if (!TextEntryDialog(newTeamFlarmCNTarget, 4))

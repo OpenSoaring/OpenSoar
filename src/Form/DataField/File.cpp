@@ -20,9 +20,9 @@
  */
 [[gnu::pure]]
 static bool
-IsInternalFile(const TCHAR *str) noexcept
+IsInternalFile(const char *str) noexcept
 {
-  static const TCHAR *const ifiles[] = {
+  static const char *const ifiles[] = {
     _T("xcsoar-checklist.txt"),
     _T("xcsoar-flarm.txt"),
     _T("xcsoar-marks.txt"),
@@ -73,7 +73,7 @@ FileDataField::FileDataField(DataFieldListener *listener) noexcept
    postponed_value(nullptr) {}
 
 void
-FileDataField::ScanDirectoryTop(const TCHAR *filter) noexcept
+FileDataField::ScanDirectoryTop(const char *filter) noexcept
 {
   if (!loaded) {
     if (!postponed_patterns.full() &&
@@ -91,7 +91,7 @@ FileDataField::ScanDirectoryTop(const TCHAR *filter) noexcept
 }
 
 void
-FileDataField::ScanMultiplePatterns(const TCHAR *patterns) noexcept
+FileDataField::ScanMultiplePatterns(const char *patterns) noexcept
 {
   size_t length;
   while ((length = strlen(patterns)) > 0) {
@@ -209,7 +209,7 @@ FileDataField::AddNull() noexcept
   item.path = Path(_T(""));
 }
 
-const TCHAR *
+const char *
 FileDataField::GetAsString() const noexcept
 {
   if (!loaded && postponed_value != nullptr)
@@ -221,7 +221,7 @@ FileDataField::GetAsString() const noexcept
     return _T("");
 }
 
-const TCHAR *
+const char *
 FileDataField::GetAsDisplayString() const noexcept
 {
   if (!loaded && postponed_value != nullptr) {
@@ -305,7 +305,7 @@ FileDataField::Sort() noexcept
 }
 
 ComboList
-FileDataField::CreateComboList([[maybe_unused]] const TCHAR *reference) const noexcept
+FileDataField::CreateComboList([[maybe_unused]] const char *reference) const noexcept
 {
   /* sorry for the const_cast .. this method keeps the promise of not
      modifying the object, given that one does not count filling the
@@ -314,7 +314,7 @@ FileDataField::CreateComboList([[maybe_unused]] const TCHAR *reference) const no
 
   ComboList combo_list;
 
-  TCHAR buffer[MAX_PATH];
+  char buffer[MAX_PATH];
 
   for (unsigned i = 0; i < files.size(); i++) {
     const Path path = files[i].filename;
@@ -331,7 +331,7 @@ FileDataField::CreateComboList([[maybe_unused]] const TCHAR *reference) const no
       }
     }
 
-    const TCHAR *display_string = path.c_str();
+    const char *display_string = path.c_str();
     if (found) {
       /* yes - append the absolute path to allow the user to see the
          difference */
@@ -351,7 +351,7 @@ FileDataField::CreateComboList([[maybe_unused]] const TCHAR *reference) const no
 }
 
 void
-FileDataField::SetFromCombo(int i, const TCHAR *) noexcept
+FileDataField::SetFromCombo(int i, const char *) noexcept
 {
   ModifyIndex(i);
 }

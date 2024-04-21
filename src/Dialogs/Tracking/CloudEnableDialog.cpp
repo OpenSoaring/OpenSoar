@@ -48,7 +48,7 @@ CloudEnableDialog() noexcept
     return;
 #endif
 
-  const TCHAR *msg = _("The XCSoar project is currently developing a revolutionary service which allows sharing thermal/wave locations and more with other pilots.\n"
+  const char *msg = _("The XCSoar project is currently developing a revolutionary service which allows sharing thermal/wave locations and more with other pilots.\n"
                        "Do you wish to participate in the field test? This means that your position, thermal/wave locations and other weather data will be transmitted to our test server. You can disable it at any time in the \"Tracking\" settings.\n"
                        "Please help us improve XCSoar!");
 

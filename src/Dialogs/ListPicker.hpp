@@ -8,7 +8,7 @@
 class ListItemRenderer;
 
 /** returns string of item's help text **/
-typedef const TCHAR* (*ItemHelpCallback_t)(unsigned item);
+typedef const char* (*ItemHelpCallback_t)(unsigned item);
 
 /**
  * Shows a list dialog and lets the user pick an item.
@@ -26,10 +26,10 @@ typedef const TCHAR* (*ItemHelpCallback_t)(unsigned item);
  * the user clicked the "extra" button
  */
 int
-ListPicker(const TCHAR *caption,
+ListPicker(const char *caption,
            unsigned num_items, unsigned initial_value,
            unsigned item_height,
            ListItemRenderer &item_renderer, bool update = false,
-           const TCHAR *help_text = nullptr,
+           const char *help_text = nullptr,
            ItemHelpCallback_t itemhelp_callback = nullptr,
-           const TCHAR *extra_caption=nullptr);
+           const char *extra_caption=nullptr);

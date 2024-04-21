@@ -24,7 +24,7 @@ Profile::Get([[maybe_unused]] std::string_view key,
 
 bool
 Profile::Get([[maybe_unused]] std::string_view key,
-             std::span<TCHAR> value) noexcept
+             std::span<char> value) noexcept
 {
   value[0] = _T('\0');
   return false;

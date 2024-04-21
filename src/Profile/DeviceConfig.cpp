@@ -89,7 +89,7 @@ LoadPath(const ProfileMap &map, DeviceConfig &config, unsigned n)
   bool retvalue = map.Get(buffer, config.path);
   // the usual windows port names has no colon at the end
   if (retvalue && !config.path.empty()) {
-    if ((config.path.back() == TCHAR(':')) &&
+    if ((config.path.back() == char(':')) &&
         /* In Windows the value itself should be only have the short */
       config.path.StartsWith(_T("COM"))) {
       /* old-style raw names has a trailing colon (for backwards

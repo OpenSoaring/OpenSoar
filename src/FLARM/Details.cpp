@@ -21,7 +21,7 @@ LookupRecord(FlarmId id) noexcept
   return traffic_databases->flarm_net.FindRecordById(id);
 }
 
-const TCHAR *
+const char *
 LookupCallsign(FlarmId id) noexcept
 {
   if (traffic_databases == nullptr)
@@ -31,7 +31,7 @@ LookupCallsign(FlarmId id) noexcept
 }
 
 FlarmId
-LookupId(const TCHAR *cn) noexcept
+LookupId(const char *cn) noexcept
 {
   assert(traffic_databases != nullptr);
 
@@ -39,7 +39,7 @@ LookupId(const TCHAR *cn) noexcept
 }
 
 bool
-AddSecondaryItem(FlarmId id, const TCHAR *name) noexcept
+AddSecondaryItem(FlarmId id, const char *name) noexcept
 {
   assert(id.IsDefined());
   assert(traffic_databases != nullptr);
@@ -48,7 +48,7 @@ AddSecondaryItem(FlarmId id, const TCHAR *name) noexcept
 }
 
 unsigned
-FindIdsByCallSign(const TCHAR *cn, FlarmId array[], unsigned size) noexcept
+FindIdsByCallSign(const char *cn, FlarmId array[], unsigned size) noexcept
 {
   assert(cn != NULL);
   assert(!StringIsEmpty(cn));

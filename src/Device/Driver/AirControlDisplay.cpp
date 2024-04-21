@@ -120,7 +120,7 @@ public:
               OperationEnvironment &env) override;
   bool PutVolume(unsigned volume, OperationEnvironment &env) override;
   bool PutStandbyFrequency(RadioFrequency frequency,
-                           const TCHAR *name,
+                           const char *name,
                            OperationEnvironment &env) override;
   bool PutTransponderCode(TransponderCode code, OperationEnvironment &env) override;
   void OnSensorUpdate(const MoreData &basic) override;
@@ -148,7 +148,7 @@ ACDDevice::PutVolume(unsigned volume, OperationEnvironment &env)
 
 bool
 ACDDevice::PutStandbyFrequency(RadioFrequency frequency,
-                                   [[maybe_unused]] const TCHAR *name,
+                                   [[maybe_unused]] const char *name,
                                    OperationEnvironment &env)
 {
   char buffer[100];

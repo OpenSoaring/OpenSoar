@@ -5,10 +5,10 @@
 
 #include <algorithm>
 
-const TCHAR *
+const char *
 PasswordDataField::GetAsDisplayString() const noexcept
 {
-  const TCHAR *obfuscated = _T("********************************");
+  const char *obfuscated = _T("********************************");
   const size_t obfuscated_length = strlen(obfuscated);
   size_t length = std::min(strlen(GetAsString()), obfuscated_length);
   return obfuscated + (obfuscated_length - length);

@@ -5,14 +5,14 @@
 #include "util/Macros.hpp"
 #include "Language/Language.hpp"
 
-static const TCHAR *const severity_strings[] = {
+static const char *const severity_strings[] = {
   N_("No error"),
   N_("Information"),
   N_("Reduced functionality"),
   N_("Fatal problem"),
 };
 
-const TCHAR *
+const char *
 FlarmError::ToString(Severity severity) noexcept
 {
   unsigned i = (unsigned)severity;
@@ -23,7 +23,7 @@ FlarmError::ToString(Severity severity) noexcept
 
 static constexpr struct {
   FlarmError::Code code;
-  const TCHAR *string;
+  const char *string;
 } error_strings[] = {
   { FlarmError::Code::FIRMWARE_TIMEOUT, N_("Firmware timeout") },
   { FlarmError::Code::POWER, N_("Power") },
@@ -41,7 +41,7 @@ static constexpr struct {
   { FlarmError::Code::OTHER, nullptr }
 };
 
-const TCHAR *
+const char *
 FlarmError::ToString(Code code) noexcept
 {
   for (auto i = error_strings; i->string != nullptr; ++i)

@@ -10,7 +10,6 @@
 #include <iterator>
 #endif
 
-typedef char TCHAR;
 #define _stprintf sprintf
 #define _vstprintf vsprintf
 #define _vsntprintf vsnprintf

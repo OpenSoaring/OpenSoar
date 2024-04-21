@@ -30,7 +30,7 @@
 
 static constexpr struct {
   DeviceConfig::PortType type;
-  const TCHAR *label;
+  const char *label;
 } port_types[] = {
   { DeviceConfig::PortType::DISABLED, N_("Disabled") },
 #ifdef HAVE_INTERNAL_GPS
@@ -62,8 +62,8 @@ static constexpr unsigned num_port_types = std::size(port_types) - 1;
 
 static unsigned
 AddPort(DataFieldEnum &df, DeviceConfig::PortType type,
-        const TCHAR *text, const TCHAR *display_string=nullptr,
-        const TCHAR *help=nullptr) noexcept
+        const char *text, const char *display_string=nullptr,
+        const char *help=nullptr) noexcept
 {
   /* the upper 16 bit is the port type, and the lower 16 bit is a
      serial number to make the enum id unique */
@@ -111,9 +111,9 @@ try {
                                               "Enum\\BthEnum")};
   std::map<const tstring, tstring> bthmap;
   for (unsigned k = 0;; ++k) {
-    TCHAR dev_name[128];
-    TCHAR name[128];
-    TCHAR friendly_name[128];
+    char dev_name[128];
+    char name[128];
+    char friendly_name[128];
 
     if (!bthenums.EnumKey(k, std::span{dev_name}))
       break;
@@ -137,9 +137,9 @@ try {
                                               "Enum\\BthLE")};
   std::map<const tstring, tstring> blemap;
   for (unsigned k = 0;; ++k) {
-    TCHAR dev_name[128];
-    TCHAR name[128];
-    TCHAR friendly_name[128];
+    char dev_name[128];
+    char name[128];
+    char friendly_name[128];
 
     if (!bthle.EnumKey(k, std::span{dev_name}))
       break;
@@ -165,8 +165,8 @@ try {
   RegistryKey serialcomm{HKEY_LOCAL_MACHINE, _T("Hardware\\DeviceMap\\SerialComm")};
 
   for (unsigned i = 0;; ++i) {
-    TCHAR name[128];
-    TCHAR value[64];
+    char name[128];
+    char value[64];
 
     DWORD type;
     if (!serialcomm.EnumValue(i, std::span{name}, &type,
@@ -179,7 +179,7 @@ try {
 
     RegistryKey devices {HKEY_LOCAL_MACHINE, _T("SYSTEM\\CurrentControlSet\\"
             "Control\\COM Name Arbiter\\Devices")};
-    TCHAR name1[0x200];
+    char name1[0x200];
 
     if (!devices.GetValue(value, name1))
       break;
@@ -251,7 +251,7 @@ FillPortTypes(DataFieldEnum &df, const DeviceConfig &config) noexcept
 // maybe this is to check with the tests!
 static void
 SetPort(DataFieldEnum &df, DeviceConfig::PortType type,
-        const TCHAR *value) noexcept
+        const char *value) noexcept
 {
   assert(value != nullptr);
 
@@ -279,12 +279,12 @@ static void FillSerialPorts(DataFieldEnum &df,
 
 void
 SetBluetoothPort(DataFieldEnum &df, DeviceConfig::PortType type,
-                 const TCHAR *bluetooth_mac) noexcept
+                 const char *bluetooth_mac) noexcept
 {
   assert(bluetooth_mac != nullptr);
 
   if (!df.SetValue(bluetooth_mac)) {
-    const TCHAR *name = nullptr;
+    const char *name = nullptr;
 #ifdef ANDROID
     if (bluetooth_helper != nullptr)
       name = bluetooth_helper->GetNameFromAddress(Java::GetEnv(),
@@ -320,8 +320,8 @@ FillAndroidIOIOPorts([[maybe_unused]] DataFieldEnum &df, [[maybe_unused]] const 
 #if defined(ANDROID)
   df.EnableItemHelp(true);
 
-  TCHAR tempID[4];
-  TCHAR tempName[15];
+  char tempID[4];
+  char tempName[15];
   for (unsigned i = 0; i < AndroidIOIOUartPort::getNumberUarts(); i++) {
     StringFormatUnsafe(tempID, _T("%u"), i);
     StringFormat(tempName, sizeof(tempName), _T("IOIO UART %u"), i);
@@ -347,7 +347,7 @@ FillPorts(DataFieldEnum &df, const DeviceConfig &config) noexcept
 
 void
 UpdatePortEntry(DataFieldEnum &df, DeviceConfig::PortType type,
-                const TCHAR *value, const TCHAR *name) noexcept
+                const char *value, const char *name) noexcept
 {
   for (std::size_t i = 0, n = df.Count(); i < n; ++i) {
     const auto &item = df[i];
