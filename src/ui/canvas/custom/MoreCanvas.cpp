@@ -74,7 +74,7 @@ Canvas::DrawFormattedText(const PixelRect r, const tstring_view text,
 
   // simple wordbreak algorithm. looks for single spaces only, no tabs,
   // no grouping of multiple spaces
-  for (size_t i = 0; i < len; i += _tcslen(duplicated + i) + 1) {
+  for (size_t i = 0; i < len; i += strlen(duplicated + i) + 1) {
     PixelSize sz = CalcTextSize(duplicated + i);
     TCHAR *prev_p = nullptr;
 
@@ -103,7 +103,7 @@ Canvas::DrawFormattedText(const PixelRect r, const tstring_view text,
   int y = (format & DT_VCENTER) && lines < max_lines
     ? (r.top + r.bottom - lines * skip) / 2
     : r.top;
-  for (size_t i = 0; i < len; i += _tcslen(duplicated + i) + 1) {
+  for (size_t i = 0; i < len; i += strlen(duplicated + i) + 1) {
     if (duplicated[i] != _T('\0')) {
       int x;
       if (format & (DT_RIGHT | DT_CENTER)) {
