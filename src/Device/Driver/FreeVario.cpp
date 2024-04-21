@@ -246,9 +246,9 @@ FreeVarioDevice::ParseNMEA(const char *_line, NMEAInfo &info)
 }
 
 /*
- * Send total_energy_vario to FreeVario device on every sensor update.
- * Is needed to have a good refresh rate on the external device showing the
- * vario values
+ * Send total_energy_vario, external wind direction and external wind speed to 
+ * FreeVario device on every sensor update. Is needed to have a good refresh 
+ * rate on the external device showing the vario and external wind values.
  */
 void
 FreeVarioDevice::OnSensorUpdate(const MoreData &basic)
@@ -256,10 +256,26 @@ FreeVarioDevice::OnSensorUpdate(const MoreData &basic)
    NullOperationEnvironment env;
    char nmeaOutbuffer[80];
 
-   if (basic.total_energy_vario_available.IsValid()) {
-     sprintf(nmeaOutbuffer,"PFV,VAR,%f", basic.total_energy_vario);
-     PortWriteNMEA(port, nmeaOutbuffer, env);
-   }
+ if (basic.total_energy_vario_available.IsValid()) {
+   sprintf(nmeaOutbuffer,"PFV,VAR,%f", basic.total_energy_vario);
+   PortWriteNMEA(port, nmeaOutbuffer, env);
+ }
+   
+ if (basic.external_wind_available.IsValid() && basic.attitude.heading_available){
+   const Angle relWindDirection = (basic.external_wind.bearing - Angle::HalfCircle() - basic.attitude.heading).AsBearing();     
+   snprintf(nmeaOutbuffer,sizeof(nmeaOutbuffer),"PFV,AWD,%f", relWindDirection.Degrees());
+   PortWriteNMEA(port, nmeaOutbuffer, env);
+   snprintf(nmeaOutbuffer,sizeof(nmeaOutbuffer),"PFV,AWS,%f", basic.external_wind.norm);
+   PortWriteNMEA(port, nmeaOutbuffer, env);
+ }
+
+ if (basic.external_instantaneous_wind_available.IsValid() && basic.attitude.heading_available){
+   const Angle relWindDirection = (basic.external_instantaneous_wind.bearing - Angle::HalfCircle() - basic.attitude.heading).AsBearing();     
+   snprintf(nmeaOutbuffer,sizeof(nmeaOutbuffer),"PFV,CWD,%f", relWindDirection.Degrees());
+   PortWriteNMEA(port, nmeaOutbuffer, env);
+   snprintf(nmeaOutbuffer,sizeof(nmeaOutbuffer),"PFV,CWS,%f", basic.external_instantaneous_wind.norm);
+   PortWriteNMEA(port, nmeaOutbuffer, env);
+ }
 
    // TODO(August2111): basic.netto_variable has no timestamp unfortunately?
    // if (basic.netto_vario_available.IsValid()) {
@@ -267,7 +283,6 @@ FreeVarioDevice::OnSensorUpdate(const MoreData &basic)
      PortWriteNMEA(port, nmeaOutbuffer, env);
    // }
 }
-
 
 /*
  * Always send the calculated updated values to the FreeVario to have a good
@@ -280,7 +295,14 @@ FreeVarioDevice::OnCalculatedUpdate(const MoreData &basic,
   NullOperationEnvironment env;
 
   char nmeaOutbuffer[80];
-
+ if (!basic.external_instantaneous_wind_available.IsValid() && calculated.wind.IsNonZero() && basic.track_available){
+   const Angle relWindDirection = (calculated.wind.bearing - Angle::HalfCircle() - basic.track).AsBearing();
+   snprintf(nmeaOutbuffer,sizeof(nmeaOutbuffer),"PFV,AWD,%f", relWindDirection.Degrees());
+   PortWriteNMEA(port, nmeaOutbuffer, env);
+   snprintf(nmeaOutbuffer,sizeof(nmeaOutbuffer),"PFV,AWS,%f", calculated.wind.norm);
+   PortWriteNMEA(port, nmeaOutbuffer, env);
+ }
+ 
  if (basic.baro_altitude_available.IsValid()){
    sprintf(nmeaOutbuffer,"PFV,HIG,%f", basic.baro_altitude);
    PortWriteNMEA(port, nmeaOutbuffer, env);
