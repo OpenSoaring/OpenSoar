@@ -31,7 +31,7 @@ class QuickMenuButtonRenderer final : public ButtonRenderer {
 
 public:
   explicit QuickMenuButtonRenderer(const DialogLook &_look,
-                                   const TCHAR *_caption) noexcept
+                                   const char *_caption) noexcept
     :look(_look), caption(_caption) {
     text_renderer.SetCenter();
     text_renderer.SetVCenter();
@@ -149,7 +149,7 @@ QuickMenu::Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept
     if (!menuItem.IsDefined())
       continue;
 
-    TCHAR buffer[100];
+    char buffer[100];
     const auto expanded =
       ButtonLabel::Expand(menuItem.label, std::span{buffer});
     if (!expanded.visible)
@@ -272,7 +272,7 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &menu) noexcept
 }
 
 void dlgQuickMenuShowModal(UI::SingleWindow &parent,
-                           [[maybe_unused]] const TCHAR *mode) noexcept
+                           [[maybe_unused]] const char *mode) noexcept
 {
   const auto *menu = InputEvents::GetMenu(_T("RemoteStick"));
   if (menu == nullptr)

@@ -33,12 +33,12 @@ struct TextInBoxMode {
 };
 
 bool
-TextInBox(Canvas &canvas, const TCHAR *value, PixelPoint p,
+TextInBox(Canvas &canvas, const char *value, PixelPoint p,
           TextInBoxMode mode, const PixelRect &map_rc,
           LabelBlock *label_block=nullptr) noexcept;
 
 bool
-TextInBox(Canvas &canvas, const TCHAR *value, PixelPoint p,
+TextInBox(Canvas &canvas, const char *value, PixelPoint p,
           TextInBoxMode mode,
           PixelSize screen_size,
           LabelBlock *label_block=nullptr) noexcept;

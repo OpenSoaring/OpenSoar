@@ -4,11 +4,11 @@
 #include "TrafficDatabases.hpp"
 #include "util/StringCompare.hxx"
 
-const TCHAR *
+const char *
 TrafficDatabases::FindNameById(FlarmId id) const noexcept
 {
   // try to find flarm from userFile
-  const TCHAR *name = flarm_names.Get(id);
+  const char *name = flarm_names.Get(id);
   if (name != nullptr)
     return name;
 
@@ -21,7 +21,7 @@ TrafficDatabases::FindNameById(FlarmId id) const noexcept
 }
 
 FlarmId
-TrafficDatabases::FindIdByName(const TCHAR *name) const noexcept
+TrafficDatabases::FindIdByName(const char *name) const noexcept
 {
   assert(!StringIsEmpty(name));
 
@@ -39,7 +39,7 @@ TrafficDatabases::FindIdByName(const TCHAR *name) const noexcept
 }
 
 unsigned
-TrafficDatabases::FindIdsByName(const TCHAR *name,
+TrafficDatabases::FindIdsByName(const char *name,
                                 FlarmId *buffer, unsigned max) const noexcept
 {
   assert(!StringIsEmpty(name));

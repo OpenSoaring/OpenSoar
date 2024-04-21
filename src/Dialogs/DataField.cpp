@@ -24,8 +24,8 @@
 #include <algorithm>
 
 bool
-EditDataFieldDialog(const TCHAR *caption, DataField &df,
-                    const TCHAR *help_text)
+EditDataFieldDialog(const char *caption, DataField &df,
+                    const char *help_text)
 {
   const auto type = df.GetType();
   if (type == DataField::Type::FILE) {
@@ -85,7 +85,7 @@ EditDataFieldDialog(const TCHAR *caption, DataField &df,
              type == DataField::Type::PREFIX) {
     auto &sdf = static_cast<DataFieldString &>(df);
 
-    const TCHAR *value = sdf.GetValue();
+    const char *value = sdf.GetValue();
     assert(value != nullptr);
 
     StaticString<EDITSTRINGSIZE> buffer(value);

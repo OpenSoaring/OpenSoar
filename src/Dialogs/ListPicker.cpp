@@ -34,7 +34,7 @@ class ListPickerWidget : public ListWidget {
     UpdateHelp(GetList().GetCursorIndex());
   }};
 
-  const TCHAR *const caption, *const help_text;
+  const char *const caption, *const help_text;
   ItemHelpCallback_t item_help_callback;
   TextWidget *help_widget;
   TwoWidgets *two_widgets;
@@ -44,7 +44,7 @@ public:
                    unsigned _row_height,
                    ListItemRenderer &_item_renderer,
                    WndForm &_dialog,
-                   const TCHAR *_caption, const TCHAR *_help_text) noexcept
+                   const char *_caption, const char *_help_text) noexcept
     :num_items(_num_items), initial_value(_initial_value),
      row_height(_row_height),
      visible(false),
@@ -119,13 +119,13 @@ public:
 };
 
 int
-ListPicker(const TCHAR *caption,
+ListPicker(const char *caption,
            unsigned num_items, unsigned initial_value,
            unsigned item_height,
            ListItemRenderer &item_renderer, bool update,
-           const TCHAR *help_text,
+           const char *help_text,
            ItemHelpCallback_t _itemhelp_callback,
-           const TCHAR *extra_caption)
+           const char *extra_caption)
 {
   assert(num_items <= 0x7fffffff);
   assert((num_items == 0 && initial_value == 0) || initial_value < num_items);

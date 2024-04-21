@@ -78,7 +78,7 @@ class TrafficListWidget : public ListWidget, public DataFieldListener,
     bool loaded = false;
 
     const FlarmNetRecord *record;
-    const TCHAR *callsign;
+    const char *callsign;
 
     /**
      * This object's location.  Check GeoPoint::IsValid().
@@ -356,7 +356,7 @@ TrafficListWidget::UpdateList()
   items.clear();
   last_update.Clear();
 
-  const TCHAR *callsign = filter_widget->GetValueString(CALLSIGN);
+  const char *callsign = filter_widget->GetValueString(CALLSIGN);
   if (!StringIsEmpty(callsign)) {
     FlarmId ids[30];
     unsigned count = FlarmDetails::FindIdsByCallSign(callsign, ids, 30);
@@ -571,7 +571,7 @@ TrafficListWidget::OnPaintItem(Canvas &canvas, PixelRect rc,
   item.AutoLoad();
 
   const FlarmNetRecord *record = item.record;
-  const TCHAR *callsign = item.callsign;
+  const char *callsign = item.callsign;
 
   const DialogLook &look = UIGlobals::GetDialogLook();
   const Font &name_font = *look.list.font_bold;
@@ -580,7 +580,7 @@ TrafficListWidget::OnPaintItem(Canvas &canvas, PixelRect rc,
   const unsigned text_padding = Layout::GetTextPadding();
   const unsigned frame_padding = text_padding / 2;
 
-  TCHAR tmp_id[10];
+  char tmp_id[10];
   item.id.Format(tmp_id);
 
   canvas.Select(name_font);
@@ -765,7 +765,7 @@ TrafficListDialog()
 }
 
 FlarmId
-PickFlarmTraffic(const TCHAR *title, FlarmId array[], unsigned count)
+PickFlarmTraffic(const char *title, FlarmId array[], unsigned count)
 {
   assert(count > 0);
 

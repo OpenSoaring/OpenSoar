@@ -32,7 +32,7 @@
 //	n.n	- Zoom to a set scale
 //	show - Show current zoom scale
 void
-InputEvents::eventZoom(const TCHAR* misc)
+InputEvents::eventZoom(const char* misc)
 {
   // JMW pass through to handler in MapWindow
   // here:
@@ -81,7 +81,7 @@ InputEvents::eventZoom(const TCHAR* misc)
     else
       Message::AddMessage(_("Circling zoom off"));
   } else {
-    TCHAR *endptr;
+    char *endptr;
     double zoom = strtod(misc, &endptr);
     if (endptr == misc)
       return;
@@ -107,7 +107,7 @@ InputEvents::eventZoom(const TCHAR* misc)
  *  @todo feature: ??? Go to waypoint (eg: next, named)
  */
 void
-InputEvents::eventPan(const TCHAR *misc)
+InputEvents::eventPan(const char *misc)
 {
   if (StringIsEqual(misc, _T("toggle")))
     TogglePan();

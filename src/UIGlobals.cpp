@@ -77,4 +77,4 @@ UIGlobals::GetMapLook()
 }
 
 
-const TCHAR *UIGlobals::CommandLine = nullptr;
+const char *UIGlobals::CommandLine = nullptr;

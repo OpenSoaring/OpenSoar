@@ -24,7 +24,7 @@
 #include "BackendComponents.hpp"
 
 void
-InputEvents::eventSounds(const TCHAR *misc)
+InputEvents::eventSounds(const char *misc)
 {
   SoundSettings &settings = CommonInterface::SetUISettings().sound;
  // bool OldEnableSoundVario = EnableSoundVario;
@@ -62,7 +62,7 @@ InputEvents::eventSounds(const TCHAR *misc)
 }
 
 void
-InputEvents::eventSnailTrail(const TCHAR *misc)
+InputEvents::eventSnailTrail(const char *misc)
 {
   MapSettings &settings_map = CommonInterface::SetMapSettings();
 
@@ -102,14 +102,14 @@ InputEvents::eventSnailTrail(const TCHAR *misc)
 }
 
 void
-InputEvents::eventTerrainTopology(const TCHAR *misc)
+InputEvents::eventTerrainTopology(const char *misc)
 {
   eventTerrainTopography(misc);
 }
 
 // Do JUST Terrain/Topography (toggle any, on/off any, show)
 void
-InputEvents::eventTerrainTopography(const TCHAR *misc)
+InputEvents::eventTerrainTopography(const char *misc)
 {
   if (StringIsEqual(misc, _T("terrain toggle")))
     sub_TerrainTopography(-2);
@@ -141,7 +141,7 @@ InputEvents::eventTerrainTopography(const TCHAR *misc)
 // +: increases deadband
 // -: decreases deadband
 void
-InputEvents::eventAudioDeadband(const TCHAR *misc)
+InputEvents::eventAudioDeadband(const char *misc)
 {
   SoundSettings &settings = CommonInterface::SetUISettings().sound;
 
@@ -171,7 +171,7 @@ InputEvents::eventAudioDeadband(const TCHAR *misc)
 // min: selects the worst performance (50%)
 // show: shows the current bug degradation
 void
-InputEvents::eventBugs(const TCHAR *misc)
+InputEvents::eventBugs(const char *misc)
 {
   if (!backend_components->protected_task_manager)
     return;
@@ -193,7 +193,7 @@ InputEvents::eventBugs(const TCHAR *misc)
   else if (StringIsEqual(misc, _T("min")))
     BUGS = 0.5;
   else if (StringIsEqual(misc, _T("show"))) {
-    TCHAR Temp[100];
+    char Temp[100];
     _stprintf(Temp, _T("%d"), (int)(BUGS * 100));
     Message::AddMessage(_("Bugs performance"), Temp);
   }
@@ -212,7 +212,7 @@ InputEvents::eventBugs(const TCHAR *misc)
 // min: selects 0% ballast
 // show: displays a status message indicating the ballast percentage
 void
-InputEvents::eventBallast(const TCHAR *misc)
+InputEvents::eventBallast(const char *misc)
 {
   if (!backend_components->protected_task_manager)
     return;
@@ -235,7 +235,7 @@ InputEvents::eventBallast(const TCHAR *misc)
   else if (StringIsEqual(misc, _T("min")))
     BALLAST = 0;
   else if (StringIsEqual(misc, _T("show"))) {
-    TCHAR Temp[100];
+    char Temp[100];
     _stprintf(Temp, _T("%d"), (int)(BALLAST * 100));
     /* xgettext:no-c-format */
     Message::AddMessage(_("Ballast %"), Temp);
@@ -250,7 +250,7 @@ InputEvents::eventBallast(const TCHAR *misc)
 // ProfileLoad
 // Loads the profile of the specified filename
 void
-InputEvents::eventProfileLoad(const TCHAR *misc)
+InputEvents::eventProfileLoad(const char *misc)
 {
   if (!StringIsEmpty(misc)) {
     Profile::LoadFile(Path(misc));
@@ -268,7 +268,7 @@ InputEvents::eventProfileLoad(const TCHAR *misc)
 // ProfileSave
 // Saves the profile to the specified filename
 void
-InputEvents::eventProfileSave(const TCHAR *misc)
+InputEvents::eventProfileSave(const char *misc)
 {
   if (!StringIsEmpty(misc)) {
       try {
@@ -286,7 +286,7 @@ InputEvents::eventProfileSave(const TCHAR *misc)
 // -: decreases temperature by one degree celsius
 // show: Shows a status message with the current forecast temperature
 void
-InputEvents::eventAdjustForecastTemperature(const TCHAR *misc)
+InputEvents::eventAdjustForecastTemperature(const char *misc)
 {
   if (StringIsEqual(misc, _T("+")))
     CommonInterface::SetComputerSettings().forecast_temperature += Temperature::FromKelvin(1);
@@ -295,16 +295,16 @@ InputEvents::eventAdjustForecastTemperature(const TCHAR *misc)
   else if (StringIsEqual(misc, _T("show"))) {
     auto temperature =
       CommonInterface::GetComputerSettings().forecast_temperature;
-    TCHAR Temp[100];
+    char Temp[100];
     _stprintf(Temp, _T("%f"), temperature.ToUser());
     Message::AddMessage(_("Forecast temperature"), Temp);
   }
 }
 
 void
-InputEvents::eventDeclutterLabels(const TCHAR *misc)
+InputEvents::eventDeclutterLabels(const char *misc)
 {
-  static const TCHAR *const msg[] = {
+  static const char *const msg[] = {
     N_("All"),
     N_("Task & Landables"),
     N_("Task"),
@@ -313,7 +313,7 @@ InputEvents::eventDeclutterLabels(const TCHAR *misc)
   };
   static constexpr unsigned int n = ARRAY_SIZE(msg);
 
-  static const TCHAR *const actions[n] = {
+  static const char *const actions[n] = {
     _T("all"),
     _T("task+landables"),
     _T("task"),
@@ -327,7 +327,7 @@ InputEvents::eventDeclutterLabels(const TCHAR *misc)
     wls = WaypointRendererSettings::LabelSelection(((unsigned)wls + 1) %  n);
     Profile::Set(ProfileKeys::WaypointLabelSelection, (int)wls);
   } else if (StringIsEqual(misc, _T("show"))) {
-    TCHAR tbuf[64];
+    char tbuf[64];
     _stprintf(tbuf, _T("%s: %s"), _("Waypoint labels"),
               gettext(msg[(unsigned)wls]));
     Message::AddMessage(tbuf);
@@ -346,7 +346,7 @@ InputEvents::eventDeclutterLabels(const TCHAR *misc)
 }
 
 void
-InputEvents::eventAirspaceDisplayMode(const TCHAR *misc)
+InputEvents::eventAirspaceDisplayMode(const char *misc)
 {
   AirspaceRendererSettings &settings =
     CommonInterface::SetMapSettings().airspace;
@@ -366,7 +366,7 @@ InputEvents::eventAirspaceDisplayMode(const TCHAR *misc)
 }
 
 void
-InputEvents::eventOrientation(const TCHAR *misc)
+InputEvents::eventOrientation(const char *misc)
 {
   MapSettings &settings_map = CommonInterface::SetMapSettings();
 
@@ -445,7 +445,7 @@ InputEvents::sub_TerrainTopography(int vswitch)
   else if (vswitch == 0) {
     // Show terrain/topography
     // ARH Let user know what's happening
-    TCHAR buf[128];
+    char buf[128];
 
     if (settings_map.topography_enabled)
       _stprintf(buf, _T("\r\n%s / "), _("On"));

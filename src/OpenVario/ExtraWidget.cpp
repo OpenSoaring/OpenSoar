@@ -26,9 +26,9 @@
 #include <tchar.h>
 #include <string>
 
-constexpr const TCHAR *opensoar = _T("OpenSoar");
-constexpr const TCHAR *xcsoar = _T("XCSoar");
-constexpr const TCHAR *main_app = opensoar;
+constexpr const char *opensoar = _T("OpenSoar");
+constexpr const char *xcsoar = _T("XCSoar");
+constexpr const char *main_app = opensoar;
 constexpr const char *_main_app = "OpenSoar";  // only temporarily
 
 class ExtraWidget final : public RowFormWidget {

@@ -241,7 +241,7 @@ public:
    * @return Type as text of airspace
    */
   [[gnu::pure]]
-  const TCHAR *GetType() const noexcept {
+  const char *GetType() const noexcept {
     return astype.c_str();
   }
 
@@ -320,7 +320,7 @@ public:
 #endif
 
   [[gnu::pure]]
-  const TCHAR *GetName() const noexcept {
+  const char *GetName() const noexcept {
     return name.c_str();
   }
 
@@ -328,7 +328,7 @@ public:
    * Returns true if the name begins with the specified string.
    */
   [[gnu::pure]]
-  bool MatchNamePrefix(const TCHAR *prefix) const noexcept;
+  bool MatchNamePrefix(const char *prefix) const noexcept;
 
   [[gnu::pure]]
   RadioFrequency GetRadioFrequency() const noexcept {

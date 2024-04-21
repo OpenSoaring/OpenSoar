@@ -47,7 +47,7 @@ FlarmComputer::Process(FlarmData &flarm, const FlarmData &last_flarm,
     // if we don't know the target's name yet
     if (!traffic.HasName()) {
       // lookup the name of this target's id
-      const TCHAR *fname = FlarmDetails::LookupCallsign(traffic.id);
+      const char *fname = FlarmDetails::LookupCallsign(traffic.id);
       if (fname != NULL)
         traffic.name = fname;
     }

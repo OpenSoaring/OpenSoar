@@ -115,7 +115,7 @@ public:
    * @return true on success
    */
   virtual bool PutActiveFrequency(RadioFrequency frequency,
-                                  const TCHAR *name,
+                                  const char *name,
                                   OperationEnvironment &env) = 0;
 
   /**
@@ -126,7 +126,7 @@ public:
    * @return true on success
    */
   virtual bool PutStandbyFrequency(RadioFrequency frequency,
-                                   const TCHAR *name,
+                                   const char *name,
                                    OperationEnvironment &env) = 0;
 
   /**
@@ -249,10 +249,10 @@ public:
   bool PutVolume(unsigned volume, OperationEnvironment &env) override;
   bool PutPilotEvent(OperationEnvironment &env) override;
   bool PutActiveFrequency(RadioFrequency frequency,
-                          const TCHAR *name,
+                          const char *name,
                           OperationEnvironment &env) override;
   bool PutStandbyFrequency(RadioFrequency frequency,
-                           const TCHAR *name,
+                           const char *name,
                            OperationEnvironment &env) override;
 
   bool PutTransponderCode(TransponderCode code, OperationEnvironment &env) override;
@@ -351,12 +351,12 @@ struct DeviceRegister {
    * The internal name of the driver, i.e. the one that is stored in
    * the profile.
    */
-  const TCHAR *name;
+  const char *name;
 
   /**
    * The human-readable name of this driver.
    */
-  const TCHAR *display_name;
+  const char *display_name;
 
   /**
    * A bit set describing the features of this driver.

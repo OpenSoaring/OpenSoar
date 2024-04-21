@@ -20,4 +20,4 @@ void dlgStatusShowModal(int page);
 void dlgCreditsShowModal(UI::SingleWindow &parent);
 
 void dlgQuickMenuShowModal(UI::SingleWindow & parent,
-                        const TCHAR *mode) noexcept;
+                        const char *mode) noexcept;

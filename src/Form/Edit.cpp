@@ -75,7 +75,7 @@ WndProperty::OnKillFocus() noexcept
 }
 
 WndProperty::WndProperty(ContainerWindow &parent, const DialogLook &_look,
-                         const TCHAR *Caption,
+                         const char *Caption,
                          const PixelRect &rc,
                          int CaptionWidth,
                          const WindowStyle style) noexcept
@@ -97,7 +97,7 @@ WndProperty::WndProperty(const DialogLook &_look) noexcept
 
 void
 WndProperty::Create(ContainerWindow &parent, const PixelRect &rc,
-                    const TCHAR *_caption,
+                    const char *_caption,
                     unsigned _caption_width,
                     const WindowStyle style=WindowStyle()) noexcept
 {
@@ -340,7 +340,7 @@ WndProperty::OnPaint(Canvas &canvas) noexcept
 }
 
 void
-WndProperty::SetText(const TCHAR *_value) noexcept
+WndProperty::SetText(const char *_value) noexcept
 {
   assert(_value != nullptr);
 

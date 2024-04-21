@@ -14,7 +14,7 @@
 AllocatedPath
 ProfileMap::GetPath(std::string_view key) const noexcept
 {
-  TCHAR buffer[MAX_PATH];
+  char buffer[MAX_PATH];
   if (!Get(key, std::span{buffer}))
       return nullptr;
 
@@ -36,7 +36,7 @@ ProfileMap::GetPathIsEqual(std::string_view key, Path value) const noexcept
 
 [[gnu::pure]]
 static Path
-BackslashBaseName(const TCHAR *p) noexcept
+BackslashBaseName(const char *p) noexcept
 {
   if (DIR_SEPARATOR != '\\') {
     const auto *backslash = StringFindLast(p, _T('\\'));
@@ -47,7 +47,7 @@ BackslashBaseName(const TCHAR *p) noexcept
   return Path(p).GetBase();
 }
 
-StringPointer<TCHAR>
+StringPointer<char>
 ProfileMap::GetPathBase(std::string_view key) const noexcept
 {
   const auto *path = Get(key);

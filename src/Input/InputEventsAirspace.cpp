@@ -29,7 +29,7 @@
  * but 0 should mean OFF all the way.
  */
 void
-InputEvents::eventAirSpace(const TCHAR *misc)
+InputEvents::eventAirSpace(const char *misc)
 {
   AirspaceRendererSettings &settings =
     CommonInterface::SetMapSettings().airspace;
@@ -58,7 +58,7 @@ InputEvents::eventAirSpace(const TCHAR *misc)
 // ClearAirspaceWarnings
 // Clears airspace warnings for the selected airspace
 void
-InputEvents::eventClearAirspaceWarnings([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventClearAirspaceWarnings([[maybe_unused]] const char *misc)
 {
   if (auto *airspace_warnings = backend_components->GetAirspaceWarnings())
     airspace_warnings->AcknowledgeAll();
@@ -72,7 +72,7 @@ InputEvents::eventClearAirspaceWarnings([[maybe_unused]] const TCHAR *misc)
 // to the nearest exit to the airspace.
 
 void 
-InputEvents::eventNearestAirspaceDetails([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventNearestAirspaceDetails([[maybe_unused]] const char *misc)
 {
   const MoreData &basic = CommonInterface::Basic();
   const DerivedInfo &calculated = CommonInterface::Calculated();

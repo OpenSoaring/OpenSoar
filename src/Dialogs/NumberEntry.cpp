@@ -62,7 +62,7 @@ NumberEntryDialog(TWidgetDialog<FixedWindowWidget> &dialog,
 // ----------------------------------------------------------------------------
 /** NumberEntryDialog for big signed numbers  -> SIGNED with +/-! */
 bool
-NumberEntryDialog(const TCHAR *caption, int &value, unsigned length) {
+NumberEntryDialog(const char *caption, int &value, unsigned length) {
   TWidgetDialog<FixedWindowWidget> dialog(WidgetDialog::Auto{},
                                           UIGlobals::GetMainWindow(),
                                           UIGlobals::GetDialogLook(), caption);
@@ -75,7 +75,7 @@ NumberEntryDialog(const TCHAR *caption, int &value, unsigned length) {
 // ----------------------------------------------------------------------------
 /** NumberEntryDialog for big unsigned numbers -> UNSIGNED! */
 bool
-NumberEntryDialog(const TCHAR *caption, unsigned &value, unsigned length) {
+NumberEntryDialog(const char *caption, unsigned &value, unsigned length) {
   TWidgetDialog<FixedWindowWidget> dialog(WidgetDialog::Auto{},
                                           UIGlobals::GetMainWindow(),
                                           UIGlobals::GetDialogLook(), caption);
@@ -88,7 +88,7 @@ NumberEntryDialog(const TCHAR *caption, unsigned &value, unsigned length) {
 // ----------------------------------------------------------------------------
 /** NumberEntryDialog for big angle values */
 bool
-AngleEntryDialog(const TCHAR *caption, Angle &value) {
+AngleEntryDialog(const char *caption, Angle &value) {
   TWidgetDialog<FixedWindowWidget> dialog(WidgetDialog::Auto{},
                                           UIGlobals::GetMainWindow(),
                                           UIGlobals::GetDialogLook(), caption);

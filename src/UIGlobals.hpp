@@ -53,6 +53,6 @@ namespace UIGlobals {
   [[gnu::const]]
   const MapLook &GetMapLook();
 
-  extern const TCHAR *CommandLine;
+  extern const char *CommandLine;
   
   };

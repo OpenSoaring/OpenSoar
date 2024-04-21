@@ -19,7 +19,7 @@
 #endif
 
 bool
-PlayResource(const TCHAR *resource_name)
+PlayResource(const char *resource_name)
 {
 #ifdef ANDROID
 

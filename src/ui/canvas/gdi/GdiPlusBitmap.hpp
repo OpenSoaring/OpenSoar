@@ -8,7 +8,7 @@
 #include <tchar.h>
 #include <windef.h>
 
-HBITMAP GdiLoadImage(const TCHAR* filename);
+HBITMAP GdiLoadImage(const char* filename);
 void GdiStartup();
 void GdiShutdown();
 #endif  // _WIN32 && USE_GDI

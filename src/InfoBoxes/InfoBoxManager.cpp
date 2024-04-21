@@ -186,7 +186,7 @@ InfoBoxManager::ShowInfoBoxPicker(const int i) noexcept
 
   ComboList list;
   for (unsigned j = InfoBoxFactory::MIN_TYPE_VAL; j < InfoBoxFactory::NUM_TYPES; j++) {
-    const TCHAR *desc = InfoBoxFactory::GetDescription((InfoBoxFactory::Type)j);
+    const char *desc = InfoBoxFactory::GetDescription((InfoBoxFactory::Type)j);
     list.Append(j, gettext(InfoBoxFactory::GetName((InfoBoxFactory::Type)j)),
                 gettext(InfoBoxFactory::GetName((InfoBoxFactory::Type)j)),
                 desc != NULL ? gettext(desc) : NULL);
@@ -194,7 +194,7 @@ InfoBoxManager::ShowInfoBoxPicker(const int i) noexcept
   for (unsigned j = InfoBoxFactory::e_NUM_AREA_2nd;
        j < InfoBoxFactory::NUM_TYPES_2nd; j++) {
     const InfoBoxFactory::Type type = (InfoBoxFactory::Type)(j);
-    const TCHAR *desc = InfoBoxFactory::GetDescription(type);
+    const char *desc = InfoBoxFactory::GetDescription(type);
     list.Append(j, gettext(InfoBoxFactory::GetName(type)),
                 gettext(InfoBoxFactory::GetName(type)),
                 desc != NULL ? gettext(desc) : NULL);
