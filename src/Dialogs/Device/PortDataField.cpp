@@ -185,7 +185,6 @@ try {
             "Control\\COM Name Arbiter\\Devices")};
     TCHAR name1[0x200];
 
-    DWORD type1;
     if (!devices.GetValue(value, name1))
       break;
 
