@@ -9,6 +9,7 @@
 #include <locale>
 #include <string>
 
-std::wstring UTF8ToWide(const std::string_view s);
+std::wstring 
+UTF8ToWide(const std::string_view s);
 
 #endif

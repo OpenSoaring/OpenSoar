@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#include "UTF8.hpp"
+#include "UTF8Win.hpp"
 #include "LogFile.hpp"
 
 #ifdef _WIN32
