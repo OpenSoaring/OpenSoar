@@ -70,8 +70,8 @@ WindowsPort(TCHAR buffer[], const DeviceConfig &config) {
     throw std::runtime_error("No port path configured");
 
   // the usual windows style of device names:
-  _tcscpy(buffer, _T("\\\\.\\"));
-  _tcscat(buffer, config.path.c_str());return buffer;
+  strcpy(buffer, _T("\\\\.\\"));
+  strcat(buffer, config.path.c_str());return buffer;
 }
 #endif
 
@@ -240,8 +240,8 @@ OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
       throw std::runtime_error("No port path configured");
 
     // the usual windows style of device names:
-    _tcscpy(buffer, _T("\\\\.\\"));
-    _tcscat(buffer, config.path.c_str());
+    strcpy(buffer, _T("\\\\.\\"));
+    strcat(buffer, config.path.c_str());
     path = buffer;
 #else
     throw std::runtime_error("Android USB serial not available");

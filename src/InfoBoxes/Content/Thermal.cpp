@@ -220,7 +220,7 @@ UpdateInfoBoxCircleDiameter(InfoBoxData &data) noexcept
 
   StaticString<16> duration_buffer;
   duration_buffer.Format(_T("%u s"), int(circle_duration));
-  _tcscpy (buffer, duration_buffer);
+  strcpy (buffer, duration_buffer);
   data.SetComment (buffer);
 }
 

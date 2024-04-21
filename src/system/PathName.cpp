@@ -32,5 +32,5 @@ ReplaceBaseName(TCHAR *path, const TCHAR *new_base)
     ++q;
   else
     q = path;
-  _tcscpy(q, new_base);
+  strcpy(q, new_base);
 }

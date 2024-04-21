@@ -343,7 +343,7 @@ FlightStatisticsRenderer::CaptionTask(TCHAR *sTmp, const DerivedInfo &derived) n
 
   if (!task_stats.task_valid ||
       !derived.task_stats.total.remaining.IsDefined()) {
-    _tcscpy(sTmp, _("No task"));
+    strcpy(sTmp, _("No task"));
   } else {
     const auto d_remaining = derived.task_stats.total.remaining.GetDistance();
     if (task_stats.has_targets) {

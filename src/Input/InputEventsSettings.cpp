@@ -452,7 +452,7 @@ InputEvents::sub_TerrainTopography(int vswitch)
     else
       _stprintf(buf, _T("\r\n%s / "), _("Off"));
 
-    _tcscat(buf, settings_map.terrain.enable
+    strcat(buf, settings_map.terrain.enable
             ? _("On") : _("Off"));
 
     Message::AddMessage(_("Topography/Terrain"), buf);
