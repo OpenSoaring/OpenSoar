@@ -30,7 +30,7 @@ protected:
 public:
   /** Constructor. Duplicates the const input to be able to tokenize it. */
   METARLine(const TCHAR *line)
-    :start(_tcsdup(line)), data(start), end(start + _tcslen(line))
+    :start(strdup(line)), data(start), end(start + strlen(line))
   {
     // Trim possible = character at the end (End-of-METAR character)
     if (start != end && *(end - 1) == _T('=')) {
@@ -67,7 +67,7 @@ public:
 static bool
 DetectICAOCodeToken(const TCHAR *token)
 {
-  if (_tcslen(token) != 4)
+  if (strlen(token) != 4)
     return false;
 
   for (unsigned i = 0; i < 4; i++) {
@@ -85,7 +85,7 @@ DetectICAOCodeToken(const TCHAR *token)
 static bool
 DetectTimeCodeToken(const TCHAR *token)
 {
-  if (_tcslen(token) != 7)
+  if (strlen(token) != 7)
     return false;
 
   return token[6] == _T('Z') || token[6] == _T('z');
@@ -97,7 +97,7 @@ ParseTimeCode(const TCHAR *token, ParsedMETAR &parsed)
   assert(DetectTimeCodeToken(token));
 
   TCHAR *endptr;
-  unsigned time_code = _tcstod(token, &endptr);
+  unsigned time_code = strtod(token, &endptr);
   if (endptr == NULL || endptr == token)
     return false;
 
@@ -117,7 +117,7 @@ ParseTimeCode(const TCHAR *token, ParsedMETAR &parsed)
 static bool
 DetectWindToken(const TCHAR *token)
 {
-  unsigned length = _tcslen(token);
+  unsigned length = strlen(token);
 
   if (length != 8 && length != 7)
     return false;
@@ -146,7 +146,7 @@ ParseWind(const TCHAR *token, ParsedMETAR &parsed)
     return true;
 
   TCHAR *endptr;
-  unsigned wind_code = _tcstod(token, &endptr);
+  unsigned wind_code = strtod(token, &endptr);
   if (endptr == NULL || endptr == token)
     return false;
 
@@ -169,14 +169,14 @@ ParseWind(const TCHAR *token, ParsedMETAR &parsed)
 static bool
 DetectCAVOK(const TCHAR *token)
 {
-  return (_tcslen(token) == 5 && StringIsEqualIgnoreCase(token, _T("CAVOK")));
+  return (strlen(token) == 5 && StringIsEqualIgnoreCase(token, _T("CAVOK")));
 }
 
 /** Detects a token with exactly 5 digits */
 static bool
 DetectVisibilityToken(const TCHAR *token)
 {
-  if (_tcslen(token) != 4)
+  if (strlen(token) != 4)
     return false;
 
   for (unsigned i = 0; i < 4; ++i)
@@ -192,7 +192,7 @@ ParseVisibility(const TCHAR *token, ParsedMETAR &parsed)
   assert(DetectVisibilityToken(token));
 
   TCHAR *endptr;
-  parsed.visibility = _tcstol(token, &endptr, 10);
+  parsed.visibility = strtol(token, &endptr, 10);
   if (endptr == NULL || endptr == token)
     return false;
 
@@ -207,7 +207,7 @@ ParseVisibility(const TCHAR *token, ParsedMETAR &parsed)
 static bool
 DetectTemperaturesToken(const TCHAR *token)
 {
-  unsigned length = _tcslen(token);
+  unsigned length = strlen(token);
 
   bool minus_possible = true;
   bool divider_found = false;
@@ -239,7 +239,7 @@ ParseTemperature(const TCHAR *token, double &temperature)
     token++;
 
   TCHAR *endptr;
-  int _temperature = _tcstod(token, &endptr);
+  int _temperature = strtod(token, &endptr);
   if (endptr == NULL || endptr == token)
     return NULL;
 
@@ -274,7 +274,7 @@ ParseTemperatures(const TCHAR *token, ParsedMETAR &parsed)
 static bool
 DetectAdditionalTemperaturesToken(const TCHAR *token)
 {
-  if (_tcslen(token) != 9)
+  if (strlen(token) != 9)
     return false;
 
   if (token[0] != _T('T') && token[0] != _T('t'))
@@ -297,7 +297,7 @@ ParseAdditionalTemperatures(const TCHAR *token, ParsedMETAR &parsed)
   token++;
 
   TCHAR *endptr;
-  long temperature_code = _tcstol(token, &endptr, 10);
+  long temperature_code = strtol(token, &endptr, 10);
   if (endptr == NULL || endptr == token)
     return false;
 
@@ -320,7 +320,7 @@ ParseAdditionalTemperatures(const TCHAR *token, ParsedMETAR &parsed)
 static bool
 DetectQNHToken(const TCHAR *token)
 {
-  unsigned length = _tcslen(token);
+  unsigned length = strlen(token);
 
   // International style
   if (token[0] == _T('Q') || token[0] == _T('q'))
@@ -343,7 +343,7 @@ ParseQNH(const TCHAR *token, ParsedMETAR &parsed)
     token++;
 
     TCHAR *endptr;
-    unsigned hpa = _tcstod(token, &endptr);
+    unsigned hpa = strtod(token, &endptr);
     if (endptr == NULL || endptr == token)
       return false;
 
@@ -357,7 +357,7 @@ ParseQNH(const TCHAR *token, ParsedMETAR &parsed)
     token++;
 
     TCHAR *endptr;
-    unsigned inch_hg = _tcstod(token, &endptr);
+    unsigned inch_hg = strtod(token, &endptr);
     if (endptr == NULL || endptr == token)
       return false;
 
@@ -529,7 +529,7 @@ METARParser::ParseDecoded(const METAR::ContentString &decoded,
   // Nov 04, 2011 - 07:50 PM EDT / 2011.11.04 2350 UTC
 
   const TCHAR *start = decoded.c_str();
-  const TCHAR *end = start + _tcslen(start);
+  const TCHAR *end = start + strlen(start);
   const auto *opening_brace = StringFind(start, _T('('));
   const auto *closing_brace = StringFind(start, _T(')'));
   const auto *line_break = StringFind(start, _T('\n'));

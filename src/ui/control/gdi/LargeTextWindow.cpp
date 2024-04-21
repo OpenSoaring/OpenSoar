@@ -20,7 +20,7 @@ void
 LargeTextWindow::SetText(const TCHAR *text)
 {
   // Replace \n by \r\r\n to enable usage of line-breaks in edit control
-  unsigned size = _tcslen(text);
+  unsigned size = strlen(text);
 
   const std::unique_ptr<TCHAR[]> allocation(new TCHAR[size * 3 + 1]);
   TCHAR *buffer = allocation.get();

@@ -157,7 +157,7 @@ FlarmTrafficDetailsWidget::UpdateChanging(const MoreData &basic)
   // Fill distance/direction field
   if (target_ok) {
     FormatUserDistanceSmart(target->distance, tmp, true, 20, 1000);
-    TCHAR *p = tmp + _tcslen(tmp);
+    TCHAR *p = tmp + strlen(tmp);
     *p++ = _T(' ');
     FormatAngleDelta(p, 20, target->Bearing() - basic.track);
     value = tmp;
@@ -171,7 +171,7 @@ FlarmTrafficDetailsWidget::UpdateChanging(const MoreData &basic)
     TCHAR *p = tmp;
     if (target->altitude_available) {
       FormatUserAltitude(target->altitude, p);
-      p += _tcslen(p);
+      p += strlen(p);
       *p++ = _T(' ');
     }
 
