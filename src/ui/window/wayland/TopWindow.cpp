@@ -87,7 +87,7 @@ static const struct xdg_toplevel_listener toplevel_listener = {
 };
 
 void
-TopWindow::CreateNative(const TCHAR *text, PixelSize size,
+TopWindow::CreateNative(const char *text, PixelSize size,
                         TopWindowStyle)
 {
   auto compositor = event_queue->GetCompositor();

@@ -68,7 +68,7 @@ LogoPageWindow::OnPaint(Canvas &canvas) noexcept
 
   canvas.SetTextColor(COLOR_BLACK);
   x = middle;
-  const TCHAR *version = _T("Version: ");
+  const char *version = _T("Version: ");
   PixelSize ts = canvas.CalcTextSize(version);
   PixelSize ts2 = canvas.CalcTextSize(OpenSoar_VersionString);
   x = middle - ((ts.width + ts2.width) / 2 );
@@ -80,7 +80,7 @@ LogoPageWindow::OnPaint(Canvas &canvas) noexcept
 #ifdef GIT_COMMIT_ID
   y += ts.height + Layout::FastScale(2);
   x = middle;
-  const TCHAR *git = _T("git: ");
+  const char *git = _T("git: ");
   ts = canvas.CalcTextSize(git);
   ts2 = canvas.CalcTextSize(_T(GIT_COMMIT_ID));
   x = middle - ((ts.width + ts2.width) / 2 );
@@ -91,8 +91,8 @@ LogoPageWindow::OnPaint(Canvas &canvas) noexcept
 #endif
 
   y += Layout::FastScale(8);
-  const TCHAR *visit = _T("Vist us at:");
-  const TCHAR *url = _T("https://xcsoar.org");
+  const char *visit = _T("Vist us at:");
+  const char *url = _T("https://xcsoar.org");
   ts = canvas.CalcTextSize(visit);
   ts2 = canvas.CalcTextSize(url);
   x = middle - (ts.width / 2);

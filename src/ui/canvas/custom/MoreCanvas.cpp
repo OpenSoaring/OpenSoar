@@ -49,9 +49,9 @@ Canvas::DrawFormattedText(const PixelRect r, const tstring_view text,
     ? UINT_MAX
     : (r.GetHeight() + skip - 1) / skip;
 
-  TCHAR *const duplicated = new TCHAR[text.size() + 1], *p = duplicated;
+  char *const duplicated = new char[text.size() + 1], *p = duplicated;
   unsigned lines = 1;
-  for (TCHAR ch : text) {
+  for (char ch : text) {
     if (ch == _T('\n')) {
       /* explicit line break */
 
@@ -76,7 +76,7 @@ Canvas::DrawFormattedText(const PixelRect r, const tstring_view text,
   // no grouping of multiple spaces
   for (size_t i = 0; i < len; i += strlen(duplicated + i) + 1) {
     PixelSize sz = CalcTextSize(duplicated + i);
-    TCHAR *prev_p = nullptr;
+    char *prev_p = nullptr;
 
     // remove words from behind till line fits or no more space is found
     while (sz.width > r.GetWidth() &&

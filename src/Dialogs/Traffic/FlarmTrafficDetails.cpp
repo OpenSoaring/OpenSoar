@@ -146,8 +146,8 @@ FlarmTrafficDetailsWidget::Hide() noexcept
 void
 FlarmTrafficDetailsWidget::UpdateChanging(const MoreData &basic)
 {
-  TCHAR tmp[40];
-  const TCHAR *value;
+  char tmp[40];
+  const char *value;
 
   const FlarmTraffic* target =
     basic.flarm.traffic.FindTraffic(target_id);
@@ -157,7 +157,7 @@ FlarmTrafficDetailsWidget::UpdateChanging(const MoreData &basic)
   // Fill distance/direction field
   if (target_ok) {
     FormatUserDistanceSmart(target->distance, tmp, true, 20, 1000);
-    TCHAR *p = tmp + strlen(tmp);
+    char *p = tmp + strlen(tmp);
     *p++ = _T(' ');
     FormatAngleDelta(p, 20, target->Bearing() - basic.track);
     value = tmp;
@@ -168,7 +168,7 @@ FlarmTrafficDetailsWidget::UpdateChanging(const MoreData &basic)
 
   // Fill altitude field
   if (target_ok) {
-    TCHAR *p = tmp;
+    char *p = tmp;
     if (target->altitude_available) {
       FormatUserAltitude(target->altitude, p);
       p += strlen(p);
@@ -202,8 +202,8 @@ FlarmTrafficDetailsWidget::UpdateChanging(const MoreData &basic)
 void
 FlarmTrafficDetailsWidget::Update()
 {
-  TCHAR tmp[200], tmp_id[7];
-  const TCHAR *value;
+  char tmp[200], tmp_id[7];
+  const char *value;
 
   // Set the dialog caption
   StringFormatUnsafe(tmp, _T("%s (%s)"),
@@ -243,7 +243,7 @@ FlarmTrafficDetailsWidget::Update()
     const FlarmTraffic* target =
       CommonInterface::Basic().flarm.traffic.FindTraffic(target_id);
 
-    const TCHAR* actype;
+    const char* actype;
     if (target == nullptr ||
         (actype = FlarmTraffic::GetTypeString(target->type)) == nullptr)
       actype = _T("--");
@@ -254,15 +254,15 @@ FlarmTrafficDetailsWidget::Update()
   // Fill the callsign field (+ registration)
   // note: don't use target->Name here since it is not updated
   //       yet if it was changed
-  const TCHAR* cs = FlarmDetails::LookupCallsign(target_id);
+  const char* cs = FlarmDetails::LookupCallsign(target_id);
   if (cs != nullptr && cs[0] != 0) {
     try {
-      BasicStringBuilder<TCHAR> builder(tmp, ARRAY_SIZE(tmp));
+      BasicStringBuilder<char> builder(tmp, ARRAY_SIZE(tmp));
       builder.Append(cs);
       if (record)
         builder.Append(_T(" ("), record->registration.c_str(), _T(")"));
       value = tmp;
-    } catch (BasicStringBuilder<TCHAR>::Overflow) {
+    } catch (BasicStringBuilder<char>::Overflow) {
       value = cs;
     }
   } else

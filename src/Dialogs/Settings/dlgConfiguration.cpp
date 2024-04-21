@@ -345,7 +345,7 @@ protected:
 };
 
 void
-ConfigPanel::BorrowExtraButton(unsigned i, const TCHAR *caption,
+ConfigPanel::BorrowExtraButton(unsigned i, const char *caption,
                                std::function<void()> callback) noexcept
 {
   ConfigurationExtraButtons &extra =
@@ -427,8 +427,8 @@ OnPageFlipped(WidgetDialog &dialog, TabMenuDisplay &menu)
 {
   menu.OnPageFlipped();
 
-  TCHAR buffer[128];
-  const TCHAR *caption = menu.GetCaption(buffer, ARRAY_SIZE(buffer));
+  char buffer[128];
+  const char *caption = menu.GetCaption(buffer, ARRAY_SIZE(buffer));
   if (caption == nullptr)
     caption = _("Configuration");
   dialog.SetCaption(caption);

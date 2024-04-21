@@ -102,13 +102,13 @@ LocalPath(Path file) noexcept
 }
 
 AllocatedPath
-LocalPath(const TCHAR *file) noexcept
+LocalPath(const char *file) noexcept
 {
   return LocalPath(Path(file));
 }
 
 AllocatedPath
-MakeLocalPath(const TCHAR *name)
+MakeLocalPath(const char *name)
 {
   auto path = LocalPath(name);
   Directory::Create(path);
@@ -121,11 +121,11 @@ RelativePath(Path path) noexcept
   return path.RelativeTo(GetPrimaryDataPath());
 }
 
-static constexpr TCHAR local_path_code[] = _T("%LOCAL_PATH%\\");
+static constexpr char local_path_code[] = _T("%LOCAL_PATH%\\");
 
 [[gnu::pure]]
-static const TCHAR *
-AfterLocalPathCode(const TCHAR *p) noexcept
+static const char *
+AfterLocalPathCode(const char *p) noexcept
 {
   p = StringAfterPrefix(p, local_path_code);
   if (p == nullptr)
@@ -144,7 +144,7 @@ AllocatedPath
 ExpandLocalPath(Path src) noexcept
 {
   // Get the relative file name and location (ptr)
-  const TCHAR *ptr = AfterLocalPathCode(src.c_str());
+  const char *ptr = AfterLocalPathCode(src.c_str());
   if (ptr == nullptr)
     return src;
 
@@ -180,7 +180,7 @@ ContractLocalPath(Path src) noexcept
 static AllocatedPath
 FindDataPathAtModule(HMODULE hModule) noexcept
 {
-  TCHAR buffer[MAX_PATH];
+  char buffer[MAX_PATH];
   if (GetModuleFileName(hModule, buffer, MAX_PATH) <= 0)
     return nullptr;
 
@@ -245,7 +245,7 @@ FindDataPaths() noexcept
 
   /* Windows: use "My Documents\OpenSoarData" */
   {
-    TCHAR buffer[MAX_PATH];
+    char buffer[MAX_PATH];
     if (SHGetSpecialFolderPath(nullptr, buffer, CSIDL_PERSONAL,
                                result.empty()))
       result.emplace_back(AllocatedPath::Build(buffer, _T(OPENSOAR_DATADIR)));
@@ -285,7 +285,7 @@ FindDataPaths() noexcept
 }
 
 void
-VisitDataFiles(const TCHAR* filter, File::Visitor &visitor)
+VisitDataFiles(const char* filter, File::Visitor &visitor)
 {
   for (const auto &i : data_paths)
     Directory::VisitSpecificFiles(i, filter, visitor, true);
@@ -298,7 +298,7 @@ GetCachePath() noexcept
 }
 
 AllocatedPath
-MakeCacheDirectory(const TCHAR *name) noexcept
+MakeCacheDirectory(const char *name) noexcept
 {
   Directory::Create(cache_path);
   auto path = AllocatedPath::Build(cache_path, Path(name));

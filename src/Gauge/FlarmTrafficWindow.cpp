@@ -206,7 +206,7 @@ FlarmTrafficWindow::PaintRadarNoTraffic(Canvas &canvas) const noexcept
   if (small)
     return;
 
-  const TCHAR* str = _("No Traffic");
+  const char* str = _("No Traffic");
   canvas.Select(look.no_traffic_font);
   PixelSize ts = canvas.CalcTextSize(str);
   canvas.SetTextColor(look.default_color);
@@ -409,7 +409,7 @@ FlarmTrafficWindow::PaintRadarTarget(Canvas &canvas,
   canvas.Select(look.side_info_font);
 
   // Format string
-  TCHAR tmp[10];
+  char tmp[10];
 
   if (side_display_type == SideInfoType::VARIO)
     FormatUserVerticalSpeed(traffic.climb_rate_avg30s, tmp, false);

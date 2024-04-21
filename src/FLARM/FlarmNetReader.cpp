@@ -21,12 +21,12 @@
  * @param res Pointer to be written in
  */
 static void
-LoadString(const char *bytes, size_t length, TCHAR *res, [[maybe_unused]] size_t res_size)
+LoadString(const char *bytes, size_t length, char *res, [[maybe_unused]] size_t res_size)
 {
   const char *const end = bytes + length * 2;
   const char *const limit = res + res_size - 2;
 
-  TCHAR *p = res;
+  char *p = res;
 
   char tmp[3];
   tmp[2] = 0;
@@ -82,7 +82,7 @@ LoadRecord(FlarmNetRecord &record, const char *line)
   LoadString(line + 158, 7, record.frequency);
 
   // Terminate callsign string on first whitespace
-  for (TCHAR *i = record.callsign.buffer(); *i != _T('\0'); ++i)
+  for (char *i = record.callsign.buffer(); *i != _T('\0'); ++i)
     if (IsWhitespaceFast(*i))
       *i = _T('\0');
 

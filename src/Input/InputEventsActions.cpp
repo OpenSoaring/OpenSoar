@@ -148,7 +148,7 @@ SuspendAppendSaveWaypoint(Waypoint &&wp)
 
 // TODO code: Keep marker text for use in log file etc.
 void
-InputEvents::eventMarkLocation(const TCHAR *misc)
+InputEvents::eventMarkLocation(const char *misc)
 {
   const NMEAInfo &basic = CommonInterface::Basic();
 
@@ -167,7 +167,7 @@ InputEvents::eventMarkLocation(const TCHAR *misc)
     Waypoint wp = factory.Create(location);
     factory.FallbackElevation(wp);
 
-    TCHAR name[64] = _T("Marker");
+    char name[64] = _T("Marker");
     if (basic.date_time_utc.IsPlausible()) {
       auto *p = name + StringLength(name);
       *p++ = _T(' ' );
@@ -187,7 +187,7 @@ InputEvents::eventMarkLocation(const TCHAR *misc)
 }
 
 void
-InputEvents::eventPilotEvent([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventPilotEvent([[maybe_unused]] const char *misc)
 try {
   // Configure start window
   const OrderedTaskSettings &ots =
@@ -228,7 +228,7 @@ try {
 }
 
 void
-InputEvents::eventScreenModes(const TCHAR *misc)
+InputEvents::eventScreenModes(const char *misc)
 {
   // toggle switches like this:
   //  -- normal infobox
@@ -269,7 +269,7 @@ InputEvents::eventScreenModes(const TCHAR *misc)
 // ClearStatusMessages
 // Do Clear Event Warnings
 void
-InputEvents::eventClearStatusMessages([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventClearStatusMessages([[maybe_unused]] const char *misc)
 {
   // TODO enhancement: allow selection of specific messages (here we are acknowledging all)
   if (CommonInterface::main_window->popup != nullptr)
@@ -281,7 +281,7 @@ InputEvents::eventClearStatusMessages([[maybe_unused]] const TCHAR *misc)
 //  The argument is the label of the mode to activate.
 //  This is used to activate menus/submenus of buttons
 void
-InputEvents::eventMode(const TCHAR *misc)
+InputEvents::eventMode(const char *misc)
 {
   assert(misc != NULL);
 
@@ -292,7 +292,7 @@ InputEvents::eventMode(const TCHAR *misc)
 
 // Don't think we need this.
 void
-InputEvents::eventMainMenu([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventMainMenu([[maybe_unused]] const char *misc)
 {
   // todo: popup main menu
 }
@@ -301,7 +301,7 @@ InputEvents::eventMainMenu([[maybe_unused]] const TCHAR *misc)
 // Displays the checklist dialog
 //  See the checklist dialog section of the reference manual for more info.
 void
-InputEvents::eventChecklist([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventChecklist([[maybe_unused]] const char *misc)
 {
   dlgChecklistShowModal();
 }
@@ -314,7 +314,7 @@ InputEvents::eventChecklist([[maybe_unused]] const TCHAR *misc)
 //  See the status dialog section of the reference manual for more info
 //  on these.
 void
-InputEvents::eventStatus(const TCHAR *misc)
+InputEvents::eventStatus(const char *misc)
 {
   if (StringIsEqual(misc, _T("system"))) {
     dlgStatusShowModal(1);
@@ -332,7 +332,7 @@ InputEvents::eventStatus(const TCHAR *misc)
 //  See the analysis dialog section of the reference manual
 // for more info.
 void
-InputEvents::eventAnalysis([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventAnalysis([[maybe_unused]] const char *misc)
 {
   dlgAnalysisShowModal(*CommonInterface::main_window,
                        CommonInterface::main_window->GetLook(),
@@ -350,7 +350,7 @@ InputEvents::eventAnalysis([[maybe_unused]] const TCHAR *misc)
 //  See the waypoint dialog section of the reference manual
 // for more info.
 void
-InputEvents::eventWaypointDetails(const TCHAR *misc)
+InputEvents::eventWaypointDetails(const char *misc)
 {
   const NMEAInfo &basic = CommonInterface::Basic();
   WaypointPtr wp;
@@ -384,7 +384,7 @@ InputEvents::eventWaypointDetails(const TCHAR *misc)
 }
 
 void
-InputEvents::eventWaypointEditor([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventWaypointEditor([[maybe_unused]] const char *misc)
 {
   dlgConfigWaypointsShowModal(*data_components->waypoints);
 }
@@ -394,7 +394,7 @@ InputEvents::eventWaypointEditor([[maybe_unused]] const TCHAR *misc)
 //    The argument is the text to be displayed.
 //    No punctuation characters are allowed.
 void
-InputEvents::eventStatusMessage(const TCHAR *misc)
+InputEvents::eventStatusMessage(const char *misc)
 {
   if (misc != NULL)
     Message::AddMessage(gettext(misc));
@@ -402,13 +402,13 @@ InputEvents::eventStatusMessage(const TCHAR *misc)
 
 // Plays a sound from the filename
 void
-InputEvents::eventPlaySound(const TCHAR *misc)
+InputEvents::eventPlaySound(const char *misc)
 {
   PlayResource(misc);
 }
 
 void
-InputEvents::eventAutoLogger(const TCHAR *misc)
+InputEvents::eventAutoLogger(const char *misc)
 {
   if (is_simulator())
     return;
@@ -438,7 +438,7 @@ InputEvents::eventAutoLogger(const TCHAR *misc)
 // nmea: turns on and off NMEA logging
 // note: the text following the 'note' characters is added to the log file
 void
-InputEvents::eventLogger(const TCHAR *misc)
+InputEvents::eventLogger(const char *misc)
 try {
   auto *logger = backend_components->igc_logger.get();
   if (logger == nullptr)
@@ -493,7 +493,7 @@ try {
 // Repeats the last status message.  If pressed repeatedly, will
 // repeat previous status messages
 void
-InputEvents::eventRepeatStatusMessage([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventRepeatStatusMessage([[maybe_unused]] const char *misc)
 {
   // new interface
   // TODO enhancement: display only by type specified in misc field
@@ -504,7 +504,7 @@ InputEvents::eventRepeatStatusMessage([[maybe_unused]] const TCHAR *misc)
 // NearestWaypointDetails
 // Displays the waypoint details dialog
 void
-InputEvents::eventNearestWaypointDetails([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventNearestWaypointDetails([[maybe_unused]] const char *misc)
 {
   const auto location = GetVisibleLocation();
   if (!location.IsValid())
@@ -517,7 +517,7 @@ InputEvents::eventNearestWaypointDetails([[maybe_unused]] const TCHAR *misc)
 // NearestMapItems
 // Displays the map item list dialog
 void
-InputEvents::eventNearestMapItems([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventNearestMapItems([[maybe_unused]] const char *misc)
 {
   const auto location = GetVisibleLocation();
   if (!location.IsValid())
@@ -530,13 +530,13 @@ InputEvents::eventNearestMapItems([[maybe_unused]] const TCHAR *misc)
 // The null event does nothing.  This can be used to override
 // default functionality
 void
-InputEvents::eventNull([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventNull([[maybe_unused]] const char *misc)
 {
   // do nothing
 }
 
 void
-InputEvents::eventBeep([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventBeep([[maybe_unused]] const char *misc)
 {
 #ifdef _WIN32
   MessageBeep(MB_ICONEXCLAMATION);
@@ -553,7 +553,7 @@ InputEvents::eventBeep([[maybe_unused]] const TCHAR *misc)
 //  Airspace: Airspace filter settings
 //  Replay: IGC replay dialog
 void
-InputEvents::eventSetup(const TCHAR *misc)
+InputEvents::eventSetup(const char *misc)
 {
   if (StringIsEqual(misc, _T("Basic")))
     dlgBasicSettingsShowModal();
@@ -587,7 +587,7 @@ InputEvents::eventSetup(const TCHAR *misc)
 }
 
 void
-InputEvents::eventCredits([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventCredits([[maybe_unused]] const char *misc)
 {
   dlgCreditsShowModal(*CommonInterface::main_window);
 }
@@ -596,7 +596,7 @@ InputEvents::eventCredits([[maybe_unused]] const TCHAR *misc)
 // Runs an external program of the specified filename.
 // Note that XCSoar will wait until this program exits.
 void
-InputEvents::eventRun(const TCHAR *misc)
+InputEvents::eventRun(const char *misc)
 {
 #ifdef _WIN32
   PROCESS_INFORMATION pi;
@@ -617,14 +617,14 @@ InputEvents::eventRun(const TCHAR *misc)
 }
 
 void
-InputEvents::eventBrightness([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventBrightness([[maybe_unused]] const char *misc)
 {
   // not implemented (was only implemented on Altair)
 }
 
 // Exits for general systems
 void 
-InputEvents::eventExit([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventExit([[maybe_unused]] const char *misc)
 {
   bool force = false;
     if (StringIsEqual(misc, _T("system"))) {
@@ -645,7 +645,7 @@ InputEvents::eventExit([[maybe_unused]] const TCHAR *misc)
 #if 1  // defined(IS_OPENVARIO)
 // Exits with real Shutdown only in systems where this is possible
 void 
-InputEvents::eventShutdown([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventShutdown([[maybe_unused]] const char *misc)
 {
 #if defined(IS_OPENVARIO)
     if (StringIsEqual(misc, _T("reboot"))) {
@@ -661,42 +661,42 @@ InputEvents::eventShutdown([[maybe_unused]] const TCHAR *misc)
 #include "ui/event/KeyCode.hpp"
 
 void 
-InputEvents::eventKeyPressed(const TCHAR *misc)
+InputEvents::eventKeyPressed(const char *misc)
 {
 //  std::map<unsigned, const char> keys;
     for (auto *p = misc; *p != 0; p++) {
       if (*p != ' ') {
-      TCHAR c[2] = {*p, 0};
+      char c[2] = {*p, 0};
       if (!strncmp(p, "LEFT", strlen("LEFT"))) {
-        c[0] = (TCHAR) KEY_LEFT;
+        c[0] = (char) KEY_LEFT;
         p += strlen("LEFT") ;
       } else if (!strncmp(p, "RIGHT", strlen("RIGHT"))) {
-        c[0] = (TCHAR) KEY_RIGHT;
+        c[0] = (char) KEY_RIGHT;
         p += strlen("RIGHT") ;
       } else if (!strncmp(p, "UP", strlen("UP"))) {
-        c[0] = (TCHAR) KEY_UP;
+        c[0] = (char) KEY_UP;
         p += strlen("UP") ;
       } else if (!strncmp(p, "DOWN", strlen("DOWN"))) {
-        c[0] = (TCHAR) KEY_DOWN;
+        c[0] = (char) KEY_DOWN;
         p += strlen("DOWN") ;
       } else if (!strncmp(p, "ESCAPE", strlen("ESCAPE"))) {
-        c[0] = (TCHAR) KEY_ESCAPE;
+        c[0] = (char) KEY_ESCAPE;
         p += strlen("ESCAPE") ;
       } else if (!strncmp(p, "ENTER", strlen("ENTER"))) {
-        c[0] = (TCHAR) KEY_RETURN;
+        c[0] = (char) KEY_RETURN;
         p += strlen("ENTER") ;
       } else if (!strncmp(p, "RETURN", strlen("RETURN"))) {
-        c[0] = (TCHAR) KEY_RETURN;
+        c[0] = (char) KEY_RETURN;
         p += strlen("RETURN") ;
       }
-      ProcessKey(MODE_MENU, ParseKeyCode((const TCHAR *)c));
+      ProcessKey(MODE_MENU, ParseKeyCode((const char *)c));
     }
   }
 }
 #endif
 
 void
-InputEvents::eventUserDisplayModeForce(const TCHAR *misc)
+InputEvents::eventUserDisplayModeForce(const char *misc)
 {
   UIState &ui_state = CommonInterface::SetUIState();
 
@@ -714,7 +714,7 @@ InputEvents::eventUserDisplayModeForce(const TCHAR *misc)
 }
 
 void
-InputEvents::eventAddWaypoint(const TCHAR *misc)
+InputEvents::eventAddWaypoint(const char *misc)
 {
   const NMEAInfo &basic = CommonInterface::Basic();
   const DerivedInfo &calculated = CommonInterface::Calculated();
@@ -784,31 +784,31 @@ mph/kts/...
 // helpers
 
 void
-InputEvents::eventWeather(const TCHAR *misc)
+InputEvents::eventWeather(const char *misc)
 {
   ShowWeatherDialog(misc);
 }
 
 void
-InputEvents::eventQuickMenu(const TCHAR *misc)
+InputEvents::eventQuickMenu(const char *misc)
 {
  dlgQuickMenuShowModal(*CommonInterface::main_window, misc);
 }
 
 void
-InputEvents::eventFileManager([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventFileManager([[maybe_unused]] const char *misc)
 {
   ShowFileManager();
 }
 
 void
-InputEvents::eventExchangeFrequencies([[maybe_unused]] const TCHAR *misc)
+InputEvents::eventExchangeFrequencies([[maybe_unused]] const char *misc)
 {
   XCSoarInterface::ExchangeRadioFrequencies(true);
 }
 
 void
-InputEvents::eventUploadIGCFile([[maybe_unused]] const TCHAR *misc) {
+InputEvents::eventUploadIGCFile([[maybe_unused]] const char *misc) {
   FileDataField df;
   df.ScanMultiplePatterns(_T("*.igc\0"));
   df.SetFileType(FileType::IGC);

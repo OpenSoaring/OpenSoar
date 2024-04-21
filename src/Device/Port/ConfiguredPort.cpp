@@ -42,7 +42,7 @@
  * See http://msdn.microsoft.com/en-us/library/bb202042.aspx
  */
 static bool
-DetectGPS([[maybe_unused]] TCHAR *path, [[maybe_unused]] std::size_t path_max_size)
+DetectGPS([[maybe_unused]] char *path, [[maybe_unused]] std::size_t path_max_size)
 {
   return false;
 }
@@ -64,8 +64,8 @@ WrapPort(const DeviceConfig &config, PortListener *listener,
 }
 
 #if defined(_WIN32)
-static const TCHAR *
-WindowsPort(TCHAR buffer[], const DeviceConfig &config) {
+static const char *
+WindowsPort(char buffer[], const DeviceConfig &config) {
   if (config.path.empty())
     throw std::runtime_error("No port path configured");
 
@@ -85,8 +85,8 @@ OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
                  const DeviceConfig &config, PortListener *listener,
                  DataHandler &handler)
 {
-  const TCHAR *path = nullptr;
-  TCHAR buffer[MAX_PATH];
+  const char *path = nullptr;
+  char buffer[MAX_PATH];
 
   switch (config.port_type) {
   case DeviceConfig::PortType::DISABLED:

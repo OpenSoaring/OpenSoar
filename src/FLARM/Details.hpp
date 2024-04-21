@@ -27,7 +27,7 @@ LookupRecord(FlarmId id) noexcept;
  * @return The corresponding callsign if found, otherwise NULL
  */
 [[gnu::pure]]
-const TCHAR *
+const char *
 LookupCallsign(FlarmId id) noexcept;
 
 /**
@@ -38,7 +38,7 @@ LookupCallsign(FlarmId id) noexcept;
  */
 [[gnu::pure]]
 FlarmId
-LookupId(const TCHAR *cn) noexcept;
+LookupId(const char *cn) noexcept;
 
 /**
  * Adds a FLARM details couple (callsign + FLARM id)
@@ -48,9 +48,9 @@ LookupId(const TCHAR *cn) noexcept;
  * @return True if successfully added, False otherwise
  */
 bool
-AddSecondaryItem(FlarmId id, const TCHAR *name) noexcept;
+AddSecondaryItem(FlarmId id, const char *name) noexcept;
 
 unsigned
-FindIdsByCallSign(const TCHAR *cn, FlarmId array[], unsigned size) noexcept;
+FindIdsByCallSign(const char *cn, FlarmId array[], unsigned size) noexcept;
 
 } // namespace FlarmDetails

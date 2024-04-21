@@ -10,8 +10,8 @@
 
 using std::string_view_literals::operator""sv;
 
-TCHAR *
-RadioFrequency::Format(TCHAR *buffer, size_t max_size) const noexcept
+char *
+RadioFrequency::Format(char *buffer, size_t max_size) const noexcept
 {
   if (!IsDefined())
     return nullptr;

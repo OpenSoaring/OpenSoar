@@ -152,7 +152,7 @@ private:
    */
   int
   SetAR620xStation(uint8_t *command, int active_passive,
-                   double f_frequency, const TCHAR* station) noexcept;
+                   double f_frequency, const char* station) noexcept;
 
   /*
    * Parses the messages which XCSoar receives from the radio.
@@ -191,14 +191,14 @@ public:
    * Sets the active frequency on the radio.
    */
   virtual bool PutActiveFrequency(RadioFrequency frequency,
-                                  const TCHAR *name,
+                                  const char *name,
                                   OperationEnvironment &env) override;
  
   /**
    * Sets the standby frequency on the radio.
    */
   virtual bool PutStandbyFrequency(RadioFrequency frequency,
-                                   const TCHAR *name,
+                                   const char *name,
                                    OperationEnvironment &env) override;
  
   /**
@@ -431,7 +431,7 @@ int
 AR62xxDevice::SetAR620xStation(uint8_t *command,
                                int active_passive,
                                double f_frequency,
-                               [[maybe_unused]] const TCHAR *station) noexcept
+                               [[maybe_unused]] const char *station) noexcept
 {
   unsigned int len = 0;
 
@@ -583,7 +583,7 @@ AR62xxDevice::AR620xConvertAnswer(uint8_t *sz_command,
  */
 bool
 AR62xxDevice::PutActiveFrequency(RadioFrequency frequency,
-                                 const TCHAR* name,
+                                 const char* name,
                                  OperationEnvironment &env)
 {
   unsigned int ufreq = frequency.GetKiloHertz();
@@ -602,7 +602,7 @@ AR62xxDevice::PutActiveFrequency(RadioFrequency frequency,
  */
 bool
 AR62xxDevice::PutStandbyFrequency(RadioFrequency frequency,
-                                  const TCHAR *name,
+                                  const char *name,
                                   OperationEnvironment &env)
 {
   unsigned int ufreq = frequency.GetKiloHertz();

@@ -70,7 +70,7 @@ public:
   [[gnu::pure]]
   bool HasVega() const noexcept;
 
-  void VegaWriteNMEA(const TCHAR *text, OperationEnvironment &env) noexcept;
+  void VegaWriteNMEA(const char *text, OperationEnvironment &env) noexcept;
 
   void PutMacCready(double mac_cready, OperationEnvironment &env) noexcept;
   void PutBugs(double bugs, OperationEnvironment &env) noexcept;
@@ -78,9 +78,9 @@ public:
                   OperationEnvironment &env) noexcept;
   void PutVolume(unsigned volume, OperationEnvironment &env) noexcept;
   void PutPilotEvent(OperationEnvironment &env) noexcept;
-  void PutActiveFrequency(RadioFrequency frequency, const TCHAR *name,
+  void PutActiveFrequency(RadioFrequency frequency, const char *name,
                           OperationEnvironment &env) noexcept;
-  void PutStandbyFrequency(RadioFrequency frequency, const TCHAR *name,
+  void PutStandbyFrequency(RadioFrequency frequency, const char *name,
                            OperationEnvironment &env) noexcept;
   void PutTransponderCode(TransponderCode code, OperationEnvironment &env) noexcept;
   void PutQNH(AtmosphericPressure pres, OperationEnvironment &env) noexcept;

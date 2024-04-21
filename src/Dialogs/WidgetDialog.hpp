@@ -28,7 +28,7 @@ public:
   explicit WidgetDialog(const DialogLook &look);
 
   WidgetDialog(UI::SingleWindow &parent, const DialogLook &look,
-               const PixelRect &rc, const TCHAR *caption,
+               const PixelRect &rc, const char *caption,
                Widget *widget) noexcept;
 
   struct Auto {};
@@ -38,14 +38,14 @@ public:
    * Call FinishPreliminary() to resume building the dialog.
    */
   WidgetDialog(Auto, UI::SingleWindow &parent, const DialogLook &look,
-               const TCHAR *caption) noexcept;
+               const char *caption) noexcept;
 
   /**
    * Create a dialog with an automatic size (by
    * Widget::GetMinimumSize() and Widget::GetMaximumSize()).
    */
   WidgetDialog(Auto, UI::SingleWindow &parent, const DialogLook &look,
-               const TCHAR *caption, Widget *widget) noexcept;
+               const char *caption, Widget *widget) noexcept;
 
   struct Full {};
 
@@ -54,13 +54,13 @@ public:
    * Call FinishPreliminary() to resume building the dialog.
    */
   WidgetDialog(Full, UI::SingleWindow &parent, const DialogLook &look,
-               const TCHAR *caption) noexcept;
+               const char *caption) noexcept;
 
   /**
    * Create a full-screen dialog.
    */
   WidgetDialog(Full, UI::SingleWindow &parent, const DialogLook &look,
-               const TCHAR *caption, Widget *widget) noexcept;
+               const char *caption, Widget *widget) noexcept;
 
   virtual ~WidgetDialog();
 
@@ -98,16 +98,16 @@ public:
     return buttons.Add(std::move(renderer), std::move(callback));
   }
 
-  Button *AddButton(const TCHAR *caption,
+  Button *AddButton(const char *caption,
                     Button::Callback callback) noexcept {
     return buttons.Add(caption, std::move(callback));
   }
 
-  Button *AddButton(const TCHAR *caption, int modal_result) {
+  Button *AddButton(const char *caption, int modal_result) {
     return AddButton(caption, MakeModalResultCallback(modal_result));
   }
 
-  Button *AddSymbolButton(const TCHAR *caption,
+  Button *AddSymbolButton(const char *caption,
                           Button::Callback callback) noexcept {
     return buttons.AddSymbol(caption, std::move(callback));
   }
@@ -173,8 +173,8 @@ public:
  */
 bool
 DefaultWidgetDialog(UI::SingleWindow &parent, const DialogLook &look,
-                    const TCHAR *caption, const PixelRect &rc, Widget &widget);
+                    const char *caption, const PixelRect &rc, Widget &widget);
 
 bool
 DefaultWidgetDialog(UI::SingleWindow &parent, const DialogLook &look,
-                    const TCHAR *caption, Widget &widget);
+                    const char *caption, Widget &widget);

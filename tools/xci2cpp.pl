@@ -170,7 +170,7 @@ sub c_string($) {
     return qq|_T("$value")|;
 }
 
-print "static const TCHAR *const default_modes[] = {\n";
+print "static const char *const default_modes[] = {\n";
 splice @modes, 0, 4;
 foreach my $m (@modes) {
     $m = c_string($m);

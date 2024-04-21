@@ -267,7 +267,7 @@ RowFormWidget::AddSpacer() noexcept
 }
 
 void
-RowFormWidget::AddLabel(const TCHAR *text, unsigned lines) noexcept
+RowFormWidget::AddLabel(const char *text, unsigned lines) noexcept
 {
   ContainerWindow &panel = (ContainerWindow &)GetWindow();
   if (lines == 0) lines = 1;
@@ -280,7 +280,7 @@ RowFormWidget::AddLabel(const TCHAR *text, unsigned lines) noexcept
 }
 
 void
-RowFormWidget::AddMultiLine(const TCHAR *text) noexcept
+RowFormWidget::AddMultiLine(const char *text) noexcept
 {
   assert(IsDefined());
 
@@ -302,7 +302,7 @@ RowFormWidget::AddMultiLine(const TCHAR *text) noexcept
 }
 
 Button *
-RowFormWidget::AddButton(const TCHAR *label,
+RowFormWidget::AddButton(const char *label,
                          std::function<void()> callback) noexcept
 {
   assert(IsDefined());
@@ -322,7 +322,7 @@ RowFormWidget::AddButton(const TCHAR *label,
 }
 
 void
-RowFormWidget::SetMultiLineText(unsigned i, const TCHAR *text) noexcept
+RowFormWidget::SetMultiLineText(unsigned i, const char *text) noexcept
 {
   assert(text != nullptr);
   assert(rows[i].type == Row::Type::MULTI_LINE);

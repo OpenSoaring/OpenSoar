@@ -36,7 +36,7 @@ GdiShutdown()
 //----------------------------------------------------------------------------
 // can load: BMP, GIF, JPEG, PNG, TIFF, Exif, WMF, and EMF
 HBITMAP
-GdiLoadImage(const TCHAR* filename)
+GdiLoadImage(const char* filename)
 {
   HBITMAP result = nullptr;
   Gdiplus::Bitmap bitmap(UTF8ToWide(filename).c_str(), false);

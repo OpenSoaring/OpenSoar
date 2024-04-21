@@ -77,7 +77,7 @@ public:
   }
 #endif
 
-  void SetText(const TCHAR *text);
+  void SetText(const char *text);
 
   /**
    * Scroll the contents of a multi-line control by the specified
