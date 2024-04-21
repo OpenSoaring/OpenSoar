@@ -1,3 +1,14 @@
+OpenSoar Version 7.42.22 - 2024/05/21
+---------------
+* Development- remove UNICODE
+    - the 2nd step: remove all UNICODE code parts, TCHAR, tstring...
+    - remove alol ConvertString operations (only needed in previous Windows builds
+    - use for dynamic created, included source code the *.hpp extension (isnstead of *.cpp)
+    - create the ProgramVersion.h in generate.mk 
+    - solve the bug at creating manual on Github
+* OpenVario - clamb highest map resolution ("500km" to "250km") because performance problem
+* Android Bluetooth - detect also BT ports on older systems too - without BLE support (f.e. Nexus7 with Android 5) 
+
 OpenSoar Version 7.42.22.A - 2024/04/21 - PreRelease A to 7.42.22
 ---------------
 * System: add possibility to restart OpenSoar without exit to system
