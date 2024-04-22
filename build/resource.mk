@@ -195,12 +195,20 @@ $(TARGET_OUTPUT_DIR)/resources.txt: Data/resources.txt | $(TARGET_OUTPUT_DIR)/di
 	@$(NQ)echo "  CPP     $@"
 	$(Q)cat $< |$(CC) -E -o $@ -I$(OUT)/include $(TARGET_CPPFLAGS) $(OPENGL_CPPFLAGS) $(GDI_CPPFLAGS) -
 
+ifeq ($(TARGET_IS_ANDROID),y)
+
+$(TARGET_OUTPUT_DIR)/include/MakeResource.hpp: $(TARGET_OUTPUT_DIR)/resources.txt tools/GenerateMakeResource.pl | $(TARGET_OUTPUT_DIR)/include/dirstamp
+	@$(NQ)echo "  GEN     $@"
+	$(Q)$(PERL) tools/GenerateMakeResource.pl <$< >$(TARGET_OUTPUT_DIR)/$(ANDROID_APK_LIB_ABI)/MakeResource.hpp.tmp
+	$(Q)mv -n $(TARGET_OUTPUT_DIR)/$(ANDROID_APK_LIB_ABI)/MakeResource.hpp.tmp $@
+
+else 
+
 $(TARGET_OUTPUT_DIR)/include/MakeResource.hpp: $(TARGET_OUTPUT_DIR)/resources.txt tools/GenerateMakeResource.pl | $(TARGET_OUTPUT_DIR)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
 	$(Q)$(PERL) tools/GenerateMakeResource.pl <$< >$@.tmp
 	$(Q)mv $@.tmp $@
 
-ifeq ($(TARGET_IS_ANDROID),n)
 
 ifeq ($(USE_WIN32_RESOURCES),y)
 RESOURCE_FILES += $(BMP_BITMAPS)
