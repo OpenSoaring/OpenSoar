@@ -4,7 +4,7 @@
 #pragma once
 
 #include "system/Path.hpp"
-#include "util/tstring.hpp"
+#include <string>
 
 #include <memory>
 #include <vector>
@@ -41,7 +41,7 @@ public:
   /**
    * Throws on error.
    */
-  virtual std::vector<tstring> GetList() const = 0;
+  virtual std::vector<std::string> GetList() const = 0;
 
   virtual std::unique_ptr<OrderedTask> GetTask(const TaskBehaviour &task_behaviour,
                                                const Waypoints *waypoints,

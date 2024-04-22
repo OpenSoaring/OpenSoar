@@ -5,4 +5,4 @@
 
 #include <string_view>
 
-using tstring_view = std::string_view;
+using std::string_view = std::string_view;

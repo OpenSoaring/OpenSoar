@@ -16,7 +16,6 @@
 # include "util/StringFormat.hpp"
 # include <boost/algorithm/string.hpp>
 # include <map>
-  typedef std::string tstring;
 #endif
 
 #ifdef ANDROID
@@ -109,7 +108,7 @@ try {
 //-------------------------------
   RegistryKey bthenums{HKEY_LOCAL_MACHINE, _T("SYSTEM\\CurrentControlSet\\"
                                               "Enum\\BthEnum")};
-  std::map<const tstring, tstring> bthmap;
+  std::map<const std::string, std::string> bthmap;
   for (unsigned k = 0;; ++k) {
     char dev_name[128];
     char name[128];
@@ -117,7 +116,7 @@ try {
 
     if (!bthenums.EnumKey(k, std::span{dev_name}))
       break;
-    tstring map_name(dev_name);
+    std::string map_name(dev_name);
     if (!map_name.starts_with(_T("Dev_")))
       continue;
     RegistryKey bthenum_dev{bthenums, dev_name};
@@ -128,14 +127,14 @@ try {
     if (!bthenum_key.GetValue(_T("FriendlyName"), friendly_name))
       break;
     map_name = map_name.substr(4);
-    for (tstring::iterator it = map_name.begin(); it != map_name.end();
+    for (std::string::iterator it = map_name.begin(); it != map_name.end();
          ++it)
       *it = towlower(*it);
     bthmap[map_name] = friendly_name; // Left "Dev_"
   }
   RegistryKey bthle{HKEY_LOCAL_MACHINE, _T("SYSTEM\\CurrentControlSet\\"
                                               "Enum\\BthLE")};
-  std::map<const tstring, tstring> blemap;
+  std::map<const std::string, std::string> blemap;
   for (unsigned k = 0;; ++k) {
     char dev_name[128];
     char name[128];
@@ -143,7 +142,7 @@ try {
 
     if (!bthle.EnumKey(k, std::span{dev_name}))
       break;
-    tstring map_name(dev_name);
+    std::string map_name(dev_name);
     if (!map_name.starts_with(_T("Dev_")))
       continue;
     RegistryKey bthle_dev{bthle, dev_name};
@@ -154,7 +153,7 @@ try {
     if (!bthle_key.GetValue(_T("FriendlyName"), friendly_name))
       break;
     map_name = map_name.substr(4);
-    for (tstring::iterator it = map_name.begin(); it != map_name.end();
+    for (std::string::iterator it = map_name.begin(); it != map_name.end();
          ++it)
       *it = towlower(*it);
     blemap[map_name] = friendly_name; // Left "Dev_"
@@ -188,10 +187,10 @@ try {
     // BlueTooth: "\\?\bthenum#"
     // USB:       "\\?\usb#"
     // Normal:    "\\?\acpi#"   - an Kupschis Rechner!
-    tstring dev = name1;
+    std::string dev = name1;
     if (dev.starts_with(_T("\\\\?\\usb#"))) {
-      std::vector<tstring> strs;
-      tstring port_name;
+      std::vector<std::string> strs;
+      std::string port_name;
       boost::split(strs, name, boost::is_any_of("\\"));
       port_name = value;
       port_name += _T(" (");
@@ -200,8 +199,8 @@ try {
 
       AddPort(df, DeviceConfig::PortType::USB_SERIAL, value, port_name.c_str());
     } else if (dev.starts_with(_T("\\\\?\\bthenum#"))) {
-      std::vector<tstring> strs;
-      tstring port_name;
+      std::vector<std::string> strs;
+      std::string port_name;
       boost::split(strs, name1, boost::is_any_of("#"));
       boost::split(strs, strs[2], boost::is_any_of("_"));
       if (strs[1] == _T("c00000000")) {

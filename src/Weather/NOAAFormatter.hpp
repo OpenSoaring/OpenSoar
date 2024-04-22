@@ -4,11 +4,11 @@
 #pragma once
 
 #include "NOAAStore.hpp"
-#include "util/tstring.hpp"
+#include <string>
 
 namespace NOAAFormatter {
 
 void
-Format(const NOAAStore::Item &station, tstring &output);
+Format(const NOAAStore::Item &station, std::string &output);
 
 } // namespace NOAAFormatter

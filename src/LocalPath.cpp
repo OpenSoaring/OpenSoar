@@ -20,7 +20,7 @@
 #ifdef _WIN32
 #include "system/PathName.hpp"
 #else
-#include "util/tstring.hpp"
+#include <string>
 #endif
 
 #include <algorithm>
@@ -150,7 +150,7 @@ ExpandLocalPath(Path src) noexcept
 
 #ifndef _WIN32
   // Convert backslashes to slashes on platforms where it matters
-  tstring src2(ptr);
+  std::string src2(ptr);
   std::replace(src2.begin(), src2.end(), '\\', '/');
   ptr = src2.c_str();
 #endif

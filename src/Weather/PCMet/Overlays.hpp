@@ -5,7 +5,7 @@
 
 #include "system/Path.hpp"
 #include "time/BrokenDateTime.hpp"
-#include "util/tstring.hpp"
+#include <string>
 
 #include <list>
 
@@ -35,7 +35,7 @@ struct OverlayInfo {
   unsigned level;
   unsigned step;
 
-  tstring label;
+  std::string label;
   AllocatedPath path;
 };
 
