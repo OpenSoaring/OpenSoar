@@ -26,8 +26,8 @@
 #include <tchar.h>
 #include <string>
 
-constexpr const char *opensoar = _T("OpenSoar");
-constexpr const char *xcsoar = _T("XCSoar");
+constexpr const char *opensoar = "OpenSoar";
+constexpr const char *xcsoar = "XCSoar";
 constexpr const char *main_app = opensoar;
 constexpr const char *_main_app = "OpenSoar";  // only temporarily
 
@@ -47,7 +47,7 @@ void ExtraWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   std::string ImageFile = "";
   AddFile(_("Upgrade Firmware"),
           _("Upgrade Firmware (.img.gz) "),
-          ImageFile, _T("*.img.gz\0"), FileType::IMAGE);
+          ImageFile, "*.img.gz\0", FileType::IMAGE);
 
 #else
   AddButton(_("Upgrade Firmware"), [this]() {

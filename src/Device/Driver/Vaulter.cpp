@@ -164,8 +164,8 @@ VaulterCreateOnPort([[maybe_unused]] const DeviceConfig &config, Port &com_port)
 }
 
 const struct DeviceRegister vaulter_driver = {
-  _T("Vaulter"),
-  _T("WSI Vaulter"),
+  "Vaulter",
+  "WSI Vaulter",
   DeviceRegister::RECEIVE_SETTINGS | DeviceRegister::SEND_SETTINGS,
   VaulterCreateOnPort,
 };

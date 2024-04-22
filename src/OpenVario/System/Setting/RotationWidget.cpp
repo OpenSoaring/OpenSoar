@@ -66,7 +66,7 @@ void
 SettingRotationWidget::SaveRotation(const int rotationInt)
 {
 
-   File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")), (rotationString).c_str());
+   File::WriteExisting(Path("/sys/class/graphics/fbcon/rotate"), (rotationString).c_str());
 //   int rotationInt = stoi(rotationString);
    // ChangeConfigInt("rotation", rotationInt, ovdevice.GetSettingsConfig());
    // TODO(August2111):  move the from ovdevice.settings to ovdevice.sysetm
@@ -81,23 +81,23 @@ void
 SettingRotationWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                              [[maybe_unused]] const PixelRect &rc) noexcept
 {
- AddButton(_T("Landscape"), [this](){
+ AddButton("Landscape", [this](){
 	  // SaveRotation("2");
    // Display::Rotate(DisplayOrientation::LANDSCAPE);
     ovdevice.SetRotation(DisplayOrientation::LANDSCAPE);
  });
 
- AddButton(_T("Portrait (90°)"), [this](){
+ AddButton("Portrait (90°)", [this](){
    //SaveRotation("1");
    ovdevice.SetRotation(DisplayOrientation::REVERSE_PORTRAIT);
  });
 
- AddButton(_T("Landscape (180°)"), [this](){
+ AddButton("Landscape (180°)", [this](){
    // SaveRotation("4");
    ovdevice.SetRotation(DisplayOrientation::REVERSE_LANDSCAPE);
  });
 
- AddButton(_T("Portrait (270°)"), [this](){
+ AddButton("Portrait (270°)", [this](){
    // SaveRotation("3");
    ovdevice.SetRotation(DisplayOrientation::PORTRAIT);
  });
@@ -108,7 +108,7 @@ ShowRotationSettingsWidget(ContainerWindow &parent,
                                const DialogLook &look) noexcept {
  TWidgetDialog<SettingRotationWidget> sub_dialog(
      WidgetDialog::Full{}, (UI::SingleWindow &)parent, look,
-     _T("OpenVario Rotation Settings"));
+     "OpenVario Rotation Settings");
  sub_dialog.SetWidget();
  sub_dialog.AddButton(_("Close"), mrOK);
  return sub_dialog.ShowModal();

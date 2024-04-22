@@ -82,9 +82,9 @@ LoadRecord(FlarmNetRecord &record, const char *line)
   LoadString(line + 158, 7, record.frequency);
 
   // Terminate callsign string on first whitespace
-  for (char *i = record.callsign.buffer(); *i != _T('\0'); ++i)
+  for (char *i = record.callsign.buffer(); *i != '\0'; ++i)
     if (IsWhitespaceFast(*i))
-      *i = _T('\0');
+      *i = '\0';
 
   return true;
 }

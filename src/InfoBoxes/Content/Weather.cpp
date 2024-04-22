@@ -29,7 +29,7 @@ UpdateInfoBoxHumidity(InfoBoxData &data) noexcept
   }
 
   // Set Value
-  data.FmtValue( _T("{}"), (int)basic.humidity);
+  data.FmtValue( "{}", (int)basic.humidity);
 }
 
 void
@@ -42,7 +42,7 @@ UpdateInfoBoxTemperature(InfoBoxData &data) noexcept
   }
 
   // Set Value
-  data.FmtValue(_T("{:2.1f}"), basic.temperature.ToUser());
+  data.FmtValue("{:2.1f}", basic.temperature.ToUser());
 
   data.SetValueUnit(Units::current.temperature_unit);
 }
@@ -51,7 +51,7 @@ void
 InfoBoxContentTemperatureForecast::Update(InfoBoxData &data) noexcept
 {
   auto temperature = CommonInterface::GetComputerSettings().forecast_temperature;
-  data.FmtValue(_T("{:2.1f}"), temperature.ToUser());
+  data.FmtValue("{:2.1f}", temperature.ToUser());
 
   data.SetValueUnit(Units::current.temperature_unit);
 }
@@ -104,7 +104,7 @@ UpdateInfoBoxWindSpeed(InfoBoxData &data) noexcept
   }
 
   // Set Value
-  data.FmtValue(_T("{:2.0f}"), Units::ToUserWindSpeed(info.wind.norm));
+  data.FmtValue("{:2.0f}", Units::ToUserWindSpeed(info.wind.norm));
 
   // Set Unit
   data.SetValueUnit(Units::current.wind_speed_unit);
@@ -137,7 +137,7 @@ void UpdateInfoBoxInstWindSpeed(InfoBoxData &data) noexcept {
   }
 
   // Set Value
-  data.FmtValue(_T("{:2.0f}"),
+  data.FmtValue("{:2.0f}",
                 Units::ToUserWindSpeed(info.external_instantaneous_wind.norm));
 
   // Set Unit
@@ -173,7 +173,7 @@ UpdateInfoBoxHeadWind(InfoBoxData &data) noexcept
   }
 
   // Set Value
-  data.FmtValue(_T("{:2.0f}"), Units::ToUserWindSpeed(info.head_wind));
+  data.FmtValue("{:2.0f}", Units::ToUserWindSpeed(info.head_wind));
 
   // Set Unit
   data.SetValueUnit(Units::current.wind_speed_unit);
@@ -191,7 +191,7 @@ UpdateInfoBoxHeadWindSimplified(InfoBoxData &data) noexcept
   auto value = basic.true_airspeed - basic.ground_speed;
 
   // Set Value
-  data.FmtValue(_T("{:2.0f}"), Units::ToUserWindSpeed(value));
+  data.FmtValue("{:2.0f}", Units::ToUserWindSpeed(value));
 
   // Set Unit
   data.SetValueUnit(Units::current.wind_speed_unit);
@@ -214,7 +214,7 @@ InfoBoxContentWindArrow::Update(InfoBoxData &data) noexcept
   FormatUserWindSpeed(info.wind.norm, speed_buffer, true, false);
 
   StaticString<36> buffer;
-  buffer.Format(_T("%s / %s"),
+  buffer.Format("%s / %s",
                 FormatBearing(info.wind.bearing).c_str(),
                 speed_buffer);
   data.SetComment(buffer);

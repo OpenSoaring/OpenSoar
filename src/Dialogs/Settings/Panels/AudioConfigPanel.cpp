@@ -37,7 +37,7 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
 
   const auto &settings = CommonInterface::GetUISettings().sound;
 
-  AddInteger(_("Master Volume"), nullptr, _T("%d %%"), _T("%d"),
+  AddInteger(_("Master Volume"), nullptr, "%d %%", "%d",
              0, VolumeController::GetMaxValue(), 1, settings.master_volume);
 }
 

@@ -97,17 +97,17 @@ FreeVarioDevice::POVParserAndForward(NMEAInputLine &line)
     // info.switch_state.flight_mode = SwitchState::FlightMode::CIRCLING;
     StaticString<4> bufferAsString;
     bufferAsString.SetUTF8(buff);
-    if ('C' == command && bufferAsString == _T("STF")) {
+    if ('C' == command && bufferAsString == "STF") {
       messageValid = true;
-      InputEvents::eventSendNMEAPort1(_T("POV,C,STF*4B"));
-      InputEvents::eventSendNMEAPort2(_T("POV,C,STF*4B"));
-      InputEvents::eventStatusMessage(_T("Speed to Fly Mode"));
+      InputEvents::eventSendNMEAPort1("POV,C,STF*4B");
+      InputEvents::eventSendNMEAPort2("POV,C,STF*4B");
+      InputEvents::eventStatusMessage("Speed to Fly Mode");
     }
-    if ('C' == command && bufferAsString == _T("VAR")) {
+    if ('C' == command && bufferAsString == "VAR") {
       messageValid = true;
-      InputEvents::eventSendNMEAPort1(_T("POV,C,VAR*4F"));
-      InputEvents::eventSendNMEAPort2(_T("POV,C,VAR*4F"));
-      InputEvents::eventStatusMessage(_T("Vario Mode"));
+      InputEvents::eventSendNMEAPort1("POV,C,VAR*4F");
+      InputEvents::eventSendNMEAPort2("POV,C,VAR*4F");
+      InputEvents::eventStatusMessage("Vario Mode");
     }
 #endif
   }
@@ -392,8 +392,8 @@ FreeVarioCreateOnPort([[maybe_unused]] const DeviceConfig &config,
 }
 
 const struct DeviceRegister free_vario_driver = {
-  _T("FreeVario"),
-  _T("FreeVario"),
+  "FreeVario",
+  "FreeVario",
   DeviceRegister::SEND_SETTINGS|
   DeviceRegister::RECEIVE_SETTINGS,
   FreeVarioCreateOnPort,

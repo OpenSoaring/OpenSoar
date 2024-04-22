@@ -200,7 +200,7 @@ try {
        ResourceLoader::Init(hInstance);
 #endif
     // Write startup note + version to logfile
-    LogFormat(_T("Starting OpenSoar %s"), OpenSoar_ProductToken);
+    LogFormat("Starting OpenSoar %s", OpenSoar_ProductToken);
 
     // int
     ret = Main();

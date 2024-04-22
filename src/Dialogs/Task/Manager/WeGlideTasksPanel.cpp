@@ -167,7 +167,7 @@ WeGlideTasksPanel::ReloadList() noexcept
                         UpdateButtons();
                       },
                       [](std::exception_ptr error){
-                        ShowError(error, _T("Error"));
+                        ShowError(error, "Error");
                       });
 }
 

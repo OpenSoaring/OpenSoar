@@ -148,11 +148,11 @@ static constexpr TabMenuPage setup_pages[] = {
 #ifdef HAVE_TRACKING
   { N_("Tracking"), CreateTrackingConfigPanel },
 #endif
-  { _T("XCSoar Cloud"), CreateCloudConfigPanel },
+  { "XCSoar Cloud", CreateCloudConfigPanel },
 #if defined(HAVE_PCMET) || defined(HAVE_HTTP)
   { N_("Weather"), CreateWeatherConfigPanel },
 #endif
-  { _T("WeGlide"), CreateWeGlideConfigPanel },
+  { "WeGlide", CreateWeGlideConfigPanel },
 #ifdef HAVE_VOLUME_CONTROLLER
   { N_("Audio"), CreateAudioConfigPanel },
 #endif
@@ -285,8 +285,8 @@ protected:
                   layout.xcsoar_style, style,
                   [](bool value){ OnXCSoarStyle(value); });
 #endif
-    button2.Create(parent, look.button, _T(""), layout.button2, style);
-    button1.Create(parent, look.button, _T(""), layout.button1, style);
+    button2.Create(parent, look.button, "", layout.button2, style);
+    button1.Create(parent, look.button, "", layout.button1, style);
   }
 
   void Show(const PixelRect &rc) noexcept override {
@@ -483,7 +483,7 @@ void dlgConfigurationShowModal()
       if (ShowMessageBox(
               _("Changes to configuration saved.  Restart OpenSoar "
                 "is needed to apply changes. Do you want restart immediately?"),
-              _T(""), MB_YESNO | MB_ICONQUESTION) == IDYES) {
+              "", MB_YESNO | MB_ICONQUESTION) == IDYES) {
         if (UI::TopWindow::GetExitValue() == 0)
             UI::TopWindow::SetExitValue(EXIT_RESTART);
         UIActions::SignalShutdown(true);

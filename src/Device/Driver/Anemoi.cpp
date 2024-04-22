@@ -478,8 +478,8 @@ AnemoiCreateOnPort([[maybe_unused]] const DeviceConfig &config, Port &com_port)
 }
 
 const struct DeviceRegister anemoi_driver = {
-  _T("Anemoi"),
-  _T("Anemoi"),
+  "Anemoi",
+  "Anemoi",
 //  DeviceRegister::RECEIVE_SETTINGS | DeviceRegister::SEND_SETTINGS,
   DeviceRegister::NO_TIMEOUT | DeviceRegister::RAW_GPS_DATA,
   AnemoiCreateOnPort,

@@ -434,11 +434,11 @@ public:
   bool IsLogger() const noexcept;
 
   bool IsCondor() const noexcept {
-    return IsDriver(_T("Condor"));
+    return IsDriver("Condor");
   }
 
   bool IsVega() const noexcept {
-    return IsDriver(_T("Vega"));
+    return IsDriver("Vega");
   }
 
   bool IsNMEAOut() const noexcept;

@@ -20,8 +20,8 @@
 #include <tchar.h>
 #include <string>
 
-constexpr const char *opensoar = _T("OpenSoar");
-constexpr const char *xcsoar = _T("XCSoar");
+constexpr const char *opensoar = "OpenSoar";
+constexpr const char *xcsoar = "XCSoar";
 constexpr const char *main_app = opensoar;
 constexpr const char *_main_app = "OpenSoar";  // only temporarily
 
@@ -74,7 +74,7 @@ void FileMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
   //-----------------------------------------------------
   title.Format(_("- Complete System Data Transfers"), main_app);
-  AddLabel(title); // _T("---OpenSoar Data Files---"));
+  AddLabel(title); // "---OpenSoar Data Files---");
 
   AddButton(_("Backup: OpenVario System to USB"), []() {
     static constexpr const char *argv[] = {"/usr/bin/transfer-system.sh",

@@ -37,7 +37,7 @@ foreach my $i (@named) {
     my ($name, $size) = @$i;
     my $variable = "resource_${name}";
     $variable =~ s,\.,_,g;
-    print "  { _T(\"${name}\"), { ${variable}, ${size} } },\n";
+    print "  { \"${name}\", { ${variable}, ${size} } },\n";
 }
 print "  { 0, {} }\n";
 print "};\n";

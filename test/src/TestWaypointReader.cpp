@@ -86,7 +86,7 @@ static void
 TestWinPilot(const wp_vector &org_wp)
 {
   Waypoints way_points;
-  if (!TestWaypointFile(Path(_T("test/data/waypoints.dat")), way_points,
+  if (!TestWaypointFile(Path("test/data/waypoints.dat"), way_points,
                         org_wp.size())) {
     skip(10 * org_wp.size(), 0, "opening waypoint file failed");
     return;
@@ -126,7 +126,7 @@ TestSeeYou(const wp_vector &org_wp)
 {
   // Test a SeeYou waypoint file with no runway width field:
   Waypoints way_points;
-  if (!TestWaypointFile(Path(_T("test/data/waypoints.cup")), way_points,
+  if (!TestWaypointFile(Path("test/data/waypoints.cup"), way_points,
                         org_wp.size())) {
     skip(9 * org_wp.size(), 0, "opening waypoints.cup failed");
   } else {
@@ -138,7 +138,7 @@ TestSeeYou(const wp_vector &org_wp)
 
   // Test a SeeYou waypoint file with a runway width field:
   Waypoints way_points2;
-  if (!TestWaypointFile(Path(_T("test/data/waypoints2.cup")), way_points2,
+  if (!TestWaypointFile(Path("test/data/waypoints2.cup"), way_points2,
                         org_wp.size())) {
     skip(9 * org_wp.size(), 0, "opening waypoints2.cup failed");
     return;
@@ -150,7 +150,7 @@ TestSeeYou(const wp_vector &org_wp)
   }
   // Test a SeeYou waypoint file with useradata and pics fields:
   Waypoints way_points3;
-  if (!TestWaypointFile(Path(_T("test/data/waypoints3.cup")), way_points3,
+  if (!TestWaypointFile(Path("test/data/waypoints3.cup"), way_points3,
                         org_wp.size())) {
     skip(9 * org_wp.size(), 0, "opening waypoints3.cup failed");
     return;
@@ -192,7 +192,7 @@ static void
 TestZander(const wp_vector &org_wp)
 {
   Waypoints way_points;
-  if (!TestWaypointFile(Path(_T("test/data/waypoints.wpz")), way_points,
+  if (!TestWaypointFile(Path("test/data/waypoints.wpz"), way_points,
                         org_wp.size())) {
     skip(10 * org_wp.size(), 0, "opening waypoint file failed");
     return;
@@ -209,7 +209,7 @@ static void
 TestFS(const wp_vector &org_wp)
 {
   Waypoints way_points;
-  if (!TestWaypointFile(Path(_T("test/data/waypoints_geo.wpt")), way_points,
+  if (!TestWaypointFile(Path("test/data/waypoints_geo.wpt"), way_points,
                         org_wp.size())) {
     skip(3 * org_wp.size(), 0, "opening waypoint file failed");
     return;
@@ -225,7 +225,7 @@ static void
 TestFS_UTM(const wp_vector &org_wp)
 {
   Waypoints way_points;
-  if (!TestWaypointFile(Path(_T("test/data/waypoints_utm.wpt")), way_points,
+  if (!TestWaypointFile(Path("test/data/waypoints_utm.wpt"), way_points,
                         org_wp.size())) {
     skip(3 * org_wp.size(), 0, "opening waypoint file failed");
     return;
@@ -241,7 +241,7 @@ static void
 TestOzi(const wp_vector &org_wp)
 {
   Waypoints way_points;
-  if (!TestWaypointFile(Path(_T("test/data/waypoints_ozi.wpt")), way_points,
+  if (!TestWaypointFile(Path("test/data/waypoints_ozi.wpt"), way_points,
                         org_wp.size())) {
     skip(3 * org_wp.size(), 0, "opening waypoint file failed");
     return;
@@ -257,7 +257,7 @@ static void
 TestCompeGPS(const wp_vector &org_wp)
 {
   Waypoints way_points;
-  if (!TestWaypointFile(Path(_T("test/data/waypoints_compe_geo.wpt")), way_points,
+  if (!TestWaypointFile(Path("test/data/waypoints_compe_geo.wpt"), way_points,
                         org_wp.size())) {
     skip(3 * org_wp.size(), 0, "opening waypoint file failed");
     return;
@@ -265,7 +265,7 @@ TestCompeGPS(const wp_vector &org_wp)
 
   for (auto i : org_wp) {
     size_t pos;
-    while ((pos = i.name.find_first_of(_T(' '))) != std::string::npos)
+    while ((pos = i.name.find_first_of(' ')) != std::string::npos)
       i.name.erase(pos, 1);
 
     TruncateStrip(i.name, 6);
@@ -278,7 +278,7 @@ static void
 TestCompeGPS_UTM(const wp_vector &org_wp)
 {
   Waypoints way_points;
-  if (!TestWaypointFile(Path(_T("test/data/waypoints_compe_utm.wpt")), way_points,
+  if (!TestWaypointFile(Path("test/data/waypoints_compe_utm.wpt"), way_points,
                         org_wp.size())) {
     skip(3 * org_wp.size(), 0, "opening waypoint file failed");
     return;
@@ -286,7 +286,7 @@ TestCompeGPS_UTM(const wp_vector &org_wp)
 
   for (auto i : org_wp) {
     size_t pos;
-    while ((pos = i.name.find_first_of(_T(' '))) != std::string::npos)
+    while ((pos = i.name.find_first_of(' ')) != std::string::npos)
       i.name.erase(pos, 1);
 
     TruncateStrip(i.name, 6);
@@ -332,8 +332,8 @@ CreateOriginalWaypoints()
   Waypoint wp(loc);
   wp.elevation = 488;
   wp.has_elevation = true;
-  wp.name = _T("Bergneustadt");
-  wp.comment = _T("Rabbit holes, 20\" ditch south end of rwy");
+  wp.name = "Bergneustadt";
+  wp.comment = "Rabbit holes, 20\" ditch south end of rwy";
   wp.runway.SetDirection(Angle::Degrees(40));
   wp.runway.SetLength(590);
 
@@ -351,8 +351,8 @@ CreateOriginalWaypoints()
   Waypoint wp2(loc);
   wp2.elevation = 6962;
   wp2.has_elevation = true;
-  wp2.name = _T("Aconcagua");
-  wp2.comment = _T("Highest mountain in south-america");
+  wp2.name = "Aconcagua";
+  wp2.comment = "Highest mountain in south-america";
 
   wp2.type = Waypoint::Type::MOUNTAIN_TOP;
   wp2.flags.turn_point = true;
@@ -368,8 +368,8 @@ CreateOriginalWaypoints()
   Waypoint wp3(loc);
   wp3.elevation = 227;
   wp3.has_elevation = true;
-  wp3.name = _T("Golden Gate Bridge");
-  wp3.comment = _T("");
+  wp3.name = "Golden Gate Bridge";
+  wp3.comment = "";
 
   wp3.type = Waypoint::Type::BRIDGE;
   wp3.flags.turn_point = true;
@@ -385,7 +385,7 @@ CreateOriginalWaypoints()
   Waypoint wp4(loc);
   wp4.elevation = 123;
   wp4.has_elevation = true;
-  wp4.name = _T("Red Square");
+  wp4.name = "Red Square";
   wp4.runway.SetDirection(Angle::Degrees(90));
   wp4.runway.SetLength((unsigned)Units::ToSysUnit(0.01, Unit::STATUTE_MILES));
 
@@ -403,8 +403,8 @@ CreateOriginalWaypoints()
   Waypoint wp5(loc);
   wp5.elevation = 5;
   wp5.has_elevation = true;
-  wp5.name = _T("Sydney Opera");
-  wp5.comment = _T("");
+  wp5.name = "Sydney Opera";
+  wp5.comment = "";
 
   wp5.type = Waypoint::Type::NORMAL;
   wp5.flags.turn_point = true;

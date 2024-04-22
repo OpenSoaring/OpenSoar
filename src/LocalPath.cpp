@@ -75,7 +75,7 @@ SetPrimaryDataPath(Path path) noexcept
   data_paths.emplace_front(path);
 
 #ifndef ANDROID
-  cache_path = LocalPath(_T("cache"));
+  cache_path = LocalPath("cache");
 #endif
 }
 
@@ -89,7 +89,7 @@ SetSingleDataPath(Path path) noexcept
   data_paths.emplace_front(path);
 
 #ifndef ANDROID
-  cache_path = LocalPath(_T("cache"));
+  cache_path = LocalPath("cache");
 #endif
 }
 
@@ -121,7 +121,7 @@ RelativePath(Path path) noexcept
   return path.RelativeTo(GetPrimaryDataPath());
 }
 
-static constexpr char local_path_code[] = _T("%LOCAL_PATH%\\");
+static constexpr char local_path_code[] = "%LOCAL_PATH%\\";
 
 [[gnu::pure]]
 static const char *
@@ -131,7 +131,7 @@ AfterLocalPathCode(const char *p) noexcept
   if (p == nullptr)
     return nullptr;
 
-  while (*p == _T('/') || *p == _T('\\'))
+  while (*p == '/' || *p == '\\')
     ++p;
 
   if (StringIsEmpty(p))
@@ -184,7 +184,7 @@ FindDataPathAtModule(HMODULE hModule) noexcept
   if (GetModuleFileName(hModule, buffer, MAX_PATH) <= 0)
     return nullptr;
 
-  ReplaceBaseName(buffer, _T(OPENSOAR_DATADIR));
+  ReplaceBaseName(buffer, OPENSOAR_DATADIR);
   return Directory::Exists(Path(buffer))
     ? AllocatedPath(buffer)
     : nullptr;
@@ -199,7 +199,7 @@ FindDataPaths() noexcept
 
   /* Kobo: hard-coded OpenSoarData path */
   if constexpr (IsKobo()) {
-    result.emplace_back(_T(KOBO_USER_DATA DIR_SEPARATOR_S OPENSOAR_DATADIR));
+    result.emplace_back(KOBO_USER_DATA DIR_SEPARATOR_S OPENSOAR_DATADIR);
     return result;
   }
 
@@ -248,7 +248,7 @@ FindDataPaths() noexcept
     char buffer[MAX_PATH];
     if (SHGetSpecialFolderPath(nullptr, buffer, CSIDL_PERSONAL,
                                result.empty()))
-      result.emplace_back(AllocatedPath::Build(buffer, _T(OPENSOAR_DATADIR)));
+      result.emplace_back(AllocatedPath::Build(buffer, OPENSOAR_DATADIR));
   }
 #endif // _WIN32
 
@@ -321,7 +321,7 @@ InitialiseDataPath()
     throw std::runtime_error("No Android cache directory");
 
 #else
-  cache_path = LocalPath(_T("cache"));
+  cache_path = LocalPath("cache");
 #endif
 }
 

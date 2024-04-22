@@ -69,9 +69,9 @@ TestWriter()
   Profile::Set("key1", 4);
   Profile::Set("key2", "value2");
 
-  Profile::SaveFile(Path(_T("output/TestProfileWriter.prf")));
+  Profile::SaveFile(Path("output/TestProfileWriter.prf"));
 
-  FileLineReaderA reader(Path(_T("output/TestProfileWriter.prf")));
+  FileLineReaderA reader(Path("output/TestProfileWriter.prf"));
 
   unsigned count = 0;
   bool found1 = false, found2 = false;
@@ -95,7 +95,7 @@ static void
 TestReader()
 {
   Profile::Clear();
-  Profile::LoadFile(Path(_T("test/data/TestProfileReader.prf")));
+  Profile::LoadFile(Path("test/data/TestProfileReader.prf"));
 
   {
     int value;
@@ -108,7 +108,7 @@ TestReader()
     StaticString<32> value;
     ok1(Profile::Exists("key2"));
     ok1(Profile::Get("key2", value));
-    ok1(value == _T("value"));
+    ok1(value == "value");
   }
 
   {

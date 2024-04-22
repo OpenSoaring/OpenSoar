@@ -50,8 +50,8 @@ AudioVarioConfigPanel::OnModified([[maybe_unused]] DataField &df) noexcept
   if (IsDataField(ENABLED, df)) {
     bool enabled = ((const DataFieldBoolean &)df).GetValue();
     // SetEnabled(((const DataFieldBoolean &)df).GetValue());
-    ShowMessageBox(enabled ? _T("Audio enabled") : _T("disabled"), 
-      _T("Audio-Enable"), 0);  //MB_OK);
+    ShowMessageBox(enabled ? "Audio enabled" : "disabled", 
+      "Audio-Enable", 0);  //MB_OK);
   }
 }
 
@@ -70,7 +70,7 @@ AudioVarioConfigPanel::Prepare(ContainerWindow &parent,
              _("Emulate the sound of an electronic vario."),
              settings.enabled, this);
 
-  AddInteger(_("Volume"), nullptr, _T("%u %%"), _T("%u"),
+  AddInteger(_("Volume"), nullptr, "%u %%", "%u",
              0, 100, 1, settings.volume);
 
   AddBoolean(_("Enable Deadband"),
@@ -82,19 +82,19 @@ AudioVarioConfigPanel::Prepare(ContainerWindow &parent,
 
   AddInteger(_("Min. Frequency"),
              _("The tone frequency that is played at maximum sink rate."),
-             _T("%u Hz"), _T("%u"),
+             "%u Hz", "%u",
              50, 3000, 50, settings.min_frequency);
   SetExpertRow(MIN_FREQUENCY);
 
   AddInteger(_("Zero Frequency"),
              _("The tone frequency that is played at zero climb rate."),
-             _T("%u Hz"), _T("%u"),
+             "%u Hz", "%u",
              50, 3000, 50, settings.zero_frequency);
   SetExpertRow(ZERO_FREQUENCY);
 
   AddInteger(_("Max. Frequency"),
              _("The tone frequency that is played at maximum climb rate."),
-             _T("%u Hz"), _T("%u"),
+             "%u Hz", "%u",
              50, 3000, 50, settings.max_frequency);
   SetExpertRow(MAX_FREQUENCY);
 
@@ -103,7 +103,7 @@ AudioVarioConfigPanel::Prepare(ContainerWindow &parent,
 
   AddFloat(_("Deadband min. lift"),
            _("Below this lift threshold the vario will start to play sounds if the 'Deadband' feature is enabled."),
-           _T("%.1f %s"), _T("%.1f"),
+           "%.1f %s", "%.1f",
            Units::ToUserVSpeed(-5), 0,
            GetUserVerticalSpeedStep(), false, UnitGroup::VERTICAL_SPEED,
            settings.min_dead);
@@ -113,7 +113,7 @@ AudioVarioConfigPanel::Prepare(ContainerWindow &parent,
 
   AddFloat(_("Deadband max. lift"),
            _("Above this lift threshold the vario will start to play sounds if the 'Deadband' feature is enabled."),
-           _T("%.1f %s"), _T("%.1f"),
+           "%.1f %s", "%.1f",
            0, Units::ToUserVSpeed(2),
            GetUserVerticalSpeedStep(), false, UnitGroup::VERTICAL_SPEED,
            settings.max_dead);

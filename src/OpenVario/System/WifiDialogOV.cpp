@@ -202,15 +202,15 @@ WifiListWidget::ScanWifi()
 {
 #ifdef __MSVC__
   char buffer[0x1000];
-  auto file = Path(_T("connman-scan-results.txt"));
-  File::ReadString(Path(_T("/Data/connman-services.txt")), buffer, sizeof(buffer));
+  auto file = Path("connman-scan-results.txt");
+  File::ReadString(Path("/Data/connman-services.txt"), buffer, sizeof(buffer));
   File::CreateExclusive(file);
   File::WriteExisting(file, buffer);
 #else
-  Run(Path(_T("connman-technologies.txt")), connmanctl, "technologies");
-  Run(Path(_T("connman-enable.txt")), connmanctl, "enable", "wifi");
-  Run(Path(_T("connman-scan.txt")), connmanctl, "scan", "wifi");
-  Run(Path(_T("connman-scan-results.txt")), connmanctl, "services");
+  Run(Path("connman-technologies.txt"), connmanctl, "technologies");
+  Run(Path("connman-enable.txt"), connmanctl, "enable", "wifi");
+  Run(Path("connman-scan.txt"), connmanctl, "scan", "wifi");
+  Run(Path("connman-scan-results.txt"), connmanctl, "services");
 #endif
 }
 
@@ -264,8 +264,8 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
     if (addr.IsDefined()) { /* valid address? */
       // StaticString<40> addr_str;
       StaticString<40> addr_str;
-      addr_str = _T("192.186.0.1");
-      state_buffer.Format(_T("%s (%s)"), state, addr_str.c_str());
+      addr_str = "192.186.0.1";
+      state_buffer.Format("%s (%s)", state, addr_str.c_str());
       state = state_buffer;
     }
 #else
@@ -275,7 +275,7 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
       // StaticString<40> addr_str;
       StaticString<40> addr_str;
       if (addr.ToString(addr_str.buffer(), addr_str.capacity()) != nullptr) {
-        state_buffer.Format(_T("%s (%s)"), state, addr_str.c_str());
+        state_buffer.Format("%s (%s)", state, addr_str.c_str());
         state = state_buffer;
       }
     }
@@ -304,7 +304,7 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
 
   if (info.signal_level >= 0) {
     StaticString<32> text;
-    text.UnsafeFormat(_T("%s %u"), _W(wifi_security[info.security]),
+    text.UnsafeFormat("%s %u", _W(wifi_security[info.security]),
                       info.signal_level);
     row_renderer.DrawRightSecondRow(canvas, rc, text);
   }
@@ -315,13 +315,13 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
 void WifiListWidget::WifiDisconnect( const char *ssid) {
   auto network = FindVisibleBySSID(ssid);
 //  StaticString<0x100> base_id;
-//  base_id.Format(_T("wifi_%s_%s_managed_"), _W(network->mac_id.c_str()),
+//  base_id.Format("wifi_%s_%s_managed_", _W(network->mac_id.c_str()),
 //                 _W(network->bssid.c_str()));
 #if defined(IS_OPENVARIO_CB2)
   // disconnect port
-  Run(Path(_T("wifi-disconnect.txt")), connmanctl, "disconnect", network->base_id.c_str());
+  Run(Path("wifi-disconnect.txt"), connmanctl, "disconnect", network->base_id.c_str());
 #endif
-  ShowMessageBox(_W(network->base_id.c_str()), _T("Disconnected"), MB_OK);
+  ShowMessageBox(_W(network->base_id.c_str()), "Disconnected", MB_OK);
 }
 
 void WifiListWidget::WifiConnect(enum WifiSecurity security,
@@ -329,25 +329,25 @@ void WifiListWidget::WifiConnect(enum WifiSecurity security,
                                         const char *ssid, const char *psk)
 {
   {
-//    ShowMessageBox(_W(psk), _T("Wifi-Passphrase"), MB_OK);
+//    ShowMessageBox(_W(psk), "Wifi-Passphrase", MB_OK);
 
     auto network = FindVisibleBySSID(ssid);
     std::cout << "Test: " << 1 << std::endl;
 //    StaticString<0x100> base_id;
-//    base_id.Format(_T("wifi_%s_%s_managed_"), _W(network->mac_id.c_str()),
+//    base_id.Format("wifi_%s_%s_managed_", _W(network->mac_id.c_str()),
 //                   _W(network->bssid.c_str()));
 
 //    std::cout << "Test: " << 2 << std::endl;
 //    switch (network->security) {
 //    case WPA_SECURITY:
-//      base_id.append(_T("psk"));
+//      base_id.append("psk");
 //      break;
 //    case WEP_SECURITY:
-//      base_id.append(_T("wep"));
+//      base_id.append("wep");
 //      break;
 //    case OPEN_SECURITY:
 //    default:
-//      base_id.append(_T("none"));
+//      base_id.append("none");
 //      break;
 //    }
 
@@ -366,24 +366,24 @@ void WifiListWidget::WifiConnect(enum WifiSecurity security,
       IPv6.privacy=disabled
 #endif // WithWPA
     StaticString<0x1000> buffer;
-    buffer.Format(_T("[%s]\n"), _W(network->base_id.c_str()));
-    buffer.AppendFormat(_T("Type=%s\n"), _W("wifi"));
-    buffer.AppendFormat(_T("Name=%s\n"), _W(ssid));
-    buffer.AppendFormat(_T("SSID=%s\n"),
+    buffer.Format("[%s]\n", _W(network->base_id.c_str()));
+    buffer.AppendFormat("Type=%s\n", _W("wifi"));
+    buffer.AppendFormat("Name=%s\n", _W(ssid));
+    buffer.AppendFormat("SSID=%s\n",
                         _W(network->bssid.c_str())); // _W(network->bssid);
-    buffer.AppendFormat(_T("Frequency=%d\n"), 2412);
-    // buffer.AppendFormat(_T("Favorite=true\n"));
-    buffer.append(_T("Favorite=true\n"));
-    buffer.append(_T("AutoConnect=true\n"));
-    buffer.AppendFormat(_T("Passphrase=%s\n"), _W(psk));
-    //    buffer.AppendFormat(_T("Modified=2024-02-01T12:38:31Z\n"));
-    buffer.AppendFormat(_T("IPv4.method=%s\n"), _T("dhcp"));
-    //    buffer.AppendFormat(_T("IPv4.DHCP.LastAddress=192.168.178.32\n"));
-    buffer.append(_T("IPv6.method=off\n"));
-    buffer.append(_T("IPv6.privacy=disabled\n"));
+    buffer.AppendFormat("Frequency=%d\n", 2412);
+    // buffer.AppendFormat("Favorite=true\n");
+    buffer.append("Favorite=true\n");
+    buffer.append("AutoConnect=true\n");
+    buffer.AppendFormat("Passphrase=%s\n", _W(psk));
+    //    buffer.AppendFormat("Modified=2024-02-01T12:38:31Z\n");
+    buffer.AppendFormat("IPv4.method=%s\n", "dhcp");
+    //    buffer.AppendFormat("IPv4.DHCP.LastAddress=192.168.178.32\n");
+    buffer.append("IPv6.method=off\n");
+    buffer.append("IPv6.privacy=disabled\n");
     std::cout << "Test: " << 6 << std::endl;
     std::cout << _A(buffer.c_str()) << std::endl;
-    ShowMessageBox(buffer.c_str(), _T("WifiConnect"), MB_OK);
+    ShowMessageBox(buffer.c_str(), "WifiConnect", MB_OK);
     std::cout << "Test: " << 7 << std::endl;
 
     Path base_id(_W(network->base_id.c_str()));
@@ -391,13 +391,13 @@ void WifiListWidget::WifiConnect(enum WifiSecurity security,
 #if defined(IS_OPENVARIO_CB2)
     // save on the connman setting location:
     auto ssid_path =
-        AllocatedPath::Build(Path(_T("/var/lib/connman")), base_id);
+        AllocatedPath::Build(Path("/var/lib/connman"), base_id);
 #else
     auto ssid_path = AllocatedPath::Build(ovdevice.GetDataPath(),
                                           base_id);
     ssid_path = AllocatedPath::Build(ssid_path, base_id);
 #endif
-    auto setting_file = AllocatedPath::Build(ssid_path, Path(_T("settings")));
+    auto setting_file = AllocatedPath::Build(ssid_path, Path("settings"));
     if (File::Exists(setting_file))
       File::Delete(setting_file);
     else
@@ -407,15 +407,15 @@ void WifiListWidget::WifiConnect(enum WifiSecurity security,
 
 #if defined(IS_OPENVARIO_CB2)
     // disable wifi
-    Run(Path(_T("wifi-disable.txt")), connmanctl, "disable", "wifi");
+    Run(Path("wifi-disable.txt"), connmanctl, "disable", "wifi");
     // wait a second
     std::this_thread::sleep_for(std::chrono::seconds(1));
     // enable wifi again for AutoConnect
-    Run(Path(_T("wifi-enable.txt")), connmanctl, "enable", "wifi");
+    Run(Path("wifi-enable.txt"), connmanctl, "enable", "wifi");
     // wait a second after wifi enabling (?)
     std::this_thread::sleep_for(std::chrono::seconds(1));
     // ask state of the wifi connection
-    Run(Path(_T("wifi-connect.txt")), connmanctl, "services",
+    Run(Path("wifi-connect.txt"), connmanctl, "services",
         network->base_id.c_str());
 #endif
   }
@@ -475,15 +475,15 @@ WifiListWidget::ReConnect()
 
 #if defined(IS_OPENVARIO_CB2)
   // disable wifi
-  Run(Path(_T("wifi-disable.txt")), connmanctl, "disable", "wifi");
+  Run(Path("wifi-disable.txt"), connmanctl, "disable", "wifi");
   // wait a second
   std::this_thread::sleep_for(std::chrono::seconds(1));
   // enable wifi again for AutoConnect
-  Run(Path(_T("wifi-enable.txt")), connmanctl, "enable", "wifi");
+  Run(Path("wifi-enable.txt"), connmanctl, "enable", "wifi");
   // wait a second after wifi enabling (?)
   std::this_thread::sleep_for(std::chrono::seconds(1));
 //  // ask state of the wifi connection
-//  Run(Path(_T("wifi-connect.txt")), connmanctl, "services",
+//  Run(Path("wifi-connect.txt"), connmanctl, "services",
 //      network->base_id.c_str());
 #endif
 
@@ -712,13 +712,13 @@ try {
 unsigned 
 ScanResults(WifiVisibleNetwork *dest, unsigned max) 
 {
-  const Path file = Path(_T("connman-scan-results.txt"));
+  const Path file = Path("connman-scan-results.txt");
   if (File::Exists(file)) {
     // ConsoleOperationEnvironment env;
     NullOperationEnvironment env;
     auto n = ParseConnmanScan(dest, file, env, max);
 
-    auto file2 = Path(_T("connman-services.txt"));
+    auto file2 = Path("connman-services.txt");
     if (File::Exists(file2))
         File::Delete(file2);
     File::Rename(file, file2);

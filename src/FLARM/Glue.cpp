@@ -50,7 +50,7 @@ LoadSecondary(FlarmNameDatabase &db) noexcept
 try {
   LogString("OpenFLARMDetails");
 
-  auto reader = OpenDataFile(_T("xcsoar-flarm.txt"));
+  auto reader = OpenDataFile("xcsoar-flarm.txt");
   BufferedReader buffered_reader{*reader};
   LoadFlarmNameFile(buffered_reader, db);
 } catch (...) {
@@ -96,7 +96,7 @@ SaveFlarmColors() noexcept
 static void
 SaveSecondary(FlarmNameDatabase &flarm_names) noexcept
 try {
-  FileOutputStream fos(LocalPath(_T("xcsoar-flarm.txt")));
+  FileOutputStream fos(LocalPath("xcsoar-flarm.txt"));
   BufferedOutputStream bos(fos);
   SaveFlarmNameFile(bos, flarm_names);
   bos.Flush();

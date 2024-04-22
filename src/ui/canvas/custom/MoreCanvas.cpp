@@ -52,24 +52,24 @@ Canvas::DrawFormattedText(const PixelRect r, const std::string_view text,
   char *const duplicated = new char[text.size() + 1], *p = duplicated;
   unsigned lines = 1;
   for (char ch : text) {
-    if (ch == _T('\n')) {
+    if (ch == '\n') {
       /* explicit line break */
 
       if (++lines > max_lines)
         break;
 
-      ch = _T('\0');
-    } else if (ch == _T('\r'))
+      ch = '\0';
+    } else if (ch == '\r')
       /* skip */
       continue;
     else if ((unsigned)ch < 0x20)
       /* replace non-printable characters */
-      ch = _T(' ');
+      ch = ' ';
 
     *p++ = ch;
   }
 
-  *p = _T('\0');
+  *p = '\0';
   const size_t len = p - duplicated;
 
   // simple wordbreak algorithm. looks for single spaces only, no tabs,
@@ -80,10 +80,10 @@ Canvas::DrawFormattedText(const PixelRect r, const std::string_view text,
 
     // remove words from behind till line fits or no more space is found
     while (sz.width > r.GetWidth() &&
-           (p = StringFindLast(duplicated + i, _T(' '))) != nullptr) {
+           (p = StringFindLast(duplicated + i, ' ')) != nullptr) {
       if (prev_p)
-        *prev_p = _T(' ');
-      *p = _T('\0');
+        *prev_p = ' ';
+      *p = '\0';
       prev_p = p;
       sz = CalcTextSize(duplicated + i);
     }
@@ -104,7 +104,7 @@ Canvas::DrawFormattedText(const PixelRect r, const std::string_view text,
     ? (r.top + r.bottom - lines * skip) / 2
     : r.top;
   for (size_t i = 0; i < len; i += strlen(duplicated + i) + 1) {
-    if (duplicated[i] != _T('\0')) {
+    if (duplicated[i] != '\0') {
       int x;
       if (format & (DT_RIGHT | DT_CENTER)) {
         PixelSize sz = CalcTextSize(duplicated + i);

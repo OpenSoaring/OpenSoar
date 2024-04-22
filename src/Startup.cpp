@@ -142,8 +142,8 @@ static void
 AfterStartup()
 {
   try {
-    const auto lua_path = LocalPath(_T("lua"));
-    Lua::StartFile(AllocatedPath::Build(lua_path, _T("init.lua")));
+    const auto lua_path = LocalPath("lua");
+    Lua::StartFile(AllocatedPath::Build(lua_path, "init.lua"));
   } catch (...) {
       LogError(std::current_exception());
   }
@@ -562,7 +562,7 @@ Startup(UI::Display &display)
 
   if (!is_simulator() && computer_settings.logger.enable_flight_logger) {
     backend_components->flight_logger = std::make_unique<GlueFlightLogger>(live_blackboard);
-    backend_components->flight_logger->SetPath(LocalPath(_T("flights.log")));
+    backend_components->flight_logger->SetPath(LocalPath("flights.log"));
   }
 
   if (computer_settings.logger.enable_nmea_logger)
