@@ -158,6 +158,14 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
                   99999, 1, ovdevice.iTest);
 #endif
 
+#if 1
+   AddButton(_("Upgrade Firmware (temp.)"), [this]() {
+     ContainerWindow::SetExitValue(START_UPGRADE);
+     UIActions::SignalShutdown(false);
+     return mrOK; // START_UPGRADE;
+   });
+#endif
+
    SetEnabled(ovdevice.enabled);
 }
 
