@@ -165,7 +165,7 @@ static constexpr TabMenuPage openvario_pages[] = {
     {N_("System Settings"), CreateSystemSettingsWidget},
     {N_("Display Settings"), CreateDisplaySettingsWidget},
     {N_("File Transfer"), CreateFileMenuWidget},
-#if 1
+#if _DEBUG
     // remove with better FW-Upgrade
     {N_("Advanced Menu (temp)"), CreateExtraWidget},
 #endif
