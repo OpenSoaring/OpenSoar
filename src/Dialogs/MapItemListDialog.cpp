@@ -284,11 +284,11 @@ ShowMapItemDialog(const MapItem &item,
 #endif
 
   case MapItem::Type::OVERLAY:
-    ShowWeatherDialog(_T("overlay"));
+    ShowWeatherDialog("overlay");
     break;
 
   case MapItem::Type::RASP:
-    ShowWeatherDialog(_T("rasp"));
+    ShowWeatherDialog("rasp");
     break;
   }
 }

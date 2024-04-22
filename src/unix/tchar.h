@@ -5,8 +5,8 @@
 
 #ifdef LIBCXX
 /* libc++ uses "_T" as template argument names; this conflicts with
-   the macro "_T()" defined below.  To work around that problem,
-   include all relevant libc++ headers before defining _T() */
+   the macro "" defined below.  To work around that problem,
+   include all relevant libc++ headers before defining  */
 #include <iterator>
 #endif
 
@@ -17,7 +17,6 @@
 #define _ftprintf fprintf
 #define _vftprintf vfprintf
 #define _fputts fputs
-#define _T(x) x
 #define _topen open
 #define _tfopen fopen
 #define _TEOF EOF

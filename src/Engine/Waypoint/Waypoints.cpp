@@ -349,7 +349,7 @@ Waypoints::GenerateTakeoffPoint(const GeoPoint& location,
   Waypoint to_point(location);
   to_point.elevation = terrain_alt;
   to_point.has_elevation = true;
-  to_point.name = _T("(takeoff)");
+  to_point.name = "(takeoff)";
   to_point.type = Waypoint::Type::OUTLANDING;
   return to_point;
 }
@@ -359,7 +359,7 @@ Waypoints::AddTakeoffPoint(const GeoPoint& location,
                            const double terrain_alt) noexcept
 {
   // remove old one first
-  WaypointPtr old_takeoff_point = LookupName(_T("(takeoff)"));
+  WaypointPtr old_takeoff_point = LookupName("(takeoff)");
   if (old_takeoff_point != nullptr)
     Erase(std::move(old_takeoff_point));
 

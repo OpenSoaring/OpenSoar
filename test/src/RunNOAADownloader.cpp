@@ -40,41 +40,41 @@ DisplayParsedMETAR(const NOAAStore::Item &station)
   printf("Parsed Data:\n");
 
   if (parsed.name_available)
-    _tprintf(_T("Name: %s\n"), parsed.name.c_str());
+    _tprintf("Name: %s\n", parsed.name.c_str());
 
   if (parsed.location_available)
-    _tprintf(_T("Location: %s\n"),
+    _tprintf("Location: %s\n",
              FormatGeoPoint(parsed.location, CoordinateFormat::DDMMSS).c_str());
 
   if (parsed.qnh_available) {
     char buffer[256];
     FormatUserPressure(parsed.qnh, buffer);
-    _tprintf(_T("QNH: %s\n"), buffer);
+    _tprintf("QNH: %s\n", buffer);
   }
 
   if (parsed.wind_available) {
     char buffer[256];
     FormatUserWindSpeed(parsed.wind.norm, buffer);
-    _tprintf(_T("Wind: %.0f" DEG " %s\n"),
+    _tprintf("Wind: %.0f" DEG " %s\n",
              (double)parsed.wind.bearing.Degrees(), buffer);
   }
 
   if (parsed.temperatures_available) {
     char buffer[256];
     FormatUserTemperature(parsed.temperature, buffer);
-    _tprintf(_T("Temperature: %s\n"), buffer);
+    _tprintf("Temperature: %s\n", buffer);
     FormatUserTemperature(parsed.dew_point, buffer);
-    _tprintf(_T("Dew point: %s\n"), buffer);
+    _tprintf("Dew point: %s\n", buffer);
   }
 
   if (parsed.visibility_available) {
     char buffer[256];
     if (parsed.visibility >= 9999)
-      strcpy(buffer, _T("unlimited"));
+      strcpy(buffer, "unlimited");
     else {
       FormatUserDistanceSmart(parsed.visibility, buffer);
     }
-    _tprintf(_T("Visibility: %s\n"), buffer);
+    _tprintf("Visibility: %s\n", buffer);
   }
 
   printf("\n");
@@ -99,10 +99,10 @@ DisplayMETAR(const NOAAStore::Item &station)
          (unsigned)metar.last_update.second);
 
   if (!metar.content.empty())
-    _tprintf(_T("%s\n\n"), metar.content.c_str());
+    _tprintf("%s\n\n", metar.content.c_str());
 
   if (!metar.decoded.empty())
-    _tprintf(_T("%s\n\n"), metar.decoded.c_str());
+    _tprintf("%s\n\n", metar.decoded.c_str());
 
   DisplayParsedMETAR(station);
 }
@@ -126,7 +126,7 @@ DisplayTAF(const NOAAStore::Item &station)
          (unsigned)taf.last_update.second);
 
   if (!taf.content.empty())
-    _tprintf(_T("%s\n\n"), taf.content.c_str());
+    _tprintf("%s\n\n", taf.content.c_str());
 }
 
 int

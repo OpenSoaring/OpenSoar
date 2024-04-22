@@ -158,11 +158,11 @@ FlarmTrafficDetailsWidget::UpdateChanging(const MoreData &basic)
   if (target_ok) {
     FormatUserDistanceSmart(target->distance, tmp, true, 20, 1000);
     char *p = tmp + strlen(tmp);
-    *p++ = _T(' ');
+    *p++ = ' ';
     FormatAngleDelta(p, 20, target->Bearing() - basic.track);
     value = tmp;
   } else
-    value = _T("--");
+    value = "--";
 
   SetText(DISTANCE, value);
 
@@ -172,7 +172,7 @@ FlarmTrafficDetailsWidget::UpdateChanging(const MoreData &basic)
     if (target->altitude_available) {
       FormatUserAltitude(target->altitude, p);
       p += strlen(p);
-      *p++ = _T(' ');
+      *p++ = ' ';
     }
 
     Angle dir = Angle::FromXY(target->distance, target->relative_altitude);
@@ -180,7 +180,7 @@ FlarmTrafficDetailsWidget::UpdateChanging(const MoreData &basic)
 
     value = tmp;
   } else
-    value = _T("--");
+    value = "--";
 
   SetText(ALTITUDE, value);
 
@@ -189,7 +189,7 @@ FlarmTrafficDetailsWidget::UpdateChanging(const MoreData &basic)
     FormatUserVerticalSpeed(target->climb_rate_avg30s, tmp);
     value = tmp;
   } else
-    value = _T("--");
+    value = "--";
 
   SetText(VARIO, value);
 }
@@ -206,7 +206,7 @@ FlarmTrafficDetailsWidget::Update()
   const char *value;
 
   // Set the dialog caption
-  StringFormatUnsafe(tmp, _T("%s (%s)"),
+  StringFormatUnsafe(tmp, "%s (%s)",
                      _("FLARM Traffic Details"), target_id.Format(tmp_id));
   dialog.SetCaption(tmp);
 
@@ -219,9 +219,9 @@ FlarmTrafficDetailsWidget::Update()
 
     // Fill the frequency field
     if (!StringIsEmpty(record->frequency))
-      value = UnsafeBuildString(tmp, record->frequency.c_str(), _T(" MHz"));
+      value = UnsafeBuildString(tmp, record->frequency.c_str(), " MHz");
     else
-      value = _T("--");
+      value = "--";
     SetText(RADIO, value);
 
     // Fill the home airfield field
@@ -231,13 +231,13 @@ FlarmTrafficDetailsWidget::Update()
     SetText(PLANE, record->plane_type);
   } else {
     // Fill the pilot name field
-    SetText(PILOT, _T("--"));
+    SetText(PILOT, "--");
 
     // Fill the frequency field
-    SetText(RADIO, _T("--"));
+    SetText(RADIO, "--");
 
     // Fill the home airfield field
-    SetText(AIRPORT, _T("--"));
+    SetText(AIRPORT, "--");
 
     // Fill the plane type field
     const FlarmTraffic* target =
@@ -246,7 +246,7 @@ FlarmTrafficDetailsWidget::Update()
     const char* actype;
     if (target == nullptr ||
         (actype = FlarmTraffic::GetTypeString(target->type)) == nullptr)
-      actype = _T("--");
+      actype = "--";
 
     SetText(PLANE, actype);
   }
@@ -260,13 +260,13 @@ FlarmTrafficDetailsWidget::Update()
       BasicStringBuilder<char> builder(tmp, ARRAY_SIZE(tmp));
       builder.Append(cs);
       if (record)
-        builder.Append(_T(" ("), record->registration.c_str(), _T(")"));
+        builder.Append(" (", record->registration.c_str(), ")");
       value = tmp;
     } catch (BasicStringBuilder<char>::Overflow) {
       value = cs;
     }
   } else
-    value = _T("--");
+    value = "--";
   SetText(CALLSIGN, value);
 
   // Update the frequently changing fields too

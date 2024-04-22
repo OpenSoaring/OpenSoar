@@ -528,7 +528,7 @@ public:
   }
 
   void ClearText(unsigned i) noexcept {
-    SetText(i, _T(""));
+    SetText(i, "");
   }
 
   /**
@@ -610,7 +610,7 @@ public:
    * to indicate that there's no valid value currently.
    */
   void ClearValue(unsigned i) noexcept {
-    GetControl(i).SetText(_T(""));
+    GetControl(i).SetText("");
   }
 
   [[gnu::pure]]

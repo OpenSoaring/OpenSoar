@@ -101,7 +101,7 @@ InfoBoxContentAlternateGR::Update(InfoBoxData &data) noexcept
     alternate = NULL;
   }
 
-  data.FmtTitle(_T("Altn {} GR"), index + 1);
+  data.FmtTitle("Altn {} GR", index + 1);
 
   if (alternate == NULL) {
     data.SetInvalid();
@@ -115,7 +115,7 @@ InfoBoxContentAlternateGR::Update(InfoBoxData &data) noexcept
 
   if (gradient < 0) {
     data.SetValueColor(0);
-    data.SetValue(_T("+++"));
+    data.SetValue("+++");
     return;
   }
   if (::GradientValid(gradient)) {

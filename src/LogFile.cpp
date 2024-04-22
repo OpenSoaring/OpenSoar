@@ -46,12 +46,12 @@ OpenLog()
      * '-datapath=' 
      * A handler for this is possible but make the management much complicated!
      */
-    path = LocalPath(_T("OpenSoar"));
+    path = LocalPath("OpenSoar");
 
     /* delete the obsolete log file */
-    File::Delete(path + _T("-startup.log"));
-    auto back_path = path + _T("-old.log");
-    path = path + _T(".log");
+    File::Delete(path + "-startup.log");
+    auto back_path = path + "-old.log";
+    path = path + ".log";
     File::Replace(path, back_path);
 
 #ifdef ANDROID

@@ -450,7 +450,7 @@ FlarmTrafficWindow::PaintTargetInfoSmall(Canvas &canvas,
 
   // Write the relativ altitude devided by 100 to the Buffer
   StaticString<10> buffer;
-  const auto relalt_s = buffer.Format(_T("%d"), abs(relalt));
+  const auto relalt_s = buffer.Format("%d", abs(relalt));
 
   // Select font
   canvas.SetBackgroundTransparent();
@@ -611,9 +611,9 @@ FlarmTrafficWindow::PaintNorth(Canvas &canvas) const noexcept
   const auto radar_mid = radar_renderer.GetCenter();
   const PixelPoint q = radar_mid + iround(p * radar_renderer.GetRadius());
 
-  PixelSize s = canvas.CalcTextSize(_T("N"));
+  PixelSize s = canvas.CalcTextSize("N");
   canvas.DrawCircle(q, s.height * 0.65);
-  canvas.DrawText(q - s / 2u, _T("N"));
+  canvas.DrawText(q - s / 2u, "N");
 }
 
 static void

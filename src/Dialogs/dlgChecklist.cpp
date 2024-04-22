@@ -40,7 +40,7 @@ UpdateCaption(WndForm &form, const Checklist &checklist, std::size_t page)
   const auto &p = checklist[page];
 
   if (!p.title.empty()) {
-    buffer.append(_T(": "));
+    buffer.append(": ");
     buffer.append(p.title);
   }
 
@@ -52,7 +52,7 @@ LoadChecklist() noexcept
 try {
   Checklist c;
 
-  auto file_reader = OpenDataFile(_T(XCSCHKLIST));
+  auto file_reader = OpenDataFile(XCSCHKLIST);
   BufferedReader reader{*file_reader};
   StringConverter string_converter{Charset::UTF8};
 

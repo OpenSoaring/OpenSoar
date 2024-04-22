@@ -29,18 +29,18 @@ InputEvents::eventSounds(const char *misc)
   SoundSettings &settings = CommonInterface::SetUISettings().sound;
  // bool OldEnableSoundVario = EnableSoundVario;
   bool enabled = settings.vario.enabled;
-  if (StringIsEqual(misc, _T("toggle")))
+  if (StringIsEqual(misc, "toggle"))
     settings.vario.enabled = !enabled;
-  else if (StringIsEqual(misc, _T("on")))
+  else if (StringIsEqual(misc, "on"))
     settings.vario.enabled = true;
-  else if (StringIsEqual(misc, _T("off")))
+  else if (StringIsEqual(misc, "off"))
     settings.vario.enabled = false;
-  else if (StringIsEqual(misc, _T("quieter"))) {
+  else if (StringIsEqual(misc, "quieter")) {
     settings.vario.volume = settings.vario.volume / 2;
     if (settings.vario.volume < 1) // settings.vario.max_volume)
       settings.vario.volume = 1;  // don't switch to off!
     // settings.vario.enabled = false;
-  } else if (StringIsEqual(misc, _T("louder"))) {
+  } else if (StringIsEqual(misc, "louder")) {
     if (settings.vario.volume > 0)
       settings.vario.volume *= 2;
     else
@@ -48,7 +48,7 @@ InputEvents::eventSounds(const char *misc)
     if (settings.vario.volume > 100) // settings.vario.max_volume)
       settings.vario.volume = 100;
     // settings.vario.enabled = false;
-  } else if (StringIsEqual(misc, _T("show"))) {
+  } else if (StringIsEqual(misc, "show")) {
     if (enabled)
       Message::AddMessage(_("Vario sounds on"));
     else
@@ -66,19 +66,19 @@ InputEvents::eventSnailTrail(const char *misc)
 {
   MapSettings &settings_map = CommonInterface::SetMapSettings();
 
-  if (StringIsEqual(misc, _T("toggle"))) {
+  if (StringIsEqual(misc, "toggle")) {
     unsigned trail_length = (int)settings_map.trail.length;
     trail_length = (trail_length + 1u) % 4u;
     settings_map.trail.length = (TrailSettings::Length)trail_length;
-  } else if (StringIsEqual(misc, _T("off")))
+  } else if (StringIsEqual(misc, "off"))
     settings_map.trail.length = TrailSettings::Length::OFF;
-  else if (StringIsEqual(misc, _T("long")))
+  else if (StringIsEqual(misc, "long"))
     settings_map.trail.length = TrailSettings::Length::LONG;
-  else if (StringIsEqual(misc, _T("short")))
+  else if (StringIsEqual(misc, "short"))
     settings_map.trail.length = TrailSettings::Length::SHORT;
-  else if (StringIsEqual(misc, _T("full")))
+  else if (StringIsEqual(misc, "full"))
     settings_map.trail.length = TrailSettings::Length::FULL;
-  else if (StringIsEqual(misc, _T("show"))) {
+  else if (StringIsEqual(misc, "show")) {
     switch (settings_map.trail.length) {
     case TrailSettings::Length::OFF:
       Message::AddMessage(_("Snail trail off"));
@@ -111,27 +111,27 @@ InputEvents::eventTerrainTopology(const char *misc)
 void
 InputEvents::eventTerrainTopography(const char *misc)
 {
-  if (StringIsEqual(misc, _T("terrain toggle")))
+  if (StringIsEqual(misc, "terrain toggle"))
     sub_TerrainTopography(-2);
-  else if (StringIsEqual(misc, _T("topography toggle")))
+  else if (StringIsEqual(misc, "topography toggle"))
     sub_TerrainTopography(-3);
-  else if (StringIsEqual(misc, _T("topology toggle")))
+  else if (StringIsEqual(misc, "topology toggle"))
     sub_TerrainTopography(-3);
-  else if (StringIsEqual(misc, _T("terrain on")))
+  else if (StringIsEqual(misc, "terrain on"))
     sub_TerrainTopography(3);
-  else if (StringIsEqual(misc, _T("terrain off")))
+  else if (StringIsEqual(misc, "terrain off"))
     sub_TerrainTopography(4);
-  else if (StringIsEqual(misc, _T("topography on")))
+  else if (StringIsEqual(misc, "topography on"))
     sub_TerrainTopography(1);
-  else if (StringIsEqual(misc, _T("topography off")))
+  else if (StringIsEqual(misc, "topography off"))
     sub_TerrainTopography(2);
-  else if (StringIsEqual(misc, _T("topology on")))
+  else if (StringIsEqual(misc, "topology on"))
     sub_TerrainTopography(1);
-  else if (StringIsEqual(misc, _T("topology off")))
+  else if (StringIsEqual(misc, "topology off"))
     sub_TerrainTopography(2);
-  else if (StringIsEqual(misc, _T("show")))
+  else if (StringIsEqual(misc, "show"))
     sub_TerrainTopography(0);
-  else if (StringIsEqual(misc, _T("toggle")))
+  else if (StringIsEqual(misc, "toggle"))
     sub_TerrainTopography(-1);
 
   XCSoarInterface::SendMapSettings(true);
@@ -145,13 +145,13 @@ InputEvents::eventAudioDeadband(const char *misc)
 {
   SoundSettings &settings = CommonInterface::SetUISettings().sound;
 
-  if (StringIsEqual(misc, _T("+"))) {
+  if (StringIsEqual(misc, "+")) {
     if (settings.sound_deadband >= 40)
       return;
 
     ++settings.sound_deadband;
   }
-  if (StringIsEqual(misc, _T("-"))) {
+  if (StringIsEqual(misc, "-")) {
     if (settings.sound_deadband <= 0)
       return;
 
@@ -180,21 +180,21 @@ InputEvents::eventBugs(const char *misc)
   auto BUGS = settings.bugs;
   auto oldBugs = BUGS;
 
-  if (StringIsEqual(misc, _T("up"))) {
+  if (StringIsEqual(misc, "up")) {
     BUGS += 1 / 10.;
     if (BUGS > 1)
       BUGS = 1;
-  } else if (StringIsEqual(misc, _T("down"))) {
+  } else if (StringIsEqual(misc, "down")) {
     BUGS -= 1 / 10.;
     if (BUGS < 0.5)
       BUGS = 0.5;
-  } else if (StringIsEqual(misc, _T("max")))
+  } else if (StringIsEqual(misc, "max"))
     BUGS = 1;
-  else if (StringIsEqual(misc, _T("min")))
+  else if (StringIsEqual(misc, "min"))
     BUGS = 0.5;
-  else if (StringIsEqual(misc, _T("show"))) {
+  else if (StringIsEqual(misc, "show")) {
     char Temp[100];
-    _stprintf(Temp, _T("%d"), (int)(BUGS * 100));
+    _stprintf(Temp, "%d", (int)(BUGS * 100));
     Message::AddMessage(_("Bugs performance"), Temp);
   }
 
@@ -222,21 +222,21 @@ InputEvents::eventBallast(const char *misc)
   auto BALLAST = polar.GetBallast();
   auto oldBallast = BALLAST;
 
-  if (StringIsEqual(misc, _T("up"))) {
+  if (StringIsEqual(misc, "up")) {
     BALLAST += 1 / 10.;
     if (BALLAST >= 1)
       BALLAST = 1;
-  } else if (StringIsEqual(misc, _T("down"))) {
+  } else if (StringIsEqual(misc, "down")) {
     BALLAST -= 1 / 10.;
     if (BALLAST < 0)
       BALLAST = 0;
-  } else if (StringIsEqual(misc, _T("max")))
+  } else if (StringIsEqual(misc, "max"))
     BALLAST = 1;
-  else if (StringIsEqual(misc, _T("min")))
+  else if (StringIsEqual(misc, "min"))
     BALLAST = 0;
-  else if (StringIsEqual(misc, _T("show"))) {
+  else if (StringIsEqual(misc, "show")) {
     char Temp[100];
-    _stprintf(Temp, _T("%d"), (int)(BALLAST * 100));
+    _stprintf(Temp, "%d", (int)(BALLAST * 100));
     /* xgettext:no-c-format */
     Message::AddMessage(_("Ballast %"), Temp);
   }
@@ -288,15 +288,15 @@ InputEvents::eventProfileSave(const char *misc)
 void
 InputEvents::eventAdjustForecastTemperature(const char *misc)
 {
-  if (StringIsEqual(misc, _T("+")))
+  if (StringIsEqual(misc, "+"))
     CommonInterface::SetComputerSettings().forecast_temperature += Temperature::FromKelvin(1);
-  else if (StringIsEqual(misc, _T("-")))
+  else if (StringIsEqual(misc, "-"))
     CommonInterface::SetComputerSettings().forecast_temperature -= Temperature::FromKelvin(1);
-  else if (StringIsEqual(misc, _T("show"))) {
+  else if (StringIsEqual(misc, "show")) {
     auto temperature =
       CommonInterface::GetComputerSettings().forecast_temperature;
     char Temp[100];
-    _stprintf(Temp, _T("%f"), temperature.ToUser());
+    _stprintf(Temp, "%f", temperature.ToUser());
     Message::AddMessage(_("Forecast temperature"), Temp);
   }
 }
@@ -314,21 +314,21 @@ InputEvents::eventDeclutterLabels(const char *misc)
   static constexpr unsigned int n = ARRAY_SIZE(msg);
 
   static const char *const actions[n] = {
-    _T("all"),
-    _T("task+landables"),
-    _T("task"),
-    _T("none")
-    _T("task+airfields"),
+    "all",
+    "task+landables",
+    "task",
+    "none"
+    "task+airfields",
   };
 
   WaypointRendererSettings::LabelSelection &wls =
     CommonInterface::SetMapSettings().waypoint.label_selection;
-  if (StringIsEqual(misc, _T("toggle"))) {
+  if (StringIsEqual(misc, "toggle")) {
     wls = WaypointRendererSettings::LabelSelection(((unsigned)wls + 1) %  n);
     Profile::Set(ProfileKeys::WaypointLabelSelection, (int)wls);
-  } else if (StringIsEqual(misc, _T("show"))) {
+  } else if (StringIsEqual(misc, "show")) {
     char tbuf[64];
-    _stprintf(tbuf, _T("%s: %s"), _("Waypoint labels"),
+    _stprintf(tbuf, "%s: %s", _("Waypoint labels"),
               gettext(msg[(unsigned)wls]));
     Message::AddMessage(tbuf);
   }
@@ -351,15 +351,15 @@ InputEvents::eventAirspaceDisplayMode(const char *misc)
   AirspaceRendererSettings &settings =
     CommonInterface::SetMapSettings().airspace;
 
-  if (StringIsEqual(misc, _T("all")))
+  if (StringIsEqual(misc, "all"))
     settings.altitude_mode = AirspaceDisplayMode::ALLON;
-  else if (StringIsEqual(misc, _T("clip")))
+  else if (StringIsEqual(misc, "clip"))
     settings.altitude_mode = AirspaceDisplayMode::CLIP;
-  else if (StringIsEqual(misc, _T("auto")))
+  else if (StringIsEqual(misc, "auto"))
     settings.altitude_mode = AirspaceDisplayMode::AUTO;
-  else if (StringIsEqual(misc, _T("below")))
+  else if (StringIsEqual(misc, "below"))
     settings.altitude_mode = AirspaceDisplayMode::ALLBELOW;
-  else if (StringIsEqual(misc, _T("off")))
+  else if (StringIsEqual(misc, "off"))
     settings.altitude_mode = AirspaceDisplayMode::ALLOFF;
 
   TriggerMapUpdate();
@@ -370,22 +370,22 @@ InputEvents::eventOrientation(const char *misc)
 {
   MapSettings &settings_map = CommonInterface::SetMapSettings();
 
-  if (StringIsEqual(misc, _T("northup"))) {
+  if (StringIsEqual(misc, "northup")) {
     settings_map.cruise_orientation = MapOrientation::NORTH_UP;
     settings_map.circling_orientation = MapOrientation::NORTH_UP;
-  } else if (StringIsEqual(misc, _T("northcircle"))) {
+  } else if (StringIsEqual(misc, "northcircle")) {
     settings_map.cruise_orientation = MapOrientation::TRACK_UP;
     settings_map.circling_orientation = MapOrientation::NORTH_UP;
-  } else if (StringIsEqual(misc, _T("trackcircle"))) {
+  } else if (StringIsEqual(misc, "trackcircle")) {
     settings_map.cruise_orientation = MapOrientation::NORTH_UP;
     settings_map.circling_orientation = MapOrientation::TRACK_UP;
-  } else if (StringIsEqual(misc, _T("trackup"))) {
+  } else if (StringIsEqual(misc, "trackup")) {
     settings_map.cruise_orientation = MapOrientation::TRACK_UP;
     settings_map.circling_orientation = MapOrientation::TRACK_UP;
-  } else if (StringIsEqual(misc, _T("northtrack"))) {
+  } else if (StringIsEqual(misc, "northtrack")) {
     settings_map.cruise_orientation = MapOrientation::TRACK_UP;
     settings_map.circling_orientation = MapOrientation::TARGET_UP;
-  } else if (StringIsEqual(misc, _T("targetup"))) {
+  } else if (StringIsEqual(misc, "targetup")) {
     settings_map.cruise_orientation = MapOrientation::TARGET_UP;
     settings_map.circling_orientation = MapOrientation::TARGET_UP;
   }
@@ -448,9 +448,9 @@ InputEvents::sub_TerrainTopography(int vswitch)
     char buf[128];
 
     if (settings_map.topography_enabled)
-      _stprintf(buf, _T("\r\n%s / "), _("On"));
+      _stprintf(buf, "\r\n%s / ", _("On"));
     else
-      _stprintf(buf, _T("\r\n%s / "), _("Off"));
+      _stprintf(buf, "\r\n%s / ", _("Off"));
 
     strcat(buf, settings_map.terrain.enable
             ? _("On") : _("Off"));

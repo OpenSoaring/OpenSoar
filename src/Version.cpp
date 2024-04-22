@@ -39,8 +39,8 @@
 # define GIT_SUFFIX
 #endif
 
-const char OpenSoar_Version[] = _T(VERSION);
-const char OpenSoar_VersionLong[] = _T(VERSION VERSION_SUFFIX);
-const char OpenSoar_VersionString[] = _T(VERSION VERSION_SUFFIX "-" TARGET);
-const char OpenSoar_VersionStringOld[] = _T(TARGET " " VERSION VERSION_SUFFIX);
-const char OpenSoar_ProductToken[] = _T("OpenSoar v" VERSION VERSION_SUFFIX "-" TARGET GIT_SUFFIX);
+const char OpenSoar_Version[] = VERSION;
+const char OpenSoar_VersionLong[] = VERSION VERSION_SUFFIX;
+const char OpenSoar_VersionString[] = VERSION VERSION_SUFFIX "-" TARGET;
+const char OpenSoar_VersionStringOld[] = TARGET " " VERSION VERSION_SUFFIX;
+const char OpenSoar_ProductToken[] = "OpenSoar v" VERSION VERSION_SUFFIX "-" TARGET GIT_SUFFIX;

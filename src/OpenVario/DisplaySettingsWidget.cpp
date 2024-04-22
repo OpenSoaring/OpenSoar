@@ -60,11 +60,11 @@ enum ControlIndex {
 };
 
   static constexpr StaticEnumChoice rotation_list[] = {
-    // { DisplayOrientation::DEFAULT,  _T("default") },
-    {DisplayOrientation::LANDSCAPE, _T("Landscape (0°)")},
-    {DisplayOrientation::PORTRAIT, _T("Portrait (90°)")},
-    {DisplayOrientation::REVERSE_LANDSCAPE, _T("Rev. Landscape (180°)")},
-    {DisplayOrientation::REVERSE_PORTRAIT, _T("rev. Portrait (270°)")},
+    // { DisplayOrientation::DEFAULT,  "default" },
+    {DisplayOrientation::LANDSCAPE, "Landscape (0°)"},
+    {DisplayOrientation::PORTRAIT, "Portrait (90°)"},
+    {DisplayOrientation::REVERSE_LANDSCAPE, "Rev. Landscape (180°)"},
+    {DisplayOrientation::REVERSE_PORTRAIT, "rev. Portrait (270°)"},
     nullptr};
 
 class DisplaySettingsWidget final : public RowFormWidget, DataFieldListener {
@@ -127,8 +127,8 @@ DisplaySettingsWidget::Prepare([[maybe_unused]] ContainerWindow &_parent,
   AddEnum(_("Rotation"), _("Rotation Display OpenVario"), rotation_list,
           (unsigned)ovdevice.rotation, this);
 
-  AddInteger(_("Brightness"), _("Brightness Display OpenVario"), _T("%d%%"),
-             _T("%d%%"), 10, 100, 10, brightness, this);
+  AddInteger(_("Brightness"), _("Brightness Display OpenVario"), "%d%%",
+             "%d%%", 10, 100, 10, brightness, this);
 
   AddBoolean(_("Touch enabled"), _("Enabling the tTouch Screen"), ovdevice.touch, this);
 
@@ -170,7 +170,7 @@ ShowDisplaySettingsWidget(ContainerWindow &parent,
                               const DialogLook &look) noexcept {
   TWidgetDialog<DisplaySettingsWidget> sub_dialog(
       WidgetDialog::Full{}, (UI::SingleWindow &)parent, look,
-      _T("OpenVario Display Settings"));
+      "OpenVario Display Settings");
   sub_dialog.SetWidget();
   sub_dialog.AddButton(_("Close"), mrOK);
   return sub_dialog.ShowModal();

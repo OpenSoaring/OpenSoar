@@ -32,13 +32,13 @@ CalibrateSensors() noexcept
                                                  "sensord.service", nullptr};
 
   RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                   _T("Calibrate Sensors"), stop_sensord, [](int status) {
+                   "Calibrate Sensors", stop_sensord, [](int status) {
                      return status == EXIT_SUCCESS ? mrOK : 0;
                    });
 
   AtScopeExit() {
     RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                     _T("Calibrate Sensors"), start_sensord, [](int status) {
+                     "Calibrate Sensors", start_sensord, [](int status) {
                        return status == EXIT_SUCCESS ? mrOK : 0;
                      });
   };
@@ -51,7 +51,7 @@ CalibrateSensors() noexcept
   static constexpr int RESULT_BOARD_NOT_INITIALISED = 100;
   int result = RunProcessDialog(
       UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-      _T("Calibrate Sensors"), calibrate_sensors, [](int status) {
+      "Calibrate Sensors", calibrate_sensors, [](int status) {
         return status == STATUS_BOARD_NOT_INITIALISED
                    ? RESULT_BOARD_NOT_INITIALISED
                    : 0;
@@ -60,8 +60,8 @@ CalibrateSensors() noexcept
     return;
 
   /* initialise the sensors? */
-  if (ShowMessageBox(_T("Sensorboard is virgin. Do you want to initialise it?"),
-                     _T("Calibrate Sensors"), MB_YESNO) != IDYES)
+  if (ShowMessageBox("Sensorboard is virgin. Do you want to initialise it?",
+                     "Calibrate Sensors", MB_YESNO) != IDYES)
     return;
 
   static constexpr const char *init_sensors[] = {"/opt/bin/sensorcal", "-i",
@@ -69,7 +69,7 @@ CalibrateSensors() noexcept
 
   result =
       RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                       _T("Calibrate Sensors"), init_sensors, [](int status) {
+                       "Calibrate Sensors", init_sensors, [](int status) {
                          return status == EXIT_SUCCESS ? mrOK : 0;
                        });
   if (result != mrOK)
@@ -77,7 +77,7 @@ CalibrateSensors() noexcept
 
   /* calibrate again */
   RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                   _T("Calibrate Sensors"), calibrate_sensors, [](int status) {
+                   "Calibrate Sensors", calibrate_sensors, [](int status) {
                      return status == STATUS_BOARD_NOT_INITIALISED
                                 ? RESULT_BOARD_NOT_INITIALISED
                                 : 0;

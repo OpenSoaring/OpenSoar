@@ -73,7 +73,7 @@ private:
 
 void ScreenSSHWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                               [[maybe_unused]] const PixelRect &rc) noexcept {
-  AddButton(_T("Enable"), []() {
+  AddButton("Enable", []() {
     static constexpr const char *argv[] = {
         "/bin/sh", "-c",
         "systemctl enable --now dropbear.socket && printf '\nSSH has been enabled'",
@@ -81,48 +81,48 @@ void ScreenSSHWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
         nullptr};
 
     RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                     _T("Enable"), argv);
+                     "Enable", argv);
   });
 
-  AddButton(_T("Disable"), []() {
+  AddButton("Disable", []() {
     static constexpr const char *argv[] = {
         "/bin/sh", "-c",
         "systemctl disable --now dropbear.socket && printf '\nSSH has been disabled'",
         nullptr};
 
     RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                     _T("Disable"), argv);
+                     "Disable", argv);
   });
 
-  AddButton(_T("IsEnabled"), []() {
+  AddButton("IsEnabled", []() {
     static constexpr const char *argv[] = {
         "/bin/sh", "-c",
         "systemctl is-enabled dropbear.socket",
         nullptr};
 
     RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                     _T("IsEnabled"), argv);
+                     "IsEnabled", argv);
   });
-  AddButton(_T("IsActive"), []() {
+  AddButton("IsActive", []() {
     static constexpr const char *argv[] = {
         "/bin/sh", "-c",
         "systemctl is-active dropbear.socket",
         nullptr};
 
     RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                     _T("IsActive"), argv);
+                     "IsActive", argv);
   });
 
-  AddButton(_T("GetStatus"), []() {
+  AddButton("GetStatus", []() {
     static constexpr const char *argv[] = {
         "/bin/sh", "-c",
         "systemctl is-enabled dropbear.socket", 
         "systemctl is-active dropbear.socket", nullptr};
 
     RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                     _T("GetStatus"), argv);
+                     "GetStatus", argv);
   });
-  AddButton(_T("GetStatus2"), []() {
+  AddButton("GetStatus2", []() {
     static constexpr const char *argv[] = {
         "/bin/sh", "-c",
         "/bin/systemctl is-enabled dropbear.socket", 
@@ -130,7 +130,7 @@ void ScreenSSHWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
         "/bin/systemctl is-active dropbear.socket", nullptr};
 
     RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                     _T("GetStatus2"), argv);
+                     "GetStatus2", argv);
   });
 }
 
@@ -152,11 +152,11 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 #if 1
   // the variant with command line...
   // UI::SingleWindow main_window = 
-  AddButton(_T("SSH"), [this]() {
+  AddButton("SSH", [this]() {
     TWidgetDialog<ScreenSSHWidget> sub_dialog(WidgetDialog::Full{},
                                               // dialog.GetMainWindow(), GetLook(),
                   UIGlobals::GetMainWindow(), GetLook(),
-                                              _T("Enable or Disable SSH"));
+                                              "Enable or Disable SSH");
     sub_dialog.SetWidget();
     sub_dialog.AddButton(_("Close"), mrOK);
     return sub_dialog.ShowModal();
@@ -170,7 +170,7 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     _T("Update System"), argv);
+                     "Update System", argv);
   });
 
   AddButton(_("Calibrate Sensors"), CalibrateSensors);
@@ -183,7 +183,7 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     ContainerWindow::SetExitValue(LAUNCH_TOUCH_CALIBRATE);
     UIActions::SignalShutdown(true);
     return mrOK;
-    //        InputEvents::eventShutdown(_T("reboot"));
+    //        InputEvents::eventShutdown("reboot");
     // dialog.SetModalResult(LAUNCH_TOUCH_CALIBRATE);
     // dialog.SetModalResult(LAUNCH_TOUCH_CALIBRATE);
 
@@ -193,14 +193,14 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
           nullptr};
 
     RunProcessDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                       _T("Calibrate Touch"), argv);
+                       "Calibrate Touch", argv);
 #else
 //    const UI::ScopeDropMaster drop_master{display};
 //    const UI::ScopeSuspendEventQueue
         // suspend_event_queue{event_queue};
         // RunProcessDialog(UIGlobals::GetMainWindow(),
         // UIGlobals::GetDialogLook(),
-    //                 _T("System Info"), "/usr/bin/ov-calibrate-ts.sh");
+    //                 "System Info", "/usr/bin/ov-calibrate-ts.sh");
 //    Run("/usr/bin/ov-calibrate-ts.sh");
 #endif
 #endif
@@ -214,7 +214,7 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     _T("System Info"), argv);
+                     "System Info", argv);
   });
 
   AddButton(_("List Dir"), []() {
@@ -222,12 +222,12 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
     RunProcessDialog(UIGlobals::GetMainWindow(),
                      UIGlobals::GetDialogLook(),
-                     _T("List Dir"), argv);
+                     "List Dir", argv);
   });
 
   AddButton(_("Test-Process 2"), [this]() {
     StaticString<0x200> str;
-    str.Format(_T("%s/%s"), ovdevice.GetHomePath().c_str(), _T("process.txt"));
+    str.Format("%s/%s", ovdevice.GetHomePath().c_str(), "process.txt");
     Path output = Path(str);
 
     auto ret_value = Run(
@@ -249,7 +249,7 @@ ShowSystemMenuWidget(ContainerWindow  &parent,
 {
   TWidgetDialog<SystemMenuWidget> sub_dialog(
       WidgetDialog::Full{}, (UI::SingleWindow &) parent, look,
-      _T("OpenVario System Menu"));
+      "OpenVario System Menu");
   sub_dialog.SetWidget();
   sub_dialog.AddButton(_("Close"), mrOK);
   return sub_dialog.ShowModal();

@@ -631,8 +631,8 @@ AR62xxCreateOnPort([[maybe_unused]] const DeviceConfig &config,
  * same as in KRT2.cpp
  */
 const struct DeviceRegister ar62xx_driver = {
-  _T("AR62xx"),
-  _T("Becker AR62xx"),
+  "AR62xx",
+  "Becker AR62xx",
   DeviceRegister::NO_TIMEOUT | DeviceRegister::RAW_GPS_DATA,
   AR62xxCreateOnPort,
 };

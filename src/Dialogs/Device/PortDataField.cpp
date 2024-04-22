@@ -37,8 +37,8 @@ static constexpr struct {
 #endif
 #ifdef ANDROID
   { DeviceConfig::PortType::RFCOMM_SERVER, N_("Bluetooth server") },
-  { DeviceConfig::PortType::DROIDSOAR_V2, _T("DroidSoar V2") },
-  { DeviceConfig::PortType::GLIDER_LINK, _T("GliderLink traffic receiver") },
+  { DeviceConfig::PortType::DROIDSOAR_V2, "DroidSoar V2" },
+  { DeviceConfig::PortType::GLIDER_LINK, "GliderLink traffic receiver" },
 #ifndef NDEBUG
   { DeviceConfig::PortType::NUNCHUCK, N_("IOIO switches and Nunchuk") },
 #endif
@@ -106,8 +106,8 @@ static void
 DetectSerialPorts(DataFieldEnum &df) noexcept
 try {
 //-------------------------------
-  RegistryKey bthenums{HKEY_LOCAL_MACHINE, _T("SYSTEM\\CurrentControlSet\\"
-                                              "Enum\\BthEnum")};
+  RegistryKey bthenums{HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\"
+                                              "Enum\\BthEnum"};
   std::map<const std::string, std::string> bthmap;
   for (unsigned k = 0;; ++k) {
     char dev_name[128];
@@ -117,14 +117,14 @@ try {
     if (!bthenums.EnumKey(k, std::span{dev_name}))
       break;
     std::string map_name(dev_name);
-    if (!map_name.starts_with(_T("Dev_")))
+    if (!map_name.starts_with("Dev_"))
       continue;
     RegistryKey bthenum_dev{bthenums, dev_name};
     // only one is possible...
     if (!bthenum_dev.EnumKey(0, std::span{name}))
       break;
     RegistryKey bthenum_key{bthenum_dev, name};
-    if (!bthenum_key.GetValue(_T("FriendlyName"), friendly_name))
+    if (!bthenum_key.GetValue("FriendlyName", friendly_name))
       break;
     map_name = map_name.substr(4);
     for (std::string::iterator it = map_name.begin(); it != map_name.end();
@@ -132,8 +132,8 @@ try {
       *it = towlower(*it);
     bthmap[map_name] = friendly_name; // Left "Dev_"
   }
-  RegistryKey bthle{HKEY_LOCAL_MACHINE, _T("SYSTEM\\CurrentControlSet\\"
-                                              "Enum\\BthLE")};
+  RegistryKey bthle{HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\"
+                                              "Enum\\BthLE"};
   std::map<const std::string, std::string> blemap;
   for (unsigned k = 0;; ++k) {
     char dev_name[128];
@@ -143,14 +143,14 @@ try {
     if (!bthle.EnumKey(k, std::span{dev_name}))
       break;
     std::string map_name(dev_name);
-    if (!map_name.starts_with(_T("Dev_")))
+    if (!map_name.starts_with("Dev_"))
       continue;
     RegistryKey bthle_dev{bthle, dev_name};
     // only one is possible...
     if (!bthle_dev.EnumKey(0, std::span{name}))
       break;
     RegistryKey bthle_key{bthle_dev, name};
-    if (!bthle_key.GetValue(_T("FriendlyName"), friendly_name))
+    if (!bthle_key.GetValue("FriendlyName", friendly_name))
       break;
     map_name = map_name.substr(4);
     for (std::string::iterator it = map_name.begin(); it != map_name.end();
@@ -161,7 +161,7 @@ try {
 
   /* the registry key HKEY_LOCAL_MACHINE/Hardware/DEVICEMAP/SERIALCOMM
      is the best way to discover serial ports on Windows */
-  RegistryKey serialcomm{HKEY_LOCAL_MACHINE, _T("Hardware\\DeviceMap\\SerialComm")};
+  RegistryKey serialcomm{HKEY_LOCAL_MACHINE, "Hardware\\DeviceMap\\SerialComm"};
 
   for (unsigned i = 0;; ++i) {
     char name[128];
@@ -176,8 +176,8 @@ try {
       // weird
       continue;
 
-    RegistryKey devices {HKEY_LOCAL_MACHINE, _T("SYSTEM\\CurrentControlSet\\"
-            "Control\\COM Name Arbiter\\Devices")};
+    RegistryKey devices {HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\"
+            "Control\\COM Name Arbiter\\Devices"};
     char name1[0x200];
 
     if (!devices.GetValue(value, name1))
@@ -188,27 +188,27 @@ try {
     // USB:       "\\?\usb#"
     // Normal:    "\\?\acpi#"   - an Kupschis Rechner!
     std::string dev = name1;
-    if (dev.starts_with(_T("\\\\?\\usb#"))) {
+    if (dev.starts_with("\\\\?\\usb#")) {
       std::vector<std::string> strs;
       std::string port_name;
       boost::split(strs, name, boost::is_any_of("\\"));
       port_name = value;
-      port_name += _T(" (");
+      port_name += " (";
       port_name += strs[2];
-      port_name += _T(")");
+      port_name += ")";
 
       AddPort(df, DeviceConfig::PortType::USB_SERIAL, value, port_name.c_str());
-    } else if (dev.starts_with(_T("\\\\?\\bthenum#"))) {
+    } else if (dev.starts_with("\\\\?\\bthenum#")) {
       std::vector<std::string> strs;
       std::string port_name;
       boost::split(strs, name1, boost::is_any_of("#"));
       boost::split(strs, strs[2], boost::is_any_of("_"));
-      if (strs[1] == _T("c00000000")) {
+      if (strs[1] == "c00000000") {
         boost::split(strs, strs[0], boost::is_any_of("&"));
-        if (strs[3] != _T("000000000000")) {
+        if (strs[3] != "000000000000") {
           DeviceConfig::PortType port_type = DeviceConfig::PortType::DISABLED;
           port_name = value;
-          port_name += _T(" (");
+          port_name += " (";
           if (blemap.find(strs[3]) != blemap.end()) {
             port_type = DeviceConfig::PortType::RFCOMM;
             port_type = DeviceConfig::PortType::BLE_HM10;
@@ -219,13 +219,13 @@ try {
             port_name += bthmap[strs[3]];
           } 
 
-          port_name += _T(")");
+          port_name += ")";
           if (port_type != DeviceConfig::PortType::DISABLED)
             AddPort(df, port_type, value,
                    port_name.c_str());
         }
       }
-    } else //  if (dev.starts_with(_T("\\\\?\\acpi#")))
+    } else //  if (dev.starts_with("\\\\?\\acpi#"))
       AddPort(df, DeviceConfig::PortType::SERIAL, value, name);
   }
 } catch (const std::system_error &) {
@@ -322,8 +322,8 @@ FillAndroidIOIOPorts([[maybe_unused]] DataFieldEnum &df, [[maybe_unused]] const 
   char tempID[4];
   char tempName[15];
   for (unsigned i = 0; i < AndroidIOIOUartPort::getNumberUarts(); i++) {
-    StringFormatUnsafe(tempID, _T("%u"), i);
-    StringFormat(tempName, sizeof(tempName), _T("IOIO UART %u"), i);
+    StringFormatUnsafe(tempID, "%u", i);
+    StringFormat(tempName, sizeof(tempName), "IOIO UART %u", i);
     unsigned id = AddPort(df, DeviceConfig::PortType::IOIOUART,
                           tempID, tempName,
                           AndroidIOIOUartPort::getPortHelp(i));
@@ -399,7 +399,7 @@ SetDevicePort(DataFieldEnum &df, const DeviceConfig &config) noexcept
 
   case DeviceConfig::PortType::IOIOUART:
     StaticString<16> buffer;
-    buffer.UnsafeFormat(_T("%d"), config.ioio_uart_id);
+    buffer.UnsafeFormat("%d", config.ioio_uart_id);
     df.SetValue(buffer);
     return;
   }

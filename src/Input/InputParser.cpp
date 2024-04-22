@@ -26,7 +26,7 @@ parse_assignment(char *buffer, const char *&key, const char *&value)
   if (separator == NULL || separator == buffer)
     return false;
 
-  *separator = _T('\0');
+  *separator = '\0';
 
   key = buffer;
   value = separator + 1;
@@ -69,7 +69,7 @@ struct EventBuilder {
       // All modes are valid at this point
       int mode_id = config.MakeMode(token);
       if (mode_id < 0) {
-        LogFormat(_T("Too many modes: %.*s at %u"),
+        LogFormat("Too many modes: %.*s at %u",
                   int(token.size()), token.data(), line);
         continue;
       }
@@ -87,34 +87,34 @@ struct EventBuilder {
 
       // Make key (Keyboard input)
       // key - Hardware key or keyboard
-      if (type.equals(_T("key"))) {
+      if (type.equals("key")) {
         // Get the int key (eg: APP1 vs 'a')
         unsigned key = ParseKeyCode(data);
         if (key > 0)
           config.SetKeyEvent(mode_id, key, event_id);
         else
-          LogFormat(_T("Invalid key data: %s at %u"), data.c_str(), line);
+          LogFormat("Invalid key data: %s at %u", data.c_str(), line);
 
         // Make gce (Glide Computer Event)
         // GCE - Glide Computer Event
-      } else if (type.equals(_T("gce"))) {
+      } else if (type.equals("gce")) {
         // Get the int key (eg: APP1 vs 'a')
         int key = InputEvents::findGCE(data);
         if (key >= 0)
           config.GC2Event[key] = event_id;
         else
-          LogFormat(_T("Invalid GCE data: %s at %u"), data.c_str(), line);
+          LogFormat("Invalid GCE data: %s at %u", data.c_str(), line);
 
         // Make gesture (Gesture Event)
         // Key - Key Event
-      } else if (type.equals(_T("gesture"))) {
+      } else if (type.equals("gesture")) {
         // Check data for invalid characters:
         bool valid = true;
         for (const char* c = data; *c; c++)
-          if (*c != _T('U') &&
-              *c != _T('D') &&
-              *c != _T('R') &&
-              *c != _T('L'))
+          if (*c != 'U' &&
+              *c != 'D' &&
+              *c != 'R' &&
+              *c != 'L')
             valid = false;
         
         if (valid) {
@@ -122,24 +122,24 @@ struct EventBuilder {
           config.Gesture2Event.Remove(data.c_str());
           config.Gesture2Event.Add(data.c_str(), event_id);
         } else
-          LogFormat(_T("Invalid gesture data: %s at %u"), data.c_str(), line);
+          LogFormat("Invalid gesture data: %s at %u", data.c_str(), line);
 
         // Make ne (NMEA Event)
         // NE - NMEA Event
-      } else if (type.equals(_T("ne"))) {
+      } else if (type.equals("ne")) {
         // Get the int key (eg: APP1 vs 'a')
         int key = InputEvents::findNE(data);
         if (key >= 0)
           config.N2Event[key] = event_id;
         else
-          LogFormat(_T("Invalid GCE data: %s at %u"), data.c_str(), line);
+          LogFormat("Invalid GCE data: %s at %u", data.c_str(), line);
 
         // label only - no key associated (label can still be touch screen)
-      } else if (type.equals(_T("label"))) {
+      } else if (type.equals("label")) {
         // Nothing to do here...
 
       } else {
-        LogFormat(_T("Invalid type: %s at %u"), type.c_str(), line);
+        LogFormat("Invalid type: %s at %u", type.c_str(), line);
       }
     }
   }

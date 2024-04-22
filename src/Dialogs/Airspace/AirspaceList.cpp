@@ -148,22 +148,22 @@ static GeoPoint location;
 static Angle last_heading;
 
 static constexpr StaticEnumChoice type_filter_list[] = {
-  { WILDCARD, _T("*") },
-  { OTHER, _T("Other") },
-  { RESTRICT, _T("Restricted areas") },
-  { PROHIBITED, _T("Prohibited areas") },
-  { DANGER, _T("Danger areas") },
-  { CLASSA, _T("Class A") },
-  { CLASSB, _T("Class B") },
-  { CLASSC, _T("Class C") },
-  { CLASSD, _T("Class D") },
-  { NOGLIDER, _T("No gliders") },
-  { CTR, _T("CTR") },
-  { WAVE, _T("Wave") },
-  { CLASSE, _T("Class E") },
-  { CLASSF, _T("Class F") },
-  { TMZ, _T("TMZ") },
-  { MATZ, _T("MATZ") },
+  { WILDCARD, "*" },
+  { OTHER, "Other" },
+  { RESTRICT, "Restricted areas" },
+  { PROHIBITED, "Prohibited areas" },
+  { DANGER, "Danger areas" },
+  { CLASSA, "Class A" },
+  { CLASSB, "Class B" },
+  { CLASSC, "Class C" },
+  { CLASSD, "Class D" },
+  { NOGLIDER, "No gliders" },
+  { CTR, "CTR" },
+  { WAVE, "Wave" },
+  { CLASSE, "Class E" },
+  { CLASSF, "Class F" },
+  { TMZ, "TMZ" },
+  { MATZ, "MATZ" },
   nullptr
 };
 
@@ -248,7 +248,7 @@ AirspaceListWidget::FilterMode(bool direction)
     filter_widget.LoadValueEnum(DISTANCE, WILDCARD);
     filter_widget.LoadValueEnum(DIRECTION, WILDCARD);
   } else {
-    filter_widget.LoadValue(NAME, _T(""));
+    filter_widget.LoadValue(NAME, "");
   }
 }
 
@@ -304,7 +304,7 @@ GetHeadingString(char *buffer)
   FormatBearing(heading, ARRAY_SIZE(heading),
                 CommonInterface::Basic().attitude.heading);
 
-  StringFormatUnsafe(buffer, _T("%s (%s)"), _("Heading"), heading);
+  StringFormatUnsafe(buffer, "%s (%s)", _("Heading"), heading);
   return buffer;
 }
 
@@ -338,7 +338,7 @@ AirspaceFilterWidget::Update()
 static void
 FillDistanceEnum(DataFieldEnum &df)
 {
-  df.AddChoice(0, _T("*"));
+  df.AddChoice(0, "*");
 
   static constexpr unsigned distances[] = {
     25, 50, 75, 100, 150, 250, 500, 1000
@@ -347,7 +347,7 @@ FillDistanceEnum(DataFieldEnum &df)
   char buffer[64];
   const char *unit = Units::GetDistanceName();
   for (unsigned i = 0; i < ARRAY_SIZE(distances); ++i) {
-    StringFormatUnsafe(buffer, _T("%u %s"), distances[i], unit);
+    StringFormatUnsafe(buffer, "%u %s", distances[i], unit);
     df.AddChoice(distances[i], buffer);
   }
 
@@ -359,7 +359,7 @@ FillDirectionEnum(DataFieldEnum &df)
 {
   char buffer[64];
 
-  df.AddChoice(WILDCARD, _T("*"));
+  df.AddChoice(WILDCARD, "*");
   df.AddChoice(0, GetHeadingString(buffer));
 
   static constexpr unsigned directions[] = {
@@ -375,7 +375,7 @@ FillDirectionEnum(DataFieldEnum &df)
 static DataField *
 CreateNameDataField(DataFieldListener *listener)
 {
-  return new PrefixDataField(_T(""), listener);
+  return new PrefixDataField("", listener);
 }
 
 static DataField *

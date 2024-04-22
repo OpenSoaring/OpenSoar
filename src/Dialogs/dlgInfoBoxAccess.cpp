@@ -59,7 +59,7 @@ dlgInfoBoxAccessShowModeless(const int id, const InfoBoxPanel *panels)
       if (widget == NULL)
         continue;
 
-      if (!found_setup && StringIsEqual(panels->name, _T("Setup"))) {
+      if (!found_setup && StringIsEqual(panels->name, "Setup")) {
         /* add a "Switch InfoBox" button to the "Setup" tab -
            kludge! */
         found_setup = true;

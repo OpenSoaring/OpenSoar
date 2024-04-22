@@ -29,7 +29,7 @@ try {
                    progress);
   return true;
 } catch (...) {
-  LogFormat(_T("Failed to read waypoint file: %s"), path.c_str());
+  LogFormat("Failed to read waypoint file: %s", path.c_str());
   LogError(std::current_exception());
   return false;
 }
@@ -45,7 +45,7 @@ try {
                    progress);
   return true;
 } catch (...) {
-  LogFormat(_T("Failed to read waypoint file: %s"), path.c_str());
+  LogFormat("Failed to read waypoint file: %s", path.c_str());
   LogError(std::current_exception());
   return false;
 }
@@ -62,7 +62,7 @@ try {
                    progressg);
   return true;
 } catch (...) {
-  LogFormat(_T("Failed to read waypoint file: %s"), path);
+  LogFormat("Failed to read waypoint file: %s", path);
   LogError(std::current_exception());
   return false;
 }
@@ -116,7 +116,7 @@ LoadWaypoints(Waypoints &way_points, const RasterTerrain *terrain,
     }
   }
   //Load user.cup
-  LoadWaypointFile(way_points, LocalPath(_T("user.cup")),
+  LoadWaypointFile(way_points, LocalPath("user.cup"),
                    WaypointFileType::SEEYOU,
                    WaypointOrigin::USER, terrain, progress);
   // Optimise the waypoint list after attaching new waypoints

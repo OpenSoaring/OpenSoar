@@ -12,7 +12,7 @@
 void
 WaypointGlue::SaveWaypoints(const Waypoints &way_points)
 {
-  const auto path = LocalPath(_T("user.cup"));
+  const auto path = LocalPath("user.cup");
 
   FileOutputStream file(path);
   BufferedOutputStream writer(file);
@@ -22,13 +22,13 @@ WaypointGlue::SaveWaypoints(const Waypoints &way_points)
   writer.Flush();
   file.Commit();
 
-  LogFormat(_T("Waypoint file '%s' saved"), path.c_str());
+  LogFormat("Waypoint file '%s' saved", path.c_str());
 }
 
 void
 WaypointGlue::SaveWaypoint(const Waypoint &wp)
 {
-  const auto path = LocalPath(_T("user.cup"));
+  const auto path = LocalPath("user.cup");
 
   FileOutputStream file(path, FileOutputStream::Mode::APPEND_OR_CREATE);
   BufferedOutputStream writer(file);

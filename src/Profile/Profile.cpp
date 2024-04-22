@@ -46,7 +46,7 @@ Profile::LoadFile(Path path) noexcept
 {
   try {
     LoadFile(map, path);
-    LogFormat(_T("Loaded profile from %s"), path.c_str());
+    LogFormat("Loaded profile from %s", path.c_str());
   } catch (...) {
     LogError(std::current_exception(), "Failed to load profile");
   }
@@ -74,7 +74,7 @@ Profile::Save() noexcept
 void
 Profile::SaveFile(Path path)
 {
-  LogFormat(_T("Saving profile to %s"), path.c_str());
+  LogFormat("Saving profile to %s", path.c_str());
   SaveFile(map, path);
 }
 
@@ -91,7 +91,7 @@ Profile::SetFiles(Path override_path) noexcept
         startProfileFile = LocalPath(override_path);
       else {
         std::string t(override_path.c_str());
-        t += _T(".prf");
+        t += ".prf";
         startProfileFile = LocalPath(t.c_str());
       }
     } else
@@ -100,7 +100,7 @@ Profile::SetFiles(Path override_path) noexcept
   }
 
   // Set the default profile file
-  startProfileFile = LocalPath(_T(XCSPROFILE));
+  startProfileFile = LocalPath(XCSPROFILE);
 }
 
 AllocatedPath

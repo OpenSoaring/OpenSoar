@@ -60,7 +60,7 @@ LoggerConfigPanel::Prepare(ContainerWindow &parent,
   AddFloat(_("Crew weight default"),
             _("Default for all weight loaded to the glider beyond the empty weight and besides "
                 "the water ballast."),
-            _T("%.0f %s"), _T("%.0f"),
+            "%.0f %s", "%.0f",
             0, 300, 5, false, UnitGroup::MASS,
             logger.crew_mass_template);
 

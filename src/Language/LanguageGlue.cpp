@@ -193,20 +193,20 @@ InitNativeGettext(const char *locale) noexcept
 static bool
 ReadBuiltinLanguage(const BuiltinLanguage &language) noexcept
 {
-  LogFormat(_T("Language: loading resource '%s'"), language.resource);
+  LogFormat("Language: loading resource '%s'", language.resource);
 
 #ifdef HAVE_BUILTIN_LANGUAGES
   // Load MO file from resource
   delete mo_loader;
   mo_loader = new MOLoader({language.begin, (size_t)language.size});
   if (mo_loader->error()) {
-    LogFormat(_T("Language: could not load resource '%s'"), language.resource);
+    LogFormat("Language: could not load resource '%s'", language.resource);
     delete mo_loader;
     mo_loader = nullptr;
     return false;
   }
 
-  LogFormat(_T("Loaded translations from resource '%s'"), language.resource);
+  LogFormat("Loaded translations from resource '%s'", language.resource);
 
   mo_file = &mo_loader->get();
 #else
@@ -242,7 +242,7 @@ static bool
 LoadLanguageFile([[maybe_unused]] Path path) noexcept
 {
 #ifdef HAVE_BUILTIN_LANGUAGES
-  LogFormat(_T("Language: loading file '%s'"), path.c_str());
+  LogFormat("Language: loading file '%s'", path.c_str());
 
   delete mo_loader;
   mo_loader = nullptr;
@@ -250,7 +250,7 @@ LoadLanguageFile([[maybe_unused]] Path path) noexcept
   try {
     mo_loader = new MOLoader(path);
     if (mo_loader->error()) {
-      LogFormat(_T("Language: could not load file '%s'"), path.c_str());
+      LogFormat("Language: could not load file '%s'", path.c_str());
       delete mo_loader;
       mo_loader = nullptr;
       return false;
@@ -260,7 +260,7 @@ LoadLanguageFile([[maybe_unused]] Path path) noexcept
     return false;
   }
 
-  LogFormat(_T("Loaded translations from file '%s'"), path.c_str());
+  LogFormat("Loaded translations from file '%s'", path.c_str());
 
   mo_file = &mo_loader->get();
   return true;
@@ -293,12 +293,12 @@ ReadLanguageFile() noexcept
 
   auto value = Profile::GetPath(ProfileKeys::LanguageFile);
 
-  if (value == nullptr || value.empty() || value == Path(_T("auto"))) {
+  if (value == nullptr || value.empty() || value == Path("auto")) {
     AutoDetectLanguage();
     return;
   }
 
-  if (value == Path(_T("none")))
+  if (value == Path("none"))
     return;
 
   Path base = value.GetBase();

@@ -14,8 +14,8 @@
 
 static constexpr double DELTA_V_STEP = 4.0;
 static constexpr double DELTA_V_LIMIT = 16.0;
-#define TEXT_BUG _T("Bug")
-#define TEXT_BALLAST _T("Bal")
+#define TEXT_BUG "Bug"
+#define TEXT_BALLAST "Bal"
 
 inline
 GaugeVario::BallastGeometry::BallastGeometry(const VarioLook &look,
@@ -56,7 +56,7 @@ GaugeVario::BallastGeometry::BallastGeometry(const VarioLook &look,
     look.text_font->GetCapitalHeight();
 
   // get max value size
-  tSize = look.text_font->TextSize(_T("100%"));
+  tSize = look.text_font->TextSize("100%");
 
   value_rect.right = value_rect.left + tSize.width;
   // update back rect with max label size
@@ -96,7 +96,7 @@ GaugeVario::BugsGeometry::BugsGeometry(const VarioLook &look,
     + look.text_font->GetHeight()
     - look.text_font->GetAscentHeight();
 
-  tSize = look.text_font->TextSize(_T("100%"));
+  tSize = look.text_font->TextSize("100%");
 
   value_rect.right = value_rect.left + tSize.width;
   value_rect.bottom = value_rect.top +
@@ -232,7 +232,7 @@ GaugeVario::RenderBackground(Canvas &canvas, const PixelRect &rc) noexcept
                                           geometry.offset));
 
     char label[16];
-    StringFormatUnsafe(label, _T("%d"), i * tick_value_step);
+    StringFormatUnsafe(label, "%d", i * tick_value_step);
 
     const auto label_size = canvas.CalcTextSize(label);
 
@@ -258,14 +258,14 @@ GaugeVario::OnPaintBuffer(Canvas &canvas) noexcept
     // JMW averager now displays netto average if not circling
     RenderValue(canvas, geometry.average, average_di,
                 Units::ToUserVSpeed(Calculated().circling ? Calculated().average : Calculated().netto_average),
-                Calculated().circling ? _T("Avg") : _T("NetAvg"));
+                Calculated().circling ? "Avg" : "NetAvg");
   }
 
   if (Settings().show_mc) {
     auto mc = Units::ToUserVSpeed(GetGlidePolar().GetMC());
     RenderValue(canvas, geometry.mc, mc_di,
                 mc,
-                GetComputerSettings().task.auto_mc ? _T("Auto MC") : _T("MC"));
+                GetComputerSettings().task.auto_mc ? "Auto MC" : "MC");
   }
 
   if (Settings().show_speed_to_fly)
@@ -336,7 +336,7 @@ GaugeVario::OnPaintBuffer(Canvas &canvas) noexcept
 
     RenderValue(canvas, geometry.gross, gross_di,
                 vvaldisplay,
-                _T("Gross"));
+                "Gross");
   }
 
   RenderZero(canvas);
@@ -517,7 +517,7 @@ GaugeVario::RenderValue(Canvas &canvas, const LabelValueGeometry &g,
     char buffer[18];
     canvas.SetBackgroundColor(look.background_color);
     canvas.SetTextColor(look.text_color);
-    _stprintf(buffer, _T("%.1f"), (double)value);
+    _stprintf(buffer, "%.1f", (double)value);
     canvas.Select(look.value_font);
     const unsigned width = canvas.CalcTextSize(buffer).width;
 
@@ -704,7 +704,7 @@ GaugeVario::RenderBallast(Canvas &canvas) noexcept
     // new ballast 0, hide value
     if (ballast > 0) {
       char buffer[18];
-      _stprintf(buffer, _T("%u%%"), ballast);
+      _stprintf(buffer, "%u%%", ballast);
       canvas.SetTextColor(look.text_color);
 
       if (IsPersistent())
@@ -747,7 +747,7 @@ GaugeVario::RenderBugs(Canvas &canvas) noexcept
 
     if (bugs > 0) {
       char buffer[18];
-      _stprintf(buffer, _T("%d%%"), bugs);
+      _stprintf(buffer, "%d%%", bugs);
       canvas.SetTextColor(look.text_color);
       if (IsPersistent())
         canvas.DrawOpaqueText(g.value_pos, g.value_rect, buffer);

@@ -182,7 +182,7 @@ dlgStartupShowModal() noexcept
 
   /* scan all profile files */
   auto *dff = new FileDataField();
-  dff->ScanDirectoryTop(_T("*.prf"));
+  dff->ScanDirectoryTop("*.prf");
 
   if (dff->GetNumFiles() == 1) {
     /* skip this dialog if there is only one */

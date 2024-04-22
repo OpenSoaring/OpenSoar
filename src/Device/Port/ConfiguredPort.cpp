@@ -70,7 +70,7 @@ WindowsPort(char buffer[], const DeviceConfig &config) {
     throw std::runtime_error("No port path configured");
 
   // the usual windows style of device names:
-  strcpy(buffer, _T("\\\\.\\"));
+  strcpy(buffer, "\\\\.\\");
   strcat(buffer, config.path.c_str());return buffer;
 }
 #endif
@@ -168,7 +168,7 @@ OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
     if (!DetectGPS(buffer, sizeof(buffer)))
       throw std::runtime_error("No GPS detected");
 
-    LogFormat(_T("GPS detected: %s"), buffer);
+    LogFormat("GPS detected: %s", buffer);
 
     path = buffer;
     break;
@@ -240,7 +240,7 @@ OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
       throw std::runtime_error("No port path configured");
 
     // the usual windows style of device names:
-    strcpy(buffer, _T("\\\\.\\"));
+    strcpy(buffer, "\\\\.\\");
     strcat(buffer, config.path.c_str());
     path = buffer;
 #else
