@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "GdiPlusBitmap.hpp"
+#include "util/UTF8.hpp"
 
 #if defined(_MSC_VER)
 # include <algorithm>
@@ -9,8 +10,6 @@ using std::min;  // to avoid the missing 'min' in the gdiplush headers
 using std::max;  // to avoid the missing 'max' in the gdiplush headers
 #endif  // _MSC_VER
 
-// #include "util/UTF8.hpp"
-#include "util/UTF8Win.hpp"
 
 #include <assert.h>
 #include <unknwn.h>
