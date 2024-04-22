@@ -13,7 +13,7 @@
 #include "util/UTF8Win.hpp"
 
 static bool UTF8TextOut(HDC hdc, const PixelPoint &p, unsigned options, const RECT *r,
-            tstring_view _text, const int *lpDx) {
+            std::string_view _text, const int *lpDx) {
   auto text = UTF8ToWide(_text);
 #if 1
   return ::ExtTextOutW(hdc, p.x, p.y, options, r, text.c_str(), text.size(),
@@ -110,11 +110,11 @@ Canvas::DrawArc(PixelPoint center, unsigned radius,
 }
 
 const PixelSize
-Canvas::CalcTextSize(tstring_view _text) const noexcept
+Canvas::CalcTextSize(std::string_view _text) const noexcept
 {
   assert(IsDefined());
 
-  // tstring_view text = UTF8ToWide(_text.data());
+  // std::string_view text = UTF8ToWide(_text.data());
   auto text = UTF8ToWide(_text);
   // std::wstring text = UTF8ToWide(_text.data());
 
@@ -134,7 +134,7 @@ Canvas::GetFontHeight() const
 }
 
 void
-Canvas::DrawText(PixelPoint p, tstring_view text) noexcept
+Canvas::DrawText(PixelPoint p, std::string_view text) noexcept
 {
   assert(IsDefined());
 
@@ -143,7 +143,7 @@ Canvas::DrawText(PixelPoint p, tstring_view text) noexcept
 
 void
 Canvas::DrawOpaqueText(PixelPoint p, const PixelRect &_rc,
-                       tstring_view text) noexcept
+                       std::string_view text) noexcept
 {
   assert(IsDefined());
 
@@ -153,7 +153,7 @@ Canvas::DrawOpaqueText(PixelPoint p, const PixelRect &_rc,
 
 void
 Canvas::DrawClippedText(PixelPoint p, const PixelRect &_rc,
-                        tstring_view text) noexcept
+                        std::string_view text) noexcept
 {
   assert(IsDefined());
 
@@ -163,7 +163,7 @@ Canvas::DrawClippedText(PixelPoint p, const PixelRect &_rc,
 
 void
 Canvas::DrawClippedText(PixelPoint p, unsigned width,
-                        tstring_view text) noexcept
+                        std::string_view text) noexcept
 {
   const PixelSize size = CalcTextSize(text);
 
@@ -350,7 +350,7 @@ Canvas::AlphaBlend(PixelPoint dest_position, PixelSize dest_size,
 #endif
 
 unsigned 
-Canvas::DrawFormattedText(RECT rc, tstring_view _text, unsigned format) {
+Canvas::DrawFormattedText(RECT rc, std::string_view _text, unsigned format) {
   format |= DT_NOPREFIX | DT_WORDBREAK;
   auto text = UTF8ToWide(_text);
 

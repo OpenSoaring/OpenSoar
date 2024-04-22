@@ -5,4 +5,4 @@
 
 #include <string>
 
-using tstring = std::string;
+using std::string = std::string;

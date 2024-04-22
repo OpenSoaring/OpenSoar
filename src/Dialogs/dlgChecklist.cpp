@@ -10,7 +10,7 @@
 #include "util/StaticString.hxx"
 #include "util/StringSplit.hxx"
 #include "util/StringCompare.hxx"
-#include "util/tstring.hpp"
+#include <string>
 #include "io/DataFile.hpp"
 #include "io/Reader.hxx"
 #include "io/BufferedReader.hxx"
@@ -23,7 +23,7 @@
 #define XCSCHKLIST  "xcsoar-checklist.txt"
 
 struct ChecklistPage {
-  tstring title, text;
+  std::string title, text;
 
   bool empty() const noexcept {
     return title.empty() && text.empty();

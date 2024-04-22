@@ -9,7 +9,7 @@
 #include "util/RadixTree.hpp"
 #include "util/QuadTree.hxx"
 #include "util/Serial.hpp"
-#include "util/tstring_view.hxx"
+#include <string>
 
 #include <functional>
 
@@ -44,10 +44,10 @@ class Waypoints {
   class WaypointNameTree : public RadixTree<WaypointPtr> {
   public:
     [[gnu::pure]]
-    WaypointPtr Get(tstring_view name) const noexcept;
+    WaypointPtr Get(std::string_view name) const noexcept;
 
-    void VisitNormalisedPrefix(tstring_view prefix, const WaypointVisitor &visitor) const;
-    char *SuggestNormalisedPrefix(tstring_view prefix,
+    void VisitNormalisedPrefix(std::string_view prefix, const WaypointVisitor &visitor) const;
+    char *SuggestNormalisedPrefix(std::string_view prefix,
                                    char *dest, size_t max_length) const noexcept;
     void Add(WaypointPtr wp) noexcept;
     void Remove(const WaypointPtr &wp) noexcept;
@@ -254,7 +254,7 @@ public:
    * @return Pointer to waypoint if found (or nullptr if not)
    */
   [[gnu::pure]]
-  WaypointPtr LookupName(tstring_view name) const noexcept;
+  WaypointPtr LookupName(std::string_view name) const noexcept;
 
   /**
    * Check if a waypoint with same name and approximate location
@@ -282,14 +282,14 @@ public:
    * Call visitor function on waypoints with the specified name
    * prefix.
    */
-  void VisitNamePrefix(tstring_view prefix, WaypointVisitor visitor) const;
+  void VisitNamePrefix(std::string_view prefix, WaypointVisitor visitor) const;
 
   /**
    * Returns a set of possible characters following the specified
    * prefix.
    */
   [[gnu::pure]]
-  char *SuggestNamePrefix(tstring_view prefix,
+  char *SuggestNamePrefix(std::string_view prefix,
                            char *dest, size_t max_length) const noexcept {
     return name_tree.SuggestNormalisedPrefix(prefix, dest, max_length);
   }

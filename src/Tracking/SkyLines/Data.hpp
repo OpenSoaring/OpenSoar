@@ -5,7 +5,7 @@
 
 #include "Geo/GeoPoint.hpp"
 #include "thread/Mutex.hxx"
-#include "util/tstring.hpp"
+#include <string>
 
 #include <map>
 #include <list>
@@ -76,7 +76,7 @@ struct Data {
    * A database of user-id to display-name.  An empty string means
    * the server has failed/refused to supply a name.
    */
-  std::map<uint32_t, tstring> user_names;
+  std::map<uint32_t, std::string> user_names;
 
   std::list<Wave> waves;
 

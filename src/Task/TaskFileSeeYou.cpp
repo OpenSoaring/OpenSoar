@@ -553,10 +553,10 @@ try {
   return nullptr;
 }
 
-std::vector<tstring>
+std::vector<std::string>
 TaskFileSeeYou::GetList() const
 {
-  std::vector<tstring> result;
+  std::vector<std::string> result;
 
   // Open the CUP file
   FileReader file_reader{path};

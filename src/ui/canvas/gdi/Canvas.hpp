@@ -9,7 +9,7 @@
 #include "ui/canvas/Pen.hpp"
 #include "ui/dim/Rect.hpp"
 #include "ui/dim/BulkPoint.hpp"
-#include "util/tstring_view.hxx"
+#include <string>
 
 #include <cassert>
 
@@ -359,33 +359,33 @@ public:
   }
 
   [[gnu::pure]]
-  const PixelSize CalcTextSize(tstring_view text) const noexcept;
+  const PixelSize CalcTextSize(std::string_view text) const noexcept;
 
   [[gnu::pure]]
-  unsigned CalcTextWidth(tstring_view text) const {
+  unsigned CalcTextWidth(std::string_view text) const {
     return CalcTextSize(text).width;
   }
 
   [[gnu::pure]]
   unsigned GetFontHeight() const;
 
-  void DrawText(PixelPoint p, tstring_view text) noexcept;
+  void DrawText(PixelPoint p, std::string_view text) noexcept;
   void DrawOpaqueText(PixelPoint p, const PixelRect &rc,
-                      tstring_view text) noexcept;
+                      std::string_view text) noexcept;
 
   void DrawClippedText(PixelPoint p, const PixelRect &rc,
-                       tstring_view text) noexcept;
+                       std::string_view text) noexcept;
   void DrawClippedText(PixelPoint p, unsigned width,
-                       tstring_view text) noexcept;
+                       std::string_view text) noexcept;
 
   /**
    * Render text, clip it within the bounds of this Canvas.
    */
-  void TextAutoClipped(PixelPoint p, tstring_view text) noexcept {
+  void TextAutoClipped(PixelPoint p, std::string_view text) noexcept {
     DrawText(p, text);
   }
 
-  unsigned DrawFormattedText(RECT rc, tstring_view _text, unsigned format);
+  unsigned DrawFormattedText(RECT rc, std::string_view _text, unsigned format);
 
   void Copy(PixelPoint dest_position, PixelSize dest_size,
             HDC src, PixelPoint src_position,

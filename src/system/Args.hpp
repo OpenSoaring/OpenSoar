@@ -4,7 +4,7 @@
 #pragma once
 
 #include "util/Compiler.h"
-#include "util/tstring.hpp"
+#include <string>
 #include "util/NumberParser.hpp"
 #include "system/Path.hpp"
 
@@ -162,11 +162,11 @@ public:
     return result;
   }
 
-  tstring ExpectNextT() {
+  std::string ExpectNextT() {
     const char *p = ExpectNext();
     assert(p != nullptr);
 
-    return tstring(p);
+    return std::string(p);
   }
 
   Path ExpectNextPath() {

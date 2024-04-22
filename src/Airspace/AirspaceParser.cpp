@@ -121,10 +121,10 @@ struct TempAirspace
   }
 
   // General
-  tstring name;
+  std::string name;
   RadioFrequency radio_frequency;
   AirspaceClass asclass;
-  tstring astype;
+  std::string astype;
   std::optional<AirspaceAltitude> base;
   std::optional<AirspaceAltitude> top;
   AirspaceActivity days_of_operation;
