@@ -203,8 +203,8 @@ FlightStatisticsRenderer::CaptionContest(char *sTmp,
 
     StringFormatUnsafe(sTmp,
                        (Layout::landscape
-                        ? _T("%s:\r\n%s\r\n%s (FAI)\r\n%s:\r\n%.1f %s\r\n%s: %s\r\n%s: %s\r\n")
-                        : _T("%s: %s\r\n%s (FAI)\r\n%s: %.1f %s\r\n%s: %s\r\n%s: %s\r\n")),
+                        ? "%s:\r\n%s\r\n%s (FAI)\r\n%s:\r\n%.1f %s\r\n%s: %s\r\n%s: %s\r\n"
+                        : "%s: %s\r\n%s (FAI)\r\n%s: %.1f %s\r\n%s: %s\r\n%s: %s\r\n"),
                        _("Distance"),
                        FormatUserDistanceSmart(result_classic.distance).c_str(),
                        FormatUserDistanceSmart(result_fai.distance).c_str(),
@@ -222,8 +222,8 @@ FlightStatisticsRenderer::CaptionContest(char *sTmp,
 
     StringFormatUnsafe(sTmp,
                        (Layout::landscape
-                        ? _T("%s:\r\n%s (Free)\r\n%s (Triangle)\r\n%s:\r\n%.1f %s\r\n%s: %s\r\n%s: %s\r\n")
-                        : _T("%s: %s (Free)\r\n%s (Triangle)\r\n%s: %.1f %s\r\n%s: %s\r\n%s: %s\r\n")),
+                        ? "%s:\r\n%s (Free)\r\n%s (Triangle)\r\n%s:\r\n%.1f %s\r\n%s: %s\r\n%s: %s\r\n"
+                        : "%s: %s (Free)\r\n%s (Triangle)\r\n%s: %.1f %s\r\n%s: %s\r\n%s: %s\r\n"),
                        _("Distance"),
                        FormatUserDistanceSmart(result_free.distance).c_str(),
                        FormatUserDistanceSmart(result_triangle.distance).c_str(),
@@ -249,8 +249,8 @@ FlightStatisticsRenderer::CaptionContest(char *sTmp,
 
     StringFormatUnsafe(sTmp,
                        (Layout::landscape
-                        ? _T("%s:\r\n%s\r\n%s:\r\n%.1f %s\r\n%s: %s\r\n%s: %s\r\n")
-                        : _T("%s: %s\r\n%s: %.1f %s\r\n%s: %s\r\n%s: %s\r\n")),
+                        ? "%s:\r\n%s\r\n%s:\r\n%.1f %s\r\n%s: %s\r\n%s: %s\r\n"
+                        : "%s: %s\r\n%s: %.1f %s\r\n%s: %s\r\n%s: %s\r\n"),
                        _("Distance"),
                        FormatUserDistanceSmart(result_olc.distance).c_str(),
                        _("Score"), (double)result_olc.score, _("pts"),
@@ -352,7 +352,7 @@ FlightStatisticsRenderer::CaptionTask(char *sTmp, const DerivedInfo &derived) no
 
       if (Layout::landscape) {
         StringFormatUnsafe(sTmp,
-                           _T("%s:\r\n  %s\r\n%s:\r\n  %s\r\n%s:\r\n  %5.0f %s\r\n%s:\r\n  %5.0f %s\r\n"),
+                           "%s:\r\n  %s\r\n%s:\r\n  %s\r\n%s:\r\n  %5.0f %s\r\n%s:\r\n  %5.0f %s\r\n",
                            _("Task to go"), timetext1.c_str(),
                            _("AAT to go"), timetext2.c_str(),
                            _("Distance to go"),
@@ -362,7 +362,7 @@ FlightStatisticsRenderer::CaptionTask(char *sTmp, const DerivedInfo &derived) no
                            Units::GetTaskSpeedName());
       } else {
         StringFormatUnsafe(sTmp,
-                           _T("%s: %s\r\n%s: %s\r\n%s: %5.0f %s\r\n%s: %5.0f %s\r\n"),
+                           "%s: %s\r\n%s: %s\r\n%s: %5.0f %s\r\n%s: %5.0f %s\r\n",
                            _("Task to go"), timetext1.c_str(),
                            _("AAT to go"), timetext2.c_str(),
                            _("Distance to go"),
@@ -373,7 +373,7 @@ FlightStatisticsRenderer::CaptionTask(char *sTmp, const DerivedInfo &derived) no
                            Units::GetTaskSpeedName());
       }
     } else {
-      StringFormatUnsafe(sTmp, _T("%s: %s\r\n%s: %5.0f %s\r\n"),
+      StringFormatUnsafe(sTmp, "%s: %s\r\n%s: %5.0f %s\r\n",
                          _("Task to go"),
                          FormatSignedTimeHHMM(task_stats.total.time_remaining_now).c_str(),
                          _("Distance to go"),

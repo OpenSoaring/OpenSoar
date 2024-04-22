@@ -431,7 +431,7 @@ PixelSize
 RowFormWidget::GetMinimumSize() const noexcept
 {
   const unsigned value_width =
-    look.text_font.TextSize(_T("Foo Bar Foo Bar")).width;
+    look.text_font.TextSize("Foo Bar Foo Bar").width;
 
   const bool expert = UIGlobals::GetDialogSettings().expert;
 
@@ -451,7 +451,7 @@ PixelSize
 RowFormWidget::GetMaximumSize() const noexcept
 {
   const unsigned value_width =
-    look.text_font.TextSize(_T("Foo Bar Foo Bar")).width * 2;
+    look.text_font.TextSize("Foo Bar Foo Bar").width * 2;
 
   const unsigned edit_width = vertical
     ? std::max(GetRecommendedCaptionWidth(), value_width)

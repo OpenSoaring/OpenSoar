@@ -22,8 +22,8 @@ IsDirSeparator(char ch)
 {
 #ifdef _WIN32
   // at Windows both separators are possible!!!
-  return ch == _T(DIR_SEPARATOR) || ch == _T('/');
+  return ch == DIR_SEPARATOR || ch == '/';
 #else
-  return ch == _T(DIR_SEPARATOR);
+  return ch == DIR_SEPARATOR;
 #endif
 }

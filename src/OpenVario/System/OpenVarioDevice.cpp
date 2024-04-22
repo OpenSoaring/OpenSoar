@@ -65,27 +65,27 @@ OpenVario_Device::Initialise() noexcept {
     home.SetUTF8(getenv("HOME"));
     home_path = Path(home);
 #ifdef _WIN32
-    data_path = Path(_T("D:/Data/OpenSoarData"));
+    data_path = Path("D:/Data/OpenSoarData");
 #else
-    data_path = Path(_T("data"));
+    data_path = Path("data");
 
     system_config =
-        AllocatedPath::Build(Path(_T("/boot")), Path(_T("config.uEnv")));
+        AllocatedPath::Build(Path("/boot"), Path("config.uEnv"));
     is_real = File::Exists(system_config);
 #endif
     if (!is_real)  // a pseudo 'config' file in home_path
-      system_config = AllocatedPath::Build(home_path, Path(_T("config.uEnv")));
+      system_config = AllocatedPath::Build(home_path, Path("config.uEnv"));
 
     if (Directory::Exists(data_path)) {
       // auto config = AllocatedPath::Build(data_path,
-      // Path(_T("openvario.cfg")));
+      // Path("openvario.cfg"));
       settings_config =
-          AllocatedPath::Build(data_path, Path(_T("openvario.cfg")));
-      upgrade_config = AllocatedPath::Build(data_path, Path(_T("upgrade.cfg")));
+          AllocatedPath::Build(data_path, Path("openvario.cfg"));
+      upgrade_config = AllocatedPath::Build(data_path, Path("upgrade.cfg"));
     } else {
       settings_config =
-          AllocatedPath::Build(home_path, Path(_T("openvario.cfg")));
-      upgrade_config = AllocatedPath::Build(home_path, Path(_T("upgrade.cfg")));
+          AllocatedPath::Build(home_path, Path("openvario.cfg"));
+      upgrade_config = AllocatedPath::Build(home_path, Path("upgrade.cfg"));
     }
     if (!File::Exists(settings_config))
       File::CreateExclusive(settings_config);
@@ -95,7 +95,7 @@ OpenVario_Device::Initialise() noexcept {
 #ifndef DBUS_FUNCTIONS
     // This path is only for Debug purposes on Non-OpenVario systems
     internal_config =
-        AllocatedPath::Build(home_path, Path(_T("ov-internal.cfg")));
+        AllocatedPath::Build(home_path, Path("ov-internal.cfg"));
 #endif
     //----------------------------
     LogFormat("data_path (base) = %s", data_path.ToUTF8().c_str());
@@ -104,14 +104,14 @@ OpenVario_Device::Initialise() noexcept {
     LogFormat("settings_config = %s", settings_config.ToUTF8().c_str());
     LogFormat("system_config = %s", system_config.ToUTF8().c_str());
     LogFormat("upgrade_config = %s", upgrade_config.ToUTF8().c_str());
-    // the same...: LogFormat(_T("upgrade_config = %s"), upgrade_config.c_str());
+    // the same...: LogFormat("upgrade_config = %s", upgrade_config.c_str());
     LogFormat("is_real = %s", is_real ? "True" : "False");
 
     LogFormat("exe_path = %s", exe_path.c_str());
     LogFormat("bin_path = %s", bin_path.c_str());
 #endif
     //----------------------------
-    run_output_file = AllocatedPath::Build(home_path, Path(_T("tmp.txt")));
+    run_output_file = AllocatedPath::Build(home_path, Path("tmp.txt"));
     LoadSettings();
     initialised = true;
   } 
@@ -211,7 +211,7 @@ OpenVario_Device::GetBrightness() noexcept
   char line[4];
   int result = 10;
 
-  if (File::ReadString(Path(_T("/sys/class/backlight/lcd/brightness")), line, sizeof(line))) {
+  if (File::ReadString(Path("/sys/class/backlight/lcd/brightness"), line, sizeof(line))) {
     result = atoi(line);
   }
 
@@ -227,14 +227,14 @@ OpenVario_Device::SetBrightness(uint_least8_t value) noexcept
   brightness = value;
   settings.insert_or_assign("Brightness",
                                      std::to_string(value));
-  File::WriteExisting(Path(_T("/sys/class/backlight/lcd/brightness")), fmt::format_int{value}.c_str());
+  File::WriteExisting(Path("/sys/class/backlight/lcd/brightness"), fmt::format_int{value}.c_str());
 }
 
 DisplayOrientation
 OpenVario_Device::GetRotation()
 {
   std::map<std::string, std::string, std::less<>> map;
-  LoadConfigFile(map, system_config);  // Path(_T("/boot/config.uEnv")));
+  LoadConfigFile(map, system_config);  // Path("/boot/config.uEnv"));
   if (map.contains("Rotation"))       // this is wrong!!!
     map.erase("Rotation");
 
@@ -256,7 +256,7 @@ OpenVario_Device::SetRotation(DisplayOrientation orientation, int mode)
 {
   std::map<std::string, std::string, std::less<>> map;
 
-  LoadConfigFile(map, system_config); // Path(_T("/boot/config.uEnv")));
+  LoadConfigFile(map, system_config); // Path("/boot/config.uEnv"));
   if (map.contains("Rotation"))       // this is wrong!!!
     map.erase("Rotation");
 
@@ -288,7 +288,7 @@ OpenVario_Device::SetRotation(DisplayOrientation orientation, int mode)
 
   if (map["rotation"] != rot_string) {
     if (mode & 2) {
-      File::WriteExisting(Path(_T("/sys/class/graphics/fbcon/rotate")),
+      File::WriteExisting(Path("/sys/class/graphics/fbcon/rotate"),
                         rot_string.c_str());
     }
 
@@ -352,11 +352,11 @@ OpenVario_Device::GetSystemStatus(std::string_view system) noexcept
   Path run_tmp_file(_dirname.data());
 
   if (system == "sensord")
-    file = _T("SensorD.txt");
+    file = "SensorD.txt";
   else if (system == "variod")
-    file = _T("VarioD.txt");
+    file = "VarioD.txt";
   else if (system == "dropbear.socket")
-    file = _T("SSH.txt");
+    file = "SSH.txt";
   AllocatedPath _tmp_file = AllocatedPath::Build(home_path, Path(file));
 
   Path tmp_file = _tmp_file;

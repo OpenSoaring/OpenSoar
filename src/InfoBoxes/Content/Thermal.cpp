@@ -18,7 +18,7 @@ SetVSpeed(InfoBoxData &data, double value) noexcept
 {
   char buffer[32];
   FormatUserVerticalSpeed(value, buffer, false);
-  data.SetValue(buffer[0] == _T('+') ? buffer + 1 : buffer);
+  data.SetValue(buffer[0] == '+' ? buffer + 1 : buffer);
   data.SetValueUnit(Units::current.vertical_speed_unit);
 }
 
@@ -219,7 +219,7 @@ UpdateInfoBoxCircleDiameter(InfoBoxData &data) noexcept
     Angle::FullCircle().Native() / turn_rate.Native();
 
   StaticString<16> duration_buffer;
-  duration_buffer.Format(_T("%u s"), int(circle_duration));
+  duration_buffer.Format("%u s", int(circle_duration));
   strcpy (buffer, duration_buffer);
   data.SetComment (buffer);
 }

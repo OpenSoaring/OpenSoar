@@ -115,7 +115,7 @@ UpdateInfoBoxTeamBearing(InfoBoxData &data) noexcept
   else if (!settings.team_flarm_callsign.empty())
     data.SetComment(settings.team_flarm_callsign.c_str());
   else
-    data.SetComment(_T("???"));
+    data.SetComment("???");
 
   if (flarm.FindTraffic(settings.team_flarm_id) != NULL)
     data.SetCommentColor(2);
@@ -145,7 +145,7 @@ UpdateInfoBoxTeamBearingDiff(InfoBoxData &data) noexcept
   else if (!StringIsEmpty(settings.team_flarm_callsign))
     data.SetComment(settings.team_flarm_callsign);
   else
-    data.SetComment(_T("???"));
+    data.SetComment("???");
 
   if (flarm.FindTraffic(settings.team_flarm_id) != NULL)
     data.SetCommentColor(2);
@@ -172,7 +172,7 @@ UpdateInfoBoxTeamDistance(InfoBoxData &data) noexcept
   else if (!StringIsEmpty(settings.team_flarm_callsign))
     data.SetComment(settings.team_flarm_callsign);
   else
-    data.SetComment(_T("???"));
+    data.SetComment("???");
 
   data.SetCommentColor(teamcode_info.flarm_teammate_code_current ? 2 : 1);
 }

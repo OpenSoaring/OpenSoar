@@ -94,18 +94,18 @@ FLARMConfigWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   notrack = GetUnsignedValue(device, "NOTRACK", 0) == 1;
 
   static constexpr StaticEnumChoice baud_list[] = {
-    { 0, _T("4800") },
-    { 1, _T("9600") },
-    { 2, _T("19200") },
-    { 4, _T("38400") },
-    { 5, _T("57600") },
+    { 0, "4800" },
+    { 1, "9600" },
+    { 2, "19200" },
+    { 4, "38400" },
+    { 5, "57600" },
     nullptr
   };
 
   AddEnum(_("Baud rate"), NULL, baud_list, baud);
   AddBoolean(_("Stealth mode"), NULL, priv);
-  AddInteger(_("Threshold"), NULL, _T("%d m/s"), _T("%d"), 1, 10, 1, thre);
-  AddInteger(_("Range"), NULL, _T("%d m"), _T("%d"), 2000, 25500, 250, range);
+  AddInteger(_("Threshold"), NULL, "%d m/s", "%d", 1, 10, 1, thre);
+  AddInteger(_("Range"), NULL, "%d m", "%d", 2000, 25500, 250, range);
 
   static constexpr StaticEnumChoice acft_list[] = {
     { FlarmTraffic::AircraftType::UNKNOWN, N_("Unknown") },
@@ -127,7 +127,7 @@ FLARMConfigWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   };
 
   AddEnum(_("Type"), NULL, acft_list, acft);
-  AddInteger(_("Logger interval"), NULL, _T("%d s"), _T("%d"),
+  AddInteger(_("Logger interval"), NULL, "%d s", "%d",
              1, 8, 1, log_int);
   AddBoolean(_("No tracking mode"), NULL, notrack);
 
@@ -187,6 +187,6 @@ try {
 } catch (OperationCancelled) {
   return false;
 } catch (...) {
-  ShowError(std::current_exception(), _T("FLARM"));
+  ShowError(std::current_exception(), "FLARM");
   return false;
 }

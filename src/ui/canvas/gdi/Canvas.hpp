@@ -230,7 +230,7 @@ public:
     * without the need to create a HBRUSH 
     * Here is no need to use UTF8TextOut - because all strings are empty */
     ::SetBkColor(dc, color);
-    ::ExtTextOut(dc, rc.left, rc.top, ETO_OPAQUE, &rc, _T(""), 0, nullptr);
+    ::ExtTextOut(dc, rc.left, rc.top, ETO_OPAQUE, &rc, "", 0, nullptr);
   }
 
   void DrawFilledRectangle(const PixelRect &rc, const Color color) {

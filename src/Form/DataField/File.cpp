@@ -23,14 +23,14 @@ static bool
 IsInternalFile(const char *str) noexcept
 {
   static const char *const ifiles[] = {
-    _T("xcsoar-checklist.txt"),
-    _T("xcsoar-flarm.txt"),
-    _T("xcsoar-marks.txt"),
-    _T("xcsoar-persist.log"),
-    _T("xcsoar-startup.log"),
-    _T("xcsoar.log"),
-    _T("xcsoar-rasp.dat"),
-    _T("user.cup"),
+    "xcsoar-checklist.txt",
+    "xcsoar-flarm.txt",
+    "xcsoar-marks.txt",
+    "xcsoar-persist.log",
+    "xcsoar-startup.log",
+    "xcsoar.log",
+    "xcsoar-rasp.dat",
+    "user.cup",
     nullptr
   };
 
@@ -177,7 +177,7 @@ FileDataField::GetValue() const noexcept
 
   if (current_index >= files.size())
     // TODO: return nullptr instead of empty string?
-    return Path(_T(""));
+    return Path("");
 
   const Path path = files[current_index].path;
   assert(path != nullptr);
@@ -205,8 +205,8 @@ FileDataField::AddNull() noexcept
   assert(!files.full());
 
   Item &item = files.append();
-  item.filename = Path(_T(""));
-  item.path = Path(_T(""));
+  item.filename = Path("");
+  item.path = Path("");
 }
 
 const char *
@@ -218,7 +218,7 @@ FileDataField::GetAsString() const noexcept
   if (current_index < files.size())
     return files[current_index].path.c_str();
   else
-    return _T("");
+    return "";
 }
 
 const char *
@@ -236,7 +236,7 @@ FileDataField::GetAsDisplayString() const noexcept
   if (current_index < files.size())
     return files[current_index].filename.c_str();
   else
-    return _T("");
+    return "";
 }
 
 void
@@ -336,9 +336,9 @@ FileDataField::CreateComboList([[maybe_unused]] const char *reference) const noe
       /* yes - append the absolute path to allow the user to see the
          difference */
       strcpy(buffer, path.c_str());
-      strcat(buffer, _T(" ("));
+      strcat(buffer, " (");
       strcat(buffer, files[i].path.c_str());
-      strcat(buffer, _T(")"));
+      strcat(buffer, ")");
       display_string = buffer;
     }
 

@@ -220,7 +220,7 @@ InfoBoxesConfigWidget::Prepare(ContainerWindow &parent,
   DataFieldEnum *dfe = new DataFieldEnum(this);
   for (unsigned i = 0; i < layout.info_boxes.count; ++i) {
     char label[32];
-    _stprintf(label, _T("%u"), i + 1);
+    _stprintf(label, "%u", i + 1);
     dfe->addEnumText(label, i);
   }
 
@@ -300,7 +300,7 @@ InfoBoxesConfigWidget::RefreshEditContentDescription()
 {
   DataFieldEnum &df = (DataFieldEnum &)GetDataField(CONTENT);
   WndFrame &description = (WndFrame &)GetRow(DESCRIPTION);
-  description.SetText(df.GetHelp() != nullptr ? df.GetHelp() : _T(""));
+  description.SetText(df.GetHelp() != nullptr ? df.GetHelp() : "");
 }
 
 void

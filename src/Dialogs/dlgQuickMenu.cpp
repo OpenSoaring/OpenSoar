@@ -185,7 +185,7 @@ QuickMenu::UpdateCaption() noexcept
   StaticString<32> buffer;
   unsigned pageSize = GetWindow().GetNumColumns() * grid_view.GetNumRows();
   unsigned lastPage = buttons.size() / pageSize;
-  buffer.Format(_T("Quick Menu  %d/%d"),
+  buffer.Format("Quick Menu  %d/%d",
                 grid_view.GetCurrentPage() + 1, lastPage + 1);
   dialog.SetCaption(buffer);
 }
@@ -274,7 +274,7 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &menu) noexcept
 void dlgQuickMenuShowModal(UI::SingleWindow &parent,
                            [[maybe_unused]] const char *mode) noexcept
 {
-  const auto *menu = InputEvents::GetMenu(_T("RemoteStick"));
+  const auto *menu = InputEvents::GetMenu("RemoteStick");
   if (menu == nullptr)
     return;
 

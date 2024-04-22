@@ -82,8 +82,8 @@ CondorCreateOnPort([[maybe_unused]] const DeviceConfig &config, [[maybe_unused]]
 }
 
 const struct DeviceRegister condor_driver = {
-  _T("Condor"),
-  _T("Condor Soaring Simulator"),
+  "Condor",
+  "Condor Soaring Simulator",
   0,
   CondorCreateOnPort,
 };

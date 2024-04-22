@@ -42,14 +42,14 @@ public:
 void
 SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent, [[maybe_unused]] const PixelRect &rc) noexcept
 {
-  WndProperty *wp = Add(_T(""), 0, true);
+  WndProperty *wp = Add("", 0, true);
   wp->SetText(GetPrimaryDataPath().c_str());
   wp->SetEnabled(false);
 
   AddFile(_("Map database"),
           _("The name of the file (.xcm) containing terrain, topography, and optionally "
             "waypoints, their details and airspaces."),
-          ProfileKeys::MapFile, _T("*.xcm\0*.lkm\0"), FileType::MAP);
+          ProfileKeys::MapFile, "*.xcm\0*.lkm\0", FileType::MAP);
 
   AddFile(_("Waypoints"),
           _("Primary waypoints file.  Supported file types are Cambridge/WinPilot files (.dat), "
@@ -72,28 +72,28 @@ SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent, [[maybe_unuse
   SetExpertRow(WatchedWaypointFile);
 
   AddFile(_("Airspaces"), _("The file name of the primary airspace file."),
-          ProfileKeys::AirspaceFile, _T("*.txt\0*.air\0*.sua\0"),
+          ProfileKeys::AirspaceFile, "*.txt\0*.air\0*.sua\0",
           FileType::AIRSPACE);
 
   AddFile(_("More airspaces"), _("The file name of the secondary airspace file."),
-          ProfileKeys::AdditionalAirspaceFile, _T("*.txt\0*.air\0*.sua\0"),
+          ProfileKeys::AdditionalAirspaceFile, "*.txt\0*.air\0*.sua\0",
           FileType::AIRSPACE);
   SetExpertRow(AdditionalAirspaceFile);
 
   AddFile(_("Waypoint details"),
           _("The file may contain extracts from enroute supplements or other contributed "
             "information about individual waypoints and airfields."),
-          ProfileKeys::AirfieldFile, _T("*.txt\0"),
+          ProfileKeys::AirfieldFile, "*.txt\0",
           FileType::WAYPOINTDETAILS);
   SetExpertRow(AirfieldFile);
 
   AddFile(_("FLARM Device Database"),
           _("The name of the file containing information about registered FLARM devices."),
-          ProfileKeys::FlarmFile, _T("*.fln\0"),
+          ProfileKeys::FlarmFile, "*.fln\0",
           FileType::FLARMNET);
 
-  AddFile(_T("RASP"), nullptr,
-          ProfileKeys::RaspFile, _T("*-rasp*.dat\0"),
+  AddFile("RASP", nullptr,
+          ProfileKeys::RaspFile, "*-rasp*.dat\0",
           FileType::RASP);
 }
 

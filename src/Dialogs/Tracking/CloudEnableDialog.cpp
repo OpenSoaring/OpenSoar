@@ -52,7 +52,7 @@ CloudEnableDialog() noexcept
                        "Do you wish to participate in the field test? This means that your position, thermal/wave locations and other weather data will be transmitted to our test server. You can disable it at any time in the \"Tracking\" settings.\n"
                        "Please help us improve XCSoar!");
 
-  int result = ShowMessageBox(msg, _T("XCSoar Cloud"),
+  int result = ShowMessageBox(msg, "XCSoar Cloud",
                               MB_YESNOCANCEL|MB_ICONQUESTION);
 
   switch (result) {

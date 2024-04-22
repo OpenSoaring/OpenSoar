@@ -152,7 +152,7 @@ private:
     timer.Schedule(std::chrono::seconds{1});
 
     StaticString<256> buffer;
-    buffer.Format(_T("Starting XCSoar in %u seconds (press any key to cancel)"),
+    buffer.Format("Starting XCSoar in %u seconds (press any key to cancel)",
              remaining_seconds);
     progress_timer->SetText(buffer);
   }
@@ -264,7 +264,7 @@ MainMenuWidget::StartSoarExe(std::string_view _exe,
     LogFormat("Program file '%s' doesnt exist!", ExePath.c_str());
 #ifdef _WIN32
     // with Linux ShowMessageBox -> crash!
-    ShowMessageBox(_("Program file doesnt exist!"), _T("Run"),
+    ShowMessageBox(_("Program file doesnt exist!"), "Run",
                    MB_OK | MB_ICONEXCLAMATION);
 #endif
   }
@@ -291,7 +291,7 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   //----------------------------------------------------------
-  AddReadOnly(_T("")); // split between start cmds and setting
+  AddReadOnly(""); // split between start cmds and setting
   //----------------------------------------------------------
 
   AddButton(_("File Transfers"), [this]() {
@@ -320,7 +320,7 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
 //    TWidgetDialog<SystemMenuWidget> sub_dialog(
 //        WidgetDialog::Full{}, UIGlobals::GetMainWindow(), GetLook(),
-//        _T("OpenVario Placeholder Settings"));
+//        "OpenVario Placeholder Settings");
 //    sub_dialog.SetWidget(display, event_queue, sub_dialog);
 //    // sub_dialog.SetWidget();
 //    sub_dialog.AddButton(_("Close"), mrOK);
@@ -328,32 +328,32 @@ void MainMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   //----------------------------------------------------------
-  AddReadOnly(_T("")); // split setting and switch off cmds
+  AddReadOnly(""); // split setting and switch off cmds
   //----------------------------------------------------------
 
-  auto Btn_Shell = AddButton(_T("Exit to Shell"),
+  auto Btn_Shell = AddButton("Exit to Shell",
                              [this]() { dialog.SetModalResult(LAUNCH_SHELL); });
 
 #ifndef RELEASE_VERSION
-  AddButton(_T("Exit to Shell (with Wait)"),
+  AddButton("Exit to Shell (with Wait)",
             [this]() { dialog.SetModalResult(LAUNCH_SHELL_STOP); });
 #endif
 
   auto Btn_Reboot =
-      AddButton(_T("Reboot"), []() { Run("/sbin/reboot"); });
-  // auto Btn_Reboot = AddButton(_T("Reboot"), []() { Run("/sbin/reboot"); });
+      AddButton("Reboot", []() { Run("/sbin/reboot"); });
+  // auto Btn_Reboot = AddButton("Reboot", []() { Run("/sbin/reboot"); });
   
   auto Btn_Shutdown =
-      AddButton(_T("Power off"), []() { Run("/sbin/poweroff"); });
-      // AddButton(_T("Power off"), []() { "/sbin/poweroff"); });
+      AddButton("Power off", []() { Run("/sbin/poweroff"); });
+      // AddButton("Power off", []() { "/sbin/poweroff"); });
 
   //----------------------------------------------------------
-  progress_timer = RowFormWidget::Add(_T(""), _T(""), true);
-  // AddReadOnly(_T("")); // Timer-Progress
+  progress_timer = RowFormWidget::Add("", "", true);
+  // AddReadOnly(""); // Timer-Progress
   //----------------------------------------------------------
 
   if (!ovdevice.IsReal()) {
-    Btn_Shell->SetCaption(_T("Exit"));
+    Btn_Shell->SetCaption("Exit");
     Btn_Reboot->SetEnabled(false);
     Btn_Shutdown->SetEnabled(false);
   }
@@ -368,7 +368,7 @@ Main(UI::EventQueue &event_queue, UI::SingleWindow &main_window,
 {
   TWidgetDialog<MainMenuWidget>
     dialog(WidgetDialog::Full{}, main_window,
-           dialog_look, _T("OpenVario Base Menu"));
+           dialog_look, "OpenVario Base Menu");
   dialog.SetWidget(main_window.GetDisplay(), event_queue, dialog);
 
   return dialog.ShowModal();
@@ -399,7 +399,7 @@ Main()
 #endif
 
   UI::SingleWindow main_window{screen_init.GetDisplay()};
-  main_window.Create(_T("OpenSoar/OpenVarioBaseMenu"), {600, 800}, main_style);
+  main_window.Create("OpenSoar/OpenVarioBaseMenu", {600, 800}, main_style);
   main_window.Show();
 
   global_dialog_look = &dialog_look;

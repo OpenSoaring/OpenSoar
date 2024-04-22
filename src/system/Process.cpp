@@ -27,7 +27,7 @@
 #include <filesystem>
 
 // static std::filesystem::path output;
-// static Path output = Path(_T(""));
+// static Path output = Path("");
 static Path output;
 
 #include <fcntl.h>
@@ -122,7 +122,7 @@ try {
 #if PROCESS_DEBUG_OUTPUT // def DEBUG_OPENVARIO
   std::cout << "Start Run with:" << std::endl;
   if (!output.empty())
-    LogFormat(_T("Process.cpp - Run with output: %s"), output.c_str());
+    LogFormat("Process.cpp - Run with output: %s", output.c_str());
   else 
     LogFormat("Process.cpp - Run w/o output");
 #endif

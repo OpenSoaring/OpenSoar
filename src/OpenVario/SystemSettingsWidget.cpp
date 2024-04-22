@@ -71,22 +71,22 @@ private:
 
 #ifdef OPENVARIOBASEMENU
   static constexpr StaticEnumChoice timeout_list[] = {
-    { 0,  _T("immediately"), },
-    { 1,  _T("1s"), },
-    { 3,  _T("3s"), },
-    { 5,  _T("5s"), },
-    { 10, _T("10s"), },
-    { 30, _T("30s"), },
-    { 60, _T("1min"), },
-    { -1, _T("never"), },
+    { 0,  "immediately", },
+    { 1,  "1s", },
+    { 3,  "3s", },
+    { 5,  "5s", },
+    { 10, "10s", },
+    { 30, "30s", },
+    { 60, "1min", },
+    { -1, "never", },
     nullptr
   };
 #endif
 
   static constexpr StaticEnumChoice enable_list[] = {
-    { SSHStatus::ENABLED,   _T("enabled"), },
-    { SSHStatus::DISABLED,  _T("disabled"), },
-    { SSHStatus::TEMPORARY, _T("temporary"), },
+    { SSHStatus::ENABLED,   "enabled", },
+    { SSHStatus::DISABLED,  "disabled", },
+    { SSHStatus::TEMPORARY, "temporary", },
     nullptr
   };
 
@@ -109,7 +109,7 @@ SystemSettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
   }  else if (IsDataField(FIRMWARE, df)) {
     // (DataFieldInteger*)df)
     // ConvertString
-    ShowMessageBox(_T("FirmWare-Selection"), _T("??File??"), MB_OKCANCEL);
+    ShowMessageBox("FirmWare-Selection", "??File??", MB_OKCANCEL);
   } 
 }
 
@@ -121,12 +121,12 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
 
   AddReadOnly(_("Current OpenSoar"), _("Current firmware version of OpenVario"),
 #if defined(PROGRAM_VERSION)
-              _T(PROGRAM_VERSION));
+              PROGRAM_VERSION);
 #else
-              _T("7.42.21.3"));
+              "7.42.21.3");
 #endif
   AddFile(_("OV-Firmware"), _("Current firmware file version of OpenVario"),
-          "OVImage", _T("*.img.gz\0"), FileType::IMAGE);  // no callback... , this);
+          "OVImage", "*.img.gz\0", FileType::IMAGE);  // no callback... , this);
   
   AddBoolean(
       _("Settings Enabled"),
@@ -144,7 +144,7 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
 #endif
 
    auto btnWifi = AddButton(
-       _T("Settings Wifi"), [this]() { 
+       "Settings Wifi", [this]() { 
          ShowWifiDialog();
      });
    btnWifi->SetEnabled(true);  // dependend on availability? Missing: 
@@ -154,7 +154,7 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
 
 #ifdef _DEBUG
    AddInteger(_("IntegerTest"),
-               _("IntegerTest."), _T("%d"), _T("%d"), 0,
+               _("IntegerTest."), "%d", "%d", 0,
                   99999, 1, ovdevice.iTest);
 #endif
 
@@ -232,7 +232,7 @@ ShowSystemSettingsWidget(ContainerWindow  &parent,
 {
   TWidgetDialog<SystemSettingsWidget> sub_dialog(
       WidgetDialog::Full{}, (UI::SingleWindow &) parent, look,
-      _T("OpenVario System Settings"));
+      "OpenVario System Settings");
   sub_dialog.SetWidget();
   sub_dialog.AddButton(_("Save"), mrOK);
   sub_dialog.AddButton(_("Close"), mrOK);

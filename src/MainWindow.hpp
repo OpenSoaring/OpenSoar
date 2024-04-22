@@ -37,7 +37,7 @@ namespace InfoBoxLayout { struct Layout; }
  * The XCSoar main window.
  */
 class MainWindow : public UI::SingleWindow {
-  static constexpr const char *title = _T("OpenSoar");
+  static constexpr const char *title = "OpenSoar";
 
   Look *look = nullptr;
 

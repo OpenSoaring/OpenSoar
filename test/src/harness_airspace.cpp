@@ -25,7 +25,7 @@ airspace_random_properties(AbstractAirspace& as)
   AirspaceAltitude top;
   base.altitude = rand()%4000;
   top.altitude = base.altitude+rand()%3000;
-  as.SetProperties(_T("hello"), asclass, _T("E"), base, top);
+  as.SetProperties("hello", asclass, "E", base, top);
 }
 
 
@@ -45,7 +45,7 @@ void setup_airspaces(Airspaces& airspaces, const GeoPoint& center, const unsigne
   std::ofstream *fin = NULL;
 
   if (verbose) {
-    Directory::Create(Path(_T("output/results")));
+    Directory::Create(Path("output/results"));
     fin = new std::ofstream("output/results/res-bb-in.txt");
   }
 
@@ -240,7 +240,7 @@ void scan_airspaces(const AircraftState state,
 {
   const double range(20000.0);
 
-  Directory::Create(Path(_T("output/results")));
+  Directory::Create(Path("output/results"));
 
   {
     AirspaceVisitorPrint pvisitor("output/results/res-bb-range.txt",

@@ -91,13 +91,13 @@ LoadPath(const ProfileMap &map, DeviceConfig &config, unsigned n)
   if (retvalue && !config.path.empty()) {
     if ((config.path.back() == char(':')) &&
         /* In Windows the value itself should be only have the short */
-      config.path.StartsWith(_T("COM"))) {
+      config.path.StartsWith("COM")) {
       /* old-style raw names has a trailing colon (for backwards
        compatibility with older XCSoar versions) */
       config.path.Truncate(config.path.length() - 1); 
       //  write back this (short) value to the profile:
       ((ProfileMap)map).Set(buffer, config.path);
-    } else if (config.path.StartsWith(_T("\\\\.\\COM"))) {
+    } else if (config.path.StartsWith("\\\\.\\COM")) {
       /* since 7.30 the raw names in the XCSoar config has the UNC style
        (compatibility with this XCSoar versions config) */
       config.path = config.path + 4;
