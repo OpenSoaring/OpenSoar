@@ -18,10 +18,4 @@ UTIL_SOURCES = \
 	$(UTIL_SRC_DIR)/StringStrip.cxx \
 	$(UTIL_SRC_DIR)/StringUtil.cpp
 
-ifeq ($(HAVE_MSVCRT),y)
-# move this code in UTF8.cpp!
-UTIL_SOURCES += \
-	$(UTIL_SRC_DIR)/UTF8Win.cpp
-endif
-
 $(eval $(call link-library,util,UTIL))

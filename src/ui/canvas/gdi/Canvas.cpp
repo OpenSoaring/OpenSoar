@@ -7,10 +7,9 @@
 #include "Asset.hpp" /* for needclipping */
 #include "AlphaBlend.hpp"
 #include "Math/Angle.hpp"
+#include "util/UTF8.hpp"
 
 #include <algorithm>
-
-#include "util/UTF8Win.hpp"
 
 static bool UTF8TextOut(HDC hdc, const PixelPoint &p, unsigned options, const RECT *r,
             std::string_view _text, const int *lpDx) {
