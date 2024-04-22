@@ -11,18 +11,12 @@ set(_SOURCES
         util/StringStrip.cxx
         util/StringUtil.cpp
         util/TruncateString.cpp
-        # removed 7.36: util/tstring.cpp
         util/UTF8.cpp
         util/MD5.cpp  # new with 6.8.14
         util/DecimalParser.cxx  # new with 7.40
 )
 if(WIN32)
   list(APPEND _SOURCES
-        util/WASCII.cxx
-        util/WStringCompare.cxx
-        util/WStringStrip.cxx
-        util/WStringUtil.cpp
-
         util/UTF8Win.cpp
   )
 endif()
