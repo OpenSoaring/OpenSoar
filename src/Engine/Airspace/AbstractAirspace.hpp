@@ -4,7 +4,7 @@
 #pragma once
 
 #include "util/TriState.hpp"
-#include "util/tstring.hpp"
+#include <string>
 #include "AirspaceAltitude.hpp"
 #include "AirspaceClass.hpp"
 #include "AirspaceActivity.hpp"
@@ -52,10 +52,10 @@ protected:
   AirspaceAltitude altitude_top;
 
   /** Airspace name (identifier) */
-  tstring name;
+  std::string name;
 
   /** Airspace type */
-  tstring astype;
+  std::string astype;
 
   /** Radio frequency (optional) */
   RadioFrequency radio_frequency = RadioFrequency::Null();
@@ -197,8 +197,8 @@ public:
    * @param _base Lower limit
    * @param _top Upper limit
    */
-  void SetProperties(tstring &&_name, const AirspaceClass _class,
-                     tstring &&_type,
+  void SetProperties(std::string &&_name, const AirspaceClass _class,
+                     std::string &&_type,
                      const AirspaceAltitude &_base,
                      const AirspaceAltitude &_top) noexcept {
     name = std::move(_name);

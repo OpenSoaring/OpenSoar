@@ -6,7 +6,7 @@
 #include "util/StaticCache.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringAPI.hxx"
-#include "util/tstring_view.hxx"
+#include <string>
 
 #ifdef ENABLE_OPENGL
 #include "ui/canvas/opengl/Texture.hpp"

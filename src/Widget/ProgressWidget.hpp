@@ -5,7 +5,7 @@
 
 #include "WindowWidget.hpp"
 #include "Operation/MessageOperationEnvironment.hpp"
-#include "util/tstring.hpp"
+#include <string>
 
 class PluggableOperationEnvironment;
 
@@ -17,7 +17,7 @@ class ProgressWidget final : public WindowWidget, MessageOperationEnvironment {
 
   PluggableOperationEnvironment &env;
 
-  tstring text;
+  std::string text;
 
 public:
   explicit ProgressWidget(PluggableOperationEnvironment &_env,

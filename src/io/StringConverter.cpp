@@ -84,7 +84,7 @@ StringConverter::Convert(char *narrow)
   gcc_unreachable();
 }
 
-tstring_view
+std::string_view
 StringConverter::Convert(std::string_view src)
 {
   src = DetectStrip(src);

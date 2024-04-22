@@ -27,8 +27,6 @@
 #include "LogFile.hpp"
 #include "LocalPath.hpp"
 
-#include <util/tstring.hpp>
-
 #ifndef _WIN32
 #include <unistd.h>
 #include <sys/stat.h>

@@ -18,7 +18,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Debug.hpp"
 #include "time/FloatDuration.hxx"
-#include "util/tstring.hpp"
+#include <string>
 #include "util/StaticFifoBuffer.hxx"
 
 #ifdef HAVE_INTERNAL_GPS
@@ -231,7 +231,7 @@ class DeviceDescriptor final
    * If this device has failed, then this attribute may contain an
    * error message.
    */
-  tstring error_message;
+  std::string error_message;
 
   /**
    * Number of port failures since the device was last reset.
@@ -292,7 +292,7 @@ public:
   [[gnu::pure]]
   PortState GetState() const noexcept;
 
-  tstring GetErrorMessage() const noexcept {
+  std::string GetErrorMessage() const noexcept {
     const std::lock_guard lock{mutex};
     return error_message;
   }

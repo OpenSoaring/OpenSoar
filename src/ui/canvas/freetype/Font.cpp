@@ -75,7 +75,7 @@ FT_CEIL(FT_Long x) noexcept
 
 [[gnu::pure]]
 static unsigned
-NextChar(tstring_view &s) noexcept
+NextChar(std::string_view &s) noexcept
 {
   assert(!s.empty());
 
@@ -203,7 +203,7 @@ Font::Destroy() noexcept
 }
 
 static void
-ForEachChar(tstring_view text, std::invocable<unsigned> auto f)
+ForEachChar(std::string_view text, std::invocable<unsigned> auto f)
 {
   assert(ValidateUTF8(text));
 
@@ -261,7 +261,7 @@ ForEachGlyph(const FT_Face face, unsigned ascent_height, T &&text,
 }
 
 PixelSize
-Font::TextSize(tstring_view text) const noexcept
+Font::TextSize(std::string_view text) const noexcept
 {
   int maxx = 0;
 
@@ -370,7 +370,7 @@ RenderGlyph(uint8_t *buffer, size_t width, size_t height,
 }
 
 void
-Font::Render(tstring_view text, const PixelSize size,
+Font::Render(std::string_view text, const PixelSize size,
              void *_buffer) const noexcept
 {
   uint8_t *buffer = (uint8_t *)_buffer;
