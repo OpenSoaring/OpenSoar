@@ -4,6 +4,7 @@
 #include "UTF8.hpp"
 #include "CharUtil.hxx"
 #include "Compiler.h"
+#include "LogFile.hpp"
 
 #include <algorithm>
 
@@ -658,3 +659,17 @@ NextUTF8(const char *p) noexcept
     gcc_unreachable();
   }
 }
+
+#ifdef _WIN32
+#include <stringapiset.h>
+
+std::wstring 
+UTF8ToWide(const std::string_view s)
+{
+  int length = MultiByteToWideChar(CP_UTF8, 0, s.data(), s.size() + 1, nullptr, 0);
+  std::wstring w(length + 1, L'\0');
+  MultiByteToWideChar(CP_UTF8, 0, s.data(), s.size() + 1, w.data(), length);
+  return w;
+}
+
+#endif

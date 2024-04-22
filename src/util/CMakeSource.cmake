@@ -15,11 +15,6 @@ set(_SOURCES
         util/MD5.cpp  # new with 6.8.14
         util/DecimalParser.cxx  # new with 7.40
 )
-if(WIN32)
-  list(APPEND _SOURCES
-        util/UTF8Win.cpp
-  )
-endif()
 
 set(SCRIPT_FILES
     CMakeSource.cmake

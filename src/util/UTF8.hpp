@@ -5,7 +5,7 @@
 
 #include <cstddef>
 #include <span>
-#include <string_view>
+#include <string>
 #include <utility>
 
 constexpr std::string_view utf8_byte_order_mark{"\xef\xbb\xbf"};
@@ -146,3 +146,13 @@ CopyTruncateStringUTF8(std::span<char> dest,
 [[gnu::pure]] [[gnu::nonnull]]
 std::pair<unsigned, const char *>
 NextUTF8(const char *p) noexcept;
+
+#ifdef _WIN32
+// #include <codecvt>
+#include <locale>
+#include <string>
+
+std::wstring 
+UTF8ToWide(const std::string_view s);
+
+#endif
