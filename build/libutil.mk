@@ -19,13 +19,9 @@ UTIL_SOURCES = \
 	$(UTIL_SRC_DIR)/StringUtil.cpp
 
 ifeq ($(HAVE_MSVCRT),y)
+# move this code in UTF8.cpp!
 UTIL_SOURCES += \
-	$(UTIL_SRC_DIR)/UTF8Win.cpp \
-	\
-	$(UTIL_SRC_DIR)/WASCII.cxx \
-	$(UTIL_SRC_DIR)/WStringCompare.cpp \
-	$(UTIL_SRC_DIR)/WStringStrip.cxx \
-	$(UTIL_SRC_DIR)/WStringUtil.cpp
+	$(UTIL_SRC_DIR)/UTF8Win.cpp
 endif
 
 $(eval $(call link-library,util,UTIL))
