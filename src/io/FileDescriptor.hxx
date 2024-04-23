@@ -17,11 +17,8 @@
 #else
 # include <unistd.h>
 #endif
-#include <sys/types.h>
 
-#ifdef _WIN32
-#include <wchar.h>
-#endif
+#include <sys/types.h>
 
 class UniqueFileDescriptor;
 
@@ -114,11 +111,6 @@ public:
 
 	[[nodiscard]]
 	bool Open(const char *pathname, int flags, mode_t mode=0666) noexcept;
-
-#ifdef _WIN32
-	[[nodiscard]]
-	bool Open(const wchar_t *pathname, int flags, mode_t mode=0666) noexcept;
-#endif
 
 	[[nodiscard]]
 	bool OpenReadOnly(const char *pathname) noexcept;
