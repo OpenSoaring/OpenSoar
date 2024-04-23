@@ -13,20 +13,14 @@ res_array = []
 # def write_resource(outfile, line, macro, type, extension):
 def create_line(name, res_name, path, file, ext):
         line = '{:30s}'.format(name) + ' ' + '{:12s}'.format(res_name)
-        line = line + 'DISCARDABLE   L"' + path + '/'
+        line = line + 'DISCARDABLE   "' + path + '/'
         line = line + file + '.' + ext + '"'
-        # line = '{:30s}'.format(params[1]) + ' ' + '{:12s}'.format(resource[2])
-        # line = line + 'DISCARDABLE   L"' + resource[3] + '/'
-        # line = line + params[2].strip(' \n').replace('"','') + resource[4] + '"'
         outfile.write(line + '\n') # Copy of read line (with replaced field)
         if debug:
             print(line)
         ## return line
 
 def write_resource(outfile, line, resource):
-         # line = line.replace(resource[0]+'(','')
-         # line = line.replace(')','')
-         # params = line.split(',')
          params = line.split(' ')
          # if debug:
          if len(params) >= 2:
@@ -76,15 +70,7 @@ if debug:
 
 src_location1 = sys.argv[3]
 src_location2 = sys.argv[4]
-
-### res_array.append(['BITMAP_ICON',   'BITMAP', src_location2 + '/icons', '.bmp'])
-### res_array.append(['BITMAP_BITMAP', 'BITMAP', src_location1 + '/bitmaps', '.bmp'])
-### res_array.append(['BITMAP_GRAPHIC','BITMAP', src_location2 + '/graphics', '.bmp'])
-### res_array.append(['HATCH_BITMAP',  'BITMAP', src_location1 + '/bitmaps', '.bmp'])
-### res_array.append(['SOUND',         'WAVE',   src_location1 + '/sound', '.wav'])
-### res_array.append(['ICON_ICON',     'ICON',   src_location1 + '/bitmaps', '.ico'])
-
-# res_array.append(['bitmap_icon ', 'BITMAP', src_location2 + '/icons', '.bmp'])
+ 
 res_array.append(['bitmap_icon_scaled ', 'BITMAP_ICON',   'BITMAP', src_location2 + '/icons', 'bmp'])
 res_array.append(['bitmap_bitmap ',      'BITMAP_BITMAP', 'BITMAP', src_location1 + '/bitmaps', 'bmp'])
 res_array.append(['bitmap_graphic ',     'BITMAP_GRAPHIC','BITMAP', src_location2 + '/graphics', 'bmp'])
