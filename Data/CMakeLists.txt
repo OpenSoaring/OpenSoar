@@ -274,26 +274,26 @@ endif()
     
     ## add_custom_command(TARGET ${TARGET_NAME} PRE_LINK
     set(INPUTEVENTS_CPP
-               ${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.cpp
+               ${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.hpp
                # ${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.cpp
-               ${_INCLUDE_OUTPUT}/InputEvents_Char2NE.cpp
-               ${_INCLUDE_OUTPUT}/InputEvents_Text2Event.cpp
-               ${_INCLUDE_OUTPUT}/InputEvents_Text2GCE.cpp
-               ${_INCLUDE_OUTPUT}/InputEvents_Text2NE.cpp
-               ${_INCLUDE_OUTPUT}/InputEvents_default.cpp
+               ${_INCLUDE_OUTPUT}/InputEvents_Char2NE.hpp
+               ${_INCLUDE_OUTPUT}/InputEvents_Text2Event.hpp
+               ${_INCLUDE_OUTPUT}/InputEvents_Text2GCE.hpp
+               ${_INCLUDE_OUTPUT}/InputEvents_Text2NE.hpp
+               ${_INCLUDE_OUTPUT}/InputEvents_default.hpp
     )
 
     set(DEFAULT_XCI   ${_DATA_INPUT}/Input/defaultOV.xci)
     # set(DEFAULT_XCI   ${_DATA_INPUT}/Input/${DEFAULT_XCI_FILE})
-    add_custom_command(OUTPUT  ${_INCLUDE_OUTPUT}/InputCppFiles.txt
-           COMMENT Create InputEvents_*.cpp!
+    add_custom_command(OUTPUT  ${INPUTEVENTS_CPP} ${_INCLUDE_OUTPUT}/InputCppFiles.txt
+           COMMENT Create InputEvents_*.hpp!
            COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT} 
-           COMMAND perl tools/Char2GCE.pl    src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.cpp
-           COMMAND perl tools/Char2NE.pl     src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Char2NE.cpp
-           COMMAND perl tools/Text2Event.pl  src/Input/InputEvents.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2Event.cpp
-           COMMAND perl tools/Text2GCE.pl    src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2GCE.cpp
-           COMMAND perl tools/Text2NE.pl     src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2NE.cpp
-           COMMAND perl tools/xci2cpp.pl     ${DEFAULT_XCI}           >${_INCLUDE_OUTPUT}/InputEvents_default.cpp
+           COMMAND perl tools/Char2GCE.pl    src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.hpp
+           COMMAND perl tools/Char2NE.pl     src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Char2NE.hpp
+           COMMAND perl tools/Text2Event.pl  src/Input/InputEvents.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2Event.hpp
+           COMMAND perl tools/Text2GCE.pl    src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2GCE.hpp
+           COMMAND perl tools/Text2NE.pl     src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2NE.hpp
+           COMMAND perl tools/xci2cpp.pl     ${DEFAULT_XCI}           >${_INCLUDE_OUTPUT}/InputEvents_default.hpp
            COMMAND perl tools/xci2cpp.pl     ${DEFAULT_XCI}           >${_INCLUDE_OUTPUT}/InputCppFiles.txt
            DEPENDS ${PROJECTGROUP_SOURCE_DIR}/src/Input/InputQueue.hpp 
                    ${PROJECTGROUP_SOURCE_DIR}/src/Input/InputEvents.hpp
@@ -301,17 +301,14 @@ endif()
            WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
     )
     
-    add_custom_command( OUTPUT ${OUTPUT_FOLDER}/include/Status_defaults.cpp
-    # add_custom_command( OUTPUT DefaultStatus
-    # add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
-       # COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECTGROUP_SOURCE_DIR}/${_INCLUDE_OUTPUT}
+    add_custom_command( OUTPUT ${OUTPUT_FOLDER}/include/Status_defaults.hpp
        COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT}
-       COMMAND perl tools/xcs2cpp.pl    Data/Status/default.xcs >${OUTPUT_FOLDER}/include/Status_defaults.cpp
+       COMMAND perl tools/xcs2cpp.pl    Data/Status/default.xcs >${OUTPUT_FOLDER}/include/Status_defaults.hpp
        DEPENDS ${_DATA_INPUT}/Status/default.xcs
        WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
     )
     
-    list(APPEND INPUTEVENTS_CPP ${OUTPUT_FOLDER}/include/Status_defaults.cpp)
+    list(APPEND INPUTEVENTS_CPP ${OUTPUT_FOLDER}/include/Status_defaults.hpp)
     
     # list(APPEND C_FILES ${_INCLUDE_OUTPUT}/Status_defaults.cpp)
 
@@ -382,7 +379,7 @@ add_library(${TARGET_NAME}  ${XCSOAR_LIB_TYPE}
    ${ICON_BITMAPS}
    ${ICON_FILES}
    ${PROJECTGROUP_SOURCE_DIR}/tools/Char2GCE.pl
-   # ${INPUTEVENTS_CPP}
+   ${INPUTEVENTS_CPP}
    ${_INCLUDE_OUTPUT}/InputCppFiles.txt
    # InputCppFiles    # role for input files
    # DefaultStatus # role for status defaults
