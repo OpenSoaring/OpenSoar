@@ -72,10 +72,10 @@ class WifiListWidget final
   : public ListWidget {
 
   struct NetworkInfo {
-    NarrowString<64> mac_id;
-    NarrowString<64> bssid;
-    NarrowString<256> ssid;
-    NarrowString<256> base_id;
+    StaticString<64> mac_id;
+    StaticString<64> bssid;
+    StaticString<256> ssid;
+    StaticString<256> base_id;
     int signal_level;
     int id;
 

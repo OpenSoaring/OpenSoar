@@ -138,7 +138,7 @@ FLARMConfigWidget::Save(bool &_changed) noexcept
 try {
   PopupOperationEnvironment env;
   bool changed = false;
-  NarrowString<32> buffer;
+  StaticString<32> buffer;
 
   if (SaveValueEnum(Baud, baud)) {
     buffer.UnsafeFormat("%u", baud);

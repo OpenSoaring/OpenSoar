@@ -225,7 +225,7 @@ MainMenuWidget::StartSoarExe(std::string_view _exe,
     ArgList = {exe.c_str(), "-fly"};
 
     //=============== Datapath =======================
-    NarrowString<0x200> datapath("-datapath=");
+    StaticString<0x200> datapath("-datapath=");
     if (_datapath.empty()) {
         _datapath = GetPrimaryDataPath().c_str();
     } else {
@@ -237,7 +237,7 @@ MainMenuWidget::StartSoarExe(std::string_view _exe,
 
     //=============== Profile =======================
     if (ovdevice.settings.find("MainProfile") != ovdevice.settings.end()) {
-      NarrowString<0x80> profile("");
+      StaticString<0x80> profile("");
       profile = "-profile=";
       std::string str = ovdevice.settings.find("MainProfile")->second;
       profile += ovdevice.settings.find("MainProfile")->second;
@@ -247,7 +247,7 @@ MainMenuWidget::StartSoarExe(std::string_view _exe,
     //=============== Profile =======================
 #ifdef _WIN32  // OpenVario needs no format field!
     if (ovdevice.settings.find("Format") != ovdevice.settings.end()) {
-      NarrowString<0x10> format("");
+      StaticString<0x10> format("");
       format = "-";
       format += ovdevice.settings.find("Format")->second;
       ArgList.push_back(format.c_str());

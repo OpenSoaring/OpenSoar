@@ -452,7 +452,7 @@ LarusDevice::PutQNH(const AtmosphericPressure &pres,
 bool
 LarusDevice::SendCmd(const char *cmd, double value, 
                               OperationEnvironment &env) {
-  NarrowString<80> buffer("PLARS,H,");
+  StaticString<80> buffer("PLARS,H,");
   buffer.AppendFormat(cmd, value);
 
   PortWriteNMEA(port, buffer.c_str(), env);
