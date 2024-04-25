@@ -245,7 +245,7 @@ def lookup_function(value):
         return RoughTimePrinter(value)
     elif typename == 'RoughTimeSpan':
         return RoughTimeSpanPrinter(value)
-    elif typename[:12] == 'StaticString' or typename[:12] == 'NarrowString':
+    elif typename[:12] == 'StaticString':
         return StaticStringPrinter(value)
 
     return None
