@@ -33,7 +33,6 @@
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/SystemMenuWidget.hpp"
 
-#include "util/ConvertString.hpp"
 #include "LocalPath.hpp"
 #include "LogFile.hpp"
 #include "Dialogs/Message.hpp"

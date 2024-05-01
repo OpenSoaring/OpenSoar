@@ -9,7 +9,6 @@
 #include "lib/curl/Setup.hxx"
 #include "LocalPath.hpp"
 #include "system/FileUtil.hpp"
-#include "util/ConvertString.hpp"
 #include "util/StringSplit.hxx"
 
 #include <stdexcept>
@@ -111,17 +110,14 @@ PCMet::DownloadLatestImage(const char *type, const char *area,
                            const PCMetSettings &settings,
                            CurlGlobal &curl, ProgressListener &progress)
 {
-  const WideToUTF8Converter username(settings.www_credentials.username);
-  const WideToUTF8Converter password(settings.www_credentials.password);
-
   char url[256];
   snprintf(url, sizeof(url),
            PCMET_URI "/fw/bilder/%s?type=%s",
            type, area);
 
   // download the HTML page
-  const auto response =
-    co_await CoGet(curl, url, username, password, progress);
+  const auto response = co_await CoGet(curl, url, settings.www_credentials.username,
+                     settings.www_credentials.password, progress);
 
   static constexpr char img_needle[] = "<img name=\"bild\" src=\"/";
   const char *img = strstr(response.body.c_str(), img_needle);
@@ -144,16 +140,16 @@ PCMet::DownloadLatestImage(const char *type, const char *area,
 
   // TODO: delete the old directory XCSoarData/pc_met?
   const auto cache_path = MakeCacheDirectory("pc_met");
-  auto path = AllocatedPath::Build(cache_path,
-                                   UTF8ToWideConverter(name.c_str()));
+  auto path = AllocatedPath::Build(cache_path, name.c_str());
 
   if (!File::Exists(path)) {
     // URI for a single page of a selected 'Satellitenbilder"-page with link
     // to the latest image and the namelist array of all stored images
     snprintf(url, sizeof(url), PCMET_URI "%.*s", int(src.size()), src.data());
 
-    const auto ignored_response = co_await
-      Net::CoDownloadToFile(curl, url, username, password,
+    const auto ignored_response = co_await Net::CoDownloadToFile(
+        curl, url, settings.www_credentials.username,
+        settings.www_credentials.password,
                             path, nullptr, progress);
   }
 

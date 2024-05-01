@@ -4,7 +4,6 @@
 #include "Client.hpp"
 #include "Operation/Operation.hpp"
 #include "util/StringCompare.hxx"
-#include "util/ConvertString.hpp"
 #include "lib/curl/CoRequest.hxx"
 #include "lib/curl/Setup.hxx"
 #include "lib/fmt/RuntimeError.hxx"
@@ -35,16 +34,11 @@ Client::GetUserID(const char *username, const char *password)
   CurlEasy easy;
 
   {
-    const WideToUTF8Converter username2(username);
-    const WideToUTF8Converter password2(password);
-    if (!username2.IsValid() || !password2.IsValid())
-      throw std::runtime_error("WideToUTF8Converter failed");
-
     StaticString<1024> url;
     url.Format("http://%s/client.php?op=login&user=%s&pass=%s",
                GetServer(),
-               easy.Escape(username2).c_str(),
-               easy.Escape(password2).c_str());
+               easy.Escape(username).c_str(),
+               easy.Escape(password).c_str());
     easy.SetURL(url);
   }
 
@@ -75,12 +69,6 @@ Client::StartTracking(SessionID session, const char *username,
   CurlEasy easy;
 
   {
-    const WideToUTF8Converter username2(username);
-    const WideToUTF8Converter password2(password);
-    const WideToUTF8Converter vname2(vname);
-    if (!username2.IsValid() || !password2.IsValid() || !vname2.IsValid())
-      throw std::runtime_error("WideToUTF8Converter failed");
-
     const char *version = OpenSoar_VersionLong;
     StaticString<2048> url;
     url.Format("http://%s/track.php?leolive=2&sid=%u&pid=%u&"
@@ -88,10 +76,10 @@ Client::StartTracking(SessionID session, const char *username,
                GetServer(), session, 1,
 //               "OpenSoar", easy.Escape(version).c_str(),
                "XCSoar", easy.Escape(version).c_str(),
-               easy.Escape(username2).c_str(),
-               easy.Escape(password2).c_str(),
+               easy.Escape(username).c_str(),
+               easy.Escape(password).c_str(),
                vtype,
-               easy.Escape(vname2).c_str());
+               easy.Escape(vname).c_str());
 
     easy.SetURL(url);
   }

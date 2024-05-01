@@ -108,7 +108,6 @@ SystemSettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
     SetEnabled(((const DataFieldBoolean &)df).GetValue());
   }  else if (IsDataField(FIRMWARE, df)) {
     // (DataFieldInteger*)df)
-    // ConvertString
     ShowMessageBox("FirmWare-Selection", "??File??", MB_OKCANCEL);
   } 
 }

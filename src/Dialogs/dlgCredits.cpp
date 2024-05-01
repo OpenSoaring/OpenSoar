@@ -15,7 +15,6 @@
 #include "ui/canvas/Font.hpp"
 #include "Version.hpp"
 #include "Inflate.hpp"
-#include "util/ConvertString.hpp"
 #include "util/AllocatedString.hxx"
 #include "Resources.hpp"
 #include "UIGlobals.hpp"
@@ -133,24 +132,19 @@ dlgCreditsShowModal([[maybe_unused]] UI::SingleWindow &parent)
   const DialogLook &look = UIGlobals::GetDialogLook();
 
   const auto authors = InflateToString(AUTHORS_gz, AUTHORS_gz_size);
-  const UTF8ToWideConverter authors2(authors.c_str());
-
   const auto news =
       InflateToString(OpenSoar_News_md_gz, OpenSoar_News_md_gz_size);
-  const UTF8ToWideConverter news2(news.c_str());
-
   const auto license = InflateToString(COPYING_gz, COPYING_gz_size);
-  const UTF8ToWideConverter license2(license.c_str());
-
+  
   WidgetDialog dialog(WidgetDialog::Full{}, UIGlobals::GetMainWindow(),
                       look, _("Credits"));
 
   auto pager = std::make_unique<ArrowPagerWidget>(look.button,
                                                   dialog.MakeModalResultCallback(mrOK));
   pager->Add(std::make_unique<CreateWindowWidget>(CreateLogoPage));
-  pager->Add(std::make_unique<LargeTextWidget>(look, authors2));
-  pager->Add(std::make_unique<LargeTextWidget>(look, news2));
-  pager->Add(std::make_unique<LargeTextWidget>(look, license2));
+  pager->Add(std::make_unique<LargeTextWidget>(look, authors.c_str()));
+  pager->Add(std::make_unique<LargeTextWidget>(look, news.c_str()));
+  pager->Add(std::make_unique<LargeTextWidget>(look, license.c_str()));
 
   dialog.FinishPreliminary(std::move(pager));
   dialog.ShowModal();

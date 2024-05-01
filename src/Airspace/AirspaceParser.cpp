@@ -18,7 +18,6 @@
 #include "lib/fmt/RuntimeError.hxx"
 #include "io/BufferedReader.hxx"
 #include "io/StringConverter.hpp"
-#include "util/ConvertString.hpp"
 #include "util/StaticString.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
@@ -975,7 +974,7 @@ ParseAirspaceFile(Airspaces &airspaces,
   }
 
   if (filetype == AirspaceFileType::UNKNOWN)
-    throw std::runtime_error(WideToUTF8Converter(_("Unknown airspace filetype")));
+    throw std::runtime_error(_("Unknown airspace filetype"));
 
   // Process final area (if any)
   temp_area.Commit(airspaces);

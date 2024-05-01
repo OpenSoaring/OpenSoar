@@ -11,7 +11,6 @@
 #include "Geo/GeoVector.hpp"
 #include "Formatter/AirspaceFormatter.hpp"
 #include "system/FileUtil.hpp"
-#include "util/ConvertString.hpp"
 
 #include <stdlib.h>
 #include <fstream>
@@ -116,7 +115,7 @@ public:
   void Visit(const AbstractAirspace &as) {
     if (do_report) {
       *fout << as;
-      *fout << "# Name: " << WideToUTF8Converter(as.GetName())
+      *fout << "# Name: " << as.GetName()
             << "Base: " << as.GetBase()
             << " Top: " << as.GetTop()
             << "\n";

@@ -24,7 +24,6 @@
 #include "ui/event/PeriodicTimer.hpp"
 #include "thread/Mutex.hxx"
 #include "Operation/ThreadedOperationEnvironment.hpp"
-#include "util/ConvertString.hpp"
 
 #include <vector>
 
@@ -106,12 +105,11 @@ private:
  * Throws on error.
  */
 static AllocatedPath
-DownloadFile(const char *uri, const char *_base)
+DownloadFile(const char *uri, const char *base)
 {
   assert(Net::DownloadManager::IsAvailable());
 
-  const UTF8ToWideConverter base(_base);
-  if (!base.IsValid())
+  if (!base)
     return nullptr;
 
   ProgressDialog dialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
@@ -285,8 +283,7 @@ DownloadFilePickerWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
 {
   const auto &file = items[i];
 
-  const UTF8ToWideConverter name(file.GetName());
-  row_renderer.DrawTextRow(canvas, rc, name);
+  row_renderer.DrawTextRow(canvas, rc, file.GetName());
 }
 
 void

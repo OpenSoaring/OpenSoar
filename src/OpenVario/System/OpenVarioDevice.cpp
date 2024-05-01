@@ -21,7 +21,6 @@
 #include "Profile/Map.hpp"
 
 #include "util/StaticString.hxx"
-#include "util/ConvertString.hpp"
 #include "util/StringCompare.hxx"
 
 #include "LogFile.hpp"
