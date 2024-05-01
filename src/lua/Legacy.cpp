@@ -4,7 +4,6 @@
 #include "Legacy.hpp"
 #include "Util.hxx"
 #include "Input/InputLookup.hpp"
-#include "util/ConvertString.hpp"
 
 extern "C" {
 #include <lauxlib.h>
@@ -18,15 +17,13 @@ l_fire_legacy_event(lua_State *L)
   if (event == nullptr)
     return luaL_error(L, "No InputEvent specified");
 
-  auto *event_function = InputEvents::findEvent(UTF8ToWideConverter(event).c_str());
+  auto *event_function = InputEvents::findEvent(event);
   if (event_function == nullptr)
     return luaL_error(L, "Unknown InputEvent");
 
   const char *parameter = lua_tostring(L, 2);
-  if (parameter == nullptr)
-    parameter = "";
-
-  event_function(UTF8ToWideConverter(parameter));
+  if (parameter != nullptr)
+    event_function(parameter);
   return 0;
 }
 

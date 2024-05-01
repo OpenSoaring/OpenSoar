@@ -14,7 +14,6 @@
 #include "net/UniqueSocketDescriptor.hxx"
 #include "util/CRC16CCITT.hpp"
 #include "util/UTF8.hpp"
-#include "util/ConvertString.hpp"
 
 #include <span>
 #include <string>
@@ -167,8 +166,7 @@ SkyLinesTracking::Client::OnUserNameReceived(const UserNameResponsePacket &packe
   if (!ValidateUTF8(name.c_str()))
     return;
 
-  UTF8ToWideConverter tname(name.c_str());
-  handler->OnUserName(FromBE32(packet.user_id), tname);
+  handler->OnUserName(FromBE32(packet.user_id), name.c_str());
 }
 
 inline void

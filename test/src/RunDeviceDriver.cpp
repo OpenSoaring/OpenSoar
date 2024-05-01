@@ -11,7 +11,6 @@
 #include "Engine/Waypoint/Waypoints.hpp"
 #include "Input/InputEvents.hpp"
 #include "system/Args.hpp"
-#include "util/ConvertString.hpp"
 #include "util/StringStrip.hxx"
 
 #include <stdio.h>
@@ -166,8 +165,7 @@ int main(int argc, char **argv)
   {
     const DeviceRegister *driver;
     for (unsigned i = 0; (driver = GetDriverByIndex(i)) != nullptr; ++i) {
-      WideToUTF8Converter driver_name(driver->name);
-      usage.AppendFormat("\n\t%s", (const char *)driver_name);
+      usage.AppendFormat("\n\t%s", driver->name);
     }
   }
 

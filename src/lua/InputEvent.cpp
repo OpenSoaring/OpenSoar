@@ -12,7 +12,6 @@
 #include "Input/InputKeys.hpp"
 #include "util/Compiler.h"
 #include "util/StringAPI.hxx"
-#include "util/ConvertString.hpp"
 #include "Util.hxx"
 #include "Interface.hpp"
 
@@ -173,21 +172,19 @@ public:
 
     else if (StringIsEqual(name, "gesture_", 8)) {
       // scan for gesture
-      const UTF8ToWideConverter gesture(name+8);
-      if (gesture.IsValid()) {
+      if (name + 8) {
         auto *input_event = new LuaInputEvent(L, 2);
-        input_event->AttachGesture(gesture);
+        input_event->AttachGesture(name + 8);
         return 1;
       }
     } else if (StringIsEqual(name, "key_", 4)) {
         // scan for key code
-        const UTF8ToWideConverter keycode(name+4);
-        if (keycode.IsValid()) {
-          const unsigned code = ParseKeyCode(keycode);
-          auto *input_event = new LuaInputEvent(L, 2);
-          input_event->AttachKey(code);
-          return 1;
-        }
+      if (name + 4) {
+        const unsigned code = ParseKeyCode(name + 4);
+        auto *input_event = new LuaInputEvent(L, 2);
+        input_event->AttachKey(code);
+        return 1;
+      }
     } else {
       // scan for other enums
       const unsigned code = luaL_checkoption(L, 1, NULL, event_enum_names);
@@ -223,16 +220,14 @@ public:
       return luaL_error(L, "Invalid parameters");
 
     else if (StringIsEqual(name, "gesture_", 8)) {
-      const UTF8ToWideConverter gesture(name+8);
-      if (gesture.IsValid()) {
-        event_store_gesture.Clear(std::string(gesture));
+      if (name + 8) {
+        event_store_gesture.Clear(std::string(name + 8));
         return 1;
       }
     } else if (StringIsEqual(name, "key_", 4)) {
       // scan for key code
-      const UTF8ToWideConverter keycode(name+4);
-      if (keycode.IsValid()) {
-        const unsigned code = ParseKeyCode(keycode);
+      if (name + 4) {
+        const unsigned code = ParseKeyCode(name + 4);
         event_store_key.Clear(code);
         return 1;
       }

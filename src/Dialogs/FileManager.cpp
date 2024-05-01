@@ -18,7 +18,6 @@
 #include "Formatter/TimeFormatter.hpp"
 #include "time/BrokenDateTime.hpp"
 #include "net/http/Features.hpp"
-#include "util/ConvertString.hpp"
 #include "util/Macros.hpp"
 #include "Repository/FileRepository.hpp"
 #include "Repository/Parser.hpp"
@@ -42,11 +41,10 @@
 static AllocatedPath
 LocalPath(const AvailableFile &file)
 {
-  const UTF8ToWideConverter base(file.GetName());
-  if (!base.IsValid())
+  if (!file.GetName())
     return nullptr;
 
-  return LocalPath(base);
+  return LocalPath(file.GetName());
 }
 
 #ifdef HAVE_DOWNLOAD_MANAGER
@@ -495,11 +493,11 @@ ManagedFileListWidget::Download()
     return;
 
   const AvailableFile &remote_file = *remote_file_p;
-  const UTF8ToWideConverter base(remote_file.GetName());
-  if (!base.IsValid())
+  if (!remote_file.GetName())
     return;
 
-  Net::DownloadManager::Enqueue(remote_file.uri.c_str(), Path(base));
+  Net::DownloadManager::Enqueue(remote_file.uri.c_str(),
+                                Path(remote_file.GetName()));
 #endif
 }
 
@@ -530,13 +528,11 @@ AddFileListItemRenderer::OnPaintItem(Canvas &canvas, const PixelRect rc,
 
   const AvailableFile &file = list[i];
 
-  const UTF8ToWideConverter name(file.GetName());
-  if (name.IsValid())
-    row_renderer.DrawFirstRow(canvas, rc, name);
+  if (file.GetName())
+    row_renderer.DrawFirstRow(canvas, rc, file.GetName());
 
-  const UTF8ToWideConverter description(file.GetDescription());
-  if (description.IsValid())
-    row_renderer.DrawSecondRow(canvas, rc, description);
+  if (file.GetDescription())
+    row_renderer.DrawSecondRow(canvas, rc, file.GetDescription());
 
   if (file.update_date.IsPlausible()) {
     char string_buffer[21];
@@ -559,11 +555,10 @@ ManagedFileListWidget::Add()
       /* already downloading this file */
       continue;
 
-    const UTF8ToWideConverter name(remote_file.GetName());
-    if (!name.IsValid())
+    if (!remote_file.GetName())
       continue;
 
-    if (FindItem(name) < 0)
+    if (FindItem(remote_file.GetName()) < 0)
       list.push_back(remote_file);
   }
 
@@ -581,11 +576,11 @@ ManagedFileListWidget::Add()
   assert((unsigned)i < list.size());
 
   const AvailableFile &remote_file = list[i];
-  const UTF8ToWideConverter base(remote_file.GetName());
-  if (!base.IsValid())
+  if (!remote_file.GetName())
     return;
 
-  Net::DownloadManager::Enqueue(remote_file.GetURI(), Path(base));
+  Net::DownloadManager::Enqueue(remote_file.GetURI(),
+                                Path(remote_file.GetName()));
 #endif
 }
 
@@ -599,11 +594,11 @@ ManagedFileListWidget::UpdateFiles() {
       const AvailableFile *remote_file = FindRemoteFile(repository, file.name);
 
       if (remote_file != nullptr) {
-        const UTF8ToWideConverter base(remote_file->GetName());
-        if (!base.IsValid())
+        if (!remote_file->GetName())
           return;
 
-        Net::DownloadManager::Enqueue(remote_file->GetURI(), Path(base));
+        Net::DownloadManager::Enqueue(remote_file->GetURI(),
+                                      Path(remote_file->GetName()));
       }
     }
   }
@@ -655,16 +650,10 @@ ManagedFileListWidget::OnDownloadAdded(Path path_relative,
   if (name == nullptr)
     return;
 
-  const WideToUTF8Converter name2(name.c_str());
-  if (!name2.IsValid())
-    return;
-
-  const std::string name3(name2);
-
   {
     const std::lock_guard lock{mutex};
-    downloads[name3] = DownloadStatus{size, position};
-    failures.erase(name3);
+    downloads[name.c_str()] = DownloadStatus{size, position};
+    failures.erase(name.c_str());
   }
 
   download_notify.SendNotification();
@@ -677,18 +666,12 @@ ManagedFileListWidget::OnDownloadComplete(Path path_relative) noexcept
   if (name == nullptr)
     return;
 
-  const WideToUTF8Converter name2(name.c_str());
-  if (!name2.IsValid())
-    return;
-
-  const std::string name3(name2);
-
   {
     const std::lock_guard lock{mutex};
 
-    downloads.erase(name3);
+    downloads.erase(name.c_str());
 
-    if (StringIsEqual(name2, "repository")) {
+    if (StringIsEqual(name.c_str(), "repository")) {
       repository_failed = false;
       repository_modified = true;
     }
@@ -705,22 +688,17 @@ ManagedFileListWidget::OnDownloadError(Path path_relative,
   if (name == nullptr)
     return;
 
-  const WideToUTF8Converter name2(name.c_str());
-  if (!name2.IsValid())
-    return;
-
-  const std::string name3(name2);
 
   {
     const std::lock_guard lock{mutex};
 
-    downloads.erase(name3);
+    downloads.erase(name.c_str());
 
     // TODO: store the error
-    if (StringIsEqual(name2, "repository")) {
+    if (StringIsEqual(name.c_str(), "repository")) {
       repository_failed = true;
     } else
-      failures.insert(name3);
+      failures.insert(name.c_str());
   }
 
   download_notify.SendNotification();

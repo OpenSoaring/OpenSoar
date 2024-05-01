@@ -7,7 +7,6 @@
 #include "Util.hxx"
 #include "system/Path.hpp"
 #include "Replay/Replay.hpp"
-#include "util/ConvertString.hpp"
 #include "Components.hpp"
 #include "BackendComponents.hpp"
 
@@ -61,8 +60,8 @@ l_replay_start(lua_State *L)
   if (lua_gettop(L) != 1)
     return luaL_error(L, "Invalid parameters");
 
-  const UTF8ToWideConverter filename(luaL_checkstring(L, 1));
-  if (filename.IsValid()) {
+  const char *filename = luaL_checkstring(L, 1);
+  if (filename) {
     Path p(filename);
 
     try {

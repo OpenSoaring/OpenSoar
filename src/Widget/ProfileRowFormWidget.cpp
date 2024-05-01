@@ -7,7 +7,6 @@
 #include "Form/DataField/Date.hpp"
 #include "Profile/Profile.hpp"
 #include "LocalPath.hpp"
-#include "util/ConvertString.hpp"
 #include "Formatter/TimeFormatter.hpp"
 
 WndProperty *
@@ -85,15 +84,14 @@ RowFormWidget::SaveValueFileReader(unsigned i,
   if (contracted != nullptr)
     new_value = contracted;
 
-  const WideToUTF8Converter new_value2(new_value.c_str());
-  if (!new_value2.IsValid())
+  if (!new_value.c_str())
     return false;
 
   const char *old_value = Profile::Get(profile_key, "");
-  if (StringIsEqual(old_value, new_value2))
+  if (StringIsEqual(old_value, new_value.c_str()))
     return false;
 
-  Profile::Set(profile_key, new_value2);
+  Profile::Set(profile_key, new_value.c_str());
   return true;
 }
 

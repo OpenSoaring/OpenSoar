@@ -25,7 +25,6 @@
 #include "net/http/Init.hpp"
 #include "lib/curl/Global.hxx"
 #include "util/Compiler.h"
-#include "util/ConvertString.hpp"
 #include "UIGlobals.hpp"
 #include "Components.hpp"
 #include "DataComponents.hpp"
@@ -123,12 +122,12 @@ WeGlideTasksPanel::OnPaintItem(Canvas &canvas, const PixelRect rc,
   assert(idx <= list.size());
   const auto &info = list[idx];
 
-  if (UTF8ToWideConverter w{info.name.c_str()}; w.IsValid())
-    row_renderer.DrawFirstRow(canvas, rc, w);
+  if (info.name.c_str())
+    row_renderer.DrawFirstRow(canvas, rc, info.name.c_str());
 
   if (selection != WeGlideTaskSelection::USER)
-    if (UTF8ToWideConverter w{info.user_name.c_str()}; w.IsValid())
-      row_renderer.DrawSecondRow(canvas, rc, w);
+    if (info.user_name.c_str())
+      row_renderer.DrawSecondRow(canvas, rc, info.user_name.c_str());
 
   row_renderer.DrawRightSecondRow(canvas, rc,
                                   FormatUserDistanceSmart(info.distance));

@@ -11,7 +11,6 @@
 #include "Device/Config.hpp"
 #include "system/Args.hpp"
 #include "util/StringStrip.hxx"
-#include "util/ConvertString.hpp"
 #include "util/PrintException.hxx"
 #include "Operation/ConsoleOperationEnvironment.hpp"
 #include "io/async/GlobalAsioThread.hpp"
@@ -40,8 +39,7 @@ ChangePilot(FlarmDevice &flarm, OperationEnvironment &env)
     StripRight(pilot_name);
     fprintf(stdout, "Setting pilot name to \"%s\" ...\n", pilot_name);
 
-    const UTF8ToWideConverter value(pilot_name);
-    if (flarm.SetPilot(value, env))
+    if (flarm.SetPilot(pilot_name, env))
       fprintf(stdout, "Pilot name set to \"%s\"\n", pilot_name);
     else
       fprintf(stdout, "Operation failed!\n");
@@ -70,8 +68,7 @@ ChangeCoPilot(FlarmDevice &flarm, OperationEnvironment &env)
     StripRight(copilot_name);
     fprintf(stdout, "Setting copilot name to \"%s\" ...\n", copilot_name);
 
-    const UTF8ToWideConverter value(copilot_name);
-    if (flarm.SetCoPilot(value, env))
+    if (flarm.SetCoPilot(copilot_name, env))
       fprintf(stdout, "CoPilot name set to \"%s\"\n", copilot_name);
     else
       fprintf(stdout, "Operation failed!\n");
@@ -100,8 +97,7 @@ ChangePlaneType(FlarmDevice &flarm, OperationEnvironment &env)
     StripRight(plane_type);
     fprintf(stdout, "Setting plane type to \"%s\" ...\n", plane_type);
 
-    const UTF8ToWideConverter value(plane_type);
-    if (flarm.SetPlaneType(value, env))
+    if (flarm.SetPlaneType(plane_type, env))
       fprintf(stdout, "Plane type set to \"%s\"\n", plane_type);
     else
       fprintf(stdout, "Operation failed!\n");
@@ -130,8 +126,7 @@ ChangeRegistration(FlarmDevice &flarm, OperationEnvironment &env)
     StripRight(registration);
     fprintf(stdout, "Setting plane registration to \"%s\" ...\n", registration);
 
-    const UTF8ToWideConverter value(registration);
-    if (flarm.SetPlaneRegistration(value, env))
+    if (flarm.SetPlaneRegistration(registration, env))
       fprintf(stdout, "Plane registration set to \"%s\"\n", registration);
     else
       fprintf(stdout, "Operation failed!\n");
@@ -160,8 +155,7 @@ ChangeCompetitionId(FlarmDevice &flarm, OperationEnvironment &env)
     StripRight(id);
     fprintf(stdout, "Setting competition id to \"%s\" ...\n", id);
 
-    const UTF8ToWideConverter value(id);
-    if (flarm.SetCompetitionId(value, env))
+    if (flarm.SetCompetitionId(id, env))
       fprintf(stdout, "competition id set to \"%s\"\n", id);
     else
       fprintf(stdout, "Operation failed!\n");
@@ -190,8 +184,7 @@ ChangeCompetitionClass(FlarmDevice &flarm, OperationEnvironment &env)
     StripRight(comp_class);
     fprintf(stdout, "Setting competition class to \"%s\" ...\n", comp_class);
 
-    const UTF8ToWideConverter value(comp_class);
-    if (flarm.SetCompetitionClass(value, env))
+    if (flarm.SetCompetitionClass(comp_class, env))
       fprintf(stdout, "Competition class set to \"%s\"\n", comp_class);
     else
       fprintf(stdout, "Operation failed!\n");

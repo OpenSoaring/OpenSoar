@@ -9,7 +9,6 @@
 #include "co/Task.hxx"
 #include "system/FileUtil.hpp"
 #include "util/StaticString.hxx"
-#include "util/ConvertString.hpp"
 #include "util/Macros.hpp"
 #include "LocalPath.hpp"
 
@@ -129,17 +128,12 @@ PCMet::DownloadOverlay(const OverlayInfo &info, BrokenDateTime now_utc,
 
   const auto cache_path = MakeCacheDirectory("pc_met");
   auto path = AllocatedPath::Build(cache_path,
-                                   UTF8ToWideConverter(url.c_str() + sizeof(PCMET_FTP)));
+                                   url.c_str() + sizeof(PCMET_FTP));
 
   {
-    const WideToUTF8Converter username(settings.ftp_credentials.username);
-    const WideToUTF8Converter password(settings.ftp_credentials.password);
-
-    const auto ignored_response = co_await
-      Net::CoDownloadToFile(curl, url,
-                            username, password,
-                            path, nullptr,
-                            progress);
+    const auto ignored_response = co_await Net::CoDownloadToFile(
+        curl, url, settings.ftp_credentials.username,
+        settings.ftp_credentials.password, path, nullptr, progress);
   }
 
   BrokenDateTime run_time(now_utc.GetDate(), BrokenTime(run_hour, 0));

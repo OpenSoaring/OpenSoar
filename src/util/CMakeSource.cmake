@@ -1,6 +1,5 @@
 set(_SOURCES
         util/ASCII.cxx
-        util/ConvertString.cpp
         util/CRC16CCITT.cpp
         util/EscapeBackslash.cpp
         util/Exception.cxx

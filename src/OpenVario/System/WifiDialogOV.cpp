@@ -18,7 +18,6 @@
 #include "ui/event/PeriodicTimer.hpp"
 #include "util/HexFormat.hxx"
 #include "util/StaticString.hxx"
-#include "util/ConvertString.hpp"
 
 #include "LocalPath.hpp"
 #include "LogFile.hpp"
@@ -248,8 +247,8 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
     "Open",
   };
 
-  row_renderer.DrawFirstRow(canvas, rc, _W(info.ssid));
-  row_renderer.DrawSecondRow(canvas, rc,_W(info.bssid));
+  row_renderer.DrawFirstRow(canvas, rc, info.ssid);
+  row_renderer.DrawSecondRow(canvas, rc,info.bssid);
 
   const char *state = nullptr;
   StaticString<40> state_buffer;
@@ -304,7 +303,7 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
 
   if (info.signal_level >= 0) {
     StaticString<32> text;
-    text.UnsafeFormat("%s %u", _W(wifi_security[info.security]),
+    text.UnsafeFormat("%s %u", wifi_security[info.security],
                       info.signal_level);
     row_renderer.DrawRightSecondRow(canvas, rc, text);
   }
@@ -315,13 +314,13 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
 void WifiListWidget::WifiDisconnect( const char *ssid) {
   auto network = FindVisibleBySSID(ssid);
 //  StaticString<0x100> base_id;
-//  base_id.Format("wifi_%s_%s_managed_", _W(network->mac_id.c_str()),
-//                 _W(network->bssid.c_str()));
+//  base_id.Format("wifi_%s_%s_managed_", network->mac_id.c_str()),
+//                 network->bssid.c_str()));
 #if defined(IS_OPENVARIO_CB2)
   // disconnect port
   Run(Path("wifi-disconnect.txt"), connmanctl, "disconnect", network->base_id.c_str());
 #endif
-  ShowMessageBox(_W(network->base_id.c_str()), "Disconnected", MB_OK);
+  ShowMessageBox(network->base_id.c_str(), "Disconnected", MB_OK);
 }
 
 void WifiListWidget::WifiConnect(enum WifiSecurity security,
@@ -329,13 +328,13 @@ void WifiListWidget::WifiConnect(enum WifiSecurity security,
                                         const char *ssid, const char *psk)
 {
   {
-//    ShowMessageBox(_W(psk), "Wifi-Passphrase", MB_OK);
+//    ShowMessageBox(psk, "Wifi-Passphrase", MB_OK);
 
     auto network = FindVisibleBySSID(ssid);
     std::cout << "Test: " << 1 << std::endl;
 //    StaticString<0x100> base_id;
-//    base_id.Format("wifi_%s_%s_managed_", _W(network->mac_id.c_str()),
-//                   _W(network->bssid.c_str()));
+//    base_id.Format("wifi_%s_%s_managed_", network->mac_id.c_str()),
+//                   network->bssid.c_str());
 
 //    std::cout << "Test: " << 2 << std::endl;
 //    switch (network->security) {
@@ -366,27 +365,27 @@ void WifiListWidget::WifiConnect(enum WifiSecurity security,
       IPv6.privacy=disabled
 #endif // WithWPA
     StaticString<0x1000> buffer;
-    buffer.Format("[%s]\n", _W(network->base_id.c_str()));
-    buffer.AppendFormat("Type=%s\n", _W("wifi"));
-    buffer.AppendFormat("Name=%s\n", _W(ssid));
+    buffer.Format("[%s]\n", network->base_id.c_str());
+    buffer.AppendFormat("Type=%s\n", "wifi");
+    buffer.AppendFormat("Name=%s\n", ssid);
     buffer.AppendFormat("SSID=%s\n",
-                        _W(network->bssid.c_str())); // _W(network->bssid);
+                        network->bssid.c_str()); // network->bssid;
     buffer.AppendFormat("Frequency=%d\n", 2412);
     // buffer.AppendFormat("Favorite=true\n");
     buffer.append("Favorite=true\n");
     buffer.append("AutoConnect=true\n");
-    buffer.AppendFormat("Passphrase=%s\n", _W(psk));
+    buffer.AppendFormat("Passphrase=%s\n", psk);
     //    buffer.AppendFormat("Modified=2024-02-01T12:38:31Z\n");
     buffer.AppendFormat("IPv4.method=%s\n", "dhcp");
     //    buffer.AppendFormat("IPv4.DHCP.LastAddress=192.168.178.32\n");
     buffer.append("IPv6.method=off\n");
     buffer.append("IPv6.privacy=disabled\n");
     std::cout << "Test: " << 6 << std::endl;
-    std::cout << _A(buffer.c_str()) << std::endl;
+    std::cout << buffer << std::endl;
     ShowMessageBox(buffer.c_str(), "WifiConnect", MB_OK);
     std::cout << "Test: " << 7 << std::endl;
 
-    Path base_id(_W(network->base_id.c_str()));
+    Path base_id(network->base_id.c_str());
 
 #if defined(IS_OPENVARIO_CB2)
     // save on the connman setting location:
@@ -403,7 +402,7 @@ void WifiListWidget::WifiConnect(enum WifiSecurity security,
     else
       Directory::Create(ssid_path);
     File::CreateExclusive(setting_file);
-    File::WriteExisting(setting_file, _A(buffer.c_str()));
+    File::WriteExisting(setting_file, buffer);
 
 #if defined(IS_OPENVARIO_CB2)
     // disable wifi
@@ -507,7 +506,7 @@ WifiListWidget::Connect()
     const auto ssid = info.ssid;
 
     StaticString<256> caption;
-    caption.Format(_("Passphrase of network '%s'"), _W(ssid.c_str()));
+    caption.Format(_("Passphrase of network '%s'"), ssid.c_str());
 
     StaticString<32> passphrase;
     passphrase.clear();
@@ -517,7 +516,7 @@ WifiListWidget::Connect()
       return;
 
     WifiConnect(info.security, /* wpa_supplicant, */ info.ssid,
-        _A(passphrase.c_str()));
+        passphrase);
 //  } else {
 //    wpa_supplicant.RemoveNetwork(info.id);
 //    wpa_supplicant.SaveConfig();
