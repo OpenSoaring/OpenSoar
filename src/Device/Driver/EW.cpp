@@ -14,7 +14,6 @@
 #include "NMEA/Checksum.hpp"
 #include "Operation/Operation.hpp"
 #include "util/TruncateString.hpp"
-#include "util/ConvertString.hpp"
 #include "util/ScopeExit.hxx"
 
 #include <algorithm>
@@ -197,12 +196,11 @@ EWDevice::AddWaypoint(const Waypoint &way_point, OperationEnvironment &env)
     return false;
 
   // copy at most 6 chars
-  const WideToUTF8Converter name_utf8(way_point.name.c_str());
-  if (!name_utf8.IsValid())
+  if (way_point.name.empty())
     return false;
 
   char IDString[12];
-  char *end = CopyTruncateString(IDString, 7, name_utf8);
+  char *end = CopyTruncateString(IDString, 7, way_point.name.c_str());
 
   // fill up with spaces
   std::fill(end, IDString + 6, ' ');

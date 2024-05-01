@@ -16,7 +16,6 @@
 #include "io/async/GlobalAsioThread.hpp"
 #include "io/async/AsioThread.hpp"
 #include "io/NullDataHandler.hpp"
-#include "util/ConvertString.hpp"
 #include "util/PrintException.hxx"
 
 #include <stdio.h>
@@ -70,8 +69,7 @@ try {
     const DeviceRegister *driver;
     for (unsigned i = 0; (driver = GetDriverByIndex(i)) != NULL; ++i) {
       if (driver->IsLogger()) {
-        WideToUTF8Converter driver_name(driver->name);
-        usage.AppendFormat("\n\t%s", (const char *)driver_name);
+        usage.AppendFormat("\n\t%s", driver->name);
       }
     }
   }

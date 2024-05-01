@@ -16,7 +16,6 @@
 #include "LocalPath.hpp"
 #include "Compatibility/path.h"
 #include "system/Path.hpp"
-#include "util/ConvertString.hpp"
 #include "Airspace.hpp"
 #include "Task.hpp"
 #include "Settings.hpp"
@@ -50,8 +49,7 @@ Lua::NewFullState()
   InitInputEvent(L);
 
   {
-    SetPackagePath(L,
-                   WideToUTF8Converter(LocalPath("lua" DIR_SEPARATOR_S "?.lua").c_str()));
+    SetPackagePath(L, LocalPath("lua" DIR_SEPARATOR_S "?.lua").c_str());
   }
   return L;
 }

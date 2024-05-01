@@ -26,7 +26,6 @@
 #include "ui/event/Timer.hpp"
 #include "ui/window/Init.hpp"
 #include "util/ScopeExit.hxx"
-#include "util/ConvertString.hpp"
 
 #include "OpenVario/SystemSettingsWidget.hpp"
 

@@ -16,7 +16,6 @@
 #include "NMEA/Info.hpp"
 #include "thread/Mutex.hxx"
 #include "util/StringAPI.hxx"
-#include "util/ConvertString.hpp"
 #include "util/Exception.hxx"
 #include "Logger/NMEALogger.hpp"
 #include "Language/Language.hpp"
@@ -391,15 +390,15 @@ try {
     char name_buffer[64];
     const char *name = config.GetPortName(name_buffer, 64);
 
-    LogError(e, _A(name));
+    LogError(e, name);
 
-    const auto _msg = GetFullMessage(e);
-    if (const UTF8ToWideConverter what{_msg.c_str()}; what.IsValid()) {
-      LockSetErrorMessage(what);
-
+    
+    // const std::string_view _msg(GetFullMessage(e));
+    const auto what = GetFullMessage(e);
+    if (what.c_str() != nullptr) {
       StaticString<256> msg;
-      msg.Format("%s: %s (%s)", _("Unable to open port"), name,
-                 (const char *)what);
+      LockSetErrorMessage(what.c_str());
+      msg.Format("%s: %s (%s)", _("Unable to open port"), name, what.c_str());
       env.SetErrorMessage(msg);
     }
 
@@ -437,11 +436,10 @@ try {
   const auto e = std::current_exception();
   LogError(e);
 
-  const auto _msg = GetFullMessage(e);
-
-  if (const UTF8ToWideConverter msg{_msg.c_str()}; msg.IsValid()) {
-    LockSetErrorMessage(msg);
-    env.SetErrorMessage(msg);
+  const auto msg = GetFullMessage(e);
+  if (msg.c_str() != nullptr) {
+    LockSetErrorMessage(msg.c_str());
+    env.SetErrorMessage(msg.c_str());
   }
 
   return false;

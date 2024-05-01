@@ -7,7 +7,6 @@
 #include "K6BtPort.hpp"
 #include "Device/Config.hpp"
 #include "LogFile.hpp"
-#include "util/ConvertString.hpp"
 #include "TCPClientPort.hpp"
 
 #ifdef ANDROID
@@ -183,12 +182,11 @@ OpenPortInternal(EventLoop &event_loop, Cares::Channel &cares,
     break;
 
   case DeviceConfig::PortType::TCP_CLIENT: {
-    const WideToUTF8Converter ip_address(config.ip_address);
-    if (!ip_address.IsValid())
+    if (config.ip_address.empty())
       throw std::runtime_error("No IP address configured");
 
-    return std::make_unique<TCPClientPort>(event_loop, cares,
-                                           ip_address, config.tcp_port,
+    return std::make_unique<TCPClientPort>(event_loop, cares, config.ip_address,
+                                           config.tcp_port,
                                            listener, handler);
   }
 

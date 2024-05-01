@@ -19,7 +19,6 @@
 #include <string.h>
 #ifdef _WIN32
   // TODO(August2111): needs work!
-#include "util/ConvertString.hpp"
 typedef size_t pid_t;
 #include <sstream>
 #else

@@ -3,13 +3,12 @@
 
 #include "Operation/Operation.hpp"
 #include "system/Sleep.h"
-#include "util/ConvertString.hpp"
 #include "util/Exception.hxx"
 
 void
 OperationEnvironment::SetError(std::exception_ptr e) noexcept
 {
-  SetErrorMessage(UTF8ToWideConverter(GetFullMessage(e).c_str()));
+  SetErrorMessage(GetFullMessage(e).c_str());
 }
 
 bool
