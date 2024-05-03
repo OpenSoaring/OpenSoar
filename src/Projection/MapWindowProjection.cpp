@@ -9,25 +9,26 @@
 #include <cassert>
 
 static constexpr unsigned ScaleList[] = {
-  100,
-  200,
-  300,
-  500,
-  1000,
-  2000,
-  3000,
-  5000,
-  10000,
-  20000,
-  30000,
-  50000,
-  75000,
-  100000,
-  150000,
-  200000,
-  300000,
-  500000,
-  1000000,
+  100,           // 
+  200,           // 2
+  300,           // 1.5
+  500,           // 1.67
+  1000,          // 2
+  2000,          // 2
+  3000,          // 1.5
+
+  5000,          // 1.67    =   2.5
+  10000,         // 2       =   5
+  20000,         // 2       =  10
+  30000,         // 1.5     =  15
+  50000,         // 1.67    =  25
+  75000,         // 1.5     =  38 (37.5)
+  100000,        // 1.33    =  50
+  150000,        // 1.5     =  75
+  200000,        // 1.33    = 100
+  300000,        // 1.5     = 150
+  500000,        // 1.67    = 250
+  1000000,       // 2       = 500
 };
 
 static constexpr unsigned ScaleListCount = std::size(ScaleList);
@@ -56,7 +57,12 @@ double
 MapWindowProjection::StepMapScale(const double scale, int Step) const noexcept
 {
   int i = FindMapScale(scale) + Step;
+#ifdef IS_OPENVARIO
+  // don't use the last scale value on OpenVario (Performance?)
+  i = std::clamp(i, 0, (int)ScaleListCount - 2);
+#else
   i = std::clamp(i, 0, (int)ScaleListCount - 1);
+#endif
   return CalculateMapScale(i);
 }
 
