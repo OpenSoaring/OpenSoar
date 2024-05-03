@@ -79,7 +79,7 @@ class PortPickerWidget
   ComboList combo_list;
 
 #ifdef ANDROID
-  Java::LocalObject detect_listener;
+  Java::LocalObject bluetooth_detect_listener;
   Java::LocalObject usb_serial_detect_listener;
 
   struct DetectedPort {
@@ -141,9 +141,8 @@ public:
 #ifdef ANDROID
     if (bluetooth_helper != nullptr) {
       const auto env = Java::GetEnv();
-      if (bluetooth_helper->HasLe(env))
-        detect_listener =
-          bluetooth_helper->AddDetectDeviceListener(env, *this);
+      bluetooth_detect_listener =
+        bluetooth_helper->AddDetectDeviceListener(env, *this);
     }
 
     if (usb_serial_helper != nullptr) {
@@ -156,10 +155,10 @@ public:
 
   void Hide() noexcept override {
 #ifdef ANDROID
-    if (detect_listener) {
-      bluetooth_helper->RemoveDetectDeviceListener(detect_listener.GetEnv(),
-                                                   detect_listener);
-      detect_listener = {};
+    if (bluetooth_detect_listener) {
+      bluetooth_helper->RemoveDetectDeviceListener(
+          bluetooth_detect_listener.GetEnv(), bluetooth_detect_listener);
+      bluetooth_detect_listener = {};
     }
 
     if (usb_serial_detect_listener) {
