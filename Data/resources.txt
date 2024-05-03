@@ -25,7 +25,7 @@ bitmap_icon_scaled IDB_AIRPORT_MARGINAL2 "alt2_marginal_airport"
 bitmap_icon_scaled IDB_AIRPORT_UNREACHABLE2 "alt2_landable_airport"
 
 #ifdef USE_GDI
-hatch_bitmap IDB_AIRSPACE0 "airspace0"
+hatch_bitmap IDB_AIRSPACE0 "airspace3"
 hatch_bitmap IDB_AIRSPACE1 "airspace1"
 hatch_bitmap IDB_AIRSPACE2 "airspace2"
 hatch_bitmap IDB_AIRSPACE3 "airspace3"
