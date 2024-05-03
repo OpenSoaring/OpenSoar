@@ -317,7 +317,7 @@ InputEvents::eventDeclutterLabels(const char *misc)
     "all",
     "task+landables",
     "task",
-    "none"
+    "none",
     "task+airfields",
   };
 
