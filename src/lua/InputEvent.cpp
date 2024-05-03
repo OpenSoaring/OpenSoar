@@ -172,14 +172,14 @@ public:
 
     else if (StringIsEqual(name, "gesture_", 8)) {
       // scan for gesture
-      if (name + 8) {
+      if (strlen(name) > 8) {
         auto *input_event = new LuaInputEvent(L, 2);
         input_event->AttachGesture(name + 8);
         return 1;
       }
     } else if (StringIsEqual(name, "key_", 4)) {
         // scan for key code
-      if (name + 4) {
+      if (strlen(name) > 4) {
         const unsigned code = ParseKeyCode(name + 4);
         auto *input_event = new LuaInputEvent(L, 2);
         input_event->AttachKey(code);
@@ -220,13 +220,13 @@ public:
       return luaL_error(L, "Invalid parameters");
 
     else if (StringIsEqual(name, "gesture_", 8)) {
-      if (name + 8) {
+      if (strlen(name) > 8) {
         event_store_gesture.Clear(std::string(name + 8));
         return 1;
       }
     } else if (StringIsEqual(name, "key_", 4)) {
       // scan for key code
-      if (name + 4) {
+      if (strlen(name) > 4) {
         const unsigned code = ParseKeyCode(name + 4);
         event_store_key.Clear(code);
         return 1;
