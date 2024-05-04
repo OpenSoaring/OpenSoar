@@ -16,12 +16,14 @@ on:
       - master
       - dev-branch
 env:
-  TARGET: manual
+  TARGET:
   TARGET_FINAL: OpenSoar-docs
   TARGET_EXT: pdf
+  NDK:
 jobs:
   opensoar-compile:
     runs-on: ubuntu-latest
+
     steps:
      - id: checkout
        uses: actions/checkout@v4
@@ -34,14 +36,27 @@ jobs:
      - name: find githash
        run: |
          echo "git_hash=$(git rev-parse --short $GITHUB_SHA)" >> $GITHUB_ENV
-     - name: XCSoar generate Docs
-       uses: addnab/docker-run-action@v3
-       with:
-         image: ghcr.io/${{ steps.repository.outputs.lowercase }}/opensoar-build:latest
-         options: -v ${{ github.workspace }}:/opt/opensoar
-         run: |
-           cd /opt/opensoar
-           make manual V=2
+         
+     - name: Install dependencies
+       run: |
+         sudo apt-get update
+         sudo apt-get install -y --no-install-recommends \
+           make \
+           python3 \
+           librsvg2-bin xsltproc \
+           texlive \
+           texlive-latex-extra \
+           texlive-luatex \
+           texlive-lang-french \
+           texlive-lang-polish \
+           texlive-lang-portuguese \
+           texlive-lang-german \
+           liblocale-po-perl
+
+     - name: OpenSoar generate Docs
+       run: |
+         make manual V=2
+
      - name: upload artifact
        uses: actions/upload-artifact@v4
        with:
