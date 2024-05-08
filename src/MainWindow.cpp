@@ -773,12 +773,15 @@ MainWindow::OnClose() noexcept
 
   if (UIActions::CheckShutdown()) {
     PostQuit();
-  }
 #ifdef IS_OPENVARIO
-  if (UI::TopWindow::GetExitValue() == 0)
-  	// normal exit code on OpenVario (for Test purpose!)
-    UI::TopWindow::SetExitValue(EXIT_NORMAL);   // unix has only Byte 10000);
+    if (UI::TopWindow::GetExitValue() == 0)
+      // normal exit code on OpenVario (for Test purpose!)
+      UI::TopWindow::SetExitValue(EXIT_NORMAL); // unix has only Byte 10000);
 #endif
+  } else {
+    // No shutdown/restart - set the exit value back to untouched
+    UI::TopWindow::SetExitValue(0);
+  }
   return true;
 }
 
