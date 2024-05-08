@@ -88,17 +88,20 @@ type=key
 data=ESCAPE
 event=Mode default
 
+# Shutdown
 mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
 type=key
 data=X
 event=Shutdown shutdown
 event=Mode default
 
+# Reboot
 mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
 type=key
 data=R
 event=Shutdown reboot
 event=Mode default
+
 
 mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
 type=key
@@ -106,10 +109,18 @@ data=Y
 event=Exit restart
 event=Mode default
 
+# internal New Start
 mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
 type=key
 data=N
 event=Exit newstart
+event=Mode default
+
+# normal Quit = program end
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
+type=key
+data=Q
+event=Exit system
 event=Mode default
 
 mode=default pantype=key
