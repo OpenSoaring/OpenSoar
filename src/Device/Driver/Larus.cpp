@@ -248,6 +248,9 @@ LarusDevice::PLARD(NMEAInputLine &line, [[maybe_unused]] NMEAInfo &info)
      * 2)  a = (M)easured or (E)stimated
      * 3)  Checksum
     */
+
+   // Remark Simsys: As far as I understand it, XCSoar does not support that 
+   // the air density is provided from the outside.
   double value;
   if (line.ReadChecked(value)) {
     switch (line.ReadOneChar()) {
@@ -395,7 +398,7 @@ LarusDevice::PLARS(NMEAInputLine &line, NMEAInfo &info)
         return info.settings.ProvideMacCready(value, info.clock);
       } else if (field == "BUGS"sv) {
         // - value is bugs in % [0-30], OpenSoar wants [0.5 .. 1.00]
-        return info.settings.ProvideBugs((1.0 - value)/100.0, info.clock);
+        return info.settings.ProvideBugs(1.0 - value/100.0, info.clock);
       } else if (field == "BAL"sv) {
         // - value is ballast overload [1.00..1.60]
         return info.settings.ProvideBallastOverload(value, info.clock);
@@ -417,7 +420,7 @@ LarusDevice::PutBugs(double bugs, OperationEnvironment &env)
   // OpenSoar/XCSoar has values between [0.5 ..1.0]
   if ((bugs < 0.7) || (bugs > 1.0))
     return false;
-  return SendCmd("BUGS,%u", uround((1.0-bugs) * 100), env);
+  return SendCmd("BUGS,%0.0f", (1.0-bugs) * 100.0, env);
 }
 
 //-----------------------------------------------------------------------------
