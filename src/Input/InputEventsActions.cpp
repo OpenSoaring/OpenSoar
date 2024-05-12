@@ -637,6 +637,12 @@ InputEvents::eventExit([[maybe_unused]] const char *misc)
 #if defined(IS_OPENVARIO)    
     } else if (StringIsEqual(misc, "newstart")) {
       UI::TopWindow::SetExitValue(EXIT_NEWSTART);
+#if 1  // Deprecated: the support in openvario.xci should be removed..
+    } else if (StringIsEqual(misc, "reboot")) {
+      UI::TopWindow::SetExitValue(EXIT_REBOOT);
+    } else if (StringIsEqual(misc, "shutdown")) {
+      UI::TopWindow::SetExitValue(EXIT_SHUTDOWN);
+#endif  // if 1
 #endif
     }
     UIActions::SignalShutdown(force);
