@@ -31,7 +31,12 @@ static constexpr unsigned ScaleList[] = {
   1000000,       // 2       = 500
 };
 
-static constexpr unsigned ScaleListCount = std::size(ScaleList);
+#ifdef IS_OPENVARIO
+// don't use the last scale value on OpenVario (Performance?)
+  static constexpr unsigned ScaleListCount = std::size(ScaleList) - 1;
+#else
+  static constexpr unsigned ScaleListCount = std::size(ScaleList);
+#endif
 
 bool
 MapWindowProjection::WaypointInScaleFilter(const Waypoint &way_point) const noexcept
@@ -57,12 +62,7 @@ double
 MapWindowProjection::StepMapScale(const double scale, int Step) const noexcept
 {
   int i = FindMapScale(scale) + Step;
-#ifdef IS_OPENVARIO
-  // don't use the last scale value on OpenVario (Performance?)
-  i = std::clamp(i, 0, (int)ScaleListCount - 2);
-#else
   i = std::clamp(i, 0, (int)ScaleListCount - 1);
-#endif
   return CalculateMapScale(i);
 }
 
