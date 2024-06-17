@@ -10,7 +10,6 @@
 #include <vector>
 #include <tchar.h>
 #include "Operation/VerboseOperationEnvironment.hpp"
-#include "util/tstring.hpp"
 #include "time/BrokenDateTime.hpp"
 #include "thread/StandbyThread.hpp"
 #include "ui/event/Timer.hpp"
@@ -29,8 +28,8 @@ public:
   SkysightImageFile(Path _filename, Path _path);
   Path fullpath;
   Path filename;
-  tstring metric;
-  tstring region;
+  std::string metric;
+  std::string region;
   uint64_t datetime;
   bool is_valid;
   uint64_t mtime;
@@ -38,23 +37,23 @@ public:
 
 class Skysight final: private NullBlackboardListener {
 public:
-  tstring region = "EUROPE";
+  std::string region = "EUROPE";
   DisplayedMetric displayed_metric;
   CurlGlobal *curl;
 
   Skysight(CurlGlobal &_curl);
 
-  static void APIInited(const tstring details, const bool success,
-			const tstring layer_id, const uint64_t time_index);
-  static void DownloadComplete(const tstring details, const bool success,
-			       const tstring layer_id,
+  static void APIInited(const std::string details, const bool success,
+			const std::string layer_id, const uint64_t time_index);
+  static void DownloadComplete(const std::string details, const bool success,
+			       const std::string layer_id,
 			       const uint64_t time_index);
 
-  std::map<tstring, tstring> GetRegions() {
+  std::map<std::string, std::string> GetRegions() {
     return api->regions;
   }
 
-  tstring GetRegion() {
+  std::string GetRegion() {
     return api->region;
   }
 
@@ -62,11 +61,11 @@ public:
     return api->GetMetric(index);
   }
 
-  SkysightMetric GetMetric(const tstring id) {
+  SkysightMetric GetMetric(const std::string id) {
     return api->GetMetric(id);
   }
 
-  bool MetricExists(const tstring id) {
+  bool MetricExists(const std::string id) {
     return api->MetricExists(id);
   }
 
@@ -82,23 +81,23 @@ public:
   void LoadActiveMetrics();
 
   void RemoveActiveMetric(int index);
-  void RemoveActiveMetric(const tstring id);
+  void RemoveActiveMetric(const std::string id);
   bool ActiveMetricsUpdating();
-  bool GetActiveMetricState(tstring metric_name, SkysightActiveMetric &m);
-  void SetActveMetricUpdateState(const tstring id, bool state = false);
-  void RefreshActiveMetric(tstring id);
+  bool GetActiveMetricState(std::string metric_name, SkysightActiveMetric &m);
+  void SetActveMetricUpdateState(const std::string id, bool state = false);
+  void RefreshActiveMetric(std::string id);
   SkysightActiveMetric GetActiveMetric(int index);
-  SkysightActiveMetric GetActiveMetric(const tstring id);
+  SkysightActiveMetric GetActiveMetric(const std::string id);
   int NumActiveMetrics();
   bool ActiveMetricsFull();
-  bool IsActiveMetric(const TCHAR *const id);
-  int AddActiveMetric(const TCHAR *const id);
-  bool DownloadActiveMetric(tstring id);
-  bool DisplayActiveMetric(const TCHAR *const id = nullptr);
+  bool IsActiveMetric(const char *const id);
+  int AddActiveMetric(const char *const id);
+  bool DownloadActiveMetric(std::string id);
+  bool DisplayActiveMetric(const char *const id = nullptr);
 
   static inline 
   AllocatedPath GetLocalPath() {
-    return MakeLocalPath(_T("skysight"));
+    return MakeLocalPath("skysight");
   }
 
   BrokenDateTime FromUnixTime(uint64_t t);
@@ -111,8 +110,8 @@ protected:
   static Skysight *self;
 
 private:
-  tstring email;
-  tstring password;
+  std::string email;
+  std::string password;
   bool update_flag = false;
   BrokenDateTime curr_time;
 
@@ -120,11 +119,11 @@ private:
   virtual void OnCalculatedUpdate(const MoreData &basic,
                                   const DerivedInfo &calculated) override;
 
-  bool SetDisplayedMetric(const TCHAR *const id,
+  bool SetDisplayedMetric(const char *const id,
 			  BrokenDateTime forecast_time = BrokenDateTime());
   BrokenDateTime GetForecastTime(BrokenDateTime curr_time);
   std::vector<SkysightActiveMetric> active_metrics;
 
-  std::vector<SkysightImageFile> ScanFolder(tstring search_pattern);
+  std::vector<SkysightImageFile> ScanFolder(std::string search_pattern);
   void CleanupFiles();
 };

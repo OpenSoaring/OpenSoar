@@ -8,7 +8,6 @@
 #include "system/FileUtil.hpp"
 #include "util/StringCompare.hxx"
 #include "util/Macros.hpp"
-#include "util/tstring.hpp"
 #include <tchar.h>
 #include <string>
 #include <vector>
@@ -44,7 +43,7 @@
  * fix variable style/case,
  * reduce use of STL strings
  * Can use AtScopeExit for object cleanup in tiff generation
- * Use consistent string conventions ( _()?,  _T()?s )
+ * Use consistent string conventions ( _()? )
  * replace #defines in skysight.hpp with better c++ idioms
 * Use static_cast<> instead of c casts
  */
@@ -65,8 +64,8 @@ SkysightImageFile::SkysightImageFile(Path _filename) {
 SkysightImageFile::SkysightImageFile(Path _filename, Path _path) { 
   filename = _filename;
   fullpath = _path;
-  region = tstring(_("INVALID"));
-  metric = tstring(_("INVALID"));
+  region = std::string(_("INVALID"));
+  metric = std::string(_("INVALID"));
   datetime = 0;
   is_valid = false;
   mtime = 0;
@@ -75,21 +74,21 @@ SkysightImageFile::SkysightImageFile(Path _filename, Path _path) {
   if (!filename.EndsWithIgnoreCase(".tif"))
     return;
 
-  tstring file_base = filename.GetBase().c_str();
+  std::string file_base = filename.GetBase().c_str();
 
   std::size_t p = file_base.find(_("-"));
-  if (p == tstring::npos)
+  if (p == std::string::npos)
     return;
 
-  tstring reg = file_base.substr(0, p);
-  tstring rem = file_base.substr(p+1);
+  std::string reg = file_base.substr(0, p);
+  std::string rem = file_base.substr(p+1);
 
   p = rem.find(_("-"));
-  if (p == tstring::npos)
+  if (p == std::string::npos)
     return;
-  tstring met = rem.substr(0, p);
+  std::string met = rem.substr(0, p);
 
-  tstring dt = rem.substr(p+1);
+  std::string dt = rem.substr(p+1);
   unsigned yy = stoi(dt.substr(0, 4));
   unsigned mm = stoi(dt.substr(4, 2));
   unsigned dd = stoi(dt.substr(6, 2));
@@ -114,7 +113,7 @@ SkysightImageFile::SkysightImageFile(Path _filename, Path _path) {
  *
  */
 bool
-Skysight::IsActiveMetric(const TCHAR *const id)
+Skysight::IsActiveMetric(const char *const id)
 {
   for (auto &i : active_metrics)
     if (!i.metric->id.compare(id))
@@ -130,7 +129,7 @@ Skysight::ActiveMetricsFull()
 }
 
 int
-Skysight::AddActiveMetric(const TCHAR *const id)
+Skysight::AddActiveMetric(const char *const id)
 {
   bool metric_exists = false;
   std::vector<SkysightMetric>::iterator i;
@@ -158,7 +157,7 @@ Skysight::AddActiveMetric(const TCHAR *const id)
 }
 
 void
-Skysight::RefreshActiveMetric(tstring id)
+Skysight::RefreshActiveMetric(std::string id)
 {
   std::vector<SkysightActiveMetric>::iterator i;
   for (i = active_metrics.begin(); i < active_metrics.end(); ++i) {
@@ -178,7 +177,7 @@ Skysight::GetActiveMetric(int index)
 }
 
 SkysightActiveMetric
-Skysight::GetActiveMetric(const tstring id)
+Skysight::GetActiveMetric(const std::string id)
 {
   std::vector<SkysightActiveMetric>::iterator i;
 
@@ -193,7 +192,7 @@ Skysight::GetActiveMetric(const tstring id)
 }
 
 void
-Skysight::SetActveMetricUpdateState(const tstring id, bool state)
+Skysight::SetActveMetricUpdateState(const std::string id, bool state)
 {
   for (auto &i: active_metrics) {
     if (!i.metric->id.compare(id)) {
@@ -212,7 +211,7 @@ Skysight::RemoveActiveMetric(int index)
 }
 
 void
-Skysight::RemoveActiveMetric(const tstring id)
+Skysight::RemoveActiveMetric(const std::string id)
 {
   std::vector<SkysightActiveMetric>::iterator i;
 
@@ -241,7 +240,7 @@ Skysight::NumActiveMetrics()
 void
 Skysight::SaveActiveMetrics()
 {
-  tstring am_list;
+  std::string am_list;
 
   if (NumActiveMetrics()) {
     for(auto &i: active_metrics) {
@@ -264,15 +263,15 @@ Skysight::LoadActiveMetrics()
   const char *s = Profile::Get(ProfileKeys::SkysightActiveMetrics);
   if (s == NULL)
     return;
-  tstring am_list = tstring(s);
+  std::string am_list = std::string(s);
   size_t pos;
-  while ((pos = am_list.find(",")) != tstring::npos) {
+  while ((pos = am_list.find(",")) != std::string::npos) {
     AddActiveMetric(am_list.substr(0, pos).c_str());
     am_list.erase(0, pos + 1);
   }
   AddActiveMetric(am_list.c_str()); // last one
 
-  const TCHAR *const d = Profile::Get(ProfileKeys::SkysightDisplayedMetric);
+  const char *const d = Profile::Get(ProfileKeys::SkysightDisplayedMetric);
   if (d == NULL)
     return;
 
@@ -311,8 +310,8 @@ Skysight::Init()
 }
 
 void
-Skysight::APIInited(__attribute__((unused)) const tstring details, __attribute__((unused)) const bool success,
-            __attribute__((unused)) const tstring layer_id, __attribute__((unused)) const uint64_t time_index)
+Skysight::APIInited(__attribute__((unused)) const std::string details, __attribute__((unused)) const bool success,
+            __attribute__((unused)) const std::string layer_id, __attribute__((unused)) const uint64_t time_index)
 {
   if (!self)
     return;
@@ -324,9 +323,9 @@ Skysight::APIInited(__attribute__((unused)) const tstring details, __attribute__
 }
 
 bool
-Skysight::GetActiveMetricState(tstring metric_name, SkysightActiveMetric &m)
+Skysight::GetActiveMetricState(std::string metric_name, SkysightActiveMetric &m)
 {
-  tstring search_pattern = region + "-" + metric_name + "*";
+  std::string search_pattern = region + "-" + metric_name + "*";
   std::vector<SkysightImageFile> img_files = ScanFolder(search_pattern);
 
   if (img_files.size() > 0) {
@@ -353,7 +352,7 @@ Skysight::GetActiveMetricState(tstring metric_name, SkysightActiveMetric &m)
 }
 
 std::vector<SkysightImageFile>
-Skysight::ScanFolder(tstring search_string = "*.tif")
+Skysight::ScanFolder(std::string search_string = "*.tif")
 {
   //start by checking for output files
   std::vector<SkysightImageFile> file_list;
@@ -374,7 +373,7 @@ Skysight::ScanFolder(tstring search_string = "*.tif")
 
   } visitor(file_list);
 
-  Directory::VisitSpecificFiles(GetLocalPath(), _T(search_string.c_str()),
+  Directory::VisitSpecificFiles(GetLocalPath(), search_string.c_str(),
 				visitor);
   return file_list;
 }
@@ -396,7 +395,7 @@ Skysight::CleanupFiles()
     }
   } visitor(std::chrono::system_clock::to_time_t(Skysight::GetNow().ToTimePoint()));
 
-  Directory::VisitSpecificFiles(GetLocalPath(), _T("*.tif"), visitor);
+  Directory::VisitSpecificFiles(GetLocalPath(), "*.tif", visitor);
 }
 
 BrokenDateTime
@@ -447,7 +446,7 @@ Skysight::GetForecastTime(BrokenDateTime curr_time)
 }
 
 bool
-Skysight::SetDisplayedMetric(const TCHAR *const id,
+Skysight::SetDisplayedMetric(const char *const id,
 			     BrokenDateTime forecast_time)
 {
   if (!IsActiveMetric(id))
@@ -460,8 +459,8 @@ Skysight::SetDisplayedMetric(const TCHAR *const id,
 }
 
 void
-Skysight::DownloadComplete(__attribute__((unused)) const tstring details, const bool success,
-                const tstring layer_id, __attribute__((unused)) const uint64_t time_index)
+Skysight::DownloadComplete(__attribute__((unused)) const std::string details, const bool success,
+                const std::string layer_id, __attribute__((unused)) const uint64_t time_index)
 {
   if (!self)
     return;
@@ -474,7 +473,7 @@ Skysight::DownloadComplete(__attribute__((unused)) const tstring details, const 
 }
 
 bool
-Skysight::DownloadActiveMetric(tstring id = "*")
+Skysight::DownloadActiveMetric(std::string id = "*")
 {
   BrokenDateTime now = Skysight::GetNow();
   if (id == "*") {
@@ -509,7 +508,7 @@ Skysight::GetNow(bool use_system_time)
 }
 
 bool
-Skysight::DisplayActiveMetric(const TCHAR *const id)
+Skysight::DisplayActiveMetric(const char *const id)
 {
   update_flag = false;
 
@@ -538,7 +537,7 @@ Skysight::DisplayActiveMetric(const TCHAR *const id)
 
   uint64_t test_time;
   bool found = false;
-  NarrowString<256> filename;
+  StaticString<256> filename;
   BrokenDateTime bdt;
   int max_offset = (60*60);
 
@@ -582,7 +581,7 @@ Skysight::DisplayActiveMetric(const TCHAR *const id)
   desc.Format("Skysight: %s (%04u-%02u-%02u %02u:%02u)",
 	      displayed_metric.metric->name.c_str(), bdt.year, bdt.month, 
 	      bdt.day, bdt.hour, bdt.minute);
-  tstring label = desc.c_str();
+  std::string label = desc.c_str();
 
   auto *map = UIGlobals::GetMap();
   if (map == nullptr)

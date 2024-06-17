@@ -3,13 +3,15 @@
 
 #pragma once
 
-#include "util/tstring.hpp"
 #include "Operation/Operation.hpp"
 
+#include <string>
+
+
 typedef void (*SkysightCallback) (
-  const tstring details,
+  const std::string details,
   const bool  success, 
-  const tstring layer,
+  const std::string layer,
   const uint64_t time_index
 );
 
@@ -24,18 +26,18 @@ enum class SkysightCallType {
 };
 
 struct SkysightRequestArgs {
-  const tstring url;
-  const tstring path;
+  const std::string url;
+  const std::string path;
   const bool to_file;
   const SkysightCallType calltype;
-  const tstring region;
-  const tstring layer;
+  const std::string region;
+  const std::string layer;
   const uint64_t from;
   const uint64_t to;
   const SkysightCallback cb;
-  SkysightRequestArgs(const tstring _url, const tstring _path,
+  SkysightRequestArgs(const std::string _url, const std::string _path,
 		      const bool _to_file, const SkysightCallType _ct,
-		      const tstring _region, const tstring _layer,
+		      const std::string _region, const std::string _layer,
 		      const uint64_t _from = 0, const uint64_t _to = 0,
 		      const SkysightCallback _cb = nullptr):
     url(_url), path(_path), to_file(_to_file), calltype(_ct),

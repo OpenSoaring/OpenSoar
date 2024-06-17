@@ -65,10 +65,10 @@ ShowWeatherDialog(const char *page)
 
   widget.AddTab(CreateRaspWidget(), "RASP");
 
-  if (page != nullptr && StringIsEqual(page, _T("Skysight")))
+  if (page != nullptr && StringIsEqual(page, "Skysight"))
     start_page = widget.GetSize();
 
-  widget.AddTab(CreateSkysightWidget(), _T("Skysight"));
+  widget.AddTab(CreateSkysightWidget(), "Skysight");
 
 #ifdef HAVE_PCMET
   if (page != nullptr && StringIsEqual(page, "pc_met"))

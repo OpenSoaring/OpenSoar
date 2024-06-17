@@ -4,15 +4,15 @@
 #include "SkysightRegions.hpp"
 
 const SkysightRegionDetails skysight_region_defaults[] = {
-	{_T("South Africa"), "SANEW"},
-	{_T("Europe"), "EUROPE"},
-	{_T("Western US"), "WEST_US"},
-	{_T("Eastern US"), "EAST_US"},
-	{_T("Argentina/Chile"), "ARGENTINA_CHILE"},
-	{_T("Brazil"), "BRAZIL"},
-	{_T("Japan"), "JAPAN"},
-	{_T("New Zealand"), "NZ"},
-	{_T("Western Australia"), "WA"},
-	{_T("Eastern Australia"), "EAST_AUS"},
+	{"South Africa", "SANEW"},
+	{"Europe", "EUROPE"},
+	{"Western US", "WEST_US"},
+	{"Eastern US", "EAST_US"},
+	{"Argentina/Chile", "ARGENTINA_CHILE"},
+	{"Brazil", "BRAZIL"},
+	{"Japan", "JAPAN"},
+	{"New Zealand", "NZ"},
+	{"Western Australia", "WA"},
+	{"Eastern Australia", "EAST_AUS"},
 	{nullptr, nullptr}
 };

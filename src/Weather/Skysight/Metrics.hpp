@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "util/tstring.hpp"
 #include "time/BrokenDateTime.hpp"
 #include <map>
 
@@ -14,14 +13,14 @@ struct LegendColor {
 };
 
 struct SkysightMetric {
-  const tstring id;
-  const tstring name;
-  const tstring desc;
+  const std::string id;
+  const std::string name;
+  const std::string desc;
   uint64_t last_update = 0;
   std::map<float, LegendColor> legend;
 
 public:
-  SkysightMetric(tstring _id, tstring _name, tstring _desc):
+  SkysightMetric(std::string _id, std::string _name, std::string _desc):
     id(_id), name(_name), desc(_desc) {}
   SkysightMetric(const SkysightMetric &m):
     id(m.id), name(m.name), desc(m.desc), last_update(m.last_update),
@@ -58,7 +57,7 @@ struct DisplayedMetric {
 
   void clear() { metric = nullptr; }
 
-  bool operator == (const TCHAR *const id) {
+  bool operator == (const char *const id) {
     if (!metric || !id)
       return false;
 

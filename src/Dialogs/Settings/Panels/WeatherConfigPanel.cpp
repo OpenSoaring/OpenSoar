@@ -51,7 +51,7 @@ public:
 };
 
 static void
-FillRegionControl(WndProperty &wp, const TCHAR *setting)
+FillRegionControl(WndProperty &wp, const char *setting)
 {
   DataFieldEnum *df = (DataFieldEnum *)wp.GetDataField();
   auto skysight = DataGlobals::GetSkysight();
@@ -96,11 +96,11 @@ WeatherConfigPanel::Prepare(ContainerWindow &parent,
 #ifdef HAVE_SKYSIGHT
   AddSpacer();
 
-  AddText(_T("Skysight Email"), _T("The e-mail you use to log in to the skysight.io site."),
+  AddText("Skysight Email", "The e-mail you use to log in to the skysight.io site.",
           settings.skysight.email);
-  AddPassword(_T("Skysight Password"), _T("Your Skysight password."),
+  AddPassword("Skysight Password", "Your Skysight password.",
               settings.skysight.password);  
-  WndProperty *wp = AddEnum(_T("Skysight Region"), _T("The Skysight region to load data for."), (DataFieldListener*)nullptr);
+  WndProperty *wp = AddEnum("Skysight Region", "The Skysight region to load data for.", (DataFieldListener*)nullptr);
   FillRegionControl(*wp, settings.skysight.region);
 #endif
 }

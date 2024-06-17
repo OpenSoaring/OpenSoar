@@ -66,7 +66,7 @@ SkysightListItemRenderer::Draw(Canvas &canvas, const PixelRect rc, unsigned i) {
   const ComputerSettings &settings = CommonInterface::GetComputerSettings();
   SkysightActiveMetric m = SkysightActiveMetric(skysight->GetActiveMetric(i));
 
-  tstring first_row = tstring(m.metric->name);
+  std::string first_row = std::string(m.metric->name);
   if (skysight->displayed_metric == m.metric->id.c_str())
     first_row += " [ACTIVE]";
 
@@ -115,15 +115,15 @@ public:
     row_renderer.DrawTextRow(canvas, rc, skysight->GetMetric(i).name.c_str());
   }
   
-  static const TCHAR* HelpCallback(unsigned i)
+  static const char* HelpCallback(unsigned i)
   {
     std::shared_ptr<Skysight> skysight = DataGlobals::GetSkysight();
 
     if (!skysight)
       return _("No description available.");
 
-    tstring helptext = skysight->GetMetric(i).desc;
-    TCHAR *help = new TCHAR[helptext.length() + 1];
+    std::string helptext = skysight->GetMetric(i).desc;
+    char *help = new char[helptext.length() + 1];
     std::strcpy(help, helptext.c_str());
     return help;
   }  
@@ -271,7 +271,7 @@ void SkysightWidget::AddClicked()
                      item_renderer.CalculateLayout(UIGlobals::GetDialogLook()),
                      item_renderer,
                      false, /*timer */
-                     nullptr, /*TCHAR help text */
+                     nullptr, /*char help text */
                      &SkysightMetricsListItemRenderer::HelpCallback,
                      nullptr /*Extra caption*/);
 

@@ -5,7 +5,6 @@
 
 #include "APIGlue.hpp"
 #include "thread/StandbyThread.hpp"
-#include "util/tstring.hpp"
 #include <map>
 #include "Metrics.hpp"
 #include "system/Path.hpp"
@@ -17,7 +16,7 @@ public:
 private:
   const AllocatedPath path;
   const AllocatedPath output_path;
-  const tstring data_varname;
+  const std::string data_varname;
   const uint64_t time_index;
   const std::map<float, LegendColor> legend;
   SkysightCallback callback;
@@ -31,7 +30,7 @@ private:
 public:
   enum class Result {Available, Requested, Error};
 
-  CDFDecoder(const tstring &&_path, const tstring &&_output, const tstring &&_varname,
+  CDFDecoder(const std::string &&_path, const std::string &&_output, const std::string &&_varname,
              const uint64_t _time_index, const std::map<float, LegendColor> _legend, SkysightCallback _callback) : 
              StandbyThread("CDFDecoder"), path(AllocatedPath(_path.c_str())), output_path(AllocatedPath(_output.c_str())), 
              data_varname(_varname), time_index(_time_index), legend(_legend), callback(_callback), 

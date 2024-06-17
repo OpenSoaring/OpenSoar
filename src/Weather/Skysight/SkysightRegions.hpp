@@ -7,7 +7,7 @@
 
 struct SkysightRegionDetails
 {
-  const TCHAR *name;
+  const char *name;
   const char *id;
 };
 

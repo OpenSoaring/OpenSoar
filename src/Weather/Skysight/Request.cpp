@@ -138,8 +138,8 @@ SkysightRequest::GetType()
 }
 
 void
-SkysightRequest::SetCredentials(const TCHAR *_key, const TCHAR *_username, 
-				const TCHAR *_password)
+SkysightRequest::SetCredentials(const char *_key, const char *_username, 
+				const char *_password)
 {
   key = _key;
   if(_username != nullptr)
@@ -157,16 +157,16 @@ SkysightAsyncRequest::GetType()
 }
 
 void
-SkysightAsyncRequest::SetCredentials(const TCHAR *_key,
-				     const TCHAR *_username,
-				     const TCHAR *_password)
+SkysightAsyncRequest::SetCredentials(const char *_key,
+				     const char *_username,
+				     const char *_password)
 {
   std::lock_guard<Mutex> lock(mutex);
   SkysightRequest::SetCredentials(_key, _username, _password);
 }
 
 void
-SkysightAsyncRequest::TriggerNullCallback(tstring &&ErrText)
+SkysightAsyncRequest::TriggerNullCallback(std::string &&ErrText)
 {
   if(args.cb)
     args.cb(ErrText.c_str(), false, args.layer.c_str(), args.from);
@@ -178,16 +178,16 @@ SkysightRequest::Process()
   return RequestToFile();
 }
 
-tstring
+std::string
 SkysightAsyncRequest::GetMessage()
 {
   std::lock_guard<Mutex> lock(mutex);
-  tstring msg = tstring (_T("Downloading ")) + args.layer;
+  std::string msg = std::string ("Downloading ") + args.layer;
   return msg;
 }
 
 bool
-SkysightRequest::ProcessToString(tstring &response)
+SkysightRequest::ProcessToString(std::string &response)
 {
   return RequestToBuffer(response);
 }
@@ -208,7 +208,7 @@ SkysightAsyncRequest::Tick() noexcept
   mutex.unlock();
 
   bool result;
-  tstring resultStr;
+  std::string resultStr;
 
   if (args.to_file) {
     result = RequestToFile();
@@ -220,7 +220,7 @@ SkysightAsyncRequest::Tick() noexcept
   if (result) {
     SkysightAPI::ParseResponse(resultStr.c_str(), result, args);
   } else {
-    SkysightAPI::ParseResponse(_T("Could not fetch data from Skysight server."),
+    SkysightAPI::ParseResponse("Could not fetch data from Skysight server.",
 			       result, args);
   }
 
@@ -245,7 +245,7 @@ SkysightRequest::RequestToFile()
   if (!File::Delete(temp_path) && File::ExistsAny(temp_path))
     return  false;
 
-  FILE *file = _tfopen(temp_path.c_str(), _T("wb"));
+  FILE *file = fopen(temp_path.c_str(), "wb");
   if (file == nullptr)
     return false;
 
@@ -260,12 +260,12 @@ SkysightRequest::RequestToFile()
   snprintf(api_key_buffer, sizeof(api_key_buffer), "%s: %s", "User-Agent", OpenSoar_ProductToken);
   request_headers.Append(api_key_buffer);
 
-  tstring pBody;
+  std::string pBody;
   if (username.length() && password.length()) {
     char content_type_buffer[4096];
     snprintf(content_type_buffer, sizeof(content_type_buffer), "%s: %s", "Content-Type", "application/json");
     request_headers.Append(content_type_buffer);
-    NarrowString<1024> creds;
+    StaticString<1024> creds;
     creds.Format("{\"username\":\"%s\",\"password\":\"%s\"}", username.c_str(), password.c_str());
     pBody = creds.c_str();
     request.GetEasy().SetRequestBody(pBody.c_str(), pBody.length());
@@ -300,7 +300,7 @@ SkysightRequest::RequestToFile()
 }
 
 bool
-SkysightRequest::RequestToBuffer(tstring &response)
+SkysightRequest::RequestToBuffer(std::string &response)
 {
   LogFormat("Connecting to %s for %s with key:%s user-agent:%s", args.url.c_str(), args.path.c_str(), key.c_str(), OpenSoar_ProductToken);
 
@@ -317,12 +317,12 @@ SkysightRequest::RequestToBuffer(tstring &response)
   snprintf(api_key_buffer, sizeof(api_key_buffer), "%s: %s", "User-Agent", OpenSoar_ProductToken);
   request_headers.Append(api_key_buffer);
 
-  tstring pBody;
+  std::string pBody;
   if (username.length() && password.length()) {
     char content_type_buffer[4096];
     snprintf(content_type_buffer, sizeof(content_type_buffer), "%s: %s", "Content-Type", "application/json");
     request_headers.Append(content_type_buffer);
-    NarrowString<1024> creds;
+    StaticString<1024> creds;
     creds.Format("{\"username\":\"%s\",\"password\":\"%s\"}",
 		                 username.c_str(), password.c_str());
     pBody = creds.c_str();
@@ -340,7 +340,7 @@ SkysightRequest::RequestToBuffer(tstring &response)
     success = false;
   }
 
-  response = tstring(buffer,
+  response = std::string(buffer,
 		     buffer + handler.GetReceived() / sizeof(buffer[0]));
   return success;
 }

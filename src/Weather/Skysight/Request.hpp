@@ -25,7 +25,6 @@ Copyright_License {
 
 #include "APIGlue.hpp"
 #include "thread/StandbyThread.hpp"
-#include "util/tstring.hpp"
 
 #include "system/Path.hpp"
 #include "system/FileUtil.hpp"
@@ -46,11 +45,11 @@ public:
 
   SkysightRequest(const SkysightRequestArgs _args): args(_args) {};
   bool Process();
-  bool ProcessToString(tstring &response);
+  bool ProcessToString(std::string &response);
 
   SkysightCallType GetType();
-  void SetCredentials(const TCHAR *_key, const TCHAR *_username = nullptr,
-                      const TCHAR *_password = nullptr);
+  void SetCredentials(const char *_key, const char *_username = nullptr,
+                      const char *_password = nullptr);
 
   class FileHandler final: public CurlResponseHandler {
     FILE *file;
@@ -99,9 +98,9 @@ public:
 
 protected:
   const SkysightRequestArgs args;
-  tstring key, username, password;
+  std::string key, username, password;
   bool RequestToFile();
-  bool RequestToBuffer(tstring &response);
+  bool RequestToBuffer(std::string &response);
 };
 
 struct SkysightAsyncRequest final:
@@ -116,13 +115,13 @@ public:
   void Process();
   void Done();
 
-  tstring GetMessage();
+  std::string GetMessage();
 
   SkysightCallType GetType();
-  void SetCredentials(const TCHAR *_key, const TCHAR *_username = nullptr,
-                      const TCHAR *_password = nullptr);
+  void SetCredentials(const char *_key, const char *_username = nullptr,
+                      const char *_password = nullptr);
 
-  void TriggerNullCallback(tstring &&ErrText);
+  void TriggerNullCallback(std::string &&ErrText);
   
 protected:
   Status status;
