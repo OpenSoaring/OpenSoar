@@ -12,7 +12,7 @@
 #include "util/NumberParser.hxx"
 #include "util/StringSplit.hxx"
 
-using std::string_view_literals::operator""sv;
+// using std::string_view_literals::operator""sv;
 
 NMEAParser::NMEAParser()
 {
@@ -47,22 +47,22 @@ NMEAParser::ParseLine(const char *string, NMEAInfo &info)
   if (IsAlphaASCII(type[1]) && IsAlphaASCII(type[2])) {
     const auto type2 = type.substr(3);
 
-    if (type2 == "GSA"sv)
+    if (type2 == "GSA")
       return GSA(line, info);
 
-    if (type2 == "GLL"sv)
+    if (type2 == "GLL")
       return GLL(line, info);
 
-    if (type2 == "RMC"sv)
+    if (type2 == "RMC")
       return RMC(line, info);
 
-    if (type2 == "GGA"sv)
+    if (type2 == "GGA")
       return GGA(line, info);
 
-    if (type2 == "HDM"sv)
+    if (type2 == "HDM")
       return HDM(line, info);
 
-    if (type2 == "MWV"sv)
+    if (type2 == "MWV")
       return MWV(line, info);
   }
 
@@ -71,32 +71,32 @@ NMEAParser::ParseLine(const char *string, NMEAInfo &info)
     const auto type2 = type.substr(1);
 
     // Airspeed and vario sentence
-    if (type2 == "PTAS1"sv)
+    if (type2 == "PTAS1")
       return PTAS1(line, info);
 
     // FLARM sentences
-    if (type2 == "PFLAE"sv) {
+    if (type2 == "PFLAE") {
       ParsePFLAE(line, info.flarm.error, info.clock);
       return true;
     }
 
-    if (type2 == "PFLAV"sv) {
+    if (type2 == "PFLAV") {
       ParsePFLAV(line, info.flarm.version, info.clock);
       return true;
     }
 
-    if (type2 == "PFLAA"sv) {
+    if (type2 == "PFLAA") {
       ParsePFLAA(line, info.flarm.traffic, info.clock);
       return true;
     }
 
-    if (type2 == "PFLAU"sv) {
+    if (type2 == "PFLAU") {
       ParsePFLAU(line, info.flarm.status, info.clock);
       return true;
     }
 
     // Garmin altitude sentence
-    if (type2 == "PGRMZ"sv)
+    if (type2 == "PGRMZ")
       return RMZ(line, info);
 
     return false;
