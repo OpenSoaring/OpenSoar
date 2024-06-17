@@ -29,7 +29,6 @@
 
 
 #include <stdio.h>
-#include <tchar.h>
 
 enum ControlIndex {
   FW_VERSION,
@@ -48,7 +47,6 @@ enum ControlIndex {
 };
 
 
-#if 1
 #include "UIGlobals.hpp"
 // -------------------------------------------
 class SystemSettingsWidget final : public RowFormWidget, DataFieldListener {
@@ -67,7 +65,6 @@ private:
   /* methods from DataFieldListener */
   void OnModified(DataField &df) noexcept override;
 };
-#endif
 
 #ifdef OPENVARIOBASEMENU
   static constexpr StaticEnumChoice timeout_list[] = {
@@ -244,5 +241,3 @@ CreateSystemSettingsWidget() noexcept
 {
   return std::make_unique<SystemSettingsWidget>();
 }
-
-
