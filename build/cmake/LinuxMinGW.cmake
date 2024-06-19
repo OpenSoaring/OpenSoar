@@ -22,8 +22,6 @@ add_compile_definitions(WIN32_LEAN_AND_MEAN)
 add_compile_definitions(NOMINMAX)
 add_compile_definitions(HAVE_STRUCT_POLLFD)
 add_compile_definitions(HAVE_MSVCRT)
-add_compile_definitions(UNICODE)  # ???
-add_compile_definitions(_UNICODE)
 add_compile_definitions(STRICT)
 add_compile_definitions(EYE_CANDY)
 add_compile_definitions(USE_WIN32_RESOURCES)

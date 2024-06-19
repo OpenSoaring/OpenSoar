@@ -12,9 +12,7 @@ add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON)
 add_compile_definitions(BOOST_JSON_HEADER_ONLY)
 add_compile_definitions(BOOST_JSON_STANDALONE)
 
-        # add_compile_definitions(HAVE_MSVCRT)
-add_compile_definitions(UNICODE)  # ???
-add_compile_definitions(_UNICODE)
+# add_compile_definitions(HAVE_MSVCRT)
 add_compile_definitions(STRICT)
 add_compile_definitions(_USE_MATH_DEFINES)   # necessary under C++17!
 add_compile_definitions(ZZIP_1_H)   # definition of uint32_t and Co.!
