@@ -5,7 +5,6 @@
 
 #include "util/Compiler.h"
 
-#include <tchar.h>
 
 struct InputConfig;
 class Menu;

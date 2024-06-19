@@ -28,7 +28,6 @@ union SDL_Event;
 struct SDL_Window;
 #endif
 
-#include <tchar.h>
 
 #ifdef SOFTWARE_ROTATE_DISPLAY
 #include "DisplayOrientation.hpp"

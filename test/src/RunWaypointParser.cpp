@@ -9,7 +9,6 @@
 #include "util/PrintException.hxx"
 
 #include <stdio.h>
-#include <tchar.h>
 
 int main(int argc, char **argv)
 try {
@@ -29,14 +28,14 @@ try {
 
   way_points.VisitNamePrefix("", [](const auto &p){
     const auto &wp = *p;
-    _ftprintf(stdout, "%s, %f, %f, ", wp.name.c_str(),
+    fprintf(stdout, "%s, %f, %f, ", wp.name.c_str(),
               wp.location.latitude.Degrees(),
               wp.location.longitude.Degrees());
 
     if (wp.has_elevation)
-      _ftprintf(stdout, "%.0fm\n", wp.elevation);
+      fprintf(stdout, "%.0fm\n", wp.elevation);
     else
-      _ftprintf(stdout, "?\n");
+      fprintf(stdout, "?\n");
   });
 
   return EXIT_SUCCESS;

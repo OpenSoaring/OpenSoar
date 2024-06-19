@@ -1301,6 +1301,8 @@ TestOpenVario()
   delete device;
 }
 
+/*
+see line 744!
 static void
 TestLarus()
 {
@@ -1346,6 +1348,7 @@ TestLarus()
     nmea_info.Reset();
     delete device;
 }
+*/
 
 static void
 TestWesterboer()

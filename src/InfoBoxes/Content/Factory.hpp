@@ -6,7 +6,6 @@
 #include "Type.hpp"
 
 #include <memory>
-#include <tchar.h>
 
 class InfoBoxContent;
 

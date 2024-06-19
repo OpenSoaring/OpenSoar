@@ -83,7 +83,7 @@ NumberEntryDialog(const char *caption, unsigned &value, unsigned length) {
   if (!NumberEntryDialog(dialog, DATA_UNSIGNED, value, length))
       return false;
 #else
-NumberEntryDialog(const TCHAR *caption,
+NumberEntryDialog(const char *caption,
                   unsigned &value, unsigned length)
 {
   /* create the dialog */
@@ -136,7 +136,7 @@ AngleEntryDialog(const char *caption, Angle &value) {
   if (!NumberEntryDialog(dialog, DATA_ANGLE, value, 0))
       return false;
 #else
-AngleEntryDialog(const TCHAR *caption, Angle &value)
+AngleEntryDialog(const char *caption, Angle &value)
 {
   /* create the dialog */
 

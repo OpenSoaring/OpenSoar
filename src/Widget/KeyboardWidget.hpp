@@ -7,7 +7,6 @@
 #include "Form/CharacterButton.hpp"
 #include "Form/Button.hpp"
 
-#include <tchar.h>
 
 struct ButtonLook;
 class WndSymbolButton;

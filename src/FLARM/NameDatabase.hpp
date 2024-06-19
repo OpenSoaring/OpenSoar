@@ -8,7 +8,6 @@
 #include "util/StaticArray.hxx"
 
 #include <cassert>
-#include <tchar.h>
 
 class FlarmNameDatabase {
 public:

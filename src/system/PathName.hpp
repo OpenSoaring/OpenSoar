@@ -5,7 +5,6 @@
 
 #include "util/Compiler.h"
 
-#include <tchar.h>
 
 /**
  * Replaces the "base name" of the specified path, i.e. the portion

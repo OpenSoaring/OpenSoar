@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <stdio.h>
-#include <tchar.h>
 
 class Reader;
 class FileOutputStream;

@@ -194,7 +194,7 @@ InputEvents::eventBugs(const char *misc)
     BUGS = 0.5;
   else if (StringIsEqual(misc, "show")) {
     char Temp[100];
-    _stprintf(Temp, "%d", (int)(BUGS * 100));
+    snprintf(Temp, sizeof(Temp), "%d", (int)(BUGS * 100));
     Message::AddMessage(_("Bugs performance"), Temp);
   }
 
@@ -236,7 +236,7 @@ InputEvents::eventBallast(const char *misc)
     BALLAST = 0;
   else if (StringIsEqual(misc, "show")) {
     char Temp[100];
-    _stprintf(Temp, "%d", (int)(BALLAST * 100));
+    snprintf(Temp, sizeof(Temp), "%d", (int)(BALLAST * 100));
     /* xgettext:no-c-format */
     Message::AddMessage(_("Ballast %"), Temp);
   }
@@ -296,7 +296,7 @@ InputEvents::eventAdjustForecastTemperature(const char *misc)
     auto temperature =
       CommonInterface::GetComputerSettings().forecast_temperature;
     char Temp[100];
-    _stprintf(Temp, "%f", temperature.ToUser());
+    snprintf(Temp, sizeof(Temp), "%f", temperature.ToUser());
     Message::AddMessage(_("Forecast temperature"), Temp);
   }
 }
@@ -328,7 +328,7 @@ InputEvents::eventDeclutterLabels(const char *misc)
     Profile::Set(ProfileKeys::WaypointLabelSelection, (int)wls);
   } else if (StringIsEqual(misc, "show")) {
     char tbuf[64];
-    _stprintf(tbuf, "%s: %s", _("Waypoint labels"),
+    snprintf(tbuf, sizeof(tbuf), "%s: %s", _("Waypoint labels"),
               gettext(msg[(unsigned)wls]));
     Message::AddMessage(tbuf);
   }
@@ -366,10 +366,7 @@ InputEvents::eventAirspaceDisplayMode(const char *misc)
 }
 
 void
-// August2111?: 
 InputEvents::eventOrientationCruise(const char *misc)
-// check the merge 2024-07-10
-// InputEvents::eventOrientationCruise(const TCHAR *misc)
 {
   MapSettings &settings_map = CommonInterface::SetMapSettings();
 
@@ -463,9 +460,9 @@ InputEvents::sub_TerrainTopography(int vswitch)
     char buf[128];
 
     if (settings_map.topography_enabled)
-      _stprintf(buf, "\r\n%s / ", _("On"));
+      snprintf(buf, sizeof(buf), "\r\n%s / ", _("On"));
     else
-      _stprintf(buf, "\r\n%s / ", _("Off"));
+      snprintf(buf, sizeof(buf), "\r\n%s / ", _("Off"));
 
     strcat(buf, settings_map.terrain.enable
             ? _("On") : _("Off"));

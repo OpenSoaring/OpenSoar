@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <cassert>
-#include <tchar.h>
 
 using std::string_view_literals::operator""sv;
 

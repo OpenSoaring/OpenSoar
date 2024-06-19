@@ -13,7 +13,6 @@
 #include "BackendComponents.hpp"
 #include "DataComponents.hpp"
 
-#include <tchar.h>
 
 static void
 ShowAnalysis8() noexcept

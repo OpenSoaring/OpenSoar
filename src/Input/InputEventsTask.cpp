@@ -300,7 +300,8 @@ InputEvents::eventTaskTransition(const char *misc)
       return;
 
     char TempAll[120];
-    _stprintf(TempAll, "\r\n%s: %s\r\n%s:%s\r\n%s: %s",
+    snprintf(
+        TempAll, sizeof(TempAll), "\r\n%s: %s\r\n%s:%s\r\n%s: %s",
               _("Altitude"),
               FormatUserAltitude(start_stats.altitude).c_str(),
               _("Speed"),

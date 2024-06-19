@@ -38,7 +38,6 @@ Copyright_License {
 // #include "NMEA/Checksum.hpp"  // aug: or whereis it?
 #include "Units/System.hpp"
 
-#include <tchar.h>
 #include <stdio.h>
 
 using std::string_view_literals::operator""sv;

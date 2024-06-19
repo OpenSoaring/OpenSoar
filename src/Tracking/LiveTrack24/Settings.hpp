@@ -7,7 +7,6 @@
 
 #include <cstdint>
 
-#include <tchar.h>
 
 namespace LiveTrack24 {
 

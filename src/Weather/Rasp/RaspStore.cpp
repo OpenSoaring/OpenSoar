@@ -16,7 +16,6 @@
 #include <set>
 
 #include <cassert>
-#include <tchar.h>
 #include <stdio.h>
 #include <windef.h> // for MAX_PATH
 

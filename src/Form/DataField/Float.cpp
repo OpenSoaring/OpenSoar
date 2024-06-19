@@ -13,14 +13,14 @@ static bool DataFieldKeyUp = false;
 const char *
 DataFieldFloat::GetAsString() const noexcept
 {
-  _stprintf(mOutBuf, edit_format, (double)mValue);
+  snprintf(mOutBuf, sizeof(mOutBuf), edit_format, (double)mValue);
   return mOutBuf;
 }
 
 const char *
 DataFieldFloat::GetAsDisplayString() const noexcept
 {
-  _stprintf(mOutBuf, display_format, (double)mValue, unit.c_str());
+  snprintf(mOutBuf, sizeof(mOutBuf), display_format, (double)mValue, unit.c_str());
   return mOutBuf;
 }
 
@@ -94,8 +94,8 @@ DataFieldFloat::AppendComboValue(ComboList &combo_list,
                                  double value) const noexcept
 {
   char a[decltype(edit_format)::capacity()], b[decltype(display_format)::capacity()];
-  _stprintf(a, edit_format, (double)value);
-  _stprintf(b, display_format, (double)value, unit.c_str());
+  snprintf(a, sizeof(a), edit_format, (double)value);
+  snprintf(b, sizeof(b), display_format, (double)value, unit.c_str());
   combo_list.Append(a, b);
 }
 

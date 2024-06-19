@@ -21,7 +21,6 @@
 
 #include <chrono>
 
-#include <tchar.h>
 
 enum class TaskPointType : uint8_t;
 

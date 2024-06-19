@@ -12,7 +12,6 @@
 
 #include <memory>
 
-#include <tchar.h>
 
 struct NMEAInfo;
 struct LoggerSettings;

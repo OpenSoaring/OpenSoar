@@ -5,7 +5,6 @@
 #include "Language/Language.hpp"
 
 #include <algorithm>
-#include <tchar.h>
 
 using namespace InfoBoxFactory;
 

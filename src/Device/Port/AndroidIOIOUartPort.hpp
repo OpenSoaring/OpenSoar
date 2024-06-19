@@ -6,7 +6,6 @@
 #include "util/Compiler.h"
 
 #include <memory>
-#include <tchar.h>
 
 class Port;
 class PortListener;

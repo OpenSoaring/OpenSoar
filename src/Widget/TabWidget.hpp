@@ -8,7 +8,6 @@
 
 #include <cassert>
 #include <memory>
-#include <tchar.h>
 
 class MaskedIcon;
 class TabDisplay;

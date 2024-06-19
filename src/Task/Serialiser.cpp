@@ -14,7 +14,6 @@
 #include "util/Compiler.h"
 
 #include <cassert>
-#include <tchar.h>
 
 [[gnu::const]]
 static const char *

@@ -13,7 +13,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <tchar.h>
 
 unsigned Layout::scale_1024 = 1024;
 

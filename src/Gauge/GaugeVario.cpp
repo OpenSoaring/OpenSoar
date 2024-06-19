@@ -520,7 +520,7 @@ GaugeVario::RenderValue(Canvas &canvas, const LabelValueGeometry &g,
     char buffer[18];
     canvas.SetBackgroundColor(look.background_color);
     canvas.SetTextColor(look.text_color);
-    _stprintf(buffer, "%.1f", (double)value);
+    snprintf(buffer, 18, "%.1f", (double)value);
     canvas.Select(look.value_font);
     const unsigned width = canvas.CalcTextSize(buffer).width;
 
@@ -707,7 +707,7 @@ GaugeVario::RenderBallast(Canvas &canvas) noexcept
     // new ballast 0, hide value
     if (ballast > 0) {
       char buffer[18];
-      _stprintf(buffer, "%u%%", ballast);
+      snprintf(buffer, 18, "%u%%", ballast);
       canvas.SetTextColor(look.text_color);
 
       if (IsPersistent())
@@ -750,7 +750,7 @@ GaugeVario::RenderBugs(Canvas &canvas) noexcept
 
     if (bugs > 0) {
       char buffer[18];
-      _stprintf(buffer, "%d%%", bugs);
+      snprintf(buffer, 18, "%d%%", bugs);
       canvas.SetTextColor(look.text_color);
       if (IsPersistent())
         canvas.DrawOpaqueText(g.value_pos, g.value_rect, buffer);

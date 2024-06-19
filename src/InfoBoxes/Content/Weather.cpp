@@ -17,7 +17,6 @@
 #include "UIGlobals.hpp"
 #include "Look/Look.hpp"
 
-#include <tchar.h>
 
 void
 UpdateInfoBoxHumidity(InfoBoxData &data) noexcept

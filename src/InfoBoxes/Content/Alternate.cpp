@@ -18,7 +18,6 @@
 #include "DataComponents.hpp"
 
 #include <stdio.h>
-#include <tchar.h>
 
 static std::unique_ptr<Widget>
 LoadAlternatesPanel([[maybe_unused]] unsigned id) noexcept

@@ -13,7 +13,6 @@
 #include "Rough/RoughAngle.hpp"
 
 #include <type_traits>
-#include <tchar.h>
 
 struct FlarmTraffic {
   enum class AlarmType: uint8_t {

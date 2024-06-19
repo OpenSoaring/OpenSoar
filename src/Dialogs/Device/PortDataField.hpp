@@ -5,7 +5,6 @@
 
 #include "Device/Config.hpp"
 
-#include <tchar.h>
 
 class DataFieldEnum;
 

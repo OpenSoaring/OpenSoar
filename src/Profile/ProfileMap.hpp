@@ -10,7 +10,6 @@
 #include <span>
 #include <string_view>
 
-#include <tchar.h>
 
 class KeyValueFileWriter;
 

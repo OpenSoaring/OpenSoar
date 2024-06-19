@@ -12,7 +12,6 @@
 #include <cstddef>
 #include <string_view>
 
-#include <tchar.h>
 
 /**
  * This class tores a VHF radio frequency.

@@ -5,7 +5,6 @@
 
 #include <string>
 
-#include <tchar.h>
 
 typedef void (*pt2Event)(const char *);
 

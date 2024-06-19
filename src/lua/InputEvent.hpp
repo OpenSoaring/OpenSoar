@@ -4,7 +4,6 @@
 #pragma once
 
 #include "util/Compiler.h"
-#include <tchar.h>
 
 struct lua_State;
 

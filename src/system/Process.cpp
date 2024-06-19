@@ -23,7 +23,6 @@
 #include <stdarg.h>
 
 #include <sstream>
-#include <tchar.h>
 #include <filesystem>
 
 // static std::filesystem::path output;

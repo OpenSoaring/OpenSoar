@@ -5,7 +5,6 @@
 
 
 #include <vector>
-#include <tchar.h>
 #include <string>
 
 class ComboList {

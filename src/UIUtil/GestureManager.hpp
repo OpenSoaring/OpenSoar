@@ -6,7 +6,6 @@
 #include "ui/dim/Point.hpp"
 #include "util/StaticString.hxx"
 
-#include <tchar.h>
 
 /**
  * A manager class that can detect mouse gesture

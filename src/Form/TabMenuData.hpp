@@ -5,7 +5,6 @@
 
 #include <memory>
 
-#include <tchar.h>
 
 class Widget;
 

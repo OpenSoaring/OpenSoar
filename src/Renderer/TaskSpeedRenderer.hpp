@@ -12,7 +12,6 @@ struct DerivedInfo;
 class TaskManager;
 class GlidePolar;
 
-#include <tchar.h>
 
 void
 TaskSpeedCaption(char *sTmp,

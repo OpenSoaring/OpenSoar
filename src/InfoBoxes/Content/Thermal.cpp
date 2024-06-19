@@ -11,7 +11,6 @@
 #include "Look/Look.hpp"
 #include "Renderer/ClimbPercentRenderer.hpp"
 
-#include <tchar.h>
 
 static void
 SetVSpeed(InfoBoxData &data, double value) noexcept

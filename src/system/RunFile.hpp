@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <tchar.h>
 
 #if defined(ANDROID) || \
   (defined(HAVE_POSIX) && !defined(_WIN32) && !defined(KOBO))

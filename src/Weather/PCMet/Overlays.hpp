@@ -9,7 +9,6 @@
 
 #include <list>
 
-#include <tchar.h>
 
 struct PCMetSettings;
 class CurlGlobal;

@@ -5,7 +5,6 @@
 
 #if defined(_WIN32) && defined(USE_GDI)
 
-#include <tchar.h>
 #include <windef.h>
 
 HBITMAP GdiLoadImage(const char* filename);

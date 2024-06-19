@@ -7,7 +7,6 @@
 #include "event/PipeEvent.hxx"
 
 #include <atomic>
-#include <tchar.h>
 
 /**
  * A serial port class for POSIX (/dev/ttyS*, /dev/ttyUSB*).

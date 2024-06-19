@@ -5,7 +5,6 @@
 #include "util/StringCompare.hxx"
 #include "TestUtil.hpp"
 
-#include <tchar.h>
 
 int main()
 {

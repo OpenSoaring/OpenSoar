@@ -10,7 +10,6 @@
 #include <concepts>
 #include <span>
 
-#include <tchar.h>
 
 /**
  * Expand variable references in the "$(NAME)" style from the source

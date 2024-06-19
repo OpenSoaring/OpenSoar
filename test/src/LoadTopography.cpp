@@ -16,7 +16,6 @@
 #include "util/PrintException.hxx"
 
 #include <stdio.h>
-#include <tchar.h>
 
 #ifdef ENABLE_OPENGL
 

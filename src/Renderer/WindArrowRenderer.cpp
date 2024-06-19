@@ -16,7 +16,6 @@
 #include "util/Macros.hpp"
 #include "MapSettings.hpp"
 
-#include <tchar.h>
 
 #ifdef ENABLE_OPENGL
 #include "ui/canvas/opengl/Scope.hpp"

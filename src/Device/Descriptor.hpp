@@ -36,7 +36,6 @@
 #include <memory>
 
 #include <cassert>
-#include <tchar.h>
 #include <stdio.h>
 
 namespace Java { class GlobalCloseable; }

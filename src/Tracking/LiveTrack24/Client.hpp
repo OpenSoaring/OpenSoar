@@ -10,7 +10,6 @@
 #include <chrono>
 #include <cstdint>
 
-#include <tchar.h>
 
 class Angle;
 struct GeoPoint;

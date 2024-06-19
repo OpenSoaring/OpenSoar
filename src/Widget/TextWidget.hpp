@@ -5,7 +5,6 @@
 
 #include "WindowWidget.hpp"
 
-#include <tchar.h>
 
 class Color;
 

@@ -8,13 +8,13 @@
 void
 ConsoleOperationEnvironment::SetErrorMessage(const char *text) noexcept
 {
-  _ftprintf(stderr, "ERROR: %s\n", text);
+  fprintf(stderr, "ERROR: %s\n", text);
 }
 
 void
 ConsoleOperationEnvironment::SetText(const char *text) noexcept
 {
-  _tprintf("%s\n", text);
+  printf("%s\n", text);
 }
 
 void

@@ -6,7 +6,6 @@
 #include "util/StringBuffer.hxx"
 
 #include <functional>
-#include <tchar.h>
 
 typedef std::function<const char *(const char *)> AllowedCharacters;
 

@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <tchar.h>
 
 /** 5.2.5 */
 extern const char OpenSoar_Version[];

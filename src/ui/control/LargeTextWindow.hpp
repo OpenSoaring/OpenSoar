@@ -10,7 +10,6 @@
 #include <string>
 #endif
 
-#include <tchar.h>
 
 class LargeTextWindowStyle : public WindowStyle {
 public:

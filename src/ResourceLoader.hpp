@@ -9,7 +9,6 @@
 #include <windef.h>
 #endif
 
-#include <tchar.h>
 
 class ResourceId;
 

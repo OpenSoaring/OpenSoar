@@ -46,7 +46,7 @@ try {
     });
   } else {
     for (const auto &i : file->GetList())
-      _tprintf("task: %s\n", i.c_str());
+      printf("task: %s\n", i.c_str());
   }
 
   return EXIT_SUCCESS;

@@ -8,7 +8,6 @@
 #include "system/Path.hpp"
 // #include "LogFile.hpp"
 
-#include <tchar.h>
 
 #include <map>
 #include <string>

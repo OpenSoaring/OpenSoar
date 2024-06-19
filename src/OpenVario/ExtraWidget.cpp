@@ -23,7 +23,6 @@
 # include "ui/window/ContainerWindow.hpp"
 #endif
 
-#include <tchar.h>
 #include <string>
 
 constexpr const char *opensoar = "OpenSoar";

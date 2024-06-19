@@ -11,7 +11,6 @@
 
 #include <span>
 
-#include <tchar.h>
 
 class XYDataStore;
 class LeastSquares;

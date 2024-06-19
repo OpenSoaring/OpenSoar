@@ -6,7 +6,6 @@
 #include "Settings.hpp"
 #include "System.hpp"
 
-#include <tchar.h>
 
 class AtmosphericPressure;
 

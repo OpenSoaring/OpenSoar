@@ -18,7 +18,6 @@
 
 #include <algorithm>
 
-#include <tchar.h>
 #include <stdio.h>
 #include "Waypoint/Waypoint.hpp"
 

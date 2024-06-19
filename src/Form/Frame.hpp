@@ -8,7 +8,6 @@
 #include "Renderer/TextRenderer.hpp"
 #include <string>
 
-#include <tchar.h>
 
 struct DialogLook;
 

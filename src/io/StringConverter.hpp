@@ -7,7 +7,6 @@
 #include "util/ReusableArray.hpp"
 #include <string>
 
-#include <tchar.h>
 
 /**
  * Helper which imports strings from a file to `char*`.

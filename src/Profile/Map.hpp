@@ -11,7 +11,6 @@
 #include <string>
 
 #include <cstdint>
-#include <tchar.h>
 
 struct GeoPoint;
 class RGB8Color;

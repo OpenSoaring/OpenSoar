@@ -13,7 +13,7 @@
 #include "Formatter/TimeFormatter.hpp"
 #include "json/ParserOutputStream.hxx"
 #include "Language/Language.hpp"
-#include "lib/fmt/tchar.hxx"
+#include "lib/fmt/ToBuffer.hxx"
 #include "net/http/Init.hpp"
 #include "Operation/PluggableOperationEnvironment.hpp"
 #include "system/Path.hpp"

@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <tchar.h>
 
 #ifdef PRINT_RADIX_TREE
 #include <ostream>

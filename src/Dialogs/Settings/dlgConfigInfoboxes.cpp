@@ -220,7 +220,7 @@ InfoBoxesConfigWidget::Prepare(ContainerWindow &parent,
   DataFieldEnum *dfe = new DataFieldEnum(this);
   for (unsigned i = 0; i < layout.info_boxes.count; ++i) {
     char label[32];
-    _stprintf(label, "%u", i + 1);
+    snprintf(label, sizeof(label), "%u", i + 1);
     dfe->addEnumText(label, i);
   }
 

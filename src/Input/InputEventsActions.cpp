@@ -72,7 +72,6 @@ doc/html/advanced/input/ALL  http://xcsoar.sourceforge.net/advanced/input/
 #include "DataComponents.hpp"
 
 #include <cassert>
-#include <tchar.h>
 #include <algorithm>
 
 #ifdef __APPLE__

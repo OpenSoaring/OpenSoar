@@ -36,7 +36,7 @@ public:
   }
 
   void print_flight() {
-    _tprintf("%s,%04u-%02u-%02u,%02u:%02u,%02u:%02u\n", name.c_str(),
+    printf("%s,%04u-%02u-%02u,%02u:%02u,%02u:%02u\n", name.c_str(),
              year, month, day,
              takeoff.time.hour, takeoff.time.minute,
              landing.time.hour, landing.time.minute);

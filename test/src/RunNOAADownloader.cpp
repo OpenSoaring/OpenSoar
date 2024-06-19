@@ -40,31 +40,31 @@ DisplayParsedMETAR(const NOAAStore::Item &station)
   printf("Parsed Data:\n");
 
   if (parsed.name_available)
-    _tprintf("Name: %s\n", parsed.name.c_str());
+    printf("Name: %s\n", parsed.name.c_str());
 
   if (parsed.location_available)
-    _tprintf("Location: %s\n",
+    printf("Location: %s\n",
              FormatGeoPoint(parsed.location, CoordinateFormat::DDMMSS).c_str());
 
   if (parsed.qnh_available) {
     char buffer[256];
     FormatUserPressure(parsed.qnh, buffer);
-    _tprintf("QNH: %s\n", buffer);
+    printf("QNH: %s\n", buffer);
   }
 
   if (parsed.wind_available) {
     char buffer[256];
     FormatUserWindSpeed(parsed.wind.norm, buffer);
-    _tprintf("Wind: %.0f" DEG " %s\n",
+    printf("Wind: %.0f" DEG " %s\n",
              (double)parsed.wind.bearing.Degrees(), buffer);
   }
 
   if (parsed.temperatures_available) {
     char buffer[256];
     FormatUserTemperature(parsed.temperature, buffer);
-    _tprintf("Temperature: %s\n", buffer);
+    printf("Temperature: %s\n", buffer);
     FormatUserTemperature(parsed.dew_point, buffer);
-    _tprintf("Dew point: %s\n", buffer);
+    printf("Dew point: %s\n", buffer);
   }
 
   if (parsed.visibility_available) {
@@ -74,7 +74,7 @@ DisplayParsedMETAR(const NOAAStore::Item &station)
     else {
       FormatUserDistanceSmart(parsed.visibility, buffer);
     }
-    _tprintf("Visibility: %s\n", buffer);
+    printf("Visibility: %s\n", buffer);
   }
 
   printf("\n");
@@ -99,10 +99,10 @@ DisplayMETAR(const NOAAStore::Item &station)
          (unsigned)metar.last_update.second);
 
   if (!metar.content.empty())
-    _tprintf("%s\n\n", metar.content.c_str());
+    printf("%s\n\n", metar.content.c_str());
 
   if (!metar.decoded.empty())
-    _tprintf("%s\n\n", metar.decoded.c_str());
+    printf("%s\n\n", metar.decoded.c_str());
 
   DisplayParsedMETAR(station);
 }
@@ -126,7 +126,7 @@ DisplayTAF(const NOAAStore::Item &station)
          (unsigned)taf.last_update.second);
 
   if (!taf.content.empty())
-    _tprintf("%s\n\n", taf.content.c_str());
+    printf("%s\n\n", taf.content.c_str());
 }
 
 int

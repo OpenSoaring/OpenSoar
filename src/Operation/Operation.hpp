@@ -10,7 +10,6 @@
 #include <exception>
 #include <functional>
 
-#include <tchar.h>
 
 /**
  * An environment a complex operation runs in.  The operation may run

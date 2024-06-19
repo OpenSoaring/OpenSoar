@@ -14,7 +14,6 @@
 
 #include <array>
 #include <list>
-#include <tchar.h>
 
 class DeviceBlackboard;
 class NMEALogger;

@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <tchar.h>
 
 void
 HelpDialog(const char *caption, const char *text);

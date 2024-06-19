@@ -379,8 +379,8 @@ HorizonRenderer::Draw(Canvas &canvas, const PixelRect &rc,
       canvas.Select(look.mark_font);
       canvas.SetBackgroundTransparent();
       canvas.SetTextColor(COLOR_WHITE);
-      TCHAR buffer[5];
-      StringFormatUnsafe(buffer, _T("%+3d"), k);
+      char buffer[5];
+      StringFormat(buffer, 5, "%+3d", k);
       PixelSize ts = canvas.CalcTextSize(buffer);
       m2 = {+radius / 5 + static_cast<int>(ts.height / 2),
             static_cast<int>(h / 2.f * (pitch_degrees - k) /

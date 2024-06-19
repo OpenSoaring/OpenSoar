@@ -14,7 +14,6 @@
 #include <cassert>
 
 #include <handleapi.h> // for INVALID_HANDLE_VALUE
-#include <tchar.h>
 #include <wingdi.h>
 #include <winuser.h>
 

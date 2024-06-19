@@ -7,7 +7,6 @@
 
 #include <functional>
 #include <memory>
-#include <tchar.h>
 
 enum class ButtonState : int;
 struct ButtonLook;

@@ -53,14 +53,14 @@ AngleDataField::ModifyValue(Angle _value) noexcept
 const char *
 AngleDataField::GetAsString() const noexcept
 {
-  _stprintf(string_buffer, "%u", GetIntegerValue());
+  snprintf(string_buffer, sizeof(string_buffer),"%u", GetIntegerValue());
   return string_buffer;
 }
 
 const char *
 AngleDataField::GetAsDisplayString() const noexcept
 {
-  _stprintf(string_buffer, "%u°", GetIntegerValue());
+  snprintf(string_buffer, sizeof(string_buffer),"%u°", GetIntegerValue());
   return string_buffer;
 }
 
@@ -89,8 +89,8 @@ static void
 AppendComboValue(ComboList &combo_list, unsigned value) noexcept
 {
   char buffer1[16], buffer2[16];
-  _stprintf(buffer1, "%u", value);
-  _stprintf(buffer2, "%u°", value);
+  snprintf(buffer1, 16,"%u", value);
+  snprintf(buffer2, 16, "%u°", value);
   combo_list.Append(value, buffer1, buffer2);
 }
 

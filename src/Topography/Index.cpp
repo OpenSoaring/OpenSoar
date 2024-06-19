@@ -7,7 +7,6 @@
 #include "Resources.hpp"
 
 #include <stdlib.h>
-#include <tchar.h>
 
 typedef struct {
   const char *name;

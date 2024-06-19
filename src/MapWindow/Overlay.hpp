@@ -5,7 +5,6 @@
 
 #include "util/Compiler.h"
 
-#include <tchar.h>
 
 class Canvas;
 class WindowProjection;

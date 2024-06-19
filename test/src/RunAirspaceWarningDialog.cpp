@@ -24,7 +24,6 @@
 #include "Components.hpp"
 
 #include <memory>
-#include <tchar.h>
 #include <stdio.h>
 
 void VisitDataFiles([[maybe_unused]] const char* filter,

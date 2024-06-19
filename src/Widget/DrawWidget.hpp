@@ -8,7 +8,6 @@
 #include <functional>
 #include <memory>
 
-#include <tchar.h>
 
 struct PixelRect;
 class Canvas;

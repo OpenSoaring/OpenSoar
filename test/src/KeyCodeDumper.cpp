@@ -87,7 +87,7 @@ protected:
     for (int i = num_events - 1, y = 4; i >= 0; --i, y += text_height) {
       const struct key_event &event = events[i];
       char buffer[64];
-      _stprintf(buffer, "key %s = 0x%x",
+      snprintf(buffer, sizeof(buffer), "key %s = 0x%x",
                 event.down ? "down" : "up", event.code);
       canvas.DrawText({4, y}, buffer);
     }

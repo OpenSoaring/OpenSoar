@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include <tchar.h>
 
 struct TaskBehaviour;
 class Waypoints;

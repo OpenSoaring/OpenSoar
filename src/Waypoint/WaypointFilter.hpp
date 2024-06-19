@@ -7,7 +7,6 @@
 #include "Math/Angle.hpp"
 
 #include <cstdint>
-#include <tchar.h>
 
 struct Waypoint;
 struct GeoPoint;

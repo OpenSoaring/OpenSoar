@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <cstdint>
 
-#include <tchar.h>
 
 /**
  * This class stores a 4-digit octal transponder code.

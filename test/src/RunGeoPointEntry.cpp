@@ -24,7 +24,7 @@ Main([[maybe_unused]] TestMainWindow &main_window)
     return;
 
   if (value.IsValid())
-    _tprintf("%s\n",
+    printf("%s\n",
              FormatGeoPoint(value, CoordinateFormat::DDMMSS).c_str());
   else
     printf("invalid\n");

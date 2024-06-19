@@ -5,7 +5,6 @@
 
 #include "Unit.hpp"
 
-#include <tchar.h>
 
 struct UnitDescriptor
 {

@@ -20,7 +20,6 @@
 #include "BackendComponents.hpp"
 #include "DataComponents.hpp"
 
-#include <tchar.h>
 
 static void
 ShowNextWaypointDetails() noexcept

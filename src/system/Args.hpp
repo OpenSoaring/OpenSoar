@@ -8,7 +8,6 @@
 #include "util/NumberParser.hpp"
 #include "system/Path.hpp"
 
-#include <tchar.h>
 
 #include <list>
 #include <algorithm>

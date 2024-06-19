@@ -17,7 +17,6 @@
 // #include "ui/event/Globals.hpp"
 // #include "ui/display/Display.hpp"
 
-#include <tchar.h>
 #include <string>
 
 constexpr const char *opensoar = "OpenSoar";
