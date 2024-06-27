@@ -4,8 +4,6 @@
 #include "time/BrokenDateTime.hpp"
 #include "TestUtil.hpp"
 
-#include <stdio.h>
-
 using namespace std::chrono;
 
 static void
@@ -158,7 +156,8 @@ TestDateTime()
   ok1(BrokenDateTime(2010, 1, 2, 12, 15, 30).second == 30);
 
   ok1(BrokenDateTime(2010, 2, 28, 23, 0, 0) == BrokenDateTime(2010, 2, 28, 23, 0, 0));
-  ok1(BrokenDateTime(2010, 2, 28, 23, 0, 0) + std::chrono::hours(1) == BrokenDateTime(2010, 3, 1));
+  ok1(BrokenDateTime(2010, 2, 28, 23, 0, 0) + std::chrono::hours(1) ==
+      BrokenDateTime(2010, 3, 1));
   ok1(BrokenDateTime(2010, 2, 28, 23, 59, 59) + std::chrono::seconds(1) == BrokenDateTime(2010, 3, 1));
   ok1(BrokenDateTime(2010, 2, 28, 23, 59, 59) + std::chrono::seconds(2) == BrokenDateTime(2010, 3, 1, 0, 0, 1));
   ok1(BrokenDateTime(2010, 12, 31, 23, 59, 59) + std::chrono::seconds(1) == BrokenDateTime(2011, 1, 1));
