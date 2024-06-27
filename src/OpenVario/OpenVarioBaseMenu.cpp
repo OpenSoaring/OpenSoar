@@ -218,7 +218,7 @@ MainMenuWidget::StartSoarExe(std::string_view _exe,
   std::string exe = ExePath.string().c_str();
   LogFormat("ExePath = %s", exe.c_str());
   printf("ExePath = %s\n", exe.c_str());
-  if (File::Exists(Path(ExePath.c_str()))) {
+  if (File::Exists(Path(exe.c_str()))) {
     std::vector<const char *> ArgList;
     ArgList.reserve(10);
     ArgList = {exe.c_str(), "-fly"};
