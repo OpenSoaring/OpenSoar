@@ -15,6 +15,11 @@
 #include <tchar.h>
 #include <stdio.h>
 
+#ifdef _WIN32
+// TODO(August2111) commented out for PC and WIN64:
+# include "LogFile.hpp"
+#endif
+
 SerialPort::SerialPort(PortListener *_listener, DataHandler &_handler)
   :BufferedPort(_listener, _handler), StoppableThread("SerialPort")
 {
@@ -26,9 +31,16 @@ SerialPort::~SerialPort() noexcept
   if (hPort != INVALID_HANDLE_VALUE) {
     StoppableThread::BeginStop();
 
-    if (CloseHandle(hPort))
-      Sleep(2000); // needed for windows bug
-
+    if (CloseHandle(hPort)) {
+#ifdef _WIN32
+      auto result = ::WaitForSingleObject(hPort, 2000);  // or INFINITE?
+      if (result != (DWORD) -1 ) { // WAIT_OBJECT_0)
+        LogFormat("ERROR: Stopping SerialPort with error %lu", result);
+      }
+#else
+      Sleep(100); // needed for windows bug?
+#endif
+    }
     if (Thread::IsDefined())
         Thread::Join();
   }
