@@ -157,11 +157,11 @@ MapOverlayBitmap::Draw([[maybe_unused]] Canvas &canvas,
       const auto v = GeoFrom2D(ring[i]);
 
       auto p = MapInQuadrilateral(bounds, v);
-      coord[i].x = p.x * x_factor;
-      coord[i].y = p.y * y_factor;
 
       if (bitmap.IsFlipped())
-        coord[i].y = 1 - coord[i].y;
+        p.y = 1 - p.y;
+      coord[i].x = p.x * x_factor;
+      coord[i].y = p.y * y_factor;
 
       vertices[i] = projection.GeoToScreen(v);
     }
