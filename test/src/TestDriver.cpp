@@ -254,10 +254,6 @@ TestFLARM()
   } else {
     skip(15, 0, "traffic3 == NULL");
   }
-
-#ifdef __MSVC__
-  exit(1);
-#endif
 }
 
 static void
@@ -1301,55 +1297,6 @@ TestOpenVario()
   delete device;
 }
 
-/*
-see line 744!
-static void
-TestLarus()
-{
-    NullPort null;
-    Device *device = larus_driver.CreateOnPort(dummy_config, null);
-    ok1(device != NULL);
-
-    NMEAInfo nmea_info;
-    nmea_info.Reset();
-    nmea_info.clock = TimeStamp{FloatDuration{1}};
-
-    // $PLARA:
-    ok1(device->ParseNMEA("$PLARA,-0.8,7.5,99.3*58", nmea_info));
-
-    // $PLARB: battery voltage
-    ok1(device->ParseNMEA("$PLARB,12.20*4E", nmea_info));
-    ok1(nmea_info.voltage_available);
-    ok1(equals(nmea_info.voltage, 12.2));
-
-    ok1(device->ParseNMEA("$PLARB,12.23*4D", nmea_info));
-    ok1(nmea_info.voltage_available);
-    ok1(equals(nmea_info.voltage, 12.23));
-
-    // $PLARD:
-    ok1(device->ParseNMEA("$PLARD,1214.30,M*2D", nmea_info));
-    // $PLARV:
-    ok1(device->ParseNMEA("$PLARV,-0.11,0.02,141,5*77", nmea_info));
-    // $PLARW: wind, instant. and long time
-    ok1(device->ParseNMEA("$PLARW,98,4,I,A*65", nmea_info));
-    ok1(device->ParseNMEA("$PLARW,89,7,A,A*6E", nmea_info));
-    ok1(nmea_info.external_instantaneous_wind_available);
-    ok1(equals(nmea_info.external_instantaneous_wind.norm * 3.6, 4.0));
-    ok1(equals(nmea_info.external_instantaneous_wind.bearing.AbsoluteDegrees(), 98.0));
-    ok1(nmea_info.external_wind_available);
-    ok1(equals(nmea_info.external_wind.norm * 3.6, 7.0));
-    ok1(equals(nmea_info.external_wind.bearing.AbsoluteDegrees(), 89.0));
-#ifdef _DEBUG
-    std::cout << "Wind: " << nmea_info.external_wind.norm * 3.6 << "km/h, "
-              << nmea_info.external_wind.bearing.AbsoluteDegrees() << std::endl;
-#endif
-    // $HCHDT: true heading
-    ok1(device->ParseNMEA("$HCHDT,99.3,T*1A", nmea_info));
-    nmea_info.Reset();
-    delete device;
-}
-*/
-
 static void
 TestWesterboer()
 {
@@ -1753,8 +1700,7 @@ TestFlightList(const struct DeviceRegister &driver)
 
 int main()
 {
-#if 1
-  plan_tests(865);
+  plan_tests(880);
 
   TestGeneric();
   TestTasman();
@@ -1775,10 +1721,6 @@ int main()
   TestLXV7();
   TestILEC();
   TestOpenVario();
-#endif
-  // plan_tests(13);
-  TestLarus();
-#if 1
   TestVega();
   TestWesterboer();
   TestZander();
@@ -1805,7 +1747,6 @@ int main()
   TestFlightList(cai302_driver);
   TestFlightList(lx_driver);
   TestFlightList(imi_driver);
-#endif
 
   return exit_status();
 }

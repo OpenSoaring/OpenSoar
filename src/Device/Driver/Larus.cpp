@@ -371,11 +371,11 @@ LarusDevice::PLARS(NMEAInputLine &line, NMEAInfo &info)
         // - value is MacCReady in m/s [0.0 .. 9.9]
         return info.settings.ProvideMacCready(value, info.clock);
       } else if (field == "BUGS") {
-        // - value is bugs in % [0-30], OpenSoar wants [0.5 .. 1.00]
-        return info.settings.ProvideBugs((1.0 - value)/100.0, info.clock);
+        // - value is bugs in % [0-50]
+        return info.settings.ProvideBugs(1.0 - value/100.0, info.clock);
       } else if (field == "BAL") {
-        // - value is ballast overload [1.00..1.60]
-        return info.settings.ProvideBallastOverload(value, info.clock);
+        // - value is ballast fraction [0.00 - 1.00]
+        return info.settings.ProvideBallastFraction(value, info.clock);
       } else if (field == "QNH") {
         // - value is pressure in hPa
         return info.settings.ProvideQNH(AtmosphericPressure::HectoPascal(value),
