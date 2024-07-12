@@ -19,7 +19,9 @@
 #include <string.h>
 #ifdef _WIN32
   // TODO(August2111): needs work!
+#ifdef __MSVC__
 typedef size_t pid_t;
+#endif
 #include <sstream>
 #else
 #include <sys/wait.h>
