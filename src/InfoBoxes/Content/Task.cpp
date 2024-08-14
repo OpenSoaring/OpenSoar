@@ -64,7 +64,7 @@ UpdateInfoBoxBearing(InfoBoxData &data) noexcept
 
   // Set Value
   data.SetValue(vector_remaining.bearing);
-  data.SetValueColor(task_stats.inside_oz ? 3 : 0);
+  data.SetValueColor(task_stats.inside_oz ? 3 : 5);
 }
 
 void
@@ -97,7 +97,7 @@ UpdateInfoBoxRadial(InfoBoxData &data) noexcept
 
   // Set Value
   data.SetValue(vector_remaining.bearing.Reciprocal());
-  data.SetValueColor(task_stats.inside_oz ? 3 : 0);
+  data.SetValueColor(task_stats.inside_oz ? 3 : 5);
 
   data.SetCommentFromDistance(vector_remaining.distance);
 }
@@ -144,7 +144,7 @@ InfoBoxContentNextWaypoint::Update(InfoBoxData &data) noexcept
   data.SetValueFromBearingDifference(Value);
 
   // Set Color (blue/black)
-  data.SetValueColor(solution_remaining.IsFinalGlide() ? 2 : 0);
+  data.SetValueColor(solution_remaining.IsFinalGlide() ? 2 : 5);
 }
 
 const InfoBoxPanel *
@@ -178,7 +178,7 @@ UpdateInfoBoxNextDistance(InfoBoxData &data) noexcept
 
   // Set Value
   data.SetValueFromDistance(vector_remaining.distance);
-  data.SetValueColor(task_stats.inside_oz ? 3 : 0);
+  data.SetValueColor(task_stats.inside_oz ? 3 : 5);
 
   if (basic.track_available) {
     Angle bd = vector_remaining.bearing - basic.track;
@@ -216,7 +216,7 @@ UpdateInfoBoxNextDistanceNominal(InfoBoxData &data) noexcept
 
   // Set Value
   data.SetValueFromDistance(vector.distance);
-  data.SetValueColor(task_stats.inside_oz ? 3 : 0);
+  data.SetValueColor(task_stats.inside_oz ? 3 : 5);
   data.SetComment(vector.bearing);
 }
 
@@ -234,6 +234,7 @@ UpdateInfoBoxNextETE(InfoBoxData &data) noexcept
   assert(task_stats.current_leg.time_remaining_now.count() >= 0);
 
   data.SetValueFromTimeTwoLines(task_stats.current_leg.time_remaining_now);
+  data.SetValueColor(5);
 }
 
 void
@@ -258,6 +259,7 @@ UpdateInfoBoxNextETA(InfoBoxData &data) noexcept
 
   // Set Comment
   data.FmtComment("{:02}", t.second);
+  data.SetValueColor(5);
 }
 
 static void
@@ -284,6 +286,7 @@ UpdateInfoBoxNextAltitudeDiff(InfoBoxData &data) noexcept
   const auto &next_solution = task_stats.current_leg.solution_remaining;
 
   SetValueFromAltDiff(data, task_stats, next_solution);
+  data.SetValueColor(5);
 }
 
 void
@@ -293,6 +296,7 @@ UpdateInfoBoxNextMC0AltitudeDiff(InfoBoxData &data) noexcept
 
   SetValueFromAltDiff(data, task_stats,
                       task_stats.current_leg.solution_mc0);
+  data.SetValueColor(5);
 }
 
 void
@@ -308,6 +312,7 @@ UpdateInfoBoxNextAltitudeRequire(InfoBoxData &data) noexcept
   }
 
   data.SetValueFromAltitude(next_solution.GetRequiredAltitude());
+  data.SetValueColor(5);
 }
 
 void
@@ -325,6 +330,7 @@ UpdateInfoBoxNextAltitudeArrival(InfoBoxData &data) noexcept
   }
 
   data.SetValueFromAltitude(next_solution.GetArrivalAltitude(basic.nav_altitude));
+  data.SetValueColor(5);
 }
 
 
@@ -333,6 +339,7 @@ UpdateInfoBoxNextGR(InfoBoxData &data) noexcept
 {
   // pilots want this to be assuming terminal flight to this wp, and this
   // is what current_leg gradient does.
+  data.SetValueColor(5);
 
   if (!CommonInterface::Calculated().task_stats.task_valid) {
     data.SetInvalid();
@@ -738,6 +745,7 @@ UpdateInfoBoxNextETEVMG(InfoBoxData &data) noexcept
   }
 
   data.SetValueFromTimeTwoLines(FloatDuration{d / v});
+  data.SetValueColor(5);
 }
 
 void
@@ -768,6 +776,8 @@ UpdateInfoBoxNextETAVMG(InfoBoxData &data) noexcept
     data.FmtValue("{:02}:{:02}", t.hour, t.minute);
     data.FmtComment("{:02}", t.second);
   }
+  
+  data.SetValueColor(5);
 
 }
 

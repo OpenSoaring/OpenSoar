@@ -10,8 +10,8 @@ class Font;
 
 struct WindArrowLook
 {
-  Pen arrow_pen, shaft_pen;
-  Brush arrow_brush;
+  Pen arrow_pen, shaft_pen, next_arrow_pen;
+  Brush arrow_brush, next_arrow_brush;
   Brush arrow_brush_extern;
   Brush arrow_brush_instantaneous;
 
