@@ -8,14 +8,12 @@
 
 class Font;
 
-struct WindArrowLook
+struct NextArrowLook
 {
-  Pen arrow_pen, shaft_pen;
-  Brush arrow_brush;
-  Brush arrow_brush_extern;
-  Brush arrow_brush_instantaneous;
+  Pen next_arrow_pen;
+  Brush next_arrow_brush;
 
   const Font *font;
 
-  void Initialise(const Font &font, bool inverse = false);
+  void Initialise(const Font &font, bool use_colors = true, bool inverse = false);
 };

@@ -22,6 +22,7 @@
 #include "IconLook.hpp"
 #include "ThermalAssistantLook.hpp"
 #include "ClimbPercentLook.hpp"
+#include "NextArrowLook.hpp"
 
 struct UISettings;
 class Font;
@@ -42,6 +43,7 @@ struct Look {
   FlarmTrafficLook flarm_dialog;
   InfoBoxLook info_box;
   WindArrowLook wind_arrow_info_box;
+  NextArrowLook next_arrow_info_box;
   FinalGlideBarLook final_glide_bar;
   VarioBarLook vario_bar;
   IconLook icon;
