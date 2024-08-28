@@ -3,17 +3,17 @@
 
 #pragma once
 
-
 #include "Request.hpp"
 #include "APIGlue.hpp"
 #include "APIQueue.hpp"
 #include "Metrics.hpp"
-#include <memory>
-#include <map>
 #include "system/Path.hpp"
 #include "LocalPath.hpp"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+
+#include <memory>
+#include <map>
 
 //maintain two-hour local data cache
 #define SKYSIGHTAPI_LOCAL_CACHE 7200 
@@ -39,9 +39,9 @@ public:
   
   bool IsInited();
   SkysightMetric GetMetric(int index);
-  SkysightMetric GetMetric(const std::string id);
-  SkysightMetric *GetMetric(const char *const id);
-  bool MetricExists(const std::string id);
+  SkysightMetric *GetMetric(const std::string_view id);
+  // SkysightMetric *GetMetric(const char *const id);
+  bool MetricExists(const std::string_view id);
   int NumMetrics();
 
   bool GetImageAt(const char *const layer, BrokenDateTime fctime,

@@ -104,14 +104,14 @@ bool CDFDecoder::Decode() {
 
 #if defined(WIN_SKYSIGHT) || !defined(_WIN32)
 #ifdef ANDROID
-  NcFile data_file(path.c_str(), NcFile::FileMode::ReadOnly);
+  NcFile data_file(url.c_str(), NcFile::FileMode::ReadOnly);
   if (!data_file.is_valid())
     return DecodeError();
 
   size_t lat_size = data_file.get_dim("lat")->size();
   size_t lon_size = data_file.get_dim("lon")->size();
 #else
-  netCDF::NcFile data_file(path.c_str(), netCDF::NcFile::read);
+  netCDF::NcFile data_file(url.c_str(), netCDF::NcFile::read);
   if (data_file.isNull())
     return DecodeError();
 
@@ -253,7 +253,7 @@ bool CDFDecoder::Decode() {
   GTIFFree(gt);
 
   data_file.close();
-  File::Delete(path);
+  // August2111: why and how delete the url(path) File::Delete(url); // path);
   return (success) ? DecodeSuccess() : DecodeError();
 #endif // defined(WIN_SKYSIGHT) || !defined(_WIN32)
 

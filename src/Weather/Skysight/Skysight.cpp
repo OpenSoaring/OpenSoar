@@ -339,7 +339,8 @@ Skysight::GetActiveMetricState(std::string metric_name, SkysightActiveMetric &m)
       updated  = std::max(updated, i.mtime);
     }
     if (MetricExists(metric_name)) {
-      m.metric =new SkysightMetric(GetMetric(metric_name));
+      //m.metric =new SkysightMetric(GetMetric(metric_name));
+      m.metric = GetMetric(metric_name);
       m.from = min_date;
       m.to = max_date;
       m.mtime = updated;

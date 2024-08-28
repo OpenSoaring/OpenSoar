@@ -61,7 +61,7 @@ public:
     return api->GetMetric(index);
   }
 
-  SkysightMetric GetMetric(const std::string id) {
+  SkysightMetric *GetMetric(const std::string_view id) {
     return api->GetMetric(id);
   }
 

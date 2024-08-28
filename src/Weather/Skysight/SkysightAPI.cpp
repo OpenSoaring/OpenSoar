@@ -7,10 +7,6 @@
 #include "SkysightRegions.hpp"
 #include "util/StaticString.hxx"
 
-#include <memory>
-#include <vector>
-#include <map>
-
 #include "system/Path.hpp"
 #include "LocalPath.hpp"
 #include "system/FileUtil.hpp"
@@ -20,13 +16,18 @@
 #include "io/FileLineReader.hpp"
 #include "time/BrokenDateTime.hpp"
 #include "Metrics.hpp"
+#include "io/BufferedReader.hxx"
+#include "Operation/Operation.hpp"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <sstream>
-#include "io/BufferedReader.hxx"
 
-#include "Operation/Operation.hpp"
+#include <memory>
+#include <vector>
+#include <map>
+#include <sstream>
+#include <string>
+
 
 SkysightAPI *SkysightAPI::self;
 
@@ -44,20 +45,22 @@ SkysightAPI::GetMetric(int index)
   return i;
 }
 
-SkysightMetric
-SkysightAPI::GetMetric(const std::string id)
+SkysightMetric *
+// SkysightAPI::GetMetric(const std::string id)
+SkysightAPI::GetMetric(const std::string_view id)
 {
   std::vector<SkysightMetric>::iterator i;
   for(i = metrics.begin(); i<metrics.end();++i) {
     if(!i->id.compare(id)) {
       assert(i < metrics.end());
-      return (*i);
+      return &(*i);
     }
   }
 
-  return (*i);
+  return &(*i);
 }
 
+#if 0
 //TODO: Use auto ptr, use char for all, try to whittle down to pointer only ver
 SkysightMetric *
 SkysightAPI::GetMetric(const char *const id)
@@ -78,8 +81,10 @@ SkysightAPI::GetMetric(const char *const id)
 
   return &(*i);
 }
+#endif
 
-bool SkysightAPI::MetricExists(const std::string id) {
+bool 
+SkysightAPI::MetricExists(const std::string_view id) {
 
   std::vector<SkysightMetric>::iterator i;
   for(i = metrics.begin(); i<metrics.end();++i)
@@ -478,7 +483,8 @@ SkysightAPI::ParseData(const SkysightRequestArgs &args, __attribute__((unused)) 
 			    args.from);
   queue.AddDecodeJob(std::make_unique<CDFDecoder>(args.path.c_str(), output_img.c_str(),
                                         args.layer.c_str(), args.from, 
-                                        GetMetric(args.layer.c_str())->legend, args.cb));
+                                        GetMetric(args.layer)->legend, args.cb));
+//                                        GetMetric(args.layer.c_str()).legend, args.cb));
   return true;
 }
 
@@ -529,8 +535,9 @@ SkysightAPI::CacheAvailable(Path path, SkysightCallType calltype,
 {
   uint64_t layer_updated = 0;
   if (layer) {
-    SkysightMetric *m = GetMetric(layer);
-    layer_updated = m->last_update;
+    // SkysightMetric m = GetMetric(layer);
+    // layer_updated = m.last_update;
+    layer_updated = GetMetric(layer)->last_update;
   }
 
   if (File::Exists(path)) {
