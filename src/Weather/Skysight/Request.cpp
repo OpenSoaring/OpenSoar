@@ -210,7 +210,7 @@ SkysightAsyncRequest::Tick() noexcept
   bool result;
   std::string resultStr;
 
-  if (args.to_file) {
+  if (!args.path.empty()) {
     result = RequestToFile();
     resultStr = args.path.c_str();
   } else {

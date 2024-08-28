@@ -496,16 +496,22 @@ SkysightAPI::GetData(SkysightCallType t, const char *const layer,
 {
   const std::string url = link ? link : GetUrl(t, layer,  from);
 
-  const auto path = GetPath(t,  layer,  from);
+  // const
+  auto path = GetPath(t,  layer,  from);
 
-  bool to_file = !(t == SkysightCallType::DataDetails ||
-		   t == SkysightCallType::Login ||
-		   t == SkysightCallType::LastUpdates);
+//  bool to_file = !(t == SkysightCallType::DataDetails ||
+//		   t == SkysightCallType::Login ||
+//		   t == SkysightCallType::LastUpdates);
+  if (t == SkysightCallType::DataDetails || t == SkysightCallType::Login ||
+      t == SkysightCallType::LastUpdates)
+    if (!path.empty())
+      LogString(path.c_str());
+    // path..clear() = "";
 
   SkysightRequestArgs ra(
     url.c_str(),
     path.c_str(),
-    to_file,
+    // to_file,
     t,
     region.c_str(),
     layer ? layer : "",
@@ -577,7 +583,8 @@ SkysightAPI::GetResult(const SkysightRequestArgs &args, const std::string result
 		       boost::property_tree::ptree &output)
 {
   try {
-    if (args.to_file) {
+//    if (args.to_file) {
+    if (!args.path.empty()) {
       boost::property_tree::read_json(result.c_str(), output);
     } else {
       std::stringstream result_stream(result);
