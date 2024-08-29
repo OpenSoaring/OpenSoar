@@ -36,7 +36,7 @@ EventLoop::Get(Event &event)
 void
 EventLoop::Dispatch(const Event &event)
 {
-  if (event.type == Event::CALLBACK) {
+  if (event.type == Event::CALLBACK_) {
     event.callback(event.ptr);
   } else if (top_window != nullptr && event.type != Event::NOP) {
 #ifndef NON_INTERACTIVE

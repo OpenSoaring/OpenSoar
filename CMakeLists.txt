@@ -358,6 +358,8 @@ endif()
     add_subdirectory(src/lib)
 add_subdirectory(src)   # libOpenSoar!
 
+add_subdirectory(src/OpenVario)   # libOpenSoar!
+
 list(APPEND SOURCE_FILES "src/OpenSoar.cpp")
 # list(APPEND SOURCE_FILES "src/Version.cpp")
 ## configure_file(

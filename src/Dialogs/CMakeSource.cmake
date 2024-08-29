@@ -94,7 +94,6 @@ set(_SOURCES
         Dialogs/Settings/Panels/WaypointDisplayConfigPanel.cpp
         Dialogs/Settings/Panels/WeatherConfigPanel.cpp
         Dialogs/Settings/Panels/WindConfigPanel.cpp
-        Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp
         Dialogs/Settings/WindSettingsDialog.cpp
         Dialogs/Settings/WindSettingsPanel.cpp
 
@@ -156,6 +155,30 @@ set(_SOURCES
 
         Dialogs/CoDialog.cpp
 )
+
+
+
+if(ON)  # IS_OPENVARIO
+  list(APPEND _SOURCES
+        ../OpenVario/System/OpenVarioDevice.cpp
+        ../OpenVario/FileMenuWidget.cpp
+
+        ../OpenVario/System/SystemMenuWidget.cpp
+        ../OpenVario/System/SystemSettingsWidget.cpp
+        ../OpenVario/System/Setting/RotationWidget.cpp 
+        # OpenVario/System/Setting/BrightnessWidget.cpp 
+        # OpenVario/System/Setting/TimeoutWidget.cpp 
+        # OpenVario/System/Setting/SSHWidget.cpp
+        # OpenVario/System/Setting/VariodWidget.cpp
+        # OpenVario/System/Setting/SensordWidget.cpp
+
+        ../OpenVario/System/WifiDialogOV.cpp 
+        ../OpenVario/System/WifiSupplicantOV.cpp 
+        
+        Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp
+  )
+endif() 
+
 if(UNIX)
   list(APPEND _SOURCES
         Dialogs/Settings/Panels/AudioVarioConfigPanel.cpp

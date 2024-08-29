@@ -3,20 +3,15 @@ if (SHOW_SUBPROJECTS)
     message(STATUS "+++ Start CMake ${CMAKE_CURRENT_SOURCE_DIR}!")
 endif()
 
-  get_filename_component(TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
+  get_filename_component(TARGET_FOLDER ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
+  set(TARGET_NAME OpenVarioBaseMenu)
 
 include(CMakeSource.cmake)
 # organize the files in subdirectories
-
-if(MSVC)
-  # in device driver could be found characters f.e. fro german codepage
-  # (f.e. VOLKSLOGGER) - surpress this warnings:
-  add_compile_options(/wd4828)  #  "|": unsichere Kombination von Typ "bool" mit Typ "int" in einer Operation
-endif()
-
 set(SOURCE_FILES )
 foreach(source_file ${_SOURCES})
-    string(REPLACE "${TARGET_NAME}/" "" source_file ${source_file})
+    string(REPLACE "${TARGET_FOLDER}/" "" source_file ${source_file})
+    string(REPLACE "${PROJECTGROUP_SOURCE_DIR}/" "../../" source_file ${source_file})
     list(APPEND SOURCE_FILES ${source_file})
     get_filename_component(src_path ${source_file} DIRECTORY)
     if (src_path)
@@ -45,15 +40,25 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
+add_compile_definitions("OPENVARIO_DEVICE")
+add_compile_definitions("IS_OPENVARIO")
+
+# add_compile_definitions("USE_LIBINPUT")
+# remeve this definition after  
+
+if(MSVC)
+  SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECTGROUP_BINARY_DIR}")
+endif()
+
+add_executable(${TARGET_NAME} 
     ${SOURCE_FILES}
     ${HEADER_FILES}
     ${SCRIPT_FILES}
 )
+## target_link_libraries(${TARGET_NAME} PUBLIC Logger)
 
-target_link_libraries(${TARGET_NAME} PUBLIC Job NMEA)
+ # message(FATAL_ERROR "Stop!")
+set_target_properties(${TARGET_NAME} PROPERTIES FOLDER OpenVarioBaseMenu)
 
-# message(FATAL_ERROR "Stop!")
-set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)
-
-add_dependencies(${TARGET_NAME} util)
+target_link_libraries(${TARGET_NAME} PUBLIC ${OPENVARIOBASEMENU_LIBS})
+add_dependencies(${TARGET_NAME} util Data)

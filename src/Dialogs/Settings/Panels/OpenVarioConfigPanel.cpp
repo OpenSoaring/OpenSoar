@@ -4,18 +4,46 @@
 #ifdef IS_OPENVARIO
 // don't use (and compile) this code outside an OpenVario project!
 
-#include "Profile/Keys.hpp"
+#include "Dialogs/Settings/Panels/OpenVarioConfigPanel.hpp"
+#include "Dialogs/WidgetDialog.hpp"
+#include "Widget/RowFormWidget.hpp"
+#include "Look/DialogLook.hpp"
+
 #include "Language/Language.hpp"
 #include "Widget/RowFormWidget.hpp"
 #include "Form/DataField/Boolean.hpp"
 #include "Form/DataField/Listener.hpp"
+#include "Form/DataField/Enum.hpp"
 #include "Interface.hpp"
 #include "UIGlobals.hpp"
+#include "ui/window/SingleWindow.hpp"
+
+#include "Dialogs/Message.hpp"
+
+#include "OpenVario/System/OpenVarioDevice.hpp"
+#include "OpenVario/System/WifiDialogOV.hpp"
+
 
 #include <stdio.h>
 
-// #define HAVE_WEGLIDE_PILOTNAME
 
+enum ControlIndex {
+  FIRMWARE,
+  ENABLED,
+  ROTATION,
+  BRIGHTNESS,
+  SENSORD,
+  VARIOD,
+  SSH,
+  TIMEOUT,
+  SHELL_BUTTON,
+  WIFI_BUTTON,
+
+  INTEGERTEST,
+};
+
+
+#if 0
 class OpenVarioConfigPanel final
   : public RowFormWidget, DataFieldListener {
 public:
@@ -28,87 +56,168 @@ public:
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
 
+  int OnShow(const UI::SingleWindow &parent) noexcept;
+
 private:
   /* methods from DataFieldListener */
   void OnModified(DataField &df) noexcept override;
 };
+#endif
+  static constexpr StaticEnumChoice timeout_list[] = {
+    { 0,  _T("immediately"), },
+    { 1,  _T("1s"), },
+    { 3,  _T("3s"), },
+    { 5,  _T("5s"), },
+    { 10, _T("10s"), },
+    { 30, _T("30s"), },
+    { 60, _T("1min"), },
+    { -1, _T("never"), },
+    nullptr
+  };
+
+  static constexpr StaticEnumChoice enable_list[] = {
+    { SSHStatus::ENABLED,   _T("enabled"), },
+    { SSHStatus::DISABLED,  _T("disabled"), },
+    { SSHStatus::TEMPORARY, _T("temporary"), },
+    nullptr
+  };
 
 void
 OpenVarioConfigPanel::SetEnabled([[maybe_unused]] bool enabled) noexcept
 {
-#ifdef OPENVARIO_CONFIG
-  // out commented currently:
-  SetRowEnabled(WeGlideAutomaticUpload, enabled);
-  SetRowEnabled(WeGlidePilotBirthDate, enabled);
-  SetRowEnabled(WeGlidePilotID, enabled);
-#endif
+  // this disabled itself: SetRowEnabled(ENABLED, enabled);
+  SetRowEnabled(BRIGHTNESS, enabled);
+  SetRowEnabled(TIMEOUT, enabled);
 }
 
 void
 OpenVarioConfigPanel::OnModified([[maybe_unused]] DataField &df) noexcept
 {
-#ifdef OPENVARIO_CONFIG
-// out commented currently:
-  if (IsDataField(WeGlideEnabled, df)) {
+  if (IsDataField(ENABLED, df)) {
     const DataFieldBoolean &dfb = (const DataFieldBoolean &)df;
     SetEnabled(dfb.GetValue());
   }
-#endif
 }
 
 void
 OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
                             const PixelRect &rc) noexcept
 {
-  // const WeGlideSettings &weglide = CommonInterface::GetComputerSettings().weglide;
-
   RowFormWidget::Prepare(parent, rc);
 
-  bool bTest = false;
-  unsigned iTest = 0;
+  ovdevice.sensord = OpenvarioGetSensordStatus();
+  ovdevice.variod = OpenvarioGetVariodStatus();
+  ovdevice.ssh = (unsigned) OpenvarioGetSSHStatus();
+  
 
-  // void AddReadOnly(label, help,text;
-  auto version = _("3.2.20");
+  const TCHAR version[] = _T(PROGRAM_VERSION);
+
+//   auto version = _T("3.2.20 (hard coded)");
   AddReadOnly(_("OV-Firmware-Version"), _("Current firmware version of OpenVario"), version);
   AddBoolean(
-      _("Boolean Test"),
-      _("Boolean Test."),
-      bTest, this);
+      _("Settings Enabled"),
+      _("Enable the Settings Page"), ovdevice.enabled, this);
 
-   AddInteger(_("Integer Test"),
-             _("Integer Test."),
-             _T("%d"), _T("%d"), 1, 99999, 1, iTest);
+   AddInteger(_("Rotation"),
+             _("Rotation Display OpenVario"), _T("%d"), _T("%d%%"), 0,
+              3, 1, ovdevice.rotation);
 
-  SetEnabled(bTest);
+   AddInteger(_("Brightness"),
+             _("Brightness Display OpenVario"), _T("%d"), _T("%d%%"), 10,
+              100, 10, ovdevice.brightness);
+   AddBoolean(_("SensorD"), _("Enable the SensorD"), ovdevice.sensord, this);
+   AddBoolean(_("VarioD"), _("Enable the VarioD"), ovdevice.variod, this);
+   AddEnum(_("SSH"), _("Enable the SSH Connection"), enable_list,
+           ovdevice.ssh);
+
+   AddEnum(_("Program Timeout"), _("Timeout for Program Start."), timeout_list, ovdevice.timeout);
+
+   // auto Btn_Shell = 
+   AddButton(
+       _T("Shell"), [this]() { 
+         ShowMessageBox(_("Button pressed"), _("OV-Button"),
+                        MB_OK | MB_ICONERROR);
+     });
+
+   AddButton(
+       _T("Settings Wifi"), [this]() { 
+         ShowWifiDialog();
+     });
+
+   AddInteger(_("IntegerTest"),
+               _("IntegerTest."), _T("%d"), _T("%d"), 0,
+                  99999, 1, ovdevice.iTest);
+
+  AddReadOnly(_("OV-Firmware-Version"),
+               _("Current firmware version of OpenVario"), version);
+
+  SetEnabled(ovdevice.enabled);
 }
 
 bool
 OpenVarioConfigPanel::Save([[maybe_unused]] bool &_changed) noexcept
 {
-#ifdef OPENVARIO_CONFIG
-  // out commented currently:
   bool changed = false;
+  changed |= SaveValue(ENABLED, "Enabled", ovdevice.enabled, false);
 
-  auto &weglide = CommonInterface::SetComputerSettings().weglide;
+  if (SaveValue(ENABLED, "Enabled", ovdevice.enabled, false)) {
+    ovdevice.settings.insert_or_assign("Enabled",
+                          ovdevice.brightness ? "True" : "False");
+    changed = true;
+  }
 
-  changed |= SaveValue(WeGlideAutomaticUpload,
-                       ProfileKeys::WeGlideAutomaticUpload,
-                       weglide.automatic_upload);
+  if (SaveValueEnum(TIMEOUT, "Timeout", ovdevice.timeout)) {
+    ovdevice.settings.insert_or_assign("Timeout",
+      std::to_string(ovdevice.timeout));
+    changed = true;
+  }
 
-  changed |= SaveValueInteger(WeGlidePilotID, ProfileKeys::WeGlidePilotID,
-                              weglide.pilot_id);
+  if (SaveValueInteger(BRIGHTNESS, "Brightness", ovdevice.brightness)) {
+    ovdevice.settings.insert_or_assign(
+        "Brightness", std::to_string(ovdevice.brightness));
+    changed = true;
+  }
 
-  changed |= SaveValue(WeGlidePilotBirthDate,
-                       ProfileKeys::WeGlidePilotBirthDate,
-                       weglide.pilot_birthdate);
+  if (SaveValueInteger(INTEGERTEST, "iTest",ovdevice.iTest)) {
+    ovdevice.settings.insert_or_assign(
+        "iTest", std::to_string(ovdevice.iTest));
+    changed = true;
+  }
+#if 0 // TOD(August2111) Only Test
+  ovdevice.settings.insert_or_assign("OpenSoarData",
+                                     "D:/Data/OpenSoarData");
+#endif
 
-  changed |= SaveValue(WeGlideEnabled, ProfileKeys::WeGlideEnabled,
-                       weglide.enabled);
+  if (changed) {
+    WriteConfigFile(ovdevice.settings, ovdevice.GetSettingsConfig());
+  }
 
-  _changed |= changed;
- 
-  #endif
+  if (SaveValueEnum(SSH, ovdevice.ssh))
+    OpenvarioSetSSHStatus((SSHStatus) ovdevice.ssh); 
+
+  if (SaveValue(SENSORD, ovdevice.sensord))
+    OpenvarioSetSensordStatus(ovdevice.sensord); 
+
+  if (SaveValue(VARIOD, ovdevice.variod)) 
+    OpenvarioSetSensordStatus(ovdevice.variod); 
+
+
   return true;
+}
+
+int 
+OpenVarioConfigPanel::OnShow([[maybe_unused]] const UI::SingleWindow &parent)
+                             noexcept {
+#if 0
+  TWidgetDialog<OpenVarioConfigPanel> sub_dialog(
+      WidgetDialog::Full{}, parent, GetLook(),
+      _T("OpenVario System Settings"));
+  sub_dialog.SetWidget();
+  sub_dialog.AddButton(_("Close"), mrOK);
+  return sub_dialog.ShowModal();
+#else
+  return 0;
+#endif
 }
 
 std::unique_ptr<Widget>
@@ -116,4 +225,7 @@ CreateOpenVarioConfigPanel() noexcept
 {
   return std::make_unique<OpenVarioConfigPanel>();
 }
+
 #endif
+
+

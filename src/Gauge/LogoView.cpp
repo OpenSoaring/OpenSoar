@@ -15,9 +15,7 @@ LogoView::LogoView() noexcept try
   :logo(IDB_LOGO), big_logo(IDB_LOGO_HD),
    title(IDB_TITLE), big_title(IDB_TITLE_HD)
 {
-#ifndef USE_GDI
   font.Load(FontDescription(Layout::FontScale(10)));
-#endif
 } catch (...) {
   /* ignore Bitmap/Font loader exceptions */
 }
@@ -143,12 +141,10 @@ LogoView::draw(Canvas &canvas, const PixelRect &rc) noexcept
 
   // Draw full XCSoar version number
 
-#ifndef USE_GDI
   if (!font.IsDefined())
     return;
 
   canvas.Select(font);
-#endif
 
   canvas.SetTextColor(COLOR_BLACK);
   canvas.SetBackgroundTransparent();

@@ -35,12 +35,19 @@ OpenLog()
   if (!initialised) {
     initialised = true;
 
+#ifdef IS_OPENVARIO
+    /* delete the obsolete log file */
+    File::Delete(LocalPath(_T("opensoar-startup.log")));
+    path = LocalPath(_T("opensoar.log"));
+    File::Replace(path, LocalPath(_T("opensoar-old.log")));
+#else
     /* delete the obsolete log file */
     File::Delete(LocalPath(_T("xcsoar-startup.log")));
 
     path = LocalPath(_T("xcsoar.log"));
 
     File::Replace(path, LocalPath(_T("xcsoar-old.log")));
+#endif
 
 #ifdef ANDROID
     /* redirect stdout/stderr to xcsoar-startup.log on Android so we

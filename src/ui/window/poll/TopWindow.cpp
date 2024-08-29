@@ -28,7 +28,7 @@ TopWindow::OnEvent(const Event &event)
     Window *w;
 
   case Event::NOP:
-  case Event::CALLBACK:
+  case Event::CALLBACK_:
     break;
 
   case Event::CLOSE:

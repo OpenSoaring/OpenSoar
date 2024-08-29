@@ -45,8 +45,9 @@ Display::LoadOrientation(VerboseOperationEnvironment &env)
 
   LogString("Display rotated");
 
+#ifndef OPENVARIO_DEVICE   // remove this after OpenVarioBaseMenu is ready
   CommonInterface::main_window->Initialise();
-
+#endif
   /* force the progress dialog to update its layout */
   env.UpdateLayout();
 }

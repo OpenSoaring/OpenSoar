@@ -187,6 +187,7 @@ DeviceConfig::Clear() noexcept
 #ifndef NDEBUG
   dump_port = false;
 #endif
+//  dump_port = true;
 }
 
 const TCHAR *

@@ -37,6 +37,8 @@ public:
   void SetScreenSize(PixelSize screen_size) noexcept {
   #ifdef USE_LIBINPUT
     libinput_handler.SetScreenSize(screen_size);
+  #elif defined(_WIN32)
+    // TODO(August2111): needs work?
   #else
     merge_mouse.SetScreenSize(screen_size);
   #endif
@@ -44,13 +46,20 @@ public:
 
 #ifndef USE_LIBINPUT
   void SetDisplayOrientation(DisplayOrientation orientation) {
+#if defined(_WIN32)
+    // TODO(August2111): needs work?
+#else
     merge_mouse.SetDisplayOrientation(orientation);
+#endif
   }
 #endif
 
   bool HasPointer() const noexcept {
 #ifdef USE_LIBINPUT
     return libinput_handler.HasPointer();
+#elif defined(_WIN32)
+    // TODO(August2111): needs work?
+    return false;
 #else
     return merge_mouse.HasPointer();
 #endif
@@ -69,6 +78,9 @@ public:
   PixelPoint GetMousePosition() const noexcept {
 #ifdef USE_LIBINPUT
     return PixelPoint(libinput_handler.GetX(), libinput_handler.GetY());
+#elif defined(_WIN32)
+    // TODO(August2111): needs work?
+    return PixelPoint(0, 0);
 #else
     return merge_mouse.GetPosition();
 #endif
