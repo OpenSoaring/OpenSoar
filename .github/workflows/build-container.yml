@@ -1,3 +1,4 @@
+---
 on:
   workflow_dispatch:
   push:
@@ -13,26 +14,26 @@ jobs:
       REGISTRY: ghcr.io
       IMAGENAME: opensoar-build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-          submodules: True
+          submodules: true
       - name: Login to Registry
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-      - id: string
-        uses: ASzc/change-string-case-action@v1
+      - id: lc_repository_name
+        uses: ASzc/change-string-case-action@v6
         with:
           string: ${{ github.repository }}
       - name: build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
           context: ./ide
           file: ./ide/docker/Dockerfile
-          tags: ghcr.io/${{ steps.string.outputs.lowercase }}/opensoar-build:latest
+          tags: ghcr.io/${{ steps.lc_repository_name.outputs.lowercase }}/opensoar-build:latest
           cache-from: type=registry,ref=ghcr.io/${{ steps.string.outputs.lowercase }}/opensoar-build:latest
           cache-to: type=inline
           secrets: |

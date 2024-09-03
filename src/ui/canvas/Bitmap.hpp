@@ -88,7 +88,6 @@ public:
 
   Bitmap &operator=(Bitmap &&src) noexcept;
 
-public:
   bool IsDefined() const noexcept {
 #ifdef ENABLE_OPENGL
     return texture != nullptr;
@@ -98,6 +97,14 @@ public:
     return bitmap != nullptr;
 #endif
   }
+
+#ifdef USE_MEMORY_CANVAS
+  void Create(PixelSize _size) noexcept {
+    assert(!IsDefined());
+
+    buffer.Allocate(_size);
+  }
+#endif
 
 #ifdef ENABLE_OPENGL
   const PixelSize &GetSize() const noexcept {
@@ -116,16 +123,16 @@ public:
     return flipped;
   }
 #elif defined(USE_MEMORY_CANVAS)
-  PixelSize GetSize() const noexcept {
-    return { buffer.width, buffer.height };
+  const PixelSize &GetSize() const noexcept {
+    return buffer.size;
   }
 
   unsigned GetWidth() const noexcept {
-    return buffer.width;
+    return buffer.size.width;
   }
 
   unsigned GetHeight() const noexcept {
-    return buffer.height;
+    return buffer.size.height;
   }
 #else
   [[gnu::pure]]

@@ -10,12 +10,12 @@
 #include <cstdint>
 
 bool
-VerifyNMEAChecksum(const char *p)
+VerifyNMEAChecksum(const char *p) noexcept
 {
-  assert(p != NULL);
+  assert(p != nullptr);
 
   const char *asterisk = strrchr(p, '*');
-  if (asterisk == NULL)
+  if (asterisk == nullptr)
     return false;
 
   const char *checksum_string = asterisk + 1;
@@ -25,15 +25,17 @@ VerifyNMEAChecksum(const char *p)
     return false;
 
   uint8_t ReadCheckSum = (unsigned char)ReadCheckSum2;
-  uint8_t CalcCheckSum = NMEAChecksum(p, asterisk - p);
+  uint8_t CalcCheckSum = NMEAChecksum({p, asterisk});
 
   return CalcCheckSum == ReadCheckSum;
 }
 
 void
-AppendNMEAChecksum(char *p)
+AppendNMEAChecksum(char *p) noexcept
 {
-  assert(p != NULL);
+  assert(p != nullptr);
 
-  sprintf(p + strlen(p), "*%02X", NMEAChecksum(p));
+  const std::size_t length = strlen(p);
+
+  sprintf(p + length, "*%02X", NMEAChecksum({p, length}));
 }

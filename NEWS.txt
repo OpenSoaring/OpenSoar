@@ -1,9 +1,3 @@
-Version 7.43 - not yet released
-* windows
- - black text color in airspace list like all other systems
-* Kobo
-  - fix Wifi configuration
-
 Version 7.42 - 2024/03/01
 * ui
   - new terrain ramp High Contrast

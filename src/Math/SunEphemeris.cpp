@@ -11,6 +11,8 @@
 #include "time/BrokenDateTime.hpp"
 #include "time/RoughTime.hpp"
 
+#include <cstdint>
+
 /** Sun radius in degrees (?) */
 static constexpr double SUN_DIAMETER = 0.53;
 
@@ -33,9 +35,10 @@ FNday(const BrokenDateTime date_time) noexcept
 {
   assert(date_time.IsPlausible());
 
-  long int luku = -7 * (date_time.year + (date_time.month + 9) / 12) / 4 +
-                  275 * date_time.month / 9 + date_time.day +
-                  (long int)date_time.year * 367;
+  const int_fast32_t luku =
+    -7 * static_cast<int_fast32_t>(date_time.year + (date_time.month + 9) / 12) / 4 +
+    static_cast<int_fast32_t>(275 * date_time.month / 9 + date_time.day) +
+    static_cast<int_fast32_t>(date_time.year) * 367;
 
   return double(luku) - 730531.5 + (date_time.hour % 24) / 24.;
 }
@@ -129,9 +132,13 @@ CalculateAzimuth(const GeoPoint &Location, const BrokenTime &time,
   const auto T = (time_hours - Hours{12} + tz_hours).count();
   Angle t = Angle::Degrees(15) * T;
 
-  return -Angle::FromXY(Location.latitude.cos() * dec.sin() -
-                        Location.latitude.sin() * dec.cos() * t.cos(),
-                        dec.cos() * t.sin());
+  const auto [latitude_sin, latitude_cos] = Location.latitude.SinCos();
+  const auto [dec_sin, dec_cos] = dec.SinCos();
+  const auto [t_sin, t_cos] = t.SinCos();
+
+  return -Angle::FromXY(latitude_cos * dec_sin -
+                        latitude_sin * dec_cos * t_cos,
+                        dec_cos * t_sin);
 }
 
 Result
@@ -148,13 +155,15 @@ CalcSunTimes(const GeoPoint &location, const BrokenDateTime &date_time,
 
   // Use GetEclipticLongitude to find the ecliptic longitude of the Sun
   Angle lambda = GetEclipticLongitude(days_to_j2000, l);
+  const auto [lambda_sin, lambda_cos] = lambda.SinCos();
 
   // Obliquity of the ecliptic
   Angle obliquity = Angle::Degrees(23.439 - .0000004 * days_to_j2000);
+  const auto [obliquity_sin, obliquity_cos] = obliquity.SinCos();
 
   // Find the RA and DEC of the Sun
-  Angle alpha = Angle::FromXY(lambda.cos(), obliquity.cos() * lambda.sin());
-  Angle delta = Angle::asin(obliquity.sin() * lambda.sin());
+  Angle alpha = Angle::FromXY(lambda_cos, obliquity_cos * lambda_sin);
+  Angle delta = Angle::asin(obliquity_sin * lambda_sin);
 
   // Find the Equation of Time in minutes
   // Correction suggested by David Smith

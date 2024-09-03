@@ -159,6 +159,10 @@ include $(topdir)/build/glx.mk
 include $(topdir)/build/opengl.mk
 endif
 
+# this line should be in build/resource.mk but that file depends on
+# link.mk and compile-depends must be set before including compile.mk
+compile-depends += $(TARGET_OUTPUT_DIR)/include/MakeResource.hpp
+
 include $(topdir)/build/compile.mk
 include $(topdir)/build/host.mk
 include $(topdir)/build/flags.mk
@@ -195,6 +199,7 @@ include $(topdir)/build/libstdcxx.mk
 include $(topdir)/build/libutil.mk
 include $(topdir)/build/libmath.mk
 include $(topdir)/build/libgeo.mk
+include $(topdir)/build/libunits.mk
 include $(topdir)/build/libnmea.mk
 include $(topdir)/build/libcomputer.mk
 include $(topdir)/build/libos.mk
@@ -215,7 +220,6 @@ include $(topdir)/build/libport.mk
 include $(topdir)/build/driver.mk
 include $(topdir)/build/libio.mk
 include $(topdir)/build/shapelib.mk
-include $(topdir)/build/libunits.mk
 include $(topdir)/build/libwaypoint.mk
 include $(topdir)/build/libairspace.mk
 include $(topdir)/build/libtask.mk

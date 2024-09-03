@@ -13,22 +13,6 @@
 using std::string_view_literals::operator""sv;
 
 static bool
-ReadSpeedVector(NMEAInputLine &line, SpeedVector &value_r)
-{
-  double bearing, norm;
-
-  bool bearing_valid = line.ReadChecked(bearing);
-  bool norm_valid = line.ReadChecked(norm);
-
-  if (bearing_valid && norm_valid) {
-    value_r.bearing = Angle::Degrees(bearing);
-    value_r.norm = Units::ToSysUnit(norm, Unit::KILOMETER_PER_HOUR);
-    return true;
-  } else
-    return false;
-}
-
-static bool
 LXWP0(NMEAInputLine &line, NMEAInfo &info)
 {
   /*
@@ -68,8 +52,7 @@ LXWP0(NMEAInputLine &line, NMEAInfo &info)
 
   line.Skip(6);
 
-  SpeedVector wind;
-  if (ReadSpeedVector(line, wind))
+  if (SpeedVector wind; line.ReadSpeedVectorKPH(wind))
     info.ProvideExternalWind(wind);
 
   return true;

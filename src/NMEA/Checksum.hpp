@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string_view>
 
 /**
  * Calculates the checksum for the specified line (without the
@@ -11,10 +12,12 @@
  *
  * @param p a NULL terminated string
  */
-[[gnu::pure]]
-static inline uint8_t
-NMEAChecksum(const char *p)
+[[nodiscard]] [[gnu::pure]]
+static constexpr uint8_t
+NMEAChecksum(std::convertible_to<const char *> auto &&_src) noexcept
 {
+  const char *p = _src;
+
   uint8_t checksum = 0;
 
   /* skip the dollar sign at the beginning (the exclamation mark is
@@ -23,7 +26,7 @@ NMEAChecksum(const char *p)
     ++p;
 
   while (*p != 0)
-    checksum ^= *p++;
+    checksum ^= static_cast<uint8_t>(*p++);
 
   return checksum;
 }
@@ -35,23 +38,19 @@ NMEAChecksum(const char *p)
  * @param p a string
  * @param length the number of characters in the string
  */
-[[gnu::pure]]
-static inline uint8_t
-NMEAChecksum(const char *p, unsigned length)
+[[nodiscard]] [[gnu::pure]]
+static constexpr uint8_t
+NMEAChecksum(std::string_view src) noexcept
 {
   uint8_t checksum = 0;
 
-  unsigned i = 0;
-
   /* skip the dollar sign at the beginning (the exclamation mark is
      used by CAI302 */
-  if (length > 0 && (*p == '$' || *p == '!')) {
-    ++i;
-    ++p;
-  }
+  if (!src.empty() && (src.front() == '$' || src.front() == '!'))
+    src.remove_prefix(1);
 
-  for (; i < length; ++i)
-    checksum ^= *p++;
+  for (char ch : src)
+    checksum ^= static_cast<uint8_t>(ch);
 
   return checksum;
 }
@@ -60,13 +59,13 @@ NMEAChecksum(const char *p, unsigned length)
  * Verify the NMEA checksum at the end of the specified string,
  * separated with an asterisk ('*').
  */
-[[gnu::pure]]
+[[nodiscard]] [[gnu::pure]]
 bool
-VerifyNMEAChecksum(const char *p);
+VerifyNMEAChecksum(const char *p) noexcept;
 
 /**
  * Caclulates the checksum of the specified string, and appends it at
  * the end, preceded by an asterisk ('*').
  */
 void
-AppendNMEAChecksum(char *p);
+AppendNMEAChecksum(char *p) noexcept;

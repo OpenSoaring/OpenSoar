@@ -8,21 +8,6 @@
 
 #include <type_traits>
 
-// control of calculations, these only changed by user interface
-// but are used read-only by calculations
-
-/** AutoWindMode (not in use) */
-enum AutoWindModeBits
-{
-  /** 0: Manual */
-  AUTOWIND_NONE = 0,
-  /** 1: Circling */
-  AUTOWIND_CIRCLING,
-  /** 2: ZigZag */
-  AUTOWIND_ZIGZAG,
-  /** 3: Both */
-};
-
 /**
  * Wind calculator settings
  */
@@ -47,25 +32,25 @@ struct WindSettings {
   SpeedVector manual_wind;
   Validity manual_wind_available;
 
-  void SetDefaults();
+  void SetDefaults() noexcept;
 
-  bool IsAutoWindEnabled() const {
+  constexpr bool IsAutoWindEnabled() const noexcept {
     return circling_wind || zig_zag_wind;
   }
 
-  bool CirclingWindEnabled() const {
+  constexpr bool CirclingWindEnabled() const noexcept {
     return circling_wind;
   }
 
-  bool ZigZagWindEnabled() const {
+  constexpr bool ZigZagWindEnabled() const noexcept {
     return zig_zag_wind;
   }
 
-  unsigned GetLegacyAutoWindMode() const {
+  constexpr unsigned GetLegacyAutoWindMode() const noexcept {
     return (circling_wind ? 0x1 : 0x0) | (zig_zag_wind ? 0x2 : 0x0);
   }
 
-  void SetLegacyAutoWindMode(unsigned mode) {
+  constexpr void SetLegacyAutoWindMode(unsigned mode) noexcept {
     circling_wind = (mode & 0x1) != 0;
     zig_zag_wind = (mode & 0x2) != 0;
   }

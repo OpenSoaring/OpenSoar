@@ -6,7 +6,6 @@
 #include "NMEA/Checksum.hpp"
 #include "NMEA/Info.hpp"
 #include "NMEA/InputLine.hpp"
-#include "Units/System.hpp"
 
 using std::string_view_literals::operator""sv;
 
@@ -15,22 +14,6 @@ public:
   /* virtual methods from class Device */
   bool ParseNMEA(const char *line, struct NMEAInfo &info) override;
 };
-
-static bool
-ReadSpeedVector(NMEAInputLine &line, SpeedVector &value_r)
-{
-  double norm, bearing;
-
-  bool bearing_valid = line.ReadChecked(bearing);
-  bool norm_valid = line.ReadChecked(norm);
-
-  if (bearing_valid && norm_valid) {
-    value_r.norm = Units::ToSysUnit(norm, Unit::KILOMETER_PER_HOUR);
-    value_r.bearing = Angle::Degrees(bearing);
-    return true;
-  } else
-    return false;
-}
 
 /**
  * Parse a "$PILC,PDA1" sentence.
@@ -52,8 +35,7 @@ ParsePDA1(NMEAInputLine &line, NMEAInfo &info)
     info.ProvideTotalEnergyVario(value);
 
   // wind direction [degrees, kph]
-  SpeedVector wind;
-  if (ReadSpeedVector(line, wind))
+  if (SpeedVector wind; line.ReadSpeedVectorKPH(wind))
     info.ProvideExternalWind(wind);
 
   // confidence [0..100]
