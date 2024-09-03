@@ -38,4 +38,7 @@ const char *GetClassShort(const AbstractAirspace &airspace);
   /** Returns the type of the airspace as text. */
 [[gnu::pure]]
 const char *GetType(const AbstractAirspace &airspace);
+
+[[gnu::pure]]
+const char *GetClassOrType(const AbstractAirspace &airspace);
 }

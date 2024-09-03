@@ -203,11 +203,12 @@ $(TARGET_OUTPUT_DIR)/include/MakeResource.hpp: $(TARGET_OUTPUT_DIR)/resources.tx
 	$(Q)mv -n $(TARGET_OUTPUT_DIR)/$(ANDROID_APK_LIB_ABI)/MakeResource.hpp.tmp $@
 
 else 
+RANDOM_NUMBER := $(shell od -vAn -N4 -tu4 < /dev/urandom| tr -d ' ')
 
 $(TARGET_OUTPUT_DIR)/include/MakeResource.hpp: $(TARGET_OUTPUT_DIR)/resources.txt tools/GenerateMakeResource.pl | $(TARGET_OUTPUT_DIR)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
-	$(Q)$(PERL) tools/GenerateMakeResource.pl <$< >$@.tmp
-	$(Q)mv $@.tmp $@
+	$(Q)$(PERL) tools/GenerateMakeResource.pl <$< >$@.$(RANDOM_NUMBER).tmp
+	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
 
 
 ifeq ($(USE_WIN32_RESOURCES),y)

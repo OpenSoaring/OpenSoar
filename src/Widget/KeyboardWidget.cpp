@@ -73,7 +73,7 @@ void
 KeyboardWidget::SetAllowedCharacters(const char *allowed)
 {
   for (unsigned i = 0; i < num_buttons; ++i)
-    buttons[i].SetVisible(allowed == nullptr ||
+    buttons[i].SetEnabled(allowed == nullptr ||
                           StringFind(allowed, buttons[i].GetCharacter()) != nullptr);
 }
 

@@ -157,7 +157,7 @@ namespace InfoBoxFactory
     e_InternalZigZagWind,
 
     e_NUM_TYPES_2nd  // Last item 2nd area
-};
+  };
 
   static constexpr Type NUM_TYPES = e_NUM_TYPES;
   static constexpr Type NUM_TYPES_2nd = e_NUM_TYPES_2nd;

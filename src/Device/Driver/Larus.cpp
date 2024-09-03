@@ -1,30 +1,10 @@
-/*
-Copyright_License {
-
-  XCSoar Glide Computer - http://www.xcsoar.org/
-  Copyright (C) 2000-2022 The XCSoar Project
-  A detailed list of copyright holders can be found in the file "AUTHORS".
-
-  This program is free software; you can redistribute it and/or
-  modify it under the terms of the GNU General Public License
-  as published by the Free Software Foundation; either version 2
-  of the License, or (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-}
-*/
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright The XCSoar Project
 
 /**
-* see Documentation https://github.com/larus-breeze/documentation_and_utilities,
-* for the driver you need https://github.com/larus-breeze/standards-larus-NMEA-protocol
-* and an emulator is here https://github.com/larus-breeze/SIL_flight_sensor_emulator
+* see Documentation https://github.com/larus-breeze/doc_larus,
+* for the driver you need https://github.com/larus-breeze/doc_larus/blob/master/documentation/Larus_NMEA_Protocol.md
+* and an emulator is here https://github.com/larus-breeze/sw_tools
 */
 
 
@@ -43,8 +23,6 @@ Copyright_License {
 
 #include <span>
 
-using std::string_view_literals::operator""sv;
-
 class LarusDevice : public AbstractDevice {
   Port &port;
 
@@ -53,8 +31,6 @@ public:
 
   /* virtual methods from class Device */
   bool ParseNMEA(const char *line, NMEAInfo &info) override;
-  //  void OnCalculatedUpdate(const MoreData &basic,
-  //                  const DerivedInfo &calculated) override;
   bool PutMacCready(double mc, OperationEnvironment &env) override;
   bool PutBugs(double bugs, OperationEnvironment &env) override;
   bool PutBallast(double fraction, double overload,
@@ -92,7 +68,6 @@ ReadBearing(NMEAInputLine &line, Angle &value_r)
     return true;
 }
 
-//-----------------------------------------------------------------------------
 bool
 LarusDevice::ParseNMEA(const char *_line, NMEAInfo &info)
 {
@@ -101,7 +76,7 @@ LarusDevice::ParseNMEA(const char *_line, NMEAInfo &info)
 
   NMEAInputLine line(_line);
   const auto type = line.ReadView();
-  if (type.starts_with("$PLAR"sv)) {
+  if (type.starts_with("$PLAR")) {
     switch (type[5]) {
     case 'A':
       return PLARA(line, info);
@@ -119,13 +94,12 @@ LarusDevice::ParseNMEA(const char *_line, NMEAInfo &info)
       break;
     }
   }
-  else if (type == "$HCHDT"sv)
+  else if (type == "$HCHDT")
     return HCHDT(line, info);
 
   return false;
 }
 
-//-----------------------------------------------------------------------------
 bool
 LarusDevice::HCHDT(NMEAInputLine &line, NMEAInfo &info)
 {
@@ -160,7 +134,6 @@ LarusDevice::HCHDT(NMEAInputLine &line, NMEAInfo &info)
   return false;
 }
 
-//-----------------------------------------------------------------------------
 bool
 LarusDevice::PLARA(NMEAInputLine &line, NMEAInfo &info)
 {
@@ -202,7 +175,6 @@ LarusDevice::PLARA(NMEAInputLine &line, NMEAInfo &info)
     return true;
 }
 
-//-----------------------------------------------------------------------------
 bool
 LarusDevice::PLARB(NMEAInputLine &line, NMEAInfo &info)
 {
@@ -220,8 +192,6 @@ LarusDevice::PLARB(NMEAInputLine &line, NMEAInfo &info)
   double value;
   if (line.ReadChecked(value)) {
     if (value >= 0 && value <= 25) {
-      // info.battery_level = value;
-      // info.battery_level_available.Update(info.clock);
       info.voltage = value;
       info.voltage_available.Update(info.clock);
     }
@@ -229,9 +199,9 @@ LarusDevice::PLARB(NMEAInputLine &line, NMEAInfo &info)
   return true;
 }
 
-//-----------------------------------------------------------------------------
 bool
-LarusDevice::PLARD(NMEAInputLine &line, [[maybe_unused]] NMEAInfo &info)
+LarusDevice::PLARD([[maybe_unused]] NMEAInputLine &line,
+                   [[maybe_unused]] NMEAInfo &info)
 {
    /*
    * Instant air density sentence
@@ -248,6 +218,10 @@ LarusDevice::PLARD(NMEAInputLine &line, [[maybe_unused]] NMEAInfo &info)
      * 2)  a = (M)easured or (E)stimated
      * 3)  Checksum
     */
+#if 1 // aug: SimSys has an other opinion?
+  // XCSoar/OpenSoar don't support that the air density is provided from the
+  // outside.
+#else
   double value;
   if (line.ReadChecked(value)) {
     switch (line.ReadOneChar()) {
@@ -264,10 +238,10 @@ LarusDevice::PLARD(NMEAInputLine &line, [[maybe_unused]] NMEAInfo &info)
       break;
     }
   }
+#endif
   return true;
 }
 
-//-----------------------------------------------------------------------------
 bool
 LarusDevice::PLARV(NMEAInputLine &line, NMEAInfo &info)
 {
@@ -292,6 +266,7 @@ LarusDevice::PLARV(NMEAInputLine &line, NMEAInfo &info)
         Units::ToSysUnit(value, Unit::METER_PER_SECOND));
   }
 
+  // TODO(August2111): remove comments:
   // Parse average climb rate, Larus is doing this over one circle!
   // line.ReadChecked(value); // Skip average vario data, TODO(August2111):
   line.Skip();
@@ -308,12 +283,12 @@ LarusDevice::PLARV(NMEAInputLine &line, NMEAInfo &info)
   // Parse true airspeed
   if (line.ReadChecked(value))
     info.ProvideTrueAirspeedWithAltitude(
-        Units::ToSysUnit(value, Unit::KILOMETER_PER_HOUR), altitude);
+      Units::ToSysUnit(value, Unit::KILOMETER_PER_HOUR), altitude
+    );
 
   return true;
 }
 
-//-----------------------------------------------------------------------------
 bool
 LarusDevice::PLARW(NMEAInputLine &line, NMEAInfo &info)
 {
@@ -327,7 +302,6 @@ LarusDevice::PLARW(NMEAInputLine &line, NMEAInfo &info)
     *  4) v = Status A=valid
     *  5) Checksum
     */
-
   SpeedVector wind;
   if (!ReadBearing(line, wind.bearing))
         return false;
@@ -351,7 +325,6 @@ LarusDevice::PLARW(NMEAInputLine &line, NMEAInfo &info)
   return true;
 }
 
-//-----------------------------------------------------------------------------
 /*
 $PLARS Settings parameters bidirectional
 
@@ -370,15 +343,19 @@ $PLARS,H,BAL,1.00*68
 $PLARS,H,BUGS,0*0B
 $PLARS,H,QNH,1031.4*76
 
-The $PLARS record is intended for exchanging setting values between Larus and a host system such as XCSoar. The record can be used in both directions: from host to Larus or from Larus to host.
+The $PLARS record is intended for exchanging setting values between Larus and a host system such as 
+XCSoar. The record can be used in both directions: from host to Larus or from Larus to host.
 
-These records should not be sent cyclically, but only when needed during initialization and when changes are made.
+These records should not be sent cyclically, but only when needed during initialization and when 
+changes are made.
 
     Data source (L: Larus, H: Host)
     Settings parameter
         MC MacCready (0.0 - 9.9)
         BAL Ballast (1.00 - 1.60)
         BUGS Bugs in % (0 - 30)
+        // Simsys: BAL Ballast (0.00 - 1.00)
+        // Simsys: BUGS Bugs in % (0 - 50)
         QNH QNH in hPa
     Value (format depends on settings parameter, see examples)
     Checksum
@@ -390,16 +367,16 @@ LarusDevice::PLARS(NMEAInputLine &line, NMEAInfo &info)
     double value;
     auto field = line.ReadView();
     if (line.ReadChecked(value)) {
-      if (field == "MC"sv) {
+      if (field == "MC") {
         // - value is MacCReady in m/s [0.0 .. 9.9]
         return info.settings.ProvideMacCready(value, info.clock);
-      } else if (field == "BUGS"sv) {
+      } else if (field == "BUGS") {
         // - value is bugs in % [0-30], OpenSoar wants [0.5 .. 1.00]
         return info.settings.ProvideBugs((1.0 - value)/100.0, info.clock);
-      } else if (field == "BAL"sv) {
+      } else if (field == "BAL") {
         // - value is ballast overload [1.00..1.60]
         return info.settings.ProvideBallastOverload(value, info.clock);
-      } else if (field == "QNH"sv) {
+      } else if (field == "QNH") {
         // - value is pressure in hPa
         return info.settings.ProvideQNH(AtmosphericPressure::HectoPascal(value),
                                         info.clock);
@@ -409,7 +386,6 @@ LarusDevice::PLARS(NMEAInputLine &line, NMEAInfo &info)
   return false;
 }
 
-//-----------------------------------------------------------------------------
 bool
 LarusDevice::PutBugs(double bugs, OperationEnvironment &env)
 {
@@ -420,7 +396,6 @@ LarusDevice::PutBugs(double bugs, OperationEnvironment &env)
   return SendCmd("BUGS,%u", uround((1.0-bugs) * 100), env);
 }
 
-//-----------------------------------------------------------------------------
 bool
 LarusDevice::PutMacCready(double mc, OperationEnvironment &env)
 {
@@ -428,7 +403,6 @@ LarusDevice::PutMacCready(double mc, OperationEnvironment &env)
   return SendCmd("MC,%0.1f", mc, env);
 }
 
-//-----------------------------------------------------------------------------
 bool
 LarusDevice::PutBallast([[maybe_unused]] double fraction, double overload, 
                         OperationEnvironment &env)
@@ -439,7 +413,6 @@ LarusDevice::PutBallast([[maybe_unused]] double fraction, double overload,
   return SendCmd("BAL,%0.2f", overload, env);
 }
 
-//-----------------------------------------------------------------------------
 bool
 LarusDevice::PutQNH(const AtmosphericPressure &pres,
                           OperationEnvironment &env) 
@@ -448,7 +421,6 @@ LarusDevice::PutQNH(const AtmosphericPressure &pres,
   return SendCmd("QNH,%0.1f", pres.GetHectoPascal(), env);
 }
 
-//-----------------------------------------------------------------------------
 bool
 LarusDevice::SendCmd(const char *cmd, double value, 
                               OperationEnvironment &env) {
@@ -460,18 +432,15 @@ LarusDevice::SendCmd(const char *cmd, double value,
 }
 
 
-//-----------------------------------------------------------------------------
 static Device *
 LarusCreateOnPort([[maybe_unused]] const DeviceConfig &config, Port &com_port)
 {
   return new LarusDevice(com_port);
 }
 
-//-----------------------------------------------------------------------------
 const struct DeviceRegister larus_driver = {
   "Larus",
   "Larus",
   DeviceRegister::SEND_SETTINGS,
   LarusCreateOnPort,
 };
-//-----------------------------------------------------------------------------

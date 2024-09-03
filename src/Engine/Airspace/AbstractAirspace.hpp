@@ -16,8 +16,6 @@
 #include <iosfwd>
 #endif
 
-#include <tchar.h>
-
 struct AircraftState;
 struct AltitudeState;
 class AtmosphericPressure;
@@ -55,7 +53,8 @@ protected:
   std::string name;
 
   /** Airspace type */
-  std::string astype;
+  // std::string astype;
+  AirspaceClass astype;
 
   /** Radio frequency (optional) */
   RadioFrequency radio_frequency = RadioFrequency::Null();
@@ -198,12 +197,12 @@ public:
    * @param _top Upper limit
    */
   void SetProperties(std::string &&_name, const AirspaceClass _class,
-                     std::string &&_type,
+                     const AirspaceClass _type,
                      const AirspaceAltitude &_base,
                      const AirspaceAltitude &_top) noexcept {
     name = std::move(_name);
     asclass = _class;
-    astype = std::move(_type);
+    astype = _type;
     altitude_base = _base;
     altitude_top = _top;
   }
@@ -238,11 +237,31 @@ public:
   /**
    * Get Type of airspace
    *
-   * @return Type as text of airspace
+   * @return Type of airspace
    */
   [[gnu::pure]]
-  const char *GetType() const noexcept {
-    return astype.c_str();
+  AirspaceClass GetType() const noexcept {
+    return astype;
+  }
+
+  /**
+    * Returns the airspace class type. If GetType() is AirspaceClass::OTHER,
+    * returns GetClass(), otherwise returns GetType()
+    *
+    * @return  AirspaceClass - The determined airspace class type
+    */
+  AirspaceClass GetClassType() const noexcept {
+    return GetType() == AirspaceClass::OTHER ? GetClass() : GetType();
+  }
+
+  /**
+    * Returns the airspace type. If GetClass() is AirspaceClass::UNCLASSIFIED,
+    * returns GetType(), otherwise returns GetClass()
+    *
+    * @return  AirspaceClass - The determined airspace class or type
+    */
+  AirspaceClass GetClassOrType() const noexcept {
+    return GetClass() == AirspaceClass::UNCLASSIFIED ? GetType() : GetClass();
   }
 
   /**

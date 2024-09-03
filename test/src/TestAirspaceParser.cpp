@@ -50,7 +50,7 @@ TestOpenAir()
   }
 
   static constexpr AirspaceClassTestCouple classes[] = {
-    { "Class-R-Test", RESTRICT },
+    { "Class-R-Test", RESTRICTED },
     { "Class-Q-Test", DANGER },
     { "Class-P-Test", PROHIBITED },
     { "Class-CTR-Test", CTR },
@@ -166,7 +166,7 @@ TestTNP()
   }
 
   static constexpr AirspaceClassTestCouple classes[] = {
-    { "Class-R-Test", RESTRICT },
+    { "Class-R-Test", RESTRICTED },
     { "Class-Q-Test", DANGER },
     { "Class-P-Test", PROHIBITED },
     { "Class-CTR-Test", CTR },
@@ -271,21 +271,26 @@ TestOpenAirExtended()
     return;
   }
 
-  ok1(airspaces.GetSize() == 2);
+  ok1(airspaces.GetSize() == 3);
 
   for (const auto &as_ : airspaces.QueryAll()) {
     const AbstractAirspace &airspace = as_.GetAirspace();
     if (StringIsEqual("Type-TMA-Test", airspace.GetName())) {
-      ok1(StringIsEqual("TMA", airspace.GetType()));
+      ok1(AirspaceClass::CLASSE == airspace.GetClass());
+      ok1(AirspaceClass::TMA == airspace.GetType());
     } else if (StringIsEqual("Type-GLIDING_SECTOR-Test", airspace.GetName())) {
-      ok1(StringIsEqual("GLIDING_SECTOR", airspace.GetType()));
+      ok1(AirspaceClass::UNCLASSIFIED == airspace.GetClass());
+      ok1(AirspaceClass::GLIDING_SECTOR == airspace.GetType());
+    } else if (StringIsEqual("NO-Type-Test", airspace.GetName())) {
+      ok1(AirspaceClass::CLASSA == airspace.GetClass());
+      ok1(AirspaceClass::OTHER == airspace.GetType());
     }
   }
 }
 
 int main()
 try {
-  plan_tests(109);
+  plan_tests(113);
 
   TestOpenAir();
   TestTNP();

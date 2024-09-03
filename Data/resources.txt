@@ -7,7 +7,6 @@
 
 // Application Icons
 
-//app_icon IDI_XCSOAR "xcsoarswift"
 app_icon IDI_XCSOAR "OpenSoar"
 
 // Bitmaps

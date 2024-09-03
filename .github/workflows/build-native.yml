@@ -11,6 +11,7 @@ on:
       - 'python/**'
       - '.github/workflows/build-container.yml'
       - '.github/workflows/build-unix.yml'
+      - '.readthedocs.yaml'
     branches:
       - master
       - dev-branch
@@ -25,13 +26,14 @@ on:
       - 'python/**'
       - '.github/workflows/build-container.yml'
       - '.github/workflows/build-unix.yml'
+      - '.readthedocs.yaml'
     branches:
       - master
       - dev-branch
 
 env:
   DEBUG: y
-  BOOST: boost_1_84_0
+  BOOST: boost_1_85_0
 
 jobs:
   build-ubuntu:
@@ -109,7 +111,7 @@ jobs:
       - name: Deploy to Staging server
         if: |
           github.repository == 'OpenSoaring/OpenSoar' &&
-          github.ref == 'ref/head/master' &&
+          github.ref == 'ref/heads/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
         env:
@@ -174,6 +176,9 @@ jobs:
             liblua5.4-dev \
             libxml-parser-perl \
             libasound2-dev
+
+      - name: workaround random bits value in github actions
+        run: sudo sysctl --write vm.mmap_rnd_bits=28
 
       - name: Compile OpenSoar
         run: |
@@ -259,7 +264,7 @@ jobs:
       - name: Deploy to Staging server
         if: |
           github.repository == 'OpenSoaring/OpenSoar' &&
-          github.ref == 'ref/head/master' &&
+          github.ref == 'ref/heads/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
         env:
@@ -278,7 +283,7 @@ jobs:
       TARGET_BIN: OpenSoar-debug
       TARGET_FINAL: OpenSoar-debug
       TARGET_EXT: apk
-      NDK: r26c
+      NDK: r26d
 
     steps:
       - name: set vars for push
@@ -359,7 +364,7 @@ jobs:
       - name: Deploy to Staging server
         if: |
           github.repository == 'OpenSoaring/OpenSoar' &&
-          github.ref == 'ref/head/master' &&
+          github.ref == 'ref/heads/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
         env:
@@ -417,7 +422,7 @@ jobs:
           key: ${{ env.TARGET }}
 
       - name: "Cache Boost"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{ env.BOOST }}-${{ hashFiles('lib/boost/patches/**') }}
           path: |
@@ -463,7 +468,7 @@ jobs:
       - name: Deploy to Staging server
         if: |
           github.repository == 'OpenSoaring/OpenSoar' &&
-          github.ref == 'ref/head/master' &&
+          github.ref == 'ref/heads/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
         env:
@@ -511,7 +516,7 @@ jobs:
           key: macos
 
       - name: "Cache Boost"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{ env.BOOST }}-${{ hashFiles('lib/boost/patches/**') }}
           path: |
@@ -552,7 +557,7 @@ jobs:
       - name: Deploy to Staging server
         if: |
           github.repository == 'OpenSoaring/OpenSoar' &&
-          github.ref == 'ref/head/master' &&
+          github.ref == 'ref/heads/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
         env:
@@ -589,7 +594,7 @@ jobs:
           key: ios
 
       - name: "Cache Boost"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{ env.BOOST }}-${{ hashFiles('lib/boost/patches/**') }}
           path: |
@@ -619,7 +624,7 @@ jobs:
       - name: Deploy to Staging server
         if: |
           github.repository == 'OpenSoaring/OpenSoar' &&
-          github.ref == 'ref/head/master' &&
+          github.ref == 'ref/heads/master' &&
           github.event == 'push'
         uses: easingthemes/ssh-deploy@main
         env:
