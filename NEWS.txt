@@ -217,10 +217,6 @@ Version 7.28 - 2022/10/29
 * Kobo
   - Add support for Libra 2
 
-* Windows serial ports
-  - allow connection to COM port 10 to 254 (f.e. for BlueTooth user)
-  - remove index based COM port setting (obsolete since XCSoar 5)
-
 Version 7.27 - 2022/09/23
 * user interface
   - vertical scroll bar in some modal dialogs
@@ -603,7 +599,6 @@ Version 7.0 - 2021/03/25
   - GliderLink: new driver
   - AirControlDisplay: read radio frequencies from PAAVS,COM sentence
   - driver for LXNano modified, so declaration contains copilot
-  - driver for Becker AR62xx radios: setting of active or passive channel out of waypoint database, behaves like KRT2 driver
 * weather
   - merge all weather data in one dialog
   - allow showing both terrain and RASP
