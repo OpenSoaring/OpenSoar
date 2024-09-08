@@ -1,3 +1,6 @@
+OpenSoar Version 7.43.23.1 - not released yet, PreRelease (1) for 7.43.23
+---------------
+
 OpenSoar Version 7.42.22 - 2024/05/21
 ---------------
 * Development- remove UNICODE
