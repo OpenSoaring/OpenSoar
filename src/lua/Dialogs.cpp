@@ -7,6 +7,8 @@
 #include "Dialogs/Message.hpp"
 #include "Dialogs/Error.hpp"
 
+#include <utility>
+
 extern "C" {
 #include <lua.h>
 }
@@ -25,7 +27,8 @@ l_alert(lua_State *L)
 static void
 DialogCatchCallback(Lua::Error &&error)
 {
-  ShowError(std::make_exception_ptr(std::move(error)), "Lua");
+//  ShowError(std::make_exception_ptr(std::move(error)), "Lua");
+  ShowError(std::make_exception_ptr(error), "Lua");
 }
 
 void
