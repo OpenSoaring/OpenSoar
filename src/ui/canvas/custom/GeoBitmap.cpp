@@ -6,33 +6,34 @@
 #include "Geo/Quadrilateral.hpp"
 #include "system/Path.hpp"
 
+#include "LogFile.hpp"
+
 #ifdef USE_GEOTIFF
-#include "LibTiff.hpp"
+# include "LibTiff.hpp"
 #endif
 
 #include <stdexcept>
-
-#include <tchar.h>
-
-#if !defined(USE_GEOTIFF) && defined(__GNUC__)
-#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
-#endif
 
 GeoQuadrilateral
 Bitmap::LoadGeoFile([[maybe_unused]] Path path)
 {
 #ifdef USE_GEOTIFF
+  LogFmt("Bitmap::LoadGeoFile: {}", path.c_str());
+  LogFmt("Bitmap::LoadGeoFile: USE_GEOTIFF");
   if (path.EndsWithIgnoreCase(".tif") ||
       path.EndsWithIgnoreCase(".tiff")) {
     auto result = LoadGeoTiff(path);
-    if (!Load(std::move(result.first)))
+    if (!LoadFile(path))
       throw std::runtime_error("Failed to use geo image file");
 
     assert(IsDefined());
 
     return result.second;
   }
-#endif
-
   throw std::runtime_error("Unsupported geo image file");
+#else  // USE_GEOTIFF
+  LogFmt("Bitmap::LoadGeoFile: {}", path.c_str());
+#endif  // USE_GEOTIFF
+  return {};
+
 }
