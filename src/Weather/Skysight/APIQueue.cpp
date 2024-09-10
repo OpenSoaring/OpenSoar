@@ -20,6 +20,26 @@ SkysightAPIQueue::~SkysightAPIQueue() {
   timer.Cancel();
 }
 
+bool SkysightAPIQueue::IsLoggedIn() {
+  uint64_t now = (uint64_t)std::chrono::system_clock::to_time_t(
+      BrokenDateTime::NowUTC().ToTimePoint());
+
+  // Add a 2-minute padding so that token doesn't expire mid-way thru a request
+  return (((int64_t)(key_expiry_time - now)) > (60 * 2));
+}
+
+void SkysightAPIQueue::DoClearingQueue() {
+  for (auto &&i = request_queue.begin(); i < request_queue.end(); /* ++i */) {
+    if ((*i)->GetStatus() != SkysightRequest::Status::Busy) {
+      (*i)->Done();
+      request_queue.erase(i);
+      i = request_queue.begin(); // don't iterate or increment an erased iter
+    }
+  }
+  timer.Cancel();
+  is_clearing = false;
+}
+
 void 
 SkysightAPIQueue::AddRequest(std::unique_ptr<SkysightAsyncRequest> request,
 			     bool append_end)
@@ -134,24 +154,6 @@ SkysightAPIQueue::DoClearingQueue()
   is_clearing = false;
 }
 
-
-#else
-void SkysightAPIQueue::AddRequest(std::unique_ptr<SkysightAsyncRequest> request,
-			     bool append_end)
-{}
-
-
-void SkysightAPIQueue::Process()
-{}
-
-void
-SkysightAPIQueue::SetKey(const std::string _key,
-			 const uint64_t _key_expiry_time)
-{}
-
-void 
-SkysightAPIQueue::AddDecodeJob(std::unique_ptr<CDFDecoder> &&job)
-{}
 
 void
 SkysightAPIQueue::SetCredentials(const std::string _email,
