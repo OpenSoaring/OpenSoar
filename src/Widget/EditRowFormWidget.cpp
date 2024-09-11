@@ -382,7 +382,10 @@ RowFormWidget::GetValueEnum(unsigned i) const noexcept
 {
   auto &df = static_cast<const DataFieldEnum &>(GetDataField(i));
   assert(df.GetType() == DataField::Type::ENUM);
-  return df.GetValue();
+  if (df.Count() == 0) 
+    return 0;
+  else 
+    return df.GetValue();
 }
 
 std::chrono::seconds
