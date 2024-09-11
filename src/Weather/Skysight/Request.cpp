@@ -36,6 +36,9 @@ Copyright_License {
 #include "lib/curl/Slist.hxx"
 #include "Version.hpp"
 
+#define SKYSIGHT_REQUEST_LOG
+// #define SKYSIGHT_HTTP_LOG
+
 void
 SkysightRequest::FileHandler::OnData(std::span<const std::byte> data)
 {
@@ -49,7 +52,9 @@ SkysightRequest::FileHandler::OnData(std::span<const std::byte> data)
 void
 SkysightRequest::FileHandler::OnHeaders(unsigned status,
     __attribute__((unused)) Curl::Headers &&headers) {
+#ifdef SKYSIGHT_HTTP_LOG
   LogFormat("FileHandler::OnHeaders %d", status);
+#endif
 }
 
 void
@@ -61,7 +66,6 @@ SkysightRequest::FileHandler::OnEnd() {
 
 void
 SkysightRequest::FileHandler::OnError(std::exception_ptr e) noexcept {
-  LogFormat("FileHandler::OnError");
   LogError(e);
   const std::lock_guard<Mutex> lock(mutex);
   error = std::move(e);
@@ -94,7 +98,9 @@ SkysightRequest::BufferHandler::OnData(std::span<const std::byte> data)
 void
 SkysightRequest::BufferHandler::OnHeaders(unsigned status,
     __attribute__((unused)) Curl::Headers &&headers) {
+#ifdef SKYSIGHT_HTTP_LOG
   LogFormat("BufferHandler::OnHeaders %d", status);
+#endif
 }
 
 void
@@ -106,7 +112,6 @@ SkysightRequest::BufferHandler::OnEnd() {
 
 void
 SkysightRequest::BufferHandler::OnError(std::exception_ptr e) noexcept {
-  LogFormat("BufferHandler::OnError");
   LogError(e);
   const std::lock_guard<Mutex> lock(mutex);
   error = std::move(e);
@@ -237,7 +242,11 @@ SkysightAsyncRequest::Done()
 bool
 SkysightRequest::RequestToFile()
 {
-  LogFormat("Connecting to %s for %s with key:%s user-agent:%s", args.url.c_str(), args.path.c_str(), key.c_str(), OpenSoar_ProductToken);
+#ifdef SKYSIGHT_REQUEST_LOG
+  LogFormat("Connecting to %s for %s with key:%s user-agent:%s",
+            args.url.c_str(), args.path.c_str(), key.c_str(),
+            OpenSoar_ProductToken);
+#endif
 
   Path final_path = Path(args.path.c_str());
   AllocatedPath temp_path = final_path.WithSuffix(".dltemp");
@@ -302,7 +311,11 @@ SkysightRequest::RequestToFile()
 bool
 SkysightRequest::RequestToBuffer(std::string &response)
 {
-  LogFormat("Connecting to %s for %s with key:%s user-agent:%s", args.url.c_str(), args.path.c_str(), key.c_str(), OpenSoar_ProductToken);
+#ifdef SKYSIGHT_REQUEST_LOG
+  LogFormat("Connecting to %s for %s with key:%s user-agent:%s",
+            args.url.c_str(), args.path.c_str(), key.c_str(),
+            OpenSoar_ProductToken);
+#endif
 
   bool success = true;
 
