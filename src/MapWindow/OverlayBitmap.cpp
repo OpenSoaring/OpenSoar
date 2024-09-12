@@ -3,10 +3,14 @@
 
 #include "OverlayBitmap.hpp"
 #include "ui/canvas/Canvas.hpp"
+#ifdef ENABLE_OPENGL
 #include "ui/canvas/opengl/Texture.hpp"
 #include "ui/canvas/opengl/Scope.hpp"
 #include "ui/canvas/opengl/ConstantAlpha.hpp"
 #include "ui/canvas/opengl/VertexPointer.hpp"
+#elif defined (USE_GDI)
+#include "ui/canvas/gdi/BufferCanvas.hpp"
+#endif
 #include "Projection/WindowProjection.hpp"
 #include "Math/Point2D.hpp"
 #include "Math/Quadrilateral.hpp"
@@ -128,7 +132,7 @@ MapOverlayBitmap::Draw([[maybe_unused]] Canvas &canvas,
   if (clipped.empty())
     return;
 
-#ifdef ENABLE_OPENGL  // aug
+#ifdef ENABLE_OPENGL
   GLTexture &texture = *bitmap.GetNative();
   const PixelSize allocated = texture.GetAllocatedSize();
   const double x_factor = double(texture.GetWidth()) / allocated.width;
@@ -171,5 +175,46 @@ MapOverlayBitmap::Draw([[maybe_unused]] Canvas &canvas,
   }
 
   glDisableVertexAttribArray(OpenGL::Attribute::TEXCOORD);
-#endif // ENABLE_OPENGL // aug
+
+#else  // ENABLE_OPENGL
+  double test[8];
+  auto ChartWest = simple_bounds.GetWest().Native();
+  auto ChartNorth = simple_bounds.GetNorth().Native();
+  auto ChartWidth = simple_bounds.GetWidth().Native();
+  auto ChartHeight = simple_bounds.GetHeight().Native();
+
+  auto x = projection.GetScreenBounds();
+  auto MapWidth = x.GetWidth().Native();
+  auto MapHeight = x.GetHeight().Native();
+  auto MapWest = x.GetWest().Native();
+  auto MapNorth = x.GetNorth().Native();
+
+  PixelPoint src_point(
+    (long)(((MapWest  - ChartWest) / ChartWidth)*bitmap.GetWidth()),
+    (long)(((MapNorth - ChartNorth)/-ChartHeight)*bitmap.GetHeight())
+  );
+
+  PixelSize xsize(
+    (long)((MapWidth/ChartWidth)*bitmap.GetWidth()),
+    (long)((MapHeight/ ChartHeight)*bitmap.GetHeight())
+  );
+
+  // This is painting with big pixels (and not aligned correctly)
+  canvas.Stretch({ 0, 0 }, canvas.GetSize(), bitmap, src_point, xsize);
+
+#if 0  // TestCode (zum Probieren...):
+  // buffer.Copy({ 0,0 }, bitmap.GetSize(), bitmap, { 0,0 });
+//  buffer.Stretch({ 0,0 }, bitmap.GetSize(), bitmap);
+  buffer.Stretch(bitmap, { 0,0 }, bitmap.GetSize());
+
+//  canvas.Copy({0, }, xsize, bitmap, src_point);
+  canvas.CopyAnd({0, 0 }, xsize, bitmap, src_point);
+  canvas.CopyTransparentWhite( {400, 0 }, xsize, buffer, src_point);
+  // canvas.({400, 0}, xsize, bitmap, src_point);
+  canvas.CopyOr({400, 400 }, xsize, bitmap, src_point);
+  canvas.CopyNot({0, 400 }, xsize, bitmap, src_point);
+  // canvas.Stretch(bitmap, {0, 0 }, xsize);
+  canvas.DrawLine({0, 0 }, {200, 200 });
+#endif
+#endif  // ENABLE_OPENGL
 }
