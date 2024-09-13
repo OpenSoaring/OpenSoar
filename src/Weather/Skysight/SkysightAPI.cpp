@@ -101,7 +101,7 @@ SkysightAPI::NumMetrics()
 
 const std::string
 SkysightAPI::GetUrl(SkysightCallType type, const char *const layer,
-		    const uint64_t from)
+		    const time_t from)
 {
   StaticString<256> url;
   switch(type) {
@@ -122,7 +122,7 @@ SkysightAPI::GetUrl(SkysightCallType type, const char *const layer,
     break;
   case SkysightCallType::Data:
   case SkysightCallType::Image:
-    //caller should already have URL
+    // caller should already have URL
     break;
   case SkysightCallType::Login:
     url = SKYSIGHTAPI_BASE_URL"/auth";
@@ -133,7 +133,7 @@ SkysightAPI::GetUrl(SkysightCallType type, const char *const layer,
 
 AllocatedPath
 SkysightAPI::GetPath(SkysightCallType type, const char *const layer,
-		     const uint64_t fctime)
+		     const time_t fctime)
 {
   StaticString<256> filename;
   BrokenDateTime fc;
@@ -170,19 +170,9 @@ SkysightAPI::GetPath(SkysightCallType type, const char *const layer,
 }
 
 BrokenDateTime
-SkysightAPI::FromUnixTime(uint64_t t)
+SkysightAPI::FromUnixTime(time_t t)
 {
-#ifdef HAVE_POSIX
   return BrokenDateTime::FromUnixTime(t);
-#else
-  // Only use for skysight-provided dates. 
-  // (We can rely on their epoch being consistent)
-#if defined(HAVE_SKYSIGHT)
-  return BrokenDateTime(1970, 1, 1, 0, 0, 0) + (int)t;
-#else
-  return BrokenDateTime(1970, 1, 1, 0, 0, 0); // WRONG!!! TODO(August2111)
-#endif
-#endif
 }
 
 SkysightAPI::SkysightAPI(std::string email, std::string password, std::string _region,
@@ -421,13 +411,13 @@ SkysightAPI::ParseDataDetails(const SkysightRequestArgs &args,
   }
 
   bool success = false;
-  uint64_t time_index;
+  time_t time_index;
 
   for (auto &j: details) {
     auto time = j.second.find("time");
     auto link = j.second.find("link");
     if ((time != j.second.not_found()) && (link != j.second.not_found())) {
-      time_index = static_cast<uint64_t>(std::strtoull(time->second.data().c_str(), NULL, 0));
+      time_index = static_cast<time_t>(std::strtoull(time->second.data().c_str(), NULL, 0));
 
       if (time_index > args.to) {
         if (!success)
@@ -462,7 +452,7 @@ SkysightAPI::ParseLogin(const SkysightRequestArgs &args, const std::string &resu
 
   if ((key != details.not_found()) && (valid_until != details.not_found())) {
     queue.SetKey(key->second.data().c_str(),
-		 static_cast<uint64_t>
+		 static_cast<time_t>
 		 (std::strtoull(valid_until->second.data().c_str(), NULL, 0)));
     success = true;
     LogFormat("SkysightAPI::ParseLogin success with key %s", key->second.data().c_str());
@@ -489,7 +479,7 @@ SkysightAPI::ParseData(const SkysightRequestArgs &args, __attribute__((unused)) 
 
 bool
 SkysightAPI::GetData(SkysightCallType t, const char *const layer,
-		     const uint64_t from, const uint64_t to,
+		     const time_t from, const time_t to,
 		     const char *const link, SkysightCallback cb,
 		     bool force_recache)
 {
@@ -538,7 +528,7 @@ bool
 SkysightAPI::CacheAvailable(Path path, SkysightCallType calltype,
 			    const char *const layer)
 {
-  uint64_t layer_updated = 0;
+  time_t layer_updated = 0;
   if (layer) {
     // SkysightMetric m = GetMetric(layer);
     // layer_updated = m.last_update;
@@ -560,7 +550,7 @@ SkysightAPI::CacheAvailable(Path path, SkysightCallType calltype,
       if (!layer)
 	return false;
 
-      return (layer_updated <= (uint64_t)std::chrono::system_clock::to_time_t(File::GetLastModification(path)));
+      return (layer_updated <= (time_t)std::chrono::system_clock::to_time_t(File::GetLastModification(path)));
       break;
     case SkysightCallType::DataDetails:
     case SkysightCallType::Data:
@@ -604,13 +594,13 @@ SkysightAPI::GetImageAt(const char *const layer, BrokenDateTime fctime,
   if ((fctime.minute >= 15) && (fctime.minute < 45)) fctime.minute = 30;
   else if (fctime.minute >= 45) {
     fctime.minute = 0;
-    fctime = fctime + std::chrono::seconds(60*60);
+    fctime = fctime + std::chrono::hours(1);  //  seconds(60 * 60);
   } else if(fctime.minute < 15)
     fctime.minute = 0;
 
-  uint64_t time_index = std::chrono::system_clock::to_time_t(fctime.ToTimePoint());
-  uint64_t max_index = std::chrono::system_clock::to_time_t(maxtime.ToTimePoint());
-  uint64_t search_index = time_index;
+  auto time_index = std::chrono::system_clock::to_time_t(fctime.ToTimePoint());
+  auto max_index = std::chrono::system_clock::to_time_t(maxtime.ToTimePoint());
+  auto search_index = time_index;
   
   bool found_image = true;
   while (found_image && (search_index <= max_index)) {
@@ -643,7 +633,7 @@ SkysightAPI::GenerateLoginRequest()
 void
 SkysightAPI::MakeCallback(SkysightCallback cb, const std::string &&details,
 			  const bool success, const std::string &&layer,
-			  const uint64_t time_index)
+			  const time_t time_index)
 {
   if (cb)
     cb(details.c_str(), success, layer.c_str(), time_index);
@@ -654,16 +644,16 @@ SkysightAPI::OnTimer()
 {
   // various maintenance acions
 
-  uint64_t now = std::chrono::system_clock::to_time_t(BrokenDateTime::NowUTC().ToTimePoint());
+  auto now = std::chrono::system_clock::to_time_t(BrokenDateTime::NowUTC().ToTimePoint());
 
   //refresh regions cache file if > 24h old
   auto p = GetPath(SkysightCallType::Regions);
-  if (File::Exists(p) && ((uint64_t)std::chrono::system_clock::to_time_t(File::GetLastModification(p) + std::chrono::seconds(86400)) < now))
+  if (File::Exists(p) && (std::chrono::system_clock::to_time_t(File::GetLastModification(p) + std::chrono::hours(24)) < now))
     GetData(SkysightCallType::Regions, nullptr, true);
 
   //refresh layers cache file if > 24h old
   p = GetPath(SkysightCallType::Layers);
-  if (File::Exists(p) && ((uint64_t)std::chrono::system_clock::to_time_t(File::GetLastModification(p) + std::chrono::seconds(86400)) < now))
+  if (File::Exists(p) && (std::chrono::system_clock::to_time_t(File::GetLastModification(p) + std::chrono::hours(24)) < now))
     GetData(SkysightCallType::Layers, nullptr, true);
 
   //refresh last update times if > 5h (update freq is usually 5 hours)

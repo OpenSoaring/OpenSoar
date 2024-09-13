@@ -47,12 +47,12 @@ public:
   bool GetImageAt(const char *const layer, BrokenDateTime fctime,
 		  BrokenDateTime maxtime, SkysightCallback cb = nullptr);
 
-  BrokenDateTime FromUnixTime(uint64_t t);
+  BrokenDateTime FromUnixTime(time_t t);
   static void GenerateLoginRequest();
 
   static void MakeCallback(SkysightCallback cb, const std::string &&details,
         const bool success, const std::string &&layer,
-        const uint64_t time_index);
+        const time_t time_index);
 
 protected:
   static SkysightAPI *self;
@@ -68,10 +68,10 @@ protected:
   void OnTimer();
   inline const std::string
   GetUrl(SkysightCallType type, const char *const layer = nullptr,
-	 const uint64_t from = 0); 
+	 const time_t from = 0); 
   inline AllocatedPath
   GetPath(SkysightCallType type, const char *const layer = nullptr,
-	  const uint64_t fctime = 0);
+	  const time_t fctime = 0);
 
   bool GetResult(const SkysightRequestArgs &args, const std::string result,
 		 boost::property_tree::ptree &output);
@@ -95,15 +95,15 @@ protected:
   }
 
   inline bool
-  GetData(SkysightCallType t, const char *const layer, uint64_t from,
-	  uint64_t to,
+  GetData(SkysightCallType t, const char *const layer, time_t from,
+	  time_t to,
 	  SkysightCallback cb = nullptr,  bool force_recache = false) {
     return GetData(t, layer,  from, to, nullptr, cb, force_recache);
   }
 
   bool
-  GetData(SkysightCallType t, const char *const layer, const uint64_t from,
-	  const uint64_t to, const char *const link,
+  GetData(SkysightCallType t, const char *const layer, const time_t from,
+	  const time_t to, const char *const link,
 	  SkysightCallback cb = nullptr, bool force_recache = false);
 
   bool Login(const SkysightCallback cb = nullptr);
