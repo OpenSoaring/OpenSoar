@@ -36,7 +36,7 @@ class Thread {
 
 #else
   HANDLE handle = nullptr;
-  DWORD id;
+  DWORD id = 0;
 #endif
 
 public:
@@ -44,7 +44,7 @@ public:
 #ifdef HAVE_POSIX
   Thread(const char *_name=nullptr) noexcept:name(_name) {}
 #else
-  Thread(const char *_name=nullptr) noexcept:name(_name) {}
+  Thread(const char *_name = "check") noexcept : name(_name) {}
 #endif
 
 #ifndef NDEBUG
