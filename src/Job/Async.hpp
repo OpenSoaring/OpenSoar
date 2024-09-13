@@ -33,7 +33,11 @@ class AsyncJobRunner final : private Thread {
   std::exception_ptr exception;
 
 public:
-  AsyncJobRunner():running(false) {}
+#ifdef HAVE_POSIX
+  AsyncJobRunner() : running(false) {}
+#else
+  AsyncJobRunner() : running(false), Thread("AsyncJob") {}
+#endif
 
   ~AsyncJobRunner() {
     /* force the caller to invoke Wait() */
