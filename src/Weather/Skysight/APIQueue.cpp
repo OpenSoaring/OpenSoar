@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#if defined(HAVE_SKYSIGHT)
 #include "SkysightAPI.hpp"
 #include "APIQueue.hpp"
 #include "APIGlue.hpp"
@@ -20,7 +19,8 @@ SkysightAPIQueue::~SkysightAPIQueue() {
   timer.Cancel();
 }
 
-bool SkysightAPIQueue::IsLoggedIn() {
+bool 
+SkysightAPIQueue::IsLoggedIn() {
   uint64_t now = (uint64_t)std::chrono::system_clock::to_time_t(
       BrokenDateTime::NowUTC().ToTimePoint());
 
@@ -28,7 +28,8 @@ bool SkysightAPIQueue::IsLoggedIn() {
   return (((int64_t)(key_expiry_time - now)) > (60 * 2));
 }
 
-void SkysightAPIQueue::DoClearingQueue() {
+void 
+SkysightAPIQueue::DoClearingQueue() {
   for (auto &&i = request_queue.begin(); i < request_queue.end(); /* ++i */) {
     if ((*i)->GetStatus() != SkysightRequest::Status::Busy) {
       (*i)->Done();
@@ -74,7 +75,7 @@ SkysightAPIQueue::Process()
     case SkysightRequest::Status::Idle:
       //Provide the job with the very latest API key just prior to execution
       if ((*job)->GetType() == SkysightCallType::Login) {
-        (*job)->SetCredentials("XCSoar-JET", email.c_str(), password.c_str());
+        (*job)->SetCredentials("XCSoar", email.c_str(), password.c_str());
         (*job)->Process();
       } else {
         if (!IsLoggedIn()) {
@@ -131,30 +132,6 @@ SkysightAPIQueue::SetKey(const std::string _key,
   key_expiry_time = _key_expiry_time;
 }
 
-bool
-SkysightAPIQueue::IsLoggedIn()
-{
-  uint64_t now = (uint64_t) std::chrono::system_clock::to_time_t(
-    BrokenDateTime::NowUTC().ToTimePoint());
-
-  //Add a 2-minute padding so that token doesn't expire mid-way thru a request
-  return (((int64_t)(key_expiry_time - now)) > (60*2));
-}
-
-void
-SkysightAPIQueue::DoClearingQueue()
-{
-  for (auto &&i = request_queue.begin(); i<request_queue.end(); ++i) {
-    if ((*i)->GetStatus() != SkysightRequest::Status::Busy) {
-      (*i)->Done();
-      request_queue.erase(i);
-    }
-  }
-  timer.Cancel();
-  is_clearing = false;
-}
-
-
 void
 SkysightAPIQueue::SetCredentials(const std::string _email,
 				 const std::string _pass)
@@ -169,5 +146,3 @@ SkysightAPIQueue::Clear(const std::string msg)
   LogFormat("SkysightAPIQueue::Clear %s", msg.c_str());
   is_clearing = true;
 }
-
-#endif
