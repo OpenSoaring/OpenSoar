@@ -64,10 +64,8 @@ CDFDecoder::Tick() noexcept
   status = Status::Busy;
   mutex.unlock();
 
-#ifdef WIN_SKYSIGHT
   TIFFSetErrorHandler(tiff_errorhandler);
   TIFFSetWarningHandler(tiff_errorhandler);
-#endif
   try {
     Decode();
   } catch(const std::exception &exc) {
