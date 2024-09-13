@@ -33,15 +33,11 @@ MapWindow::~MapWindow() noexcept
   delete topography_renderer;
 }
 
-#ifdef ENABLE_OPENGL
-
 void
 MapWindow::SetOverlay(std::unique_ptr<MapOverlay> &&_overlay) noexcept
 {
   overlay = std::move(_overlay);
 }
-
-#endif
 
 void
 MapWindow::SetGlideComputer(GlideComputer *_gc) noexcept

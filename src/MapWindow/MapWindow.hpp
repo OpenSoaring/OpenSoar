@@ -113,10 +113,7 @@ protected:
    * #DoubleBufferWindow::mutex.
    */
   std::unique_ptr<RaspRenderer> rasp_renderer;
-
-#ifdef ENABLE_OPENGL
   std::unique_ptr<MapOverlay> overlay;
-#endif
 
   const TrafficLook &traffic_look;
 
@@ -220,13 +217,13 @@ public:
   void SetRasp(const std::shared_ptr<RaspStore> &_rasp_store) noexcept;
   void SetSkysight(const std::shared_ptr<Skysight> &_skysight) noexcept;
 
-#ifdef ENABLE_OPENGL
+// aug #ifdef ENABLE_OPENGL
   void SetOverlay(std::unique_ptr<MapOverlay> &&_overlay) noexcept;
 
   const MapOverlay *GetOverlay() const noexcept {
     return overlay.get();
   }
-#endif
+  // aug #endif
 
 #ifdef HAVE_NOAA
   void SetNOAAStore(NOAAStore *_noaa_store) noexcept {
