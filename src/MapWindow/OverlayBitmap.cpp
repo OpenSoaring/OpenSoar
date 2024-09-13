@@ -128,6 +128,7 @@ MapOverlayBitmap::Draw([[maybe_unused]] Canvas &canvas,
   if (clipped.empty())
     return;
 
+#ifdef ENABLE_OPENGL  // aug
   GLTexture &texture = *bitmap.GetNative();
   const PixelSize allocated = texture.GetAllocatedSize();
   const double x_factor = double(texture.GetWidth()) / allocated.width;
@@ -170,4 +171,5 @@ MapOverlayBitmap::Draw([[maybe_unused]] Canvas &canvas,
   }
 
   glDisableVertexAttribArray(OpenGL::Attribute::TEXCOORD);
+#endif // ENABLE_OPENGL // aug
 }
