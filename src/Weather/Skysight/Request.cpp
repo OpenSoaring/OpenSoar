@@ -1,49 +1,34 @@
-/*
-Copyright_License {
-
-  XCSoar Glide Computer - http://www.xcsoar.org/
-  Copyright (C) 2000-2016 The XCSoar Project
-  A detailed list of copyright holders can be found in the file "AUTHORS".
-
-  This program is free software; you can redistribute it and/or
-  modify it under the terms of the GNU General Public License
-  as published by the Free Software Foundation; either version 2
-  of the License, or (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-}
-*/
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright The XCSoar Project
 
 #include "Request.hpp"
 #include "APIGlue.hpp"
-#include "SkysightAPI.hpp"
-#include "thread/StandbyThread.hpp"
-#include "system/Path.hpp"
-#include "system/FileUtil.hpp"
-#include "net/http/Init.hpp"
-#include "lib/curl/Request.hxx"
-#include "lib/curl/Handler.hxx"
-#include "io/FileLineReader.hpp"
 #include "LogFile.hpp"
-#include "util/StaticString.hxx"
-#include "lib/curl/Slist.hxx"
+#include "SkysightAPI.hpp"
 #include "Version.hpp"
+#include "io/FileLineReader.hpp"
+#include "lib/curl/Handler.hxx"
+#include "lib/curl/Request.hxx"
+#include "lib/curl/Slist.hxx"
+#include "net/http/Init.hpp"
+#include "system/FileUtil.hpp"
+#include "system/Path.hpp"
+#include "thread/StandbyThread.hpp"
+#include "util/StaticString.hxx"
 
-#define SKYSIGHT_REQUEST_LOG
-// #define SKYSIGHT_HTTP_LOG
+#if defined(SKYSIGHT_FILE_DEBUG)
+# include <chrono>
+# include <filesystem>
+# include <iomanip> // for put_time
+# include <regex>
+# include <fmt/format.h>
+#endif
 
 void
 SkysightRequest::FileHandler::OnData(std::span<const std::byte> data)
 {
   size_t written = fwrite(data.data(), 1, data.size(), file);
-  if (written != (size_t)data.size())
+  if (written != data.size())
     throw SkysightRequestError();
 
   received += data.size();
@@ -122,7 +107,7 @@ SkysightRequest::BufferHandler::OnError(std::exception_ptr e) noexcept {
 void
 SkysightRequest::BufferHandler::Wait() {
   std::unique_lock<Mutex> lock(mutex);
-  cond.wait(lock, [this]{ return done; });
+  cond.wait(lock, [this] { return done; });
 
   if (error)
     std::rethrow_exception(error);
@@ -143,8 +128,8 @@ SkysightRequest::GetType()
 }
 
 void
-SkysightRequest::SetCredentials(const char *_key, const char *_username, 
-				const char *_password)
+SkysightRequest::SetCredentials(const char *_key, const char *_username,
+                                const char *_password)
 {
   key = _key;
   if(_username != nullptr)
@@ -187,7 +172,7 @@ std::string
 SkysightAsyncRequest::GetMessage()
 {
   std::lock_guard<Mutex> lock(mutex);
-  std::string msg = std::string ("Downloading ") + args.layer;
+  std::string msg = std::string("Downloading ") + args.layer;
   return msg;
 }
 
@@ -226,7 +211,7 @@ SkysightAsyncRequest::Tick() noexcept
     SkysightAPI::ParseResponse(resultStr.c_str(), result, args);
   } else {
     SkysightAPI::ParseResponse("Could not fetch data from Skysight server.",
-			       result, args);
+                               result, args);
   }
 
   mutex.lock();
@@ -263,19 +248,15 @@ SkysightRequest::RequestToFile()
   CurlRequest request(*Net::curl, args.url.c_str(), handler);
   CurlSlist request_headers;
 
-  char api_key_buffer[4096];
-  snprintf(api_key_buffer, sizeof(api_key_buffer), "%s: %s", "X-API-Key", key.c_str());
-  request_headers.Append(api_key_buffer);
-  snprintf(api_key_buffer, sizeof(api_key_buffer), "%s: %s", "User-Agent", OpenSoar_ProductToken);
-  request_headers.Append(api_key_buffer);
+  request_headers.AppendFormat("%s: %s", "X-API-Key", key.c_str());
+  request_headers.AppendFormat("%s: %s", "User-Agent", OpenSoar_ProductToken);
 
   std::string pBody;
   if (username.length() && password.length()) {
-    char content_type_buffer[4096];
-    snprintf(content_type_buffer, sizeof(content_type_buffer), "%s: %s", "Content-Type", "application/json");
-    request_headers.Append(content_type_buffer);
+    request_headers.AppendFormat("%s: %s", "Content-Type", "application/json");
     StaticString<1024> creds;
-    creds.Format("{\"username\":\"%s\",\"password\":\"%s\"}", username.c_str(), password.c_str());
+    creds.Format("{\"username\":\"%s\",\"password\":\"%s\"}", username.c_str(),
+                 password.c_str());
     pBody = creds.c_str();
     request.GetEasy().SetRequestBody(pBody.c_str(), pBody.length());
     request.GetEasy().SetFailOnError(false);
@@ -303,6 +284,26 @@ SkysightRequest::RequestToFile()
       return false;
     }
     std::rename(temp_path.c_str(), args.path.c_str());
+#if defined(SKYSIGHT_FILE_DEBUG)
+    std::stringstream filename;
+
+    auto tp = std::chrono::system_clock::now();
+    auto tx = std::chrono::system_clock::to_time_t(tp);
+    auto ts = std::put_time(std::localtime(&tx), "%Y%m%d_%H%M%S");
+
+    std::string name = temp_path.GetBase().c_str();
+    name = std::regex_replace(name, std::regex("\""), "");
+
+    filename << "skysight/" << ts << '-'
+             << name
+             << ".tmp";
+    AllocatedPath debug_path = LocalPath(filename.str().c_str());
+    if (std::filesystem::exists(debug_path.c_str())) {
+      LogFormat("file %s exists!", debug_path.c_str());
+    } else {
+      std::filesystem::copy_file(args.path.c_str(), debug_path.c_str());
+    }
+#endif
   }
 
   return success;
@@ -311,49 +312,96 @@ SkysightRequest::RequestToFile()
 bool
 SkysightRequest::RequestToBuffer(std::string &response)
 {
+  bool success = false;
+  if (args.url.empty())
+  {
 #ifdef SKYSIGHT_REQUEST_LOG
-  LogFormat("Connecting to %s for %s with key:%s user-agent:%s",
-            args.url.c_str(), args.path.c_str(), key.c_str(),
-            OpenSoar_ProductToken);
+    LogFormat("Connecting to %s for %s with key:%s user-agent:%s",
+              args.url.c_str(), args.path.c_str(), key.c_str(),
+              OpenSoar_ProductToken);
 #endif
 
-  bool success = true;
+    char buffer[10240];
+    BufferHandler handler(buffer, sizeof(buffer));
+    CurlRequest request(*Net::curl, args.url.c_str(), handler);
+    CurlSlist request_headers;
 
-  char buffer[10240];
-  BufferHandler handler(buffer, sizeof(buffer));
-  CurlRequest request(*Net::curl, args.url.c_str(), handler);
-  CurlSlist request_headers;
+    request_headers.AppendFormat("%s: %s", "X-API-Key", key.c_str());
+    request_headers.AppendFormat("%s: %s", "User-Agent",
+                                 OpenSoar_ProductToken);
 
-  char api_key_buffer[4096];
-  snprintf(api_key_buffer, sizeof(api_key_buffer), "%s: %s", "X-API-Key", key.c_str());
-  request_headers.Append(api_key_buffer);
-  snprintf(api_key_buffer, sizeof(api_key_buffer), "%s: %s", "User-Agent", OpenSoar_ProductToken);
-  request_headers.Append(api_key_buffer);
+    std::string pBody;
+    if (username.length() && password.length())
+    {
+      request_headers.AppendFormat("%s: %s", "Content-Type",
+                                   "application/json");
+      StaticString<1024> creds;
+      creds.Format("{\"username\":\"%s\",\"password\":\"%s\"}",
+                   username.c_str(), password.c_str());
+      pBody = creds.c_str();
+      request.GetEasy().SetRequestBody(pBody.c_str(), pBody.length());
+      request.GetEasy().SetFailOnError(false);
+    }
 
-  std::string pBody;
-  if (username.length() && password.length()) {
-    char content_type_buffer[4096];
-    snprintf(content_type_buffer, sizeof(content_type_buffer), "%s: %s", "Content-Type", "application/json");
-    request_headers.Append(content_type_buffer);
-    StaticString<1024> creds;
-    creds.Format("{\"username\":\"%s\",\"password\":\"%s\"}",
-		                 username.c_str(), password.c_str());
-    pBody = creds.c_str();
-    request.GetEasy().SetRequestBody(pBody.c_str(), pBody.length());
-    request.GetEasy().SetFailOnError(false);
+    request.GetEasy().SetRequestHeaders(request_headers.Get());
+    request.GetEasy().SetVerifyPeer(false);
+
+    try
+    {
+      request.StartIndirect();
+      handler.Wait();
+      success = true;
+    }
+    catch (const std::exception &exc)
+    {
+      success = false;
+    }
+
+    response = std::string(buffer,
+                           buffer + handler.GetReceived() / sizeof(buffer[0]));
+#if defined(SKYSIGHT_FILE_DEBUG)
+    std::stringstream filename;
+    std::stringstream s;
+    auto time = BrokenDateTime::NowLocal();
+    filename.fill('0');
+    filename.precision(2);
+
+    auto tp = std::chrono::system_clock::now();
+    auto tx = std::chrono::system_clock::to_time_t(tp);
+    auto ts = std::put_time(std::localtime(&tx), "%Y%m%d_%H%M%S");
+
+    std::string name = AllocatedPath(args.path.c_str()).GetBase().c_str();
+
+    filename << "skysight/" << ts << ' ' << name << ".txt";
+
+    AllocatedPath debug_path = LocalPath(filename.str().c_str());
+
+    s << "url:      " << args.url << std::endl;
+    s << "path:     " << args.path << std::endl;
+    s << "key:      " << key << std::endl;
+    s << "token:    " << OpenSoar_ProductToken << std::endl;
+    s << "calldate: " << ts << " - "
+      << std::chrono::duration_cast<std::chrono::seconds>(
+             tp.time_since_epoch())
+             .count()
+      << std::endl;
+    if (args.url.find("from_time") != std::string::npos)
+    {
+      std::string from_time = args.url.substr(args.url.length() - 10);
+      BrokenDateTime from =
+          BrokenDateTime::FromUnixTimeUTC(std::stoi(from_time));
+      s << "from:     "
+        << std::put_time(std::localtime(&tx /*from_time*/), "%Y%m%d_%H%M%S")
+        << std::endl;
+    }
+    s << "==================================== " << std::endl;
+    s << response;
+
+    auto file = fopen(debug_path.c_str(), "wb");
+    fwrite(s.str().c_str(), 1, s.str().length(), file);
+    fclose(file);
+#endif
   }
 
-  request.GetEasy().SetRequestHeaders(request_headers.Get());
-  request.GetEasy().SetVerifyPeer(false);
-
-  try {
-    request.StartIndirect();
-    handler.Wait();
-  } catch (const std::exception &exc) {
-    success = false;
-  }
-
-  response = std::string(buffer,
-		     buffer + handler.GetReceived() / sizeof(buffer[0]));
   return success;
 }
