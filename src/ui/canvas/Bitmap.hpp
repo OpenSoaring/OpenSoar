@@ -147,11 +147,9 @@ public:
   }
 #endif
 
-#ifndef USE_GDI
   bool Load(UncompressedImage &&uncompressed, Type type=Type::STANDARD);
 #ifndef ANDROID
   bool Load(std::span<const std::byte> buffer, Type type=Type::STANDARD);
-#endif
 #endif
 
   bool Load(ResourceId id, Type type=Type::STANDARD);
