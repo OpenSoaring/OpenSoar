@@ -112,7 +112,15 @@ SkysightAPIQueue::Process()
     case CDFDecoder::Status::Complete:
     case CDFDecoder::Status::Error:
       (*decode_job)->Done();
-      decode_queue.erase(decode_job);
+      try
+      {
+        decode_queue.erase(decode_job);
+      }
+      catch (std::exception &e)
+      {
+	      LogError(std::current_exception(),
+             e.what());
+      }
       break;
     case CDFDecoder::Status::Busy:
       break;
