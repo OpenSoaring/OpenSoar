@@ -36,6 +36,8 @@ SkysightAPIQueue::DoClearingQueue() {
       (*i)->Done();
       request_queue.erase(i);
       i = request_queue.begin(); // don't iterate or increment an erased iter
+    } else {
+      i = i++;
     }
   }
   timer.Cancel();
