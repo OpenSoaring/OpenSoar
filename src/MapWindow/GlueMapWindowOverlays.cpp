@@ -11,6 +11,7 @@
 #include "Engine/Task/Ordered/OrderedTask.hpp"
 #include "Renderer/TextInBox.hpp"
 #include "Weather/Rasp/RaspRenderer.hpp"
+#include "Weather/Skysight/Skysight.hpp"
 #include "Formatter/UserUnits.hpp"
 #include "Formatter/UserGeoPointFormatter.hpp"
 #include "UIState.hpp"
@@ -341,8 +342,12 @@ GlueMapWindow::DrawMapScale(Canvas &canvas, const PixelRect &rc,
 
   if (rasp_renderer != nullptr) {
     const char *label = rasp_renderer->GetLabel();
-    if (label != nullptr)
+    if (label != nullptr) {
+      buffer += "RASP: ";
       buffer += gettext(label);
+    }
+  } else if (skysight) {
+    buffer += "SkySight:Metric";
   }
 
   if (!buffer.empty()) {
