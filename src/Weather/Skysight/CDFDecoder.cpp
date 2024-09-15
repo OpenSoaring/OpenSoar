@@ -4,18 +4,12 @@
 #include "CDFDecoder.hpp"
 
 #ifdef ANDROID
-#include <netcdfcpp.h>
+# include <netcdfcpp.h>
+#else
+# include <netcdf>
+#endif
 #include <geotiffio.h>
 #include <xtiffio.h>
-#elif defined(WIN_SKYSIGHT) || !defined(_WIN32)
-#include <netcdf>
-#include <geotiff/geotiffio.h>
-#include <geotiff/xtiffio.h>
-#else
-// normal Windows??
-// #include <geotiff/geotiffio.h>
-// #include <geotiff/xtiffio.h>
-#endif
 
 #include "SkysightAPI.hpp"
 #include "util/AllocatedArray.hxx"
