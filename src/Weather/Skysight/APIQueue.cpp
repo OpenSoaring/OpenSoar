@@ -49,8 +49,13 @@ SkysightAPIQueue::AddRequest(std::unique_ptr<SkysightAsyncRequest> request,
 			     bool append_end)
 {
   if (!append_end) {
-    //Login requests jump to the front of the queue
-    request_queue.insert(request_queue.begin(), std::move(request));
+    // f.e. Login requests jump to the front of the queue
+    if (request_queue.empty() ||
+        request->GetType() != SkysightCallType::Login ||
+        request_queue.begin()->get()->GetType() != SkysightCallType::Login)
+      request_queue.insert(request_queue.begin(), std::move(request));
+    else 
+      request->Done();
   } else {
     request_queue.emplace_back(std::move(request));
   }
