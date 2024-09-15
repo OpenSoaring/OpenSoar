@@ -24,8 +24,9 @@ SkysightAPIQueue::IsLoggedIn() {
   uint64_t now = (uint64_t)std::chrono::system_clock::to_time_t(
       BrokenDateTime::NowUTC().ToTimePoint());
 
-  // Add a 2-minute padding so that token doesn't expire mid-way thru a request
-  return (((int64_t)(key_expiry_time - now)) > (60 * 2));
+  // Add a 1-minute padding so that token doesn't expire mid-way thru a request
+  // the key is valid for 1000 sec (16:40min, August 2024)
+  return key_expiry_time > now + (1 * 60);
 }
 
 void 
