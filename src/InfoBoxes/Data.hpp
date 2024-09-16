@@ -3,7 +3,6 @@
 
 #pragma once
 
-// #include "lib/fmt/tchar.hxx"
 #include "lib/fmt/ToBuffer.hxx"
 #include "util/StaticString.hxx"
 #include "Units/Unit.hpp"
