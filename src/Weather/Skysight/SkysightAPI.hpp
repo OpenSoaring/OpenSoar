@@ -15,6 +15,11 @@
 #include <memory>
 #include <map>
 
+#ifdef __MSVC__
+// #define USE_STD_FORMAT
+#endif
+#define SKYSIGHT_DEBUG 1
+
 //maintain two-hour local data cache
 #define SKYSIGHTAPI_LOCAL_CACHE 7200 
 
@@ -40,7 +45,6 @@ public:
   bool IsInited();
   SkysightMetric GetMetric(int index);
   SkysightMetric *GetMetric(const std::string_view id);
-  // SkysightMetric *GetMetric(const char *const id);
   bool MetricExists(const std::string_view id);
   int NumMetrics();
 
