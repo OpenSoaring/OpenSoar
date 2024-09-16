@@ -107,7 +107,7 @@ public:
   void Render(bool force_update = false);
 
 protected:
-  SkysightAPI *api;
+  SkysightAPI *api = nullptr;
   static Skysight *self;
 
 private:
