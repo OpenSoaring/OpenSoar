@@ -6,9 +6,6 @@
 #include "util/StaticString.hxx"
 #include "system/Path.hpp"
 #include "LocalPath.hpp"
-#include <map>
-#include <vector>
-#include <tchar.h>
 #include "Operation/VerboseOperationEnvironment.hpp"
 #include "time/BrokenDateTime.hpp"
 #include "thread/StandbyThread.hpp"
@@ -17,6 +14,10 @@
 #include "Weather/Skysight/Metrics.hpp"
 #include "Weather/Skysight/SkysightAPI.hpp"
 #include "Blackboard/BlackboardListener.hpp"
+
+#include <map>
+#include <vector>
+#include <string_view>
 
 #define SKYSIGHT_MAX_METRICS 5
 
