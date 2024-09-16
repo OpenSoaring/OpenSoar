@@ -5,6 +5,7 @@
 
 #include <curl/curl.h>
 
+#include <stdio.h>
 #include <stdexcept>
 #include <utility>
 
@@ -45,4 +46,16 @@ public:
 			throw std::runtime_error("curl_slist_append() failed");
 		head = new_head;
 	}
+
+   /**
+   * Use snprintf() to append to this string.  The value is
+   * truncated if it would become too long for the buffer.
+   */
+  template <typename... Args>
+  void AppendFormat(std::string::const_pointer fmt, Args &&...args) noexcept
+  {
+    char buffer[4096];
+    snprintf(buffer, sizeof(buffer), fmt, args...);
+    Append(buffer);
+  }
 };
