@@ -27,6 +27,9 @@
 #include <string>
 #include <vector>
 
+#ifdef USE_STD_FORMAT
+# include <format>
+#endif // USE_STD_FORMAT
 SkysightAPI *SkysightAPI::self;
 
 SkysightAPI::~SkysightAPI()
