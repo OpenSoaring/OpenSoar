@@ -61,12 +61,12 @@ public:
 
 struct DisplayedMetric {
   SkysightMetric *metric;
-  BrokenDateTime forecast_index;
+  BrokenDateTime forecast_time;
 
   DisplayedMetric() { metric = nullptr; };
 
-  DisplayedMetric(SkysightMetric *_metric, BrokenDateTime _fc_index):
-    metric(_metric), forecast_index(_fc_index) {};
+  DisplayedMetric(SkysightMetric *_metric, BrokenDateTime _forecast_time)
+      : metric(_metric), forecast_time(_forecast_time){};
 
   void clear() { metric = nullptr; }
 
@@ -78,11 +78,9 @@ struct DisplayedMetric {
   };
 
   bool operator < (const BrokenDateTime &t) {
-    if (!forecast_index.IsPlausible())
+    if (!forecast_time.IsPlausible())
       return false;
 
-    return (
-      std::chrono::system_clock::to_time_t(forecast_index.ToTimePoint()) <
-      std::chrono::system_clock::to_time_t(t.ToTimePoint()));
+    return (forecast_time.ToTimePoint() < t.ToTimePoint());
   }
 };
