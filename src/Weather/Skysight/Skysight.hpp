@@ -32,6 +32,7 @@ public:
   std::string metric;
   std::string region;
   uint64_t datetime;
+  uint64_t updatetime;
   bool is_valid;
   uint64_t mtime;
 };
