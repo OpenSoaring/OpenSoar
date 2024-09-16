@@ -417,8 +417,8 @@ Skysight::Render(bool force_update)
 
     //Request next images
     BrokenDateTime now = Skysight::GetNow(force_update);
-    if (force_update ||
-	(!update_flag && displayed_metric < GetForecastTime(now))) {
+    if (force_update || !displayed_metric.forecast_time.IsPlausible() ||
+       (!update_flag && displayed_metric < GetForecastTime(now))) {
       force_update = false;
       //TODO: use const char in metric rather than string/cstr
       api->GetImageAt(displayed_metric.metric->id.c_str(), now, now + std::chrono::seconds(60*60),
