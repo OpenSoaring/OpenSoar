@@ -8,9 +8,6 @@
 #include "system/FileUtil.hpp"
 #include "util/StringCompare.hxx"
 #include "util/Macros.hpp"
-#include <tchar.h>
-#include <string>
-#include <vector>
 #include "util/StaticString.hxx"
 #include "Profile/Profile.hpp"
 #include "ActionInterface.hpp"
@@ -20,10 +17,30 @@
 #include "Language/Language.hpp"
 #include "LogFile.hpp"
 #include "time/BrokenDateTime.hpp"
-#include <memory>
 #include "MapWindow/OverlayBitmap.hpp"
 #include "MapWindow/GlueMapWindow.hpp"
 #include "thread/Debug.hpp"
+
+#include <string>
+#include <sstream>
+#include <vector>
+#include <memory>
+#include <ctime>
+
+// #if defined(_DEBUG) && defined(WIN_SKYSIGHT)
+#define SKYSIGHT_DEBUG  1
+#include <chrono>
+#if defined(SKYSIGHT_DEBUG)
+# include <filesystem>
+# include <regex>
+# include <iomanip>  // put_time
+# include <thread>
+# include <fmt/format.h>
+# ifdef __MSVC__
+#   include <format>
+#   define USE_STD_FORMAT 1
+# endif
+#endif
 
 /**
  * TODO:
