@@ -134,9 +134,31 @@ SkysightAPI::GetPath(SkysightCallType type, const char *const layer,
                     fc.day, fc.hour, fc.minute);
     break;
   case SkysightCallType::Data:
-    fc = FromUnixTime(fctime);
-    filename.Format("%s-%s-%04d%02d%02d%02d%02d.nc", region.c_str(), layer,
-                    fc.year, fc.month, fc.day, fc.hour, fc.minute);
+    {
+      auto metric = GetMetric(layer);
+      auto update_time =
+          std::chrono::system_clock::from_time_t(metric->last_update);
+      auto prop_time =
+          std::chrono::system_clock::from_time_t(fctime);
+#ifdef USE_STD_FORMAT
+      filename.Format(
+          //"%s-%s-%s_%02d-%02d%02d.nc", region.c_str(), layer,
+          "%s-%s-%s_%s.nc", region.c_str(), layer,
+          std::format("{:%d-%H%M}", floor<std::chrono::minutes>(update_time))
+              .c_str(),
+          std::format("{:%d-%H%M}", floor<std::chrono::minutes>(prop_time))
+              .c_str());
+#else  // USE_STD_FORMAT
+          std::stringstream s;
+          auto tx1 = std::chrono::system_clock::to_time_t(update_time);
+          auto tx2 = std::chrono::system_clock::to_time_t(prop_time);
+          s << region << '-' << layer << '-'
+            << std::put_time(std::localtime(&tx1), "%d-%H%M") << '-'
+            << std::put_time(std::localtime(&tx2), "%d-%H%M") << ".nc";
+          filename.SetASCII(s.str().c_str());
+#endif // USE_STD_FORMAT
+
+    }
     break;
   case SkysightCallType::Image:
     return GetPath(SkysightCallType::Data, layer, fctime).WithSuffix(".tif");
