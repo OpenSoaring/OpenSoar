@@ -84,8 +84,7 @@ SkysightAPI::GetUrl(SkysightCallType type, const char *const layer,
                     const time_t from)
 {
   StaticString<256> url;
-  switch (type)
-  {
+  switch (type) {
   case SkysightCallType::Regions:
     url = SKYSIGHTAPI_BASE_URL "/regions";
     break;
@@ -118,8 +117,7 @@ SkysightAPI::GetPath(SkysightCallType type, const char *const layer,
 {
   StaticString<256> filename;
   BrokenDateTime fc;
-  switch (type)
-  {
+  switch (type) {
   case SkysightCallType::Regions:
     filename = "regions.json";
     break;
