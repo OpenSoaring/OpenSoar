@@ -58,11 +58,11 @@
  * reduce use of STL strings
  * Can use AtScopeExit for object cleanup in tiff generation
  * Use consistent string conventions ( _()? )
- * replace #defines in skysight.hpp with better c++ idioms
+ * replace #defines in self.hpp with better c++ idioms
 * Use static_cast<> instead of c casts
  */
 
-Skysight *Skysight::self;
+Skysight *Skysight::self = nullptr;
 
 /*
  *
@@ -464,7 +464,7 @@ Skysight::Render(bool force_update)
       // TODO: use const char in metric rather than string/cstr
       DisplayActiveMetric(displayed_metric.metric->id.c_str());
     }
-
+#if 0
     // Request next images
     BrokenDateTime now = Skysight::GetNow(force_update);
     if (force_update || !displayed_metric.forecast_time.IsPlausible() ||
@@ -474,6 +474,7 @@ Skysight::Render(bool force_update)
       api->GetImageAt(displayed_metric.metric->id.c_str(), now, now + std::chrono::seconds(60*60),
              DownloadComplete);
     }
+#endif
   }
 }
 
