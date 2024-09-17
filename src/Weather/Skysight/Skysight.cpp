@@ -519,7 +519,7 @@ Skysight::OnCalculatedUpdate(const MoreData &basic,
                  [[maybe_unused]] const DerivedInfo &calculated)
 {
   // maintain current time -- for use in replays etc.
-  // Cannot be accessed directly from chid threads
+  // Cannot be accessed directly from child threads
   curr_time = basic.date_time_utc;
 }
 
