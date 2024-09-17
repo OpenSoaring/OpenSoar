@@ -320,6 +320,37 @@ Skysight::Init()
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
+#if defined(SKYSIGHT_FILE_DEBUG)
+  // save in debug case an additional file in folder
+#ifdef USE_STD_FORMAT
+  auto tp = std::chrono::system_clock::now();
+#else
+  std::time_t now = std::time(0); // get time now
+#endif // USE_STD_FORMAT
+      std::stringstream _path;
+  _path << "skysight/" <<
+#ifdef USE_STD_FORMAT
+      std::format("{:%Y%m%d_%H%M%S}", floor<std::chrono::seconds>(tp))
+#else  // USE_STD_FORMAT
+      std::put_time(std::localtime(&now), "%Y%m%d_%H%M%S")
+#endif // USE_STD_FORMAT   
+    << " ====== Start-Skysight.txt";
+  AllocatedPath path = LocalPath(_path.str().c_str());
+  auto file = fopen(path.c_str(), "wb");
+
+  std::stringstream file_text;
+  file_text <<
+#ifdef USE_STD_FORMAT
+      std::format("{:%Y%m%d_%H%M%S}", floor<std::chrono::milliseconds>(tp));
+#else  // USE_STD_FORMAT
+      std::put_time(std::localtime(&now), "%Y%m%d_%H%M%S");
+#endif // USE_STD_FORMAT
+    if (file) {
+    fwrite(file_text.str().c_str(), 1, file_text.str().length(), file);
+      fclose(file);
+    }
+#endif
+ 
   const auto settings = CommonInterface::GetComputerSettings().weather.skysight;
   region = settings.region.c_str();
   email = settings.email.c_str();
