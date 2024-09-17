@@ -22,6 +22,7 @@
 #define SKYSIGHT_MAX_METRICS 5
 
 struct BrokenDateTime;
+struct DisplayedMetric;
 
 struct SkysightImageFile {
 public:
@@ -106,6 +107,25 @@ public:
   BrokenDateTime GetNow(bool use_system_time = false);
 
   void Render(bool force_update = false);
+
+  static inline Skysight *GetSkysight() { return self;}
+
+  std::string_view GetDisplayedMetricName() { 
+    if (Skysight::displayed_metric.metric &&
+      !Skysight::displayed_metric.metric->id.empty()) {
+      return Skysight::displayed_metric.metric->id;
+    } else {
+      return "n.a.";
+    }
+  }
+
+  static DisplayedMetric *GetDisplayedMetric() { 
+    if (self->displayed_metric.metric) {
+      return &self->displayed_metric;
+    } else {
+      return nullptr;
+    }
+  }
 
 protected:
   SkysightAPI *api = nullptr;
