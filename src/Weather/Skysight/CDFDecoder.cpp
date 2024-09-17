@@ -5,6 +5,10 @@
 
 #ifdef ANDROID
 # include <netcdfcpp.h>
+#define NETCDF_CPP
+#elif defined(_WIN32) && !defined(CMAKE_PROJECT) // && !defined(__MSVC__)
+ # include <netcdfcpp.h>
+ #define NETCDF_CPP
 #else
 # include <netcdf>
 #endif
@@ -44,8 +48,6 @@ CDFDecoder::GetStatus()
   mutex.unlock();
   return s;
 }
-
-// #endif  // defined(WIN_SKYSIGHT) || !defined(_WIN32)
 
 void
 CDFDecoder::MakeCallback(bool result)
@@ -96,8 +98,8 @@ CDFDecoder::DecodeSuccess()
 
 bool CDFDecoder::Decode() {
 
-#if defined(WIN_SKYSIGHT) || !defined(_WIN32)
-#ifdef ANDROID
+//  #ifdef ANDROID
+#ifdef NETCDF_CPP
   NcFile data_file(url.c_str(), NcFile::FileMode::ReadOnly);
   if (!data_file.is_valid())
     return DecodeError();
@@ -117,7 +119,8 @@ bool CDFDecoder::Decode() {
   AllocatedArray<double> lon_vals(lon_size);
   AllocatedArray<double> var_vals(lat_size * lon_size);
 
-#ifdef ANDROID
+  //  #ifdef ANDROID
+#ifdef NETCDF_CPP
   data_file.get_var("lat")->get(&lat_vals[0], lat_size);
   data_file.get_var("lon")->get(&lon_vals[0], lon_size);
 #else
@@ -132,7 +135,8 @@ bool CDFDecoder::Decode() {
   double lon_scale = (lon_max - lon_min) / lon_size;
   double lat_scale = (lat_max - lat_min) / lat_size;
 
-#ifdef ANDROID
+  //  #ifdef ANDROID
+#ifdef NETCDF_CPP
   NcVar *data_var = data_file.get_var(data_varname.c_str());
   if (!data_var->is_valid())
     return DecodeError();
@@ -212,7 +216,7 @@ bool CDFDecoder::Decode() {
         row, 0,
         linebytes *
             sizeof(
-                unsigned char)); // ensures unused data points are transparent
+                unsigned char));  // ensures unused data points are transparent
     for (unsigned int x = 0; x < lon_size; x++) {
       index = ((unsigned int)y * lon_size) + x;
       rb = x * samplesperpixel;
@@ -249,7 +253,6 @@ bool CDFDecoder::Decode() {
   data_file.close();
   // August2111: why and how delete the url(path) File::Delete(url); // path);
   return (success) ? DecodeSuccess() : DecodeError();
-#endif // defined(WIN_SKYSIGHT) || !defined(_WIN32)
 
   return false;
 }

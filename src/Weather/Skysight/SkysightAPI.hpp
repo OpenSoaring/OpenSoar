@@ -6,7 +6,7 @@
 #include "Request.hpp"
 #include "APIGlue.hpp"
 #include "APIQueue.hpp"
-#include "Metrics.hpp"
+#include "Layers.hpp"
 #include "system/Path.hpp"
 #include "LocalPath.hpp"
 #include <boost/property_tree/ptree.hpp>
@@ -36,17 +36,17 @@ class SkysightAPI final {
 public:
   std::string region;
   std::map<std::string, std::string> regions;
-  std::vector<SkysightMetric> metrics;
+  std::vector<SkysightLayer> layers;
 
   SkysightAPI(std::string email, std::string password, std::string _region,
 	      SkysightCallback cb);
   ~SkysightAPI();
   
   bool IsInited();
-  SkysightMetric GetMetric(int index);
-  SkysightMetric *GetMetric(const std::string_view id);
-  bool MetricExists(const std::string_view id);
-  int NumMetrics();
+  SkysightLayer GetLayer(int index);
+  SkysightLayer *GetLayer(const std::string_view id);
+  bool LayerExists(const std::string_view id);
+  int NumLayers();
 
   bool GetImageAt(const char *const layer, BrokenDateTime fctime,
 		  BrokenDateTime maxtime, SkysightCallback cb = nullptr);

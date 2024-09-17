@@ -11,7 +11,7 @@
 #include "thread/StandbyThread.hpp"
 #include "ui/event/Timer.hpp"
 
-#include "Weather/Skysight/Metrics.hpp"
+#include "Weather/Skysight/Layers.hpp"
 #include "Weather/Skysight/SkysightAPI.hpp"
 #include "Blackboard/BlackboardListener.hpp"
 
@@ -22,7 +22,7 @@
 #define SKYSIGHT_MAX_METRICS 5
 
 struct BrokenDateTime;
-struct DisplayedMetric;
+struct DisplayedLayer;
 class CurlGlobal;
 
 struct SkysightImageFile {
@@ -31,7 +31,7 @@ public:
   SkysightImageFile(Path _filename, Path _path);
   Path fullpath;
   Path filename;
-  std::string metric;
+  std::string layer;
   std::string region;
   uint64_t datetime;
   uint64_t updatetime;
@@ -42,7 +42,7 @@ public:
 class Skysight final: private NullBlackboardListener {
 public:
   std::string region = "EUROPE";
-  DisplayedMetric displayed_metric;
+  DisplayedLayer displayed_layer;
   CurlGlobal *curl;
 
   Skysight(CurlGlobal &_curl);
@@ -61,43 +61,43 @@ public:
     return api->region;
   }
 
-  SkysightMetric GetMetric(int index) {
-    return api->GetMetric(index);
+  SkysightLayer GetLayer(int index) {
+    return api->GetLayer(index);
   }
 
-  SkysightMetric *GetMetric(const std::string_view id) {
-    return api->GetMetric(id);
+  SkysightLayer *GetLayer(const std::string_view id) {
+    return api->GetLayer(id);
   }
 
-  bool MetricExists(const std::string id) {
-    return api->MetricExists(id);
+  bool LayerExists(const std::string id) {
+    return api->LayerExists(id);
   }
 
-  int NumMetrics() {
-    return api->NumMetrics();
+  int NumLayers() {
+    return api->NumLayers();
   }
 
 
   void Init();
   bool IsReady(bool force_update = false);
 
-  void SaveActiveMetrics();
-  void LoadActiveMetrics();
+  void SaveActiveLayers();
+  void LoadActiveLayers();
 
-  void RemoveActiveMetric(int index);
-  void RemoveActiveMetric(const std::string id);
-  bool ActiveMetricsUpdating();
-  bool GetActiveMetricState(std::string metric_name, SkysightActiveMetric &m);
-  void SetActveMetricUpdateState(const std::string id, bool state = false);
-  void RefreshActiveMetric(std::string id);
-  SkysightActiveMetric GetActiveMetric(int index);
-  SkysightActiveMetric GetActiveMetric(const std::string id);
-  int NumActiveMetrics();
-  bool ActiveMetricsFull();
-  bool IsActiveMetric(const char *const id);
-  int AddActiveMetric(const char *const id);
-  bool DownloadActiveMetric(std::string id);
-  bool DisplayActiveMetric(const char *const id = nullptr);
+  void RemoveActiveLayer(int index);
+  void RemoveActiveLayer(const std::string id);
+  bool ActiveLayersUpdating();
+  bool GetActiveLayerState(std::string layer_name, SkysightActiveLayer &m);
+  void SetActveLayerUpdateState(const std::string id, bool state = false);
+  void RefreshActiveLayer(std::string id);
+  SkysightActiveLayer GetActiveLayer(int index);
+  SkysightActiveLayer GetActiveLayer(const std::string id);
+  int NumActiveLayers();
+  bool ActiveLayersFull();
+  bool IsActiveLayer(const char *const id);
+  int AddActiveLayer(const char *const id);
+  bool DownloadActiveLayer(std::string id);
+  bool DisplayActiveLayer(const char *const id = nullptr);
 
   static inline 
   AllocatedPath GetLocalPath() {
@@ -111,18 +111,18 @@ public:
 
   static inline Skysight *GetSkysight() { return self;}
 
-  std::string_view GetDisplayedMetricName() { 
-    if (Skysight::displayed_metric.metric &&
-      !Skysight::displayed_metric.metric->id.empty()) {
-      return Skysight::displayed_metric.metric->id;
+  std::string_view GetDisplayedLayerName() { 
+    if (Skysight::displayed_layer.layer &&
+      !Skysight::displayed_layer.layer->id.empty()) {
+      return Skysight::displayed_layer.layer->id;
     } else {
       return "n.a.";
     }
   }
 
-  static DisplayedMetric *GetDisplayedMetric() { 
-    if (self->displayed_metric.metric) {
-      return &self->displayed_metric;
+  static DisplayedLayer *GetDisplayedLayer() { 
+    if (self->displayed_layer.layer) {
+      return &self->displayed_layer;
     } else {
       return nullptr;
     }
@@ -142,10 +142,10 @@ private:
   virtual void OnCalculatedUpdate(const MoreData &basic,
                                   const DerivedInfo &calculated) override;
 
-  bool SetDisplayedMetric(const char *const id,
+  bool SetDisplayedLayer(const char *const id,
 			  BrokenDateTime forecast_time = BrokenDateTime());
   BrokenDateTime GetForecastTime(BrokenDateTime curr_time);
-  std::vector<SkysightActiveMetric> active_metrics;
+  std::vector<SkysightActiveLayer> active_layers;
 
   std::vector<SkysightImageFile> ScanFolder(std::string search_pattern);
   void CleanupFiles();

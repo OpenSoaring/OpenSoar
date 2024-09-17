@@ -10,7 +10,7 @@
 #include "system/FileUtil.hpp"
 #include "system/Path.hpp"
 
-#include "Metrics.hpp"
+#include "Layers.hpp"
 #include "Operation/Operation.hpp"
 #include "io/BufferedReader.hxx"
 #include "io/FileLineReader.hpp"
@@ -38,22 +38,22 @@ SkysightAPI::~SkysightAPI()
   timer.Cancel();
 }
 
-SkysightMetric
-SkysightAPI::GetMetric(int index)
+SkysightLayer
+SkysightAPI::GetLayer(int index)
 {
-  assert(index < (int)metrics.size());
-  auto &i = metrics.at(index);
+  assert(index < (int)layers.size());
+  auto &i = layers.at(index);
 
   return i;
 }
 
-SkysightMetric *
-SkysightAPI::GetMetric(const std::string_view id)
+SkysightLayer *
+SkysightAPI::GetLayer(const std::string_view id)
 {
-  std::vector<SkysightMetric>::iterator i;
-  for(i = metrics.begin(); i<metrics.end();++i) {
+  std::vector<SkysightLayer>::iterator i;
+  for(i = layers.begin(); i<layers.end();++i) {
     if(!i->id.compare(id)) {
-      assert(i < metrics.end());
+      assert(i < layers.end());
       return &(*i);
     }
   }
@@ -62,11 +62,11 @@ SkysightAPI::GetMetric(const std::string_view id)
 }
 
 bool
-SkysightAPI::MetricExists(const std::string_view id)
+SkysightAPI::LayerExists(const std::string_view id)
 {
 
-  std::vector<SkysightMetric>::iterator i;
-  for (i = metrics.begin(); i < metrics.end(); ++i)
+  std::vector<SkysightLayer>::iterator i;
+  for (i = layers.begin(); i < layers.end(); ++i)
     if (!i->id.compare(id)) {
       return true;
     }
@@ -74,9 +74,9 @@ SkysightAPI::MetricExists(const std::string_view id)
 }
 
 int
-SkysightAPI::NumMetrics()
+SkysightAPI::NumLayers()
 {
-  return (int)metrics.size();
+  return (int)layers.size();
 }
 
 const std::string
@@ -112,7 +112,7 @@ SkysightAPI::GetUrl(SkysightCallType type, const char *const layer,
 }
 
 AllocatedPath
-SkysightAPI::GetPath(SkysightCallType type, const char *const layer,
+SkysightAPI::GetPath(SkysightCallType type, const char *const _layer,
                      const time_t fctime)
 {
   StaticString<256> filename;
@@ -130,14 +130,14 @@ SkysightAPI::GetPath(SkysightCallType type, const char *const layer,
   case SkysightCallType::DataDetails:
     fc = FromUnixTime(fctime);
     filename.Format("%s-datafiles-%s-%02d-%02d%02d.json",
-                    region.c_str(), layer,
+                    region.c_str(), _layer,
                     fc.day, fc.hour, fc.minute);
     break;
   case SkysightCallType::Data:
     {
-      auto metric = GetMetric(layer);
+      auto layer = GetLayer(_layer);
       auto update_time =
-          std::chrono::system_clock::from_time_t(metric->last_update);
+          std::chrono::system_clock::from_time_t(layer->last_update);
       auto prop_time =
           std::chrono::system_clock::from_time_t(fctime);
 #ifdef USE_STD_FORMAT
@@ -160,7 +160,7 @@ SkysightAPI::GetPath(SkysightCallType type, const char *const layer,
     }
     break;
   case SkysightCallType::Image:
-    return GetPath(SkysightCallType::Data, layer, fctime).WithSuffix(".tif");
+    return GetPath(SkysightCallType::Data, _layer, fctime).WithSuffix(".tif");
     break;
   case SkysightCallType::Login:
     // local path should not be used
@@ -326,7 +326,7 @@ SkysightAPI::ParseLayers(const SkysightRequestArgs &args,
     return false;
   }
 
-  metrics.clear();
+  layers.clear();
   bool success = false;
 
   for (auto &i: details) {
@@ -334,7 +334,7 @@ SkysightAPI::ParseLayers(const SkysightRequestArgs &args,
     auto id = node.find("id");
     auto legend = node.find("legend");
     if (id != node.not_found() && legend != node.not_found()) {
-      SkysightMetric m = SkysightMetric(
+      SkysightLayer m = SkysightLayer(
         std::string(id->second.data()), 
         std::string(node.find("name")->second.data()),
         std::string(node.find("description")->second.data())
@@ -354,7 +354,7 @@ SkysightAPI::ParseLayers(const SkysightRequestArgs &args,
             }
           ));
         }
-        metrics.push_back(m);
+        layers.push_back(m);
       }
     }
   }
@@ -385,7 +385,7 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
   }
 
   bool success = false;
-  for (auto &i : metrics) {
+  for (auto &i : layers) {
     for (auto &j : details)
     {
       auto id = j.second.find("layer_id");
@@ -480,7 +480,7 @@ SkysightAPI::ParseData(const SkysightRequestArgs &args,
       GetPath(SkysightCallType::Image, args.layer.c_str(), args.from);
   queue.AddDecodeJob(std::make_unique<CDFDecoder>(
       args.path.c_str(), output_img.c_str(), args.layer.c_str(), args.from,
-      GetMetric(args.layer)->legend, args.cb));
+      GetLayer(args.layer)->legend, args.cb));
    return true;
 }
 
@@ -534,7 +534,7 @@ SkysightAPI::CacheAvailable(Path path, SkysightCallType calltype,
 {
   time_t layer_updated = 0;
   if (layer) {
-    layer_updated = GetMetric(layer)->last_update;
+    layer_updated = GetLayer(layer)->last_update;
   }
 
   if (File::Exists(path)) {
@@ -587,9 +587,9 @@ SkysightAPI::GetResult(const SkysightRequestArgs &args,
 }
 
 #if 0 // TODO(August2111): Variant 1!
-// SkysightAPI::GetImageAt(1) with metric(!), start_time, max_time, update_time and callback
+// SkysightAPI::GetImageAt(1) with layer(!), start_time, max_time, update_time and callback
 bool
-SkysightAPI::GetImageAt(SkysightMetric &metric,
+SkysightAPI::GetImageAt(SkysightLayer &layer,
                         BrokenDateTime fctime,
                         BrokenDateTime maxtime, uint64_t update_time,
                         SkysightCallback cb)
@@ -690,7 +690,7 @@ SkysightAPI::OnTimer()
     GetData(SkysightCallType::Layers, nullptr, true);
 
     // refresh last update times if > 5h (update freq is usually 5 hours)
-  for (auto &m : metrics) {
+  for (auto &m : layers) {
     // if ((m.last_update + (5 * 60 * 60)) < (uint64_t)now) {  // = 5h
     if ((m.last_update + (30 * 60 - 5)) < (uint64_t)now) {  // = 30min!
       GetData(SkysightCallType::LastUpdates);
