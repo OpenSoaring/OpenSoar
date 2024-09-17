@@ -5,6 +5,7 @@
 #include "util/UTF8.hpp"
 
 #define GDI_WITH_TESTSAVE
+
 #if defined(_MSC_VER)
 # include <algorithm>
 using std::min;  // to avoid the missing 'min' in the gdiplush headers
@@ -12,6 +13,9 @@ using std::max;  // to avoid the missing 'max' in the gdiplush headers
 #endif           // _MSC_VER
 
 #ifdef GDI_WITH_TESTSAVE
+#include "system/Path.hpp"
+#include "LocalPath.hpp"
+
 # include <fstream>
 # include <iosfwd>
 #endif // GDI_WITH_TESTSAVE
@@ -120,9 +124,13 @@ GdiLoadImage(UncompressedImage &&uncompressed)
   Gdiplus::Bitmap bitmap(&bmi, (void *)uncompressed.GetData());
 
 #ifdef GDI_WITH_TESTSAVE
-  bitmap.Save(L"D:/Data/bitmapTest.png", &pngEncoder, nullptr);
-  bitmap.Save(L"D:/Data/bitmapTest.bmp", &bmpEncoder, nullptr);
-  bitmap.Save(L"D:/Data/bitmapTest.tif", &tifEncoder, nullptr);
+  auto path = LocalPath("/skysight/bitmapTest");
+  bitmap.Save(UTF8ToWide(path.WithSuffix(".png").c_str()).c_str(),
+    &pngEncoder, nullptr);
+  bitmap.Save(UTF8ToWide(path.WithSuffix(".bmp").c_str()).c_str(),
+    &bmpEncoder, nullptr);
+  bitmap.Save(UTF8ToWide(path.WithSuffix(".tif").c_str()).c_str(),
+    &tifEncoder, nullptr);
 #endif // GDI_WITH_TESTSAVE
 
   if (bitmap.GetLastStatus() != Gdiplus::Ok) return nullptr;
