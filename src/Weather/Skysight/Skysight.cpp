@@ -296,7 +296,7 @@ Skysight::LoadActiveMetrics()
 }
 
 bool
-Skysight::IsReady(__attribute__((unused)) bool force_update)
+Skysight::IsReady([[maybe_unused]] bool force_update)
 {
   if (email.empty() || password.empty() || region.empty())
     return false;
@@ -330,8 +330,8 @@ Skysight::Init()
 }
 
 void
-Skysight::APIInited(__attribute__((unused)) const std::string details, __attribute__((unused)) const bool success,
-            __attribute__((unused)) const std::string layer_id, __attribute__((unused)) const uint64_t time_index)
+Skysight::APIInited([[maybe_unused]] const std::string details, [[maybe_unused]] const bool success,
+            [[maybe_unused]] const std::string layer_id, [[maybe_unused]] const uint64_t time_index)
 {
   if (!self)
     return;
@@ -394,7 +394,7 @@ Skysight::ScanFolder(std::string search_string = "*.tif")
   } visitor(file_list);
 
   Directory::VisitSpecificFiles(GetLocalPath(), search_string.c_str(),
-				visitor);
+                visitor);
   return file_list;
 }
 
@@ -408,7 +408,7 @@ Skysight::CleanupFiles()
       if (filename.EndsWithIgnoreCase(".tif")) {
         SkysightImageFile img_file = SkysightImageFile(filename, path);
         if ((img_file.mtime <= (to - (60*60*24*5))) ||
-	    (img_file.datetime < (to - (60*60*24))) ) {
+        (img_file.datetime < (to - (60*60*24))) ) {
           File::Delete(path);
         }
       }
@@ -441,7 +441,7 @@ Skysight::Render(bool force_update)
       force_update = false;
       // TODO: use const char in metric rather than string/cstr
       api->GetImageAt(displayed_metric.metric->id.c_str(), now, now + std::chrono::seconds(60*60),
-		     DownloadComplete);
+             DownloadComplete);
     }
   }
 }
@@ -467,7 +467,7 @@ Skysight::GetForecastTime(BrokenDateTime curr_time)
 
 bool
 Skysight::SetDisplayedMetric(const char *const id,
-			     BrokenDateTime forecast_time)
+                 BrokenDateTime forecast_time)
 {
   if (!IsActiveMetric(id))
     return false;
@@ -479,8 +479,8 @@ Skysight::SetDisplayedMetric(const char *const id,
 }
 
 void
-Skysight::DownloadComplete(__attribute__((unused)) const std::string details, const bool success,
-                const std::string layer_id, __attribute__((unused)) const uint64_t time_index)
+Skysight::DownloadComplete([[maybe_unused]] const std::string details, const bool success,
+                const std::string layer_id, [[maybe_unused]] const uint64_t time_index)
 {
   if (!self)
     return;
@@ -500,7 +500,7 @@ Skysight::DownloadActiveMetric(std::string id = "*")
     for (auto &i: active_metrics) {
       SetActveMetricUpdateState(i.metric->id, true);
       api->GetImageAt(i.metric->id.c_str(), now, now + std::chrono::seconds(60*60*24),
-		     DownloadComplete);
+             DownloadComplete);
     }
   } else {
     SetActveMetricUpdateState(id, true);
@@ -511,7 +511,7 @@ Skysight::DownloadActiveMetric(std::string id = "*")
 
 void
 Skysight::OnCalculatedUpdate(const MoreData &basic,
-			     __attribute__((unused)) const DerivedInfo &calculated)
+                 [[maybe_unused]] const DerivedInfo &calculated)
 {
   // maintain current time -- for use in replays etc.
   // Cannot be accessed directly from chid threads
@@ -574,12 +574,12 @@ Skysight::DisplayActiveMetric(const char *const id)
             bdt.day, bdt.hour, bdt.minute);
 
       if (File::Exists(AllocatedPath::Build(GetLocalPath(),
-					    filename.c_str()))) {
+                        filename.c_str()))) {
         found = true;
         break;
       }
       if (offset == 0)
-	break;
+    break;
     }
     if (!found)
       offset += (60*30);
@@ -599,8 +599,8 @@ Skysight::DisplayActiveMetric(const char *const id)
   auto path = AllocatedPath::Build(Skysight::GetLocalPath(), filename.c_str());
   StaticString<256> desc;
   desc.Format("Skysight: %s (%04u-%02u-%02u %02u:%02u)",
-	      displayed_metric.metric->name.c_str(), bdt.year, bdt.month, 
-	      bdt.day, bdt.hour, bdt.minute);
+          displayed_metric.metric->name.c_str(), bdt.year, bdt.month, 
+          bdt.day, bdt.hour, bdt.minute);
   std::string label = desc.c_str();
 
   auto *map = UIGlobals::GetMap();
