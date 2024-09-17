@@ -23,6 +23,7 @@
 
 struct BrokenDateTime;
 struct DisplayedMetric;
+class CurlGlobal;
 
 struct SkysightImageFile {
 public:
