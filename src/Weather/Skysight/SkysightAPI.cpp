@@ -202,8 +202,8 @@ SkysightAPI::SkysightAPI(std::string email, std::string password,
   if (timer.IsActive()) {
     timer.Cancel();
   }
-  // Check for maintenance actions every 15 mins
-  timer.Schedule(std::chrono::minutes(15));
+  // Check for maintenance actions every 5 mins
+  timer.Schedule(std::chrono::minutes(5));
 }
 
 bool
