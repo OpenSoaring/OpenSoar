@@ -19,8 +19,6 @@
 #include <vector>
 #include <string_view>
 
-#define SKYSIGHT_MAX_METRICS 5
-
 struct BrokenDateTime;
 struct DisplayedLayer;
 class CurlGlobal;
@@ -40,18 +38,21 @@ public:
 };
 
 class Skysight final: private NullBlackboardListener {
+  SkysightLayer *active_layer = nullptr;
 public:
   std::string region = "EUROPE";
-  DisplayedLayer displayed_layer;
   CurlGlobal *curl;
+
+  static SkysightLayer *GetActiveLayer() { return self->active_layer; }
 
   Skysight(CurlGlobal &_curl);
 
   static void APIInited(const std::string details, const bool success,
-			const std::string layer_id, const uint64_t time_index);
+      const std::string layer_id, const uint64_t time_index);
+#if 1  // used in API (in ParseLastUpdates())
   static void DownloadComplete(const std::string details, const bool success,
-			       const std::string layer_id,
-			       const uint64_t time_index);
+      const std::string layer_id, const uint64_t time_index);
+#endif
 
   std::map<std::string, std::string> GetRegions() {
     return api->regions;
@@ -61,7 +62,7 @@ public:
     return api->region;
   }
 
-  SkysightLayer GetLayer(int index) {
+  SkysightLayer *GetLayer(size_t index) {
     return api->GetLayer(index);
   }
 
@@ -77,27 +78,36 @@ public:
     return api->NumLayers();
   }
 
-
   void Init();
   bool IsReady(bool force_update = false);
 
-  void SaveActiveLayers();
-  void LoadActiveLayers();
+  void SaveSelectedLayers();
+  void LoadSelectedLayers();
 
-  void RemoveActiveLayer(int index);
-  void RemoveActiveLayer(const std::string id);
-  bool ActiveLayersUpdating();
-  bool GetActiveLayerState(std::string layer_name, SkysightActiveLayer &m);
-  void SetActveLayerUpdateState(const std::string id, bool state = false);
-  void RefreshActiveLayer(std::string id);
-  SkysightActiveLayer GetActiveLayer(int index);
-  SkysightActiveLayer GetActiveLayer(const std::string id);
-  int NumActiveLayers();
-  bool ActiveLayersFull();
-  bool IsActiveLayer(const char *const id);
-  int AddActiveLayer(const char *const id);
-  bool DownloadActiveLayer(std::string id);
-  bool DisplayActiveLayer(const char *const id = nullptr);
+  void RemoveSelectedLayer(size_t index);
+  void RemoveSelectedLayer(const std::string_view id);
+  bool SelectedLayersUpdating();
+  bool GetSelectedLayerState(const std::string_view layer_name, SkysightLayer &m);
+#if 1  // used in API (in ParseLastUpdates())
+  void SetSelectedLayerUpdateState(const std::string_view id, bool state = false);
+#endif
+  void RefreshSelectedLayer(const std::string_view id);
+  SkysightLayer *GetSelectedLayer(int index);
+  SkysightLayer *GetSelectedLayer(const std::string_view id);
+  size_t NumSelectedLayers();
+  bool SelectedLayersFull();
+  size_t AddSelectedLayer(const std::string_view id);
+#if 0  // def _DEBUG
+  bool DownloadSelectedLayer(const std::string_view id);
+#endif
+
+//  bool IsSelectedLayer(const std::string_view id);
+  bool LayerExists(const std::string_view id);
+  // bool DisplaySelectedLayer(const std::string_view id = "");
+  bool DisplayActiveLayer();
+  
+  void DeactivateLayer();
+  bool SetLayerActive(const std::string_view id);
 
   static inline 
   AllocatedPath GetLocalPath() {
@@ -111,20 +121,19 @@ public:
 
   static inline Skysight *GetSkysight() { return self;}
 
-  std::string_view GetDisplayedLayerName() { 
-    if (Skysight::displayed_layer.layer &&
-      !Skysight::displayed_layer.layer->id.empty()) {
-      return Skysight::displayed_layer.layer->id;
+  std::string_view GetActiveLayerName() { 
+    if (active_layer) {
+      return active_layer->name;
     } else {
       return "n.a.";
     }
   }
 
-  static DisplayedLayer *GetDisplayedLayer() { 
-    if (self->displayed_layer.layer) {
-      return &self->displayed_layer;
+  std::string_view GetActiveLayerId() { 
+    if (active_layer) {
+      return active_layer->id;
     } else {
-      return nullptr;
+      return "";
     }
   }
 
@@ -142,10 +151,9 @@ private:
   virtual void OnCalculatedUpdate(const MoreData &basic,
                                   const DerivedInfo &calculated) override;
 
-  bool SetDisplayedLayer(const char *const id,
-			  BrokenDateTime forecast_time = BrokenDateTime());
+  bool SetActiveLayer(const std::string_view id,
+        BrokenDateTime forecast_time = BrokenDateTime());
   BrokenDateTime GetForecastTime(BrokenDateTime curr_time);
-  std::vector<SkysightActiveLayer> active_layers;
 
   std::vector<SkysightImageFile> ScanFolder(std::string search_pattern);
   void CleanupFiles();

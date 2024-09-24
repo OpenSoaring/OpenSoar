@@ -22,6 +22,8 @@
 
 //maintain two-hour local data cache
 #define SKYSIGHTAPI_LOCAL_CACHE 7200 
+#define SKYSIGHT_MAX_LAYERS 5
+
 
 #define SKYSIGHTAPI_BASE_URL "https://skysight.io/api"
 
@@ -36,20 +38,27 @@ class SkysightAPI final {
 public:
   std::string region;
   std::map<std::string, std::string> regions;
-  std::vector<SkysightLayer> layers;
+  std::map<std::string, const SkysightLayer *> layers;
+  std::vector<SkysightLayer> layers_vector;
+  std::vector<SkysightLayer> selected_layers;
 
   SkysightAPI(std::string email, std::string password, std::string _region,
 	      SkysightCallback cb);
   ~SkysightAPI();
   
   bool IsInited();
-  SkysightLayer GetLayer(int index);
+  SkysightLayer *GetLayer(size_t index);
   SkysightLayer *GetLayer(const std::string_view id);
   bool LayerExists(const std::string_view id);
   int NumLayers();
+  bool SelectedLayersFull();
+  bool IsSelectedLayer(const std::string_view id);
 
   bool GetImageAt(const char *const layer, BrokenDateTime fctime,
 		  BrokenDateTime maxtime, SkysightCallback cb = nullptr);
+  bool GetImageAt(/* const */ SkysightLayer &layer, BrokenDateTime fctime,
+                  BrokenDateTime maxtime, uint64_t update_time,
+                  SkysightCallback cb = nullptr);
 
   BrokenDateTime FromUnixTime(time_t t);
   static void GenerateLoginRequest();
@@ -57,6 +66,11 @@ public:
   static void MakeCallback(SkysightCallback cb, const std::string &&details,
         const bool success, const std::string &&layer,
         const time_t time_index);
+  void TimerInvoke();
+
+  inline AllocatedPath
+  GetPath(SkysightCallType type, const std::string_view layer_id = "",
+    const time_t fctime = 0);
 
 protected:
   static SkysightAPI *self;
@@ -71,11 +85,8 @@ protected:
   bool IsLoggedIn();
   void OnTimer();
   inline const std::string
-  GetUrl(SkysightCallType type, const char *const layer = nullptr,
-	 const time_t from = 0); 
-  inline AllocatedPath
-  GetPath(SkysightCallType type, const char *const layer = nullptr,
-	  const time_t fctime = 0);
+  GetUrl(SkysightCallType type, const std::string_view layer_id = "",
+	  const time_t from = 0); 
 
   bool GetResult(const SkysightRequestArgs &args, const std::string result,
 		 boost::property_tree::ptree &output);
@@ -95,19 +106,19 @@ protected:
 
   inline bool GetData(SkysightCallType t, SkysightCallback cb = nullptr,
 		      bool force_recache = false) {
-    return GetData(t,  nullptr,  0, 0, nullptr, cb, force_recache);
+    return GetData(t, "", 0, 0, "", cb, force_recache);
   }
 
   inline bool
-  GetData(SkysightCallType t, const char *const layer, time_t from,
+  GetData(SkysightCallType t, const std::string_view layer_id, time_t from,
 	  time_t to,
 	  SkysightCallback cb = nullptr,  bool force_recache = false) {
-    return GetData(t, layer,  from, to, nullptr, cb, force_recache);
+    return GetData(t, layer_id, from, to, "", cb, force_recache);
   }
 
   bool
-  GetData(SkysightCallType t, const char *const layer, const time_t from,
-	  const time_t to, const char *const link,
+  GetData(SkysightCallType t, const std::string_view layer_id, const time_t from,
+	  const time_t to, const std::string_view link,
 	  SkysightCallback cb = nullptr, bool force_recache = false);
 
   bool Login(const SkysightCallback cb = nullptr);
