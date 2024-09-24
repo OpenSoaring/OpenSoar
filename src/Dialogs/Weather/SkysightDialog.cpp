@@ -41,7 +41,14 @@
 #include "Formatter/TimeFormatter.hpp"
 #include "Formatter/LocalTimeFormatter.hpp"
 
+#include "UIGlobals.hpp"
+#include "Interface.hpp"
+#include "ui/window/TopWindow.hpp"
+#include "MainWindow.hpp"
+
 #include "Weather/Skysight/Skysight.hpp"
+
+#include <string_view>
 
 class SkysightListItemRenderer
 {
@@ -62,33 +69,34 @@ private:
 
 //TODO: Could extend this to extract Skysight data at point and display on list (see NOAAListRenderer::Draw(2)
 void
-SkysightListItemRenderer::Draw(Canvas &canvas, const PixelRect rc, unsigned i) {
+SkysightListItemRenderer::Draw(Canvas &canvas, const PixelRect rc, unsigned index) {
   const ComputerSettings &settings = CommonInterface::GetComputerSettings();
-  SkysightActiveLayer m = SkysightActiveLayer(skysight->GetActiveLayer(i));
+  // SkysightLayer m = SkysightSelectedLayer(skysight->GetActiveLayer(i));
+  SkysightLayer *layer = skysight->GetSelectedLayer(index);
 
-  std::string first_row = std::string(m.layer->name);
-  if (skysight->displayed_layer == m.layer->id.c_str())
+  std::string first_row = std::string(layer->name);
+  if (skysight->GetActiveLayerId() == layer->id)
     first_row += " [ACTIVE]";
 
   StaticString<256> second_row;
 
-  if (m.updating) {
+  if (layer->updating) {
     second_row.Format("%s", _("Updating..."));
   } else {
-    if (!m.from || !m.to || !m.mtime) {
+    if (!layer->from || !layer->to || !layer->mtime) {
       second_row.Format("%s", _("No data. Press \"Update\" to update."));
     } else {
       uint64_t elapsed = std::chrono::system_clock::to_time_t(
-        BrokenDateTime::NowUTC().ToTimePoint()) - m.mtime;
+        BrokenDateTime::NowUTC().ToTimePoint()) - layer->mtime;
 
       second_row.Format(_("Data from %s to %s. Updated %s ago"), 
-                        FormatLocalTimeHHMM(
-                          TimeStamp(std::chrono::duration<double>(m.from)),
-                          settings.utc_offset).c_str(),
-                        FormatLocalTimeHHMM(
-                          TimeStamp(std::chrono::duration<double>(m.to)),
-                          settings.utc_offset).c_str(),
-                        FormatTimespanSmart(std::chrono::seconds(elapsed)).c_str());  
+        FormatLocalTimeHHMM(
+          TimeStamp(std::chrono::duration<double>(layer->from)),
+          settings.utc_offset).c_str(),
+        FormatLocalTimeHHMM(
+          TimeStamp(std::chrono::duration<double>(layer->to)),
+          settings.utc_offset).c_str(),
+        FormatTimespanSmart(std::chrono::seconds(elapsed)).c_str());
     }
   }
 
@@ -112,7 +120,9 @@ public:
   }
 
   void OnPaintItem(Canvas &canvas, const PixelRect rc, unsigned i) noexcept override {
-    row_renderer.DrawTextRow(canvas, rc, skysight->GetLayer(i).name.c_str());
+    auto layer = skysight->GetLayer(i);
+    if (layer)
+      row_renderer.DrawTextRow(canvas, rc, layer->name.c_str());
   }
   
   static const char* HelpCallback(unsigned i)
@@ -122,10 +132,15 @@ public:
     if (!skysight)
       return _("No description available.");
 
-    std::string helptext = skysight->GetLayer(i).desc;
-    char *help = new char[helptext.length() + 1];
-    std::strcpy(help, helptext.c_str());
-    return help;
+    auto layer = skysight->GetLayer(i);
+    if (layer) {
+      std::string_view helptext = layer->desc;
+      char *help = new char[helptext.length() + 1];
+      std::strcpy(help, helptext.data());
+      return help;
+    } else {
+      return nullptr;
+    }
   }  
 };
 
@@ -134,8 +149,13 @@ class SkysightWidget final
 {
   ButtonPanelWidget *buttons_widget;
 
+#if 0  // def _DEBUG
   Button *activate_button, *deactivate_button, *add_button, *remove_button,
-    *update_button, *updateall_button;
+    *update_button, *updateall_button, *cancel_button;
+#else // def _DEBUG
+  Button *activate_button, *deactivate_button, *add_button, *remove_button,
+    *cancel_button;
+#endif // def _DEBUG
 
   struct ListItem {
     StaticString<255> name;
@@ -165,9 +185,13 @@ private:
   void ActivateClicked();
   void DeactivateClicked();
   void AddClicked();
+#if 0  // def _DEBUG
   void UpdateClicked();
   void UpdateAllClicked();
+#endif
   void RemoveClicked();
+  void CancelClicked();
+  void CloseClicked();
 
 public:
   /* virtual methods from class Widget */
@@ -198,8 +222,14 @@ SkysightWidget::CreateButtons(ButtonPanel &buttons)
   deactivate_button = buttons.Add(_("Deactivate"), [this](){ DeactivateClicked(); });
   add_button = buttons.Add(_("Add"), [this](){ AddClicked(); });
   remove_button = buttons.Add(_("Remove"), [this](){ RemoveClicked(); });
+#if 0  // def _DEBUG
   update_button = buttons.Add(_("Update"), [this](){ UpdateClicked(); });
   updateall_button = buttons.Add(_("Update All"), [this](){ UpdateAllClicked(); });
+#endif
+#ifdef _DEBUG
+  cancel_button = buttons.Add(_("Cancel"), [this](){ CancelClicked(); });
+  cancel_button = buttons.Add(_("Close"), [this](){ CloseClicked(); });
+#endif
 }
 
 void
@@ -222,34 +252,40 @@ SkysightWidget::Unprepare() noexcept
 void
 SkysightWidget::UpdateList()
 {
-  unsigned index = GetList().GetCursorIndex();
+  size_t index = GetList().GetCursorIndex();
   bool item_updating = false;
   bool item_active = false;
 
-  if ((int)index < skysight->NumActiveLayers()) {
-    SkysightActiveLayer a = skysight->GetActiveLayer(index);
-    item_updating = a.updating;
-    item_active = (skysight->displayed_layer == a.layer->id.c_str());
+  if (index < skysight->NumSelectedLayers()) {
+    auto layer = skysight->GetLayer(index);
+    item_updating = layer->updating;
+    item_active = (skysight->GetActiveLayer() == layer);
   }
 
-  bool any_updating = skysight->ActiveLayersUpdating();
-  bool empty = (!(bool)skysight->NumActiveLayers());
+#if 0  // def _DEBUG
+  // unused:
+  bool any_updating = skysight->SelectedLayersUpdating();
+#endif  // def _DEBUG
+  bool empty = (!(bool)skysight->NumSelectedLayers());
 
   ListControl &list = GetList();
-  list.SetLength(skysight->NumActiveLayers());
+  list.SetLength(skysight->NumSelectedLayers());
   list.Invalidate();
 
-  add_button->SetEnabled(!skysight->ActiveLayersFull());
+  add_button->SetEnabled(!skysight->SelectedLayersFull());
   remove_button->SetEnabled(!empty && !item_updating);
+#if 0  // def _DEBUG
   update_button->SetEnabled(!empty && !item_updating);
   updateall_button->SetEnabled(!empty && !any_updating);
-  activate_button->SetEnabled(!empty && !item_updating); 
+#endif  // def _DEBUG
+  activate_button->SetEnabled(!empty && !item_updating);
   deactivate_button->SetEnabled(!empty && item_active);
 }
 
 void
 SkysightWidget::OnPaintItem(Canvas &canvas, const PixelRect rc, unsigned index) noexcept
 {
+  row_renderer.Draw(canvas, rc, index);
   row_renderer.Draw(canvas, rc, index);
 }
 
@@ -279,43 +315,52 @@ void SkysightWidget::AddClicked()
     return;
 
   assert((int)i < skysight->NumLayers());
-  skysight->AddActiveLayer(skysight->GetLayer(i).id.c_str());
+  auto layer = skysight->GetLayer(i);
+  if (layer)
+    skysight->AddSelectedLayer(layer->id.c_str());
 
   UpdateList();
 }
 
+#if 0  // def _DEBUG
 void SkysightWidget::UpdateClicked()
 {
   unsigned index = GetList().GetCursorIndex();
-  assert(index < (unsigned)skysight->NumActiveLayers());
+  assert(index < (unsigned)skysight->NumSelectedLayers());
 
+#if 0  // August2111
   SkysightActiveLayer a = skysight->GetActiveLayer(index);  
   if (!skysight->DownloadActiveLayer(a.layer->id))
     ShowMessageBox(_("Couldn't update data."), _("Update Error"), MB_OK);
+#endif
   UpdateList();
 }
 
+
 void SkysightWidget::UpdateAllClicked()
 {
-  if (!skysight->DownloadActiveLayer("*"))
+  if (!skysight->DownloadSelectedLayer("*"))
     ShowMessageBox(_("Couldn't update data."), _("Update Error"), MB_OK);
   UpdateList();
 }
+#endif
 
 void SkysightWidget::RemoveClicked()
 {
   unsigned index = GetList().GetCursorIndex();
-  assert(index < (unsigned)skysight->NumActiveLayers());
+  assert(index < (unsigned)skysight->NumSelectedLayers());
 
-  SkysightActiveLayer a = skysight->GetActiveLayer(index);
+  // SkysightActiveLayer *layer = skysight->GetSelectedLayer(index);
+  SkysightLayer *layer = skysight->GetSelectedLayer(index);
   StaticString<256> tmp;
   tmp.Format(_("Do you want to remove \"%s\"?"),
-             a.layer->name.c_str());
+             layer->name.c_str());
 
   if (ShowMessageBox(tmp, _("Remove"), MB_YESNO) == IDNO)
     return;
 
-  skysight->RemoveActiveLayer(a.layer->id);
+  skysight->RemoveSelectedLayer(index);
+//  skysight->RemoveSelectedLayer(layer->id);
 
   UpdateList();
 }
@@ -324,11 +369,12 @@ inline void
 SkysightWidget::ActivateClicked()
 {
   unsigned index = GetList().GetCursorIndex();
-  assert(index < (unsigned)skysight->NumActiveLayers());
+  assert(index < (unsigned)skysight->NumSelectedLayers());
 
-  SkysightActiveLayer a = skysight->GetActiveLayer(index);  
-  if (!skysight->DisplayActiveLayer(a.layer->id.c_str()))
-    ShowMessageBox(_("Couldn't display data. There is no forecast data available for this time."),
+  // SkysightActiveLayer *layer = skysight->GetSelectedLayer(index);
+  SkysightLayer *layer = skysight->GetSelectedLayer(index);
+  if (!skysight->SetLayerActive(layer->id))
+    ShowMessageBox(_("Couldn't display data."),
 		   _("Display Error"), MB_OK);
   UpdateList();
 }
@@ -337,10 +383,23 @@ inline void
 SkysightWidget::DeactivateClicked()
 {
   unsigned index = GetList().GetCursorIndex();
-  assert(index < (unsigned)skysight->NumActiveLayers());
+  assert(index < (unsigned)skysight->NumSelectedLayers());
 
-  skysight->DisplayActiveLayer();
+  skysight->DeactivateLayer();
   UpdateList();
+}
+
+inline void
+SkysightWidget::CancelClicked()
+{
+  CommonInterface::main_window->Close();
+}
+inline void
+SkysightWidget::CloseClicked()
+{
+  // Save the settings
+
+  CommonInterface::main_window->Close();
 }
 
 std::unique_ptr<Widget>
