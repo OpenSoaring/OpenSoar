@@ -40,7 +40,7 @@ Bitmap::Load(UncompressedImage &&uncompressed, Type type)
 
   bitmap = GdiLoadImage(std::move(uncompressed));
 
-  return bitmap != nullptr;
+  return IsDefined();
 }
 
 
