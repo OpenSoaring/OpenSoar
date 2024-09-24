@@ -11,7 +11,6 @@
 #include "lib/curl/Setup.hxx"
 #include "Formatter/TimeFormatter.hpp"
 #include "json/ParserOutputStream.hxx"
-#include "system/ConvertPathName.hpp"
 #include "system/Path.hpp"
 #include "util/StaticString.hxx"
 
@@ -25,7 +24,7 @@ MakeUploadFlightMime(CURL *easy, const WeGlideSettings &settings,
                      Path igc_path)
 {
   CurlMime mime{easy};
-  mime.Add("file").Filename("igc_file").FileData(NarrowPathName{igc_path});
+  mime.Add("file").Filename("igc_file").FileData(igc_path.c_str());
 
   char buffer[32];
   mime.Add("user_id").Data(fmt::format_int{settings.pilot_id}.c_str());

@@ -7,7 +7,6 @@
 #include "ZzipStream.hpp"
 #include "WorldFile.hpp"
 #include "Operation/Operation.hpp"
-#include "system/ConvertPathName.hpp"
 #include "util/ScopeExit.hxx"
 
 extern "C" {

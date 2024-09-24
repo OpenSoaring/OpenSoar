@@ -5,10 +5,10 @@
 #include "lib/curl/Request.hxx"
 #include "lib/curl/Handler.hxx"
 #include "io/async/AsioThread.hpp"
-#include "system/ConvertPathName.hpp"
 #include "thread/AsyncWaiter.hxx"
 #include "util/PrintException.hxx"
 #include "util/ScopeExit.hxx"
+#include "system/Path.hpp"
 
 #include <exception>
 #include <iostream>
@@ -87,7 +87,7 @@ main(int argc, char *argv[])
     const Net::ScopeInit net_init(io_thread.GetEventLoop());
 
     const char *url = argv[1];
-    Download(*Net::curl, url, argc > 2 ? (Path)PathName(argv[2]) : nullptr);
+    Download(*Net::curl, url, argc > 2 ? Path(argv[2]) : nullptr);
   } catch (const std::exception &exception) {
     PrintException(exception);
     return EXIT_FAILURE;

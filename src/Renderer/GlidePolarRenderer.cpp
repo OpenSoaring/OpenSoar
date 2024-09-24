@@ -17,24 +17,25 @@
 
 
 void
-GlidePolarCaption(char *sTmp, const size_t length, const GlidePolar &glide_polar)
+GlidePolarCaption(char *buffer, const size_t length,
+  const GlidePolar &glide_polar)
 {
   if (!glide_polar.IsValid()) {
-    *sTmp = '\0';
+    *buffer = '\0';
     return;
   }
-  snprintf(sTmp, length, Layout::landscape ?
-                  "%s:\r\n  %d\r\n  at %d %s\r\n\r\n%s:\r\n  %3.2f %s\r\n  at %d %s" :
-                  "%s:\r\n  %d at %d %s\r\n%s:\r\n  %3.2f %s at %d %s",
-            _("L/D"),
-            (int)glide_polar.GetBestLD(),
-            (int)Units::ToUserSpeed(glide_polar.GetVBestLD()),
-            Units::GetSpeedName(),
-            _("Min. sink"),
-            (double)Units::ToUserVSpeed(glide_polar.GetSMin()),
-            Units::GetVerticalSpeedName(),
-            (int)Units::ToUserSpeed(glide_polar.GetVMin()),
-            Units::GetSpeedName());
+  snprintf(buffer, length, Layout::landscape ?
+    "%s:\r\n  %d\r\n  at %d %s\r\n\r\n%s:\r\n  %3.2f %s\r\n  at %d %s" :
+    "%s:\r\n  %d at %d %s\r\n%s:\r\n  %3.2f %s at %d %s",
+    _("L/D"),
+    (int)glide_polar.GetBestLD(),
+    (int)Units::ToUserSpeed(glide_polar.GetVBestLD()),
+     Units::GetSpeedName(),
+    _("Min. sink"),
+    Units::ToUserVSpeed(glide_polar.GetSMin()),
+    Units::GetVerticalSpeedName(),
+    (int)Units::ToUserSpeed(glide_polar.GetVMin()),
+    Units::GetSpeedName());
 }
 
 void

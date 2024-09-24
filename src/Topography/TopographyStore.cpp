@@ -6,7 +6,6 @@
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
 #include "io/LineReader.hpp"
-#include "system/ConvertPathName.hpp"
 #include "system/Path.hpp"
 #include "Operation/Operation.hpp"
 #include "Compatibility/path.h"
@@ -75,8 +74,7 @@ TopographyStore::Load(NLineReader &reader,
   // (shape_filename will be modified with the shape_filename_end pointer)
   char shape_filename[MAX_PATH];
   if (directory != nullptr) {
-    const NarrowPathName narrow_directory(directory);
-    strcpy(shape_filename, narrow_directory);
+    strcpy(shape_filename, directory.c_str());
     strcat(shape_filename, DIR_SEPARATOR_S);
   } else
     shape_filename[0] = 0;

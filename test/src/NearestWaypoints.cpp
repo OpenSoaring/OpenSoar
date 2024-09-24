@@ -4,7 +4,6 @@
 #include "Waypoint/WaypointReader.hpp"
 #include "Waypoint/Factory.hpp"
 #include "Waypoint/Waypoints.hpp"
-#include "system/ConvertPathName.hpp"
 #include "system/Args.hpp"
 #include "Operation/ConsoleOperationEnvironment.hpp"
 #include "util/PrintException.hxx"

@@ -4,7 +4,6 @@
 #include "RaspStore.hpp"
 #include "Language/Language.hpp"
 #include "Units/Units.hpp"
-#include "system/ConvertPathName.hpp"
 #include "system/Path.hpp"
 #include "io/ZipArchive.hpp"
 #include "util/StringCompare.hxx"
@@ -105,16 +104,13 @@ RaspStore::GetNearestTime(unsigned item_index, unsigned time_index) const
 }
 
 bool
-RaspStore::NarrowWeatherFilename(char *filename, Path name,
-                                          unsigned time_index)
+RaspStore::WeatherFilename(char *filename, Path path, unsigned time_index)
 {
-  const NarrowPathName narrow_name(name);
-  if (!narrow_name.IsDefined())
+  if (path != nullptr)
     return false;
-
   const BrokenTime t = IndexToTime(time_index);
   sprintf(filename, RASP_FORMAT,
-          (const char *)narrow_name, t.hour, t.minute);
+          path.c_str(), t.hour, t.minute);
   return true;
 }
 
@@ -128,7 +124,7 @@ bool
 RaspStore::ExistsItem(const ZipArchive &archive, Path name, unsigned time_index)
 {
   char filename[MAX_PATH];
-  if (!NarrowWeatherFilename(filename, name, time_index))
+  if (!WeatherFilename(filename, name, time_index))
     return false;
 
   return archive.Exists(filename);

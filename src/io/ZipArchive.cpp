@@ -4,12 +4,11 @@
 #include "ZipArchive.hpp"
 #include "lib/fmt/RuntimeError.hxx"
 #include "lib/fmt/PathFormatter.hpp"
-#include "system/ConvertPathName.hpp"
 
 #include <zzip/zzip.h>
 
 ZipArchive::ZipArchive(Path path)
-  :dir(zzip_dir_open(NarrowPathName(path), nullptr))
+  :dir(zzip_dir_open(path.c_str(), nullptr))
 {
   if (dir == nullptr)
     throw FmtRuntimeError("Failed to open ZIP archive {}", path);

@@ -5,7 +5,6 @@
 #include "IGC/IGCFix.hpp"
 #include "IGC/IGCExtensions.hpp"
 #include "io/FileLineReader.hpp"
-#include "system/ConvertPathName.hpp"
 #include "Engine/Trace/Trace.hpp"
 #include "Engine/Trace/Vector.hpp"
 #include "Printing.hpp"
@@ -87,7 +86,7 @@ try {
       unsigned nt = pow(2,i);
       char buf[100];
       sprintf(buf," trace size %d", nt);
-      ok(TestTrace(PathName(argv[1]), nt),buf, 0);
+      ok(TestTrace(Path(argv[1]), nt),buf, 0);
     }
   }
   return 0;

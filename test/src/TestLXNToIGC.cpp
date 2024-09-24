@@ -2,7 +2,6 @@
 // Copyright The XCSoar Project
 
 #include "Device/Driver/LX/Convert.hpp"
-#include "system/ConvertPathName.hpp"
 #include "io/BufferedOutputStream.hxx"
 #include "io/FileOutputStream.hxx"
 #include "util/PrintException.hxx"
@@ -29,8 +28,7 @@ RunConversion()
     return false;
   }
 
-  const PathName igc_out_path_(igc_out_path);
-  FileOutputStream igc_fos(igc_out_path_);
+  FileOutputStream igc_fos((const Path) Path(igc_out_path));
   BufferedOutputStream igc_bos(igc_fos);
 
   long size;

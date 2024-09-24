@@ -4,7 +4,6 @@
 #include "Computer/FlyingComputer.hpp"
 #include "Engine/Contest/ContestManager.hpp"
 #include "Computer/Settings.hpp"
-#include "system/ConvertPathName.hpp"
 #include "system/FileUtil.hpp"
 #include "io/FileLineReader.hpp"
 #include "NMEA/MoreData.hpp"
@@ -76,8 +75,7 @@ inline void load_scores(unsigned &contest_handicap) {
     std::cout << "# replay file: " << replay_file << "\n";
     std::cout << "# score file: " << score_file << "\n";
   }
-  const NarrowPathName score_file2(score_file);
-  std::ifstream fscore(score_file2);
+  std::ifstream fscore(score_file.c_str());
   double tmp;
   fscore >> tmp; official_index = tmp;
   load_score_file(fscore, official_score_classic);

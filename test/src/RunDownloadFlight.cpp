@@ -10,7 +10,6 @@
 #include "Device/Config.hpp"
 #include "DebugPort.hpp"
 #include "Engine/Waypoint/Waypoints.hpp"
-#include "system/ConvertPathName.hpp"
 #include "Operation/ConsoleOperationEnvironment.hpp"
 #include "system/Args.hpp"
 #include "io/async/GlobalAsioThread.hpp"

@@ -10,7 +10,6 @@
 #include "io/BufferedOutputStream.hxx"
 #include "io/Reader.hxx"
 #include "io/BufferedReader.hxx"
-#include "system/ConvertPathName.hpp"
 #include "Operation/Operation.hpp"
 #include "LogFile.hpp"
 

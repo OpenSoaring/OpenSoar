@@ -3,7 +3,6 @@
 #include "Replay/IgcReplay.hpp"
 #include "Engine/Navigation/Aircraft.hpp"
 #include "NMEA/FlyingState.hpp"
-#include "system/ConvertPathName.hpp"
 #include "system/FileUtil.hpp"
 #include "io/FileLineReader.hpp"
 #include "NMEA/Info.hpp"

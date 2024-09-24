@@ -3,7 +3,6 @@
 
 #include "RunFile.hxx"
 #include "Error.hxx"
-#include "system/ConvertPathName.hpp"
 #include "system/Path.hpp"
 
 extern "C" {
@@ -13,6 +12,6 @@ extern "C" {
 void
 Lua::RunFile(lua_State *L, Path path)
 {
-	if (luaL_loadfile(L, NarrowPathName(path)) || lua_pcall(L, 0, 0, 0))
+	if (luaL_loadfile(L, path.c_str()) || lua_pcall(L, 0, 0, 0))
 		throw PopError(L);
 }

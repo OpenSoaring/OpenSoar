@@ -5,7 +5,6 @@
 #include "harness_task.hpp"
 #include "harness_flight.hpp"
 #include "Contest/Solvers/ContestDijkstra.hpp"
-#include "system/ConvertPathName.hpp"
 #include "test_debug.hpp"
 
 #include <stdlib.h>
@@ -91,13 +90,13 @@ ParseArgs(int argc, char** argv)
       printf ("\n");
       break;
     case 'f':
-      replay_file = PathName(optarg);
+      replay_file = Path(optarg);
       break;
     case 'w':
-      waypoint_file = PathName(optarg);
+      waypoint_file = Path(optarg);
       break;
     case 'x':
-      task_file = PathName(optarg);
+      task_file = Path(optarg);
       break;
     case 'd':
       range_threshold = atof(optarg);

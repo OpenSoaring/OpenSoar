@@ -10,7 +10,6 @@
 #include "Engine/Route/ReachResult.hpp"
 #include "Terrain/RasterMap.hpp"
 #include "Terrain/Loader.hpp"
-#include "system/ConvertPathName.hpp"
 #include "Compatibility/path.h"
 #include "GlideSolvers/GlideSettings.hpp"
 #include "GlideSolvers/GlidePolar.hpp"
