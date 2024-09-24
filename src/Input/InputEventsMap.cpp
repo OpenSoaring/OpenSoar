@@ -190,9 +190,10 @@ InputEvents::sub_SetZoom(double value)
   }
 
   auto vmin = CommonInterface::GetComputerSettings().polar.glide_polar_task.GetVMin();
-  auto scale_2min_distance = vmin * 12;
-  const double scale_100m = 10;
-  const double scale_1600km = 1600*100;
+  auto scale_2min_distance = vmin * 120/10;  // vmin[m/s] * 120s
+  const double scale_100m = 100/10;
+  const double scale_1600km = 1600*1000/10;
+  // all scales apart of x/10...
   auto minreasonable = displayMode == DisplayMode::CIRCLING
     ? scale_100m
     : std::max(scale_100m, scale_2min_distance);
