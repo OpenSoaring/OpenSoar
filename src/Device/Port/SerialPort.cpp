@@ -55,7 +55,7 @@ SerialPort::Open(const char *path, unsigned _baud_rate)
   // Open the serial port.
   hPort = CreateFile(path,
                      GENERIC_READ | GENERIC_WRITE, // Access (read-write) mode
-                     0,            // Share mode
+                     0,  // FILE_SHARE_READ | FILE_SHARE_WRITE,  // Share mode
                      nullptr, // Pointer to the security attribute
                      OPEN_EXISTING,// How to open the serial port
                      FILE_FLAG_OVERLAPPED, // Overlapped I/O
