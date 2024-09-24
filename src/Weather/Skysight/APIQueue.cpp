@@ -25,7 +25,7 @@ SkysightAPIQueue::IsLoggedIn() {
       BrokenDateTime::NowUTC().ToTimePoint());
 
   // Add a 1-minute padding so that token doesn't expire mid-way thru a request
-  // the key is valid for 1000 sec (16:40min, August 2024)
+  // the key is valid for 1000 sec ( = 16:40min)
   return key_expiry_time > now + (1 * 60);
 }
 
@@ -34,8 +34,7 @@ SkysightAPIQueue::DoClearingQueue() {
   for (auto &&i = request_queue.begin(); i < request_queue.end(); /* ++i */) {
     if ((*i)->GetStatus() != SkysightRequest::Status::Busy) {
       (*i)->Done();
-      request_queue.erase(i);
-      i = request_queue.begin(); // don't iterate or increment an erased iter
+      i = request_queue.erase(i);
     } else {
       i = i++;
     }
@@ -81,9 +80,10 @@ SkysightAPIQueue::Process()
     auto job = request_queue.begin();
     switch ((*job)->GetStatus()) {
     case SkysightRequest::Status::Idle:
-      //Provide the job with the very latest API key just prior to execution
+      // Provide the job with the very latest API key just prior to execution
       if ((*job)->GetType() == SkysightCallType::Login) {
         (*job)->SetCredentials("XCSoar", email.c_str(), password.c_str());
+// not yet...        (*job)->SetCredentials("OpenSoar", email.c_str(), password.c_str());
         (*job)->Process();
       } else {
         if (!IsLoggedIn()) {
