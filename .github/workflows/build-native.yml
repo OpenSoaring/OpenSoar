@@ -71,7 +71,7 @@ jobs:
           esac
         id: changelogentry
 
-      - name: get XCSoar Version
+      - name: get OpenSoar Version
         id: get_version
         run: |
           VERSION=$(cat VERSION.txt)
@@ -101,9 +101,9 @@ jobs:
         include:
           - os: ubuntu-22.04
             target: UNIX
-            target_bin: xcsoar_${{ needs.release.outputs.version }}_amd64
+            target_bin: opensoar_${{ needs.release.outputs.version }}_amd64
             target_bin_path: ''
-            target_final: xcsoar_
+            target_final: opensoar_
             target_ext: .deb
             target_upload: true
             target_container: debian:bookworm-slim
@@ -117,34 +117,34 @@ jobs:
             target_container: debian:bookworm-slim
           - os: ubuntu-22.04
             target: ANDROID
-            target_bin: XCSoar
+            target_bin: OpenSoar
             target_bin_path: bin
-            target_final: XCSoar
+            target_final: OpenSoar
             target_ext: .apk
             target_upload: true
             ndk: r26d
             target_container: debian:bookworm-slim
           - os: ubuntu-22.04
             target: WIN64
-            target_bin: XCSoar
+            target_bin: OpenSoar
             target_bin_path: bin
-            target_final: XCSoar
+            target_final: OpenSoar
             target_ext: .exe
             target_upload: true
             target_container: debian:bookworm-slim
           - os: ubuntu-22.04
             target: PC
-            target_bin: XCSoar
+            target_bin: OpenSoar
             target_bin_path: bin
-            target_final: XCSoar
+            target_final: OpenSoar
             target_ext: .exe
             target_upload: true
             target_container: debian:bookworm-slim
           - os: macos-12
             target: OSX64
-            target_bin: XCSoar
+            target_bin: OpenSoar
             target_bin_path: bin
-            target_final: XCSoar
+            target_final: OpenSoar
             target_ext: ''
             target_upload: false
             target_container: ''
@@ -162,8 +162,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           echo "DEBUG=n" >> $GITHUB_ENV
-          if [ ${{ matrix.target }} = "xcsoar" ]; then
-            echo "TARGET_FINAL=xcsoar" >> $GITHUB_ENV
+          if [ ${{ matrix.target }} = "opensoar" ]; then
+            echo "TARGET_FINAL=opensoar" >> $GITHUB_ENV
           fi
 
       - name: Checkout code
@@ -239,13 +239,13 @@ jobs:
         shell: bash
         if: ${{ matrix.target == 'ANDROID' && startsWith(github.ref, 'refs/tags/v') }}
         run: |
-          if [ -n "${{ secrets.XCSOAR_UPLOAD_KEY_JKS_BASE64 }}" ]; then
+          if [ -n "${{ secrets.OPENSOAR_UPLOAD_KEY_JKS_BASE64 }}" ]; then
             mkdir -p ~/.android/
-            echo "${{ secrets.XCSOAR_UPLOAD_KEY_JKS_BASE64 }}" | base64 -d > ~/.android/signing-key.jks
+            echo "${{ secrets.OPENSOAR_UPLOAD_KEY_JKS_BASE64 }}" | base64 -d > ~/.android/signing-key.jks
             md5sum ~/.android/signing-key.jks
           fi
 
-      - name: Compile XCSoar - PR
+      - name: Compile OpenSoar - PR
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         run: |
           if [ ${{ matrix.target }} = 'ANDROID' ]; then
@@ -259,22 +259,22 @@ jobs:
             gmake -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 OPTIMIZE="-O0"
           fi
 
-      - name: Compile XCSoar - Sanitizer Check
+      - name: Compile OpenSoar - Sanitizer Check
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         run: |
           if [ ${{ matrix.target }} = "UNIX" ]; then
             make -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 everything check VFB=y SANITIZE=y DEBUG_GLIBCXX=y
           fi
 
-      - name: Compile XCSoar - Release
+      - name: Compile OpenSoar - Release
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           if [ ${{ matrix.target }} = 'ANDROID' ]; then
-            if [ -n "${{ secrets.XCSOAR_UPLOAD_KEY_JKS_PASSWORD }}" ] && [ -n "${{ secrets.XCSOAR_UPLOAD_KEY_JKS_KEY_ALIAS }}" ]; then
-              ANDROID_KEYSTORE_PASS=${{ secrets.XCSOAR_UPLOAD_KEY_JKS_PASSWORD }} \
+            if [ -n "${{ secrets.OPENSOAR_UPLOAD_KEY_JKS_PASSWORD }}" ] && [ -n "${{ secrets.OPENSOAR_UPLOAD_KEY_JKS_KEY_ALIAS }}" ]; then
+              ANDROID_KEYSTORE_PASS=${{ secrets.OPENSOAR_UPLOAD_KEY_JKS_PASSWORD }} \
               make -j$(nproc) TARGET=ANDROIDFAT DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 \
               output/ANDROID/bin/${{ matrix.target_bin }}${{ matrix.target_ext }} \
-              ANDROID_KEYSTORE=~/.android/signing-key.jks ANDROID_KEY_ALIAS=${{ secrets.XCSOAR_UPLOAD_KEY_JKS_KEY_ALIAS }}
+              ANDROID_KEYSTORE=~/.android/signing-key.jks ANDROID_KEY_ALIAS=${{ secrets.OPENSOAR_UPLOAD_KEY_JKS_KEY_ALIAS }}
             else
               make -j$(nproc) TARGET=ANDROIDFAT DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 \
               output/ANDROID/bin/${{ matrix.target_bin }}${{ matrix.target_ext }}
@@ -317,7 +317,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: Deploy to Download server - testing
-        if: ${{ github.repository == 'XCSoar/XCSoar' && github.ref == 'refs/heads/master' }}
+        if: ${{ github.repository == 'OpenSoaring/OpenSoar' && github.ref == 'refs/heads/master' }}
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
@@ -328,7 +328,7 @@ jobs:
           TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}/
 
       - name: Deploy to Download server - release
-        if: ${{ github.repository == 'XCSoar/XCSoar' && startsWith(github.ref, 'refs/tags/v') && matrix.target_upload == true }}
+        if: ${{ github.repository == 'OpenSoaring/OpenSoar' && startsWith(github.ref, 'refs/tags/v') && matrix.target_upload == true }}
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
