@@ -16,14 +16,14 @@ static constexpr double MAX_MACCREADY = 5.2;
 static constexpr unsigned STEPS_MACCREADY = 25;
 
 void
-MacCreadyCaption(char *sTmp, const GlidePolar &glide_polar)
+MacCreadyCaption(char *buffer, const size_t length, const GlidePolar &glide_polar)
 {
   if (!glide_polar.IsValid()) {
-    *sTmp = '\0';
+    *buffer = '\0';
     return;
   }
 
-  snprintf(sTmp, sizeof(sTmp), 
+  snprintf(buffer, length,
             "%s: %d %s\r\n%s: %d %s",
             _("Vopt"),
             (int)Units::ToUserSpeed(glide_polar.GetVBestLD()),

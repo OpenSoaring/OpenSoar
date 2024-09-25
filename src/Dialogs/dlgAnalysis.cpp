@@ -450,7 +450,7 @@ AnalysisWidget::Update()
 
   switch (page) {
   case AnalysisPage::BAROGRAPH:
-    StringFormatUnsafe(sTmp, "%s: %s", _("Analysis"),
+    StringFormat(sTmp, sizeof(sTmp), "%s: %s", _("Analysis"),
                        _("Barograph"));
     dialog.SetCaption(sTmp);
     BarographCaption(sTmp, glide_computer.GetFlightStats());
@@ -459,7 +459,7 @@ AnalysisWidget::Update()
     break;
 
   case AnalysisPage::CLIMB:
-    StringFormatUnsafe(sTmp, "%s: %s", _("Analysis"),
+    StringFormat(sTmp, sizeof(sTmp), "%s: %s", _("Analysis"),
                        _("Climb"));
     dialog.SetCaption(sTmp);
     ClimbChartCaption(sTmp, glide_computer.GetFlightStats());
@@ -468,7 +468,7 @@ AnalysisWidget::Update()
     break;
 
   case AnalysisPage::THERMAL_BAND:
-    StringFormatUnsafe(sTmp, "%s: %s", _("Analysis"),
+    StringFormat(sTmp, sizeof(sTmp), "%s: %s", _("Analysis"),
                        _("Thermal Band"));
     dialog.SetCaption(sTmp);
     ClimbChartCaption(sTmp, glide_computer.GetFlightStats());
@@ -477,7 +477,7 @@ AnalysisWidget::Update()
     break;
 
   case AnalysisPage::VARIO_HISTOGRAM:
-    StringFormatUnsafe(sTmp, "%s: %s", _("Analysis"),
+    StringFormat(sTmp, sizeof(sTmp), "%s: %s", _("Analysis"),
                        _("Vario Histogram"));
     dialog.SetCaption(sTmp);
     info.SetText("");
@@ -485,7 +485,7 @@ AnalysisWidget::Update()
     break;
 
   case AnalysisPage::WIND:
-    StringFormatUnsafe(sTmp, "%s: %s", _("Analysis"),
+    StringFormat(sTmp, sizeof(sTmp), "%s: %s", _("Analysis"),
                        _("Wind at Altitude"));
     dialog.SetCaption(sTmp);
     info.SetText("");
@@ -493,7 +493,7 @@ AnalysisWidget::Update()
     break;
 
   case AnalysisPage::POLAR:
-    StringFormatUnsafe(sTmp, "%s: %s (%s %d kg)", _("Analysis"),
+    StringFormat(sTmp, sizeof(sTmp), "%s: %s (%s %d kg)", _("Analysis"),
                        _("Glide Polar"), _("Mass"),
                        (int)settings_computer.polar.glide_polar_task.GetTotalMass());
     dialog.SetCaption(sTmp);
@@ -503,16 +503,16 @@ AnalysisWidget::Update()
     break;
 
   case AnalysisPage::MACCREADY:
-    StringFormatUnsafe(sTmp, "%s: %s", _("Analysis"),
+    StringFormat(sTmp, sizeof(sTmp), "%s: %s", _("Analysis"),
                        _("MacCready Speeds"));
     dialog.SetCaption(sTmp);
-    MacCreadyCaption(sTmp, settings_computer.polar.glide_polar_task);
+    MacCreadyCaption(sTmp, sizeof(sTmp), settings_computer.polar.glide_polar_task);
     info.SetText(sTmp);
     SetCalcCaption(_("Settings"));
     break;
 
   case AnalysisPage::TEMPTRACE:
-    StringFormatUnsafe(sTmp, "%s: %s", _("Analysis"),
+    StringFormat(sTmp, sizeof(sTmp), "%s: %s", _("Analysis"),
                        _("Temperature Trace"));
     dialog.SetCaption(sTmp);
     TemperatureChartCaption(sTmp, glide_computer.GetCuSonde());
@@ -521,17 +521,17 @@ AnalysisWidget::Update()
     break;
 
   case AnalysisPage::TASK_SPEED:
-    StringFormatUnsafe(sTmp, "%s: %s", _("Analysis"),
+    StringFormat(sTmp, sizeof(sTmp), "%s: %s", _("Analysis"),
                        _("Task Speed"));
     dialog.SetCaption(sTmp);
-    TaskSpeedCaption(sTmp, glide_computer.GetFlightStats(),
+    TaskSpeedCaption(sTmp, sizeof(sTmp), glide_computer.GetFlightStats(),
                      settings_computer.polar.glide_polar_task);
     info.SetText(sTmp);
     SetCalcCaption(_("Task Calc"));
     break;
 
   case AnalysisPage::TASK:
-    StringFormatUnsafe(sTmp, "%s: %s", _("Analysis"),
+    StringFormat(sTmp, sizeof(sTmp), "%s: %s", _("Analysis"),
                        _("Task"));
     dialog.SetCaption(sTmp);
     FlightStatisticsRenderer::CaptionTask(sTmp, calculated);
@@ -540,7 +540,7 @@ AnalysisWidget::Update()
     break;
 
   case AnalysisPage::CONTEST:
-    StringFormatUnsafe(sTmp, "%s: %s", _("Analysis"),
+    StringFormat(sTmp, sizeof(sTmp), "%s: %s", _("Analysis"),
                        ContestToString(settings_computer.contest.contest));
     dialog.SetCaption(sTmp);
     SetCalcCaption("");
@@ -550,7 +550,7 @@ AnalysisWidget::Update()
     break;
 
   case AnalysisPage::AIRSPACE:
-    StringFormatUnsafe(sTmp, "%s: %s", _("Analysis"),
+    StringFormat(sTmp, sizeof(sTmp), "%s: %s", _("Analysis"),
                        _("Airspace"));
     dialog.SetCaption(sTmp);
     info.SetText("");

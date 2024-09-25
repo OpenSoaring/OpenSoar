@@ -15,16 +15,16 @@
 #include "Engine/GlideSolvers/GlidePolar.hpp"
 
 void
-TaskSpeedCaption(char *sTmp,
+TaskSpeedCaption(char *buffer, const size_t length,
                  const FlightStatistics &fs,
                  const GlidePolar &glide_polar)
 {
   if (!glide_polar.IsValid() || fs.task_speed.IsEmpty()) {
-    *sTmp = '\0';
+    *buffer = '\0';
     return;
   }
 
-  snprintf(sTmp, sizeof(sTmp), 
+  snprintf(buffer, length, 
             "%s: %d %s\r\n%s: %d %s",
             _("Vave"),
             (int)Units::ToUserTaskSpeed(fs.task_speed.GetAverageY()),

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstddef>
 
 struct PixelRect;
 class Canvas;
@@ -10,7 +11,7 @@ struct ChartLook;
 class GlidePolar;
 
 void
-MacCreadyCaption(char *sTmp, const GlidePolar &glide_polar);
+MacCreadyCaption(char *buffer, const size_t length, const GlidePolar &glide_polar);
 
 void
 RenderMacCready(Canvas &canvas, const PixelRect rc,
