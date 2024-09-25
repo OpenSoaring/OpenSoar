@@ -228,11 +228,13 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     StaticString<0x200> str;
     str.Format("%s/%s", ovdevice.GetHomePath().c_str(), "process.txt");
     Path output = Path(str);
-
+#ifdef __AUGUST__
     auto ret_value = Run(
       output,
       "/home/august2111/TestProcess.sh");
-
+#else
+    int ret_value = 0;
+#endif
     char buffer[0x100];
     File::ReadString(output, buffer, sizeof(buffer));
     std::string xx = buffer; 

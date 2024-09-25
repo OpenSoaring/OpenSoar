@@ -342,13 +342,7 @@ OpenVario_Device::GetSystemStatus(std::string_view system) noexcept
   auto connection = ODBus::Connection::GetSystem();
   return Systemd::IsUnitEnabled(connection, system.data());
 #else
-  // StaticString
- 
   StaticString<0x20> file;
-
-  std::string_view _dirname("/home/august2111");
-  //Path run_tmp_file("/home/august2111/test.txt");
-  Path run_tmp_file(_dirname.data());
 
   if (system == "sensord")
     file = "SensorD.txt";
