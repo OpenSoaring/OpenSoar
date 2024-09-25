@@ -35,8 +35,8 @@ SkysightRequest::FileHandler::OnData(std::span<const std::byte> data)
 }
 
 void
-SkysightRequest::FileHandler::OnHeaders(unsigned status,
-    __attribute__((unused)) Curl::Headers &&headers) {
+SkysightRequest::FileHandler::OnHeaders([[maybe_unused]] unsigned status,
+    [[maybe_unused]]  Curl::Headers &&headers) {
 #ifdef SKYSIGHT_HTTP_LOG
   LogFormat("FileHandler::OnHeaders %d", status);
 #endif
@@ -81,8 +81,8 @@ SkysightRequest::BufferHandler::OnData(std::span<const std::byte> data)
 }
 
 void
-SkysightRequest::BufferHandler::OnHeaders(unsigned status,
-    __attribute__((unused)) Curl::Headers &&headers) {
+SkysightRequest::BufferHandler::OnHeaders([[maybe_unused]] unsigned status,
+    [[maybe_unused]]  Curl::Headers &&headers) {
 #ifdef SKYSIGHT_HTTP_LOG
   LogFormat("BufferHandler::OnHeaders %d", status);
 #endif
@@ -362,7 +362,7 @@ SkysightRequest::RequestToBuffer(std::string &response)
 #if defined(SKYSIGHT_FILE_DEBUG)
     std::stringstream filename;
     std::stringstream s;
-    auto time = BrokenDateTime::NowLocal();
+    // auto time = BrokenDateTime::NowLocal();
     filename.fill('0');
     filename.precision(2);
 
@@ -387,9 +387,9 @@ SkysightRequest::RequestToBuffer(std::string &response)
       << std::endl;
     if (args.url.find("from_time") != std::string::npos)
     {
-      std::string from_time = args.url.substr(args.url.length() - 10);
-      BrokenDateTime from =
-          BrokenDateTime::FromUnixTimeUTC(std::stoi(from_time));
+      // std::string from_time = args.url.substr(args.url.length() - 10);
+      // BrokenDateTime from =
+      //    BrokenDateTime::FromUnixTimeUTC(std::stoi(from_time));
       s << "from:     "
         << std::put_time(std::localtime(&tx /*from_time*/), "%Y%m%d_%H%M%S")
         << std::endl;
