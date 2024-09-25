@@ -2,7 +2,6 @@
 // Copyright The XCSoar Project
 
 #include "Skysight.hpp"
-#include "system/ConvertPathName.hpp"
 #include "system/Path.hpp"
 #include "LocalPath.hpp"
 #include "system/FileUtil.hpp"
