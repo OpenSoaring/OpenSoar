@@ -68,9 +68,9 @@ public:
         const time_t time_index);
   void TimerInvoke();
 
-  inline AllocatedPath
+  AllocatedPath
   GetPath(SkysightCallType type, const std::string_view layer_id = "",
-    const time_t fctime = 0);
+      const time_t fctime = 0);
 
 protected:
   static SkysightAPI *self;
