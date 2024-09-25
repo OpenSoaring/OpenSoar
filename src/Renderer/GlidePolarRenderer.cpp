@@ -15,15 +15,15 @@
 
 #include <stdio.h>
 
+
 void
-GlidePolarCaption(char *sTmp, const GlidePolar &glide_polar)
+GlidePolarCaption(char *sTmp, const size_t length, const GlidePolar &glide_polar)
 {
   if (!glide_polar.IsValid()) {
     *sTmp = '\0';
     return;
   }
-
-  snprintf(sTmp, sizeof(sTmp), Layout::landscape ?
+  snprintf(sTmp, length, Layout::landscape ?
                   "%s:\r\n  %d\r\n  at %d %s\r\n\r\n%s:\r\n  %3.2f %s\r\n  at %d %s" :
                   "%s:\r\n  %d at %d %s\r\n%s:\r\n  %3.2f %s at %d %s",
             _("L/D"),

@@ -497,7 +497,7 @@ AnalysisWidget::Update()
                        _("Glide Polar"), _("Mass"),
                        (int)settings_computer.polar.glide_polar_task.GetTotalMass());
     dialog.SetCaption(sTmp);
-    GlidePolarCaption(sTmp, settings_computer.polar.glide_polar_task);
+    GlidePolarCaption(sTmp, sizeof(sTmp), settings_computer.polar.glide_polar_task);
     info.SetText(sTmp);
     SetCalcCaption(_("Settings"));
     break;
