@@ -496,15 +496,15 @@ Skysight::GetForecastTime(BrokenDateTime curr_time)
   if (!curr_time.IsPlausible())
     curr_time = Skysight::GetNow();
 
-  if ((curr_time.minute >= 15) && (curr_time.minute < 45))
+  if ((curr_time.minute >= 15) && (curr_time.minute < 45)) {
+    curr_time = curr_time + std::chrono::hours(1);
+    curr_time.minute = 0;
+  } else {
+    if (curr_time.minute >= 45) 
+      curr_time = curr_time + std::chrono::hours(1);
+    // else if (curr_time.minute < 15) {}  // not necessary
     curr_time.minute = 30;
-  else if (curr_time.minute >= 45) {
-    curr_time.minute = 0;
-    curr_time = curr_time + std::chrono::seconds(60*60);
   }
-  else if (curr_time.minute < 15)
-    curr_time.minute = 0;
-
   curr_time.second = 0;
   return curr_time;
 }
