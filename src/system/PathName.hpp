@@ -3,9 +3,6 @@
 
 #pragma once
 
-#include "util/Compiler.h"
-
-
 /**
  * Replaces the "base name" of the specified path, i.e. the portion
  * after the last path separator.  If the input path does not contain
