@@ -647,9 +647,10 @@ SkysightAPI::GetResult(const SkysightRequestArgs &args,
 // SkysightAPI::GetImageAt(1) with layer(!), start_time, max_time, update_time and callback
 bool
 SkysightAPI::GetImageAt(SkysightLayer &layer,
-                        BrokenDateTime fctime,
-                        BrokenDateTime maxtime, uint64_t update_time,
-                        SkysightCallback cb)
+  BrokenDateTime fctime,
+  BrokenDateTime maxtime,
+  [[maybe_unused]] uint64_t update_time,
+  SkysightCallback cb)
 {
 #if 0
   // round time to nearest 30-min forecast slot
