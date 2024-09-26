@@ -636,7 +636,6 @@ Skysight::DisplayActiveLayer()
   bool found = false;
   // StaticString<256> filename;
   AllocatedPath filename;
-  //BrokenDateTime forecast_time;
   int max_offset = (60*60);
 
   // TODO: We're only searching w a max offset of 1 hr, simplify this!
@@ -645,16 +644,12 @@ Skysight::DisplayActiveLayer()
     for (int j=0; j <= 1; ++j) {
       test_time = n + ( offset * ((2*j)-1) );
 
-#ifdef _DEBUG
-      // (aug) not needed?: BrokenDateTime update_time;
-      // update_time = BrokenDateTime(2024, 9, 18, 17, 28, 0);
-      active_layer->forecast_time = FromUnixTime(test_time + 2 * 60 * 60);
-#endif
       filename = api->GetPath(SkysightCallType::Image,
         active_layer->id, test_time);
 
       if (File::Exists(filename)) {
-        // AllocatedPath::Build(GetLocalPath(),    filename.c_str()))) {
+        // needed for (selected) object view in map
+        active_layer->forecast_time = FromUnixTime(test_time);
         found = true;
         break;
       }
@@ -682,11 +677,11 @@ Skysight::DisplayActiveLayer()
     return false;
   }
 
+  BrokenDateTime &time = active_layer->forecast_time;
   StaticString<256> label;
   label.Format("SkySight: %s (%04u-%02u-%02u %02u:%02u)",
-    active_layer->name.c_str(), active_layer->forecast_time.year,
-    active_layer->forecast_time.month, active_layer->forecast_time.day,
-    active_layer->forecast_time.hour, active_layer->forecast_time.minute);
+    active_layer->name.c_str(), time.year, time.month, time.day,
+    time.hour, time.minute);
   bmp->SetLabel(label); // .c_str());
   bmp->SetAlpha(0.6);
   map->SetOverlay(std::move(bmp));
