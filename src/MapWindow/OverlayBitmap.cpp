@@ -4,12 +4,12 @@
 #include "OverlayBitmap.hpp"
 #include "ui/canvas/Canvas.hpp"
 #ifdef ENABLE_OPENGL
-#include "ui/canvas/opengl/Texture.hpp"
-#include "ui/canvas/opengl/Scope.hpp"
-#include "ui/canvas/opengl/ConstantAlpha.hpp"
-#include "ui/canvas/opengl/VertexPointer.hpp"
+# include "ui/canvas/opengl/Texture.hpp"
+# include "ui/canvas/opengl/Scope.hpp"
+# include "ui/canvas/opengl/ConstantAlpha.hpp"
+# include "ui/canvas/opengl/VertexPointer.hpp"
 #elif defined (USE_GDI)
-#include "ui/canvas/gdi/BufferCanvas.hpp"
+# include "ui/canvas/gdi/BufferCanvas.hpp"
 #endif
 #include "Projection/WindowProjection.hpp"
 #include "Math/Point2D.hpp"
@@ -50,14 +50,17 @@ GeoTo2D(GeoPoint p) noexcept
   return {p.longitude.Native(), p.latitude.Native()};
 }
 
+#ifdef ENABLE_OPENGL
 /**
  * Inverse of GeoTo2D().
+ * - Only used with OpenGL yet
  */
 static constexpr GeoPoint
 GeoFrom2D(DoublePoint2D p) noexcept
 {
   return {Angle::Native(p.x), Angle::Native(p.y)};
 }
+#endif  // ENABLE_OPENGL
 
 /**
  * Convert a #GeoBounds instance to a boost::geometry box.
@@ -104,6 +107,8 @@ Clip(const GeoQuadrilateral &_geo, const GeoBounds &_bounds) noexcept
   return clipped;
 }
 
+#ifdef ENABLE_OPENGL
+// only used in OpenGL case
 [[gnu::pure]]
 static DoublePoint2D
 MapInQuadrilateral(const GeoQuadrilateral &q, const GeoPoint p) noexcept
@@ -112,6 +117,7 @@ MapInQuadrilateral(const GeoQuadrilateral &q, const GeoPoint p) noexcept
                             GeoTo2D(q.bottom_right), GeoTo2D(q.bottom_left),
                             GeoTo2D(p));
 }
+#endif
 
 bool
 MapOverlayBitmap::IsInside(GeoPoint p) const noexcept
@@ -177,7 +183,6 @@ MapOverlayBitmap::Draw([[maybe_unused]] Canvas &canvas,
   glDisableVertexAttribArray(OpenGL::Attribute::TEXCOORD);
 
 #else  // ENABLE_OPENGL
-  double test[8];
   auto ChartWest = simple_bounds.GetWest().Native();
   auto ChartNorth = simple_bounds.GetNorth().Native();
   auto ChartWidth = simple_bounds.GetWidth().Native();
