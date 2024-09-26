@@ -18,6 +18,7 @@
 #include "Formatter/TimeFormatter.hpp"
 #include "Formatter/LocalTimeFormatter.hpp"
 #include "Formatter/AngleFormatter.hpp"
+#include "Formatter/GeoPointFormatter.hpp"
 #include "Dialogs/Task/dlgTaskHelpers.hpp"
 #include "Renderer/OZPreviewRenderer.hpp"
 #include "Language/Language.hpp"
@@ -55,21 +56,26 @@ Draw(Canvas &canvas, const PixelRect rc,
 {
   char info_buffer[256];
   if (item.vector.IsValid())
-    StringFormatUnsafe(info_buffer, "%s: %s, %s: %s",
+    StringFormat(info_buffer, sizeof(info_buffer), "%s: %s, %s: %s",
                        _("Distance"),
                        FormatUserDistanceSmart(item.vector.distance).c_str(),
                        _("Direction"),
                        FormatBearing(item.vector.bearing).c_str());
   else
-    StringFormatUnsafe(info_buffer, "%s: %s, %s: %s",
+    StringFormat(info_buffer, sizeof(info_buffer), "%s: %s, %s: %s",
                        _("Distance"), "???", _("Direction"), "???");
 
   row_renderer.DrawFirstRow(canvas, rc, info_buffer);
 
-  StringFormatUnsafe(info_buffer, "%s: %s", _("Elevation"),
-                     item.HasElevation()
-                     ? FormatUserAltitude(item.elevation).c_str()
-                     : "???");
+  // (geo-)position of mouse in the map
+  snprintf(info_buffer, sizeof(info_buffer), "%s: ", _("Position"));
+  FormatGeoPoint(item.location, info_buffer + strlen(info_buffer),
+    sizeof(info_buffer) - strlen(info_buffer), CoordinateFormat::DDMMSS);
+
+  snprintf(info_buffer + strlen(info_buffer),
+    sizeof(info_buffer) - strlen(info_buffer), ", %s: %s", _("Elevation"),
+    item.HasElevation() ? FormatUserAltitude(item.elevation).c_str() : "???");
+
   row_renderer.DrawSecondRow(canvas, rc, info_buffer);
 }
 

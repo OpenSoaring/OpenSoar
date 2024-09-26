@@ -75,9 +75,10 @@ struct LocationMapItem: public MapItem
    * Terrain elevation of the point.  If that is unknown, it is nan().
    */
   double elevation;
+  GeoPoint location;
 
-  LocationMapItem(const GeoVector &_vector, double _elevation)
-    :MapItem(Type::LOCATION), vector(_vector), elevation(_elevation) {}
+  LocationMapItem(const GeoVector &_vector, double _elevation, const GeoPoint &_location)
+    :MapItem(Type::LOCATION), vector(_vector), elevation(_elevation), location(_location){}
 
   bool HasElevation() const {
     return elevation > UNKNOWN_ELEVATION_THRESHOLD;
