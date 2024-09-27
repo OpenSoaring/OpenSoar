@@ -1,6 +1,6 @@
 # Rules for VALI-XCS.exe, the non-interactive G record validation tool
 
-ifeq ($(PROGRAM_NAME),xcsoar)
+## ifeq ($(PROGRAM_NAME), OpenSoar)
 VALI_XCS_SOURCES = \
 	$(SRC)/Logger/GRecord.cpp \
 	$(SRC)/util/MD5.cpp \
@@ -11,4 +11,4 @@ VALI_XCS_STRIP = y
 
 $(eval $(call link-program,vali-xcs,VALI_XCS))
 
-endif
+## endif

@@ -9,12 +9,12 @@ install-mo: mo
 		install -m 0644 $(OUT)/po/$$i.mo $(prefix)/share/locale/$$i/LC_MESSAGES/$(PROGRAM_NAME_LC).mo; \
 	done
 
-install-bin: all
-	@$(NQ)echo "  INSTALL   Passiert hier irgend etwas????"
-	install -d -m 0755 $(prefix)/bin
-	install -m 0755 $(TARGET_BIN_DIR)/$(PROGRAM_NAME) $(prefix)/bin
+VALI_XCS_EXE = $(TARGET_BIN_DIR)/vali-xcs
 
-#	install -m 0755 $(TARGET_BIN_DIR)/$(PROGRAM_NAME) $(TARGET_BIN_DIR)/vali-xcs $(prefix)/bin
+install-bin: all
+	@$(NQ)echo "  INSTALL   (August2111) Passiert hier irgend etwas????"
+	install -d -m 0755 $(prefix)/bin
+	install -m 0755 $(TARGET_BIN_DIR)/$(PROGRAM_NAME) $(TARGET_BIN_DIR)/vali-xcs $(prefix)/bin
 
 install-manual: manual
 	install -d -m 0755 $(prefix)/share/doc/$(PROGRAM_NAME)
