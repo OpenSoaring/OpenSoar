@@ -149,13 +149,8 @@ class SkysightWidget final
 {
   ButtonPanelWidget *buttons_widget;
 
-#if 0  // def _DEBUG
   Button *activate_button, *deactivate_button, *add_button, *remove_button,
-    *update_button, *updateall_button, *cancel_button;
-#else // def _DEBUG
-  Button *activate_button, *deactivate_button, *add_button, *remove_button,
-    *cancel_button;
-#endif // def _DEBUG
+    *close_button;  // *cancel_button, 
 
   struct ListItem {
     StaticString<255> name;
@@ -226,10 +221,8 @@ SkysightWidget::CreateButtons(ButtonPanel &buttons)
   update_button = buttons.Add(_("Update"), [this](){ UpdateClicked(); });
   updateall_button = buttons.Add(_("Update All"), [this](){ UpdateAllClicked(); });
 #endif
-#ifdef _DEBUG
-  cancel_button = buttons.Add(_("Cancel"), [this](){ CancelClicked(); });
-  cancel_button = buttons.Add(_("Close"), [this](){ CloseClicked(); });
-#endif
+//  cancel_button = buttons.Add(_("Cancel"), [this](){ CancelClicked(); });
+  close_button = buttons.Add(_("Close"), [this](){ CloseClicked(); });
 }
 
 void
@@ -386,16 +379,20 @@ SkysightWidget::DeactivateClicked()
   UpdateList();
 }
 
+#if 0
 inline void
 SkysightWidget::CancelClicked()
 {
+  // remove changes...
+  // t.b.d.!
   CommonInterface::main_window->Close();
 }
+#endif
+
 inline void
 SkysightWidget::CloseClicked()
 {
-  // Save the settings
-
+  // t.b.d.: Save the settings!
   CommonInterface::main_window->Close();
 }
 
