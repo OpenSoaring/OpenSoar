@@ -382,9 +382,6 @@ SkysightWidget::ActivateClicked()
 inline void
 SkysightWidget::DeactivateClicked()
 {
-  unsigned index = GetList().GetCursorIndex();
-  assert(index < (unsigned)skysight->NumSelectedLayers());
-
   skysight->DeactivateLayer();
   UpdateList();
 }
