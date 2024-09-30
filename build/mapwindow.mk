@@ -31,6 +31,6 @@ LIBMAPWINDOW_SOURCES = \
 	$(SRC)/MapWindow/TargetMapWindowDrag.cpp \
 	$(SRC)/MapWindow/OverlayBitmap.cpp
 
-LIBMAPWINDOW_DEPENDS = SCREEN
+LIBMAPWINDOW_DEPENDS = SCREEN CURL
 
 $(eval $(call link-library,libmapwindow,LIBMAPWINDOW))
