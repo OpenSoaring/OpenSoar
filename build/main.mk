@@ -188,8 +188,7 @@ DIALOG_SOURCES += \
 	$(SRC)/Dialogs/Weather/NOAAList.cpp \
 	$(SRC)/Dialogs/Weather/NOAADetails.cpp
     
-ifeq ($(HAVE_HTTP)$(HAVE_WIN32),yn)
-# add SkySight (on not) Windows too
+ifeq ($(HAVE_SKYSIGHT),y)
 DIALOG_SOURCES += \
 	$(SRC)/Dialogs/Weather/SkysightDialog.cpp
 endif
@@ -661,24 +660,22 @@ XCSOAR_SOURCES += \
 	$(SRC)/Weather/NOAAStore.cpp \
 	$(SRC)/Weather/NOAAUpdater.cpp
 
-ifeq ($(HAVE_HTTP)$(HAVE_WIN32),yn)
-# add SkySight on (not) Windows too
-XCSOAR_SOURCES += \
-	$(SRC)/Weather/Skysight/Skysight.cpp \
-	$(SRC)/Weather/Skysight/CDFDecoder.cpp \
-	$(SRC)/Weather/Skysight/APIQueue.cpp \
-	$(SRC)/Weather/Skysight/SkysightAPI.cpp \
-	$(SRC)/Weather/Skysight/Request.cpp \
-	$(SRC)/Weather/Skysight/SkysightRegions.cpp \
-	\
-	$(SRC)/Weather/Skysight/SkysightRenderer.cpp
-
-endif
-
-XCSOAR_SOURCES += \
-	$(SRC)/Tracking/LiveTrack24/SessionID.cpp \
-	$(SRC)/Tracking/LiveTrack24/Glue.cpp \
-	$(SRC)/Tracking/LiveTrack24/Client.cpp
+	ifeq ($(HAVE_SKYSIGHT),y)
+		XCSOAR_SOURCES += \
+			$(SRC)/Weather/Skysight/Skysight.cpp \
+			$(SRC)/Weather/Skysight/CDFDecoder.cpp \
+			$(SRC)/Weather/Skysight/APIQueue.cpp \
+			$(SRC)/Weather/Skysight/SkysightAPI.cpp \
+			$(SRC)/Weather/Skysight/Request.cpp \
+			$(SRC)/Weather/Skysight/SkysightRegions.cpp \
+			\
+			$(SRC)/Weather/Skysight/SkysightRenderer.cpp
+	endif
+	
+	XCSOAR_SOURCES += \
+		$(SRC)/Tracking/LiveTrack24/SessionID.cpp \
+		$(SRC)/Tracking/LiveTrack24/Glue.cpp \
+		$(SRC)/Tracking/LiveTrack24/Client.cpp
 endif
 
 XCSOAR_SOURCES += \
