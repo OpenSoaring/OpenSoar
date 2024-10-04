@@ -4,9 +4,8 @@
 #include "GdiPlusBitmap.hpp"
 #include "util/UTF8.hpp"
 
-#define GDI_WITH_TESTSAVE
-
 #if defined(_MSC_VER)
+#define GDI_WITH_TESTSAVE
 # include <algorithm>
 using std::min;  // to avoid the missing 'min' in the gdiplush headers
 using std::max;  // to avoid the missing 'max' in the gdiplush headers
@@ -121,7 +120,7 @@ GdiLoadImage(UncompressedImage &&uncompressed)
   file.close();
 #endif
 
-  Gdiplus::Bitmap bitmap(&bmi, (void *)uncompressed.GetData());
+  Gdiplus::Bitmap bitmap( &bmi, const_cast<void *> (uncompressed.GetData()));
 
 #ifdef GDI_WITH_TESTSAVE
   auto path = LocalPath("/skysight/bitmapTest");
