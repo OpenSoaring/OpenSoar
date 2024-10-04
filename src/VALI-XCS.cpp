@@ -6,7 +6,7 @@
  * to validate the GRecord of an XCSoar-generated IGC file
  */
 
-#include "system/ConvertPathName.hpp"
+#include "system/Path.hpp"
 #include "Logger/GRecord.hpp"
 #include "Version.hpp"
 #include "util/PrintException.hxx"
@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <tchar.h>
 
 enum STATUS_t {
   eValidationPassed,
@@ -32,7 +31,7 @@ ValidateXCS(Path path, GRecord &oGRecord)
   STATUS_t eStatus = eValidationFileNotFound;
 
   FILE *inFile = nullptr;
-  inFile = _tfopen(path.c_str(), "r");
+  inFile = fopen(path.c_str(), "r");
   if (inFile == nullptr)
     return eStatus;
 
@@ -69,8 +68,7 @@ try {
          OpenSoar_Version);
 
   if (argc > 1 && strcmp(argv[1], "-?") != 0) {
-    PathName path(argv[1]);
-    return RunValidate(path);
+    return RunValidate(Path(argv[1]));
   } else
     return 0;
 } catch (...) {
