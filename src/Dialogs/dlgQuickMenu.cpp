@@ -216,7 +216,7 @@ QuickMenu::AddNavigationButtons(GridView *grid_view,
   auto &previous_button =
       buttons.emplace_back(*grid_view, button_rc, buttonStyle,
                            std::make_unique<QuickMenuButtonRenderer>(
-                               dialog_look, _T("Previous Page")),
+                               dialog_look, "Previous Page"),
                            [this]()
                            {
                              auto &grid_view = GetWindow();
@@ -229,7 +229,7 @@ QuickMenu::AddNavigationButtons(GridView *grid_view,
   // Add "Next Page" button
   auto &next_button = buttons.emplace_back(
       *grid_view, button_rc, buttonStyle,
-      std::make_unique<QuickMenuButtonRenderer>(dialog_look, _T("Next Page")),
+      std::make_unique<QuickMenuButtonRenderer>(dialog_look, "Next Page"),
       [this]()
       {
         auto &grid_view = GetWindow();
@@ -243,7 +243,7 @@ QuickMenu::AddNavigationButtons(GridView *grid_view,
   // Add "Cancel" button
   auto &cancel_button = buttons.emplace_back(
       *grid_view, button_rc, buttonStyle,
-      std::make_unique<QuickMenuButtonRenderer>(dialog_look, _T("Cancel")),
+      std::make_unique<QuickMenuButtonRenderer>(dialog_look, "Cancel"),
       [this]() { dialog.SetModalResult(mrCancel); });
   cancel_button.SetEnabled(true);
   grid_view->AddItem(cancel_button);
