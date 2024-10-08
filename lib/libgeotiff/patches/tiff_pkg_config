@@ -2,9 +2,13 @@ Index: libgeotiff-1.7.1/CMakeLists.txt
 ===================================================================
 --- libgeotiff-1.7.1.orig/CMakeLists.txt
 +++ libgeotiff-1.7.1/CMakeLists.txt
-@@ -159,10 +159,8 @@ IF(WITH_JPEG)
+@@ -158,10 +158,11 @@ IF(WITH_JPEG)
  ENDIF()
  
++if(WIN32)
++   INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/include)
++endif()
+
  IF(WITH_TIFF)
 -    FIND_PACKAGE(TIFF NO_MODULE QUIET)
 -    if (NOT TIFF_FOUND)
