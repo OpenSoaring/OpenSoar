@@ -28,12 +28,8 @@ LIBMAPWINDOW_SOURCES = \
 	$(SRC)/MapWindow/GlueMapWindowDisplayMode.cpp \
 	$(SRC)/MapWindow/TargetMapWindow.cpp \
 	$(SRC)/MapWindow/TargetMapWindowEvents.cpp \
-	$(SRC)/MapWindow/TargetMapWindowDrag.cpp
-
-ifeq ($(OPENGL),y)
-LIBMAPWINDOW_SOURCES += \
+	$(SRC)/MapWindow/TargetMapWindowDrag.cpp \
 	$(SRC)/MapWindow/OverlayBitmap.cpp
-endif
 
 LIBMAPWINDOW_DEPENDS = SCREEN
 
