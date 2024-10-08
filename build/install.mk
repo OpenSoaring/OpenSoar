@@ -12,7 +12,6 @@ install-mo: mo
 VALI_XCS_EXE = $(TARGET_BIN_DIR)/vali-xcs
 
 install-bin: all
-	@$(NQ)echo "  INSTALL   (August2111) Passiert hier irgend etwas????"
 	install -d -m 0755 $(prefix)/bin
 	install -m 0755 $(TARGET_BIN_DIR)/$(PROGRAM_NAME) $(TARGET_BIN_DIR)/vali-xcs $(prefix)/bin
 
