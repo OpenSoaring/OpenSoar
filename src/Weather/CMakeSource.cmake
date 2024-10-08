@@ -21,6 +21,8 @@ set(_SOURCES
         Weather/Skysight/Request.cpp
         Weather/Skysight/CDFDecoder.cpp
         Weather/Skysight/APIQueue.cpp
+
+        Weather/Skysight/SkysightRenderer.cpp
 )
 
 set(SCRIPT_FILES
