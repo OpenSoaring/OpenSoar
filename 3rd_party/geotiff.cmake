@@ -30,11 +30,10 @@ if (_COMPLETE_INSTALL)
         "-DWITH_UTILITIES=OFF"
         "-DBUILD_SHARED_LIBS=OFF"
 
-            "-DPROJ_DIR=${PROJ_DIR}/lib/msvc2022/cmake/proj"
-            "-DTIFF_DIR=${TIFF_DIR}/lib/msvc2022/cmake/tiff"
-            # "-DTIFF_INCLUDE_DIR=${TIFF_DIR}/include"
-            "-DTIFF_INCLUDE_DIR=${LINK_LIBS}/tiff/tiff-4.6.0/include"
-            "-DPROJ_INCLUDE_DIR=${LINK_LIBS}/proj/proj-9.3.1/include"
+        "-DPROJ_DIR=${PROJ_DIR}/lib/msvc2022/cmake/proj"
+        "-DTIFF_DIR=${TIFF_DIR}/lib/msvc2022/cmake/tiff"
+        "-DTIFF_INCLUDE_DIR=${TIFF_DIR}/include"
+        "-DPROJ_INCLUDE_DIR=${PROJ_DIR}/include"
 
     )
 

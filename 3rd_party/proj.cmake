@@ -18,10 +18,10 @@ prepare_3rdparty(proj ${_LIB_NAME})
 if (_COMPLETE_INSTALL)
 
     set(CMAKE_ARGS
-             "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
-             "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB}"
-            "-DCMAKE_INSTALL_INCLUDEDIR=include"
-            "-DCMAKE_BUILD_TYPE=Release"
+        "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
+        "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB}"
+        "-DCMAKE_INSTALL_INCLUDEDIR=include"
+        "-DCMAKE_BUILD_TYPE=Release"
  
         "-DBUILD_APPS=OFF"
 
@@ -41,8 +41,8 @@ if (_COMPLETE_INSTALL)
 
     ExternalProject_Add(
         ${_BUILD_TARGET}
-#    ('http://download.osgeo.org/proj/proj-9.4.1.tar.gz',
-#     'https://fossies.org/linux/privat/proj-9.4.1.tar.gz'),
+#####    ('http://download.osgeo.org/proj/proj-9.4.1.tar.gz',
+#####     'https://fossies.org/linux/privat/proj-9.4.1.tar.gz'),
         GIT_REPOSITORY "https://github.com/OSGeo/PROJ.git"
         GIT_TAG "${${TARGET_CNAME}_VERSION}"           # git tag by libproj!
   
