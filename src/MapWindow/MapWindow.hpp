@@ -28,7 +28,9 @@ class CachedTopographyRenderer;
 class RasterTerrain;
 class RaspStore;
 class RaspRenderer;
+#ifdef HAVE_SKYSIGHT
 class Skysight;
+#endif
 class MapOverlay;
 class Waypoints;
 class Airspaces;
@@ -105,8 +107,9 @@ protected:
   RasterTerrain *terrain = nullptr;
 
   std::shared_ptr<RaspStore> rasp_store;
+#ifdef HAVE_SKYSIGHT
   std::shared_ptr<Skysight> skysight;
-
+#endif
   /**
    * The current RASP renderer.  Modifications to this pointer (but
    * not to the #RaspRenderer instance) are protected by
@@ -209,13 +212,15 @@ public:
   const std::shared_ptr<RaspStore> &GetRasp() const noexcept {
     return rasp_store;
   }
+  void SetRasp(const std::shared_ptr<RaspStore> &_rasp_store) noexcept;
 
+#ifdef HAVE_SKYSIGHT
   const std::shared_ptr<Skysight> &GetSkysight() const noexcept{
     return skysight;
   }
 
-  void SetRasp(const std::shared_ptr<RaspStore> &_rasp_store) noexcept;
   void SetSkysight(const std::shared_ptr<Skysight> &_skysight) noexcept;
+#endif
 
 // aug #ifdef ENABLE_OPENGL
   void SetOverlay(std::unique_ptr<MapOverlay> &&_overlay) noexcept;
@@ -344,7 +349,9 @@ private:
 
   void RenderRasp(Canvas &canvas) noexcept;
 
+#ifdef HAVE_SKYSIGHT
   void RenderSkysight(Canvas &canvas) noexcept;
+#endif
 
   void RenderTerrainAbove(Canvas &canvas, bool working) noexcept;
 

@@ -11,7 +11,9 @@
 #include "Engine/Task/Ordered/OrderedTask.hpp"
 #include "Renderer/TextInBox.hpp"
 #include "Weather/Rasp/RaspRenderer.hpp"
-#include "Weather/Skysight/Skysight.hpp"
+#ifdef HAVE_SKYSIGHT
+# include "Weather/Skysight/Skysight.hpp"
+#endif
 #include "Formatter/UserUnits.hpp"
 #include "Formatter/UserGeoPointFormatter.hpp"
 #include "UIState.hpp"
@@ -346,9 +348,11 @@ GlueMapWindow::DrawMapScale(Canvas &canvas, const PixelRect &rc,
       buffer += "RASP: ";
       buffer += gettext(label);
     }
+#ifdef HAVE_SKYSIGHT
   } else if (skysight) {
     buffer += "SkySight: ";
     buffer += skysight->GetActiveLayerName();
+#endif
   }
 
   if (!buffer.empty()) {

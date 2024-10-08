@@ -14,7 +14,9 @@
 #include "Form/DataField/Enum.hpp"
 #include "Form/DataField/Listener.hpp"
 #include "DataGlobals.hpp"
-#include "Weather/Skysight/Skysight.hpp"
+#ifdef HAVE_SKYSIGHT
+# include "Weather/Skysight/Skysight.hpp"
+#endif
 
 enum ControlIndex {
 #ifdef HAVE_PCMET
@@ -50,6 +52,7 @@ public:
   bool Save(bool &changed) noexcept override;
 };
 
+#ifdef HAVE_SKYSIGHT
 static void
 FillRegionControl(WndProperty &wp, const char *setting)
 {
@@ -63,6 +66,7 @@ FillRegionControl(WndProperty &wp, const char *setting)
   df->SetValue(setting);
   wp.RefreshDisplay();
 }
+#endif
 
 void
 WeatherConfigPanel::Prepare(ContainerWindow &parent,

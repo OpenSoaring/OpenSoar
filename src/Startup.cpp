@@ -19,7 +19,9 @@
 #include "Terrain/AsyncLoader.hpp"
 #include "Weather/Rasp/RaspStore.hpp"
 #include "Weather/Rasp/Configured.hpp"
-#include "Weather/Skysight/Skysight.hpp"
+#ifdef HAVE_SKYSIGHT
+# include "Weather/Skysight/Skysight.hpp"
+#endif
 #include "Input/InputEvents.hpp"
 #include "Input/InputQueue.hpp"
 #include "Dialogs/StartupDialog.hpp"
@@ -472,10 +474,11 @@ Startup(UI::Display &display)
   LogString("RASP load");
   auto rasp = LoadConfiguredRasp();
 
-  //Initialise Skysight weather forecast
+#ifdef HAVE_SKYSIGHT
+  // Initialise Skysight weather forecast
   LogFormat("Skysight load");
   auto skysight = std::make_shared<Skysight>(*Net::curl);
-
+#endif
   // Reads the airspace files
   {
     SubOperationEnvironment sub_env(operation, 768, 1024);
@@ -535,8 +538,9 @@ Startup(UI::Display &display)
     map_window->SetTopography(data_components->topography.get());
     map_window->SetTerrain(data_components->terrain.get());
     map_window->SetRasp(rasp);
+#ifdef HAVE_SKYSIGHT
     map_window->SetSkysight(skysight);
-
+#endif
 #ifdef HAVE_NOAA
     map_window->SetNOAAStore(noaa_store);
 #endif

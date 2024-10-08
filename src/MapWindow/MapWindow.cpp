@@ -154,8 +154,10 @@ MapWindow::SetRasp(const std::shared_ptr<RaspStore> &_rasp_store) noexcept
   rasp_store = _rasp_store;
 }
 
+#ifdef HAVE_SKYSIGHT
 void
 MapWindow::SetSkysight(const std::shared_ptr<Skysight> &_skysight) noexcept
 {
   skysight = _skysight;
 }
+#endif

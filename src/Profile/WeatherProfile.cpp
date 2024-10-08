@@ -16,11 +16,13 @@ namespace Profile {
     map.Get(ProfileKeys::PCMetFtpPassword, settings.ftp_credentials.password);
   }
 
+#ifdef HAVE_SKYSIGHT
   static void Load(const ProfileMap &map, SkysightSettings &settings) {
     map.Get(ProfileKeys::SkysightEmail, settings.email);
     map.Get(ProfileKeys::SkysightPassword, settings.password);
     map.Get(ProfileKeys::SkysightRegion, settings.region);
-  }  
+  }
+#endif
 }
 
 #endif

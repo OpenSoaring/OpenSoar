@@ -6,7 +6,9 @@
 #include "Look/MapLook.hpp"
 #include "Weather/Rasp/RaspRenderer.hpp"
 #include "Weather/Rasp/RaspCache.hpp"
-#include "Weather/Skysight/Skysight.hpp"
+#ifdef HAVE_SKYSIGHT
+# include "Weather/Skysight/Skysight.hpp"
+#endif
 #include "Topography/CachedTopographyRenderer.hpp"
 #include "Renderer/AircraftRenderer.hpp"
 #include "Renderer/WaveRenderer.hpp"
@@ -72,6 +74,7 @@ MapWindow::RenderRasp(Canvas &canvas) noexcept
     rasp_renderer->Draw(canvas, render_projection);
 }
 
+#ifdef HAVE_SKYSIGHT
 inline void
 MapWindow::RenderSkysight([[maybe_unused]] Canvas &canvas) noexcept
 {
@@ -80,6 +83,7 @@ MapWindow::RenderSkysight([[maybe_unused]] Canvas &canvas) noexcept
 
   skysight->Render();
 }
+#endif
 
 void
 MapWindow::RenderTopography(Canvas &canvas) noexcept
@@ -203,8 +207,10 @@ MapWindow::Render(Canvas &canvas, const PixelRect &rc) noexcept
   draw_sw.Mark("RenderRasp");
   RenderRasp(canvas);
 
+#ifdef HAVE_SKYSIGHT
   draw_sw.Mark("RenderSkysight");
   RenderSkysight(canvas); 
+#endif
 
   draw_sw.Mark("RenderTopography");
   RenderTopography(canvas);
