@@ -17,7 +17,14 @@
 #include <exception>
 #endif
 
-#include "LogFile.hpp"
+#define PROCESS_DEBUG_OUTPUT 0
+#ifdef __MSVC__
+/* August2111: Please use the logging with VS build environment only,
+  * all other has to include the FMT component
+  * TODO(August2111): remove this debug output asap 
+*/
+# include "LogFile.hpp"
+#endif
 #include "system/FileUtil.hpp"
 
 #include <stdarg.h>
@@ -25,8 +32,6 @@
 #include <sstream>
 #include <filesystem>
 
-// static std::filesystem::path output;
-// static Path output = Path("");
 static Path output;
 
 #include <fcntl.h>
@@ -44,7 +49,11 @@ UnblockAllSignals() noexcept
 static pid_t
 ForkExec(const char *const*argv) noexcept
 {
+#ifdef __MSVC__
   LogFormat("ForkExec: Call '%s'", argv[0]);
+#endif
+#ifdef __MSVC__
+#endif
   const pid_t pid = fork();
   if (pid == 0) {
     UnblockAllSignals();
@@ -56,22 +65,30 @@ ForkExec(const char *const*argv) noexcept
     // exec or die:
     execv(argv[0], const_cast<char **>(argv));
     // ...die:
+#ifdef __MSVC__
     LogFormat("ForkExec: After execv => FAIL?");
+#endif
     _exit(EXIT_FAILURE);
   }
+#ifdef __MSVC__
   LogFormat("ForkExec: pid = %d > 0", pid);
+#endif
   return pid;
 }
 
 static int
 Wait(pid_t pid) noexcept
 {
+#ifdef __MSVC__
   LogFormat("Process.cpp - Wait: pid = %d (for assert)", pid);
+#endif
   assert(pid > 0);
 
   int status;
   pid_t pid2 = waitpid(pid, &status, 0);
+#ifdef __MSVC__
   LogFormat("Process.cpp - Wait: pid2 = %d ", pid2);
+#endif
   if (pid2 <= 0)
     return -1;
 
@@ -83,7 +100,9 @@ Wait(pid_t pid) noexcept
     close(fd);
   }
   int ret_value = WEXITSTATUS(status);
+#ifdef __MSVC__
   LogFormat("Process.cpp - Wait: return %d", ret_value);
+#endif
   return ret_value;
 }
 #endif
@@ -102,9 +121,13 @@ Start(const char *const *argv) noexcept
 
   return Wait(pid) == 0;
 #elif defined(_WIN32)
+#ifdef __MSVC__
   LogFormat("Process.cpp - on Windows no Start() function");
+#endif
   for (unsigned count = 0; argv[count] != nullptr; count++) {
+#ifdef __MSVC__
     LogFormat("Process.cpp - Start, Arg %u: %s", count, argv[count]);
+#endif
     std::cout << argv[count] << ' ';
   }
 
@@ -114,7 +137,6 @@ Start(const char *const *argv) noexcept
 #endif
 }
 
-#define PROCESS_DEBUG_OUTPUT 0
 int
 Run(const char *const *argv) noexcept
 try {
@@ -150,7 +172,9 @@ try {
      output = Path(); // for the next call..
   return ret_value;
 } catch (std::exception &e) {
+#ifdef __MSVC__
   LogFormat("Process.cpp - exception: %s", e.what());
+#endif
   return -1;
 }
 

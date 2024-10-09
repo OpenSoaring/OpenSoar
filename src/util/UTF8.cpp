@@ -4,10 +4,8 @@
 #include "UTF8.hpp"
 #include "CharUtil.hxx"
 #include "Compiler.h"
-#include "LogFile.hpp"
 
 #include <algorithm>
-
 #include <cassert>
 
 /**
