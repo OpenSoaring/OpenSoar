@@ -1,6 +1,24 @@
 name: Codacy Analysis CLI
 
-on: ["push"]
+# on: ["push"]
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - 'cloud/**'
+      - 'doc/**'
+      - 'fuzzer/**'
+      - 'kobo/**'
+      - 'python/**'
+      - '.github/workflows/build-container.yml'
+      - '.github/workflows/build-unix.yml'
+      - '.readthedocs.yaml'
+    branches:
+      - master
+      # temporarily 
+      - dev-branch
+    tags:
+      - 'v*'
 
 jobs:
   codacy-analysis-cli:

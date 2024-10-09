@@ -1,0 +1,207 @@
+---
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - 'cloud/**'
+      - 'doc/**'
+      - 'fuzzer/**'
+      - 'kobo/**'
+      - 'python/**'
+      - '.github/workflows/build-container.yml'
+      - '.github/workflows/build-unix.yml'
+      - '.readthedocs.yaml'
+    branches:
+      - nothing
+      # empty possible?
+      - dev-branch
+
+env:
+  DEBUG:           y
+  BOOST:           boost_1_85_0
+  BUILD:           UNIX,WIN64,PC
+  TEST:            UNIX,KOBO
+  # ----------------------------
+  TEST_RUN_ID:     11626994034
+  TEST_COMMIT:     0a1913a
+
+  
+
+jobs:
+  release:
+    name: "Create Release"
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.VERSION }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Parse changelog
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          TAG=$(echo "${{ github.ref }}" | cut -f3 -d '/')
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo 'CHANGELOGENTRY<<EOF' >> $GITHUB_ENV
+          ./tools/changelog.sh "$TAG" >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+          case "$TAG" in
+            *-rc*)
+              echo "PRERELEASE=true" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "PRERELEASE=false" >> $GITHUB_ENV
+              ;;
+          esac
+        id: changelogentry
+
+      - name: Create release
+        id: create_release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/create-release@v1.1.4
+        # uses: ncipollo/release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          allowUpdates: true
+          name: Version ${{ github.ref_name }}
+          body: ${{ env.CHANGELOGENTRY }}
+          prerelease: ${{ env.PRERELEASE }}
+
+      - name: Get OpenSoar Version
+        id: get_version
+        run: |
+          echo "Get OpenSoar Version"
+          echo "CurrDir = $(pwd)"
+
+  test:
+    runs-on: ${{ matrix.os }}
+    needs: release # test only
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: UNIX
+            target_container: debian:bookworm-slim
+
+          ## ++ Test on Ubuntu 20.04 is done better native (instead container) ++
+          ## - os: ubuntu-24.04
+          ##   target: UNIX
+          ##   target_container: ubuntu:24.04
+          - os: ubuntu-24.04
+            target: UNIX
+            # w/o container
+
+          ## Ubuntu 22.04 (and lower) is missing needed fmt9
+          ## Either build with 22.04 - or make a deb package
+          ## ++ Test on Ubuntu 22.04 is fail (due to fmt9) ++
+          ### - os: ubuntu-22.04
+          ###   target: UNIX
+          ###   target_container: ubuntu:22.04
+
+          ## ++ Test on Ubuntu 20.04 is fail (due to fmt9) ++
+          ### - os: ubuntu-20.04
+          ###   target: UNIX
+          ###   target_container: ubuntu:20.04
+
+          ## ++ MacOS 12 is deprecated from Github Actions: 2024\12\3 ++
+          ### deprecated: - os: macos-12
+          ### deprecated:   target: OSX64
+          ### deprecated:   # w/o container
+          - os: macos-13
+            target: OSX64
+            # w/o container
+          - os: macos-14
+            target: OSX64
+            # w/o container
+            
+          ## ++ MacOS 13 xLarge === MacOS 13 arm64 - but seems to be wrong ++
+          #### ???- os: macos-13-xlarge
+          #### ???  target: MACOS
+          - os: macos-14
+            target: MACOS
+            # w/o container
+          - os: macos-15
+            target: MACOS
+            # w/o container
+            
+          - os: windows-2022
+            target: WIN64
+            # w/o container
+          - os: windows-2019
+            target: PC
+            # w/o container
+
+    container: ${{ matrix.target_container }}
+    continue-on-error: true
+    steps:
+      - id: checkout
+        uses: actions/checkout@v4
+
+      - name: Install checkout dependencies (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu-') }}
+        run: |
+          echo "Install checkout dependencies: ${{ matrix.target }} "
+          if [ -z ${{ matrix.target_container }} ]; then
+            # test w/o container:
+            sudo apt-get update
+            sudo apt-get install -y libfmt-dev
+          else
+            ./ide/provisioning/install-debian-packages.sh UPDATE BASE LINUX
+          fi
+
+      - name: Install checkout dependencies (MacOS)
+        if: ${{ startsWith(matrix.os, 'macos-') }}
+        run: |
+          echo "Install checkout dependencies: ${{ matrix.target }} "
+          brew install fmt
+
+      - name: Set Git Variables
+        if: ${{ ! startsWith(matrix.os, 'windows-') && (env.TEST_COMMIT == '') }}
+        run: |
+          echo "Set Git Variables"
+          COMMIT=$(echo $GITHUB_SHA | head -c 7)
+          RUN_ID=${{ github.run_id }}
+          echo "GIT_COMMIT=$COMMIT" >> $GITHUB_ENV
+          echo "TEST_COMMIT=$COMMIT" >> $GITHUB_ENV
+          echo "TEST_RUN_ID=$RUN_ID" >> $GITHUB_ENV
+      
+      - name: Set Git Variables (Windows)
+        if: ${{ startsWith(matrix.os, 'windows-')  && (env.TEST_COMMIT == '') }}
+        run: |
+          echo "Set Git Variables (Windows)"
+          $COMMIT = $env:GITHUB_SHA.substring(0,7)
+          $RUN_ID=${{ github.run_id }}
+          echo "GIT_COMMIT=$COMMIT" >> $env:GITHUB_ENV
+          echo "TEST_COMMIT=$COMMIT" >> $env:GITHUB_ENV
+          echo "TEST_RUN_ID=$RUN_ID" >> $env:GITHUB_ENV
+          echo "========================"
+
+      - name: Test Variables
+        run: |
+          echo "test-run-id: ${{ env.TEST_RUN_ID }}"
+          echo "current run-id: ${{ github.run_id }}"
+          echo "github-token: ${{ github.token }}"
+          echo "name: Test-${{ env.TEST_COMMIT }}-${{ matrix.target }}"
+          echo "path: ${{ github.workspace }}"
+
+      - name: Fetch Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ env.TEST_RUN_ID }}  
+          github-token: ${{ github.token }}
+          name: Test-${{ env.TEST_COMMIT }}-${{ matrix.target }}
+          path: ${{ github.workspace }}
+
+      - name: Run Test Programs on ${{ matrix.target }}
+        run: |
+          echo "Run Test Programs on ${{ matrix.target }}"
+          chmod +x ./output/${{ matrix.target }}/bin/*
+          echo "run tests on Target '${{ matrix.target }}'"
+          make check-no-build TARGET=${{ matrix.target }}
+        working-directory: ${{ github.workspace }}

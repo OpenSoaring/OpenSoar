@@ -9,10 +9,13 @@ my $harness = TAP::Harness->new({
 		my ($harness, $test_file) = @_;
 		# Let Perl tests run.
 		return undef if $test_file =~ /[.].pl$/;
+		if (!-f $test_file) {
+		  die "File '$test_file' doesn't exists!\n";
+		}
 		if (-x $test_file) {
 			return [ $test_file ];
 		}
-		die "Unknown test file type - $test_file\n";
+		die "File '$test_file' isn't executable!\n";
 	},
 });
 my $aggregator = $harness->runtests(@ARGV);

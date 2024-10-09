@@ -1,0 +1,231 @@
+---
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - 'cloud/**'
+      - 'doc/**'
+      - 'fuzzer/**'
+      - 'kobo/**'
+      - 'python/**'
+      - '.github/workflows/build-container.yml'
+      - '.github/workflows/build-unix.yml'
+    branches:
+      - cmake-master
+      - dev-branch-cmake
+
+env:
+  DEBUG: y
+  BOOST: boost_1_85_0
+
+jobs:
+  release:
+    name: "Create Release"
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.VERSION }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: 
+        # uses: TheMrMilchmann/setup-msvc-dev@v3
+        uses: ilammy/setup-msvc-dev@v1
+        with:
+          arch: x64
+      - name: Parse changelog
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          cl
+          TAG=$(echo "${{ github.ref }}" | cut -f3 -d '/')
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo 'CHANGELOGENTRY<<EOF' >> $GITHUB_ENV
+          ./tools/changelog.sh "$TAG" >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+          case "$TAG" in
+            *-rc*)
+              echo "PRERELEASE=true" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "PRERELEASE=false" >> $GITHUB_ENV
+              ;;
+          esac
+        id: changelogentry
+
+      - name: Create release
+        id: create_release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/create-release@v1.1.4
+        # uses: ncipollo/release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          allowUpdates: true
+          name: Version ${{ github.ref_name }}
+          body: ${{ env.CHANGELOGENTRY }}
+          prerelease: ${{ env.PRERELEASE }}
+
+      - name: Get OpenSoar Version
+        id: get_version
+        run: |
+          echo "Get OpenSoar Version"
+          echo "CurrDir = $(pwd)"
+
+  build: # step 2
+    runs-on: ${{ matrix.os }}
+    needs: release
+    # if: contains('UNIX,WIN64' , ${{ matrix.target }})
+    container: ${{ matrix.target_container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: MSVC   # WIN64
+            target_bin: OpenSoar
+            target_bin_path: bin
+            target_final: OpenSoar
+            target_ext: .exe
+            target_test: true
+            target_upload: true
+            upload_artifact: true
+            # target_container: debian:bookworm-slim
+  
+    steps:
+      - name: Set Git Variables
+        if: ${{ ! startsWith(matrix.os, 'windows-') && (env.TEST_COMMIT == '') }}
+        run: |
+          echo "Set Git Variables"
+          COMMIT=$(echo $GITHUB_SHA | head -c 7)
+          echo "GIT_COMMIT=$COMMIT" >> $GITHUB_ENV
+      
+      - name: Set Git Variables (Windows)
+        if: ${{ startsWith(matrix.os, 'windows-')  && (env.TEST_COMMIT == '') }}
+        run: |
+          echo "Set Git Variables (Windows)"
+          $COMMIT = $env:GITHUB_SHA.substring(0,7)
+          echo "GIT_COMMIT=$COMMIT" >> $env:GITHUB_ENV
+          echo "========================"
+
+      - name: Check Git Variables
+        run: |
+          echo "Check Git variables"
+          echo "GIT_COMMIT = $env:GIT_COMMIT"
+          echo "GIT_SHA = $env:GITHUB_SHA"
+          echo "GIT_SHA = ${{ env.GITHUB_SHA }}"
+          echo "GIT_SHA = $GITHUB_SHA"
+        
+      ### MSVC??? - name: Install checkout dependencies
+      ### MSVC???   if: ${{ startsWith(matrix.os, 'ubuntu-') }}
+      ### MSVC???   run: |
+      ### MSVC???     echo "Install checkout dependencies: ${{ matrix.target }} "
+      ### MSVC???     apt-get update
+      ### MSVC???     apt-get install -y --no-install-recommends git \
+      ### MSVC???       ca-certificates rsync openssh-client
+  
+      ### MSVC??? - name: Set vars for release
+      ### MSVC???   if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      ### MSVC???   run: |
+      ### MSVC???     echo "Set vars for release: ${{ matrix.target }} "
+      ### MSVC???     if [ ${{ secrets.TEST }} = '123456' ]; then
+      ### MSVC???       echo "secrets detected"
+      ### MSVC???     else 
+      ### MSVC???       echo "secrets NOT detected"
+      ### MSVC???     fi
+      ### MSVC???     
+      ### MSVC???     if [ ${{ startsWith(github.ref, 'refs/tags/v') }} = true ]; then
+      ### MSVC???       echo "DEBUG=n" >> $GITHUB_ENV
+      ### MSVC???       if [ ${{ matrix.target_final }} = "OpenSoar" ]; then
+      ### MSVC???         echo "TARGET_FINAL=${{ matrix.target_final }}" >> $GITHUB_ENV
+      ### MSVC???       fi
+      ### MSVC???     elif [ ${{ matrix.target }} = 'WIN64' ]; then
+      ### MSVC???       # August2111: with WIN64 don't use the Debug option
+      ### MSVC???       echo "no DEBUG flag"
+      ### MSVC???       echo "DEBUG=n" >> $GITHUB_ENV
+      ### MSVC???     fi
+  
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+  
+      - name: Cache ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ matrix.target }}-ccache
+  
+      ##- name: "Cache Boost"
+      ##  uses: actions/cache@v4
+      ##  with:
+      ##    key: ${{ env.BOOST }}-${{ hashFiles('lib/boost/patches/**') }}
+      ##    path: |
+      ##      ${{ github.workspace }}/output/download/${{ env.BOOST }}.tar.bz2
+      ##      ${{ github.workspace }}/output/src/stamp-${{ env.BOOST }}
+      ##      ${{ github.workspace }}/output/src/${{ env.BOOST }}/boost
+  
+      - name: Install dependencies
+        run: |
+          echo "Install dependencies: ${{ matrix.target }}"
+          echo "CurrDir = $(pwd)"
+          echo "git config --global --add safe.directory ${{ github.workspace }}"
+          echo "GITHUB_WORKING: ${{ matrix.target }}"
+          echo "github.workspace = ${{ github.workspace }}"
+          echo "GITHUB_WORKSPACE = $env:GITHUB_WORKSPACE"
+          echo "GITHUB_SHA       = $env:GITHUB_SHA"
+          echo "GITHUB_HASH      = $env:GITHUB_HASH "
+          echo "GIT_COMMIT       = $env:GIT_COMMIT "
+  
+          ### MSVC??? if [ ${{ startsWith(matrix.os, 'ubuntu-') }} = true ]; then
+          ### MSVC???   ./ide/provisioning/install-debian-packages.sh UPDATE BASE LINUX
+          ### MSVC???   case ${{ matrix.target }} in
+          ### MSVC???     ANDROID | ANDROIDFAT | ANDROIDAARCH64)
+          ### MSVC???       ./ide/provisioning/install-debian-packages.sh ARM LLVM ANDROID
+          ### MSVC???       ./ide/provisioning/install-android-tools.sh NDK SDK
+          ### MSVC???       ;;
+          ### MSVC???     WIN64 | WIN32 | PC)
+          ### MSVC???       # echo "git_hash=$(shell git rev-parse --short --verify HEAD )" >> $GITHUB_ENV
+          ### MSVC???       ./ide/provisioning/install-debian-packages.sh WIN
+          ### MSVC???       ;;
+          ### MSVC???     UNIX)
+          ### MSVC???       ./ide/provisioning/install-debian-packages.sh LIBINPUT_GBM DEBIAN
+          ### MSVC???       ;;
+          ### MSVC???     KOBO)
+          ### MSVC???       ./ide/provisioning/install-debian-packages.sh ARM KOBO
+          ### MSVC???       ;;
+          ### MSVC???   esac
+          ### MSVC???   ## unknown section!!!: ./ide/provisioning/install-debian-packages.sh CLEAN
+          ### MSVC??? elif [ ${{ startsWith(matrix.os, 'macos-') }} = true ] ; then
+          ### MSVC???   ./ide/provisioning/install-darwin-packages.sh BASE
+          ### MSVC???   ./ide/provisioning/install-darwin-packages.sh ${{ matrix.target }}            
+          ### MSVC??? fi
+  
+      ### MSVC??? - name: Prepare signing key
+      ### MSVC???   shell: bash
+      ### MSVC???   if: ${{ startsWith(matrix.target, 'ANDROID') && startsWith(github.ref, 'refs/tags/v') }}
+      ### MSVC???   run: |
+      ### MSVC???     echo "Prepare signing key: ${{ matrix.target }}"
+      ### MSVC???     # please use secrets.XCSOAR_UPLOAD_KEY... for secrets.OPENSOAR_UPLOAD_KEY to be
+      ### MSVC???     # compatible with repo XCSoar/XCSoar
+      ### MSVC???     if [ -n "${{ secrets.XCSOAR_UPLOAD_KEY_JKS_BASE64 }}" ]; then
+      ### MSVC???       mkdir -p ~/.android/
+      ### MSVC???       echo "${{ secrets.XCSOAR_UPLOAD_KEY_JKS_BASE64 }}" | base64 -d > ~/.android/signing-key.jks
+      ### MSVC???       md5sum ~/.android/signing-key.jks
+      ### MSVC???     fi
+  
+      - name: Compile OpenSoar - PR
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        run: |
+          echo "Compile OpenSoar - PR: ${{ matrix.target }}"
+            # case ${{ matrix.target }} in
+            #  MSVC # | WIN64 | WIN32 | PC | UNIX | KOBO)
+                echo "!!!!! CMAKE - command!"
+                ./build/cmake/Compile-XCSoar-MSVC.cmd
+            #     ;;
+            # esac
+          cl --version
+          echo "Compile OpenSoar Finish!"
