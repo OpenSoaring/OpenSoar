@@ -21,10 +21,9 @@ namespace UI { class Notify; }
  * called for the previous #Job.
  */
 class AsyncJobRunner final : private Thread {
-  Job *job;
-  ThreadedOperationEnvironment *env;
-  UI::Notify *notify;
-
+  Job *job = nullptr;
+  ThreadedOperationEnvironment *env = nullptr;
+  UI::Notify *notify = nullptr;
   std::atomic<bool> running;
 
   /**
@@ -36,7 +35,7 @@ public:
 #ifdef HAVE_POSIX
   AsyncJobRunner() : running(false) {}
 #else
-  AsyncJobRunner() : running(false), Thread("AsyncJob") {}
+  AsyncJobRunner() : Thread("AsyncJob"), running(false) {}
 #endif
 
   ~AsyncJobRunner() {
