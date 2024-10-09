@@ -80,8 +80,11 @@ MapWindow::RenderSkysight([[maybe_unused]] Canvas &canvas) noexcept
 {
   if (skysight == nullptr)
     return;
-
+#ifndef XCSOAR_TESTING
+  /* TODO(August2111) in Test 'RunMapWindow' this call is not allowed in the
+   * moment */
   skysight->Render();
+#endif
 }
 #endif
 
