@@ -20,6 +20,13 @@ set(PROGRAM_NAME ${TARGET_NAME})
 set(PROGRAM_NAME_CC ${TARGET_NAME})              # CamelCase
 string(TOLOWER  ${PROGRAM_NAME} PROGRAM_NAME_LC) # lowercase
 
+# Features
+set (HAVE_SKYSIGHT  OFF)
+if (HAVE_SKYSIGHT)
+  add_definitions(HAVE_SKYSIGHT=ON)
+endif ()
+#==========================================
+
 ### file(READ "VERSION.txt" PROGRAM_VERSION)
 # add version string to OpenSoar:
 file(READ OpenSoar.config _config_file)
