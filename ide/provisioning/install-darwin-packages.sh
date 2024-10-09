@@ -6,7 +6,7 @@ sections_to_install=()
 
 # Parse arguments
 if [ "$#" -eq 0 ]; then
-  sections_to_install=("BASE" "OSX64" "MACOS" "IOS")
+  sections_to_install=("BASE" "OSX64" "MACOS" "IOS" "IOS64")
 else
   for arg in "$@"
   do
@@ -47,13 +47,10 @@ for section in "${sections_to_install[@]}"; do
     BASE)
       install_base
       ;;
-    OSX64)
+    OSX | OSX64 | MACOS)
       install_macOS # OSX64 and macOS have the same dependencies for now
       ;;
-    MACOS)
-      install_macOS
-      ;;
-    IOS)
+    IOS | IOS64)
       install_ios
       ;;
     *)
