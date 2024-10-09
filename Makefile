@@ -313,7 +313,7 @@ OUTPUTS := $(XCSOAR_BIN) $(VALI_XCS_BIN)
 endif
 
 ifeq ($(TARGET),ANDROID)
-OUTPUTS += $(ANDROID_BIN)/$(PROGRAM_NAME)-unsigned.apk
+OUTPUTS += $(ANDROID_BIN)/$(PROGRAM_NAME)-debug.apk
 endif
 
 ifeq ($(TARGET_IS_KOBO),y)
