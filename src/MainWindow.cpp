@@ -178,7 +178,7 @@ MainWindow::InitialiseConfigured()
 {
   const UISettings &ui_settings = CommonInterface::GetUISettings();
 
-  if (ui_settings.scale != 100)
+  if ((ui_settings.scale != 100) || (ui_settings.info_boxes.scale_title_font != 100))
     /* call Initialise() again to reload fonts with the new scale */
     Initialise();
 
@@ -274,28 +274,31 @@ MainWindow::ReinitialiseLayoutTA(PixelRect rc,
 {
   unsigned sz = std::min(layout.control_size.height,
                          layout.control_size.width) * 2;
+  unsigned mw = std::min((GetMainRect().bottom - GetMainRect().top), 
+                         (GetMainRect().right - GetMainRect().left));
+  unsigned dia = std::min(sz, mw / 2);
 
   switch (CommonInterface::GetUISettings().thermal_assistant_position) {
   case (UISettings::ThermalAssistantPosition::BOTTOM_LEFT_AVOID_IB):
     rc.bottom = GetMainRect().bottom;
     rc.left = GetMainRect().left;
-    rc.right = rc.left + sz;
+    rc.right = rc.left + dia;
     break;
   case (UISettings::ThermalAssistantPosition::BOTTOM_RIGHT_AVOID_IB):
     rc.bottom = GetMainRect().bottom;
     rc.right = GetMainRect().right;
-    rc.left = rc.right - sz;
+    rc.left = rc.right - dia;
     break;
   case (UISettings::ThermalAssistantPosition::BOTTOM_RIGHT):
     rc.right = GetMainRect().right;
-    rc.left = rc.right - sz;
+    rc.left = rc.right - dia;
     break;
   default: // BOTTOM_LEFT
     rc.left = GetMainRect().left;
-    rc.right = rc.left + sz;
+    rc.right = rc.left + dia;
     break;
   }
-  rc.top = rc.bottom - sz;
+  rc.top = rc.bottom - dia;
   thermal_assistant.Move(rc);
 }
 
@@ -323,7 +326,7 @@ MainWindow::ReinitialiseLayout() noexcept
   const InfoBoxLayout::Layout ib_layout =
     InfoBoxLayout::Calculate(rc, ui_settings.info_boxes.geometry);
 
-  look->ReinitialiseLayout(ib_layout.control_size.width);
+  look->ReinitialiseLayout(ib_layout.control_size.width, ui_settings.info_boxes.scale_title_font);
 
   InfoBoxManager::Create(*this, ib_layout, look->info_box);
   InfoBoxManager::ProcessTimer();
@@ -381,61 +384,106 @@ MainWindow::ReinitialiseLayout_flarm(PixelRect rc,
     CommonInterface::GetUISettings().traffic.gauge_location;
 
   // Automatic mode - follow info boxes
-  if (val == TrafficSettings::GaugeLocation::Auto) {
+  if (val == TrafficSettings::GaugeLocation::AUTO) {
     switch (InfoBoxManager::layout.geometry) {
     case InfoBoxSettings::Geometry::TOP_LEFT_8:
     case InfoBoxSettings::Geometry::TOP_LEFT_12:
       if (InfoBoxManager::layout.landscape)
-        val = TrafficSettings::GaugeLocation::BottomLeft;
+        val = TrafficSettings::GaugeLocation::BOTTOM_LEFT;
       else
-        val = TrafficSettings::GaugeLocation::TopRight;
+        val = TrafficSettings::GaugeLocation::TOP_RIGHT;
       break;
 
     default:
-      val = TrafficSettings::GaugeLocation::BottomRight;    // Assume bottom right unles...
+      val = TrafficSettings::GaugeLocation::BOTTOM_RIGHT;    // Assume bottom right unles...
       break;
     }
   }
 
+  unsigned sz = std::min(ib_layout.control_size.height,
+                         ib_layout.control_size.width) * 2;
+  unsigned mw = std::min((GetMainRect().bottom - GetMainRect().top),
+                         (GetMainRect().right - GetMainRect().left));
+  unsigned dia = std::min(sz, mw / 2);
+
   switch (val) {
-  case TrafficSettings::GaugeLocation::TopLeft:
-    rc.right = rc.left + ib_layout.control_size.width * 2;
-    ++rc.left;
-    rc.bottom = rc.top + ib_layout.control_size.height * 2;
-    ++rc.top;
+  case TrafficSettings::GaugeLocation::TOP_LEFT:
+    rc.right = rc.left + dia;
+    rc.bottom = rc.top + dia;
     break;
 
-  case TrafficSettings::GaugeLocation::TopRight:
-    rc.left = rc.right - ib_layout.control_size.width * 2 + 1;
-    rc.bottom = rc.top + ib_layout.control_size.height * 2;
-    ++rc.top;
+  case TrafficSettings::GaugeLocation::TOP_RIGHT:
+    rc.left = rc.right - dia;
+    rc.bottom = rc.top + dia;
     break;
 
-  case TrafficSettings::GaugeLocation::BottomLeft:
-    rc.right = rc.left + ib_layout.control_size.width * 2;
-    ++rc.left;
-    rc.top = rc.bottom - ib_layout.control_size.height * 2 + 1;
+  case TrafficSettings::GaugeLocation::BOTTOM_LEFT:
+    rc.right = rc.left + dia;
+    rc.top = rc.bottom - dia;
     break;
 
-  case TrafficSettings::GaugeLocation::CentreTop:
-    rc.left = (rc.left + rc.right) / 2 - ib_layout.control_size.width;
-    rc.right = rc.left + ib_layout.control_size.width * 2 - 1;
-    rc.bottom = rc.top + ib_layout.control_size.height * 2;
-    ++rc.top;
+  case TrafficSettings::GaugeLocation::CENTER_TOP:
+    rc.left = (rc.left + rc.right - dia) / 2 - 1;
+    rc.right = rc.left + dia;
+    rc.bottom = rc.top + dia;
     break;
 
-  case TrafficSettings::GaugeLocation::CentreBottom:
-    rc.left = (rc.left + rc.right) / 2 - ib_layout.control_size.width;
-    rc.right = rc.left + ib_layout.control_size.width * 2 - 1;
-    rc.top = rc.bottom - ib_layout.control_size.height * 2 + 1;
+  case TrafficSettings::GaugeLocation::CENTER_BOTTOM:
+    rc.left = (rc.left + rc.right - dia) / 2 - 1;
+    rc.right = rc.left + dia;
+    rc.top = rc.bottom - dia;
+    break;
+
+  case TrafficSettings::GaugeLocation::TOP_LEFT_AVOID_IB:
+    rc.top = GetMainRect().top;
+    rc.left = GetMainRect().left; 
+    rc.right = rc.left + dia;
+    rc.bottom = rc.top + dia;
+    break;
+
+  case TrafficSettings::GaugeLocation::TOP_RIGHT_AVOID_IB:
+    rc.top = GetMainRect().top;
+    rc.right = GetMainRect().right;
+    rc.left = rc.right - dia;
+    rc.bottom = rc.top + dia;
+    break;
+
+  case TrafficSettings::GaugeLocation::BOTTOM_LEFT_AVOID_IB:
+    rc.bottom = GetMainRect().bottom;
+    rc.left = GetMainRect().left;
+    rc.right = rc.left + dia;
+    rc.top = rc.bottom - dia;
+    break;
+
+  case TrafficSettings::GaugeLocation::CENTER_TOP_AVOID_IB:
+    rc.top = GetMainRect().top;
+    rc.left = (GetMainRect().left + GetMainRect().right - dia) / 2 - 1;
+    rc.right = rc.left + dia;
+    rc.bottom = rc.top + dia;
+    break;
+
+  case TrafficSettings::GaugeLocation::CENTER_BOTTOM_AVOID_IB:
+    rc.bottom = GetMainRect().bottom;
+    rc.left = (GetMainRect().left + GetMainRect().right - dia) / 2 - 1;
+    rc.right = rc.left + dia;
+    rc.top = rc.bottom - dia;
+    break;
+
+  case TrafficSettings::GaugeLocation::BOTTOM_RIGHT_AVOID_IB:
+    rc.bottom = GetMainRect().bottom;
+    rc.right = GetMainRect().right;
+    rc.left = rc.right - dia;
+    rc.top = rc.bottom - dia;
     break;
 
   default:    // aka flBottomRight
-    rc.left = rc.right - ib_layout.control_size.width * 2 + 1;
-    rc.top = rc.bottom - ib_layout.control_size.height * 2 + 1;
+    rc.left = rc.right - dia;
+    rc.top = rc.bottom - dia;
     break;
   }
 
+  ++rc.top;
+  ++rc.left;
   traffic_gauge.Move(rc);
 }
 

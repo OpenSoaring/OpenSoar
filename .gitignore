@@ -35,5 +35,6 @@ build/local-config.mk
 .*.swp
 
 .idea
+.ccache
 /VERSION.txt
 /src/OpenVario/_DustBin

@@ -129,7 +129,7 @@ try {
   InitialiseDataPath();
 
   // Write startup note + version to logfile
-  LogFormat("Starting XCSoar %s", XCSoar_ProductToken);
+  LogFormat("Starting %s", XCSoar_ProductToken);
 
   // Read options from the command line
   {

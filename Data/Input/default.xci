@@ -1360,11 +1360,13 @@ type=key
 data=M
 event=Mode AudioMenu 
 
-## look line 85
-## mode=default
-## type=key
-## data=X
-## event=Exit system
 
+# -------------
+# Define gesture to open Quickmenu without keyboard or remote
+# ("Draw a button on the screen")
+# -------------
 
-
+mode=default
+type=gesture
+data=ULDR
+event=QuickMenu

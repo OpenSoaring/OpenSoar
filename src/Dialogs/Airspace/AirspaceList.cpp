@@ -149,7 +149,7 @@ static Angle last_heading;
 
 static constexpr StaticEnumChoice type_filter_list[] = {
   { WILDCARD, "*" },
-  { OTHER, "Other" },
+  { OTHER, "Unknown" },
   { RESTRICTED, "Restricted areas" },
   { PROHIBITED, "Prohibited areas" },
   { DANGER, "Danger areas" },

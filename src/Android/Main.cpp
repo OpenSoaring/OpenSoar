@@ -239,13 +239,14 @@ try {
     InitialiseDataPath();
     AtScopeExit() { DeinitialiseDataPath(); };
 
-    LogFormat("Starting OpenSoar %s", OpenSoar_ProductToken);
+    LogFormat("Starting %s", OpenSoar_ProductToken);
 
     TextUtil::Initialise(env);
     AtScopeExit(env) { TextUtil::Deinitialise(env); };
 
     assert(native_view == nullptr);
-    native_view = new NativeView(env, obj, width, height, xdpi, ydpi, product);
+    native_view = new NativeView(env, obj, width, height, xdpi, ydpi,
+                                 product);
     AtScopeExit() {
       delete native_view;
       native_view = nullptr;
