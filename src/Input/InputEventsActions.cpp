@@ -654,11 +654,7 @@ void
 InputEvents::eventShutdown([[maybe_unused]] const char *misc)
 {
 #if defined(IS_OPENVARIO)
-<<<<<<< HEAD
     if (StringIsEqual(misc, "reboot")) {
-=======
-    if (StringIsEqual(misc, _T("reboot"))) {
->>>>>>> 77d31e538a (### [OV] Bugfix InputEventsActions.cpp)
       UI::TopWindow::SetExitValue(EXIT_REBOOT); // 20001);
     } else if (StringIsEqual(misc, "shutdown")) {
       UI::TopWindow::SetExitValue(EXIT_SHUTDOWN); // 20002);
