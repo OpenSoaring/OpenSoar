@@ -1,0 +1,14 @@
+diff --git a/libdispatch/dwinpath.c b/libdispatch/dwinpath.c
+--- a/libdispatch/dwinpath.c
++++ b/libdispatch/dwinpath.c
+@@ -222,7 +222,11 @@      free(cvtname);    
+     return status;
+ }
+ 
++#ifndef ENOENT
++# define ENOENT 2
++#endif
++
+ EXTERNL
+ int
+ NCremove(const char* path)
