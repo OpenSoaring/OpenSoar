@@ -15,12 +15,12 @@ class NOAALineSplitter
   const char *start;
 
 public:
-  typedef std::pair<const char *, unsigned> Range;
+  typedef std::pair<const char *, const size_t> Range;
 
   NOAALineSplitter(const char *_start):start(_start) {}
 
   bool HasNext() const {
-    return start != NULL && start[0] != '\0';
+    return start != nullptr && start[0] != '\0';
   }
 
   Range Next() {
@@ -32,11 +32,11 @@ public:
     const auto *line_break = StringFind(line_start, '\n');
     if (!line_break) {
       // if no line break was found
-      start = NULL;
+      start = nullptr;
       return Range(line_start, strlen(line_start));
     }
 
-    unsigned length = line_break - line_start;
+    size_t length = line_break - line_start;
     start = line_break + 1;
     return Range(line_start, length);
   }
