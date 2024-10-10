@@ -13,6 +13,10 @@ set(_SOURCES
         Weather/Rasp/RaspStore.cpp
         Weather/Rasp/RaspStyle.cpp
         Weather/Rasp/Configured.cpp
+)
+
+if(HAVE_SKYSIGHT)
+  list(APPEND _SOURCES
        # SkySight:
         Weather/Skysight/Skysight.cpp
         Weather/Skysight/SkysightAPI.cpp
@@ -23,7 +27,8 @@ set(_SOURCES
         Weather/Skysight/APIQueue.cpp
 
         Weather/Skysight/SkysightRenderer.cpp
-)
+  )
+endif()
 
 set(SCRIPT_FILES
     CMakeSource.cmake

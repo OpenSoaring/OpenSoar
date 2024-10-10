@@ -8,6 +8,7 @@ endif()
 include(CMakeSource.cmake)
 # organize the files in subdirectories
 
+add_compile_definitions(SKYSIGHT_LIVE) 
 
 set(SOURCE_FILES )
 foreach(source_file ${_SOURCES})
@@ -39,6 +40,7 @@ endforeach()
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+# include_directories(/)
 
 add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
     ${SOURCE_FILES}

@@ -21,9 +21,9 @@ set(PROGRAM_NAME_CC ${TARGET_NAME})              # CamelCase
 string(TOLOWER  ${PROGRAM_NAME} PROGRAM_NAME_LC) # lowercase
 
 # Features
-set (HAVE_SKYSIGHT  OFF)
+set (HAVE_SKYSIGHT  ON)
 if (HAVE_SKYSIGHT)
-  add_definitions(HAVE_SKYSIGHT=ON)
+  add_compile_definitions(HAVE_SKYSIGHT)
 endif ()
 #==========================================
 
