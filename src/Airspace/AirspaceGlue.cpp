@@ -34,7 +34,7 @@ try {
     ParseAirspaceFile(airspaces, buffered_reader);
   } catch (...) {
     // TODO translate this?
-    std::throw_with_nested(FmtRuntimeError("Error in file {}", path));
+    std::throw_with_nested(FmtRuntimeError("Error in file {}", path.c_str()));
   }
 
   return true;
