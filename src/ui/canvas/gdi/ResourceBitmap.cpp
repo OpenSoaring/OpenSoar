@@ -10,6 +10,14 @@
 #include <wingdi.h>
 #include <winuser.h>
 
+#ifdef _DEBUG
+# include "LogFile.hpp"
+#endif
+
+#ifdef DEBUG_CONSOLE_OUTPUT
+# include <iostream>
+#endif
+
 Bitmap::Bitmap(ResourceId id)
 {
   Load(id);
@@ -21,6 +29,16 @@ Bitmap::Load(ResourceId id, [[maybe_unused]] Type type)
   Reset();
 
   bitmap = ResourceLoader::LoadResBitmap(id);
+
+
+#ifdef _DEBUG
+  if (!bitmap)
+    LogFormat("%s - ResourceId: '%s'! ", __func__, id.GetName().data());
+#endif
+#ifdef DEBUG_CONSOLE_OUTPUT
+  if (!bitmap)
+    std::cout << __func__ << " - ResourceId: " << id.GetName() << std::endl;
+#endif
   return bitmap != nullptr;
 }
 
