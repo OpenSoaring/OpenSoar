@@ -31,6 +31,10 @@
 #include "UIGlobals.hpp"
 #include "system/Process.hpp"
 
+#ifdef DEBUG_CONSOLE_OUTPUT
+# include <iostream>
+#endif
+
 #ifdef ENABLE_SDL
 /* this is necessary on Mac OS X, to let libSDL bootstrap Quartz
    before entering our main() */
@@ -151,10 +155,14 @@ int main(int argc, char **argv)
 #else
 int WINAPI
 WinMain(HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance,
-        [[maybe_unused]] LPSTR lpCmdLine2,
-        [[maybe_unused]] int nCmdShow)
+  [[maybe_unused]] LPSTR lpCmdLine2,
+  [[maybe_unused]] int nCmdShow)
 #endif
+
 try {
+#ifdef DEBUG_CONSOLE_OUTPUT
+  std::cout << "Start: OpenSoar!" << std::endl;
+#endif
   // Read options from the command line
   int ret = -1;
   bool rerun = false;
