@@ -250,29 +250,29 @@ SkysightWidget::UpdateList()
   bool item_active = false;
 
   if (index < skysight->NumSelectedLayers()) {
-    auto layer = skysight->GetLayer(index);
+    auto layer = skysight->GetSelectedLayer(index);
     item_updating = layer->updating;
-    item_active = (skysight->GetActiveLayer() == layer);
+    if (skysight->GetActiveLayer())
+        item_active = (skysight->GetActiveLayer()->id == layer->id);
   }
 
 #if 0  // def _DEBUG
   // unused:
   bool any_updating = skysight->SelectedLayersUpdating();
 #endif  // def _DEBUG
-  bool empty = (!(bool)skysight->NumSelectedLayers());
 
   ListControl &list = GetList();
   list.SetLength(skysight->NumSelectedLayers());
   list.Invalidate();
 
   add_button->SetEnabled(!skysight->SelectedLayersFull());
-  remove_button->SetEnabled(!empty && !item_updating);
+  remove_button->SetEnabled(!item_updating);
 #if 0  // def _DEBUG
-  update_button->SetEnabled(!empty && !item_updating);
-  updateall_button->SetEnabled(!empty && !any_updating);
+  update_button->SetEnabled(!item_updating);
+  updateall_button->SetEnabled(!any_updating);
 #endif  // def _DEBUG
-  activate_button->SetEnabled(!empty && !item_updating);
-  deactivate_button->SetEnabled(!empty && item_active);
+  activate_button->SetEnabled(!item_active);  // item_updating);
+  deactivate_button->SetEnabled(item_active);
 }
 
 void
