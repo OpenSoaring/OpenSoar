@@ -100,11 +100,7 @@ struct BrokenDateTime : public BrokenDate, public BrokenTime {
    * BrokenDateTime object.
    */
   [[gnu::const]]
-#ifdef HAVE_POSIX
-  static BrokenDateTime FromUnixTimeUTC(int64_t t) noexcept;
-#else
-  static BrokenDateTime FromUnixTimeUTC(const time_t &t) noexcept;
-#endif
+  static BrokenDateTime FromUnixTime(const int64_t t) noexcept;
 
   [[gnu::pure]]
   std::chrono::system_clock::time_point ToTimePoint() const noexcept;

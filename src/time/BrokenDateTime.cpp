@@ -34,7 +34,7 @@ static const BrokenDateTime ToBrokenDateTime(const struct tm &tm) noexcept {
 }
 
 BrokenDateTime::BrokenDateTime(std::chrono::system_clock::time_point tp) noexcept
-  :BrokenDateTime(FromUnixTimeUTC(std::chrono::system_clock::to_time_t(tp))) {}
+  :BrokenDateTime(FromUnixTime(std::chrono::system_clock::to_time_t(tp))) {}
 
 std::chrono::system_clock::time_point
 BrokenDateTime::ToTimePoint() const noexcept
@@ -49,11 +49,10 @@ BrokenDateTime::ToTimePoint() const noexcept
   tm.tm_min = minute;
   tm.tm_sec = second;
   tm.tm_isdst = 0;
-  #ifdef _WIN32
-    return TimeGm(tm) - std::chrono::hours(1);  // why ??
-  #else
-    return TimeGm(tm);
-  #endif
+  tm.tm_wday = day_of_week;  // not valid
+  tm.tm_yday = -1;  // not valid
+
+  return TimeGm(tm);
 }
 
 const BrokenDateTime
@@ -69,11 +68,7 @@ BrokenDateTime::NowLocal() noexcept
 }
 
 BrokenDateTime
-#ifdef HAVE_POSIX // ??
-BrokenDateTime::FromUnixTimeUTC(int64_t t) noexcept
-#else
-BrokenDateTime::FromUnixTimeUTC(const time_t &t) noexcept
-#endif
+BrokenDateTime::FromUnixTime(const int64_t t) noexcept
 {
   return ToBrokenDateTime(GmTime(std::chrono::system_clock::from_time_t(t)));
 }
