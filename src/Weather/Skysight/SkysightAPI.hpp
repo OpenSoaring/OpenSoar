@@ -60,7 +60,6 @@ public:
                   BrokenDateTime maxtime, uint64_t update_time,
                   SkysightCallback cb = nullptr);
 
-  BrokenDateTime FromUnixTime(time_t t);
   static void GenerateLoginRequest();
 
   static void MakeCallback(SkysightCallback cb, const std::string &&details,

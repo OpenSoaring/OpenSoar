@@ -387,9 +387,6 @@ SkysightRequest::RequestToBuffer(std::string &response)
       << std::endl;
     if (args.url.find("from_time") != std::string::npos)
     {
-      // std::string from_time = args.url.substr(args.url.length() - 10);
-      // BrokenDateTime from =
-      //    BrokenDateTime::FromUnixTimeUTC(std::stoi(from_time));
       s << "from:     "
         << std::put_time(std::localtime(&tx /*from_time*/), "%Y%m%d_%H%M%S")
         << std::endl;

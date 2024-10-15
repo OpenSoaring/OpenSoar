@@ -116,7 +116,7 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
     filename.Format("lastupdated-%s.json", region.c_str());
     break;
   case SkysightCallType::DataDetails:
-    fc = FromUnixTime(fctime);
+    fc = BrokenDateTime::FromUnixTimeUTC(fctime);
     filename.Format("%s-datafiles-%s-%02d-%02d%02d.json",
                     region.c_str(), layer_id.data(),
                     fc.day, fc.hour, fc.minute);
@@ -156,12 +156,6 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
     break;
   }
   return AllocatedPath::Build(cache_path, filename);
-}
-
-BrokenDateTime
-SkysightAPI::FromUnixTime(time_t t)
-{
-  return BrokenDateTime::FromUnixTime(t);
 }
 
 SkysightAPI::SkysightAPI(std::string email, std::string password,

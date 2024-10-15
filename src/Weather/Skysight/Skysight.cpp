@@ -471,12 +471,6 @@ Skysight::CleanupFiles()
   Directory::VisitSpecificFiles(GetLocalPath(), "*.tif", visitor);
 }
 
-BrokenDateTime
-Skysight::FromUnixTime(uint64_t t)
-{
-  return api->FromUnixTime(t);
-}
-
 void
 Skysight::Render([[maybe_unused]] bool force_update)
 {
@@ -649,7 +643,7 @@ Skysight::DisplayActiveLayer()
 
       if (File::Exists(filename)) {
         // needed for (selected) object view in map
-        active_layer->forecast_time = FromUnixTime(test_time);
+        active_layer->forecast_time = BrokenDateTime::FromUnixTimeUTC(test_time);
         found = true;
         break;
       }

@@ -114,7 +114,6 @@ public:
     return MakeLocalPath("skysight");
   }
 
-  BrokenDateTime FromUnixTime(uint64_t t);
   BrokenDateTime GetNow(bool use_system_time = false);
 
   void Render(bool force_update = false);
