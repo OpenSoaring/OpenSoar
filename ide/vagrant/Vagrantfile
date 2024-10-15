@@ -40,11 +40,6 @@ Vagrant.configure("2") do |config|
             # sysctl returns Bytes and we need to convert to MB
             mem = `sysctl -n hw.memsize`.to_i / 1024 / 1024 / 2
 
-            homedir = "~"
-            xcsoarprofiledir = homedir + "/.xcsoar"
-
-            config.vm.synced_folder xcsoarprofiledir, "/home/vagrant/.xcsoar"
-
         elsif host =~ /linux/
             cpus = `nproc`.to_i
             # meminfo shows KB and we need to convert to MB
