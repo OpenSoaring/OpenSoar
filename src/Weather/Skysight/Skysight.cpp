@@ -643,7 +643,7 @@ Skysight::DisplayActiveLayer()
 
       if (File::Exists(filename)) {
         // needed for (selected) object view in map
-        active_layer->forecast_time = BrokenDateTime::FromUnixTimeUTC(test_time);
+        active_layer->forecast_time = BrokenDateTime::FromUnixTime(test_time);
         found = true;
         break;
       }
