@@ -51,9 +51,14 @@ TimeGm(struct tm &tm) noexcept
 #ifdef __GLIBC__
 	/* timegm() is a GNU extension */
 	const auto t = timegm(&tm);
-#else
+#elif defined (_WIN32)
 	tm.tm_isdst = 0;
-	const auto t = mktime(&tm) + GetTimeZoneOffset();
+	const auto t = _mkgmtime(&tm);
+#else
+	// TODO(August2111): On Windows this is wrong, what is with MacOS?
+	tm.tm_isdst = 0;
+	const auto t = timegm(&tm);
+	// const auto t = mktime(&tm) + GetTimeZoneOffset();
 #endif /* !__GLIBC__ */
 
 	return std::chrono::system_clock::from_time_t(t);
