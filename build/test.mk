@@ -794,7 +794,7 @@ DEBUG_PROGRAM_NAMES += \
   FeedFlyNetData
 endif
 
-ifeq ($(HAVE_HTTP)$(TARGET_IS_ANDROID),yn)
+ifeq ($(HAVE_HTTP)$(TARGET_IS_ANDROID)$(TARGET_IS_DARWIN),ynn)
 DEBUG_PROGRAM_NAMES += DownloadFile \
 	RunDownloadToFile \
 	UploadFile \
