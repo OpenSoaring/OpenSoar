@@ -55,20 +55,22 @@ static constexpr bool CLIP_ACCEPT(unsigned a, unsigned b) {
 unsigned
 GeoClip::ClipEncodeX(const Angle x) const
 {
-  if (x< Angle::Zero())
+  if (x < Angle::Zero()) {
     return CLIP_LEFT_EDGE;
-  if (x> width)
+  } else if (x > width) {
     return CLIP_RIGHT_EDGE;
+  }
   return 0;
 }
 
 unsigned
 GeoClip::ClipEncodeY(const Angle y) const
 {
-  if (y< GetSouth())
+  if (y < GetSouth()) {
     return CLIP_BOTTOM_EDGE;
-  if (y> GetNorth())
+  } else if (y > GetNorth()) {
     return CLIP_TOP_EDGE;
+  }
   return 0;
 }
 
@@ -126,6 +128,12 @@ GeoClip::ClipLine(GeoPoint &a, GeoPoint &b) const
   }
 }
 
+static inline bool
+IsEqual(const Angle &a, const Angle &b)
+{
+  return fabs(a.Native() - b.Native()) < 1e-15;
+}
+
 class ClipGeoPoint: public GeoPoint {
 public:
   ClipGeoPoint(const GeoPoint& _p): GeoPoint(_p), clip_code(0)
@@ -139,11 +147,11 @@ public:
   void ClipEncodeY(const Angle& south, const Angle& north) {
     if (latitude< south)
       clip_code = CLIP_BOTTOM_EDGE;
-    else if (latitude == south) 
+    else if (IsEqual(latitude, south))
       clip_code = CLIP_BOTTOM_EQUALS;
-    else if (latitude> north)
+    else if (latitude > north)
       clip_code = CLIP_TOP_EDGE;
-    else if (latitude == north)
+    else if (IsEqual(latitude, north))
       clip_code = CLIP_TOP_EQUALS;
     else
       clip_code = 0;
@@ -152,11 +160,11 @@ public:
   void ClipEncodeX(const Angle& west, const Angle& east) {
     if (longitude< west)
       clip_code = CLIP_LEFT_EDGE;
-    else if (longitude == west)
+    else if (IsEqual(longitude, west))
       clip_code = CLIP_LEFT_EQUALS;
     else if (longitude> east)
       clip_code = CLIP_RIGHT_EDGE;
-    else if (longitude == east)
+    else if (IsEqual(longitude, east))
       clip_code = CLIP_RIGHT_EQUALS;
     else
       clip_code = 0;
