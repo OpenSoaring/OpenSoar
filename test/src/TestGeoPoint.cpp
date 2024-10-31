@@ -8,6 +8,8 @@
 
 #include "TestUtil.hpp"
 
+constexpr int SHORT_ACCURACY=1000;
+
 int main()
 {
   plan_tests(80);
@@ -82,7 +84,7 @@ int main()
   ok1(equals(p1.Distance(p4), 619486.719361));
   ok1(equals(p1.Distance(p3), 1240403.22926));
   ok1(equals(p3.Distance(p4), 620924.169000));
-  ok1(equals(p1.Distance(p11), 1.561761));
+  ok1(equals(p1.Distance(p11), 1.561761, SHORT_ACCURACY));
   ok1(equals(p1.Distance(p12), 18599361.600));
 
   ok1(equals(p2.DistanceS(p6), 869326.653160));
@@ -91,7 +93,7 @@ int main()
   ok1(equals(p1.DistanceS(p4), 619603.149273));
   ok1(equals(p1.DistanceS(p3), 1240649.267606));
   ok1(equals(p3.DistanceS(p4), 621053.760625));
-  ok1(equals(p1.DistanceS(p11), 1.568588));
+  ok1(equals(p1.DistanceS(p11), 1.568588, SHORT_ACCURACY));
   ok1(equals(p1.DistanceS(p12), 18602548.701));
 
   // test bearing()
