@@ -11,7 +11,7 @@ set(_LIB_NAME netcdf)
 ##   set(_LIB_NAME netcdf_c)
 ## endif()
 
-# set (HDF5_DIR ${LINK_LIBS}/hdf5/hdf5-${HDF5_VERSION})
+set (HDF5_DIR ${LINK_LIBS}/hdf5/hdf5-${HDF5_VERSION})
 # set (CURL_DIR ${LINK_LIBS}/curl/curl-${CURL_VERSION})
 # set (ZLIB_DIR ${LINK_LIBS}/zlib/zlib-${ZLIB_VERSION})
 prepare_3rdparty(netcdf_c ${_LIB_NAME})
@@ -44,7 +44,6 @@ if (_COMPLETE_INSTALL)
         "-DCURL_LIBRARY_DEBUG=${CURL_DIR}/lib/${TOOLCHAIN}/curl.lib"
         "-DCURL_LIBRARY_RELEASE=${CURL_DIR}/lib/${TOOLCHAIN}/curl.lib"
         "-DZLIB_INCLUDE_DIR=${ZLIB_DIR}/include"
-
     )
 
     ExternalProject_Add(

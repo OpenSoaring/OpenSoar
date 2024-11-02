@@ -79,50 +79,68 @@ macro(prepare_3rdparty target_name lib_name)
        # string(REPLACE "\\" "/" _BUILD_TARGET  ${${TARGET_CNAME}_TARGET})
     endif()
 
-    set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")  ## D:/Project/link_libs...
+    set(_TARGET_LIBS_RELEASE   "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")
+##aug##    set(_TARGET_LIBS           "${_TARGET_LIBS_RELEASE}")
     string(REPLACE "\\" "/" _PREFIX_DIR  ${${TARGET_CNAME}_PREFIX})
 
     set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS})  ## for internal use
 # if (${lib_name} MATCHES "fmt" OR ${lib_name} MATCHES "netcdf-cxx4")
 if (${lib_name} MATCHES "fmt")
-    set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}d${LIB_SUFFIX}")  ## D:/Project/link_libs...
+    set(_TARGET_LIBS_DEBUG     "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}d${LIB_SUFFIX}")
+#    set(_TARGET_LIBS           "${_TARGET_LIBS_RELEASE}")
+    # set(_TARGET_LIBS           "${_TARGET_LIBS_DEBUG}")
     set(
-      ${TARGET_CNAME}_LIB
-      optimized "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}"
-      debug "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}d${LIB_SUFFIX}"
-      PARENT_SCOPE
+##aug##      # ${TARGET_CNAME}_LIB
+      _TARGET_LIBS  ##aug##
+      optimized "${_TARGET_LIBS_RELEASE}"
+      debug "${_TARGET_LIBS_DEBUG}"
+##aug##      PARENT_SCOPE
     )   ## D:/Project/link_libs...
 elseif (${lib_name} MATCHES "netcdf-cxx4")
     set(_BIN_3RD_PARTY D:/Projects/Binaries/OpenSoar/dev-branch/3rd_Party)  # only August2111
-    set(_TARGET_LIBS ${_BIN_3RD_PARTY}/netcdf_cxx/netcdf_cxx-4.3.1/build/${TOOLCHAIN}/cxx4/Debug/${LIB_PREFIX}${lib_name}${LIB_SUFFIX})
+    set(_TARGET_LIBS          ${_BIN_3RD_PARTY}/netcdf_cxx/netcdf_cxx-4.3.1/build/${TOOLCHAIN}/cxx4/Debug/${LIB_PREFIX}${lib_name}${LIB_SUFFIX})
     set(_TARGET_LIBS_DEBUG   "${_BIN_3RD_PARTY}/netcdf_cxx/netcdf_cxx-4.3.1/build/${TOOLCHAIN}/cxx4/Debug/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")
-    set(_TARGET_LIBS_RELEASE   "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}"
-)
-## if($<CONFIG:Debug>)
-## else()
-## endif()    # set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_d${LIB_SUFFIX}")  ## D:/Project/link_libs...
+
     set(
-      ${TARGET_CNAME}_LIB
-      optimized "_TARGET_LIBS_RELEASE"
-      debug "_TARGET_LIBS_DEBUG"
-      PARENT_SCOPE
+##aug##      # ${TARGET_CNAME}_LIB
+      _TARGET_LIBS  ##aug##
+      optimized ${_TARGET_LIBS_RELEASE}
+      debug     ${_TARGET_LIBS_DEBUG}
+##aug##      PARENT_SCOPE
     )   ## D:/Project/link_libs...
 elseif (${lib_name} MATCHES "proj")
-    set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_d${LIB_SUFFIX}")  ## D:/Project/link_libs...
+    # set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_d${LIB_SUFFIX}")  ## D:/Project/link_libs...
+    set(_TARGET_LIBS_DEBUG     "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}d${LIB_SUFFIX}")
+##aug##  set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")  ## D:/Project/link_libs...
     set(
-      ${TARGET_CNAME}_LIB
-      optimized "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}"
-      debug "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_d${LIB_SUFFIX}"
-      PARENT_SCOPE
+##aug##      # ${TARGET_CNAME}_LIB
+      _TARGET_LIBS  ##aug##
+      optimized ${_TARGET_LIBS_RELEASE}
+      debug     ${_TARGET_LIBS_DEBUG}
+##aug##      PARENT_SCOPE
     )   ## D:/Project/link_libs...
-elseif(${lib_name} MATCHES "hdf5")
-    # set(${TARGET_CNAME}_LIB  ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX} PARENT_SCOPE)  ## D:/Project/link_libs...
-    # in the moment without toolchain...!!!
-    set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")  ## D:/Project/link_libs...
-    set(${TARGET_CNAME}_LIB  ${_INSTALL_DIR}/lib/${LIB_PREFIX}${lib_name}${LIB_SUFFIX} PARENT_SCOPE)  ## D:/Project/link_libs...
+##aug##  elseif(${lib_name} MATCHES "hdf5")
+##aug##      # set(${TARGET_CNAME}_LIB  ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX} PARENT_SCOPE)  ## D:/Project/link_libs...
+##aug##      # in the moment without toolchain...!!!
+##aug##      set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")  ## D:/Project/link_libs...
+##aug##      set(${TARGET_CNAME}_LIB  ${_INSTALL_DIR}/lib/${LIB_PREFIX}${lib_name}${LIB_SUFFIX} PARENT_SCOPE)  ## D:/Project/link_libs...
+  elseif(${lib_name} MATCHES "hdf5")
+    set(_TARGET_LIBS           ${_TARGET_LIBS_RELEASE} 
+    ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_hl${LIB_SUFFIX}
+    ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_tools${LIB_SUFFIX}
+   )
+#        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_hl.lib # needed from netcdf
+#        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_tools.lib # needed from netcdf
 else()
-    set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS} PARENT_SCOPE)  ## D:/Project/link_libs...
+    set(_TARGET_LIBS_DEBUG     ${_TARGET_LIBS_RELEASE})  ##aug##: the same...
+    set(_TARGET_LIBS           ${_TARGET_LIBS_RELEASE})
+    # set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS})  ## for internal use
+    # set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS} PARENT_SCOPE)  ## D:/Project/link_libs...
 endif()
+    set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS})  ## for internal use
+    set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS} PARENT_SCOPE)  ## D:/Project/link_libs...
+
+
     set(${TARGET_CNAME}_TARGET  ${${TARGET_CNAME}_TARGET} PARENT_SCOPE) # f.e. zlib_3rd, sodium_3rd
 
 if (MSVC OR MINGW OR CLANG)
@@ -135,14 +153,20 @@ endif()
 
     set(_INSTALL_COMMAND INSTALL_COMMAND cmake --build . --target install --config Release)
 
-if(EXISTS ${_TARGET_LIBS})  ## for internal use
+if($<CONFIG:Debug>)
+    set(_TARGET_LIBS           ${_TARGET_LIBS_DEBUG})
+else()
+    set(_TARGET_LIBS           ${_TARGET_LIBS_RELEASE})
+endif()
+
+## ?? if(OFF)  ## test only (02.11.2024) =>  if(EXISTS ${_TARGET_LIBS})  ## for internal use
+if(EXISTS ${_TARGET_LIBS}) 
     set(_COMPLETE_INSTALL OFF)
 else()
     set(_COMPLETE_INSTALL ON)
 endif()
 
 endmacro()
-
 
 macro(post_3rdparty)
     if(${EXTRA_BUILD})

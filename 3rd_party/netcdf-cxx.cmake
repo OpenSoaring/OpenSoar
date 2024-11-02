@@ -10,6 +10,7 @@ if (MSVC)  # unfortunately the lib name is a little bit 'tricky' at libPng..
   set(_LIB_NAME netcdf_cxx)
 endif()
 
+# set (HDF5_DIR ${LINK_LIBS}/hdf5/hdf5-${HDF5_VERSION})
 set (HDF5_DIR ${LINK_LIBS}/hdf5/hdf5-${HDF5_VERSION})
 # set (CURL_DIR ${LINK_LIBS}/curl/curl-${CURL_VERSION})
 # set (ZLIB_DIR ${LINK_LIBS}/zlib/zlib-${ZLIB_VERSION})

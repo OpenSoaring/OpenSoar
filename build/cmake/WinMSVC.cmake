@@ -75,8 +75,11 @@ list(APPEND BASIC_LINK_LIBRARIES
         shlwapi                                   # needed from hdf5
         # D:\Projects\link_libs\
         ${LINK_LIBS}/sqlite3/test/lib/sqlite3.lib # needed from netcdf ?
+#        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_hl.lib # needed from netcdf
+#        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_tools.lib # needed from netcdf
         ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_hl.lib # needed from netcdf
         ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_tools.lib # needed from netcdf
+        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5.lib # needed from netcdf
 
 )
 set(SSL_LIB )  # no ssl lib on windowsfor curl necessary!

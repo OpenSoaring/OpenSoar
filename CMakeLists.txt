@@ -436,7 +436,7 @@ list(APPEND XCSOAR_LINK_LIBRARIES
    ${PROJ_TARGET}  # new at 06/2024
    ${NETCDF_C_TARGET}  # new at 06/2024
    ${NETCDF_CXX_TARGET}  # new at 06/2024
-   ${HDF5_TARGET}  # new at 06/2024
+#   ${HDF5_TARGET}  # new at 06/2024
    
    ${Boost_LIBRARIES}
 )

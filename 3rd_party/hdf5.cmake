@@ -19,7 +19,9 @@ if (_COMPLETE_INSTALL)
 
     set(CMAKE_ARGS
              "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
-             "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB}"
+             "-DHDF5_INSTALL_LIB_DIR=${_INSTALL_LIB}"
+            "-DHDF5_EXTERNAL_LIB_PREFIX="
+            "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY="  #  "${_INSTALL_LIB}"
             "-DCMAKE_INSTALL_INCLUDEDIR=include"
             "-DCMAKE_BUILD_TYPE=Release"
   
@@ -48,10 +50,11 @@ if (_COMPLETE_INSTALL)
              "-DHDF5_TEST_VFD=OFF"
 
              "-DHDF5_BUILD_EXAMPLES=OFF"
-             "-DHDF5_BUILD_HL_LIB=OFF"
              "-DHDF5_BUILD_STATIC_TOOLS=OFF"
-             "-DHDF5_BUILD_TOOLS=OFF"
              "-DHDF5_BUILD_UTILS=OFF"
+
+             "-DHDF5_BUILD_HL_LIB=ON"
+             "-DHDF5_BUILD_TOOLS=ON"
 
              "-DTEST_SHELL_SCRIPTS=OFF"
     )
