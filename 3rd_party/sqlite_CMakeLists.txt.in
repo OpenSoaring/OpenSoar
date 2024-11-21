@@ -1,0 +1,76 @@
+cmake_minimum_required(VERSION 3.15)
+
+set (TARGET_NAME         sqlite)
+project(${TARGET_NAME})
+
+get_filename_component(_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} ABSOLUTE)
+
+        ### no cache? set(CMAKE_BUILD_TYPE Release CACHE STRING
+        ### no cache?               "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or "
+        ### no cache?               "CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.")
+
+if (NOT CMAKE_INSTALL_INCLUDEDIR)
+    set(CMAKE_INSTALL_INCLUDEDIR include)
+        ### no cache? set(CMAKE_INSTALL_INCLUDEDIR include CACHE STRING
+        ### no cache?             "Installation directory for include files, a relative path that "
+        ### no cache?             "will be joined with ${CMAKE_INSTALL_PREFIX} or an absolute path.")
+endif()
+if (NOT CMAKE_INSTALL_LIBDIR)
+    set(CMAKE_INSTALL_LIBDIR lib)
+        ### no cache? set(CMAKE_INSTALL_LIBDIR lib CACHE STRING
+        ### no cache?               "Installation directory for libraries, a relative path that "
+        ### no cache?               "will be joined to ${CMAKE_INSTALL_PREFIX} or an absolute path.")
+endif()
+
+set(${TARGET_NAME}_SOURCES 
+   ${_SOURCE_DIR}/sqlite3.c
+)
+
+### foreach(source_file ${${TARGET_NAME}_LIBRARY})
+###   set_source_files_properties(${source_file} PROPERTIES LANGUAGE C)
+### endforeach()
+
+file(GLOB_RECURSE HEADER_FILES "*.h*")
+
+include_directories(
+    ${_SOURCE_DIR}
+)
+
+set(${TARGET_NAME}_LIBRARY 
+   ${${TARGET_NAME}_SOURCES}
+)
+
+add_library(${TARGET_NAME} STATIC
+  ${${TARGET_NAME}_LIBRARY}
+  ${HEADER_FILES}
+)
+
+add_executable(${TARGET_NAME}_EXE
+  ${_SOURCE_DIR}/sqlite3.c
+  ${_SOURCE_DIR}/shell.c
+  ${HEADER_FILES}
+)
+
+# set_source_files_properties(${TARGET_NAME} PROPERTIES LANGUAGE C)
+set_target_properties(${TARGET_NAME}  PROPERTIES
+  LINKER_LANGUAGE CXX
+)
+set_target_properties(${TARGET_NAME}_EXE  PROPERTIES
+  LINKER_LANGUAGE CXX
+  # DEBUG_OUTPUT_NAME ${TARGET_NAME}d
+  # RELEASE_OUTPUT_NAME ${TARGET_NAME}3
+  OUTPUT_NAME ${TARGET_NAME}3
+)
+
+set (INSTALL_SQLITE ON)
+if (INSTALL_SQLITE)
+install(TARGETS ${TARGET_NAME}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+install(TARGETS ${TARGET_NAME}_EXE
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+install(FILES ${HEADER_FILES}
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+endif()
