@@ -61,6 +61,7 @@ if toolchain.is_windows:
     # mingw.  This prevents some libraries such as libsodium to enable
     # it.
     toolchain.cppflags += ' -D_FORTIFY_SOURCE=0'
+    with_skysight = True
 elif toolchain.is_darwin:
     with_geotiff = True
     thirdparty_libs.append(sdl2)
