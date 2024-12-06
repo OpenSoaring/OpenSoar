@@ -6,6 +6,12 @@ message(STATUS "+++ CMAKE_HOST_SYSTEM_NAME:     ${CMAKE_HOST_SYSTEM_NAME}")
 message(STATUS "+++ CMAKE_SYSTEM_NAME:          ${CMAKE_SYSTEM_NAME}")
 message(STATUS "+++ TOOLCHAIN:                  ${TOOLCHAIN}")
 
+message(STATUS "+++ CMAKE_BUILD_TYPE:          ${CMAKE_BUILD_TYPE}")
+message(STATUS "+++ VERBOSE_LEVEL:             ${VERBOSE_LEVEL}")
+
+if (CMAKE_BUILD_TYPE)
+  message(FATAL_ERROR "+++ CMAKE_BUILD_TYPE:          ${CMAKE_BUILD_TYPE}")
+endif()
 
 get_filename_component(PROJECTGROUP_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} ABSOLUTE)
 get_filename_component(PROJECTGROUP_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} ABSOLUTE)
@@ -411,6 +417,7 @@ if(1)
   message(STATUS "tiff:         TIFF_LIBS        =  ${TIFF_LIBS}      / ${TIFF_TARGET} ")
   message(STATUS "geotiff:      GEOTIFF_LIBS     =  ${GEOTIFF_LIBS}   / ${GEOTIFF_TARGET} ")
   message(STATUS "sqlite:       SQLITE_LIBS      =  ${SQLITE_LIBS}    / ${SQLITE_TARGET} ")
+  message(STATUS "szip:         SZIP_LIBS        =  ${SZIP_LIBS}      / ${SZIP_TARGET} ")
   message(STATUS "proj:         PROJ_LIBS        =  ${PROJ_LIBS}      / ${PROJ_TARGET} ")
   message(STATUS "netcdf-c:     NETCDF_C_LIBS    =  ${NETCDF_C_LIBS}  / ${NETCDF_C_TARGET} ")
   message(STATUS "netcdf-cxx:   NETCDF_CXX_LIBS  =  ${NETCDF_CXX_LIBS} / ${NETCDF_CXX_TARGET} ")
@@ -434,6 +441,7 @@ list(APPEND XCSOAR_LINK_LIBRARIES
    
    ${TIFF_LIBS}  # new at 06/2024
    ${GEOTIFF_LIBS}  # new at 06/2024
+      ${SZIP_LIBS}  # new at 12/2024
       ${SQLITE_LIBS}  # new at 11/2024
    ${PROJ_LIBS}  # new at 06/2024
    ${NETCDF_C_LIBS}  # new at 06/2024
@@ -490,7 +498,8 @@ list(APPEND SCRIPT_FILES
 if (ANDROID)  # library!
    add_library(${TARGET_NAME} STATIC ${SOURCE_FILES})
 elseif(MINGW)
-   add_executable(${TARGET_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${EXT_PROJ}) #  ${XCSOAR_LINK_LIBRARIES})
+   add_executable(${TARGET_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${EXT_PROJ})
+ # add_executable(${TARGET_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${XCSOAR_LINK_LIBRARIES} ${EXT_PROJ})
 else()        # executable!
    message(STATUS  "### add_executable(${TARGET_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${EXT_PROJ}")
    add_executable(${TARGET_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${EXT_PROJ})
@@ -499,12 +508,14 @@ endif()
 list(APPEND XCSOAR_LINK_LIBRARIES ) # sequence is very important, I don't no, why'!!!!
 
 set (VERBOSE_LEVEL 10)
-if (_VERBOSE_LEVEL)
+if (VERBOSE_LEVEL)
     message(STATUS "----- XCSOAR_LINK_LIBRARIES = ${XCSOAR_LINK_LIBRARIES}")
     foreach(libs ${XCSOAR_LINK_LIBRARIES})
       message(STATUS "+++ XCSOAR_LINK_LIBRARIES: ${libs}")
     endforeach()
-    message(FATAL_ERROR "Stop =================")
+    if (VERBOSE_LEVEL GREATER 100)
+       message(FATAL_ERROR "Stop =================")
+    endif()
 endif()
 
 target_link_libraries(${TARGET_NAME} PUBLIC ${XCSOAR_LINK_LIBRARIES})

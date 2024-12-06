@@ -1,4 +1,5 @@
-set(TARGET_NAME "XCSoarAug-MinGW")  # hardcoded yet
+# set(TARGET_NAME "XCSoarAug-MinGW")  # hardcoded yet
+# set(TARGET_NAME "OpenSoar-MinGW")  # hardcoded yet
 
 message(STATUS "+++ System = WIN32 / MinGW (${TOOLCHAIN})  on ${CMAKE_HOST_SYSTEM_NAME} !!!")
 

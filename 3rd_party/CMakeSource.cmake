@@ -21,8 +21,12 @@ list(APPEND CMAKE_FILES fmt.cmake)
 
 
 set (SKYSIGHT_LIBS ON)
-if (SKYSIGHT_LIBS)  # SkySight!
-  list(APPEND CMAKE_FILES hdf5.cmake)
+if (SKYSIGHT_LIBS)    # SkySight!
+  set (HAVE_HDF5 ON)
+  if (HAVE_HDF5)
+    list(APPEND CMAKE_FILES szip.cmake)
+    list(APPEND CMAKE_FILES hdf5.cmake)
+  endif (HAVE_HDF5)
   set (SKYSIGHT_TEST ON)
   if (SKYSIGHT_TEST)
      list(APPEND CMAKE_FILES sqlite.cmake)

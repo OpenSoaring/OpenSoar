@@ -14,6 +14,10 @@ endif(MSVC)
 endif(0)
 
 prepare_3rdparty(hdf5 ${_LIB_NAME} ${_LIB_NAME}_D)
+
+
+set(HDF5_HL_LIBRARY  ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${_LIB_NAME}_hl${LIB_SUFFIX})  # finally
+
 # string(APPEND HDF5_CMAKE_DIR  /???L)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   # set(HDF5_CMAKE_DIR  ${HDF5_DIR}/cmake)
@@ -75,15 +79,27 @@ if (_COMPLETE_INSTALL)
         "-DBUILD_TESTING=OFF"
         # "-DH5EX_BUILD_TESTING=OFF"
         # "-DH5EX_BUILD_EXAMPLES=OFF"
-             "-DHDF5_ENABLE_Z_LIB_SUPPORT=ON"
-             "-DZLIB_USE_EXTERNAL=ON"
-             # "-DZLIB_DIR=${ZLIB_LIB}"
+#             "-DHDF5_ENABLE_Z_LIB_SUPPORT=ON"
+             "-DHDF5_ENABLE_Z_LIB_SUPPORT=OFF"
+#             "-DZLIB_USE_EXTERNAL=ON"
+             "-DZLIB_USE_EXTERNAL=OFF"
+
+         "-DSZIP_USE_EXTERNAL=ON"
+         ## 2024-12-03 "-DSZIP_DIR=${SZIP_LIB}"
+         "-DSZIP_LIBRARY:FILEPATH=${SZIP_LIBRARY}"
+
+         ## 2024-12-03 "-DZLIB_DIR=${ZLIB_LIB}"
         #     "-DZLIB_INCLUDE_DIR=${ZLIB_INCLUDE_DIR}"
         #     "-DZLIB_LIBRARY=${ZLIB_LIB}"
-             # "-DZLIB_LIBRARY_DEBUG=${ZLIB_LIB}"
+         "-DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}"
+            # "-DZLIB_LIBRARY_DEBUG=${ZLIB_LIB}"
              # "-DZLIB_LIBRARY_RELEASE=${ZLIB_LIB}"
              "-DHDF5_USE_ZLIB_STATIC:BOOL=ON" # see Release.txt, line 346 ('Configuration')
-             "-DHDF5_ENABLE_SZIP_SUPPORT:BOOL=OFF"
+             "-DHDF5_ENABLE_SZIP_ENCODING:BOOL=ON"
+             "-DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON"
+
+             "-DHDF5_BUILD_TOOLS:BOOL=OFF"
+             "-DHDF5_BUILD_STATIC_TOOLS:BOOL=OFF"
 
              # "-DHDF5_TEST_CPP=OFF"
              # "-DHDF5_TEST_EXAMPLES=OFF"
@@ -123,12 +139,15 @@ if (_COMPLETE_INSTALL)
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
 
-        DEPENDS ${ZLIB_TARGET} ${PROJ_TARGET}
+        DEPENDS ${ZLIB_TARGET} ${PROJ_TARGET} ${SZIP_TARGET}
        # DEPENDS ${ZLIB_LIB}
      
         BUILD_BYPRODUCTS  ${_TARGET_LIBS} # ${${TARGET_CNAME}_LIB}
     )
 endif()
 post_3rdparty()
+
+set(HDF5_CMAKE_DIR  ${HDF5_LIB_DIR}/cmake)  # finally
+
 # set(HDF5_DIR D:/Projects/link_libs/hdf5/hdf5-1.14.5)
 # set(HDF5_CMAKE_DIR D:/Projects/link_libs/hdf5/hdf5-1.14.5//lib/msvc2022d/cmake)

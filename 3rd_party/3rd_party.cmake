@@ -17,10 +17,13 @@ if (1) # SkySight
   set(GEOTIFF_VERSION     "1.7.1")  # oder 1.7.3 ??
   set(PROJ_VERSION        "9.3.1")  # 9.3.1 ->  9.4.1
   set(NETCDF_C_VERSION    "4.6.2")  # 4.6.2 -> 4.9.2 ??
+  # set(NETCDF_CXX_VERSION  "4.2.1")  #is without cmake (starts with 4..3.1)
   set(NETCDF_CXX_VERSION  "4.3.1")  # 4.2.1 -> 4.3.1 ??
 
   # set(HDF5_VERSION        "1.14.4.3")  # ??
   set(HDF5_VERSION        "1.14.5")  # ?? 
+
+  set(SZIP_VERSION        "2.1")    # New 02.12.2024??? Not used up to now...
 
   # set(SQLITE_VERSION      "3.46.1")
   # set(SQLITE_YEAR         2024)
@@ -93,6 +96,7 @@ elseif(WIN32 AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
     set(EXE_PREFIX ".exe")
 
     # set(TOOLCHAIN clang14)  # ??? 2022-09-08: necessary???
+    set(TOOLCHAIN clang15)  # ??? 2022-09-08: necessary???
     set(LINK_LIBS D:/Projects/link_libs)
 elseif (MINGW) # MinGW
     message(STATUS "+++ 3rd party System: MINGW!")

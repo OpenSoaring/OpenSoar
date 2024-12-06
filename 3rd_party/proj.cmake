@@ -8,6 +8,10 @@ set(_LIB_NAME proj)
 # set (HDF5_DIR ${LINK_LIBS}/hdf5/hdf5-${HDF5_VERSION})
 # set (CURL_DIR ${LINK_LIBS}/curl/curl-${CURL_VERSION})
 # set (ZLIB_DIR ${LINK_LIBS}/zlib/zlib-${ZLIB_VERSION})
+
+message (STATUS "xxxx SQLITE_LIBRARY: ${SQLITE_LIBRARY}")
+# 2024.11.26:   ## message (FATAL_ERROR "xxxx STOP!!!") 
+
 prepare_3rdparty(proj ${_LIB_NAME} ${_LIB_NAME}_d)
 string(APPEND PROJ_CMAKE_DIR  /proj)
 # string(APPEND PROJ_CMAKE_DIR  /proj4)
@@ -68,7 +72,7 @@ if (_COMPLETE_INSTALL)
   
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
-        DEPENDS ${ZLIB_TARGET} ${SQLITE_TARGET}
+        DEPENDS ${ZLIB_TARGET} ${SQLITE_TARGET} ${TIFF_TARGET}
      
         BUILD_BYPRODUCTS  ${_TARGET_LIBS} # ${${TARGET_CNAME}_LIB}
     )
