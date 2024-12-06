@@ -37,9 +37,10 @@ add_compile_definitions(_GLIBCXX_ASSERTIONS)
 add_compile_definitions(BOOST_JSON_STANDALONE)
 
 
-#  string(APPEND CMAKE_CXX_FLAGS " -Og -funit-at-a-time -ffast-math -g -std=c++20 -fno-threadsafe-statics -fmerge-all-constants -fcoroutines -fconserve-space -fno-operator-names -fvisibility=hidden -finput-charset=utf-8 -Wall -Wextra -Wwrite-strings -Wcast-qual -Wpointer-arith -Wsign-compare -Wundef -Wmissing-declarations -Wredundant-decls -Wmissing-noreturn -Wvla -Wno-format-truncation -Wno-missing-field-initializers -Wcast-align -Werror -I./src/unix -I./_build/include -isystem /home/august/Projects/link_libs/boost/boost-1.80.0 ")
+#  string(APPEND CMAKE_CXX_FLAGS " -Og -funit-at-a-time -ffast-math -g -std=c++20 -fno-threadsafe-statics -fmerge-all-constants -fcoroutines -fconserve-space -fno-operator-names -fvisibility=hidden -finput-charset=utf-8 -Wall -Wextra -Wwrite-strings -Wcast-qual -Wpointer-arith -Wsign-compare -Wundef -Wmissing-declarations -Wredundant-decls -Wmissing-noreturn -Wvla -Wno-format-truncation -Wno-missing-field-initializers -Wcast-align -Werror -I./src/unix -I./_build/include -isystem /usr/lib/link_libs/boost/boost-1.80.0 ")
 string(APPEND CMAKE_CXX_FLAGS " -c -Og -funit-at-a-time -ffast-math -g -std=c++20 -fno-threadsafe-statics -fmerge-all-constants -fcoroutines -fconserve-space -fno-operator-names -finput-charset=utf-8 -Wall -Wextra -Wwrite-strings -Wcast-qual -Wpointer-arith -Wsign-compare -Wundef -Wmissing-declarations -Wredundant-decls -Wmissing-noreturn -Wvla -Wno-format-truncation -Wno-missing-field-initializers -Wcast-align -Werror -m64 -mwin32 -mwindows -mms-bitfields")
-
+##string(APPEND CMAKE_CXX_FLAGS " -Wno-stringop-truncation -Wno-strict-aliasing")
+string(APPEND CMAKE_CXX_FLAGS " -Wno-error=stringop-truncation -Wno-strict-aliasing")
 # string(APPEND CMAKE_CXX_FLAGS " -v")
 
 include_directories(

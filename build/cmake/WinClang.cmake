@@ -6,12 +6,12 @@ if(NOT TOOLCHAIN)
 #    set(TOOLCHAIN clang14)
 endif()
 
-set(TARGET_IS_OPENVARIO ON)
+set(TARGET_IS_OPENVARIO OFF)
 if (TARGET_IS_OPENVARIO)
   add_compile_definitions(IS_OPENVARIO) 
 endif()
 
-
+# set(CMAKE_BUILD_TYPE Release)
 
 include_directories(D:/Programs/LLVM/${TOOLCHAIN}/include)
 
@@ -24,6 +24,9 @@ include_directories(D:/Programs/LLVM/${TOOLCHAIN}/include)
 
 set(LIB_PREFIX "lib")
 set(LIB_SUFFIX ".a")
+# Why????:
+set(LIB_PREFIX "")
+set(LIB_SUFFIX ".lib")
 # add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
 add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
 add_compile_definitions(BOOST_JSON_HEADER_ONLY)
@@ -33,17 +36,15 @@ add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON)
 add_compile_definitions(__CLANG__)
 add_compile_definitions(_WIN32) # this should be by default?
 # add_compile_definitions(HAVE_MSVCRT)
-add_compile_definitions(_UNICODE)
-add_compile_definitions(UNICODE)  # ???
 add_compile_definitions(STRICT)
 add_compile_definitions(_USE_MATH_DEFINES)   # necessary under C++17!
 # add_compile_definitions(USE_WIN32_RESOURCES)
 
 # add_compile_options(-v)  # verbose compiler messages
 
-# 
-# add_compile_options(-fcoroutines-ts)
-add_compile_options(-fcoroutines)
+# clang 15 and below add_compile_options(-fcoroutines-ts)
+# clang16, clang 17   ??? add_compile_options(-fcoroutines)  # ???
+
 ## add_compile_options(-fconserve-space)
 ## add_compile_options(-fno-operator-names)
 
@@ -65,8 +66,8 @@ list(APPEND XCSOAR_LINK_LIBRARIES
 )
 if (0)
 list(APPEND XCSOAR_LINK_LIBRARIES
-    D:/Projects/link_libs/boost/boost-1.81.0/lib/clang15/libboost_container-clang15-mt-d-x64-1_81.lib
-    D:/Projects/link_libs/boost/boost-1.81.0/lib/clang15/libboost_json-clang15-mt-d-x64-1_81.lib
+    /usr/lib/link_libs/boost/boost-1.81.0/lib/clang15/libboost_container-clang15-mt-d-x64-1_81.lib
+    /usr/lib/link_libs/boost/boost-1.81.0/lib/clang15/libboost_json-clang15-mt-d-x64-1_81.lib
 )
 endif()
 
@@ -99,6 +100,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static  -v")
 set(SSL_LIBS )  # no ssl lib on windows! == Use Schannel
 set(CRYPTO_LIBS Crypt32.lib BCrypt.lib) # no (OpenSSL-)crypto lib on windows!
 
-set(PERCENT_CHAR "%%" GLOBAL)
-set(DOLLAR_CHAR  "$$" GLOBAL)
+# set(PERCENT_CHAR "%%" GLOBAL)
+set(PERCENT_CHAR "%%") # GLOBAL)
+set(DOLLAR_CHAR  "$$") # GLOBAL)
 ### message(FATAL_ERROR "Stop clang")

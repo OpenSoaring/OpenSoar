@@ -1,3 +1,6 @@
+if (NOT TOOLCHAIN)
+  set(TOOLCHAIN "msvc2022" ) 
+endif (NOT TOOLCHAIN)
 message(STATUS "+++ System = WIN32 / MSVC (${TOOLCHAIN})!")
 
 set(LIB_PREFIX "" )  # "lib")
@@ -5,13 +8,14 @@ set(LIB_SUFFIX ".lib")    # "a")
 # ??? add_compile_definitions(PROJECT_OUTPUT_FOLDER=${OUTPUT_FOLDER})
 
 # only in DEBUG-Version---
-set(TARGET_IS_OPENVARIO ON)
+set(TARGET_IS_OPENVARIO OFF)
 # add special OpenVario functions
 if (TARGET_IS_OPENVARIO)
   add_compile_definitions(IS_OPENVARIO) 
 endif()
 
-add_compile_definitions(WIN_SKYSIGHT) 
+set (HAVE_SKYSIGHT ON)
+###  see CMakeLists.txt, line 216: add_compile_definitions(HAVE_SKYSIGHT) 
 #-------------------------------
 add_compile_definitions(__MSVC__)
 #********************************************************************************
@@ -22,9 +26,6 @@ if(AUGUST_SPECIAL)
     add_compile_definitions(_AUG_MSC)
 endif()
 #********************************************************************************
-
-## add_compile_definitions(_UNICODE)
-## add_compile_definitions(UNICODE)  # ???
 
 add_compile_definitions(NO_ERROR_CHECK)  # EnumBitSet funktioniert m.E. noch nicht korrekt!!!!
 add_compile_definitions(WIN32_LEAN_AND_MEAN)
@@ -70,6 +71,13 @@ set(BASIC_LINK_LIBRARIES
         ws2_32.lib
         gdiplus
 )
+
+list(APPEND BASIC_LINK_LIBRARIES
+        shlwapi.lib # needed from hdf5
+)
+### list(APPEND BASIC_LINK_LIBRARIES
+### 
+### )
 set(SSL_LIBS )  # no ssl lib on windows for curl necessary!
 set(CRYPTO_LIBS Crypt32.lib BCrypt.lib)
 

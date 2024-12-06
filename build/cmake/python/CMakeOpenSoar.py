@@ -2,11 +2,11 @@
 
 import os, sys, subprocess
 
+# 
 Configuration = 'Release'
 # Configuration = 'Debug'
+# Configuration = 'Multi'
 
-# Am 19.03.2020 aktuell!
-# Am 16.04.2020 cmd2py angefangen!
 
 # if len(sys.argv) > 1:
 #   print(sys.argv[1])
@@ -257,6 +257,12 @@ def create_opensoar(args):
   print('Creation-Flag: ', creation)
   if prev_batch:
     print(prev_batch)
+    
+  if build_dir.endswith('msvc2022'):
+    if Configuration == 'Release':
+      build_dir = build_dir + 'release'
+    elif Configuration == 'Debug':
+      build_dir = build_dir + 'debug'
   #========================================================================
   if creation & 1:
     print('Python Step 1 - Configure CMake')
@@ -278,7 +284,11 @@ def create_opensoar(args):
     arguments.append(build_dir)
     arguments.append('-G') 
     arguments.append(cmake_generator) 
-    arguments.append('--debug-trycompile')
+#    arguments.append('-DCMAKE_BUILD_TYPE=Release')
+
+    if Configuration == 'Release' or Configuration == 'Debug':
+      arguments.append('-DCMAKE_BUILD_TYPE=' + Configuration)
+      arguments.append('--debug-trycompile')
 
     if is_windows and toolchain.startswith('clang'):
       compiler = toolchain
@@ -339,12 +349,19 @@ def create_opensoar(args):
     arguments.append(build_dir)
     # if toolchain.startswith('msvc') or toolchain.startswith('mgw'):
     arguments.append('--config')
-    arguments.append(Configuration) 
+    if Configuration == 'Release' or Configuration == 'Debug':
+      arguments.append(Configuration) 
+    elif toolchain.startswith('msvc'): # Visual Studio -> Debug
+        arguments.append('Debug') 
+    else : # in other Multi-Configuration make 'Release'
+        arguments.append('Release') 
+
     # if False:  # toolchain MinGW/GCC...
     if not toolchain.startswith('msvc'):
     #if not (toolchain.startswith('msvc') or toolchain.startswith('clang')):
         arguments.append('--')  # nachfolgende Befehle werden zum Build tool durchgereicht
         arguments.append('-j')
+        # arguments.append('1')  # jobs...
         arguments.append('8')  # jobs...
     myprocess = subprocess.Popen(arguments, env = my_env, shell = False)
     myprocess.wait()
@@ -378,12 +395,16 @@ def create_opensoar(args):
   if creation & 0x08:   # ==>Run
     print('Python Step 4 - Execute OpenSoar')
     if toolchain.startswith('msvc'):
+      if Configuration == 'Release' or Configuration == 'Debug':
+        arguments.append(Configuration) 
+      else: # MSVC:
+        arguments.append('Debug') 
       build_dir = build_dir + '/'+ Configuration
       opensoar_app = project_name + '-MSVC.exe'
       opensoar_app = project_name + '.exe'  #  jetzt so...
     elif toolchain.startswith('mgw'):
       opensoar_app = project_name + '-MinGW.exe'
-      opensoar_app = 'XCSoarAug-MinGW.exe'
+      # opensoar_app = 'XCSoarAug-MinGW.exe'
     elif toolchain.startswith('clang'):
       opensoar_app = project_name + '-Clang.exe'
 
@@ -400,4 +421,5 @@ def create_opensoar(args):
             print('cmd with failure! (', myprocess, ')')
 
   if(not creation):
-    input('Error in cmake python script')
+    print('Error in cmake python script')
+    # input('Error in cmake python script')
