@@ -150,16 +150,19 @@ set(_SOURCES
         Dialogs/Weather/PCMetDialog.cpp
         Dialogs/Weather/RASPDialog.cpp
         Dialogs/Weather/WeatherDialog.cpp
-        Dialogs/Weather/SkysightDialog.cpp
 
         Dialogs/WidgetDialog.cpp
 
         Dialogs/CoDialog.cpp
 )
 
+if(HAVE_SKYSIGHT)
+  list(APPEND _SOURCES
+        Dialogs/Weather/SkysightDialog.cpp
+  )
+endif(HAVE_SKYSIGHT)
 
-
-if(ON)  # IS_OPENVARIO
+if(IS_OPENVARIO)
   list(APPEND _SOURCES
         ../OpenVario/FileMenuWidget.cpp
         ../OpenVario/DisplaySettingsWidget.cpp
@@ -177,7 +180,7 @@ if(ON)  # IS_OPENVARIO
         
         Dialogs/ProcessDialog.cpp
   )
-endif() 
+endif(IS_OPENVARIO) 
 
 if(UNIX)
   list(APPEND _SOURCES
@@ -186,7 +189,7 @@ if(UNIX)
 
         Dialogs/Weather/MapOverlayWidget.cpp
   )
-endif()
+endif(UNIX)
 
 set(SCRIPT_FILES
     CMakeSource.cmake
