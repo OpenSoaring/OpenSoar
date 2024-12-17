@@ -552,7 +552,7 @@ Skysight::DownloadSelectedLayer(const std::string_view id = "*")
 #if SKYSIGHT_DEBUG
       // reduce download request for debug!
       api->GetImageAt(layer.id.c_str(), now, now + std::chrono::hours(3),
-#else // WIN_SKYSIGHT
+#else // SKYSIGHT_DEBUG
       api->GetImageAt(layer.id.c_str(), now, now + std::chrono::hours(24),
 #endif
              DownloadComplete);
