@@ -4,6 +4,44 @@ cmake_minimum_required(VERSION 3.18)
 set (TARGET_NAME      sodium)
 project(${TARGET_NAME})
 
+
+if (0)
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium)
+#For version.h.in to version.h
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/src/libsodium/include/sodium)
+
+file(GLOB_RECURSE libsodium_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.h)
+
+file(GLOB_RECURSE libsodium_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.c)
+
+#----------------------------------------------------------
+######################### LIBRARY #########################
+#----------------------------------------------------------
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build")
+
+
+IF(ENABLE_BLOCKING_RANDOM)
+    ADD_DEFINITIONS("-DUSE_BLOCKING_RANDOM")
+ENDIF(ENABLE_BLOCKING_RANDOM)
+
+IF(LIBSODIUM_BUILD_SHARED_LIBRARIES)
+    ADD_LIBRARY(libsodium SHARED ${libsodium_HEADERS} ${libsodium_SOURCE})
+ELSE(LIBSODIUM_BUILD_SHARED_LIBRARIES)
+    ADD_DEFINITIONS("-DSODIUM_STATIC")
+    ADD_LIBRARY(libsodium STATIC ${libsodium_HEADERS} ${libsodium_SOURCE})
+ENDIF(LIBSODIUM_BUILD_SHARED_LIBRARIES)
+
+SET_TARGET_PROPERTIES(libsodium PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
+    PROJECT_LABEL "libsodium"
+)
+else (1)
 set(_INCLUDE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include)
 file(GLOB_RECURSE ${TARGET_NAME}_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.c")
 file(GLOB_RECURSE HEADER_FILES "${_INCLUDE_DIR}/*.h")
@@ -17,7 +55,20 @@ endforeach()
 add_compile_definitions(SODIUM_STATIC)
 add_compile_definitions(SODIUM_EXPORT=)
 
+### geht nicht: # Clang only...:
+### geht nicht: set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mssse3")
+
+add_compile_definitions(__AVX512F__)  # ???
+
+
 include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium
+    # ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include
+    # ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium
+    #For version.h.in to version.h
+    ${CMAKE_CURRENT_BINARY_DIR}/src/libsodium/include/sodium
+    
     ${_INCLUDE_DIR}
     ${_INCLUDE_DIR}/sodium
     ${CMAKE_CURRENT_SOURCE_DIR}/test/quirks  # test only 
@@ -47,6 +98,9 @@ install(TARGETS ${TARGET_NAME}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
+## August 2024-12-16
+target_compile_options(${TARGET_NAME} PUBLIC "-mavx2")
+
 foreach(header ${HEADER_FILES})
     string(REPLACE "${_INCLUDE_DIR}/" "" inc_file ${header})
     get_filename_component(inc_path ${inc_file} DIRECTORY)
@@ -56,3 +110,4 @@ endforeach()
 ##message(FATAL_ERROR +++ Sodium: Stop!)
 
 
+endif(1)

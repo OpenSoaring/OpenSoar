@@ -8,7 +8,7 @@ set(CARES_VERSION       "1.24.0")  # not valid!
 set(CARES_VERSION       "1.17.1")  # old version necessary...
 set(CURL_VERSION        "8.5.0")
 set(PNG_VERSION         "1.6.40")
-set(SODIUM_VERSION      "1.0.18")
+set(SODIUM_VERSION      "1.0.20") # 2024-05-25 (XCSoar since ...)
 set(LUA_VERSION         "5.4.4")  # "5.4.6") 08.11.2024: sollte gehen...
 set(FMT_VERSION         "10.2.1")
 
@@ -25,12 +25,15 @@ if (1) # SkySight
 
   set(SZIP_VERSION        "2.1")    # New 02.12.2024??? Not used up to now...
 
+  ## For SQLite we need the download of zip file from sources, otherwize on Windows (from github) 
+  ## we need the 'configure' cmd (but this is not working)
+
   # set(SQLITE_VERSION      "3.46.1")
   # set(SQLITE_YEAR         2024)
-  # set(URL_HASH )
+  # set(URL_HASH            23075baddabe87d609251bbb66884f218dea9e185dea3178fe20eecc5337a6bb)
+
   set(SQLITE_VERSION      "3.47.0")
   set(SQLITE_YEAR         2024)
-  # set(URL_HASH            23075baddabe87d609251bbb66884f218dea9e185dea3178fe20eecc5337a6bb)
   set(SQLITE_HASH         e35ee48efc24fe58d0e9102034ac0a41e3904641a745e94ab11a841fe9d7355e)
 endif() 
 
@@ -90,14 +93,12 @@ if (MSVC)    # VisualStudio:
 elseif(WIN32 AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
     message(STATUS "+++ 3rd party System: WinClang!")
     set(WITH_3RD_PARTY ON)
-    set(LIB_PREFIX "lib")
-    set(LIB_SUFFIX ".a")
 
     set(EXE_PREFIX ".exe")
 
     # set(TOOLCHAIN clang14)  # ??? 2022-09-08: necessary???
-    set(TOOLCHAIN clang15)  # ??? 2022-09-08: necessary???
-    set(LINK_LIBS D:/Projects/link_libs)
+#    set(TOOLCHAIN clang15)  # ??? 2022-09-08: necessary???
+#    set(TOOLCHAIN clang17)  # ??? 2022-09-08: necessary???
 elseif (MINGW) # MinGW
     message(STATUS "+++ 3rd party System: MINGW!")
     set(WITH_3RD_PARTY ON)

@@ -3,20 +3,29 @@ cmake_minimum_required(VERSION 3.18)
 project(GeoTIFF)
 # project(libgeotiff)
 
-# set(PROJ_DIR D:/Projects/link_libs/proj/proj-9.3.1/lib/msvc2022/cmake/proj)
-# set(TIFF_DIR D:/Projects/link_libs/tiff/tiff-4.6.0/lib/msvc2022/cmake/tiff)
-
 ### set(CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libgeotiff)
 ### message(STATUS "### CMAKE_CURRENT_SOURCE_DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
 ### # include(${CMAKE_CURRENT_SOURCE_DIR}/libgeotiff/CMakeLists.txt)
 ### include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
 
+if (NOT LINK_LIBS)
+  message(STATUS "+++ No LINK_LIBS!!!")
+  message(FATAL_ERROR "+++ Stop !!!")
+  set (LINK_LIBS /usr/lib/link_libs)  # August2111: this Windows, Flaps6,....
+endif (NOT LINK_LIBS)
+
+
+  message(STATUS "### TIFF_INCLUDE_DIR    = ${TIFF_INCLUDE_DIR}")
+# not set!  message(STATUS "### GEOTIFF_INCLUDE_DIR = ${GEOTIFF_INCLUDE_DIR}")
+
+# message(FATAL_ERROR "+++ Stop !!!")
+
 include_directories($(TIFF_INCLUDE_DIR))
+# include_directories($(GEOTIFF_INCLUDE_DIR))
 include_directories(${LINK_LIBS}/tiff/tiff-4.6.0/include)
-include_directories(D:/Projects/link_libs/tiff/tiff-4.6.0/include)
 
 
- ADD_SUBDIRECTORY(libgeotiff)
+ADD_SUBDIRECTORY(libgeotiff)
  
 # include_directories(libgeotiff)
 

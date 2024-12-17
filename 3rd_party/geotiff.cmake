@@ -40,7 +40,8 @@ if (_COMPLETE_INSTALL)
         "-DPROJ_DIR:PATH=${PROJ_CMAKE_DIR}"  # ${PROJ_DIR}"  # "/lib/${TOOLCHAIN}/cmake/proj"
         # "-DPROJ_INCLUDE_DIR:PATH=${PROJ_DIR}/include"
         "-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY"
-
+        
+        "-DLINK_LIBS:PATH=${LINK_LIBS}"
     )
 
     ExternalProject_Add(

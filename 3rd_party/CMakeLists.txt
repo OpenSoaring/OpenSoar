@@ -28,6 +28,11 @@
     set(CLANG ON)
   endif()
 
+if (NOT LINK_LIBS)
+  message(STATUS "+++ No LINK_LIBS!!!")
+  set (LINK_LIBS /usr/lib/link_libs)  # August2111: this Windows, Flaps6,....
+endif (NOT LINK_LIBS)
+
   include(3rd_party.cmake)
   
   # set(EP_BASE "${THIRD_PARTY}/external")  # later remove 'External!' # not used up to now!
@@ -126,21 +131,33 @@ endif()
 
     set(_TARGET_LIB_RELEASE   ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX})
     set(_TARGET_LIB_DEBUG     ${_INSTALL_DIR}/lib/${TOOLCHAIN}d/${LIB_PREFIX}${debug_lib}${LIB_SUFFIX})
-    set(_TARGET_LIBS          optimized ${_TARGET_LIB_RELEASE}  debug ${_TARGET_LIB_DEBUG}) 
+    if (MSVC)
+      set(_TARGET_LIBS          optimized ${_TARGET_LIB_RELEASE}  debug ${_TARGET_LIB_DEBUG}) 
+    else (MSVC)
+      set(_TARGET_LIBS          ${_TARGET_LIB_RELEASE})   # ... ${_TARGET_LIB_DEBUG}) 
+    endif (MSVC)
+   
 ##aug##    set(_TARGET_LIBRARY           "${_TARGET_LIB_RELEASE}")
     string(REPLACE "\\" "/" _PREFIX_DIR  ${${TARGET_CNAME}_PREFIX})
 
     set(${TARGET_CNAME}_LIBS  ${_TARGET_LIBS})  ## for internal use
 if(${lib_name} MATCHES "hdf5")
+    if (MSVC)
       list(APPEND _TARGET_LIBS        
-      ## optimized ${_TARGET_LIB_RELEASE} 
-      optimized ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_hl${LIB_SUFFIX}
-      ## debug     ${_TARGET_LIB_DEBUG} 
-      debug ${_INSTALL_DIR}/lib/${TOOLCHAIN}d/${LIB_PREFIX}${lib_name}_hl_D${LIB_SUFFIX}
-   )
-   if(WIN32)
+        ## optimized ${_TARGET_LIB_RELEASE} 
+        optimized ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_hl${LIB_SUFFIX}
+        ## debug     ${_TARGET_LIB_DEBUG} 
+        debug ${_INSTALL_DIR}/lib/${TOOLCHAIN}d/${LIB_PREFIX}${lib_name}_hl_D${LIB_SUFFIX}
+      )
+    else (MSVC)
+      list(APPEND _TARGET_LIBS        
+        ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_hl${LIB_SUFFIX}
+        ## debug: ${_INSTALL_DIR}/lib/${TOOLCHAIN}d/${LIB_PREFIX}${lib_name}_hl_D${LIB_SUFFIX}
+      )
+    endif (MSVC)
+    if(WIN32)
       list(APPEND _TARGET_LIBS    shlwapi )
-   endif()
+    endif(WIN32)
 endif()
  # set(${TARGET_CNAME}_LIBS  ${_TARGET_LIBS})  ## for internal use
   set(${TARGET_CNAME}_DIR  ${_INSTALL_DIR})  ## D:/Project/link_libs...
@@ -185,6 +202,7 @@ else()
     list(APPEND _INSTALL_COMMAND --config Release)
 endif()
     set(${TARGET_CNAME}_LIBRARY  ${_TARGET_LIBRARY})
+    set(${TARGET_CNAME}_LIBRARY  ${_TARGET_LIBRARY} PARENT_SCOPE)
 
 # if(${VERBOSE_LEVEL} LESS 100)
 if(VERBOSE_LEVEL GREATER 99)
@@ -200,8 +218,9 @@ if(EXISTS ${_TARGET_LIBRARY})
 else()
     set(_COMPLETE_INSTALL ON)
 endif()
-set(_COMPLETE_INSTALL ON) ## test only (03.11.2024)!!!!!!!!
+#### set(_COMPLETE_INSTALL ON) ## test only (03.11.2024)!!!!!!!!
 # -------------------------------------------------
+
 get_filename_component(${TARGET_CNAME}_LIB_DIR  ${${TARGET_CNAME}_LIBRARY} PATH)
 
 # this <TARGET>_CMAKE_DIR could be changed in target.cmake!
@@ -243,6 +262,7 @@ endmacro()
     message(FATAL_ERROR "!!!!! CMAKE_FILES = ${CMAKE_FILES}")
   endif()
     foreach(cmake_file ${CMAKE_FILES})
+      message(STATUS "!!!!! cmake_file = ${cmake_file}")
       include(${cmake_file})
     endforeach()
   

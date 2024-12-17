@@ -94,3 +94,8 @@ message (STATUS "xxxx NETCDF-CXX-INC_DIR: ${_INCLUDE_DIR}")
     )
 endif()
 post_3rdparty()
+
+if (_COMPLETE_INSTALL)
+    add_dependencies(${_BUILD_TARGET}  ${NETCDF_C_TARGET})
+endif()
+

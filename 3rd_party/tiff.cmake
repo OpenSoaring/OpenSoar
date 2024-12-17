@@ -53,9 +53,11 @@ if (_COMPLETE_INSTALL)
 
         # workaround for build failure with -Dstrip-chopping=OFF
         "-DSTRIP_SIZE_DEFAULT=8192"
-
-        "-DCMAKE_EXE_LINKER_FLAGS=-lm"
     )
+    #2024-12-14 -> w/o Clang!!!!
+    ## list (APPEND CMAKE_ARGS
+    ##     "-DCMAKE_EXE_LINKER_FLAGS=-lm"
+    ## )
 
     ExternalProject_Add(
         ${_BUILD_TARGET}
@@ -79,3 +81,6 @@ if (_COMPLETE_INSTALL)
     )
 endif()
 post_3rdparty()
+
+message (STATUS "xxxx TIFF_LIBRARY: ${TIFF_LIBRARY}")
+

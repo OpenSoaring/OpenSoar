@@ -5,7 +5,7 @@ set(INCLUDE_WITH_TOOLCHAIN 0)  # special include path for every toolchain!
 ## set(_LIB_NAME sodium) # "libsodium.a"
 # unfortunately the windows lib name is libsodium.lib, not sodium.lib!?
 if (MSVC)
-  set(_LIB_NAME libsodium)
+  set(_LIB_NAME sodium)
 else()
   set(_LIB_NAME sodium)
 endif()
@@ -33,6 +33,12 @@ if (_COMPLETE_INSTALL)
         "-DCMAKE_INSTALL_INCLUDEDIR=include"
         "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
     )
+    #2024-12-14 -> w/ Clang only??? !!!!
+    ## list (APPEND CMAKE_ARGS
+    ##     "-DCMAKE_EXE_LINKER_FLAGS=-mavx"
+    ##     # "-DCMAKE_EXE_LINKER_FLAGS=-mavx2;-mssse3"
+    ##     # "-DCMAKE_EXE_LINKER_FLAGS=-march=haswell"
+    ## )
 
     # message(FATAL_ERROR "+++ BINARY_STEP (${TARGET_CNAME}): ${_BINARY_STEP}")
 
@@ -40,7 +46,8 @@ if (_COMPLETE_INSTALL)
        ${_BUILD_TARGET}
 
         GIT_REPOSITORY "https://github.com/jedisct1/libsodium.git"
-        GIT_TAG  ${SODIUM_VERSION}
+        # GIT_TAG  ${SODIUM_VERSION}
+        GIT_TAG  ${SODIUM_VERSION}-RELEASE
 
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
         ${_BINARY_STEP}

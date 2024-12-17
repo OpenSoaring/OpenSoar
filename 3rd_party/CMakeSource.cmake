@@ -16,60 +16,68 @@ else()
 # TODO(August2111): only temporarily curl.cmake
 endif()
 
-list(APPEND CMAKE_FILES sodium.cmake)
+set(WITH_SODIUM 1)
+if (WITH_SODIUM)
+  list(APPEND CMAKE_FILES sodium.cmake)
+endif (WITH_SODIUM)
 list(APPEND CMAKE_FILES fmt.cmake)
 
+set(WITH_TIFF 1)
+if (WITH_TIFF)
+  list(APPEND CMAKE_FILES tiff.cmake) # August2111: without SkySight too!?
+endif (WITH_TIFF)
 
-set (SKYSIGHT_LIBS ON)
-if (SKYSIGHT_LIBS)    # SkySight!
+# set (SKYSIGHT_LIBS ON)
+# if (SKYSIGHT_LIBS)    # SkySight!
+if (HAVE_SKYSIGHT)    # SkySight!
   set (HAVE_HDF5 ON)
+  set (SKYSIGHT_LIBS ON)
+  # --------------------
   if (HAVE_HDF5)
     list(APPEND CMAKE_FILES szip.cmake)
     list(APPEND CMAKE_FILES hdf5.cmake)
   endif (HAVE_HDF5)
-  set (SKYSIGHT_TEST ON)
-  if (SKYSIGHT_TEST)
+  if (SKYSIGHT_LIBS)
      list(APPEND CMAKE_FILES sqlite.cmake)
      list(APPEND CMAKE_FILES proj.cmake)
      # list(APPEND CMAKE_FILES sqlite3.cmake)
-     list(APPEND CMAKE_FILES tiff.cmake)
      list(APPEND CMAKE_FILES geotiff.cmake)
      list(APPEND CMAKE_FILES netcdf-c.cmake)
      list(APPEND CMAKE_FILES netcdf-cxx.cmake)
-  endif(SKYSIGHT_TEST)
-endif(SKYSIGHT_LIBS)
+  endif(SKYSIGHT_LIBS)
+endif(HAVE_SKYSIGHT)
 
 if(0)  # MapServer
     list(APPEND CMAKE_FILES mapserver.cmake)
-endif()
+endif(0)
 if(0)  # zzip
     list(APPEND CMAKE_FILES zzip.cmake)
-endif()
+endif(o)
 if(0) # XML-Parser
     list(APPEND CMAKE_FILES xmlparser.cmake)
-endif()
+endif(0)
 
 # for icon convert:
 if(0) # RSVG
     list(APPEND CMAKE_FILES rsvg.cmake)
-endif()
+endif(0)
 if(0)  # InkScape
     list(APPEND CMAKE_FILES inkscape.cmake)
-endif()
+endif(0)
 if(0) # RSVG
     list(APPEND CMAKE_FILES iconv.cmake)
     list(APPEND CMAKE_FILES xml2.cmake)
     list(APPEND CMAKE_FILES xlst.cmake)
-endif()
+endif(0)
 
 
-# For OpenGL:
+# Preparing for OpenGL:
 if(0)  # freeglut
     list(APPEND CMAKE_FILES freeglut.cmake)
-endif()
+endif(0)
 if(ENABLE_SDL) # SDL for OpenGL?
     list(APPEND CMAKE_FILES sdl.cmake)
-endif()
+endif(ENABLE_SDL)
 if(ENABLE_GLM) # GLM for OpenGL?
     list(APPEND CMAKE_FILES glm.cmake)
-endif()
+endif(ENABLE_GLM)

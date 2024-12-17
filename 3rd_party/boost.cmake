@@ -125,7 +125,7 @@ endif()
 
 if (CLANG)
   set(BOOST_CXX_FLAGS "cxxflags=-fms-runtime-lib=\"static\"" )
-  set(BOOST_LINK_FLAGS "linkflags=-fms-runtime-lib=\"static\"")
+# clang15 why not? set(BOOST_LINK_FLAGS "linkflags=-fms-runtime-lib=\"static\"")
 elseif()
   set(BOOST_CXX_FLAGS )
   set(BOOST_LINK_FLAGS )

@@ -22,14 +22,12 @@ set(HDF5_HL_LIBRARY  ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${_LIB_NAME}_
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   # set(HDF5_CMAKE_DIR  ${HDF5_DIR}/cmake)
   set(HDF5_CMAKE_DIR  ${HDF5_LIB_DIR}/cmake)
-  # set(HDF5_CMAKE_DIR  /Projects/link_libs/hdf5/hdf5-1.14.5/lib/${TOOLCHAIN}d/cmake)
   set(HDF5_CMAKE_DIR  lib/${TOOLCHAIN}d/cmake)
 
 else()
   # set(HDF5_CMAKE_DIR  ${HDF5_DIR}/cmake)
   # set(HDF5_CMAKE_DIR  ${HDF5_LIB_DIR}/cmake)
   set(HDF5_CMAKE_DIR  lib/${TOOLCHAIN}/cmake)
-  # set(HDF5_CMAKE_DIR  /Projects/link_libs/hdf5/hdf5-1.14.5/lib/${TOOLCHAIN}/cmake)
 endif()
 
 # NUR TEst: !!!!
@@ -148,6 +146,3 @@ endif()
 post_3rdparty()
 
 set(HDF5_CMAKE_DIR  ${HDF5_LIB_DIR}/cmake)  # finally
-
-# set(HDF5_DIR D:/Projects/link_libs/hdf5/hdf5-1.14.5)
-# set(HDF5_CMAKE_DIR D:/Projects/link_libs/hdf5/hdf5-1.14.5//lib/msvc2022d/cmake)

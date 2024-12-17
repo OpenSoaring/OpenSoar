@@ -78,3 +78,12 @@ if (_COMPLETE_INSTALL)
     )
 endif()
 post_3rdparty()
+
+# if (_COMPLETE_INSTALL)
+#  add_dependencies(${_BUILD_TARGET}  ${SQLITE_LIBRARY}) # ${SQLITE_LIB_DIR})
+#  target_link_libraries(${_BUILD_TARGET} PUBLIC ${SQLITE_LIBRARY})
+
+# endif()
+
+# add_dependencies(${_BUILD_TARGET}  ${SQLITE_TARGET} ${SQLITE_LIB_DIR})
+

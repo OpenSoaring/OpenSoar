@@ -10,12 +10,6 @@ endif()
 
 prepare_3rdparty(png ${_LIB_NAME} ${_LIB_NAME}d)
 if (_COMPLETE_INSTALL)
-
-    # Aug: Wieso ist das nicht besetzt????
-    # set(ZLIB_LIB D:/Projects/link_libs/zlib/zlib-1.2.12/lib/clang14/libzlibstatic.a) 
-    # message(FATAL_ERROR "Png-Stop: ${ZLIB_LIB} /// ${ZLIB_INCLUDE_DIR}")
-    # set(ZLIB_LIBRARY ${LINK_LIBS}/zlib/zlib-1.3/lib/msvc2022/zlibstatic.lib)
-
     set(CMAKE_ARGS
              "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
              "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB_DIR}"

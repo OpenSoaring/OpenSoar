@@ -93,6 +93,17 @@ if (_COMPLETE_INSTALL)
         "-DHDF5_hdf5_hl_LIBRARY_DEBUG:FILEPATH=${HDF5_HL_LIBRARY}"
         "-DHDF5_hdf5_hl_LIBRARY_RELEASE:FILEPATH=${HDF5_HL_LIBRARY}"
         "-DHDF5_PARALLEL:BOOL=OFF"
+        "-DHDF5_IS_PARALLEL:BOOL=OFF"
+
+        # with this 3 ARGS no FIND_PACKAGE necessary (with MSVC not needed ;-) )
+        "-DHDF5_LIBRARY:PATH=${HDF5_LIBRARY}"
+        "-DHDF5_HL_LIBRARY:PATH=${HDF5_HL_LIBRARY}"
+        "-DHDF5_INCLUDE_DIR:PATH=${HDF5_INCLUDE_DIR}"
+
+        "-DUSE_PARALLEL:BOOL=OFF"
+        "-DUSE_PARALLEL4:BOOL=OFF"
+        "-DENABLE_PARALLEL4:BOOL=OFF"
+        "-DENABLE_PARALLEL_TESTS:BOOL=OFF"
     )
     else (HAVE_HDF5)
       list(APPEND CMAKE_ARGS
@@ -124,3 +135,5 @@ if (_COMPLETE_INSTALL)
     )
 endif()
 post_3rdparty()
+
+# ???  target_link_libraries(${_BUILD_TARGET} PUBLIC ${HDF5_LIBRARY} ${HDF5_HL_LIBRARY})
