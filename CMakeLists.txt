@@ -1,6 +1,19 @@
 cmake_minimum_required(VERSION 3.18)
 
-set(SHOW_SUBPROJECTS OFF)
+## ----------------------------------------------------------
+# command line options
+set (VERBOSE_LEVEL 10)
+# Features
+# set (HAVE_SKYSIGHT ON) # look WinMSVC.cmd, WinMinGW.cmd, ...
+set (SHOW_SUBPROJECTS OFF)
+
+if (NOT LINK_LIBS)
+  message(STATUS "+++ No LINK_LIBS!!!")
+  set (LINK_LIBS /usr/lib/link_libs)  # August2111: this Windows, Flaps6,....
+endif (NOT LINK_LIBS)
+
+## ----------------------------------------------------------
+
 message(STATUS "+++ Start CMake ${CMAKE_CURRENT_SOURCE_DIR}!")
 message(STATUS "+++ CMAKE_HOST_SYSTEM_NAME:     ${CMAKE_HOST_SYSTEM_NAME}")
 message(STATUS "+++ CMAKE_SYSTEM_NAME:          ${CMAKE_SYSTEM_NAME}")
@@ -25,12 +38,6 @@ set(TARGET_NAME OpenSoar)
 set(PROGRAM_NAME ${TARGET_NAME})
 set(PROGRAM_NAME_CC ${TARGET_NAME})              # CamelCase
 string(TOLOWER  ${PROGRAM_NAME} PROGRAM_NAME_LC) # lowercase
-
-# Features
-set (HAVE_SKYSIGHT  ON)
-if (HAVE_SKYSIGHT)
-  add_compile_definitions(HAVE_SKYSIGHT)
-endif ()
 #==========================================
 
 ### file(READ "VERSION.txt" PROGRAM_VERSION)
@@ -160,15 +167,7 @@ get_filename_component(TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
   
 message(STATUS "CMAKE_HOST_SYSTEM_NAME = ${CMAKE_HOST_SYSTEM_NAME} vs. CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME} ")
 
-set(3RDPARTY_DEPENDENCIES ON)
-set(3RDPARTY_TARGETS )
-add_subdirectory(3rd_party)
-add_subdirectory(Data)
-add_subdirectory(po)
-
 set(SRC "${PROJECTGROUP_SOURCE_DIR}/src")
-include(CMakeSource.cmake)
-
 if (CMAKE_INCLUDE_SYSTEM)
   include(${CMAKE_INCLUDE_SYSTEM})  # build/cmake/LinuxMinGW.cmake)
 elseif (WIN32 AND MSVC)
@@ -207,6 +206,23 @@ else()   ### MSVC
     add_compile_definitions("GNU_PURE=[[gnu::pure]]")
 endif()  ### MSVC
 
+## if (MINGW)
+##   set (HAVE_SKYSIGHT )
+## endif(MINGW)
+if (HAVE_SKYSIGHT)
+  add_compile_definitions(HAVE_SKYSIGHT)
+else (HAVE_SKYSIGHT)
+  ###   message(FATAL_ERROR "Stop!  No SkySight")
+  message(STATUS " -> No SkySight")
+endif (HAVE_SKYSIGHT)
+
+include(CMakeSource.cmake)
+set(3RDPARTY_DEPENDENCIES ON)
+set(3RDPARTY_TARGETS )
+add_subdirectory(3rd_party)
+add_subdirectory(Data)
+add_subdirectory(po)
+
 message(STATUS "+++ Lib Pre- and Suffix: '${LIB_PREFIX}' -- '${LIB_SUFFIX}' !")
 
 
@@ -235,7 +251,7 @@ include_directories(${THIRDPARTY_INCLUDES} )
 add_compile_definitions(NOMINMAX)
 
 if(ENABLE_OPENGL)
-    message(FATAL_ERROR "Not funtional yet")
+    message(FATAL_ERROR "Not functional yet")
     add_compile_definitions(ENABLE_OPENGL)
     # set(FreeGLUT_DIR ${LINK_LIBS}/glut/freeglut-3.2.1/lib/msvc2019/cmake/FreeGLUT)
     # find_package(FreeGLUT REQUIRED)
@@ -376,14 +392,12 @@ add_subdirectory(src/OpenVario)   # libOpenSoar!
 add_subdirectory(src/Android)  # Android  -> EXCLUDE_FROM_ALL TRUE
 
 list(APPEND SOURCE_FILES "src/OpenSoar.cpp")
-# list(APPEND SOURCE_FILES "src/Version.cpp")
-## configure_file(
-##     "${CMAKE_CURRENT_SOURCE_DIR}/Data/OpenSoar.rc.in"
-##     "${OUTPUT_FOLDER}/Data/OpenSoar.rc"
-## )
+if (NOT MSVC)
+#  2024-12-13: 
+  list(APPEND SOURCE_FILES  ${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc)
 # list(APPEND SOURCE_FILES "${OUTPUT_FOLDER}/Data/OpenSoar.rc")
-list(APPEND SOURCE_FILES "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
-## list(APPEND SCRIPT_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Data/OpenSoar.rc.in")
+endif (NOT MSVC)
+
 list(APPEND SCRIPT_FILES "CMakeSource.cmake")
 
 if (MSVC)
@@ -425,59 +439,109 @@ if(1)
   # message(FATAL_ERROR "Stop: XCSOAR_LINK_LIBRARIES")
 endif()
 
-if(1)  ### better _LIB as _TARGET...
-list(APPEND XCSOAR_LINK_LIBRARIES
-   ${LUA_LIBS}
-   ${CURL_LIBS}
-   ${FMT_LIBS}
-#   ${MAPSERVER_LIBS}
-   ${LIBPNG_LIBS}
-   ${ZLIB_LIBS}
-   ${ZZIP_LIBS}    # internal or external...
-   ${SODIUM_LIBS}  # new at 06/2020
-   ${SSL_LIBS}  # new at 03/2021
-   ${CRYPTO_LIBS}  # new at 03/2021
-   ${CARES_LIBS}  # new at 03/2021
-   
-   ${TIFF_LIBS}  # new at 06/2024
-   ${GEOTIFF_LIBS}  # new at 06/2024
+set(LIBS_OR_LIBRARY ON)
+if(NOT MSVC)  ### better _LIB as _TARGET...
+  if (LIBS_OR_LIBRARY)
+  list(APPEND XCSOAR_LINK_LIBRARIES
+    ${LUA_LIBS}
+    ${CURL_LIBS}
+    ${FMT_LIBS}
+    # ${MAPSERVER_LIBS}
+    ${LIBPNG_LIBS}
+    ${ZLIB_LIBS}
+    ${ZZIP_LIBS}    # internal or external...
+    ${SODIUM_LIBS}  # new at 06/2020
+    ${SSL_LIBS}  # new at 03/2021
+    ${CRYPTO_LIBS}  # new at 03/2021
+    ${CARES_LIBS}  # new at 03/2021
+    ${TIFF_LIBS}  # new at 06/2024
+ 
+    ${Boost_LIBRARIES}
+  )
+  else (LIBS_OR_LIBRARY)
+  list(APPEND XCSOAR_LINK_LIBRARIES
+    ${LUA_LIBRARY}
+    ${CURL_LIBRARY}
+    ${FMT_LIBRARY}
+    # ${MAPSERVER_LIBRARY}
+    ${LIBPNG_LIBRARY}
+    ${ZLIB_LIBRARY}
+    ${ZZIP_LIBRARY}    # internal or external...
+    ${SODIUM_LIBRARY}  # new at 06/2020
+    ${SSL_LIBS}  # new at 03/2021
+    ${CRYPTO_LIBS}  # new at 03/2021
+    ${CARES_LIBRARY}  # new at 03/2021
+    ${TIFF_LIBRARY}  # new at 06/2024
+ 
+    ${Boost_LIBRARIES}
+  )
+  endif (LIBS_OR_LIBRARY)
+  if (HAVE_SKYSIGHT)
+  if (LIBS_OR_LIBRARY)
+    list(APPEND XCSOAR_LINK_LIBRARIES
+      ${GEOTIFF_LIBS}  # new at 06/2024
       ${SZIP_LIBS}  # new at 12/2024
       ${SQLITE_LIBS}  # new at 11/2024
-   ${PROJ_LIBS}  # new at 06/2024
-   ${NETCDF_C_LIBS}  # new at 06/2024
-   ${NETCDF_CXX_LIBS}  # new at 06/2024
-   ${HDF5_LIBS}  # new at 06/2024
+      ${PROJ_LIBS}  # new at 06/2024
+      ${NETCDF_C_LIBS}  # new at 06/2024
+      ${NETCDF_CXX_LIBS}  # new at 06/2024
+      ${HDF5_LIBS}  # new at 06/2024
+    )
+  else(LIBS_OR_LIBRARY)
+    set (HDF5_HL_LIBRARY "${HDF5_LIB_DIR}/${LIB_PREFIX}libhdf5_hl${LIB_SUFFIX}") # not public!!!
+    list(APPEND XCSOAR_LINK_LIBRARIES
+      ${GEOTIFF_LIBRARY}  # new at 06/2024
+      ${SZIP_LIBRARY}  # new at 12/2024
+      ${SQLITE_LIBRARY}  # new at 11/2024
+      ${PROJ_LIBRARY}  # new at 06/2024
+      ${NETCDF_C_LIBRARY}  # new at 06/2024
+      ${NETCDF_CXX_LIBRARY}  # new at 06/2024
+      ${HDF5_LIBRARY}  # new at 06/2024
+      ${HDF5_HL_LIBRARY}  # new at 06/2024
+    )
+    # windows shlwapi!
+    endif(LIBS_OR_LIBRARY)
+  endif()
+else(NOT MSVC)    ## -----------------------------------------
+  list(APPEND XCSOAR_LINK_LIBRARIES
+    ${LUA_TARGET}
+    ${CURL_TARGET}
+    ${FMT_TARGET}
+ #   ${FMT_LIB}
+ #   ${MAPSERVER_TARGET}
+    ${LIBPNG_TARGET}
+    ${ZLIB_TARGET}
+    ${ZZIP_TARGET}    # internal or external...
+    ${SODIUM_TARGET}  # new at 06/2020
+    ${SSL_LIBS}  # new at 03/2021
+    ${CRYPTO_LIBS}  # new at 03/2021
+    ${CARES_TARGET}  # new at 03/2021
+    
+    ${TIFF_TARGET}  # new at 06/2024
 
-   ${Boost_LIBRARIES}
-)
-else()    ## -----------------------------------------
-list(APPEND XCSOAR_LINK_LIBRARIES
-   ${LUA_TARGET}
-   ${CURL_TARGET}
-###   ${FMT_TARGET}
-   ${FMT_LIB}
-#   ${MAPSERVER_TARGET}
-   ${LIBPNG_TARGET}
-   ${ZLIB_TARGET}
-   ${ZZIP_TARGET}    # internal or external...
-   ${SODIUM_TARGET}  # new at 06/2020
-   ${SSL_LIBS}  # new at 03/2021
-   ${CRYPTO_LIBS}  # new at 03/2021
-   ${CARES_TARGET}  # new at 03/2021
-   
-   ${TIFF_TARGET}  # new at 06/2024
-   ${GEOTIFF_TARGET}  # new at 06/2024
-   # ${PROJ_TARGET}  # new at 06/2024
-   ${SQLITE_TARGET}  # new at 11/2024
-   ${PROJ_LIB}  # new at 06/2024
-   ${NETCDF_C_TARGET}  # new at 06/2024
-   ${NETCDF_CXX_TARGET}  # new at 06/2024
-#   ${HDF5_TARGET}  # new at 06/2024
-   ${HDF5_LIB}  # new at 06/2024
+    ${Boost_LIBRARIES}
+  )
+  if (HAVE_SKYSIGHT)
+    list(APPEND XCSOAR_LINK_LIBRARIES
+      ${GEOTIFF_TARGET}  # new at 06/2024
+      ## ${SQLITE_TARGET}  # new at 11/2024
+      ${SQLITE_LIBRARY}  # new at 11/2024
+      ${PROJ_TARGET}  # new at 06/2024
+      ${NETCDF_C_TARGET}  # new at 06/2024
+      ${NETCDF_CXX_TARGET}  # new at 06/2024
+      ${HDF5_TARGET}  # new at 06/2024
+    )
+    set (HDF5_HL_LIBRARY "${HDF5_LIB_DIR}/${LIB_PREFIX}libhdf5_hl${LIB_SUFFIX}")
+    message(STATUS "HDF5_HL        =  ${HDF5_HL_LIBRARY} ")
+    list(APPEND XCSOAR_LINK_LIBRARIES
+      ${HDF5_HL_LIBRARY} 
+      shlwapi
 
-   ${Boost_LIBRARIES}
-)
-endif()
+      ws2_32
+      mswsock
+    )
+  endif(HAVE_SKYSIGHT)
+endif(NOT MSVC)
 
 if (WIN32)  # Windows only:
     # BASIC_LINK_LIBRARIES from Toolchain
@@ -495,6 +559,16 @@ list(APPEND SCRIPT_FILES
     NEWS.txt
 )
 
+#### if (MINGW)
+#### ## set (NETCDF_C_LIB D:/Projects/link_libs/netcdf_c/netcdf_c-4.6.2/lib/${TOOLCHAIN})
+#### message(STATUS "NETCDF_C_LIB_DIR = ${NETCDF_C_LIB_DIR}!")
+#### # message(FATAL_ERROR "Stop!")
+#### link_directories(
+####   ${NETCDF_C_LIB_DIR}
+####   ${NETCDF_C_LIB_DIR}
+#### )
+#### endif (MINGW)
+
 if (ANDROID)  # library!
    add_library(${TARGET_NAME} STATIC ${SOURCE_FILES})
 elseif(MINGW)
@@ -507,7 +581,6 @@ endif()
 
 list(APPEND XCSOAR_LINK_LIBRARIES ) # sequence is very important, I don't no, why'!!!!
 
-set (VERBOSE_LEVEL 10)
 if (VERBOSE_LEVEL)
     message(STATUS "----- XCSOAR_LINK_LIBRARIES = ${XCSOAR_LINK_LIBRARIES}")
     foreach(libs ${XCSOAR_LINK_LIBRARIES})
@@ -518,8 +591,25 @@ if (VERBOSE_LEVEL)
     endif()
 endif()
 
-target_link_libraries(${TARGET_NAME} PUBLIC ${XCSOAR_LINK_LIBRARIES})
+# target_link_libraries(${TARGET_NAME} PUBLIC ${XCSOAR_LINK_LIBRARIES})
+if (HAVE_SKYSIGHT)
+#   target_link_libraries(${TARGET_NAME} PUBLIC ${SQLITE_LIBRARY})
+if (MINGW)
+# August2111: geht bei MSVC nicht... ;-(
+target_link_libraries(${PROJ_TARGET} INTERFACE ${SQLITE_LIBRARY})
+target_link_libraries(${NETCDF_C_TARGET} INTERFACE ${HDF5_LIBRARY} ${HDF5_HL_LIBRARY})
+target_link_libraries(${NETCDF_CXX_TARGET} INTERFACE ${NETCDF_C_LIBRARY})
+endif (MINGW)
+#  target_link_libraries(${PROJ_LIBRARY} PRIVATE ${SQLITE_LIBRARY})
+# target_link_libraries(${TARGET_NAME} PUBLIC ${HDF5_LIBRARY})
+# target_link_libraries(${TARGET_NAME} PUBLIC ${HDF5_HL_LIBRARY})
+endif(HAVE_SKYSIGHT)
+
+# target_link_libraries(${TARGET_NAME} PUBLIC ${XCSOAR_LINK_LIBRARIES})
+target_link_libraries(${TARGET_NAME} PRIVATE ${XCSOAR_LINK_LIBRARIES})
+
 if(MSVC)
+## if(WIN32)
   target_link_options(${TARGET_NAME} PUBLIC "/SUBSYSTEM:WINDOWS")
 endif()
 
@@ -571,9 +661,7 @@ endif()
 
 
 if (VERBOSE_LEVEL GREATER 100)
-    set(HDF5_DIR D:/Projects/link_libs/hdf5/hdf5-1.14.5)
-    # set(HDF5_DIR D:/Projects/link_libs/hdf5/hdf5-1.14.5/cmake)
-    # set(HDF5_CMAKE_DIR D:/Projects/link_libs/hdf5/hdf5-1.14.5/cmake)
+    set(HDF5_DIR /usr/lib/link_libs/hdf5/hdf5-1.14.5)
     set(HDF5_LIBRARIES ${HDF5_LIB_DIR})
     set(HDF5_HL_LIBRARIES ${HDF5_LIB_DIR})
     set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIR})
