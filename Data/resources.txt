@@ -6,10 +6,12 @@
    files (e.g. the Windows RC format). */
 
 // Application Icons
+//------------------
 
 app_icon IDI_XCSOAR "OpenSoar"
 
 // Bitmaps
+//------------------
 
 bitmap_icon_scaled IDB_ABORT "mode_abort"
 
