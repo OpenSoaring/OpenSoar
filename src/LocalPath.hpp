@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <filesystem>
 
 class Path;
 class AllocatedPath;
@@ -62,7 +63,7 @@ AllocatedPath
 LocalPath(Path file) noexcept;
 
 AllocatedPath
-LocalPath(const char *file) noexcept;
+LocalPath(const std::string_view file) noexcept;
 
 /**
  * Create a subdirectory of XCSoarData and return its absolute path.

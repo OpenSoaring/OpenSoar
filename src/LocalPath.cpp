@@ -101,9 +101,9 @@ LocalPath(Path file) noexcept
 }
 
 AllocatedPath
-LocalPath(const char *file) noexcept
+LocalPath(const std::string_view file) noexcept
 {
-  return LocalPath(Path(file));
+  return LocalPath(Path(file.data()));
 }
 
 AllocatedPath
