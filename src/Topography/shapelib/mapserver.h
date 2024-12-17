@@ -337,7 +337,7 @@ extern "C" {
 
 #define MS_NINT_GENERIC(x) ((x) >= 0.0 ? ((long) ((x)+.5)) : ((long) ((x)-.5)))
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 #define msIsNan(x) _isnan(x)
 #else
 #define msIsNan(x) isnan(x)
