@@ -570,7 +570,8 @@ Startup(UI::Display &display)
 
   LogString("ProgramStarted");
 #if defined(IS_OPENVARIO)
-  LogFormat("LogFileTemp: " , LocalPath(ovdevice.GetExeName().generic_string().c_str()).c_str());
+  LogFormat("LogFileTemp: %s" , LocalPath(ovdevice.GetExeName().generic_string().c_str()).c_str());
+  LogFmt("LogFileTemp: {}", ovdevice.GetExeName().generic_string());
 #endif
 
   // Give focus to the map
