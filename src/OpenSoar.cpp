@@ -31,6 +31,7 @@
 #include "UIGlobals.hpp"
 #include "system/Process.hpp"
 
+// see MinGW.cmake: #define DEBUG_CONSOLE_OUTPUT
 #ifdef DEBUG_CONSOLE_OUTPUT
 # include <iostream>
 #endif
