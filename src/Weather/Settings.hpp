@@ -7,13 +7,11 @@
 #include "net/http/Features.hpp"
 
 #ifdef HAVE_PCMET
-
-#include "PCMet/Settings.hpp"
-
+# include "PCMet/Settings.hpp"
 #endif
 
 #ifdef HAVE_SKYSIGHT
-#include "Skysight/Settings.hpp"
+# include "Skysight/Settings.hpp"
 #endif
 
 struct WeatherSettings {
