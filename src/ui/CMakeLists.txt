@@ -5,7 +5,10 @@ endif()
 
   get_filename_component(TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
 
-add_compile_definitions(USE_GEOTIFF)
+if (HAVE_SKYSIGHT)
+  add_compile_definitions(USE_GEOTIFF)
+endif (HAVE_SKYSIGHT)
+
 
 include(CMakeSource.cmake)
 # organize the files in subdirectories
@@ -50,4 +53,30 @@ add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
 # message(FATAL_ERROR "Stop!")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER FrontEnd)
 
-add_dependencies(${TARGET_NAME} util)
+if(MINGW)
+  ## target_link_directories(${TARGET_NAME} PRIVATE ${COMPILER_LIB_PATH})
+  ### set(_LINK_LIBRARIES  "gdiplus msimg32")
+#  set(_LINK_LIBRARIES  "gdiplus libmsimg32.a")
+### 2024-12-13  set(_LINK_LIBRARIES  "gdiplus D:/Programs/MinGW/mgw122/x86_64-w64-mingw32/lib/libmsimg32.a")
+  set(_LINK_LIBRARIES  "gdiplus ${COMPILER_LIB_PATH}/libmsimg32.a")
+  # set(_LINK_LIBRARIES  "gdiplus")
+endif(MINGW)
+if (HAVE_SKYSIGHT)
+  message(STATUS "TIFF_TARGET = ${TIFF_TARGET}!")
+  message(STATUS "TIFF_LIBRARY = ${TIFF_LIBRARY}!")
+  message(STATUS "GEOTIFF_LIBRARY = ${GEOTIFF_LIBRARY}!")
+### message(FATAL_ERROR "Stop!")
+#    target_link_libraries(${TARGET_NAME} ${TIFF_TARGET})
+   # target_link_libraries(${TARGET_NAME} ${TIFF_LIBRARY} ${GEOTIFF_LIBRARY})
+   add_dependencies(${TARGET_NAME} util ${GEOTIFF_TARGET})
+   # string(APPEND _LINK_LIBRARIES  " ${TIFF_LIBRARY} ${GEOTIFF_LIBRARY}")
+   # string(APPEND _LINK_LIBRARIES  " ${TIFF_TARGET} ${GEOTIFF_TARGET}")
+   list(APPEND _LINK_LIBRARIES ${TIFF_TARGET} ${GEOTIFF_TARGET})
+   # string(APPEND _LINK_LIBRARIES " ${TIFF_TARGET} ${GEOTIFF_TARGET}")
+endif()
+
+if(_LINK_LIBRARIES)
+  target_link_libraries(${TARGET_NAME} PRIVATE ${_LINK_LIBRARIES})
+endif(_LINK_LIBRARIES)
+message(STATUS "_LINK_LIBRARIES = ${_LINK_LIBRARIES}!")
+# message(FATAL_ERROR "Stop!")
