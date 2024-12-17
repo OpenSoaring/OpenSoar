@@ -40,7 +40,8 @@ add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
 # message(FATAL_ERROR "CARES-Lib = ${CARES_LIB} ")
 
 # target_link_libraries(${TARGET_NAME} PUBLIC ${CARES_LIB} system time)
-target_link_libraries(${TARGET_NAME} PUBLIC system time ${CARES_LIB})
+# target_link_libraries(${TARGET_NAME} PUBLIC system time ${CARES_LIB})
+target_link_libraries(${TARGET_NAME} PUBLIC system time ${CARES_TARGET})
 
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)
 
