@@ -108,23 +108,23 @@ add_custom_command(OUTPUT ${_TEMP_OUTPUT}/title.svg
   WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
 )
 # ============================================================================   
-if (0)  # NOT MINGW) # geht bei MinGW nicht???
-# create the resource file (for all targets )
-# add_custom_command(OUTPUT ${_DATA_OUTPUT}/${PROGRAM_NAME}.rc
-add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
-  COMMENT "Create Resource File!"
-  COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_resource.py 
-          # ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc  # Input
-          ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc  # Input
-          ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc                               # Output
-          ${_DATA_INPUT}
-          ${_DATA_OUTPUT}
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc
-          # ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_recource.py 
-  # WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
-) # add_custom_command
-endif()
-
+#### 2024-12-13 Create OpenSoar.rc.... if (0)  # NOT MINGW) # geht bei MinGW nicht???
+#### 2024-12-13 Create OpenSoar.rc.... # create the resource file (for all targets )
+#### 2024-12-13 Create OpenSoar.rc.... # add_custom_command(OUTPUT ${_DATA_OUTPUT}/${PROGRAM_NAME}.rc
+#### 2024-12-13 Create OpenSoar.rc.... add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
+#### 2024-12-13 Create OpenSoar.rc....   COMMENT "Create Resource File!"
+#### 2024-12-13 Create OpenSoar.rc....   COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_resource.py 
+#### 2024-12-13 Create OpenSoar.rc....           # ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc  # Input
+#### 2024-12-13 Create OpenSoar.rc....           ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc  # Input
+#### 2024-12-13 Create OpenSoar.rc....           ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc                               # Output
+#### 2024-12-13 Create OpenSoar.rc....           ${_DATA_INPUT}
+#### 2024-12-13 Create OpenSoar.rc....           ${_DATA_OUTPUT}
+#### 2024-12-13 Create OpenSoar.rc....   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc
+#### 2024-12-13 Create OpenSoar.rc....           # ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_recource.py 
+#### 2024-12-13 Create OpenSoar.rc....   # WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+#### 2024-12-13 Create OpenSoar.rc.... ) # add_custom_command
+#### 2024-12-13 Create OpenSoar.rc.... endif()
+#### 2024-12-13 Create OpenSoar.rc.... 
 add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
   COMMENT "Create Resource File!"
   COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_resource.py 
@@ -274,38 +274,38 @@ endif()
     
     ## add_custom_command(TARGET ${TARGET_NAME} PRE_LINK
     set(INPUTEVENTS_CPP
-               ${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.hpp
-               # ${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.cpp
-               ${_INCLUDE_OUTPUT}/InputEvents_Char2NE.hpp
-               ${_INCLUDE_OUTPUT}/InputEvents_Text2Event.hpp
-               ${_INCLUDE_OUTPUT}/InputEvents_Text2GCE.hpp
-               ${_INCLUDE_OUTPUT}/InputEvents_Text2NE.hpp
-               ${_INCLUDE_OUTPUT}/InputEvents_default.hpp
+        ${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.hpp
+        # ${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.cpp
+        ${_INCLUDE_OUTPUT}/InputEvents_Char2NE.hpp
+        ${_INCLUDE_OUTPUT}/InputEvents_Text2Event.hpp
+        ${_INCLUDE_OUTPUT}/InputEvents_Text2GCE.hpp
+        ${_INCLUDE_OUTPUT}/InputEvents_Text2NE.hpp
+        ${_INCLUDE_OUTPUT}/InputEvents_default.hpp
     )
 
     set(DEFAULT_XCI   ${_DATA_INPUT}/Input/defaultOV.xci)
     # set(DEFAULT_XCI   ${_DATA_INPUT}/Input/${DEFAULT_XCI_FILE})
     add_custom_command(OUTPUT  ${INPUTEVENTS_CPP} ${_INCLUDE_OUTPUT}/InputCppFiles.txt
-           COMMENT Create InputEvents_*.hpp!
-           COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT} 
-           COMMAND perl tools/Char2GCE.pl    src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.hpp
-           COMMAND perl tools/Char2NE.pl     src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Char2NE.hpp
-           COMMAND perl tools/Text2Event.pl  src/Input/InputEvents.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2Event.hpp
-           COMMAND perl tools/Text2GCE.pl    src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2GCE.hpp
-           COMMAND perl tools/Text2NE.pl     src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2NE.hpp
-           COMMAND perl tools/xci2cpp.pl     ${DEFAULT_XCI}           >${_INCLUDE_OUTPUT}/InputEvents_default.hpp
-           COMMAND perl tools/xci2cpp.pl     ${DEFAULT_XCI}           >${_INCLUDE_OUTPUT}/InputCppFiles.txt
-           DEPENDS ${PROJECTGROUP_SOURCE_DIR}/src/Input/InputQueue.hpp 
-                   ${PROJECTGROUP_SOURCE_DIR}/src/Input/InputEvents.hpp
-                   ${DEFAULT_XCI}
-           WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+        COMMENT Create InputEvents_*.hpp!
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT} 
+        COMMAND perl tools/Char2GCE.pl    src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.hpp
+        COMMAND perl tools/Char2NE.pl     src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Char2NE.hpp
+        COMMAND perl tools/Text2Event.pl  src/Input/InputEvents.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2Event.hpp
+        COMMAND perl tools/Text2GCE.pl    src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2GCE.hpp
+        COMMAND perl tools/Text2NE.pl     src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Text2NE.hpp
+        COMMAND perl tools/xci2cpp.pl     ${DEFAULT_XCI}           >${_INCLUDE_OUTPUT}/InputEvents_default.hpp
+        COMMAND perl tools/xci2cpp.pl     ${DEFAULT_XCI}           >${_INCLUDE_OUTPUT}/InputCppFiles.txt
+        DEPENDS ${PROJECTGROUP_SOURCE_DIR}/src/Input/InputQueue.hpp 
+                ${PROJECTGROUP_SOURCE_DIR}/src/Input/InputEvents.hpp
+                ${DEFAULT_XCI}
+        WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
     )
     
     add_custom_command( OUTPUT ${OUTPUT_FOLDER}/include/Status_defaults.hpp
-       COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT}
-       COMMAND perl tools/xcs2cpp.pl    Data/Status/default.xcs >${OUTPUT_FOLDER}/include/Status_defaults.hpp
-       DEPENDS ${_DATA_INPUT}/Status/default.xcs
-       WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT}
+        COMMAND perl tools/xcs2cpp.pl    Data/Status/default.xcs >${OUTPUT_FOLDER}/include/Status_defaults.hpp
+        DEPENDS ${_DATA_INPUT}/Status/default.xcs
+        WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
     )
     
     list(APPEND INPUTEVENTS_CPP ${OUTPUT_FOLDER}/include/Status_defaults.hpp)
@@ -342,32 +342,36 @@ endif()
 # list(APPEND SCRIPT_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Data/OpenSoar.rc.in")
 
 if(MSVC)
-set(RESOURCE_FILES
-#   ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc  # Input
-#   ${OUTPUT_FOLDER}/Data/OpenSoar.rc
-#   ${_DATA_OUTPUT}/${PROGRAM_NAME}.rc
-  ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
-)
+  set(RESOURCE_FILES
+  #   ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc  # Input
+  #   ${OUTPUT_FOLDER}/Data/OpenSoar.rc
+  #   ${_DATA_OUTPUT}/${PROGRAM_NAME}.rc
+    ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
+  )
 elseif(MINGW)
-set(RESOURCE_FILES
-   # ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc.in
-   # ${_DATA_OUTPUT}/${PROGRAM_NAME}.rc
-   ### by Clang?? 
-   # ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
-)
+  set(RESOURCE_FILES
+     # ${_DATA_OUTPUT}/${PROGRAM_NAME}.rc
+     # ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
+     #${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc  # 'PROGRAM_NAME is 'OpenSoar-MinGW.exe'
+     D:/Projects/Binaries/OpenSoar/dev-branch/mgw122/OpenSoar.rc
+     # "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
+  )
+#  message(FATAL_ERROR "MINGW!")
 elseif(CLANG)
-set(RESOURCE_FILES
-   # ${OUTPUT}/${PROGRAM_NAME}.rc
-   # ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
-# Clang:?    ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc
+  set(RESOURCE_FILES
+     # ${OUTPUT}/${PROGRAM_NAME}.rc
+     # ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
+  # Clang:?    ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc
 )
 else()
     # ${_DATA_OUTPUT}/OpenSoar.rc
     # ${PROGRAM_NAME}.rc
+#  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
+  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc
+)
 endif()
 
 add_library(${TARGET_NAME}  ${XCSOAR_LIB_TYPE}
-
    ${RESOURCE_FILES}  # depends on system?
    
    ${C_FILES}
