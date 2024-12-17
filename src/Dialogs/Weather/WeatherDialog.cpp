@@ -5,7 +5,11 @@
 #include "NOAAList.hpp"
 #include "RASPDialog.hpp"
 #include "PCMetDialog.hpp"
-#include "SkysightDialog.hpp"
+
+#ifdef HAVE_SKYSIGHT
+# include "SkysightDialog.hpp"
+#endif
+
 #if 0
 #include "MapOverlayWidget.hpp"
 #endif
