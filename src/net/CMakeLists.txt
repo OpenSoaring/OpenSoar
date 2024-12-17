@@ -55,4 +55,8 @@ add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
 # message(FATAL_ERROR "Stop!")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Net)
 
+if(MINGW)
+  target_link_libraries(${TARGET_NAME} PRIVATE ws2_32 mswsock)
+endif(MINGW)
+
 add_dependencies(${TARGET_NAME} util)
