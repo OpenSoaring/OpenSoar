@@ -105,9 +105,10 @@ OpenVario_Device::Initialise() noexcept {
     LogFormat("upgrade_config = %s", upgrade_config.ToUTF8().c_str());
     // the same...: LogFormat("upgrade_config = %s", upgrade_config.c_str());
     LogFormat("is_real = %s", is_real ? "True" : "False");
-
+# if  0  // ndef _GLIBCXX_FILESYSTEM_IS_WINDOWS
     LogFormat("exe_path = %s", exe_path.c_str());
     LogFormat("bin_path = %s", bin_path.c_str());
+# endif
 #endif
     //----------------------------
     run_output_file = AllocatedPath::Build(home_path, Path("tmp.txt"));
