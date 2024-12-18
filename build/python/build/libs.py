@@ -491,6 +491,7 @@ netcdf = AutotoolsProject(
         '--disable-shared', '--enable-static'
     ],
     patches=abspath('lib/netcdf/patches'),
+    cppflags='-DHAVE_STRLCAT',
     ldflags='-Wl,--gc-sections'
 )
 
