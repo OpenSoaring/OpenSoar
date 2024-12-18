@@ -91,18 +91,8 @@ elif '-kobo-linux-' in host_triplet:
 else:
     raise RuntimeError('Unrecognized target')
 
-if with_skysight:
-    thirdparty_libs += [
-        sqlite3,
-        proj,
-        libtiff,
-        libgeotiff,
-
-        netcdf,
-        netcdfcxx
-    ]
-    
-if with_geotiff:
+# do it before(!) 'with_skysight'
+if with_geotiff or with_skysight: 
     thirdparty_libs += [
         sqlite3,
         proj,
@@ -110,7 +100,14 @@ if with_geotiff:
         libgeotiff
     ]
 
-
+if with_skysight:
+    # with_geotiff = True - the geotiff libs have to be included before skysight
+    # therefore 
+    thirdparty_libs += [
+        netcdf,
+        netcdfcxx
+    ]
+    
 # build the third-party libraries
 for x in thirdparty_libs:
     if not x.is_installed(toolchain):
