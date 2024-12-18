@@ -92,8 +92,12 @@ else:
     raise RuntimeError('Unrecognized target')
 
 if with_skysight:
-    with_geotiff = True
     thirdparty_libs += [
+        sqlite3,
+        proj,
+        libtiff,
+        libgeotiff,
+
         netcdf,
         netcdfcxx
     ]
