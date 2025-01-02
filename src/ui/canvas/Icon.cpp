@@ -14,6 +14,9 @@
 #endif
 
 #include <algorithm>
+#ifdef _DEBUG
+# include "LogFile.hpp"
+#endif
 
 [[gnu::const]]
 static unsigned
@@ -46,10 +49,11 @@ MaskedIcon::LoadResource(ResourceId id, ResourceId big_id,
   unsigned stretch = 1024;
 #endif
 
+  unsigned source_dpi = 96;
   if (Layout::vdpi >= 120) {
     /* switch to larger 160dpi icons at 120dpi */
 
-    unsigned source_dpi = 96;
+    ////    unsigned source_dpi = 96;
     if (Layout::vdpi >= 220 && ultra_id.IsDefined()) {
       id = ultra_id;
       source_dpi = 300;
@@ -67,6 +71,12 @@ MaskedIcon::LoadResource(ResourceId id, ResourceId big_id,
   } else
     bitmap.Load(id);
 
+#if defined(_DEBUG)
+  if (!IsDefined()) {
+    LogFmt("Error at MaskedIcon::LoadResource with {} (id = {})", id.GetName(), source_dpi);
+    return;
+  }
+#endif
   assert(IsDefined());
 
   size = bitmap.GetSize();
@@ -91,6 +101,10 @@ MaskedIcon::LoadResource(ResourceId id, ResourceId big_id,
 void
 MaskedIcon::Draw([[maybe_unused]] Canvas &canvas, PixelPoint p) const noexcept
 {
+#if (_DEBUG)
+  if (!IsDefined())
+    return;
+#endif
   assert(IsDefined());
 
   p -= origin;

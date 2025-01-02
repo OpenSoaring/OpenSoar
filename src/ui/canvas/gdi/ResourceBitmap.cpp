@@ -30,7 +30,6 @@ Bitmap::Load(ResourceId id, [[maybe_unused]] Type type)
 
   bitmap = ResourceLoader::LoadResBitmap(id);
 
-
 #ifdef _DEBUG
   if (!bitmap)
     LogFormat("%s - ResourceId: '%s'! ", __func__, id.GetName().data());

@@ -22,6 +22,11 @@ Brush::Create(const Bitmap &bitmap)
 {
   /* GDI works best when the bitmap is 8x8 - to avoid bad performance,
      disallow using any other bitmap size */
+#if (_DEBUG)
+  if (!bitmap.IsDefined())
+    return;
+#endif
+
   assert(bitmap.GetSize().width == 8);
   assert(bitmap.GetSize().height == 8);
 
