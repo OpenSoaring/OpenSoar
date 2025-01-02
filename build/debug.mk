@@ -2,7 +2,7 @@ DEBUG ?= y
 DEBUG_GLIBCXX ?= n
 
 ifeq ($(DEBUG),y)
-  TARGET_CPPFLAGS += -DXCSOAR_TESTING
+  # 2025-01-02: TARGET_CPPFLAGS += -DXCSOAR_TESTING
   OPTIMIZE := -Og
   ifeq ($(CLANG),n)
     OPTIMIZE += -funit-at-a-time
