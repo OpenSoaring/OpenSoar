@@ -78,13 +78,12 @@ MapWindow::RenderRasp(Canvas &canvas) noexcept
 inline void
 MapWindow::RenderSkysight([[maybe_unused]] Canvas &canvas) noexcept
 {
+  LogFmt("MapWindow::RenderSkysight: {}!", skysight ? "ok" : "null");
   if (skysight == nullptr)
     return;
-#ifndef XCSOAR_TESTING
   /* TODO(August2111) in Test 'RunMapWindow' this call is not allowed in the
    * moment */
   skysight->Render();
-#endif
 }
 #endif
 
@@ -211,8 +210,11 @@ MapWindow::Render(Canvas &canvas, const PixelRect &rc) noexcept
   RenderRasp(canvas);
 
 #ifdef HAVE_SKYSIGHT
+  LogFmt("HAVE_SKYSIGHT ok");
   draw_sw.Mark("RenderSkysight");
   RenderSkysight(canvas); 
+#else
+  LogFmt("HAVE_SKYSIGHT: NOT defined!");
 #endif
 
   draw_sw.Mark("RenderTopography");
