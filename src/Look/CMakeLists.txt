@@ -46,4 +46,4 @@ add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
 # message(FATAL_ERROR "Stop!")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER FrontEnd)
 
-add_dependencies(${TARGET_NAME} util)
+add_dependencies(${TARGET_NAME} util Data) # aug:2024-12-23

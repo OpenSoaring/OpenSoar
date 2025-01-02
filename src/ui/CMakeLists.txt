@@ -79,4 +79,7 @@ if(_LINK_LIBRARIES)
   target_link_libraries(${TARGET_NAME} PRIVATE ${_LINK_LIBRARIES})
 endif(_LINK_LIBRARIES)
 message(STATUS "_LINK_LIBRARIES = ${_LINK_LIBRARIES}!")
+
+add_dependencies(${TARGET_NAME} Data) # aug:2024-12-23
+
 # message(FATAL_ERROR "Stop!")

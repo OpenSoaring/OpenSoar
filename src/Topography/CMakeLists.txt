@@ -53,4 +53,4 @@ target_link_libraries(${TARGET_NAME} PUBLIC
 # message(FATAL_ERROR "Stop!")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Topo)
 
-add_dependencies(${TARGET_NAME} util)
+add_dependencies(${TARGET_NAME} util Data) # aug:2024-12-23

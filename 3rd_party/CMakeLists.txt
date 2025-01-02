@@ -174,7 +174,7 @@ endif()
 ## if($<CONFIG:Debug>) 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
-    ###     set(CMAKE_BUILD_TYPE Debug)
+    set(CMAKE_BUILD_TYPE Debug)
     # message(FATAL_ERROR "+++++ CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE} ++++++")
     if(VERBOSE_LEVEL GREATER 99)
       message(STATUS "+++++ CMAKE_BUILD_TYPE (1) = ${CMAKE_BUILD_TYPE} ++++++")
@@ -242,6 +242,7 @@ macro(post_3rdparty)
         # set_target_properties(${${TARGET_CNAME}_TARGET} PROPERTIES IMPORTED_LOCATION  ${${TARGET_CNAME}_LIB}  GENERATED TRUE)
         set_target_properties(${${TARGET_CNAME}_TARGET} PROPERTIES IMPORTED_LOCATION  ${_TARGET_LIBRARY}  GENERATED TRUE)
         set_target_properties(${${TARGET_CNAME}_TARGET} PROPERTIES FOLDER 3rdParty)
+        # set_target_properties(${_BUILD_TARGET} PROPERTIES FOLDER 3rdParty)
         add_dependencies(${${TARGET_CNAME}_TARGET}  ${_BUILD_TARGET})
     endif()
 
@@ -250,8 +251,7 @@ if (_COMPLETE_INSTALL)
 endif()
     list(APPEND THIRDPARTY_INCLUDES  ${${TARGET_CNAME}_INCLUDE_DIR})
 
-    # list(APPEND 3RDPARTY_TARGETS ${LIB_TARGET_NAME})
-    list(APPEND 3RDPARTY_TARGETS ${${TARGET_CNAME}_TARGET})  # zlib_3rd
+    list(APPEND 3RDPARTY_TARGETS ${${TARGET_CNAME}_TARGET})
 
 ### -> Public: ... PARENT_SCOPE
   set(${TARGET_CNAME}_TARGET_LIBS  ${_TARGET_LIBS} PARENT_SCOPE)

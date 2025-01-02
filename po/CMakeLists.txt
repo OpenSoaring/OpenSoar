@@ -47,7 +47,7 @@ endif()
 ### )
 
 if(MSVC)
-    source_group("po-Files" FILES  ${PO_FILES})
+    source_group("po-Files" FILES  ${PO_FILES} ${MO_C_FILES})
 endif()
 
 add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE} ${MO_C_FILES} ${PO_FILES})
@@ -56,6 +56,5 @@ set_target_properties(${TARGET_NAME} PROPERTIES
                         FOLDER Data
 )
 
-add_dependencies(${TARGET_NAME}  Data)
 
 
