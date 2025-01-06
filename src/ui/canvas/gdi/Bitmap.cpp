@@ -50,7 +50,7 @@ Bitmap::Reset() noexcept
 PixelSize
 Bitmap::GetSize() const noexcept
 {
-#if (_DEBUG)
+#if defined(_DEBUG)
   if (!IsDefined())
     return { 0, 0 };
 #endif

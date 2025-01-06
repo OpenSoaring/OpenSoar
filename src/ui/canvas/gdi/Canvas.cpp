@@ -282,7 +282,7 @@ void
 Canvas::Stretch(PixelPoint dest_position, PixelSize dest_size,
                 const Bitmap &src)
 {
-#if (_DEBUG)
+#if defined(_DEBUG)
   if (!src.IsDefined())
     return;
 #endif

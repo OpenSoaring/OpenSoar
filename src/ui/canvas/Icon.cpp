@@ -101,7 +101,7 @@ MaskedIcon::LoadResource(ResourceId id, ResourceId big_id,
 void
 MaskedIcon::Draw([[maybe_unused]] Canvas &canvas, PixelPoint p) const noexcept
 {
-#if (_DEBUG)
+#if defined(_DEBUG)
   if (!IsDefined())
     return;
 #endif
