@@ -185,17 +185,17 @@ AnemoiDevice::ExpectedMsgLengthSentence(std::byte code)
   switch ((char)code) {
   case 'S':
     // Sensor health sentence
-    expected_length = 2;
+    expected_length = 3;  // old 1.4: 2
     break;
   case 'w':
   case 'W':
     // Wind sentence
-    expected_length = 8;
+    expected_length = 9;  // old 1.4: 8
     break;
   case 'a':
   case 'A':
     // 
-    expected_length = 7;
+    expected_length = 10; // old 1.4: 7;
     break;
   case 'd':
   case 'D':
@@ -302,11 +302,14 @@ AnemoiDevice::ParseAttitude(const std::byte *data, struct NMEAInfo & info)
   }
 
   value = ReadInteger16(&data);
-  // Circle diameter - no vbariable in XCSoar up to now
+  // Circle diameter - no variable in XCSoar up to now
   if (value >= 0 && value <= 1000) {
 //    info.attitude.heading = Angle::Degrees(value);
 //    info.attitude.heading_available.Update(info.clock);
   }
+  value = ReadByte(&data);  // UTC hours
+  value = ReadByte(&data);  // UTC minutes
+  value = ReadByte(&data);  // UTC seconds
 
   return true;
 }
@@ -356,6 +359,8 @@ AnemoiDevice::ParseWind(const std::byte *data, struct NMEAInfo & info)
     info.attitude.heading = Angle::Degrees(heading);
     info.attitude.heading_available.Update(info.clock);
   }
+  // Live wind uncertainly indicator (0..255):
+  [[maybe_unused]] auto value = ReadByte(&data);  
 
   return true; // No other parser necessary
 }
