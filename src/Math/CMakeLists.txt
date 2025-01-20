@@ -43,41 +43,63 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 set(MATHTABLES_H ${OUTPUT_FOLDER}/include/MathTables.h)
 
 if(MSVC)  # Multi-Config!
-    set(MATHTABLES_CMD ${PROJECTGROUP_BINARY_DIR}/tools/Debug/MathTables)
+  if (NOT CMAKE_BUILD_TYPE)
+    # set(MATHTABLES_CMD ${PROJECTGROUP_BINARY_DIR}/tools/Debug/MathTables)
+    set(MATHTABLES_CMD ${PROJECTGROUP_BINARY_DIR}/tools/Release/MathTables)
+  else()
+    set(MATHTABLES_CMD ${PROJECTGROUP_BINARY_DIR}/tools/${CMAKE_BUILD_TYPE}/MathTables)
+  endif()
 else()
     set(MATHTABLES_CMD ${PROJECTGROUP_BINARY_DIR}/tools/MathTables)
 endif()
-add_custom_command( # TARGET ${TARGET_NAME} PRE_BUILD
-        OUTPUT ${MATHTABLES_H}
-        COMMENT "Create 'MathTables.h' with Sine tables"
-        COMMAND ${MATHTABLES_CMD} >${MATHTABLES_H} 
+
+set(MATHTABLES_TARGET MathTablesTarget)
+message (STATUS "MATHTABLES_H:       ${MATHTABLES_H}")
+message (STATUS "MATHTABLES_CMD:     ${MATHTABLES_CMD}")
+message (STATUS "MATHTABLES_TARGET:  ${MATHTABLES_TARGET}")
+# message(FATAL_ERROR "Stop: Math!")
+
+### # add_executable(${MATHTABLES_TARGET}  ${SOURCE_FILES} ${MATHTABLES_H})
+### # add_custom_target( MATHTABLES_TARGET # TARGET ${TARGET_NAME} PRE_BUILD
+### add_custom_command( TARGET ${TARGET_NAME} PRE_BUILD
+### # add_custom_command( TARGET ${MATHTABLES_TARGET} PRE_BUILD
+### # add_custom_command( OUTPUT ${MATHTABLES_H}
+###         COMMENT "Create 'MathTables.h' with Sine tables -> ${MATHTABLES_H}"
+###         COMMAND ${MATHTABLES_CMD} >${MATHTABLES_H}
+###         WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+###         # DEPENDS GenerateSineTables.cpp
+###         DEPENDS MathTables
+###         # ${PROJECTGROUP_SOURCE_DIR}/tools/GenerateSineTables.cpp
+###     )
+
+list(APPEND HEADER_FILES ${MATHTABLES_H})
+
+add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
+    ${SOURCE_FILES}
+    # ${HEADER_FILES}
+    ${SCRIPT_FILES}
+    ##${MATHTABLES_H}
+    # MATHTABLES_H
+)
+# message(FATAL_ERROR "Stop!")
+set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)
+
+add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+# add_custom_command( TARGET ${MATHTABLES_TARGET} PRE_BUILD
+# add_custom_command( OUTPUT ${MATHTABLES_H}
+        COMMENT "Create 'MathTables.h' with Sine tables -> ${MATHTABLES_H}"
+        COMMAND ${MATHTABLES_CMD} >${MATHTABLES_H}
         WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
         # DEPENDS GenerateSineTables.cpp
         DEPENDS MathTables
         # ${PROJECTGROUP_SOURCE_DIR}/tools/GenerateSineTables.cpp
     )
-list(APPEND HEADER_FILES ${MATHTABLES_H})
-
-add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
-    ${SOURCE_FILES}
-    ${HEADER_FILES}
-    ${SCRIPT_FILES}
-)
-# message(FATAL_ERROR "Stop!")
-set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)
 
 # Aug: mal kurz ausblenden 5.9.22, 
 # add_dependencies(${TARGET_NAME} util)
-
-## add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
-##         # OUTPUT MathTables.h
-##         COMMENT "Create 'MathTables.h' with Sine tables"
-##         echo tools/Debug/MathTables to MathTables.h 
-##         COMMAND ${PROJECTGROUP_BINARY_DIR}/tools/Debug/MathTables > MathTables.h 
-##         WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}/${OUTPUT}/include
-##         DEPENDS GenerateSineTables.cpp
-##     )
-
 # target_link_libraries(${TARGET_NAME} MathTables)
 add_dependencies(${TARGET_NAME} MathTables Data)
+# add_dependencies(${TARGET_NAME} MATHTABLES_TARGET MathTables Data)
+# target_add_dependencies(${TARGET_NAME} MATHTABLES_TARGET MathTables)
+# MATHTABLES_TARGET
 
