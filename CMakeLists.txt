@@ -18,13 +18,7 @@ message(STATUS "+++ Start CMake ${CMAKE_CURRENT_SOURCE_DIR}!")
 message(STATUS "+++ CMAKE_HOST_SYSTEM_NAME:     ${CMAKE_HOST_SYSTEM_NAME}")
 message(STATUS "+++ CMAKE_SYSTEM_NAME:          ${CMAKE_SYSTEM_NAME}")
 message(STATUS "+++ TOOLCHAIN:                  ${TOOLCHAIN}")
-
-message(STATUS "+++ CMAKE_BUILD_TYPE:          ${CMAKE_BUILD_TYPE}")
 message(STATUS "+++ VERBOSE_LEVEL:             ${VERBOSE_LEVEL}")
-
-if (CMAKE_BUILD_TYPE)
-  message(STATUS "+++ CMAKE_BUILD_TYPE:          ${CMAKE_BUILD_TYPE}")
-endif()
 
 get_filename_component(PROJECTGROUP_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} ABSOLUTE)
 get_filename_component(PROJECTGROUP_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} ABSOLUTE)
@@ -39,6 +33,43 @@ set(PROGRAM_NAME ${TARGET_NAME})
 set(PROGRAM_NAME_CC ${TARGET_NAME})              # CamelCase
 string(TOLOWER  ${PROGRAM_NAME} PROGRAM_NAME_LC) # lowercase
 #==========================================
+if (NOT CMAKE_BUILD_TYPE) # variable is only set AFTER the project cmd!!!
+  if (WIN32 AND MSVC)
+    # with MultiConfig at MSVC and empty CMAKE_BUILD_TYPE create the Debug case
+    set(CMAKE_BUILD_TYPE Debug)
+  else()
+    if (MSVC)
+        message(FATAL_ERROR "${WIN32} AND '${CMAKE_CXX_COMPILER_ID}', '${MSVC}', '${CMAKE_BUILD_TYPE}'  ")
+    endif(MSVC)
+    set(CMAKE_BUILD_TYPE Release)
+  endif()
+endif()
+
+if (${CMAKE_BUILD_TYPE} MATCHES "Release"  AND MSVC AND 1)
+   message(FATAL_ERROR "${WIN32} AND '${CMAKE_CXX_COMPILER_ID}', '${MSVC}', '${CMAKE_BUILD_TYPE}'  ")
+endif(${CMAKE_BUILD_TYPE} MATCHES "Release")
+#==========================================
+# August2111: Why that????
+if (MSVC)    # VisualStudio:
+    set(LIB_PREFIX "" )
+    set(LIB_SUFFIX ".lib")
+    set(EXE_PREFIX ".exe")
+elseif(WIN32 AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+    set(LIB_PREFIX "lib")
+    set(LIB_SUFFIX ".a")
+    set(EXE_PREFIX ".exe")
+elseif (MINGW) # MinGW
+    set(LIB_PREFIX "lib")
+    set(LIB_SUFFIX ".a")
+    set(EXE_PREFIX ".exe")
+else()
+#     message(FATAL_ERROR "+++ unknown (3rd party-)System: ${CMAKE_SYSTEM}, Compiler = ${CMAKE_CXX_COMPILER_ID} !")
+    set(LIB_PREFIX "lib")
+    set(LIB_SUFFIX ".a")
+    set(EXE_PREFIX "")
+endif()
+#=========================
+
 
 ### file(READ "VERSION.txt" PROGRAM_VERSION)
 # add version string to OpenSoar:
@@ -205,6 +236,11 @@ else()   ### MSVC
     add_compile_definitions("GNU_CONST=[[gnu::const]]")
     add_compile_definitions("GNU_PURE=[[gnu::pure]]")
 endif()  ### MSVC
+
+
+string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=stringop-truncation")
+string(APPEND CMAKE_C_FLAGS   " -Wno-error=stringop-truncation")
+string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=maybe-uninitialized")
 
 ## if (MINGW)
 ##   set (HAVE_SKYSIGHT )

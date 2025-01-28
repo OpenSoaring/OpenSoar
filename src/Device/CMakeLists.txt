@@ -12,6 +12,8 @@ if(MSVC)
   # in device driver could be found characters f.e. fro german codepage
   # (f.e. VOLKSLOGGER) - surpress this warnings:
   add_compile_options(/wd4828)  #  "|": unsichere Kombination von Typ "bool" mit Typ "int" in einer Operation
+## elseif(MINGW)
+##   add_compile_definitions( "-Wno-stringop-truncation -Wno-strict-aliasing")
 endif()
 
 set(SOURCE_FILES )

@@ -27,8 +27,6 @@ if (WITH_TIFF)
   list(APPEND CMAKE_FILES tiff.cmake) # August2111: without SkySight too!?
 endif (WITH_TIFF)
 
-# set (SKYSIGHT_LIBS ON)
-# if (SKYSIGHT_LIBS)    # SkySight!
 if (HAVE_SKYSIGHT)    # SkySight!
   set (HAVE_HDF5 ON)
   set (SKYSIGHT_LIBS ON)
@@ -52,7 +50,7 @@ if(0)  # MapServer
 endif(0)
 if(0)  # zzip
     list(APPEND CMAKE_FILES zzip.cmake)
-endif(o)
+endif(0)
 if(0) # XML-Parser
     list(APPEND CMAKE_FILES xmlparser.cmake)
 endif(0)

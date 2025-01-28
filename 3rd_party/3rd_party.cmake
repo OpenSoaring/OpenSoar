@@ -87,14 +87,14 @@ set(XMLPARSER_VERSION "1.08")
 if (MSVC)    # VisualStudio:
     message(STATUS "+++ 3rd party System: MSVC!")
     set(WITH_3RD_PARTY ON)
-    set(LIB_PREFIX "" )
-    set(LIB_SUFFIX ".lib")
-    set(EXE_PREFIX ".exe")
+    ## set(LIB_PREFIX "" )
+    ## set(LIB_SUFFIX ".lib")
+    ## set(EXE_PREFIX ".exe")
 elseif(WIN32 AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
     message(STATUS "+++ 3rd party System: WinClang!")
     set(WITH_3RD_PARTY ON)
 
-    set(EXE_PREFIX ".exe")
+    ## set(EXE_PREFIX ".exe")
 
     # set(TOOLCHAIN clang14)  # ??? 2022-09-08: necessary???
 #    set(TOOLCHAIN clang15)  # ??? 2022-09-08: necessary???
@@ -102,15 +102,15 @@ elseif(WIN32 AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
 elseif (MINGW) # MinGW
     message(STATUS "+++ 3rd party System: MINGW!")
     set(WITH_3RD_PARTY ON)
-    set(LIB_PREFIX "lib")
-    set(LIB_SUFFIX ".a")
-    set(EXE_PREFIX ".exe")
+    ## set(LIB_PREFIX "lib")
+    ## set(LIB_SUFFIX ".a")
+    ## set(EXE_PREFIX ".exe")
 else()
 #     message(FATAL_ERROR "+++ unknown (3rd party-)System: ${CMAKE_SYSTEM}, Compiler = ${CMAKE_CXX_COMPILER_ID} !")
     set(WITH_3RD_PARTY ON)
-    set(LIB_PREFIX "lib")
-    set(LIB_SUFFIX ".a")
-    set(EXE_PREFIX "")
+    ## set(LIB_PREFIX "lib")
+    ## set(LIB_SUFFIX ".a")
+    ## set(EXE_PREFIX "")
 endif()
 #=========================
 

@@ -17,16 +17,16 @@ set (SOURCE_FILES)
 file(GLOB PO_FILES        "*.po")
 set(SCRIPT_FILES )
 set(MO_C_FILES)
-set(output_dir ${OUTPUT_FOLDER}/data)
+set(output_dir ${OUTPUT_FOLDER}/Data)
 get_filename_component(_python_dir ${PYTHON_APP} DIRECTORY)
 set(MSGFMT  "${_python_dir}/Tools/i18n/msgfmt.py")
 
 if (1)  # only if a po_file changed...
     foreach(po_file ${PO_FILES})
         get_filename_component(lang_name ${po_file}  NAME_WE)
-        ## message(STATUS "po_file  = ${po_file}  ")
         set(out_file ${output_dir}/${lang_name}.mo.c)
         set(_mo_file ${output_dir}/temp/${lang_name}.mo)
+        # message(STATUS "+++ ${_mo_file} --> ${out_file}")
         # add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
         add_custom_command(OUTPUT ${out_file}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${output_dir}/temp 
@@ -56,5 +56,7 @@ set_target_properties(${TARGET_NAME} PROPERTIES
                         FOLDER Data
 )
 
+
+### message(FATAL_ERROR "+++ Stop: po-Files")
 
 

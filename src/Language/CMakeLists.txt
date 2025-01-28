@@ -40,4 +40,4 @@ target_link_libraries(${TARGET_NAME} PUBLIC Task system po-Files) # _Deprecated)
 
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)
 
-add_dependencies(${TARGET_NAME} util Data po-Files)
+add_dependencies(${TARGET_NAME} util po-Files) # Data 

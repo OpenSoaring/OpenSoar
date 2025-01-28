@@ -17,9 +17,9 @@
 # - <TARGET>_LIBRARY_DEBUG  = ${TARGET_CNAME}_LIBRARY_DEBUG 
 #           - debug library 
 # - <TARGET>_INCLUDE_DIR    = ${TARGET_CNAME}_INCLUDE_DIR 
-#           - 
+#           -
   cmake_minimum_required(VERSION 3.15)
-  
+
   if (SHOW_SUBPROJECTS)
     message(STATUS "+++ Start CMake ${CMAKE_CURRENT_SOURCE_DIR}!")
   endif()

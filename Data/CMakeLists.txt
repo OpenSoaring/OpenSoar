@@ -342,7 +342,8 @@ set_target_properties(${TARGET_NAME} PROPERTIES
     #  ENABLE_EXPORTS TRUE
 )
 
-add_dependencies(${TARGET_NAME} util)
+add_dependencies(${TARGET_NAME} MathTables po-Files)
+# add_dependencies(${TARGET_NAME} util MathTables)
 # add_dependencies(${TARGET_NAME} util po-Files)
 
 # set (RESOURCE_FILES ${RESOURCE_FILES}) 
