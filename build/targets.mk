@@ -25,6 +25,7 @@ ifeq ($(TARGET),OPENVARIO_CB2)
   override TARGET = UNIX
   TARGET_IS_OPENVARIO = y
   TARGET_IS_OVDEVICE = y
+  TARGET_CPPFLAGS += -isystem /usr/include
 else
   TARGET_IS_OVDEVICE = n
 endif
