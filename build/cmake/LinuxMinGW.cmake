@@ -57,7 +57,7 @@ endif()
 include_directories(
        /usr/include
        /usr/include/x86_64-linux-gnu
-       ${LINK_LIBS}/boost/boost-1.80.0
+       ${LINK_LIBS}/boost/boost-1.85.0
 )
 
 #######################################################################

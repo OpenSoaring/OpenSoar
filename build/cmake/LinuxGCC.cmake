@@ -54,7 +54,7 @@ include_directories(
     lib/glm
     /usr/include
     /usr/include/x86_64-linux-gnu
-    ${LINK_LIBS}/boost/boost-1.80.0 
+    ${LINK_LIBS}/boost/boost-1.85.0 
 )
 
 # string(APPEND CMAKE_CXX_FLAGS " -Og -funit-at-a-time -ffast-math -g -std=c++20 -fno-threadsafe-statics -fmerge-all-constants -fcoroutines -fconserve-space -fno-operator-names -fvisibility=hidden -finput-charset=utf-8 -Wall -Wextra -Wwrite-strings -Wcast-qual -Wpointer-arith -Wsign-compare -Wundef -Wmissing-declarations -Wredundant-decls -Wmissing-noreturn -Wvla -Wno-format-truncation -Wno-missing-field-initializers -Wcast-align -Werror ")
