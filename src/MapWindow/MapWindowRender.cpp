@@ -12,6 +12,8 @@
 #include "Operation/Operation.hpp"
 #include "Tracking/SkyLines/Data.hpp"
 
+#include "LogFile.hpp"
+
 #ifdef HAVE_NOAA
 #include "Weather/NOAAStore.hpp"
 #endif
