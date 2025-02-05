@@ -113,7 +113,7 @@ install_arm() {
 
 install_win() {
   echo Installing PC/WIN64 dependencies...
-  apt-get install ${APTOPTS[*]} g++-mingw-w64
+  apt-get install ${APTOPTS[*]} g++-mingw-w64 libtool
   echo
 }
 
