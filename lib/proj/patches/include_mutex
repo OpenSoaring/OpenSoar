@@ -1,0 +1,196 @@
+Author: Uwe Augustin <Info@FlapsOnline.de>
+Date:   Thu Jan 06 10:00:00 2025 +0200
+
+    use CriticalSection on windows - not std::mutex
+    #include "/home/august2111/OpenSoaring/OpenSoar/src/thread/CriticalSection.hxx"
+
+diff --git a/src/mutex.cpp b/src/mutex.cpp
+--- a/src/mutex.cpp
++++ b/src/mutex.cpp
+@@ -29,9 +29,17 @@ #include <mutex>
+ 
+ #include "proj.h"
+ #include "proj_internal.h"
+ 
+-static std::recursive_mutex core_lock;
++#ifdef _WIN32
++  // -> Patch Nr 46
++  #include "../../../../src/thread/CriticalSection.hxx"
++  using Mutex = CriticalSection;
++  using RecursiveMutex = CriticalSection;
++  static RecursiveMutex core_lock;
++#else
++  static std::recursive_mutex core_lock;
++#endif
+ 
+ /************************************************************************/
+ /*                          pj_acquire_lock()                           */
+ /*                                                                      */
+diff --git a/src/networkfilemanager.cpp b/src/networkfilemanager.cpp
+--- a/src/networkfilemanager.cpp
++++ b/src/networkfilemanager.cpp
+@@ -76,7 +76,16 @@ #include <time.h>
+ 
+ //! @cond Doxygen_Suppress
+ 
++#ifdef _WIN32
++# include "../../../../src/thread/CriticalSection.hxx"
++  using Mutex = CriticalSection;
++  using RecursiveMutex = CriticalSection;
++#else
++  using Mutex = std::mutex;
++  using RecursiveMutex = std::recursive_mutex;
++#endif
++
+ #define STR_HELPER(x) #x
+ #define STR(x) STR_HELPER(x)
+ 
+ using namespace NS_PROJ::internal;
+@@ -143,6 +152,6 @@      };
+ 
+     lru11::Cache<
+-        Key, std::shared_ptr<std::vector<unsigned char>>, std::mutex,
++        Key, std::shared_ptr<std::vector<unsigned char>>, Mutex,
+         std::unordered_map<
+             Key,
+             typename std::list<lru11::KeyValuePair<
+@@ -167,6 +176,6 @@      void clearMemoryCache();
+ 
+   private:
+-    lru11::Cache<std::string, FileProperties, std::mutex> cache_{};
++    lru11::Cache<std::string, FileProperties, Mutex> cache_{};
+ };
+ 
+ // ---------------------------------------------------------------------------
+diff --git a/src/transformations/gridshift.cpp b/src/transformations/gridshift.cpp
+--- a/src/transformations/gridshift.cpp
++++ b/src/transformations/gridshift.cpp
+@@ -42,7 +42,13 @@ #include <map>
+ 
+ PROJ_HEAD(gridshift, "Generic grid shift");
+ 
+-static std::mutex gMutex{};
++#ifdef _WIN32
++# include "../../../../src/thread/CriticalSection.hxx"
++  using Mutex = CriticalSection;
++#else
++  using Mutex = std::mutex;
++#endif
++static Mutex gMutex{};
+ static std::set<std::string> gKnownGrids{};
+ 
+ using namespace NS_PROJ;
+@@ -823,7 +829,7 @@ }
+ 
+ // ---------------------------------------------------------------------------
+ 
+ void pj_clear_gridshift_knowngrids_cache() {
+-    std::lock_guard<std::mutex> lock(gMutex);
++    std::lock_guard<Mutex> lock(gMutex);
+     gKnownGrids.clear();
+ }
+diff --git a/src/transformations/hgridshift.cpp b/src/transformations/hgridshift.cpp
+--- a/src/transformations/hgridshift.cpp
++++ b/src/transformations/hgridshift.cpp
+@@ -11,7 +11,13 @@ #include "proj_internal.h"
+ 
+ PROJ_HEAD(hgridshift, "Horizontal grid shift");
+ 
+-static std::mutex gMutex{};
++#ifdef _WIN32
++# include "../../../../src/thread/CriticalSection.hxx"
++  using Mutex = CriticalSection;
++#else
++  using Mutex = std::mutex;
++#endif
++static Mutex gMutex{};
+ static std::set<std::string> gKnownGrids{};
+ 
+ using namespace NS_PROJ;
+@@ -206,6 +212,6 @@     return P;
+ }
+ 
+ void pj_clear_hgridshift_knowngrids_cache() {
+-    std::lock_guard<std::mutex> lock(gMutex);
++    std::lock_guard<Mutex> lock(gMutex);
+     gKnownGrids.clear();
+ }
+diff --git a/src/transformations/vgridshift.cpp b/src/transformations/vgridshift.cpp
+--- a/src/transformations/vgridshift.cpp
++++ b/src/transformations/vgridshift.cpp
+@@ -11,7 +11,13 @@ #include "proj_internal.h"
+ 
+ PROJ_HEAD(vgridshift, "Vertical grid shift");
+ 
+-static std::mutex gMutex{};
++#ifdef _WIN32
++# include "../../../../src/thread/CriticalSection.hxx"
++  using Mutex = CriticalSection;
++#else
++  using Mutex = std::mutex;
++#endif
++static Mutex gMutex{};
+ static std::set<std::string> gKnownGrids{};
+ 
+ using namespace NS_PROJ;
+@@ -246,6 +252,6 @@     return P;
+ }
+ 
+ void pj_clear_vgridshift_knowngrids_cache() {
+-    std::lock_guard<std::mutex> lock(gMutex);
++    std::lock_guard<Mutex> lock(gMutex);
+     gKnownGrids.clear();
+ }
+diff --git a/src/iso19111/factory.cpp b/src/iso19111/factory.cpp
+--- a/src/iso19111/factory.cpp
++++ b/src/iso19111/factory.cpp
+@@ -92,8 +92,14 @@ #if defined(PROJ_HAS_PTHREADS) && !defined(SQLITE_USE_PREAD)
+ #include <pthread.h>
+ #define REOPEN_SQLITE_DB_AFTER_FORK
+ #endif
+ 
++#ifdef _WIN32
++# include "../../../../src/thread/CriticalSection.hxx"
++  using Mutex = CriticalSection;
++#else
++  using Mutex = std::mutex;
++#endif
+ using namespace NS_PROJ::internal;
+ using namespace NS_PROJ::common;
+ 
+ NS_PROJ_START
+@@ -576,8 +580,8 @@ class SQLiteHandleCache {
+ #ifdef REOPEN_SQLITE_DB_AFTER_FORK
+     bool firstTime_ = true;
+ #endif
+ 
+-    std::mutex sMutex_{};
++    Mutex sMutex_{};
+ 
+     // Map dbname to SQLiteHandle
+     lru11::Cache<std::string, std::shared_ptr<SQLiteHandle>> cache_{};
+@@ -607,14 +613,14 @@ // ---------------------------------------------------------------------------
+ 
+ void SQLiteHandleCache::clear() {
+-    std::lock_guard<std::mutex> lock(sMutex_);
++    std::lock_guard<Mutex> lock(sMutex_);
+     cache_.clear();
+ }
+ 
+ // ---------------------------------------------------------------------------
+ 
+ std::shared_ptr<SQLiteHandle>
+ SQLiteHandleCache::getHandle(const std::string &path, PJ_CONTEXT *ctx) {
+-    std::lock_guard<std::mutex> lock(sMutex_);
++    std::lock_guard<Mutex> lock(sMutex_);
+ 
+ #ifdef REOPEN_SQLITE_DB_AFTER_FORK
+     if (firstTime_) {
+@@ -638,6 +652,6 @@ // ---------------------------------------------------------------------------
+ 
+ void SQLiteHandleCache::invalidateHandles() {
+-    std::lock_guard<std::mutex> lock(sMutex_);
++    std::lock_guard<Mutex> lock(sMutex_);
+     const auto lambda =
+         [](const lru11::KeyValuePair<std::string, std::shared_ptr<SQLiteHandle>>
+                &kvp) { kvp.value->invalidate(); };
