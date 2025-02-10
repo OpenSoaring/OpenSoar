@@ -91,7 +91,7 @@ endforeach()
 # endif(WIN32)
     
 message(STATUS "Image-App: '${BMP_CONVERT_APP}' ")
-
+  
 # ============================================================================   
 add_custom_command(OUTPUT ${_TEMP_OUTPUT}/title.svg
   COMMENT "Replace Strings!"
@@ -108,32 +108,16 @@ add_custom_command(OUTPUT ${_TEMP_OUTPUT}/title.svg
   WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
 )
 # ============================================================================   
-#### 2024-12-13 Create OpenSoar.rc.... if (0)  # NOT MINGW) # geht bei MinGW nicht???
-#### 2024-12-13 Create OpenSoar.rc.... # create the resource file (for all targets )
-#### 2024-12-13 Create OpenSoar.rc.... # add_custom_command(OUTPUT ${_DATA_OUTPUT}/${PROGRAM_NAME}.rc
-#### 2024-12-13 Create OpenSoar.rc.... add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
-#### 2024-12-13 Create OpenSoar.rc....   COMMENT "Create Resource File!"
-#### 2024-12-13 Create OpenSoar.rc....   COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_resource.py 
-#### 2024-12-13 Create OpenSoar.rc....           # ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc  # Input
-#### 2024-12-13 Create OpenSoar.rc....           ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc  # Input
-#### 2024-12-13 Create OpenSoar.rc....           ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc                               # Output
-#### 2024-12-13 Create OpenSoar.rc....           ${_DATA_INPUT}
-#### 2024-12-13 Create OpenSoar.rc....           ${_DATA_OUTPUT}
-#### 2024-12-13 Create OpenSoar.rc....   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc
-#### 2024-12-13 Create OpenSoar.rc....           # ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_recource.py 
-#### 2024-12-13 Create OpenSoar.rc....   # WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
-#### 2024-12-13 Create OpenSoar.rc.... ) # add_custom_command
-#### 2024-12-13 Create OpenSoar.rc.... endif()
-#### 2024-12-13 Create OpenSoar.rc.... 
-add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
+add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc ${_INCLUDE_OUTPUT}/MakeResource.hpp
   COMMENT "Create Resource File!"
   COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_resource.py 
-          # ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc  # Input
-          ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt  # Input
-          ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc                               # Output
+          ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt 
+          ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
           ${_DATA_INPUT}
           ${_DATA_OUTPUT}
+          ${_INCLUDE_OUTPUT}/MakeResource.hpp 
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt
+          ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_resource.py
 )
 # message(FATAL_ERROR "!!!!!! ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc")
 # if (_COMPLETE_INSTALL)
@@ -241,31 +225,8 @@ endforeach()
 if("${DOLLAR_CHAR}" STREQUAL "")
     message(FATAL_ERROR DOLLAR_CHAR not used: Stop!)
 endif() 
-    set (PERL_CMD ${PERL_APP} -ne \"print \\\"\#define ${DOLLAR_CHAR}1 ${DOLLAR_CHAR}2\\n\\\" )
-    string(APPEND PERL_CMD "if /^MAKE_RESOURCE\\\(\(\\w+\), \(\\d+\)\\\)") 
-    string(APPEND PERL_CMD "\;/\;\"") 
-    
-    set(PERL_INPUT ${PROJECTGROUP_SOURCE_DIR}/src/Resources.hpp)
-    set(RESOURCE_OUT ${_INCLUDE_OUTPUT}/resource.h)
-    message(STATUS PERL_CMD = "${PERL_CMD} ${PERL_INPUT} >${RESOURCE_OUT}")
-    # message(FATAL_ERROR Stop!)
-    
-    
-    add_custom_command( # TARGET ${TARGET_NAME} PRE_BUILD
-               OUTPUT ${RESOURCE_OUT}
-               COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT} 
-               COMMAND echo ${PERL_CMD} ${PERL_INPUT} -- ${RESOURCE_OUT}
-               COMMAND      ${PERL_CMD} ${PERL_INPUT}  >${RESOURCE_OUT}
-               # COMMAND      ${PERL_CMD} ${PERL_INPUT}
-               ## >${RESOURCE_OUT}
-               # COMMAND      ${PERL_CMD} ${PERL_INPUT} >res2.h
-               # DEPENDS src/Resources.hpp # ${_INCLUDE_OUTPUT}/dirstamp
-               # DEPENDS ${PERL_INPUT} 
-               DEPENDS ${PROJECTGROUP_SOURCE_DIR}/src/Resources.hpp
-               WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
-               COMMENT ==== 
-        )
-    
+
+   
     if (ON) # MSVC) # in other targets not possible to add this files to the project???
        source_group("Bitmaps" FILES  ${ICON_BITMAPS}  ${GRAPHIC_BITMAPS})
     endif()
@@ -331,30 +292,14 @@ else()
     set(BITMAP_EXTENSION  .png)
 endif()
 
-### configure_file(
-###     # "${CMAKE_CURRENT_SOURCE_DIR}/Data/OpenSoar.rc.in"
-###     "${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc.in"
-### #    OpenSoar.rc.in
-###     ${_DATA_OUTPUT}/OpenSoar.rc
-### )
-
-# list(APPEND SOURCE_FILES "${OUTPUT_FOLDER}/Data/OpenSoar.rc")
-# list(APPEND SCRIPT_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Data/OpenSoar.rc.in")
 
 if(MSVC)
   set(RESOURCE_FILES
-  #   ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc  # Input
-  #   ${OUTPUT_FOLDER}/Data/OpenSoar.rc
-  #   ${_DATA_OUTPUT}/${PROGRAM_NAME}.rc
     ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
   )
 elseif(MINGW)
   set(RESOURCE_FILES
-     # ${_DATA_OUTPUT}/${PROGRAM_NAME}.rc
-     # ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
-     #${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc  # 'PROGRAM_NAME is 'OpenSoar-MinGW.exe'
      D:/Projects/Binaries/OpenSoar/dev-branch/mgw122/OpenSoar.rc
-     # "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
   )
 #  message(FATAL_ERROR "MINGW!")
 elseif(CLANG)
@@ -387,7 +332,6 @@ add_library(${TARGET_NAME}  ${XCSOAR_LIB_TYPE}
    ${_INCLUDE_OUTPUT}/InputCppFiles.txt
    # InputCppFiles    # role for input files
    # DefaultStatus # role for status defaults
-   ${_INCLUDE_OUTPUT}/resource.h
    # EXCLUDE_FROM_ALL
    # ${CMAKE_CURRENT_SOURCE_DIR}/${PROGRAM_NAME}.rc.in
 )
@@ -399,4 +343,6 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 )
 
 add_dependencies(${TARGET_NAME} util)
+# add_dependencies(${TARGET_NAME} util po-Files)
 
+# set (RESOURCE_FILES ${RESOURCE_FILES}) 
