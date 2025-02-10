@@ -12,24 +12,7 @@ endif()
 prepare_3rdparty(netcdf_cxx ${_LIB_NAME})
 string(APPEND NETCDF_CXX_CMAKE_DIR  /netCDFCxx)
 
-if (ON)  # _COMPLETE_INSTALL)
-# 2024.11.26: message (STATUS "xxxx Test: ${HDF5_CMAKE_DIR}")
-# 2024.11.26: # string(REPLACE "${HDF5_DIR}//" "./" HDF5_CMAKE_DIR ${HDF5_CMAKE_DIR} )
-# 2024.11.26: message (STATUS "xxxx Test: ${HDF5_DIR}")
-# 2024.11.26: message (STATUS "xxxx Test: ${HDF5_CMAKE_DIR}")
-# 2024.11.26: message (STATUS "xxxx Test: ${HDF5_LIB_DIR}")
-# 2024.11.26: message (STATUS "xxxx Test: ${HDF5_INCLUDE_DIR}")
-
-
-message (STATUS "xxxx NETCDF-C-INC_DIR: ${NETCDF_C_INCLUDE_DIR}")
-message (STATUS "xxxx NETCDF-C-LIB_DIR: ${NETCDF_C_LIB_DIR}")
-message (STATUS "xxxx NETCDF_C_LIBRARY: ${NETCDF_C_LIBRARY}")
-message (STATUS "xxxx ======================================")
-
-message (STATUS "xxxx NETCDF-CXX-LIB_DIR: ${NETCDF_CXX_LIB_DIR}")
-message (STATUS "xxxx NETCDF-CXX-INC_DIR: ${NETCDF_CXX_INCLUDE_DIR}")
-message (STATUS "xxxx NETCDF-CXX-INC_DIR: ${_INCLUDE_DIR}")
-
+if (_COMPLETE_INSTALL)
     set(CMAKE_ARGS
         "-DCMAKE_INSTALL_PREFIX:PATH=${NETCDF_CXX_DIR}"
         "-DCMAKE_INSTALL_LIBDIR:PATH=${NETCDF_CXX_LIB_DIR}"
@@ -97,5 +80,9 @@ post_3rdparty()
 
 if (_COMPLETE_INSTALL)
     add_dependencies(${_BUILD_TARGET}  ${NETCDF_C_TARGET})
+# else()
+    # set_target_properties(${_BUILD_TARGET} PROPERTIES FOLDER 3rdParty_2)
 endif()
+
+
 
