@@ -35,6 +35,13 @@ DeviceBlackboard::SetStartupLocation([[maybe_unused]] const GeoPoint &loc,
 {
 }
 
+GlueMapWindow *
+UIGlobals::GetMap()
+{
+  return nullptr;
+}
+
+
 #ifndef NDEBUG
 
 bool
