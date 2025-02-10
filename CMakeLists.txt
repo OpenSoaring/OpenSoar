@@ -23,7 +23,7 @@ message(STATUS "+++ CMAKE_BUILD_TYPE:          ${CMAKE_BUILD_TYPE}")
 message(STATUS "+++ VERBOSE_LEVEL:             ${VERBOSE_LEVEL}")
 
 if (CMAKE_BUILD_TYPE)
-  message(FATAL_ERROR "+++ CMAKE_BUILD_TYPE:          ${CMAKE_BUILD_TYPE}")
+  message(STATUS "+++ CMAKE_BUILD_TYPE:          ${CMAKE_BUILD_TYPE}")
 endif()
 
 get_filename_component(PROJECTGROUP_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} ABSOLUTE)
@@ -392,11 +392,7 @@ add_subdirectory(src/OpenVario)   # libOpenSoar!
 add_subdirectory(src/Android)  # Android  -> EXCLUDE_FROM_ALL TRUE
 
 list(APPEND SOURCE_FILES "src/OpenSoar.cpp")
-if (NOT MSVC)
-#  2024-12-13: 
-  list(APPEND SOURCE_FILES  ${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc)
-# list(APPEND SOURCE_FILES "${OUTPUT_FOLDER}/Data/OpenSoar.rc")
-endif (NOT MSVC)
+list(APPEND SOURCE_FILES  ${RESOURCE_FILES})
 
 list(APPEND SCRIPT_FILES "CMakeSource.cmake")
 
@@ -488,7 +484,6 @@ if(NOT MSVC)  ### better _LIB as _TARGET...
       ${HDF5_LIBS}  # new at 06/2024
     )
   else(LIBS_OR_LIBRARY)
-    set (HDF5_HL_LIBRARY "${HDF5_LIB_DIR}/${LIB_PREFIX}libhdf5_hl${LIB_SUFFIX}") # not public!!!
     list(APPEND XCSOAR_LINK_LIBRARIES
       ${GEOTIFF_LIBRARY}  # new at 06/2024
       ${SZIP_LIBRARY}  # new at 12/2024
@@ -531,8 +526,6 @@ else(NOT MSVC)    ## -----------------------------------------
       ${NETCDF_CXX_TARGET}  # new at 06/2024
       ${HDF5_TARGET}  # new at 06/2024
     )
-    set (HDF5_HL_LIBRARY "${HDF5_LIB_DIR}/${LIB_PREFIX}libhdf5_hl${LIB_SUFFIX}")
-    message(STATUS "HDF5_HL        =  ${HDF5_HL_LIBRARY} ")
     list(APPEND XCSOAR_LINK_LIBRARIES
       ${HDF5_HL_LIBRARY} 
       shlwapi
