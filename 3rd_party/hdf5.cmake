@@ -15,9 +15,13 @@ endif(0)
 
 prepare_3rdparty(hdf5 ${_LIB_NAME} ${_LIB_NAME}_D)
 
-
-set(HDF5_HL_LIBRARY  ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${_LIB_NAME}_hl${LIB_SUFFIX})  # finally
-
+if ("${CMAKE_BUILD_TYPE}" MATCHES "Debug")
+   set(HDF5_HL_LIBRARY  HDF5_HL_LIBRARY_DEBUG)
+   set(HDF5_HL_LIBRARY  ${_INSTALL_DIR}/lib/${TOOLCHAIN}d/${LIB_PREFIX}${_LIB_NAME}_hl_D${LIB_SUFFIX})
+else()  
+   set(HDF5_HL_LIBRARY  ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${_LIB_NAME}_hl${LIB_SUFFIX})  # finally
+endif()
+   set(HDF5_HL_LIBRARY  ${HDF5_HL_LIBRARY} PARENT_SCOPE)  # finally
 # string(APPEND HDF5_CMAKE_DIR  /???L)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   # set(HDF5_CMAKE_DIR  ${HDF5_DIR}/cmake)
