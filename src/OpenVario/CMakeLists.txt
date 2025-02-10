@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
+
+if (0)
+
 if (SHOW_SUBPROJECTS)
     message(STATUS "+++ Start CMake ${CMAKE_CURRENT_SOURCE_DIR}!")
 endif()
@@ -64,3 +67,5 @@ set_target_properties(${TARGET_NAME} PROPERTIES FOLDER OpenVarioBaseMenu)
 
 target_link_libraries(${TARGET_NAME} PUBLIC ${OPENVARIOBASEMENU_LIBS})
 add_dependencies(${TARGET_NAME} util Data)
+
+endif()
