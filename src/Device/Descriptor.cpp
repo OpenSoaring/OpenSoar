@@ -392,8 +392,6 @@ try {
 
     LogError(e, name);
 
-    
-    // const std::string_view _msg(GetFullMessage(e));
     const auto what = GetFullMessage(e);
     if (what.c_str() != nullptr) {
       StaticString<256> msg;
