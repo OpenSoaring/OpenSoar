@@ -721,16 +721,10 @@ ifeq ($(TARGET_IS_DARWIN),y)
 XCSOAR_LDLIBS += -framework CoreLocation -lSDL2main # include SDL2main for main() on MacOS and iOS (otherwise linking fails)
 endif
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-ifeq ($(HAVE_WIN32),y)
-  XCSOAR_LDLIBS += -ltiff -lgeotiff -lproj -lsqlite3
-endif
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 XCSOAR_STRIP = y
 
 ifeq ($(TARGET),ANDROID)
-$(eval $(call link-shared-library,$(PROGRAM_NAME),XCSOAR))
+  $(eval $(call link-shared-library,$(PROGRAM_NAME),XCSOAR))
 else
-$(eval $(call link-program,$(PROGRAM_NAME),XCSOAR))
+  $(eval $(call link-program,$(PROGRAM_NAME),XCSOAR))
 endif
