@@ -48,8 +48,12 @@ if toolchain.is_windows:
         sqlite3,
         proj,
         libtiff,
-        libgeotiff,
+        libgeotiff
     ]
+    ## thirdparty_libs += [
+    ##     netcdf,
+    ##     netcdfcxx,
+    ## ]
 
     # Some libraries (such as CURL) want to use the min()/max() macros
     toolchain.cppflags = cppflags.replace('-DNOMINMAX', '')
