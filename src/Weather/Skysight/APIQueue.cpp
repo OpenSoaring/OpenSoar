@@ -14,6 +14,11 @@
 #include <string>
 #include <vector>
 
+// constexpr char *SKYSIGHT_USER_CLIENT = "XCSoar-JET";
+constexpr char *SKYSIGHT_USER_CLIENT = "XCSoar";
+// not yet...:
+// constexpr char *SKYSIGHT_USER_CLIENT = "OpenSoar";
+
 SkysightAPIQueue::~SkysightAPIQueue() {
 	LogFormat("SkysightAPIQueue::~SkysightAPIQueue %d", timer.IsActive());
   timer.Cancel();
@@ -82,8 +87,7 @@ SkysightAPIQueue::Process()
     case SkysightRequest::Status::Idle:
       // Provide the job with the very latest API key just prior to execution
       if ((*job)->GetType() == SkysightCallType::Login) {
-        (*job)->SetCredentials("XCSoar", email.c_str(), password.c_str());
-// not yet...        (*job)->SetCredentials("OpenSoar", email.c_str(), password.c_str());
+        (*job)->SetCredentials(SKYSIGHT_USER_CLIENT, email.c_str(), password.c_str());
         (*job)->Process();
       } else {
         if (!IsLoggedIn()) {
