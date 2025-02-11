@@ -69,6 +69,7 @@ def configure(toolchain: AnyToolchain, src: str, build: str, args: list[str]=[],
 
     if toolchain.is_windows:
         cross_args.append('-DCMAKE_RC_COMPILER=' + cast(str, toolchain.windres))
+    args = [arg.replace('${CMAKE_INSTALL_PREFIX}', toolchain.install_prefix) for arg in args]
 
     configure = [
         'cmake',
