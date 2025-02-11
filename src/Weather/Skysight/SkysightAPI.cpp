@@ -116,7 +116,7 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
     filename.Format("lastupdated-%s.json", region.c_str());
     break;
   case SkysightCallType::DataDetails:
-    fc = BrokenDateTime::FromUnixTimeUTC(fctime);
+    fc = BrokenDateTime::FromUnixTime(fctime);
     filename.Format("%s-datafiles-%s-%02d-%02d%02d.json",
                     region.c_str(), layer_id.data(),
                     fc.day, fc.hour, fc.minute);
