@@ -37,23 +37,22 @@ toolchain = Toolchain(xcsoar_path, lib_path,
 # a list of third-party libraries to be used by XCSoar
 from build.libs import *
 
+with_geotiff = False
+with_skysight = False
+
+thirdparty_libs = [
+    zlib,
+    libfmt,
+    libsodium,
+    openssl,
+    cares,
+    curl,
+    lua
+]
+
 if toolchain.is_windows:
-    thirdparty_libs = [
-        zlib,
-        libfmt,
-        libsodium,
-        cares,
-        curl,
-        lua,
-        sqlite3,
-        proj,
-        libtiff,
-        libgeotiff
-    ]
-    ## thirdparty_libs += [
-    ##     netcdf,
-    ##     netcdfcxx,
-    ## ]
+    # with_geotiff = True
+    thirdparty_libs.remove(openssl)
 
     # Some libraries (such as CURL) want to use the min()/max() macros
     toolchain.cppflags = cppflags.replace('-DNOMINMAX', '')
@@ -63,58 +62,49 @@ if toolchain.is_windows:
     # it.
     toolchain.cppflags += ' -D_FORTIFY_SOURCE=0'
 elif toolchain.is_darwin:
-    thirdparty_libs = [
-        zlib,
-        libfmt,
-        libsodium,
-        openssl,
-        cares,
-        curl,
-        lua,
-        sqlite3,
-        proj,
-        libtiff,
-        libgeotiff,
-        sdl2
-    ]
+    with_geotiff = True
+    thirdparty_libs.append(sdl2)
+    ## thirdparty_libs += [
+    ## ]
 elif toolchain.is_android:
-    thirdparty_libs = [
-        libfmt,
-          netcdf,
-          netcdfcxx,
-        libsodium,
-        openssl,
-        cares,
-        curl,
-        lua,
-        sqlite3,
-        proj,
-        libtiff,
-        libgeotiff,
-    ]
+    with_skysight = True
+    thirdparty_libs.remove(zlib)
+    ## thirdparty_libs += [
+    ## ]
 elif '-kobo-linux-' in host_triplet:
     thirdparty_libs = [
         binutils,
         linux_headers,
         gcc_bootstrap,
         musl,
-        gcc,
-        zlib,
-        libfmt,
-        libsodium,
+        gcc
+    ] + thirdparty_libs
+    thirdparty_libs += [
         freetype,
-        openssl,
-        cares,
-        curl,
         libpng,
         libjpeg,
-        lua,
         libsalsa,
         libusb,
-        simple_usbmodeswitch,
+        simple_usbmodeswitch
     ]
 else:
     raise RuntimeError('Unrecognized target')
+
+if with_skysight:
+    with_geotiff = True
+    thirdparty_libs += [
+        netcdf,
+        netcdfcxx
+    ]
+    
+if with_geotiff:
+    thirdparty_libs += [
+        sqlite3,
+        proj,
+        libtiff,
+        libgeotiff
+    ]
+
 
 # build the third-party libraries
 for x in thirdparty_libs:
