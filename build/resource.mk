@@ -1,10 +1,6 @@
 include build/rsvg.mk
 include build/imagemagick.mk
 
-# TODO(August2111): what is with setting in main.mk?
-# PROGRAM_NAME = XCSoar
-# PROGRAM_NAME = OpenSoar
-
 USE_WIN32_RESOURCES = $(call bool_and,$(HAVE_WIN32),$(call bool_not,$(ENABLE_SDL)))
 
 ifeq ($(USE_WIN32_RESOURCES),y)
