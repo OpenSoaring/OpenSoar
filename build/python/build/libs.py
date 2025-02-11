@@ -406,6 +406,7 @@ libgeotiff = CmakeProject(
     [
         "-DWITH_UTILITIES=OFF",
         "-DBUILD_SHARED_LIBS=OFF",
+        "-DTIFF_INCLUDE_DIR=${CMAKE_INSTALL_PREFIX}/include",
     ],
     patches=abspath("lib/libgeotiff/patches"),
 )
