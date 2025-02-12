@@ -78,7 +78,6 @@ MapWindow::RenderRasp(Canvas &canvas) noexcept
 inline void
 MapWindow::RenderSkysight([[maybe_unused]] Canvas &canvas) noexcept
 {
-  LogFmt("MapWindow::RenderSkysight: {}!", skysight ? "ok" : "null");
   if (skysight == nullptr)
     return;
   /* TODO(August2111) in Test 'RunMapWindow' this call is not allowed in the
