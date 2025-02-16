@@ -14,10 +14,7 @@
 #include <string>
 #include <vector>
 
-// constexpr char *SKYSIGHT_USER_CLIENT = "XCSoar-JET";
-constexpr char *SKYSIGHT_USER_CLIENT = "XCSoar";
-// not yet...:
-// constexpr char *SKYSIGHT_USER_CLIENT = "OpenSoar";
+const constexpr char *SKYSIGHT_USER_CLIENT = "OpenSoar";
 
 SkysightAPIQueue::~SkysightAPIQueue() {
 	LogFormat("SkysightAPIQueue::~SkysightAPIQueue %d", timer.IsActive());
@@ -93,6 +90,7 @@ SkysightAPIQueue::Process()
         if (!IsLoggedIn()) {
           // inject a login request at the front of the queue
           SkysightAPI::GenerateLoginRequest();
+
         } else {
           (*job)->SetCredentials(key.c_str());
           (*job)->Process();
@@ -150,6 +148,12 @@ SkysightAPIQueue::SetKey(const std::string _key,
 {
   key = _key;
   key_expiry_time = _key_expiry_time;
+
+  uint64_t now = (uint64_t)std::chrono::system_clock::to_time_t(
+    BrokenDateTime::NowUTC().ToTimePoint());
+  if (now > key_expiry_time) {
+    is_clearing = true;
+  }
 }
 
 void
