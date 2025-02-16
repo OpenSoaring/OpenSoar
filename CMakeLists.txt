@@ -45,9 +45,10 @@ if (NOT CMAKE_BUILD_TYPE) # variable is only set AFTER the project cmd!!!
   endif()
 endif()
 
-if (${CMAKE_BUILD_TYPE} MATCHES "Release"  AND MSVC AND 1)
-   message(FATAL_ERROR "${WIN32} AND '${CMAKE_CXX_COMPILER_ID}', '${MSVC}', '${CMAKE_BUILD_TYPE}'  ")
-endif(${CMAKE_BUILD_TYPE} MATCHES "Release")
+#### detecting build type
+### if (${CMAKE_BUILD_TYPE} MATCHES "Release"  AND MSVC AND 1)
+###    message(FATAL_ERROR "${WIN32} AND '${CMAKE_CXX_COMPILER_ID}', '${MSVC}', '${CMAKE_BUILD_TYPE}'  ")
+### endif(${CMAKE_BUILD_TYPE} MATCHES "Release")
 #==========================================
 # August2111: Why that????
 if (MSVC)    # VisualStudio:
@@ -238,9 +239,12 @@ else()   ### MSVC
 endif()  ### MSVC
 
 
-string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=stringop-truncation")
-string(APPEND CMAKE_C_FLAGS   " -Wno-error=stringop-truncation")
-string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=maybe-uninitialized")
+if (MINGW)
+  string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=stringop-truncation")  # remove this with solving!
+  string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=maybe-uninitialized")  # remove this with solving!
+  string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=strict-aliasing")      # remove this with solving!
+  string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=return-local-addr")    # remove this with solving!
+endif(MINGW)
 
 ## if (MINGW)
 ##   set (HAVE_SKYSIGHT )
@@ -455,7 +459,7 @@ if(1)
   message(STATUS "Sodium:       SODIUM_LIBS      =  ${SODIUM_LIBS}    / ${SODIUM_TARGET} ")
   # message(STATUS "LibSodium:    LIBSODIUM_LIBS   =  ${LIBSODIUM_LIBS} ")
   message(STATUS "Lua:          LUA_LIBS         =  ${LUA_LIBS}       / ${LUA_TARGET} ")
-  #message(STATUS "Lua_3rd:      LUA_LIBS_3RD     =  ${LUA_LIBS_3RD} ")
+  # message(STATUS "Lua_3rd:      LUA_LIBS_3RD     =  ${LUA_LIBS_3RD} ")
   message(STATUS "ZLib:         ZLIB_LIBS        =  ${ZLIB_LIBS}      / ${ZLIB_TARGET} ")
   message(STATUS "ZZip:         ZZIP_LIBS        =  ${ZZIP_LIBS}      / ${ZZIP_TARGET} ")
   message(STATUS "Fmt:          FMT_LIBS         =  ${FMT_LIBS}       / ${FMT_TARGET} ")
@@ -468,7 +472,7 @@ if(1)
   message(STATUS "netcdf-c:     NETCDF_C_LIBS    =  ${NETCDF_C_LIBS}  / ${NETCDF_C_TARGET} ")
   message(STATUS "netcdf-cxx:   NETCDF_CXX_LIBS  =  ${NETCDF_CXX_LIBS} / ${NETCDF_CXX_TARGET} ")
   message(STATUS "hdf5:         HDF5_LIBS        =  ${HDF5_LIBS}      / ${HDF5_TARGET} ")
-  # message(FATAL_ERROR "Stop: XCSOAR_LINK_LIBRARIES")
+# message(FATAL_ERROR "Stop: XCSOAR_LINK_LIBRARIES")
 endif()
 
 set(LIBS_OR_LIBRARY ON)
@@ -478,7 +482,7 @@ if(NOT MSVC)  ### better _LIB as _TARGET...
     ${LUA_LIBS}
     ${CURL_LIBS}
     ${FMT_LIBS}
-    # ${MAPSERVER_LIBS}
+    # ${MAPSERVER_LIBS} 
     ${LIBPNG_LIBS}
     ${ZLIB_LIBS}
     ${ZZIP_LIBS}    # internal or external...
@@ -554,16 +558,18 @@ else(NOT MSVC)    ## -----------------------------------------
   )
   if (HAVE_SKYSIGHT)
     list(APPEND XCSOAR_LINK_LIBRARIES
+      # ${SZIP_TARGET}  # new at 06/2024
+      ${SZIP_LIBS}  # new at 06/2024
       ${GEOTIFF_TARGET}  # new at 06/2024
       ## ${SQLITE_TARGET}  # new at 11/2024
       ${SQLITE_LIBRARY}  # new at 11/2024
+      ${HDF5_TARGET}  # new at 06/2024
+      ${HDF5_HL_LIBRARY} 
       ${PROJ_TARGET}  # new at 06/2024
       ${NETCDF_C_TARGET}  # new at 06/2024
       ${NETCDF_CXX_TARGET}  # new at 06/2024
-      ${HDF5_TARGET}  # new at 06/2024
     )
     list(APPEND XCSOAR_LINK_LIBRARIES
-      ${HDF5_HL_LIBRARY} 
       shlwapi
 
       ws2_32
@@ -662,10 +668,21 @@ foreach(translation ${TRANSLATIONS})
         )
 endforeach()
 
-# list(APPEND SOURCE_FILES "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
-# target_sources(${TARGET_NAME} PRIVATE "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
-
 add_dependencies(${TARGET_NAME} util libOpenSoar)
+
+add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${directory} ${CMAKE_CURRENT_BINARY_DIR}/po
+)
+add_custom_command(OUTPUT  ${RES_TEST} "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc"
+        COMMENT Create Resource!
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc" "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc" 
+        DEPENDS "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc"
+        WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+)
+
+list(APPEND SOURCE_FILES ${RES_TEST})  ## "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
+# list(APPEND SOURCE_FILES ${RESOURCE_FILES})
+# target_sources(${TARGET_NAME} PRIVATE "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
 
 # Test-Folder !!!!
 #=============================
