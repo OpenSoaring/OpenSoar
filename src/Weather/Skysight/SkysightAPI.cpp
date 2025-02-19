@@ -29,6 +29,8 @@
 #include <string>
 #include <vector>
 
+#include <windef.h> /* for MAX_PATH */
+
 #ifdef USE_STD_FORMAT
 # include <format>
 #endif // USE_STD_FORMAT
