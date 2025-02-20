@@ -400,7 +400,7 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
           // std::strtoull(time.data(), NULL, 0);
           if ((layer_id == layer.id))
           {
-#if 0  // aug
+#if 1  // aug
             if (update_time > layer.last_update) {
 #else
             if (update_time >= layer.last_update) {
@@ -413,9 +413,11 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
               GetImageAt(layer, time, time + std::chrono::hours(3),  // (5), = 6 tiff images
 #endif
                 update_time, Skysight::DownloadComplete);
+              success = true;
+            } else if (update_time == layer.last_update) { // no changes
+              success =  ParseDataDetails(args, "");
             }
           }
-          success = true;
         }
       }
     }
@@ -433,23 +435,17 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
 
 bool
 SkysightAPI::ParseDataDetails(const SkysightRequestArgs &args,
-                              const std::string &result)
+  const boost::property_tree::ptree &details)
 {
-  boost::property_tree::ptree details;
-  if (!GetResult(args, result.c_str(), details)) {
-    MakeCallback(args.cb, "", false, args.layer.c_str(), args.from);
-    return false;
-  }
-
   bool success = false;
   time_t time_index;
 
-  for (auto &j: details) {
+  for (auto &j : details) {
     auto time = j.second.find("time");
     auto link = j.second.find("link");
     if ((time != j.second.not_found()) && (link != j.second.not_found())) {
       time_index = static_cast<time_t>(std::strtoull(
-                                       time->second.data().c_str(), NULL, 0));
+        time->second.data().c_str(), NULL, 0));
 
       if (time_index > (time_t)args.to) {
         if (!success)
@@ -458,7 +454,7 @@ SkysightAPI::ParseDataDetails(const SkysightRequestArgs &args,
       }
 
       success = GetData(SkysightCallType::Data, args.layer.c_str(), time_index,
-                        args.to, link->second.data().c_str(), args.cb);
+        args.to, link->second.data().c_str(), args.cb);
 
       if (!success)
         return false;
@@ -466,6 +462,17 @@ SkysightAPI::ParseDataDetails(const SkysightRequestArgs &args,
   }
 
   return success;
+}
+bool
+SkysightAPI::ParseDataDetails(const SkysightRequestArgs &args,
+                              const std::string &result)
+{
+  boost::property_tree::ptree details;
+  if (!GetResult(args, result.c_str(), details)) {
+    MakeCallback(args.cb, "", false, args.layer.c_str(), args.from);
+    return false;
+  }
+  return ParseDataDetails(args, details);
 }
 
 bool

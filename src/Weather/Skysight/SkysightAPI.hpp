@@ -99,6 +99,9 @@ protected:
   bool ParseLastUpdates(const SkysightRequestArgs &args,
 			const std::string &result);
   bool ParseDataDetails(const SkysightRequestArgs &args,
+    const boost::property_tree::ptree &details);
+
+  bool ParseDataDetails(const SkysightRequestArgs &args,
 			const std::string &result);
   bool ParseData(const SkysightRequestArgs &args, const std::string &result);
   bool ParseLogin(const SkysightRequestArgs &args, const std::string &result);
