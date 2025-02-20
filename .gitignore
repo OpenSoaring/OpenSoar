@@ -37,4 +37,3 @@ build/local-config.mk
 .idea
 .ccache
 /VERSION.txt
-/src/OpenVario/_DustBin
