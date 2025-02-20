@@ -1073,13 +1073,13 @@ DigitEntry::OnPaint(Canvas &canvas) noexcept
       break;
 
     case Column::Type::DAY:
-      sprintf(buffer, "%02u", c.value + 1);
+      snprintf(buffer, 5, "%02u", c.value + 1);
       break;
     case Column::Type::MONTH:
-      sprintf(buffer, "%02u", c.value + 1);
+      snprintf(buffer, 5, "%02u", c.value + 1);
       break;
     case Column::Type::YEAR:
-      sprintf(buffer, "%04u", c.value + 1900);
+      snprintf(buffer, 5, "%04u", c.value + 1900);
       break;
 
     case Column::Type::UNIT:
