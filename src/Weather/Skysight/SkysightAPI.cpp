@@ -376,27 +376,7 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
   if (active_layer) {
     layer_id = active_layer->id;
 
-
-    //-------------------
-   //if (!displayed_layer) displayed_layer = Skysight::active_layers.begin();
-    // DisplayedLayer(&layer, BrokenDateTime::NowUTC()); auto iter =
-    // std::find(Skysight::active_layers.begin(), active_layers.end(), id) !=
-    //    ;
-    // displayed_layer = &GetLayer("potfd");
-    // if (!displayed_layer && layer.id == "potfd")
-    //  displayed_layer =
-    //      new SkysightActiveLayer(&layer, BrokenDateTime::NowUTC());
-    //-------------------
     for (auto &layer : layers_vector) {
-      //-------------------
-      // if (!displayed_layer && layer.id == "potfd") displayed_layer = new DisplayedLayer(&layer, BrokenDateTime::NowUTC());
-      // auto iter = std::find(Skysight::active_layers.begin(), active_layers.end(), id) !=
-      //    ;
-      //displayed_layer = &GetLayer("potfd");
-      //if (!displayed_layer && layer.id == "potfd")
-      //  displayed_layer =
-      //      new SkysightActiveLayer(&layer, BrokenDateTime::NowUTC());
-      //-------------------
       for (auto &j : details)
       {
         /* std::string -  not std::string_view because after j.second.get the
@@ -418,35 +398,21 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
         if (layer.id == id) {
           auto update_time = time;
           // std::strtoull(time.data(), NULL, 0);
-#if 1  // aug
-          if (update_time > layer.last_update) {
+          if ((layer_id == layer.id))
+          {
+#if 0  // aug
+            if (update_time > layer.last_update) {
 #else
-          if (update_time >= layer.last_update) {
+            if (update_time >= layer.last_update) {
 #endif
-            //          layer.last_update = update_time;
-                      // if (displayed_layer && (displayed_layer->layer->id == layer.id)) {
-            if ((layer_id == layer.id))
-            {
               layer.last_update = update_time;
-#if 1
-              // GetData(SkysightCallType::DataDetails, args.layer.c_str(), update_time, args.to, nullptr,
-  //                     args.cb);
               BrokenDateTime time = BrokenDateTime::NowUTC();
-              // Skysight::GetNow(bool ...: update_time);
-              // GetImageAt(args.layer.c_str(), time, time, args.cb);
-  //            GetImageAt(layer.id.c_str(), time, time + std::chrono::hours(3),  // (5),
-  //                       Skysight::DownloadComplete);
 #ifdef _DEBUG
-              GetImageAt(layer, time, time + std::chrono::minutes(60),  // = 2 tif images
+              GetImageAt(layer, time, time + std::chrono::hours(1),  // = 2 tiff images
 #else
-              GetImageAt(layer, time, time + std::chrono::hours(3),  // (5),
+              GetImageAt(layer, time, time + std::chrono::hours(3),  // (5), = 6 tiff images
 #endif
                 update_time, Skysight::DownloadComplete);
-#else
-              // GetData(SkysightCallType::Data, args.layer.c_str(), update_time, args.to,
-              GetData(SkysightCallType::DataDetails, "pfdtot", update_time, args.to,
-                nullptr, args.cb);
-#endif
             }
           }
           success = true;
