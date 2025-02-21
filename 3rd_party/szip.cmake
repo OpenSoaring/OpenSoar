@@ -15,6 +15,7 @@ if (_COMPLETE_INSTALL)
     "-DCMAKE_INSTALL_BINDIR:PATH=${_INSTALL_BIN_DIR}"
     # n.u. "-DCMAKE_INSTALL_COMPONENT=bin/${TOOLCHAIN}"
   )
+
   ExternalProject_Add(
         ${_BUILD_TARGET}
         GIT_REPOSITORY "https://github.com/erdc/szip.git"
@@ -25,9 +26,12 @@ if (_COMPLETE_INSTALL)
         CMAKE_ARGS ${CMAKE_ARGS}
         ${_BINARY_STEP}
 
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_SOURCE_DIR}/3rd_party/${LIB_TARGET_NAME}_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
+        PATCH_COMMAND ${PYTHON_APP}
+              ${PROJECTGROUP_SOURCE_DIR}/3rd_party/cmake_patch.py 
+              ${PROJECTGROUP_SOURCE_DIR} <SOURCE_DIR>
+        # SZConfig.h is 'stolen' from ./szip/szip-2.1/src/szip_build/windows/szipproj.zip/szip/src/SZConfig.h
         INSTALL_DIR "${_INSTALL_DIR}"
-###     BUILD_ALWAYS ${EP_BUILD_ALWAYS}
+        # BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
         # DEPENDS zlib
   )
