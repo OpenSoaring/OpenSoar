@@ -1,16 +1,18 @@
 cmake_minimum_required(VERSION 3.15)
 
-set(INCLUDE_WITH_TOOLCHAIN 1)  # special include path for every toolchain!
+set(INCLUDE_WITH_TOOLCHAIN 0)  # special include path for every toolchain!
+
 prepare_3rdparty(cares cares)
 
 if (_COMPLETE_INSTALL)
     set( CMAKE_ARGS
         "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
-        "-DCMAKE_INSTALL_BINDIR=${_INSTALL_BIN}"
-        "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB}"
+        "-DCMAKE_INSTALL_BINDIR=${_INSTALL_BIN_DIR}"
+        "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB_DIR}"
         # "-DCMAKE_INSTALL_COMPONENT=bin/${TOOLCHAIN}"
-        "-DCMAKE_INSTALL_INCLUDEDIR=include/${TOOLCHAIN}"
-        "-DCMAKE_BUILD_TYPE=Release"
+        # "-DCMAKE_INSTALL_INCLUDEDIR=include/${TOOLCHAIN}"
+        "-DCMAKE_INSTALL_INCLUDEDIR=${_INSTALL_INC_DIR}"
+        "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
         "-DCARES_SHARED=OFF"
         "-DCARES_STATIC=ON"
         "-DCARES_STATIC_PIC=ON"
@@ -32,7 +34,7 @@ if (_COMPLETE_INSTALL)
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
         DEPENDS  ${ZLIB_TARGET}  # !!!!
-        BUILD_BYPRODUCTS  ${_TARGET_LIBS} # ${${TARGET_CNAME}_LIB}
+        BUILD_BYPRODUCTS  ${_TARGET_LIBS}
     )
 endif()
 

@@ -73,8 +73,8 @@ set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ ${CMAKE_CXX_S
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libstdc++ -Wl,-Bstatic,--whole-archive -Wl,--no-whole-archive -v")
 # set(FREEGLUT_LIB_DIR "${LINK_LIBS}/freeglut-MinGW-3.0.0-1/freeglut")
     
-    set(SSL_LIB)
-    set(CRYPTO_LIB) # no extra (OpenSSL-)crypto lib on linux??!
+    set(SSL_LIBS)
+    set(CRYPTO_LIBS) # no extra (OpenSSL-)crypto lib on linux??!
 
 set(PERCENT_CHAR \%)
 set(DOLLAR_CHAR  $$)

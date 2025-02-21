@@ -30,5 +30,5 @@ else()
     message(FATAL_ERROR "Error: WIN32 not implemented?")
 endif()
 
-set(SSL_LIB )
-set(CRYPTO_LIB )
+set(SSL_LIBS )
+set(CRYPTO_LIBS )

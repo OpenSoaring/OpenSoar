@@ -59,7 +59,6 @@ else()
     message(FATAL_ERROR "Error: WIN32 not implemented?")
 endif()
 # set(FREEGLUT_LIB_DIR "${LINK_LIBS}/freeglut-MSVC-3.0.0-2/freeglut")
-#      set(SODIUM_LIB "${LINK_LIBS}/libsodium/x64/Release/v142/static/libsodium.lib")
 add_compile_definitions(SODIUM_STATIC=1)  # MSCV only...
 
 # see below      add_compile_definitions(CURL_STATICLIB)
@@ -71,19 +70,8 @@ set(BASIC_LINK_LIBRARIES
         ws2_32.lib
         gdiplus
 )
-list(APPEND BASIC_LINK_LIBRARIES
-        shlwapi                                   # needed from hdf5
-        # D:\Projects\link_libs\
-        ${LINK_LIBS}/sqlite3/test/lib/sqlite3.lib # needed from netcdf ?
-#        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_hl.lib # needed from netcdf
-#        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_tools.lib # needed from netcdf
-        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_hl.lib # needed from netcdf
-        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_tools.lib # needed from netcdf
-        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5.lib # needed from netcdf
-
-)
-set(SSL_LIB )  # no ssl lib on windowsfor curl necessary!
-set(CRYPTO_LIB Crypt32.lib BCrypt.lib)
+set(SSL_LIBS )  # no ssl lib on windows for curl necessary!
+set(CRYPTO_LIBS Crypt32.lib BCrypt.lib)
 
 set(USE_MEMORY_CANVAS OFF)
 

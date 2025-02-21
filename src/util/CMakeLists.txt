@@ -48,16 +48,9 @@ add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
 # message(FATAL_ERROR "Stop!")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)
 
-# if(${3RDPARTY_DEPENDENCIES})  # ON)
 ## if(OFF)
-    # message(STATUS "add_dependencies(${TARGET_NAME} ${BOOST_LIB} ${ZLIB_LIB} ${CARES_LIB} ${CURL_LIB} ${PNG_LIB} ${SODIUM_LIB} ${LUA_LIB})")
-#    add_dependencies(${TARGET_NAME} ${BOOST_LIB} ${ZLIB_LIB}    ${CARES_LIB}    ${CURL_LIB}    ${PNG_LIB}    ${SODIUM_LIB}    ${LUA_LIB} )
-    # message(FATAL_ERROR Stop!)
-
 ## else()
 ## endif()
 
 add_dependencies(${TARGET_NAME} ${3RDPARTY_TARGETS})
-
-# add_dependencies(${TARGET_NAME} boost zlib c-ares curl png lua_3rd)
 

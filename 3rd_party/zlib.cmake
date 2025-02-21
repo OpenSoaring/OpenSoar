@@ -7,16 +7,18 @@ else()
   set(_LIB_NAME z)
 endif()
 
-prepare_3rdparty(zlib ${_LIB_NAME})
+prepare_3rdparty(zlib ${_LIB_NAME} ${_LIB_NAME}d)
 
 if (_COMPLETE_INSTALL)
+#   endif()
+#   if (ON)
     #----------------------
     set(CMAKE_ARGS
         "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
-        "-DINSTALL_BIN_DIR:PATH=${_INSTALL_DIR}/${_INSTALL_BIN}"
-        "-DINSTALL_LIB_DIR:PATH=${_INSTALL_DIR}/${_INSTALL_LIB}"
+        "-DINSTALL_BIN_DIR:PATH=${_INSTALL_DIR}/${_INSTALL_BIN_DIR}"
+        "-DINSTALL_LIB_DIR:PATH=${_INSTALL_DIR}/${_INSTALL_LIB_DIR}"
         # ??? "-DCMAKE_CONFIGURATION_TYPES=Release"
-        "-DCMAKE_BUILD_TYPE=Release"
+        "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
 
         "-DZ_HAVE_UNISTD_H=OFF"  # MSVC only!!!!
     )
@@ -43,3 +45,4 @@ if (_COMPLETE_INSTALL)
 endif()
 
 post_3rdparty()
+  message(STATUS "---- ZLIB-Target(ZLIB_TARGET) = ${ZLIB_TARGET}") 

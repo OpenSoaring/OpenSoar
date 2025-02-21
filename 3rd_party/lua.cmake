@@ -6,11 +6,11 @@ prepare_3rdparty(lua lua)
 if (_COMPLETE_INSTALL)
     set(CMAKE_ARGS
         "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
-        "-DCMAKE_INSTALL_BINDIR=${_INSTALL_BIN}"
-        "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB}"
+        "-DCMAKE_INSTALL_BINDIR=${_INSTALL_BIN_DIR}"
+        "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB_DIR}"
         # "-DCMAKE_INSTALL_COMPONENT=bin/${TOOLCHAIN}"
         "-DCMAKE_INSTALL_INCLUDEDIR=include"
-        "-DCMAKE_BUILD_TYPE=Release"
+        "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
     )
 
     ExternalProject_Add(

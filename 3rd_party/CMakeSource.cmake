@@ -19,15 +19,21 @@ endif()
 list(APPEND CMAKE_FILES sodium.cmake)
 list(APPEND CMAKE_FILES fmt.cmake)
 
-if (1)  # SkySight!
+
+set (SKYSIGHT_LIBS ON)
+if (SKYSIGHT_LIBS)  # SkySight!
   list(APPEND CMAKE_FILES hdf5.cmake)
-  list(APPEND CMAKE_FILES proj.cmake)
-  # list(APPEND CMAKE_FILES sqlite3.cmake)
-  list(APPEND CMAKE_FILES tiff.cmake)
-  list(APPEND CMAKE_FILES geotiff.cmake)
-  list(APPEND CMAKE_FILES netcdf-c.cmake)
-  list(APPEND CMAKE_FILES netcdf-cxx.cmake)
-endif()
+  set (SKYSIGHT_TEST ON)
+  if (SKYSIGHT_TEST)
+     list(APPEND CMAKE_FILES sqlite.cmake)
+     list(APPEND CMAKE_FILES proj.cmake)
+     # list(APPEND CMAKE_FILES sqlite3.cmake)
+     list(APPEND CMAKE_FILES tiff.cmake)
+     list(APPEND CMAKE_FILES geotiff.cmake)
+     list(APPEND CMAKE_FILES netcdf-c.cmake)
+     list(APPEND CMAKE_FILES netcdf-cxx.cmake)
+  endif(SKYSIGHT_TEST)
+endif(SKYSIGHT_LIBS)
 
 if(0)  # MapServer
     list(APPEND CMAKE_FILES mapserver.cmake)

@@ -1,5 +1,23 @@
-# if (ON)
-  # 3rd-Party # 3rd-Party # 3rd-Party # 3rd-Party # 3rd-Party # 3rd-Party # 3rd-Party # 3rd-Party # 3rd-Party # 3rd-Party 
+# - <TARGET>                = ${TARGET_CNAME}
+#           - upper case name of the current target
+# - <target>                = ${TARGET_NAME}
+#           - lower case name of the current target
+# - <TARGET>_NAME           = ${TARGET_CNAME}_NAME
+#           - 
+# - <TARGET>_DIR            = ${TARGET_CNAME}_DIR
+#           - 
+# - <TARGET>         = ${TARGET_CNAME}
+#           - 
+# - <TARGET>_LIBS           = ${TARGET_CNAME}_LIBS
+#           - all needed libraries for target with 'optimized' or 'debug' label
+# - <TARGET>_LIBRARY        = ${TARGET_CNAME}_LIBRARY 
+#           - current library depend on Debug/Release
+# - <TARGET>_LIBRARY_RELEASE= ${TARGET_CNAME}_LIBRARY_RELEASE 
+#           - release library
+# - <TARGET>_LIBRARY_DEBUG  = ${TARGET_CNAME}_LIBRARY_DEBUG 
+#           - debug library 
+# - <TARGET>_INCLUDE_DIR    = ${TARGET_CNAME}_INCLUDE_DIR 
+#           - 
   cmake_minimum_required(VERSION 3.15)
   
   if (SHOW_SUBPROJECTS)
@@ -27,9 +45,33 @@ include(CMakeSource.cmake)
 
 set(EXTRA_BUILD 1)
 
+### macro(install_step arg1)
+###    message(STATUS "========================== ${arg1} ===================================")
+###    if(0)
+###      set (_install_cmd  INSTALL_COMMAND  cmake --build . --target install --config Debug)
+###    else()
+###      set (_install_cmd  "INSTALL_COMMAND \"\"")
+###    endif(1)
+### 
+### endmacro()
 
 #macro(prepare_3rdparty target_name) #  lib_name)
-macro(prepare_3rdparty target_name lib_name)
+macro(prepare_3rdparty target_name)
+    set(params ${ARGN}) # ARGN isn't like a list
+    list (GET params 0 lib_name)
+    list (LENGTH params _LENGTH)
+
+    ## if ("${debug_lib}" STREQUAL "NOTFOUND")
+    if (_LENGTH LESS 2)
+     #  message(FATAL_ERROR "Empty String (${_LENGTH}) !!!!!!!!!!!!!!!!!!!!!!!!!")
+      set(debug_lib ${lib_name})
+    else()
+      list (GET params 1 debug_lib)
+         # message(FATAL_ERROR "String debug_lib = ${debug_lib} / ${_LENGTH} !!!!!!!!!!!!!!!!!!!!!!!!!")
+    endif()
+##     message(STATUS "target_name (${target_name}) !!!!!!!!!!!!!!!!!!!!!!!!!")
+##     message(STATUS "lib_name    (${lib_name}) !!!!!!!!!!!!!!!!!!!!!!!!!")
+##     message(STATUS "debug_lib   (${debug_lib}) !!!!!!!!!!!!!!!!!!!!!!!!!")
     string(TOUPPER ${target_name} TARGET_CNAME)
 
     string(LENGTH ${TARGET_CNAME} _LENGTH)
@@ -60,17 +102,17 @@ macro(prepare_3rdparty target_name lib_name)
 
 
     #-------------------
-        if(INCLUDE_WITH_TOOLCHAIN)
+    if(INCLUDE_WITH_TOOLCHAIN)
+        set(_INSTALL_INC_DIR        "include/${TOOLCHAIN}")
         set(${TARGET_CNAME}_INCLUDE_DIR "${_INSTALL_DIR}/include/${TOOLCHAIN}")
     else()
+        set(_INSTALL_INC_DIR        "include")
         set(${TARGET_CNAME}_INCLUDE_DIR "${_INSTALL_DIR}/include")
     endif()
 
     # set(_INSTALL_DIR "${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}")
     # set(INSTALL_BIN "${_INSTALL_DIR}/bin/${TOOLCHAIN}")
     # set(INSTALL_LIB "${_INSTALL_DIR}/lib/${TOOLCHAIN}")
-    set(_INSTALL_BIN "bin/${TOOLCHAIN}")
-    set(_INSTALL_LIB "lib/${TOOLCHAIN}")
 
     if(${EXTRA_BUILD})
        set(_BUILD_TARGET ${LIB_TARGET_NAME}_build)
@@ -79,69 +121,26 @@ macro(prepare_3rdparty target_name lib_name)
        # string(REPLACE "\\" "/" _BUILD_TARGET  ${${TARGET_CNAME}_TARGET})
     endif()
 
-    set(_TARGET_LIBS_RELEASE   "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")
-##aug##    set(_TARGET_LIBS           "${_TARGET_LIBS_RELEASE}")
+    set(_TARGET_LIB_RELEASE   ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX})
+    set(_TARGET_LIB_DEBUG     ${_INSTALL_DIR}/lib/${TOOLCHAIN}d/${LIB_PREFIX}${debug_lib}${LIB_SUFFIX})
+    set(_TARGET_LIBS          optimized ${_TARGET_LIB_RELEASE}  debug ${_TARGET_LIB_DEBUG}) 
+##aug##    set(_TARGET_LIBRARY           "${_TARGET_LIB_RELEASE}")
     string(REPLACE "\\" "/" _PREFIX_DIR  ${${TARGET_CNAME}_PREFIX})
 
-    set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS})  ## for internal use
-# if (${lib_name} MATCHES "fmt" OR ${lib_name} MATCHES "netcdf-cxx4")
-if (${lib_name} MATCHES "fmt")
-    set(_TARGET_LIBS_DEBUG     "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}d${LIB_SUFFIX}")
-#    set(_TARGET_LIBS           "${_TARGET_LIBS_RELEASE}")
-    # set(_TARGET_LIBS           "${_TARGET_LIBS_DEBUG}")
-    set(
-##aug##      # ${TARGET_CNAME}_LIB
-      _TARGET_LIBS  ##aug##
-      optimized "${_TARGET_LIBS_RELEASE}"
-      debug "${_TARGET_LIBS_DEBUG}"
-##aug##      PARENT_SCOPE
-    )   ## D:/Project/link_libs...
-elseif (${lib_name} MATCHES "netcdf-cxx4")
-    set(_BIN_3RD_PARTY D:/Projects/Binaries/OpenSoar/dev-branch/3rd_Party)  # only August2111
-    set(_TARGET_LIBS          ${_BIN_3RD_PARTY}/netcdf_cxx/netcdf_cxx-4.3.1/build/${TOOLCHAIN}/cxx4/Debug/${LIB_PREFIX}${lib_name}${LIB_SUFFIX})
-    set(_TARGET_LIBS_DEBUG   "${_BIN_3RD_PARTY}/netcdf_cxx/netcdf_cxx-4.3.1/build/${TOOLCHAIN}/cxx4/Debug/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")
-
-    set(
-##aug##      # ${TARGET_CNAME}_LIB
-      _TARGET_LIBS  ##aug##
-      optimized ${_TARGET_LIBS_RELEASE}
-      debug     ${_TARGET_LIBS_DEBUG}
-##aug##      PARENT_SCOPE
-    )   ## D:/Project/link_libs...
-elseif (${lib_name} MATCHES "proj")
-    # set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_d${LIB_SUFFIX}")  ## D:/Project/link_libs...
-    set(_TARGET_LIBS_DEBUG     "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}d${LIB_SUFFIX}")
-##aug##  set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")  ## D:/Project/link_libs...
-    set(
-##aug##      # ${TARGET_CNAME}_LIB
-      _TARGET_LIBS  ##aug##
-      optimized ${_TARGET_LIBS_RELEASE}
-      debug     ${_TARGET_LIBS_DEBUG}
-##aug##      PARENT_SCOPE
-    )   ## D:/Project/link_libs...
-##aug##  elseif(${lib_name} MATCHES "hdf5")
-##aug##      # set(${TARGET_CNAME}_LIB  ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}${LIB_SUFFIX} PARENT_SCOPE)  ## D:/Project/link_libs...
-##aug##      # in the moment without toolchain...!!!
-##aug##      set(_TARGET_LIBS  "${_INSTALL_DIR}/lib/${LIB_PREFIX}${lib_name}${LIB_SUFFIX}")  ## D:/Project/link_libs...
-##aug##      set(${TARGET_CNAME}_LIB  ${_INSTALL_DIR}/lib/${LIB_PREFIX}${lib_name}${LIB_SUFFIX} PARENT_SCOPE)  ## D:/Project/link_libs...
-  elseif(${lib_name} MATCHES "hdf5")
-    set(_TARGET_LIBS           ${_TARGET_LIBS_RELEASE} 
-    ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_hl${LIB_SUFFIX}
-    ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_tools${LIB_SUFFIX}
+    set(${TARGET_CNAME}_LIBS  ${_TARGET_LIBS})  ## for internal use
+if(${lib_name} MATCHES "hdf5")
+      list(APPEND _TARGET_LIBS        
+      ## optimized ${_TARGET_LIB_RELEASE} 
+      optimized ${_INSTALL_DIR}/lib/${TOOLCHAIN}/${LIB_PREFIX}${lib_name}_hl${LIB_SUFFIX}
+      ## debug     ${_TARGET_LIB_DEBUG} 
+      debug ${_INSTALL_DIR}/lib/${TOOLCHAIN}d/${LIB_PREFIX}${lib_name}_hl_D${LIB_SUFFIX}
    )
-#        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_hl.lib # needed from netcdf
-#        ${LINK_LIBS}/hdf5/hdf5-1.14.4.3/lib/libhdf5_tools.lib # needed from netcdf
-else()
-    set(_TARGET_LIBS_DEBUG     ${_TARGET_LIBS_RELEASE})  ##aug##: the same...
-    set(_TARGET_LIBS           ${_TARGET_LIBS_RELEASE})
-    # set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS})  ## for internal use
-    # set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS} PARENT_SCOPE)  ## D:/Project/link_libs...
+   if(WIN32)
+      list(APPEND _TARGET_LIBS    shlwapi )
+   endif()
 endif()
-    set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS})  ## for internal use
-    set(${TARGET_CNAME}_LIB  ${_TARGET_LIBS} PARENT_SCOPE)  ## D:/Project/link_libs...
-
-
-    set(${TARGET_CNAME}_TARGET  ${${TARGET_CNAME}_TARGET} PARENT_SCOPE) # f.e. zlib_3rd, sodium_3rd
+ # set(${TARGET_CNAME}_LIBS  ${_TARGET_LIBS})  ## for internal use
+  set(${TARGET_CNAME}_DIR  ${_INSTALL_DIR})  ## D:/Project/link_libs...
 
 if (MSVC OR MINGW OR CLANG)
   set( _BINARY_STEP BINARY_DIR ${${TARGET_CNAME}_PREFIX}/build/${TOOLCHAIN})
@@ -151,21 +150,66 @@ else()
 #  message(FATAL_ERROR "_INSTALL_DIR = ${_INSTALL_DIR}")
 endif()
 
-    set(_INSTALL_COMMAND INSTALL_COMMAND cmake --build . --target install --config Release)
-
-if($<CONFIG:Debug>)
-    set(_TARGET_LIBS           ${_TARGET_LIBS_DEBUG})
+## message (FATAL_ERROR "Config = '$<CONFIG:Debug>', '$<CONFIG>', '$<CONFIGURATION>', '${CMAKE_BUILD_TYPE}' ")
+## if($<CONFIG:Debug>) 
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+    ### 
+    set(CMAKE_BUILD_TYPE Debug)
+    # message(FATAL_ERROR "+++++ CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE} ++++++")
+    if(VERBOSE_LEVEL GREATER 99)
+      message(STATUS "+++++ CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE} ++++++")
+    endif(VERBOSE_LEVEL GREATER 99)
 else()
-    set(_TARGET_LIBS           ${_TARGET_LIBS_RELEASE})
+    if(VERBOSE_LEVEL GREATER 99)
+      message(STATUS "!!!!!! CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE} !!!!!!")
+    endif(VERBOSE_LEVEL GREATER 99)
 endif()
 
-## ?? if(OFF)  ## test only (02.11.2024) =>  if(EXISTS ${_TARGET_LIBS})  ## for internal use
-if(EXISTS ${_TARGET_LIBS}) 
+set(_INSTALL_COMMAND INSTALL_COMMAND cmake --build . --target install)
+### ??? install_step(irgendwas)
+### ??? # set(_INSTALL_COMMAND  _install_cmd  )
+
+set(_INSTALL_BIN_DIR "bin/${TOOLCHAIN}")
+set(_INSTALL_LIB_DIR "lib/${TOOLCHAIN}")
+if(MSVC AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    set(_TARGET_LIBRARY     ${_TARGET_LIB_DEBUG})
+    list(APPEND _INSTALL_COMMAND --config Debug)
+    string(APPEND _INSTALL_BIN_DIR "d")
+    string(APPEND _INSTALL_LIB_DIR "d")
+else()
+    set(_TARGET_LIBRARY    ${_TARGET_LIB_RELEASE})
+    list(APPEND _INSTALL_COMMAND --config Release)
+endif()
+    set(${TARGET_CNAME}_LIBRARY  ${_TARGET_LIBRARY})
+
+# if(${VERBOSE_LEVEL} LESS 100)
+if(VERBOSE_LEVEL GREATER 99)
+  message(STATUS "++++++ 3rd party  = ${lib_name} =================")
+  ## message(STATUS "++++++ _TARGET_LIBS         =  ${_TARGET_LIBS}")
+  message(STATUS "++++++ _TARGET_LIB_DEBUG   =  ${_TARGET_LIB_DEBUG}")
+  message(STATUS "++++++ _TARGET_LIB_RELEASE =  ${_TARGET_LIB_RELEASE}")
+endif(VERBOSE_LEVEL GREATER 99)
+
+# -------------------------------------------------
+if(EXISTS ${_TARGET_LIBRARY}) 
     set(_COMPLETE_INSTALL OFF)
 else()
     set(_COMPLETE_INSTALL ON)
 endif()
+set(_COMPLETE_INSTALL ON) ## test only (03.11.2024)!!!!!!!!
+# -------------------------------------------------
+get_filename_component(${TARGET_CNAME}_LIB_DIR  ${${TARGET_CNAME}_LIBRARY} PATH)
 
+# this <TARGET>_CMAKE_DIR could be changed in target.cmake!
+set(_CMAKE_LIB "${_INSTALL_LIB_DIR}/cmake")
+set(${TARGET_CNAME}_CMAKE_DIR ${${TARGET_CNAME}_LIB_DIR}/cmake)
+
+### -> Public: ... PARENT_SCOPE
+  set(${TARGET_CNAME}_LIBS  ${_TARGET_LIBS} PARENT_SCOPE)  ## D:/Project/link_libs...
+  set(${TARGET_CNAME}_TARGET  ${${TARGET_CNAME}_TARGET} PARENT_SCOPE) # f.e. zlib_3rd, sodium_3rd
+  # set(_TARGET_LIBS    ${_TARGET_LIBS} PARENT_SCOPE)
+  set(${TARGET_CNAME}_LIB_DIR ${${TARGET_CNAME}_LIB_DIR} PARENT_SCOPE)
 endmacro()
 
 macro(post_3rdparty)
@@ -174,7 +218,7 @@ macro(post_3rdparty)
             add_library(${${TARGET_CNAME}_TARGET} STATIC IMPORTED GLOBAL)
         # set_source_files_properties(${${TARGET_CNAME}_LIB} PROPERTIES GENERATED TRUE)
         # set_target_properties(${${TARGET_CNAME}_TARGET} PROPERTIES IMPORTED_LOCATION  ${${TARGET_CNAME}_LIB}  GENERATED TRUE)
-        set_target_properties(${${TARGET_CNAME}_TARGET} PROPERTIES IMPORTED_LOCATION  ${_TARGET_LIBS}  GENERATED TRUE)
+        set_target_properties(${${TARGET_CNAME}_TARGET} PROPERTIES IMPORTED_LOCATION  ${_TARGET_LIBRARY}  GENERATED TRUE)
         set_target_properties(${${TARGET_CNAME}_TARGET} PROPERTIES FOLDER 3rdParty)
         add_dependencies(${${TARGET_CNAME}_TARGET}  ${_BUILD_TARGET})
     endif()
@@ -182,14 +226,19 @@ macro(post_3rdparty)
 if (_COMPLETE_INSTALL)
     set_target_properties(${_BUILD_TARGET} PROPERTIES FOLDER 3rdParty) # either zlib_build or zlib_3rd
 endif()
-    set(${TARGET_CNAME}_TARGET_LIBS  ${_TARGET_LIBS} PARENT_SCOPE)
-    set(${TARGET_CNAME}_INCLUDE_DIR  ${${TARGET_CNAME}_INCLUDE_DIR} PARENT_SCOPE)
-    list(APPEND THIRDPARTY_INCLUDES ${${TARGET_CNAME}_INCLUDE_DIR})
+    list(APPEND THIRDPARTY_INCLUDES  ${${TARGET_CNAME}_INCLUDE_DIR})
 
     # list(APPEND 3RDPARTY_TARGETS ${LIB_TARGET_NAME})
     list(APPEND 3RDPARTY_TARGETS ${${TARGET_CNAME}_TARGET})  # zlib_3rd
+
+### -> Public: ... PARENT_SCOPE
+  set(${TARGET_CNAME}_TARGET_LIBS  ${_TARGET_LIBS} PARENT_SCOPE)
+  set(${TARGET_CNAME}_INCLUDE_DIR  ${${TARGET_CNAME}_INCLUDE_DIR} PARENT_SCOPE)
 endmacro()
 
+  if(${lib_name} MATCHES "sqlite")
+    message(FATAL_ERROR "!!!!! CMAKE_FILES = ${CMAKE_FILES}")
+  endif()
     foreach(cmake_file ${CMAKE_FILES})
       include(${cmake_file})
     endforeach()
@@ -218,3 +267,18 @@ endmacro()
     endif()
     
 set_target_properties(ThirdParty PROPERTIES FOLDER 3rdParty)
+
+
+if(VERBOSE_LEVEL GREATER 80)
+message(STATUS      "!!!! HDF5_LIB_DIR: ${HDF5_LIB_DIR}")
+message(STATUS      "!!!! CURL_LIB_DIR: ${CURL_LIB_DIR}")
+message(STATUS      "!!!! ------------------------------------------  !!")
+message(STATUS      "!!!! HDF5_DIR:     ${HDF5_DIR}")
+message(STATUS      "!!!! CURL_DIR:     ${CURL_DIR}")
+message(STATUS      "!!!! ZLIB_DIR:     ${ZLIB_DIR}")
+message(STATUS      "!!!! ------------------------------------------  !!")
+message(STATUS      "!!!! HDF5F_CXX_CMAKE_DIR: ${HDF5_CMAKE_DIR}")
+message(STATUS      "!!!! NETCDF_CXX_CMAKE_DIR: ${NETCDF_CXX_CMAKE_DIR}")
+endif(VERBOSE_LEVEL GREATER 80)
+# message(FATAL_ERROR "!!!! HDF5_DIR: ${LINK_LIBS}/hdf5/hdf5-${HDF5_VERSION}")
+

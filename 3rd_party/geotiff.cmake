@@ -9,31 +9,36 @@ if (MSVC)  # unfortunately the lib name is a little bit 'tricky' at libPng..
   set(_LIB_NAME geotiff)
 endif()
 
-prepare_3rdparty(geotiff ${_LIB_NAME})
+prepare_3rdparty(geotiff ${_LIB_NAME} ${_LIB_NAME}_d)
 
 # D:/Projects/Binaries/OpenSoar/dev-branch/3rd_Party/geotiff/geotiff-1.7.1/src/geotiff/libgeotiff/libgeotiff
 # D:\Projects\Binaries\OpenSoar\dev-branch\3rd_Party\geotiff\geotiff-1.7.1\src\geotiff\libgeotiff
-set(GEOTIFF_SOURCE_DIR  "${GEOTIFF_PREFIX}/src")
 
-set(TIFF_DIR  "${LINK_LIBS}/tiff/tiff-4.6.0")
-set(PROJ_DIR  "${LINK_LIBS}/proj/proj-9.3.1")
+##set(GEOTIFF_SOURCE_DIR  "${GEOTIFF_PREFIX}/src")
+
+# set(TIFF_DIR  "${LINK_LIBS}/tiff/tiff-4.6.0")
+# set(PROJ_DIR  "${LINK_LIBS}/proj/proj-9.3.1")
 
 if (_COMPLETE_INSTALL)
-
     set(CMAKE_ARGS
-             "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
-             "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB}"
-            "-DCMAKE_INSTALL_INCLUDEDIR=include"
-            "-DCMAKE_BUILD_TYPE=Release"
-  
-        "-DGEOTIFF_LIB_SUBDIR=${_INSTALL_LIB}"
-        "-DWITH_UTILITIES=OFF"
-        "-DBUILD_SHARED_LIBS=OFF"
+             "-DCMAKE_INSTALL_PREFIX:PATH=${GEOTIFF_DIR}"
+             "-DCMAKE_INSTALL_LIBDIR:PATH=${GEOTIFF_LIB_DIR}"
+            "-DCMAKE_INSTALL_INCLUDEDIR:PATH=${GEOTIFF_INCLUDE_DIR}"   # "include"
+            "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
 
-        "-DPROJ_DIR=${PROJ_DIR}/lib/msvc2022/cmake/proj"
-        "-DTIFF_DIR=${TIFF_DIR}/lib/msvc2022/cmake/tiff"
-        "-DTIFF_INCLUDE_DIR=${TIFF_DIR}/include"
-        "-DPROJ_INCLUDE_DIR=${PROJ_DIR}/include"
+        # "-DWITH_UTILITIES:BOOL=OFF",
+        "-DBUILD_SHARED_LIBS=OFF",
+ 
+        "-DGEOTIFF_LIB_SUBDIR:PATH=${GEOTIFF_LIB_DIR}"
+        "-DWITH_UTILITIES:BOOL=OFF"
+        "-DBUILD_SHARED_LIBS:BOOL=OFF"
+
+        "-DTIFF_LIBRARIES:PATH=${TIFF_LIB_DIR}"
+        "-DPROJ_DIR:PATH=${PROJ_CMAKE_DIR}"  # ${PROJ_DIR}"  # "/lib/${TOOLCHAIN}/cmake/proj"
+        "-DTIFF_DIR:PATH=${TIFF_CMAKE_DIR}"   # ${TIFF_DIR}"   # "/lib/${TOOLCHAIN}/cmake/tiff"
+        "-DTIFF_INCLUDE_DIR:PATH=${TIFF_INCLUDE_DIR}"
+        # "-DPROJ_INCLUDE_DIR:PATH=${PROJ_DIR}/include"
+        "-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY"
 
     )
 
@@ -65,9 +70,9 @@ if (_COMPLETE_INSTALL)
   
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
-        # DEPENDS ${ZLIB_TARGET}
+        DEPENDS ${ZLIB_TARGET} ${TIFF_TARGET} ${PROJ_TARGET} ${HDF5_TARGET}
      
-        BUILD_BYPRODUCTS  ${_TARGET_LIBS} # ${${TARGET_CNAME}_LIB}
+ # 2024-22-19       BUILD_BYPRODUCTS  ${_TARGET_LIBS} # ${${TARGET_CNAME}_LIB}
     )
 endif()
 post_3rdparty()

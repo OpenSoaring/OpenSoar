@@ -4,24 +4,27 @@ cmake_minimum_required(VERSION 3.15)
 set(INCLUDE_WITH_TOOLCHAIN 0)  # special include path for every toolchain!
 
 set(_LIB_NAME netcdf)
-## if (MSVC)  # unfortunately the lib name is a little bit 'tricky' at libPng..
-##   set(_LIB_NAME libnetcdf_c)
-##   # message(FATAL_ERROR LibPng: MSVC')
-##  else()
-##   set(_LIB_NAME netcdf_c)
-## endif()
 
-set (HDF5_DIR ${LINK_LIBS}/hdf5/hdf5-${HDF5_VERSION})
-# set (CURL_DIR ${LINK_LIBS}/curl/curl-${CURL_VERSION})
-# set (ZLIB_DIR ${LINK_LIBS}/zlib/zlib-${ZLIB_VERSION})
 prepare_3rdparty(netcdf_c ${_LIB_NAME})
+string(APPEND NETCDF_C_CMAKE_DIR  /netCDF)
+
+#  set(HDF5_CMAKE_DIR  ${HDF5_DIR}/cmake) # WRONG!!! ??????
+#  set(HDF5_CMAKE_DIR  lib/${TOOLCHAIN}d/cmake)
+message (STATUS "xxxx Test: ${HDF5_CMAKE_DIR}")
+# string(REPLACE "${HDF5_DIR}//" "./" HDF5_CMAKE_DIR ${HDF5_CMAKE_DIR} )
+message (STATUS "xxxx Test: ${HDF5_DIR}")
+message (STATUS "xxxx Test: ${HDF5_CMAKE_DIR}")
+message (STATUS "xxxx Test: ${HDF5_LIB_DIR}")
+message (STATUS "xxxx Test: ${HDF5_INCLUDE_DIR}")
+## message (FATAL_ERROR "xxxx STOP!!!")
+
 if (_COMPLETE_INSTALL)
 
     set(CMAKE_ARGS
-             "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
-             "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB}"
-            "-DCMAKE_INSTALL_INCLUDEDIR=include"
-            "-DCMAKE_BUILD_TYPE=Release"
+             "-DCMAKE_INSTALL_PREFIX=${NETCDF_C_DIR}"
+             "-DCMAKE_INSTALL_LIBDIR=${NETCDF_C_LIB_DIR}"
+        "-DCMAKE_INSTALL_INCLUDEDIR=${NETCDF_C_INCLUDE_DIR}"
+        "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
   
         "-DWITH_UTILITIES=OFF"
         "-DBUILD_SHARED_LIBS=OFF"
@@ -35,15 +38,30 @@ if (_COMPLETE_INSTALL)
         "-DENABLE_DAP=OFF"
         "-DENABLE_TESTS=OFF"
 
-        # "-DHDF5_DIR=${HDF5_INSTALL_DIR}/cmake"
-        "-DHDF5_DIR=${HDF5_DIR}/cmake"
-        # "-DHAVE_HDF5_H=${HDF5_INSTALL_DIR}/include"
-        "-DHAVE_HDF5_H=${HDF5_DIR}/include"
-        "-DCURL_DIR=${CURL_INSTALL_DIR}/lib/${TOOLCHAIN}/cmake/CURL"
-        "-DCURL_INCLUDE_DIR=${CURL_INSTALL_DIR}/include"
-        "-DCURL_LIBRARY_DEBUG=${CURL_DIR}/lib/${TOOLCHAIN}/curl.lib"
-        "-DCURL_LIBRARY_RELEASE=${CURL_DIR}/lib/${TOOLCHAIN}/curl.lib"
-        "-DZLIB_INCLUDE_DIR=${ZLIB_DIR}/include"
+        "-DCURL_DIR:PATH=${CURL_CMAKE_DIR}"
+        "-DCURL_INCLUDE_DIR:PATH=${CURL_INCLUDE_DIR}"
+        "-DCURL_LIBRARY:FILEPATH=${CURL_LIBRARY}"
+        # "-DCURL_LIBRARY_RELEASE=${CURL_DIR}/lib/${TOOLCHAIN}/curl.lib"
+        "-DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}"
+        "-DZLIB_INCLUDE_DIR=${ZLIB_INCLUDE_DIR}"
+
+        "-DNC_FIND_SHARED_LIBS=OFF"
+
+        # "-DHDF5_DIR=${HDF5_DIR}"
+
+        "-DHAVE_HDF5_H:PATH=${HDF5_INCLUDE_DIR}"
+        # "-DHDF5_DIR:PATH=${HDF5_DIR}"
+        # "-DHDF5_CMAKE_DIR:PATH=${HDF5_CMAKE_DIR}"
+        "-DHDF5_DIR:PATH=${HDF5_CMAKE_DIR}"
+        # "-DHDF5_BUILD_DIR:PATH=${HDF5_DIR}"
+        # "-DHDF5_DIR:PATH=${HDF5_DIR}"
+        "-DHDF5_PACKAGE_NAME=hdf5"
+        "-DHDF5_LIBRARIES:PATH=${HDF5_LIB_DIR}"
+        "-DHDF5_INCLUDE_DIRS:PATH=${HDF5_INCLUDE_DIR}"
+        "-DHDF5_HL_LIBRARIES:PATH=${HDF5_LIB_DIR}"
+
+        # funktionierte so bei ggeotiff - hier auch???
+        "-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY"
     )
 
     ExternalProject_Add(
@@ -62,7 +80,7 @@ if (_COMPLETE_INSTALL)
   
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
-        DEPENDS ${ZLIB_TARGET} ${CURL_TARGET} ${HDF5_TARGET}
+        DEPENDS ${ZLIB_TARGET} ${CURL_TARGET} ${HDF5_TARGET} ${PROJ_TARGET}
      
         BUILD_BYPRODUCTS  ${_TARGET_LIBS} # ${${TARGET_CNAME}_LIB}
     )

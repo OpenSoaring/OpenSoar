@@ -96,8 +96,8 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static  -v")
 #  list(APPEND CMAKE_EXE_LINKER_FLAGS -static -v)
 
 
-set(SSL_LIB )  # no ssl lib on windows! == Use Schannel
-set(CRYPTO_LIB Crypt32.lib BCrypt.lib) # no (OpenSSL-)crypto lib on windows!
+set(SSL_LIBS )  # no ssl lib on windows! == Use Schannel
+set(CRYPTO_LIBS Crypt32.lib BCrypt.lib) # no (OpenSSL-)crypto lib on windows!
 
 set(PERCENT_CHAR "%%" GLOBAL)
 set(DOLLAR_CHAR  "$$" GLOBAL)

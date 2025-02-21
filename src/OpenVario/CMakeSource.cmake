@@ -64,8 +64,8 @@ set(OPENVARIOBASEMENU_LIBS
 
    ${FMT_LIB} ${CURL_TARGET} ${CARES_TARGET} ${ZLIB_TARGET}
    ${SODIUM_TARGET}  # new at 06/2020
-   ${SSL_LIB}  # new at 03/2021
-   ${CRYPTO_LIB}  # new at 03/2021
+   ${SSL_LIBS}  # new at 03/2021
+   ${CRYPTO_LIBS}  # new at 03/2021
 )
 
 # Win32!

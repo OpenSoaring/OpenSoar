@@ -1,18 +1,25 @@
 cmake_minimum_required(VERSION 3.15)
 # get_filename_component(LIB_TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
 set(INCLUDE_WITH_TOOLCHAIN 0)  # special include path for every toolchain!
-set(_LIB_NAME libsodium) # "liblibsodium.a"
+
+## set(_LIB_NAME sodium) # "libsodium.a"
+# unfortunately the windows lib name is libsodium.lib, not sodium.lib!?
+if (MSVC)
+  set(_LIB_NAME libsodium)
+else()
+  set(_LIB_NAME sodium)
+endif()
 Prepare_3rdParty(sodium ${_LIB_NAME})
 
 
-string(REPLACE "/" "\\" _INSTALL_DIR ${SODIUM_INSTALL_DIR})
-string(REPLACE "/" "\\" _SOURCE_DIR  ${SODIUM_PREFIX}/src/${LIB_TARGET_NAME})
+# string(REPLACE "/" "\\" _INSTALL_DIR ${SODIUM_INSTALL_DIR})
+# string(REPLACE "/" "\\" _SOURCE_DIR  ${SODIUM_PREFIX}/src/${LIB_TARGET_NAME})
 
 if (WIN32 AND MSVC)
-      set(BUILD_COMMAND devenv ${_SOURCE_DIR}\\libsodium.sln /Build Release|x64)
-      set(CONFIGURE_COMMAND  echo ${BUILD_COMMAND})
-      # set(INSTALL_COMMAND xcopy ${_SOURCE_DIR}\\Build\\Release\\x64\\*.lib ${_INSTALL_DIR}\\lib\\${TOOLCHAIN}\\* /Y /T)
-      set(INSTALL_COMMAND xcopy ${_SOURCE_DIR}\\src\\libsodium\\include\\*.h ${_INSTALL_DIR}\\include\\* /Y /I /S /E)
+#      set(BUILD_COMMAND devenv ${_SOURCE_DIR}\\libsodium.sln /Build Release|x64)
+#      set(CONFIGURE_COMMAND  echo ${BUILD_COMMAND})
+#      # set(INSTALL_COMMAND xcopy ${_SOURCE_DIR}\\Build\\Release\\x64\\*.lib ${_INSTALL_DIR}\\lib\\${TOOLCHAIN}\\* /Y /T)
+#      set(INSTALL_COMMAND xcopy ${_SOURCE_DIR}\\src\\libsodium\\include\\*.h ${_INSTALL_DIR}\\include\\* /Y /I /S /E)
 elseif (WIN32 AND MINGW AND NOT CLANG)
       find_program(MAKE_EXECUTABLE NAMES gmake make mingw32-make REQUIRED)
 endif()
@@ -20,11 +27,11 @@ endif()
 if (_COMPLETE_INSTALL)
     set(CMAKE_ARGS
         "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
-        "-DCMAKE_INSTALL_BINDIR=${_INSTALL_BIN}"
-        "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB}"
+        "-DCMAKE_INSTALL_BINDIR=${_INSTALL_BIN_DIR}"
+        "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB_DIR}"
         # "-DCMAKE_INSTALL_COMPONENT=bin/${TOOLCHAIN}"
         "-DCMAKE_INSTALL_INCLUDEDIR=include"
-        "-DCMAKE_BUILD_TYPE=Release"
+        "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
     )
 
     # message(FATAL_ERROR "+++ BINARY_STEP (${TARGET_CNAME}): ${_BINARY_STEP}")

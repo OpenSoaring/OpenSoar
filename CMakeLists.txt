@@ -392,31 +392,57 @@ endif()
 # preparing target_link_libraries!
 list(APPEND XCSOAR_LINK_LIBRARIES  libOpenSoar ${XCSOAR_SOURCE_LISTS})
 
-# TODO(aug): Cleaning up this code!!!
+# TODO(aug): Cleaning up this code!!!! 
 if(1)
-  message(STATUS "Boost:        BOOST_LIB       =  ${Boost_LIBRARIES} ")  # BOOST_LIB ???
-  message(STATUS "C-Ares:       CARES_LIB       =  ${CARES_LIB}     / ${CARES_TARGET} ")
-  message(STATUS "Curl:         CURL_LIB        =  ${CURL_LIB}      / ${CURL_TARGET} ")
-  message(STATUS "Jasper:       JASPER_LIB      =  ${JASPER_LIB}    / ${JASPER_TARGET} ")
-  ## message(STATUS "LibPng:       LIBPNG_LIB      =  ${LIBPNG_LIB} ")
-  message(STATUS "Png:          PNG_LIB         =  ${PNG_LIB}       / ${PNG_TARGET} ")
-  message(STATUS "Sodium:       SODIUM_LIB      =  ${SODIUM_LIB}    / ${SODIUM_TARGET} ")
-  # message(STATUS "LibSodium:    LIBSODIUM_LIB   =  ${LIBSODIUM_LIB} ")
-  message(STATUS "Lua:          LUA_LIB         =  ${LUA_LIB}       / ${LUA_TARGET} ")
-  #message(STATUS "Lua_3rd:      LUA_LIB_3RD     =  ${LUA_LIB_3RD} ")
-  message(STATUS "ZLib:         ZLIB_LIB        =  ${ZLIB_LIB}      / ${ZLIB_TARGET} ")
-  message(STATUS "ZZip:         ZZIP_LIB        =  ${ZZIP_LIB}      / ${ZZIP_TARGET} ")
-  message(STATUS "Fmt:          FMT_LIB         =  ${FMT_LIB}       / ${FMT_TARGET} ")
+  message(STATUS "Boost:        BOOST_LIBS       =  ${Boost_LIBRARIES} ")  # BOOST_LIB ???
+  message(STATUS "C-Ares:       CARES_LIBS       =  ${CARES_LIBS}     / ${CARES_TARGET} ")
+  message(STATUS "Curl:         CURL_LIBS        =  ${CURL_LIBS}      / ${CURL_TARGET} ")
+  message(STATUS "Jasper:       JASPER_LIBS      =  ${JASPER_LIBS}    / ${JASPER_TARGET} ")
+  ## message(STATUS "LibPng:       LIBPNG_LIBS      =  ${LIBPNG_LIBS} ")
+  message(STATUS "Png:          PNG_LIBS         =  ${PNG_LIBS}       / ${PNG_TARGET} ")
+  message(STATUS "Sodium:       SODIUM_LIBS      =  ${SODIUM_LIBS}    / ${SODIUM_TARGET} ")
+  # message(STATUS "LibSodium:    LIBSODIUM_LIBS   =  ${LIBSODIUM_LIBS} ")
+  message(STATUS "Lua:          LUA_LIBS         =  ${LUA_LIBS}       / ${LUA_TARGET} ")
+  #message(STATUS "Lua_3rd:      LUA_LIBS_3RD     =  ${LUA_LIBS_3RD} ")
+  message(STATUS "ZLib:         ZLIB_LIBS        =  ${ZLIB_LIBS}      / ${ZLIB_TARGET} ")
+  message(STATUS "ZZip:         ZZIP_LIBS        =  ${ZZIP_LIBS}      / ${ZZIP_TARGET} ")
+  message(STATUS "Fmt:          FMT_LIBS         =  ${FMT_LIBS}       / ${FMT_TARGET} ")
 
-  message(STATUS "tiff:         TIFF_LIB        =  ${TIFF_LIB}      / ${TIFF_TARGET} ")
-  message(STATUS "geotiff:      GEOTIFF_LIB     =  ${GEOTIFF_LIB}   / ${GEOTIFF_TARGET} ")
-  message(STATUS "proj:         PROJ_LIB        =  ${PROJ_LIB}      / ${PROJ_TARGET} ")
-  message(STATUS "netcdf-c:     NETCDF_C_LIB    =  ${NETCDF_C_LIB}  / ${NETCDF_C_TARGET} ")
-  message(STATUS "netcdf-cxx:   NETCDF_CXX_LIB  =  ${NETCDF_CXX_LIB} / ${NETCDF_CXX_TARGET} ")
-  message(STATUS "hdf5:         HDF5_LIB        =  ${HDF5_LIB}      / ${HDF5_TARGET} ")
+  message(STATUS "tiff:         TIFF_LIBS        =  ${TIFF_LIBS}      / ${TIFF_TARGET} ")
+  message(STATUS "geotiff:      GEOTIFF_LIBS     =  ${GEOTIFF_LIBS}   / ${GEOTIFF_TARGET} ")
+  message(STATUS "sqlite:       SQLITE_LIBS      =  ${SQLITE_LIBS}    / ${SQLITE_TARGET} ")
+  message(STATUS "proj:         PROJ_LIBS        =  ${PROJ_LIBS}      / ${PROJ_TARGET} ")
+  message(STATUS "netcdf-c:     NETCDF_C_LIBS    =  ${NETCDF_C_LIBS}  / ${NETCDF_C_TARGET} ")
+  message(STATUS "netcdf-cxx:   NETCDF_CXX_LIBS  =  ${NETCDF_CXX_LIBS} / ${NETCDF_CXX_TARGET} ")
+  message(STATUS "hdf5:         HDF5_LIBS        =  ${HDF5_LIBS}      / ${HDF5_TARGET} ")
   # message(FATAL_ERROR "Stop: XCSOAR_LINK_LIBRARIES")
 endif()
 
+if(1)  ### better _LIB as _TARGET...
+list(APPEND XCSOAR_LINK_LIBRARIES
+   ${LUA_LIBS}
+   ${CURL_LIBS}
+   ${FMT_LIBS}
+#   ${MAPSERVER_LIBS}
+   ${LIBPNG_LIBS}
+   ${ZLIB_LIBS}
+   ${ZZIP_LIBS}    # internal or external...
+   ${SODIUM_LIBS}  # new at 06/2020
+   ${SSL_LIBS}  # new at 03/2021
+   ${CRYPTO_LIBS}  # new at 03/2021
+   ${CARES_LIBS}  # new at 03/2021
+   
+   ${TIFF_LIBS}  # new at 06/2024
+   ${GEOTIFF_LIBS}  # new at 06/2024
+      ${SQLITE_LIBS}  # new at 11/2024
+   ${PROJ_LIBS}  # new at 06/2024
+   ${NETCDF_C_LIBS}  # new at 06/2024
+   ${NETCDF_CXX_LIBS}  # new at 06/2024
+   ${HDF5_LIBS}  # new at 06/2024
+
+   ${Boost_LIBRARIES}
+)
+else()    ## -----------------------------------------
 list(APPEND XCSOAR_LINK_LIBRARIES
    ${LUA_TARGET}
    ${CURL_TARGET}
@@ -427,19 +453,23 @@ list(APPEND XCSOAR_LINK_LIBRARIES
    ${ZLIB_TARGET}
    ${ZZIP_TARGET}    # internal or external...
    ${SODIUM_TARGET}  # new at 06/2020
-   ${SSL_LIB}  # new at 03/2021
-   ${CRYPTO_LIB}  # new at 03/2021
+   ${SSL_LIBS}  # new at 03/2021
+   ${CRYPTO_LIBS}  # new at 03/2021
    ${CARES_TARGET}  # new at 03/2021
    
    ${TIFF_TARGET}  # new at 06/2024
    ${GEOTIFF_TARGET}  # new at 06/2024
-   ${PROJ_TARGET}  # new at 06/2024
+   # ${PROJ_TARGET}  # new at 06/2024
+   ${SQLITE_TARGET}  # new at 11/2024
+   ${PROJ_LIB}  # new at 06/2024
    ${NETCDF_C_TARGET}  # new at 06/2024
    ${NETCDF_CXX_TARGET}  # new at 06/2024
 #   ${HDF5_TARGET}  # new at 06/2024
-   
+   ${HDF5_LIB}  # new at 06/2024
+
    ${Boost_LIBRARIES}
 )
+endif()
 
 if (WIN32)  # Windows only:
     # BASIC_LINK_LIBRARIES from Toolchain
@@ -466,8 +496,16 @@ else()        # executable!
    add_executable(${TARGET_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${EXT_PROJ})
 endif()
 
-
 list(APPEND XCSOAR_LINK_LIBRARIES ) # sequence is very important, I don't no, why'!!!!
+
+set (VERBOSE_LEVEL 10)
+if (_VERBOSE_LEVEL)
+    message(STATUS "----- XCSOAR_LINK_LIBRARIES = ${XCSOAR_LINK_LIBRARIES}")
+    foreach(libs ${XCSOAR_LINK_LIBRARIES})
+      message(STATUS "+++ XCSOAR_LINK_LIBRARIES: ${libs}")
+    endforeach()
+    message(FATAL_ERROR "Stop =================")
+endif()
 
 target_link_libraries(${TARGET_NAME} PUBLIC ${XCSOAR_LINK_LIBRARIES})
 if(MSVC)
@@ -518,4 +556,31 @@ if (MSVC)
         "${CMAKE_CURRENT_SOURCE_DIR}/ide/msvc/OpenSoar.vcxproj.user.in"
         "${PROJECTGROUP_BINARY_DIR}/${TARGET_NAME}.vcxproj.user"
     )
+endif()
+
+
+if (VERBOSE_LEVEL GREATER 100)
+    set(HDF5_DIR D:/Projects/link_libs/hdf5/hdf5-1.14.5)
+    # set(HDF5_DIR D:/Projects/link_libs/hdf5/hdf5-1.14.5/cmake)
+    # set(HDF5_CMAKE_DIR D:/Projects/link_libs/hdf5/hdf5-1.14.5/cmake)
+    set(HDF5_LIBRARIES ${HDF5_LIB_DIR})
+    set(HDF5_HL_LIBRARIES ${HDF5_LIB_DIR})
+    set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIR})
+    message (STATUS "xxxx Test: ${HDF5_DIR}")
+    message (STATUS "xxxx Test: ${HDF5_CMAKE_DIR}")
+    message (STATUS "xxxx Test: ${HDF5_LIB_DIR}d")
+    message (STATUS "xxxx Test: ${HDF5_INCLUDE_DIR}")
+    message (STATUS "xxxx Test: ${C}")
+    message (STATUS "xxxx Test: ${HL}")
+    
+    message(STATUS "0 ----------------------------------")
+    FIND_PACKAGE(hdf5 COMPONENTS C HL) #  REQUIRED)
+    message(STATUS "1 ----------------------------------")
+    FIND_PACKAGE(HDF5 COMPONENTS C HL)
+    message(STATUS "2 ----------------------------------")
+    FIND_PACKAGE(HDF5)
+    message(STATUS "3 ----------------------------------")
+    FIND_PACKAGE(hdf5)
+    message(STATUS "3 ----------------------------------")
+    message(FATAL_ERROR "xxxxx Stop !!")
 endif()

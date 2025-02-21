@@ -5,7 +5,7 @@ set(INCLUDE_WITH_TOOLCHAIN 0)  # special include path for every toolchain!
 ###     debug fmtd optimized fmt
 set(_LIB_NAME fmt)   # "liblibfmt.a"
 ## set(_LIB_NAME fmtd)   # "liblibfmt.a"
-Prepare_3rdParty(fmt ${_LIB_NAME})
+Prepare_3rdParty(fmt ${_LIB_NAME} ${_LIB_NAME}d)
 
 
 string(REPLACE "\\" "/" _INSTALL_DIR ${FMT_INSTALL_DIR})
@@ -23,11 +23,15 @@ endif()
 if (_COMPLETE_INSTALL)
     set(CMAKE_ARGS
         "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
-        "-DCMAKE_INSTALL_BINDIR=${_INSTALL_BIN}"
-        "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB}"
+        "-DCMAKE_INSTALL_BINDIR=${_INSTALL_BIN_DIR}"
+        "-DFMT_BINARY_DIR=${_INSTALL_BIN_DIR}"
+        "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB_DIR}"
+        "-DFMT_LIB_DIR=${_INSTALL_LIB_DIR}"
+        "-DFMT_CMAKE_DIR=${_INSTALL_LIB_DIR}/cmake"
+        "-DFMT_PKGCONFIG_DIR=${_INSTALL_LIB_DIR}/cmake"
         # "-DCMAKE_INSTALL_COMPONENT=bin/${TOOLCHAIN}"
         "-DCMAKE_INSTALL_INCLUDEDIR=include"
-        "-DCMAKE_BUILD_TYPE=Release"
+        "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
     )
 
     # message(FATAL_ERROR "+++ BINARY_STEP (${TARGET_CNAME}): ${_BINARY_STEP}")
@@ -41,7 +45,6 @@ if (_COMPLETE_INSTALL)
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"   # ${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}"
-
         # PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_SOURCE_DIR}/3rd_party/fmt_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
         CMAKE_ARGS ${CMAKE_ARGS}
         # INSTALL_COMMAND   cmake --build . --target install --config Release

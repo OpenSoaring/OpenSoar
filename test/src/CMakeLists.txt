@@ -10,7 +10,7 @@ set(SRC_DIR ${PROJECTGROUP_SOURCE_DIR}/test/src)
 include(CMakeSource.cmake)
 
 foreach(source_file ${TEST_LIST})
-     message(STATUS "+++ Add Test-Project to test: ${source_file} ")
+    ## CMake Debug:  message(STATUS "+++ Add Test-Project to test: ${source_file} ")
 
     add_compile_definitions("__STDC_VERSION__= 199901L") # ?
     get_filename_component(test ${source_file} NAME_WE)

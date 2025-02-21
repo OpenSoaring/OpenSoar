@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 
-set (TARGET_NAME      libsodium)
+# set (TARGET_NAME      libsodium)
+set (TARGET_NAME      sodium)
 project(${TARGET_NAME})
 
 set(_INCLUDE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include)

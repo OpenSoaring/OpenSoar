@@ -10,14 +10,17 @@ if (MSVC)  # unfortunately the lib name is a little bit 'tricky' at libPng..
   set(_LIB_NAME tiff)
 endif()
 
-prepare_3rdparty(tiff ${_LIB_NAME})
+prepare_3rdparty(tiff ${_LIB_NAME} ${_LIB_NAME}d)
+# is not standard:
+# set(${TARGET_CNAME}_CMAKE_DIR ${${TARGET_CNAME}_CMAKE_DIR}/tiff)
+string(APPEND ${TARGET_CNAME}_CMAKE_DIR  /tiff)
 if (_COMPLETE_INSTALL)
 
     set(CMAKE_ARGS
              "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
-             "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB}"
+             "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB_DIR}"
             "-DCMAKE_INSTALL_INCLUDEDIR=include"
-            "-DCMAKE_BUILD_TYPE=Release"
+            "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
   
         "-DBUILD_SHARED_LIBS=OFF"
         "-Dtiff-tools=OFF"
