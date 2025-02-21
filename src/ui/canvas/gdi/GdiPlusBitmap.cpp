@@ -99,8 +99,11 @@ GdiLoadImage(UncompressedImage &&uncompressed)
   bmfh.bfSize = nBitsOffset + bmi.bmiHeader.biSizeImage;
   bmfh.bfReserved1 = bmfh.bfReserved2 = 0;
 
-#if defined(GDI_WITH_TESTSAVE) && 0
-  std::ofstream file("D:/Data/xxx.bmp", std::ios_base::binary);
+#if defined(GDI_WITH_TESTSAVE)
+  auto path = LocalPath("/skysight/bitmapTest");
+#endif
+#if defined(GDI_WITH_TESTSAVE)
+  std::ofstream file(path.WithSuffix("XXL.bmp").c_str(), std::ios_base::binary);
   if (!file.is_open())
   {
     return nullptr;
@@ -123,7 +126,6 @@ GdiLoadImage(UncompressedImage &&uncompressed)
   Gdiplus::Bitmap bitmap( &bmi, const_cast<void *> (uncompressed.GetData()));
 
 #ifdef GDI_WITH_TESTSAVE
-  auto path = LocalPath("/skysight/bitmapTest");
   bitmap.Save(UTF8ToWide(path.WithSuffix(".png").c_str()).c_str(),
     &pngEncoder, nullptr);
   bitmap.Save(UTF8ToWide(path.WithSuffix(".bmp").c_str()).c_str(),
