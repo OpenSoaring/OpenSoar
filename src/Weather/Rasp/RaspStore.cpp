@@ -106,6 +106,7 @@ RaspStore::GetNearestTime(unsigned item_index, unsigned time_index) const
 bool
 RaspStore::WeatherFilename(char *filename, Path path, unsigned time_index)
 {
+//  if (path != nullptr)
   if (path.empty())
     return false;
   const BrokenTime t = IndexToTime(time_index);
