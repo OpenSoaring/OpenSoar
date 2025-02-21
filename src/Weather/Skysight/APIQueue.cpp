@@ -20,6 +20,9 @@ Copyright_License {
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 }
 */
+
+#if defined(HAVE_SKYSIGHT)
+
 #include "SkysightAPI.hpp"
 #include "APIQueue.hpp"
 #include "APIGlue.hpp"
@@ -162,3 +165,5 @@ SkysightAPIQueue::DoClearingQueue()
   timer.Cancel();
   is_clearing = false;
 }
+
+#endif
