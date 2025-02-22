@@ -316,8 +316,10 @@ else()
 )
 endif()
 
+set(RESOURCE_FILES ${RESOURCE_FILES} PARENT_SCOPE)
+
 add_library(${TARGET_NAME}  ${XCSOAR_LIB_TYPE}
-   ${RESOURCE_FILES}  # depends on system?
+#   ${RESOURCE_FILES}  # depends on system?
    
    ${C_FILES}
    ${HEADER_FILES}
