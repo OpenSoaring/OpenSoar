@@ -399,6 +399,13 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
       {
         /* std::string -  not std::string_view because after j.second.get the
         * data will be empty! */
+        std::string tst = j.first.data(); 
+        std::string msg = j.second.data(); 
+        if (!tst.empty() && (tst == "message") &&
+             !msg.empty() && (msg == "Bad API Key")) {
+          queue.SetKey("", 0);
+          return false;
+        }
         std::string id = j.second.get("layer_id", "");
         if (id.empty())
           continue;
