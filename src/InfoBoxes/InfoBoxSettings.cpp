@@ -32,6 +32,8 @@ InfoBoxSettings::SetDefaults() noexcept
 
   geometry = Geometry::SPLIT_8;
 
+  scale_title_font = 100;  // August2111
+
   use_colors = true;
   border_style = BorderStyle::SHADED;
 
