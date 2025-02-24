@@ -19,6 +19,7 @@
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Request.hxx"
 #include "time/BrokenDateTime.hpp"
+#include "ZipArchive.hpp"
 
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -511,6 +512,15 @@ SkysightAPI::ParseData(const SkysightRequestArgs &args,
 {
   auto output_img =
       GetPath(SkysightCallType::Image, args.layer.c_str(), args.from);
+  char buffer[16];  // a test buffer at beginning of file
+  auto filepath = Path(args.path.c_str());
+  File::ReadString(filepath, buffer, sizeof(buffer));
+  if (strncmp(buffer, "<?xml version=", 14) == 0) {
+    // this is an (error) message, no zip file or CDF-File
+    LogFmt("XML-File: {}", buffer);
+  } else if (strncmp(buffer, "CDF", 3)) {
+      ZipIO::UnzipSingleFile(filepath, filepath);  // use the same name for unzipped file
+  }
   queue.AddDecodeJob(std::make_unique<CDFDecoder>(
       args.path.c_str(), output_img.c_str(), args.layer.c_str(), args.from,
       GetLayer(args.layer)->legend, args.cb));
