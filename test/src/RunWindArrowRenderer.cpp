@@ -46,6 +46,8 @@ protected:
   }
 };
 
+static double delta = 1;
+
 static void
 Main(TestMainWindow &main_window)
 {
@@ -61,11 +63,12 @@ Main(TestMainWindow &main_window)
 
   UI::PeriodicTimer timer([&wind](){
     SpeedVector _wind = wind.GetWind();
-
     _wind.bearing = (_wind.bearing + Angle::Degrees(5)).AsBearing();
-    _wind.norm += 1;
+    _wind.norm += delta;
     if (_wind.norm > 15)
-      _wind.norm = 0;
+      delta = -1;
+    else if (_wind.norm <= 2)
+      delta = +1;
 
     wind.SetWind(_wind);
   });
