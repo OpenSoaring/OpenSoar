@@ -3,16 +3,11 @@ if (SHOW_SUBPROJECTS)
     message(STATUS "+++ Start CMake ${CMAKE_CURRENT_SOURCE_DIR}!")
 endif()
 
-  get_filename_component(TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
+get_filename_component(TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
 
-# file(GLOB_RECURSE TEST_LIST *.cpp)
+set(TEST_APPLICATION ON)
 set(SRC_DIR ${PROJECTGROUP_SOURCE_DIR}/test/src)
 include(CMakeSource.cmake)
-
-### foreach(lib ${XCSOAR_LINK_LIBRARIES})
-###      message(STATUS "### Add-Library to test: ${lib} ")
-### endforeach()
-### message(FATAL_ERROR "### Stop !!!!")
 
 foreach(source_file ${TEST_LIST})
      message(STATUS "+++ Add Test-Project to test: ${source_file} ")
@@ -41,6 +36,9 @@ endforeach()
 foreach(source_file ${GUI_TEST_LIST})
     message(STATUS "+++ Add (Gui-)Test-Project to test: ${source_file} ")
 
+    if (TEST_APPLICATION)
+      add_compile_definitions("GUITEST_APPLICATION")
+    endif (TEST_APPLICATION)
     add_compile_definitions("__STDC_VERSION__= 199901L") # ?
     get_filename_component(test ${source_file} NAME_WE)
     get_filename_component(test_path ${source_file} DIRECTORY)

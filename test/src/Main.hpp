@@ -40,6 +40,9 @@
 #include "UIGlobals.hpp"
 #include "util/CharUtil.hxx"
 #include "util/NumberParser.hpp"
+#if defined(GUITEST_APPLICATION)
+# include "LocalPath.hpp"
+#endif
 #define ENABLE_SCREEN
 #endif
 
@@ -208,6 +211,9 @@ WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevIn
         [[maybe_unused]] int nCmdShow)
 #endif
 {
+#if defined(ENABLE_MAIN_WINDOW) && defined(GUITEST_APPLICATION)
+  SetSingleDataPath(Path("./"));  // August2111 - instead FakeLogFile.cpp
+#endif
 #if defined(ENABLE_CMDLINE) || defined(ENABLE_MAIN_WINDOW)
 #ifdef _WIN32
   Args args(GetCommandLine(), USAGE);

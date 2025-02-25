@@ -45,6 +45,12 @@ InDrawThread()
 
 #endif
 
+GlueMapWindow *
+UIGlobals::GetMapIfActive()
+{
+  return nullptr;
+}
+
 static Waypoints way_points;
 
 static Airspaces airspace_database;
