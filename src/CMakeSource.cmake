@@ -1,7 +1,5 @@
-# Location ./XCSoarAug/src/CMakeSource.cmake
+# Location ./OpenSoarAug/src/CMakeSource.cmake
 
-# file(GLOB_RECURSE SOURCE_FILES  ${PROJECTGROUP_SOURCE_DIR}/src/*.cpp)
-# file(GLOB_RECURSE HEADER_FILES  ${PROJECTGROUP_SOURCE_DIR}/src/*.h*)
 file(GLOB HEADER_FILES  *.h*)
 
 set(BASIC_SOURCES
@@ -47,7 +45,6 @@ set(BASIC_SOURCES
     ${SRC}/DrawThread.cpp
    
     ${SRC}/UIReceiveBlackboard.cpp
-    ${SRC}/UIGlobals.cpp
     ${SRC}/UIState.cpp
     ${SRC}/UISettings.cpp
     ${SRC}/DisplaySettings.cpp
@@ -67,6 +64,11 @@ set(BASIC_SOURCES
 
     ${SRC}/Version.cpp
 )
+if (NOT TEST_APPLICATION)
+    list(APPEND BASIC_SOURCES
+        ${SRC}/UIGlobals.cpp
+)
+endif(NOT TEST_APPLICATION)
 
 set(SOURCE_FILES ${BASIC_SOURCES} )
 set(SCRIPT_FILES CMakeSource.cmake
