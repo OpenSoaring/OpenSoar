@@ -46,3 +46,7 @@ public:
    */
   std::string NextName() noexcept;
 };
+
+namespace ZipIO {
+  bool UnzipSingleFile(Path zipfile, Path output);
+}
