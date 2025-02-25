@@ -9,6 +9,10 @@
 
 #include <cstdio>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 static void
 PrintScreenSize([[maybe_unused]] const UI::Display &display) noexcept
 {
@@ -30,8 +34,15 @@ PrintDPI(const UI::Display &display) noexcept
   printf("DPI X: %u | DPI Y: %u\n", dpi.x, dpi.y);
 }
 
+#ifndef _WIN32
 int main()
-try {
+#else
+int WINAPI
+WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance,
+  [[maybe_unused]] LPSTR lpCmdLine2,
+  [[maybe_unused]] int nCmdShow)
+#endif
+  try {
   const UI::Display display;
 
   printf("Display Information\n\n");
