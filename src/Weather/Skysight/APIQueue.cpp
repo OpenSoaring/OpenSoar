@@ -8,7 +8,7 @@
 
 #include "Layers.hpp"
 #include "ui/event/Timer.hpp"
-#include "time/BrokenDateTime.hpp"
+#include "time/DateTime.hpp"
 #include "LogFile.hpp"
 
 #include <string>
@@ -23,12 +23,8 @@ SkysightAPIQueue::~SkysightAPIQueue() {
 
 bool 
 SkysightAPIQueue::IsLoggedIn() {
-  uint64_t now = (uint64_t)std::chrono::system_clock::to_time_t(
-      BrokenDateTime::NowUTC().ToTimePoint());
-
-  // Add a 1-minute padding so that token doesn't expire mid-way thru a request
   // the key is valid for 1000 sec ( = 16:40min)
-  return key_expiry_time > now + (1 * 60);
+  return key_expiry_time >= DateTime::now();
 }
 
 void 
@@ -84,7 +80,7 @@ SkysightAPIQueue::Process()
     case SkysightRequest::Status::Idle:
       // Provide the job with the very latest API key just prior to execution
       if ((*job)->GetType() == SkysightCallType::Login) {
-        (*job)->SetCredentials(SKYSIGHT_USER_CLIENT, email.c_str(), password.c_str());
+        (*job)->SetCredentials(SKYSIGHT_USER_CLIENT, email, password);
         (*job)->Process();
       } else {
         if (!IsLoggedIn()) {
@@ -149,16 +145,13 @@ SkysightAPIQueue::SetKey(const std::string _key,
   key = _key;
   key_expiry_time = _key_expiry_time;
 
-  uint64_t now = (uint64_t)std::chrono::system_clock::to_time_t(
-    BrokenDateTime::NowUTC().ToTimePoint());
-  if (now > key_expiry_time) {
-    is_clearing = true;
-  }
+  if (!IsLoggedIn())
+    SkysightAPI::GenerateLoginRequest();
 }
 
 void
-SkysightAPIQueue::SetCredentials(const std::string _email,
-				 const std::string _pass)
+SkysightAPIQueue::SetCredentials(const std::string_view _email,
+				 const std::string_view _pass)
 {
   password = _pass;
   email = _email;

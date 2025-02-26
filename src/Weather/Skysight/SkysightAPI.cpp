@@ -9,6 +9,9 @@
 
 #include "util/StaticString.hxx"
 
+#include "MapWindow/GlueMapWindow.hpp"
+#include "UIGlobals.hpp"
+
 #include "LocalPath.hpp"
 #include "system/FileUtil.hpp"
 #include "system/Path.hpp"
@@ -18,24 +21,30 @@
 #include "io/FileLineReader.hpp"
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Request.hxx"
+#include "time/DateTime.hpp"
+#include "io/ZipArchive.hpp"
+#include "ui/canvas/custom/GeoBitmap.hpp"
+#include "Geo/GeoBounds.hpp"
 #include "time/BrokenDateTime.hpp"
-#include "ZipArchive.hpp"
+#include "time/DateTime.hpp"
 
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include <map>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 
 #include <windef.h> /* for MAX_PATH */
 
-#ifdef USE_STD_FORMAT
-# include <format>
-#endif // USE_STD_FORMAT
 SkysightAPI *SkysightAPI::self;
+
+#ifdef _DEBUG
+static constexpr uint32_t forecast_count = 2;
+#else
+static constexpr uint32_t forecast_count = 6;
+#endif
 
 SkysightAPI::~SkysightAPI()
 {
@@ -62,7 +71,8 @@ SkysightAPI::GetLayer(const std::string_view id)
 bool
 SkysightAPI::LayerExists(const std::string_view id)
 {
-  return (std::find(layers_vector.begin(), layers_vector.end(), id) != layers_vector.end());
+  return (std::find(layers_vector.begin(), layers_vector.end(), id)
+          != layers_vector.end());
 }
 
 int
@@ -73,30 +83,53 @@ SkysightAPI::NumLayers()
 
 const std::string
 SkysightAPI::GetUrl(SkysightCallType type, const std::string_view layer_id,
-                    const time_t from)
+  const time_t from, const GeoBitmap::TileData tile)
 {
   StaticString<256> url;
   switch (type) {
-  case SkysightCallType::Regions:
-    url = SKYSIGHTAPI_BASE_URL "/regions";
+    case SkysightCallType::Regions:
+      url.Format("%s/regions", SKYSIGHTAPI_BASE_URL);
+      break;
+    case SkysightCallType::Layers:
+      url.Format("%s/layers?region_id=%s", SKYSIGHTAPI_BASE_URL,
+        region.c_str());
+      break;
+    case SkysightCallType::LastUpdates:
+      url.Format("%s/data/last_updated?region_id=%s", SKYSIGHTAPI_BASE_URL,
+        region.c_str());
+      break;
+    case SkysightCallType::DataDetails:
+      url.Format("%s/data?region_id=%s&layer_ids=%s&from_time=%llu", 
+        SKYSIGHTAPI_BASE_URL,region.c_str(), layer_id.data(), from);
+      break;
+    case SkysightCallType::Data:
+      // caller should already have an URL
+      break;
+    case SkysightCallType::Tile: {
+#ifdef SKYSIGHT_LIVE
+      if (layer_id.starts_with("osm"))
+        url.Format("%s/", OSM_BASE_URL);
+      else {
+        url.Format("%s/%s/", SKYSIGHTAPI_BASE_URL, layer_id.data());
+      }
+      url.AppendFormat("%u/%u/%u", tile.zoom, tile.x, tile.y);
+
+      if (layer_id.starts_with("osm"))
+        url.append(".png");
+      else {
+        auto last_time = (from / _10MINUTES - 1) * _10MINUTES;
+        url.AppendFormat("/%s", DateTime::time_str(last_time, "%Y/%m/%d/%H%M").c_str());
+      }
+#else
+    // caller should already have an URL
+#endif
+    }
     break;
-  case SkysightCallType::Layers:
-    url.Format(SKYSIGHTAPI_BASE_URL "/layers?region_id=%s", region.c_str());
-    break;
-  case SkysightCallType::LastUpdates:
-    url.Format(SKYSIGHTAPI_BASE_URL "/data/last_updated?region_id=%s",
-               region.c_str());
-    break;
-  case SkysightCallType::DataDetails:
-    url.Format(SKYSIGHTAPI_BASE_URL "/data?region_id=%s&layer_ids=%s"
-      "&from_time=%llu", region.c_str(), layer_id.data(), from);
-    break;
-  case SkysightCallType::Data:
   case SkysightCallType::Image:
-    // caller should already have URL
+    // no url because no skysight server request!
     break;
   case SkysightCallType::Login:
-    url = SKYSIGHTAPI_BASE_URL "/auth";
+    url.Format("%s/auth", SKYSIGHTAPI_BASE_URL);
     break;
   }
   return url.c_str();
@@ -104,7 +137,7 @@ SkysightAPI::GetUrl(SkysightCallType type, const std::string_view layer_id,
 
 AllocatedPath
 SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
-                     const time_t fctime)
+                     const time_t fctime, const GeoBitmap::TileData tile)
 {
   StaticString<256> filename;
   BrokenDateTime fc;
@@ -119,40 +152,47 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
     filename.Format("lastupdated-%s.json", region.c_str());
     break;
   case SkysightCallType::DataDetails:
-    fc = BrokenDateTime::FromUnixTime(fctime);
-    filename.Format("%s-datafiles-%s-%02d-%02d%02d.json",
-                    region.c_str(), layer_id.data(),
-                    fc.day, fc.hour, fc.minute);
+    filename.Format("datafiles-%s-%s-%s.json", region.c_str(), layer_id.data(),
+       DateTime::time_str(fctime, "%d-%H%M").c_str());
+     break;
+  case SkysightCallType::Data: {
+    auto layer = GetLayer(layer_id);
+    filename.Format("%s-%s-%llu-%s.nc", region.c_str(), layer_id.data(),
+      layer ? layer->last_update : 0, 
+      DateTime::time_str(fctime, "%d-%H%M").c_str());
+    }
     break;
-  case SkysightCallType::Data:
-    {
-      auto layer = GetLayer(layer_id);
-      auto update_time =
-          std::chrono::system_clock::from_time_t(layer->last_update);
-      auto prop_time =
-          std::chrono::system_clock::from_time_t(fctime);
-#ifdef USE_STD_FORMAT
-      filename.Format(
-        "%s-%s-%s_%s.nc", region.c_str(), layer,
-        std::format("{:%d-%H%M}", 
-          floor<std::chrono::minutes>(update_time)).c_str(),
-        std::format("{:%d-%H%M}",
-          floor<std::chrono::minutes>(prop_time)).c_str());
-#else  // USE_STD_FORMAT
-          std::stringstream s;
-          auto tx1 = std::chrono::system_clock::to_time_t(update_time);
-          auto tx2 = std::chrono::system_clock::to_time_t(prop_time);
-          s << region << '-' << layer_id << '-'
-            << std::put_time(std::localtime(&tx1), "%d-%H%M") << '-'
-            << std::put_time(std::localtime(&tx2), "%d-%H%M") << ".nc";
-          filename.SetASCII(s.str().c_str());
-#endif // USE_STD_FORMAT
+  case SkysightCallType::Tile:
+    if (1)  // Tile..
+  {
+    std::stringstream s;
+    std::string_view servername;
+    bool is_osm = layer_id.starts_with("osm");
+    servername = is_osm ? OSM_BASE_URL : SKYSIGHTAPI_BASE_URL;
+    auto path = GetUrl(type, layer_id, fctime, tile).substr(servername.length()+1);
+    // substitute '/' with '-':
+    for (auto &ch : path)
+      if (ch == '/') ch = '-';
 
+    if (is_osm)
+      filename = path;  // has already extension .png
+    else 
+      filename = path + (GetLayer(layer_id)->live_layer ? ".jpg" : ".nc");
+    } else {
+      auto layer = GetLayer(layer_id);
+      filename.Format("%s-%s-%s-%s.nc",
+        region.c_str(),
+        layer_id.data(),
+        DateTime::time_str(GetLayer(layer_id)->last_update, "%d-%H%M").c_str(),
+        DateTime::time_str(fctime, "%d-%H%M").c_str()
+      );
     }
     break;
   case SkysightCallType::Image:
-    return GetPath(SkysightCallType::Data, layer_id, fctime).WithSuffix(".tif");
-    break;
+    if (GetLayer(layer_id)->tile_layer)
+      return GetPath(SkysightCallType::Tile, layer_id, fctime).WithSuffix(".jpg");
+    else 
+      return GetPath(SkysightCallType::Data, layer_id, fctime).WithSuffix(".tif");
   case SkysightCallType::Login:
     // local path should not be used
     filename = "credentials.json";
@@ -161,12 +201,14 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
   return AllocatedPath::Build(cache_path, filename);
 }
 
-SkysightAPI::SkysightAPI(std::string email, std::string password,
-                         std::string _region, SkysightCallback cb)
+SkysightAPI::SkysightAPI(std::string_view email, std::string_view password,
+                         std::string_view _region, SkysightCallback cb)
     : cache_path(MakeLocalPath("skysight"))
 {
   self = this;
   inited_regions = false;
+  inited_layers = false;
+  inited_lastupdates = false;
   LoadDefaultRegions();
 
   region = (_region.empty()) ? "EUROPE" : _region;
@@ -174,13 +216,12 @@ SkysightAPI::SkysightAPI(std::string email, std::string password,
     region = "EUROPE";
   }
 
-  inited_layers = false;
-  inited_lastupdates = false;
 
   if (email.empty() || password.empty())
+    // w/o eMail and password no communication possible
     return;
 
-  queue.SetCredentials(email.c_str(), password.c_str());
+  queue.SetCredentials(email, password);
 
 //  GetData(SkysightCallType::Login, cb);
   GetData(SkysightCallType::Regions, cb);
@@ -189,7 +230,9 @@ SkysightAPI::SkysightAPI(std::string email, std::string password,
     timer.Cancel();
   }
   // Check for maintenance actions every 5 mins
-  timer.Schedule(std::chrono::minutes(5));
+  // timer.Schedule(std::chrono::minutes(5));
+  // TODO(August2111): now for test - 1 Minute:
+  timer.Schedule(std::chrono::minutes(1));
 }
 
 bool
@@ -230,6 +273,9 @@ SkysightAPI::ParseResponse(const std::string &&result, const bool success,
     break;
   case SkysightCallType::Data:
     self->ParseData(req, result);
+    break;
+  case SkysightCallType::Tile:
+    self->ParseTile(req, result);
     break;
   case SkysightCallType::Image:
     break;
@@ -315,6 +361,15 @@ SkysightAPI::ParseLayers(const SkysightRequestArgs &args,
   layers_vector.clear();
   bool success = false;
 
+#ifdef SKYSIGHT_LIVE
+  layers_vector.push_back({ "satellite","Satellite", "live satellite images" });
+  layers_vector.push_back({ "rain","Rain", "live rain layer" });
+  layers_vector.push_back({ "osm","Open Street Map", "OSM layer" });
+  layers_vector[0].live_layer = layers_vector[0].tile_layer = true;
+  layers_vector[1].live_layer = layers_vector[0].tile_layer = true;
+  layers_vector[0].tile_layer = true;
+#endif
+
   for (auto &i: details) {
     boost::property_tree::ptree &node = i.second;
     auto id = node.find("id");
@@ -345,6 +400,18 @@ SkysightAPI::ParseLayers(const SkysightRequestArgs &args,
       }
     }
   }
+#ifdef SKYSIGHT_LIVE
+  int i = 0;
+  for (auto &layer : layers_vector) {
+    layer.tile_layer = (i < 3);
+    layer.live_layer = (i < 2);
+    if (++i >= 3) break;
+  }
+//  if (layers_vector.size() >=2 )
+//     layers_vector[0].live_layer = layers_vector[1].live_layer = true;
+#endif  // SKYSIGHT_LIVE
+
+//  Skysight::GetSkysight()->LoadSelectedLayers();
 
   if (success) {
     if (!inited_lastupdates)
@@ -398,22 +465,17 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
 
         if (layer.id == id) {
           auto update_time = time;
-          // std::strtoull(time.data(), NULL, 0);
           if ((layer_id == layer.id))
           {
-#if 1  // aug
+#if 0  // aug
             if (update_time > layer.last_update) {
 #else
             if (update_time >= layer.last_update) {
 #endif
               layer.last_update = update_time;
-              BrokenDateTime time = BrokenDateTime::NowUTC();
-#ifdef _DEBUG
-              GetImageAt(layer, time, time + std::chrono::hours(1),  // = 2 tiff images
-#else
-              GetImageAt(layer, time, time + std::chrono::hours(3),  // (5), = 6 tiff images
-#endif
-                update_time, Skysight::DownloadComplete);
+              time_t forecast_time = ((std::time(0) / 1800) + 1) * 1800;
+              GetImageAt(layer, forecast_time, forecast_time
+                + forecast_count * 1800, update_time, Skysight::DownloadComplete);
               success = true;
             } else if (update_time == layer.last_update) { // no changes
               success =  ParseDataDetails(args, "");
@@ -425,10 +487,11 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
   } else {
     // layer_id = Profile::Get(ProfileKeys::WeatherLayerDisplayed);
     layer_id = "n.a.";
+    ///  success = true;
   }
 
-
   inited_lastupdates = success;
+  lastupdates_time = success ? std::time(0) : 0;
   MakeCallback(args.cb, "", success, "", 0);
 
   return success;
@@ -454,6 +517,10 @@ SkysightAPI::ParseDataDetails(const SkysightRequestArgs &args,
         return success;
       }
 
+      // const auto path = GetPath(SkysightCallType::Data, args.layer.data(), time_index);
+      // if (File::Exists(path)) {
+      //   MakeCallback(args.cb, path.c_str(), true, args.layer.data(), time_index);
+      // }
       success = GetData(SkysightCallType::Data, args.layer.c_str(), time_index,
         args.to, link->second.data().c_str(), args.cb);
 
@@ -506,49 +573,169 @@ SkysightAPI::ParseLogin(const SkysightRequestArgs &args,
   return success;
 }
 
+void
+SkysightAPI::CallCDFDecoder(const SkysightRequestArgs &args,
+  [[maybe_unused]] const std::string_view& output_img)
+{
+  queue.AddDecodeJob(std::make_unique<CDFDecoder>(
+    args.path.c_str(), output_img.data(), args.layer.c_str(), args.from,
+    GetLayer(args.layer)->legend, args.cb));
+}
+
 bool
 SkysightAPI::ParseData(const SkysightRequestArgs &args,
                        [[maybe_unused]] const std::string &result)
 {
-  auto output_img =
-      GetPath(SkysightCallType::Image, args.layer.c_str(), args.from);
+  std::string output_img =
+      GetPath(SkysightCallType::Image, args.layer.c_str(), args.from).c_str();
+//  std::string s = output_img.c_str();
+//  s = GetPath(SkysightCallType::Image, args.layer.c_str(), args.from).c_str();
   char buffer[16];  // a test buffer at beginning of file
   auto filepath = Path(args.path.c_str());
   File::ReadString(filepath, buffer, sizeof(buffer));
   if (strncmp(buffer, "<?xml version=", 14) == 0) {
     // this is an (error) message, no zip file or CDF-File
     LogFmt("XML-File: {}", buffer);
-  } else if (strncmp(buffer, "CDF", 3)) {
-      ZipIO::UnzipSingleFile(filepath, filepath);  // use the same name for unzipped file
+  } else if (strncmp(buffer, "CDF", 3) == 0) {
+    // only the CDF file has to be decoded
+    if (result.ends_with(".nc")) {
+      CallCDFDecoder(args, output_img);
+    } // else {}
+  }  else if (args.path.ends_with(".jpg")) {
+    if (args.cb)
+      args.cb(result, true, Skysight::GetActiveLayer()->id, 0);
+  }  else { 
+    auto zip_file = filepath.WithSuffix(".zip");
+    File::Rename(filepath, zip_file);
+    ZipIO::UnzipSingleFile(zip_file, filepath);  // use the same name for unzipped file
+    File::ReadString(filepath, buffer, sizeof(buffer));  // re-read again
+    if (strncmp(buffer, "CDF", 3) == 0) {
+      // and now it is a CDF file
+      CallCDFDecoder(args, output_img);  // result); // 
+    }
   }
-  queue.AddDecodeJob(std::make_unique<CDFDecoder>(
-      args.path.c_str(), output_img.c_str(), args.layer.c_str(), args.from,
-      GetLayer(args.layer)->legend, args.cb));
    return true;
 }
 
 bool
-SkysightAPI::GetData(SkysightCallType t, const std::string_view layer_id,
-                     const time_t from, const time_t to,
-                     const std::string_view link, SkysightCallback cb,
-                     bool force_recache)
+SkysightAPI::ParseTile(const SkysightRequestArgs &args,
+                       [[maybe_unused]] const std::string &result)
 {
-  const std::string url = link.empty() ? GetUrl(t, layer_id, from) : std::string(link);
+  std::string output_img =
+      GetPath(SkysightCallType::Image, args.layer.c_str(), args.from).c_str();
+  if (args.path.ends_with(".jpg")) {
+    if (args.cb)
+      args.cb(result, true, Skysight::GetActiveLayer()->id, 0);
+  }
+  return true;
+}
 
-  const auto path = GetPath(t, layer_id, from);
+// bool
+// SkysightAPI::GetData(SkysightCallType type, const std::string_view layer_id,
+//                      const time_t from, const time_t to,
+//                      [[maybe_unused]] const std::string_view link,
+//                      SkysightCallback cb, bool force_recache)
+bool
+SkysightAPI::GetTileData(const std::string_view layer_id,
+    const time_t from, const time_t to,
+    SkysightCallback cb, bool force_recache)
+{
 
+  GlueMapWindow *map_window = UIGlobals::GetMap();
+  GeoBitmap::TileData base_tile;
+  const SkysightCallType type = SkysightCallType::Tile;
+  if (map_window) { // && map_window->IsPanning()) {
+    double scale = map_window->VisibleProjection().GetMapScale();
+    base_tile = GeoBitmap::GetTile(map_window->VisibleProjection());
+  }
+  else {
+    return false;
+  }
+
+  auto tile = base_tile;
+  for (tile.x = base_tile.x - 1; tile.x <= base_tile.x + 1; tile.x++)
+    for (tile.y = base_tile.y - 1; tile.y <= base_tile.y + 1; tile.y++) {
+
+      GeoBounds bounds = GeoBitmap::GetBounds(tile);
+      bool inside = false;
+      inside |= map_window->VisibleProjection().GeoVisible(bounds.GetNorthEast());
+      inside |= map_window->VisibleProjection().GeoVisible(bounds.GetNorthWest());
+      inside |= map_window->VisibleProjection().GeoVisible(bounds.GetSouthEast());
+      inside |= map_window->VisibleProjection().GeoVisible(bounds.GetSouthWest());
+
+      if (!inside)
+        continue;
+      const std::string url = GetUrl(type, layer_id, from, tile);
+      const auto path = GetPath(type, layer_id, from, tile);
+
+      if (File::Exists(path)) {
+        MakeCallback(cb, path.c_str(), true, layer_id.data(), from);
+        continue;
+      }
+
+      SkysightRequestArgs ra(
+        url.c_str(),
+        path.c_str(),
+        type,
+        region.c_str(),
+        layer_id.data(),
+        from,
+        to,
+        cb
+      );
+
+      /*
+        If cache is available, parse it directly regardless of whether async or
+      sync
+      */
+      if (!force_recache && CacheAvailable(path, type)) {
+        ParseResponse(path.c_str(), true, ra);
+        return true;
+      }
+
+      queue.AddRequest(std::make_unique<SkysightAsyncRequest>(ra),
+        (type != SkysightCallType::Login));
+    }
+  return true;
+}
+
+bool
+SkysightAPI::GetData(SkysightCallType type, const std::string_view layer_id,
+    const time_t from, const time_t to,
+    [[maybe_unused]] const std::string_view link,
+    SkysightCallback cb, bool force_recache)
+{
+  const std::string url = link.empty() ? GetUrl(type, layer_id, from) : std::string(link);
+  const auto path = GetPath(type, layer_id, from);
+
+  switch (type) {
 #if SKYSIGHT_DEBUG  // log the path in opensoar.log
-  if ((t == SkysightCallType::DataDetails ||
-      t == SkysightCallType::Login ||
-      t == SkysightCallType::LastUpdates) &&
-      !path.empty())
-    LogString(path.c_str());
+    case SkysightCallType::DataDetails:
+    case SkysightCallType::Login:
+    case SkysightCallType::LastUpdates:
+      if (!path.empty())
+        LogString(path.c_str());
+      break;
 #endif
+    case SkysightCallType::Tile:
+    case SkysightCallType::Data:
+        // ParseData(arg, path);
+      // const auto path = GetPath(SkysightCallType::Data, args.layer.data(), time_index);
+      if (File::Exists(path)) {
+        MakeCallback(cb, path.c_str(), true, layer_id.data(), from);
+        //return false;  // no request if file exists
+        return true;  // don't create request if file exists
+        //break;
+      }
+      break;
+    default:
+      break;
+  }
 
   SkysightRequestArgs ra(
     url.c_str(),
     path.c_str(),
-    t,
+    type,
     region.c_str(),
     layer_id.data(),
     from,
@@ -560,13 +747,13 @@ SkysightAPI::GetData(SkysightCallType t, const std::string_view layer_id,
     If cache is available, parse it directly regardless of whether async or
   sync
   */
-  if (!force_recache && CacheAvailable(path, t)) {
+  if (!force_recache && CacheAvailable(path, type)) {
     ParseResponse(path.c_str(), true, ra);
     return true;
   }
 
   queue.AddRequest(std::make_unique<SkysightAsyncRequest>(ra),
-                   (t != SkysightCallType::Login));
+                   (type != SkysightCallType::Login));
 
   return true;
 }
@@ -594,12 +781,14 @@ SkysightAPI::CacheAvailable(Path path, SkysightCallType calltype,
     case SkysightCallType::Image:
       if (!layer)
 	      return false;
-      return (layer_updated <= (time_t)std::chrono::system_clock::to_time_t(File::GetLastModification(path)));
+      return (layer_updated <= File::GetTime(path));
       break;
     case SkysightCallType::DataDetails:
     case SkysightCallType::Data:
     case SkysightCallType::Login:
       // these aren't cached to disk
+    case SkysightCallType::Tile:
+      // these aren't cached to disk ???
       return false;
       break;
     default:
@@ -629,51 +818,23 @@ SkysightAPI::GetResult(const SkysightRequestArgs &args,
   return true;
 }
 
-#if 1 // TODO(August2111): Variant 1!
-// SkysightAPI::GetImageAt(1) with layer(!), start_time, max_time, update_time and callback
 bool
 SkysightAPI::GetImageAt(SkysightLayer &layer,
-  BrokenDateTime fctime,
-  BrokenDateTime maxtime,
-  [[maybe_unused]] uint64_t update_time,
+  time_t fctime,
+  time_t maxtime,
+  [[maybe_unused]] time_t update_time,
   SkysightCallback cb)
 {
-#if 0
-  // round time to nearest 30-min forecast slot
-  constexpr uint64_t forecast_diff = 60 * 30; // 30 min in sec
-  fctime.second = 0;
-  //  fctime = fctime + std::chrono::seconds(forecast_diff);
-  if (fctime.minute < 15) {
-    fctime.minute = 30;
-  } else {
-    fctime = fctime + std::chrono::hours(1); //  seconds(60 * 60);
-    fctime.minute = (fctime.minute < 45) ? 0 :30;
-  }
-//  return true;
-  //auto time_index = std::chrono::system_clock::to_time_t(fctime.ToTimePoint());
-#endif
   return GetData(SkysightCallType::DataDetails, layer.id.c_str(),
-    std::chrono::system_clock::to_time_t(fctime.ToTimePoint()),
-    std::chrono::system_clock::to_time_t(maxtime.ToTimePoint()), cb);
+    fctime, maxtime, cb);
 }
-#endif
 
 bool
-SkysightAPI::GetImageAt(const char *const layer, BrokenDateTime fctime,
-                        BrokenDateTime maxtime, SkysightCallback cb)
+SkysightAPI::GetImageAt(const char *const layer, time_t fc_time,
+  time_t maxtime, SkysightCallback cb)
 {
-  // round time to nearest 30-min forecast slot
-  if ((fctime.minute >= 15) && (fctime.minute < 45)) fctime.minute = 30;
-  else if (fctime.minute >= 45)
-  {
-    fctime.minute = 0;
-    fctime = fctime + std::chrono::hours(1);
-  }
-  else if (fctime.minute < 15) fctime.minute = 0;
-
-  auto time_index = std::chrono::system_clock::to_time_t(fctime.ToTimePoint());
-  auto max_index = std::chrono::system_clock::to_time_t(maxtime.ToTimePoint());
-  auto search_index = time_index;
+  auto max_index = maxtime;
+  auto search_index = fc_time;
 
   bool found_image = true;
   while (found_image && (search_index <= max_index))
@@ -687,13 +848,13 @@ SkysightAPI::GetImageAt(const char *const layer, BrokenDateTime fctime,
 
       if (search_index > max_index)
       {
-        MakeCallback(cb, path.c_str(), true, layer, time_index);
+        MakeCallback(cb, path.c_str(), true, layer, fc_time);
         return true;
       }
     }
   }
 
-  return GetData(SkysightCallType::DataDetails, layer, time_index, max_index,
+  return GetData(SkysightCallType::DataDetails, layer, fc_time, max_index,
                  cb);
 }
 
@@ -725,29 +886,32 @@ void
 SkysightAPI::OnTimer()
 {
   // various maintenance actions
-  auto now = std::chrono::system_clock::to_time_t(
-      BrokenDateTime::NowUTC().ToTimePoint());
+  auto now = std::time(0);
 
   // refresh regions cache file if > 24h old
   auto p = GetPath(SkysightCallType::Regions);
-  if (File::Exists(p) &&
-      (std::chrono::system_clock::to_time_t(File::GetLastModification(p) +
-                                            std::chrono::hours(24)) < now))
+  if (File::Exists(p) && (File::GetTime(p) + 24*60*60 < now))
     GetData(SkysightCallType::Regions, nullptr, true);
 
   // refresh layers cache file if > 24h old
   p = GetPath(SkysightCallType::Layers);
-  if (File::Exists(p) &&
-      (std::chrono::system_clock::to_time_t(File::GetLastModification(p) +
-                                            std::chrono::hours(24)) < now))
+  if (File::Exists(p) && (File::GetTime(p) + 24 * 60 * 60 < now))
     GetData(SkysightCallType::Layers, nullptr, true);
 
-    // refresh last update times if > 5h (update freq is usually 5 hours)
-  for (auto &m : layers_vector) {
-    // if ((m.last_update + (5 * 60 * 60)) < (uint64_t)now) {  // = 5h
-    if ((m.last_update + (30 * 60 - 5)) < (uint64_t)now) {  // = 30min!
-      GetData(SkysightCallType::LastUpdates);
-      break;
+
+  auto active_layer = Skysight::GetActiveLayer();
+  if (active_layer) {
+    if (active_layer->tile_layer) {
+      // GetData(SkysightCallType::Tile, active_layer->id.c_str(), now,
+      //   now, Skysight::DownloadComplete);
+      GetTileData(active_layer->id.c_str(), now,
+        now, Skysight::DownloadComplete);
+    } else {
+      /* the timer is called every minute, LastUpdate should only check after
+      5 minutes to prevent too many server accesses */
+      if (!inited_lastupdates || (std::time(0) > lastupdates_time + 5*60))
+      // if (std::time(0) > lastupdates_time + 5*60)
+        GetData(SkysightCallType::LastUpdates);
     }
   }
 }

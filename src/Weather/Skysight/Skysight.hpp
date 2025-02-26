@@ -101,12 +101,15 @@ public:
   bool DownloadSelectedLayer(const std::string_view id);
 #endif
 
-//  bool IsSelectedLayer(const std::string_view id);
   bool LayerExists(const std::string_view id);
-  // bool DisplaySelectedLayer(const std::string_view id = "");
   bool DisplayActiveLayer();
+  bool TileActiveLayer();
+  bool ForecastActiveLayer();
+  bool UpdateActiveLayer(const Path &filename,
+    GeoBitmap::TileData tile = { 0 });
   
   void DeactivateLayer();
+  void MapOverlayReset();
   bool SetLayerActive(const std::string_view id);
 
   static inline 
@@ -151,8 +154,8 @@ private:
                                   const DerivedInfo &calculated) override;
 
   bool SetActiveLayer(const std::string_view id,
-        BrokenDateTime forecast_time = BrokenDateTime());
-  BrokenDateTime GetForecastTime(BrokenDateTime curr_time);
+        time_t forecast_time = 0);
+  time_t GetForecastTime(time_t curr_time);
 
   std::vector<SkysightImageFile> ScanFolder(std::string search_pattern);
   void CleanupFiles();

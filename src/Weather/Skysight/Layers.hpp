@@ -23,8 +23,12 @@ struct SkysightLayer {
   double to = 0;
   double mtime = 0;
   bool updating = false;
+#ifdef SKYSIGHT_LIVE
+  bool live_layer = false;
+#endif
+  bool tile_layer = false;
 
-  BrokenDateTime forecast_time = BrokenDateTime(0, 0, 0);
+  time_t forecast_time = 0;
 public:
   SkysightLayer(std::string _id, std::string _name, std::string _desc):
     id(_id), name(_name), desc(_desc) {}
@@ -47,72 +51,4 @@ public:
 
     return (id == _id);
   };
-
-  bool operator < (const BrokenDateTime &t) {
-    if (!forecast_time.IsPlausible())
-      return false;
-
-    return (forecast_time.ToTimePoint() < t.ToTimePoint());
-  }
-
 };
-
-
-#if 0
-/*
- * Skysight chart which is overlaid
- */
-#if 1
-#define SkysightActiveLayer SkysightLayer
-#define DisplayedLayer SkysightLayer
-#else 
-struct SkysightActiveLayer {
-  SkysightLayer *layer;
-  double from = 0;
-  double to = 0;
-  double mtime = 0;
-  bool updating = false;
-
-public:
-  SkysightActiveLayer(SkysightLayer *_layer, uint64_t _from,
-		       uint64_t _to, uint64_t _mtime): 
-    layer(_layer), from(_from), to(_to), mtime(_mtime) {}
-  SkysightActiveLayer(const SkysightActiveLayer &m):
-    layer(m.layer), from(m.from), to(m.to), mtime(m.mtime),
-    updating(m.updating) {}
-  bool operator==(const std::string_view &id)
-  {
-    if (!this || !layer || id.empty())
-      return false;
-
-    return (*layer == id);
-  };
-
-};
-struct DisplayedLayer {
-  SkysightLayer *layer;
-  BrokenDateTime forecast_time;
-
-  DisplayedLayer() { layer = nullptr; };
-
-  DisplayedLayer(SkysightLayer *_layer, BrokenDateTime _forecast_time)
-      : layer(_layer), forecast_time(_forecast_time){};
-
-  void clear() { layer = nullptr; }
-
-  bool operator==(const std::string_view &id) {
-    if (!layer || id.empty())
-      return false;
-
-    return (*layer == id);
-  };
-
-  bool operator < (const BrokenDateTime &t) {
-    if (!forecast_time.IsPlausible())
-      return false;
-
-    return (forecast_time.ToTimePoint() < t.ToTimePoint());
-  }
-};
-#endif
-#endif

@@ -19,25 +19,16 @@
 #include "MapWindow/OverlayBitmap.hpp"
 #include "MapWindow/GlueMapWindow.hpp"
 #include "thread/Debug.hpp"
+#include "time/DateTime.hpp"
+#include "Formatter/TimeFormatter.hpp"
+
+#include "MainWindow.hpp"
 
 #include <string>
-#include <sstream>
 #include <vector>
 #include <memory>
-#include <ctime>
-#include <chrono>
 
-#if defined(SKYSIGHT_DEBUG)
-# include <filesystem>
-# include <regex>
-# include <iomanip>  // put_time
-# include <thread>
-# include <fmt/format.h>
-# ifdef USE_STD_FORMAT
-#   include <format>
-# endif
-#endif
-
+static uint16_t overlay_index = 0;
 /**
  * TODO:
  * -- overlay only shows following render -- no way to trigger from child 
@@ -103,22 +94,8 @@ SkysightImageFile::SkysightImageFile(Path _filename, Path _path) {
   if (p == std::string::npos)
     return;
   std::string met = rem.substr(0, p);
-
-  std::string dt = rem.substr(p+1);
-  unsigned yy = stoi(dt.substr(0, 4));
-  unsigned mm = stoi(dt.substr(4, 2));
-  unsigned dd = stoi(dt.substr(6, 2));
-  unsigned hh = stoi(dt.substr(8, 2));
-  unsigned ii = stoi(dt.substr(10, 2));
-
-  BrokenDateTime d = BrokenDateTime(yy, mm, dd, hh, ii);
-  if (!d.IsPlausible())
-    return;
-
-  datetime = std::chrono::system_clock::to_time_t(d.ToTimePoint());
-
-  mtime = std::chrono::system_clock::to_time_t(
-    File::GetLastModification(fullpath));
+  datetime = std::stoi(rem.substr(p + 1));
+  mtime = File::GetTime(fullpath);
 
   region = reg;
   layer = met;
@@ -282,13 +259,14 @@ Skysight::LoadSelectedLayers()
     SetActiveLayer(active_id);
   }
 #else
-  api->selected_layers.clear();
 
   const char *id = Profile::Get(ProfileKeys::SkysightSelectedLayers);
   if (id == nullptr)
     return;
   std::string am_list = std::string(id);
   size_t pos;
+
+  api->selected_layers.clear();
   while ((pos = am_list.find(",")) != std::string::npos) {
     AddSelectedLayer(am_list.substr(0, pos).c_str());
     am_list.erase(0, pos + 1);
@@ -334,31 +312,14 @@ Skysight::Init()
 
 #if defined(SKYSIGHT_FILE_DEBUG)
   // save in debug case an additional file in folder
-#ifdef USE_STD_FORMAT
-  auto tp = std::chrono::system_clock::now();
-#else
-  std::time_t now = std::time(0); // get time now
-#endif // USE_STD_FORMAT
-      std::stringstream _path;
-  _path << "skysight/" <<
-#ifdef USE_STD_FORMAT
-      std::format("{:%Y%m%d_%H%M%S}", floor<std::chrono::seconds>(tp))
-#else  // USE_STD_FORMAT
-      std::put_time(std::localtime(&now), "%Y%m%d_%H%M%S")
-#endif // USE_STD_FORMAT   
-    << " ====== Start-Skysight.txt";
-  AllocatedPath path = LocalPath(_path.str().c_str());
-  auto file = fopen(path.c_str(), "wb");
+  std::string _path("skysight/");
+  _path += DateTime::str_now() + " ====== Start-Skysight.txt";
+  auto file = fopen(LocalPath(_path).c_str(), "wb");
 
-  std::stringstream file_text;
-  file_text <<
-#ifdef USE_STD_FORMAT
-      std::format("{:%Y%m%d_%H%M%S}", floor<std::chrono::milliseconds>(tp));
-#else  // USE_STD_FORMAT
-      std::put_time(std::localtime(&now), "%Y%m%d_%H%M%S");
-#endif // USE_STD_FORMAT
+
     if (file) {
-    fwrite(file_text.str().c_str(), 1, file_text.str().length(), file);
+      std::string file_text = DateTime::str_now();
+      fwrite(file_text.c_str(), 1, file_text.length(), file);
       fclose(file);
     }
 #endif
@@ -385,7 +346,7 @@ Skysight::APIInited([[maybe_unused]] const std::string details,
   if (!self)
     return;
 
-  if (self->api && self->api->layers_vector.size()) {
+  if (self->api) {
     self->LoadSelectedLayers();
     self->Render(true);
   }
@@ -453,22 +414,42 @@ Skysight::ScanFolder(std::string search_string = "*.tif")
 void
 Skysight::CleanupFiles()
 {
-  struct SkysightFileVisitor: public File::Visitor {
-    explicit SkysightFileVisitor(const uint64_t _to): to(_to) {}
-    const uint64_t to;
+  struct SkysightTIFVisitor: public File::Visitor {
+    explicit SkysightTIFVisitor(const time_t _to): to(_to) {}
+    const time_t to;
     void Visit(Path path, Path filename) override {
-      if (filename.EndsWithIgnoreCase(".tif")) {
-        SkysightImageFile img_file = SkysightImageFile(filename, path);
-        if ((img_file.mtime <= (to - (60*60*24*5))) ||
-        (img_file.datetime < (to - (60*60*24))) ) {
-          File::Delete(path);
-        }
+      SkysightImageFile img_file = SkysightImageFile(filename, path);
+      if ((img_file.mtime < to) || (img_file.datetime < to ) ) {
+        File::Delete(path);
       }
     }
-  } visitor(std::chrono::system_clock::to_time_t(
-      Skysight::GetNow().ToTimePoint()));
+  };
 
-  Directory::VisitSpecificFiles(GetLocalPath(), "*.tif", visitor);
+  struct SkysightFileDeleter: public File::Visitor {
+    explicit SkysightFileDeleter(const time_t _to): to(_to) {}
+    const time_t to;
+    void Visit(Path fullpath, Path filename) override {
+        auto mtime = File::GetTime(fullpath);
+        if (mtime < to) { 
+          File::Delete(fullpath);
+        }
+    }
+  };
+  char buffer[30];
+  FormatISO8601(buffer, std::time(0));
+  LogFmt("Time-Compare: {}, {}", buffer, DateTime::str_now());
+  
+  auto now = DateTime::now();
+  SkysightTIFVisitor  visitor_tif(now - (60 * 60 * 24));  // 1 day
+  SkysightFileDeleter deleter_tmp(now - 6 * 60 * 60);     // 6 hours
+  SkysightFileDeleter deleter_txt(now - 1 * 60 * 60);     // 1 hour
+
+  auto path = GetLocalPath();
+  Directory::VisitSpecificFiles(path, "*.tif", visitor.tif);
+  Directory::VisitSpecificFiles(path, "*.jpg", visitor);
+  Directory::VisitSpecificFiles(path, "*.tmp", deleter_tmp);
+  Directory::VisitSpecificFiles(path, "*.txt;*.json", deleter_txt);
+  Directory::VisitSpecificFiles(path, "*.json", deleter_txt);
 }
 
 void
@@ -478,33 +459,26 @@ Skysight::Render([[maybe_unused]] bool force_update)
     // set by dl callback
     if (update_flag) {
       DisplayActiveLayer();
+    } else {
+#if 1  // start the timer?
+      if (api && api->QueueIsEmpty())
+        api->TimerInvoke();
+#endif
     }
-    // August2111: Rendering w/o download!
   }
 }
 
-BrokenDateTime
-Skysight::GetForecastTime(BrokenDateTime curr_time)
+time_t
+Skysight::GetForecastTime(time_t time)
 {
-  if (!curr_time.IsPlausible())
-    curr_time = Skysight::GetNow();
-
-  if ((curr_time.minute >= 15) && (curr_time.minute < 45)) {
-    curr_time = curr_time + std::chrono::hours(1);
-    curr_time.minute = 0;
-  } else {
-    if (curr_time.minute >= 45) 
-      curr_time = curr_time + std::chrono::hours(1);
-    // else if (curr_time.minute < 15) {}  // not necessary
-    curr_time.minute = 30;
-  }
-  curr_time.second = 0;
-  return curr_time;
+  time += _10MINUTES;
+  auto fctime = (time / _HALFHOUR + 1) * _HALFHOUR;
+  return fctime;
 }
 
 bool
 Skysight::SetActiveLayer(const std::string_view id,
-                 BrokenDateTime forecast_time)
+                         time_t forecast_time)
 {
   if (api->IsSelectedLayer(id)) {
     active_layer = api->GetLayer(id);
@@ -518,7 +492,6 @@ Skysight::SetActiveLayer(const std::string_view id,
   return false;
 }
 
-#if 1
 void
 Skysight::DownloadComplete([[maybe_unused]] const std::string details,
   const bool success,  const std::string layer_id,
@@ -531,40 +504,17 @@ Skysight::DownloadComplete([[maybe_unused]] const std::string details,
   self->RefreshSelectedLayer(layer_id);
 
   if (success && (self->GetActiveLayerId() == layer_id.c_str())) {
-    if (!self->update_flag) {
+    if (!self->update_flag && self->api->QueueIsLastJob()) {
       self->update_flag = true;
       GlueMapWindow *map_window = UIGlobals::GetMapIfActive();
       if (map_window)
         map_window->DeferRedraw();
-    }
-  }
-}
-#endif
 
-#if 0  // def _DEBUG
-bool
-Skysight::DownloadSelectedLayer(const std::string_view id = "*")
-{
-  BrokenDateTime now = Skysight::GetNow();
-  if (id == "*") {
-    for (auto &layer: selected_layers) {
-      SetSelectedLayerUpdateState(layer.id, true);
-#if SKYSIGHT_DEBUG
-      // reduce download request for debug!
-      api->GetImageAt(layer.id.c_str(), now, now + std::chrono::hours(3),
-#else // SKYSIGHT_DEBUG
-      api->GetImageAt(layer.id.c_str(), now, now + std::chrono::hours(24),
-#endif
-             DownloadComplete);
+      // CommonInterface::main_window->SendGPSUpdate(); // which one is better?
+      CommonInterface::main_window->SendCalculatedUpdate();
     }
-  } else {
-    SetSelectedLayerUpdateState(id, true);
-    api->GetImageAt(id.data(), now, now + std::chrono::seconds(60*60*24),
-      DownloadComplete);
   }
-  return true;
 }
-#endif
 
 void
 Skysight::OnCalculatedUpdate(const MoreData &basic,
@@ -585,12 +535,19 @@ Skysight::GetNow(bool use_system_time)
 }
 
 void
+Skysight::MapOverlayReset()
+{
+  auto *map = UIGlobals::GetMap();
+  if (map)
+    for (uint16_t i = 0; i < 9; i++) map->SetOverlay(i, nullptr);
+  overlay_index = 0;
+}
+
+void
 Skysight::DeactivateLayer()
 {
   active_layer = nullptr;
-  auto *map = UIGlobals::GetMap();
-  if (map)
-    map->SetOverlay(nullptr);
+  MapOverlayReset();
   Profile::Set(ProfileKeys::WeatherLayerDisplayed, "");
 }
 
@@ -616,68 +573,155 @@ Skysight::SetLayerActive(const std::string_view id)
 }
 
 bool
+Skysight::ForecastActiveLayer()
+{
+  // TODO: We're only searching w a max offset of 1 hr, simplify this!
+  AllocatedPath filename;
+  bool found = false;
+
+  int offset = 0;
+  constexpr time_t preview = _10MINUTES;
+  time_t test_time = ((DateTime::now() + preview) / _HALFHOUR + 1) * _HALFHOUR;
+
+  constexpr auto max_steps = 3;
+
+  for (int j = 0; !found && (j < max_steps); j++) {
+    filename = api->GetPath(SkysightCallType::Image, active_layer->id,
+        test_time);
+
+    if (File::Exists(filename)) {
+      // needed for (selected) object view in map
+      active_layer->forecast_time = test_time;
+      return UpdateActiveLayer(filename, {0, 0, 0});
+    } else {
+      test_time += _HALFHOUR;  // next possible forecast
+    }
+  }
+  return false;
+}
+
+bool
+Skysight::UpdateActiveLayer(const Path &filename, GeoBitmap::TileData tile)
+{
+  if (!File::Exists(filename))
+    return false;
+  auto *map = UIGlobals::GetMap();
+  if (map == nullptr)
+    return false;
+
+  LogFmt("SkySight::DisplayActiveLayer {}", filename.c_str());
+  std::unique_ptr<MapOverlayBitmap> bmp;
+  try {
+    bmp.reset(new MapOverlayBitmap(filename));
+    // what is with the new created MapOverlayBitmap? Where is deleting this?
+  }
+  catch (...) {
+    LogError(std::current_exception(), "MapOverlayBitmap load error");
+    return false;
+  }
+
+  if (!active_layer)
+    return false;
+
+  StaticString<256> label;
+  label.Format("SkySight: %s", active_layer->name.c_str());
+  if (active_layer->live_layer || !active_layer->tile_layer)
+    label.AppendFormat("  (%s)", DateTime::time_str(
+      active_layer->forecast_time, "%Y-%m-%d %H:%M").c_str());
+  if (active_layer->tile_layer)
+    label.AppendFormat(" - tile: %u (%u, %u)", tile.zoom, tile.x, tile.y);
+  bmp->SetLabel(label);
+  bmp->SetAlpha(0.6);
+  map->SetOverlay(overlay_index, std::move(bmp));
+  if (active_layer->tile_layer)
+    overlay_index++;  // increasing in tile mode only...
+  update_flag = false;  // is already updated
+  return true;
+}
+bool
+Skysight::TileActiveLayer()
+{
+  GlueMapWindow *map_window = UIGlobals::GetMap();
+  GeoBitmap::TileData base_tile;
+  const SkysightCallType type = SkysightCallType::Tile;
+  if (map_window) { // && map_window->IsPanning()) {
+    double scale = map_window->VisibleProjection().GetMapScale();
+    base_tile = GeoBitmap::GetTile(map_window->VisibleProjection());
+  }
+  else {
+    return false;
+  }
+
+  MapOverlayReset();
+
+  auto tile = base_tile;
+  for (tile.x = base_tile.x - 1; tile.x <= base_tile.x + 1; tile.x++)
+    for (tile.y = base_tile.y - 1; tile.y <= base_tile.y + 1; tile.y++) {
+
+      GeoBounds bounds = GeoBitmap::GetBounds(tile);
+      bool inside = false;
+      inside |= map_window->VisibleProjection().GeoVisible(bounds.GetNorthEast());
+      inside |= map_window->VisibleProjection().GeoVisible(bounds.GetNorthWest());
+      inside |= map_window->VisibleProjection().GeoVisible(bounds.GetSouthEast());
+      inside |= map_window->VisibleProjection().GeoVisible(bounds.GetSouthWest());
+
+      if (!inside)
+        continue;
+
+      AllocatedPath filename;
+      bool found = false;
+
+      int offset = 0;
+      if (!active_layer->live_layer) { // osm
+        UpdateActiveLayer(api->GetPath(SkysightCallType::Tile,
+          active_layer->id, 0, tile), tile);
+      } else {
+        constexpr time_t preview = _10MINUTES; // 
+
+        time_t test_time = (std::time(0) / _10MINUTES) * _10MINUTES;
+
+        auto max_steps = 3;
+
+        for (int j = 0; !found && (j < max_steps); j++) {
+          filename = api->GetPath(SkysightCallType::Tile, active_layer->id,
+              test_time, tile);
+
+          if (File::Exists(filename)) {
+            // needed for (selected) object view in map
+            active_layer->forecast_time = test_time;
+            UpdateActiveLayer(filename, tile);
+            break;
+          } else {
+            if (active_layer->live_layer)
+              test_time -= _10MINUTES;  // previous live picture
+            else
+              test_time += _HALFHOUR;  // next possible forecast
+          }
+        }
+      }
+    }
+  return false;
+}
+
+bool
 Skysight::DisplayActiveLayer()
 {
   if (!active_layer)
     return false;
 
-  BrokenDateTime now = GetForecastTime(Skysight::GetNow());
-
-  int offset = 0;
-  uint64_t n = std::chrono::system_clock::to_time_t(now.ToTimePoint());
-
-  uint64_t test_time;
-  bool found = false;
-  // StaticString<256> filename;
   AllocatedPath filename;
-  int max_offset = (60*60);
-
-  // TODO: We're only searching w a max offset of 1 hr, simplify this!
-  while (!found) {
-    // look back for closest forecast first, then look forward
-    for (int j=0; j <= 1; ++j) {
-      test_time = n + ( offset * ((2*j)-1) );
-
-      filename = api->GetPath(SkysightCallType::Image,
-        active_layer->id, test_time);
-
-      if (File::Exists(filename)) {
-        // needed for (selected) object view in map
-        active_layer->forecast_time = BrokenDateTime::FromUnixTime(test_time);
-        found = true;
-        break;
-      }
-      if (offset == 0)
-        break;
-    }
-    if (!found)
-      offset += (60*30);
-
-    if (offset > max_offset)
-      break;
+  bool found = false;
+  if (active_layer->tile_layer) {
+    // no time stamp...
+    return TileActiveLayer();
+  } else if (active_layer->id.starts_with("osm")) {
+    // no time stamp...
+    filename = api->GetPath(SkysightCallType::Image, active_layer->id, 0);
+    found = File::Exists(filename);
+  } else {
+    // TODO: We're only searching w a max offset of 1 hr, simplify this!
+    return ForecastActiveLayer();
   }
-
-  auto *map = UIGlobals::GetMap();
-  if (map == nullptr)
-    return false;
-
-  LogFormat("SkySight::DisplayActiveLayer %s", filename.c_str());
-  std::unique_ptr<MapOverlayBitmap> bmp;
-  try {
-    bmp.reset(new MapOverlayBitmap(filename));
-    // what is with the new created MapOverlayBitmap? Where is deleting this?
-  } catch (...) {
-    LogError(std::current_exception(), "MapOverlayBitmap load error");
-    return false;
-  }
-
-  BrokenDateTime &time = active_layer->forecast_time;
-  StaticString<256> label;
-  label.Format("SkySight: %s (%04u-%02u-%02u %02u:%02u)",
-    active_layer->name.c_str(), time.year, time.month, time.day,
-    time.hour, time.minute);
-  bmp->SetLabel(label); // .c_str());
-  bmp->SetAlpha(0.6);
-  map->SetOverlay(std::move(bmp));
-  return true;
+  
+  return false;
 }

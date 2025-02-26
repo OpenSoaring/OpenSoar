@@ -16,8 +16,8 @@ class SkysightAPIQueue final {
   bool is_clearing = false;
   std::string key;
   uint64_t key_expiry_time = 0;
-  std::string email;
-  std::string password;
+  std::string_view email;
+  std::string_view password;
 
   void Process();
   UI::PeriodicTimer timer{[this]{ Process(); }};
@@ -26,12 +26,18 @@ public:
   SkysightAPIQueue() {};
   ~SkysightAPIQueue();
 
-  void SetCredentials(const std::string _email, const std::string _pass);
+  void SetCredentials(const std::string_view _email, const std::string_view _pass);
   void SetKey(const std::string _key, const uint64_t _key_expiry_time);
   bool IsLoggedIn();
   void AddRequest(std::unique_ptr<SkysightAsyncRequest> request,
 		  bool append_end = true);
   void AddDecodeJob(std::unique_ptr<CDFDecoder> &&job);
   void Clear(const std::string msg);
+  bool IsEmpty() {
+    return (request_queue.empty() && decode_queue.empty());
+  }
+  bool IsLastJob() {
+    return ((request_queue.size() + decode_queue.size()) <= 1) ;
+  }
   void DoClearingQueue();
 };

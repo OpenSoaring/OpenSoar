@@ -22,7 +22,8 @@ enum class SkysightCallType {
   LastUpdates,
   DataDetails,
   Data,
-  Image
+  Image,
+  Tile
 };
 
 struct SkysightRequestArgs {

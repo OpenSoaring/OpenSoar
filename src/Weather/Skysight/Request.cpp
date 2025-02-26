@@ -15,13 +15,18 @@
 #include "system/Path.hpp"
 #include "thread/StandbyThread.hpp"
 #include "util/StaticString.hxx"
+#include "time/DateTime.hpp"
 
 #if defined(SKYSIGHT_FILE_DEBUG)
 # include <chrono>
 # include <filesystem>
-# include <iomanip> // for put_time
+# include <fstream>
 # include <regex>
-# include <fmt/format.h>
+# ifdef USE_STD_FORMAT
+#   include <format>
+# else
+#   include <fmt/format.h>
+# endif
 #endif
 
 void
@@ -232,8 +237,7 @@ SkysightRequest::RequestToFile()
             args.url.c_str(), args.path.c_str(), key.c_str(),
             OpenSoar_ProductToken);
 #endif
-
-  Path final_path = Path(args.path.c_str());
+  Path final_path(args.path.c_str());
   AllocatedPath temp_path = final_path.WithSuffix(".dltemp");
 
   if (!File::Delete(temp_path) && File::ExistsAny(temp_path))
@@ -252,14 +256,25 @@ SkysightRequest::RequestToFile()
   request_headers.AppendFormat("%s: %s", "User-Agent", OpenSoar_ProductToken);
 
   std::string pBody;
-  if (username.length() && password.length()) {
-    request_headers.AppendFormat("%s: %s", "Content-Type", "application/json");
-    StaticString<1024> creds;
-    creds.Format("{\"username\":\"%s\",\"password\":\"%s\"}", username.c_str(),
-                 password.c_str());
-    pBody = creds.c_str();
-    request.GetEasy().SetRequestBody(pBody.c_str(), pBody.length());
-    request.GetEasy().SetFailOnError(false);
+  switch (GetType()) {
+    case SkysightCallType::Login:
+      if (username.length() && password.length()) {
+        request_headers.AppendFormat("%s: %s", "Content-Type", "application/json");
+        StaticString<1024> creds;
+        creds.Format("{\"username\":\"%s\",\"password\":\"%s\"}", username.c_str(),
+          password.c_str());
+        pBody = creds.c_str();
+        request.GetEasy().SetRequestBody(pBody.c_str(), pBody.length());
+        request.GetEasy().SetFailOnError(false);
+      }
+      break;
+    case SkysightCallType::Data:
+    case SkysightCallType::Image:
+      request_headers.AppendFormat("%s: %s", "Content-Type", "gzip");
+      break;
+    default:
+      request_headers.AppendFormat("%s: %s", "Content-Type", "application/json");
+      break;
   }
 
   request.GetEasy().SetRequestHeaders(request_headers.Get());
@@ -287,17 +302,13 @@ SkysightRequest::RequestToFile()
 #if defined(SKYSIGHT_FILE_DEBUG)
     std::stringstream filename;
 
-    auto tp = std::chrono::system_clock::now();
-    auto tx = std::chrono::system_clock::to_time_t(tp);
-    auto ts = std::put_time(std::localtime(&tx), "%Y%m%d_%H%M%S");
-
     std::string name = temp_path.GetBase().c_str();
     name = std::regex_replace(name, std::regex("\""), "");
+    name = std::regex_replace(name, std::regex("[.]dltemp"), "");
 
-    filename << "skysight/" << ts << '-'
-             << name
-             << ".tmp";
-    AllocatedPath debug_path = LocalPath(filename.str().c_str());
+    filename << "skysight/" << name << '-' << 
+      DateTime::str_now("%Y%m%d_%H%M%S") << ".tmp";
+    AllocatedPath debug_path = LocalPath(filename.str());
     if (std::filesystem::exists(debug_path.c_str())) {
       LogFormat("file %s exists!", debug_path.c_str());
     } else {
@@ -360,43 +371,34 @@ SkysightRequest::RequestToBuffer(std::string &response)
     response = std::string(buffer,
                            buffer + handler.GetReceived() / sizeof(buffer[0]));
 #if defined(SKYSIGHT_FILE_DEBUG)
-    std::stringstream filename;
-    std::stringstream s;
-    // auto time = BrokenDateTime::NowLocal();
-    filename.fill('0');
-    filename.precision(2);
+    std::string filename("skysight/");
 
-    auto tp = std::chrono::system_clock::now();
-    auto tx = std::chrono::system_clock::to_time_t(tp);
-    auto ts = std::put_time(std::localtime(&tx), "%Y%m%d_%H%M%S");
 
-    std::string name = AllocatedPath(args.path.c_str()).GetBase().c_str();
+    auto name = LocalPath(args.path).GetBase();
+    filename += DateTime::str_now() + ' ';
+    filename += name.str() + ".txt";
 
-    filename << "skysight/" << ts << ' ' << name << ".txt";
+    AllocatedPath debug_path = LocalPath(filename);
 
-    AllocatedPath debug_path = LocalPath(filename.str().c_str());
+    std::fstream s;
+    s.open(debug_path.c_str(), std::fstream::out | std::fstream::app);
 
     s << "url:      " << args.url << std::endl;
     s << "path:     " << args.path << std::endl;
     s << "key:      " << key << std::endl;
     s << "token:    " << OpenSoar_ProductToken << std::endl;
-    s << "calldate: " << ts << " - "
-      << std::chrono::duration_cast<std::chrono::seconds>(
-             tp.time_since_epoch())
-             .count()
+    s << "calldate: " << DateTime::now() << " - "
       << std::endl;
     if (args.url.find("from_time") != std::string::npos)
     {
       s << "from:     "
-        << std::put_time(std::localtime(&tx /*from_time*/), "%Y%m%d_%H%M%S")
+        << DateTime::time_str(from_time)
         << std::endl;
     }
     s << "==================================== " << std::endl;
     s << response;
 
-    auto file = fopen(debug_path.c_str(), "wb");
-    fwrite(s.str().c_str(), 1, s.str().length(), file);
-    fclose(file);
+    s.close();
 #endif
   }
 
