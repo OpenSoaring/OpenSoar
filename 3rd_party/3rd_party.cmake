@@ -2,7 +2,7 @@
 # ./3rd_party/3rd_party.cmake
 # =================================================================
 
-set(BOOST_VERSION       "1.84.0")
+set(BOOST_VERSION       "1.87.0")
 set(CARES_VERSION       "1.24.0")  # not valid!
 # 25.12.23 
 set(CARES_VERSION       "1.17.1")  # old version necessary...
