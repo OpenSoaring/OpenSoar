@@ -33,7 +33,7 @@ on:
 
 env:
   DEBUG: y
-  BOOST: boost_1_87_0
+  BOOST: boost_1_85_0
   BUILD: UNIX,WIN64,PC
   TEST: UNIX,KOBO
 
@@ -206,7 +206,7 @@ jobs:
             target_ext: .apk
             target_test: true
             target_upload: true
-            upload_artifact: false
+            upload_artifact: true
             ndk: r26d
             target_container: debian:bookworm-slim
           
@@ -231,7 +231,7 @@ jobs:
             target_ext: .deb
             target_test: true
             target_upload: true
-            upload_artifact: false
+            upload_artifact: true
             target_container: debian:bookworm-slim    # => Ubuntu 24.04
             #  target_container: debian:bullseye-slim # => Ubuntu 22.04
 
@@ -253,7 +253,7 @@ jobs:
             target_ext: .exe
             target_test: true
             target_upload: true
-            upload_artifact: true
+            upload_artifact: false
             target_container: debian:bookworm-slim
           
           - os: ubuntu-24.04
@@ -264,7 +264,7 @@ jobs:
             target_ext: .exe
             target_test: true
             target_upload: true
-            upload_artifact: false
+            upload_artifact: true
             target_container: debian:bookworm-slim
           
           - os: macos-13
