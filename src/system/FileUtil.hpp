@@ -168,6 +168,24 @@ std::chrono::system_clock::time_point
 GetLastModification(Path path) noexcept;
 
 /**
+ * Get a timestamp in UNIX time format of last modification 
+ * @param path Path to the file
+ * @return 0 in case of failure or a UNIX timestamp for comparison
+ */
+[[gnu::pure]]
+time_t
+GetTime(Path path) noexcept;
+
+/**
+ * Set a timestamp in UNIX time format to the file
+ * @param path Path to the file
+ * @param t new timestamp of the file
+ * @return false in case of failure
+ */
+bool
+SetTime(Path path, time_t t) noexcept;
+
+/**
  * Sets the modification timestamp of the file to the current system time
  * @param path Path to the file
  * @return True in case of success, False otherwise
