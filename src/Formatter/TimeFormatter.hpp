@@ -20,6 +20,9 @@ void
 FormatISO8601(char *buffer, const BrokenDateTime &stamp) noexcept;
 
 void
+FormatISO8601(char *buffer, const time_t &stamp) noexcept;
+
+void
 FormatTime(char *buffer, FloatDuration time) noexcept;
 
 static inline void

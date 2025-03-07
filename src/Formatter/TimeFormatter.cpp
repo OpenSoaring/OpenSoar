@@ -3,6 +3,7 @@
 
 #include "TimeFormatter.hpp"
 #include "time/BrokenDateTime.hpp"
+#include "time/DateTime.hpp"
 #include "Math/Util.hpp"
 #include "util/StringCompare.hxx"
 #include "util/StaticString.hxx"
@@ -23,6 +24,12 @@ FormatISO8601(char *buffer, const BrokenDateTime &stamp) noexcept
   sprintf(buffer, "%04u-%02u-%02uT%02u:%02u:%02uZ",
           stamp.year, stamp.month, stamp.day,
           stamp.hour, stamp.minute, stamp.second);
+}
+
+void
+FormatISO8601(char *buffer, const time_t &stamp) noexcept
+{
+  strncpy(buffer, DateTime::time_str(stamp, "%Y-%m-%dT%H:%M:%SZ").c_str(), 21);
 }
 
 void
