@@ -106,6 +106,21 @@ UnixEpochDurationToFileTime(FileTimeDuration d) noexcept
 	return ToFileTime(d + windows_unix_delta);
 }
 
+constexpr FILETIME
+UnixEpochTimeToFileTime(time_t t) noexcept
+{
+	/**
+	 * The number of days between the Windows FILETIME epoch
+	 * (1601-01-01T00:00) and the Unix epoch (1970-01-01T00:00).
+	 */
+	constexpr int_least64_t windows_unix_days = 134774;
+	constexpr int_least64_t windows_unix_hours = windows_unix_days * 24;
+
+	constexpr FileTimeDuration windows_unix_delta{std::chrono::hours{windows_unix_hours}};
+
+	return ToFileTime(windows_unix_delta + std::chrono::seconds(t));
+}
+
 inline FILETIME
 ChronoToFileTime(std::chrono::system_clock::time_point tp) noexcept
 {
