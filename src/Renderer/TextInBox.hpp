@@ -12,7 +12,7 @@ struct PixelRect;
 class Canvas;
 class LabelBlock;
 void
-RenderShadowedText(Canvas &canvas, const TCHAR *text,
+RenderShadowedText(Canvas &canvas, const char *text,
                    PixelPoint p,
                    bool inverted) noexcept;
 
