@@ -106,6 +106,12 @@ set(_SOURCES
         Device/Driver/XCTracer/Register.cpp
         Device/Driver/XCVario.cpp
         Device/Driver/Zander.cpp
+        Device/Driver/LX_EOS/LXEosDeclare.cpp
+        Device/Driver/LX_EOS/LXEosDevice.cpp
+        Device/Driver/LX_EOS/LXEosDownload.cpp
+        Device/Driver/LX_EOS/LXEosParser.cpp
+        Device/Driver/LX_EOS/LXEosRegister.cpp
+
         Device/MultipleDevices.cpp
         Device/Parser.cpp
         Device/Port/BufferedPort.cpp
