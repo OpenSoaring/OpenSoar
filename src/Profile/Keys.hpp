@@ -215,6 +215,7 @@ constexpr std::string_view FontBugsBallastFont = "BugsBallastFont";
 constexpr std::string_view FontAirspacePressFont = "AirspacePressFont";
 constexpr std::string_view FontAirspaceColourDlgFont = "AirspaceColourDlgFont";
 constexpr std::string_view FontTeamCodeFont = "TeamCodeFont";
+constexpr std::string_view Show95PercentRuleHelpers = "Show95PercentRuleHelpers";
 
 constexpr std::string_view UseFinalGlideDisplayMode = "UseFinalGlideDisplayMode";
 constexpr std::string_view InfoBoxGeometry = "InfoBoxGeometry";
@@ -223,6 +224,7 @@ constexpr std::string_view InfoBoxTitleScale = "InfoBoxTitleScale";
 constexpr std::string_view FlarmSideData = "FlarmRadarSideData";
 constexpr std::string_view FlarmAutoZoom = "FlarmRadarAutoZoom";
 constexpr std::string_view FlarmNorthUp = "FlarmRadarNorthUp";
+constexpr std::string_view FlarmRadarZoom = "FlarmRadarZoom";
 
 constexpr std::string_view IgnoreNMEAChecksum = "IgnoreNMEAChecksum";
 constexpr std::string_view MapOrientation = "DisplayOrientation";
@@ -286,5 +288,4 @@ constexpr std::string_view WaveAssistant = "WaveAssistant";
 constexpr std::string_view MasterAudioVolume = "MasterAudioVolume";
 
 constexpr std::string_view RaspFile = "RaspFile";
-
 }

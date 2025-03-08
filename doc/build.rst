@@ -44,11 +44,11 @@ Getting the Source Code
 The XCSoar source code is managed with `git <http://git-scm.com/>`__. It
 can be downloaded with the following command::
 
-  git clone https://github.com/XCSoar/XCSoar
+  git clone --recurse-submodules https://github.com/XCSoar/XCSoar
 
 To update your repository, type::
 
-  git pull
+  git pull --recurse-submodules
 
 To update third-party libraries used by XCSoar (such as `Boost
 <http://www.boost.org/>`__), type::
@@ -65,13 +65,13 @@ The following is needed for all targets:
 -  GNU make
 
 -  GNU compiler collection (``gcc``), version 10 or later or clang/LLVM
-   10 (with "make CLANG=y")
+   12 (with "make CLANG=y")
 
 -  GNU gettext
 
--  `rsvg <http://librsvg.sourceforge.net/)>`__
+-  `rsvg <https://librsvg.sourceforge.net/>`__
 
--  `ImageMagick 6.4 <http://www.imagemagick.org/>`__
+-  `ImageMagick 6.4 <https://www.imagemagick.org/>`__
 
 -  `xsltproc <http://xmlsoft.org/XSLT/xsltproc2.html>`__
 
@@ -98,24 +98,24 @@ Compiling for Linux/UNIX
 The following additional packages are needed to build for Linux and
 similar operating systems:
 
--  `zlib <http://www.zlib.net/>`__
+-  `zlib <https://www.zlib.net/>`__
 
-- `c-ares <https://c-ares.haxx.se/`__
+-  `c-ares <https://c-ares.org/>`__
 
--  `CURL <http://curl.haxx.se/>`__
+-  `CURL <https://curl.se/>`__
 
--  `Lua <http://www.lua.org/>`__
+-  `Lua <https://www.lua.org/>`__
 
 -  `libinput <https://www.freedesktop.org/wiki/Software/libinput/>`__
    (not required when using Wayland or on the KOBO)
 
--  `SDL <http://www.libsdl.org/>`__
+-  `SDL <https://www.libsdl.org/>`__
 
--  `SDL_ttf <http://www.libsdl.org/projects/SDL_ttf/>`__
+-  `SDL_ttf <https://github.com/libsdl-org/SDL_ttf>`__
 
--  `libpng <http://www.libpng.org/>`__
+-  `libpng <http://www.libpng.org/pub/png/libpng.html>`__
 
--  `libjpeg <http://libjpeg.sourceforge.net/>`__
+-  `libjpeg <https://libjpeg.sourceforge.net/>`__
 
 -  OpenGL (Mesa)
 
@@ -129,7 +129,7 @@ The following command installs these on Debian::
       libfmt-dev \
       libdbus-1-dev \
       libsodium-dev \
-      libfreetype6-dev \
+      libfreetype-dev \
       libpng-dev libjpeg-dev \
       libtiff5-dev libgeotiff-dev \
       libc-ares-dev \
@@ -172,7 +172,7 @@ For Android, you need:
 - Java JDK
 
 On Debian::
-  
+
   sudo apt-get install
       default-jdk-headless \
       vorbis-tools \
@@ -266,6 +266,10 @@ To compile for iOS / ARMv7, run::
 
   make TARGET=IOS32 ipa
 
+To compile for macOS / ARM64, run::
+
+  make TARGET=MACOS dmg
+
 To compile for macOS / x86_64, run::
 
   make TARGET=OSX64 dmg
@@ -289,7 +293,9 @@ Install the required Homebrew packages::
     libtiff libgeotiff proj \
     c-ares \
     curl \
-    lua
+    lua \
+    libicns \
+    cdrtools
 
 Then compile::
 
@@ -351,7 +357,8 @@ Debian packages::
   sudo apt-get install \
       fakeroot \
       python3-setuptools \
-      ttf-bitstream-vera
+      ttf-bitstream-vera \
+      fonts-roboto-unhinted
 
 Then compile using this command::
 

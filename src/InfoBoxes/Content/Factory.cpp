@@ -1172,6 +1172,14 @@ static constexpr MetaData meta_data[] = {
     UpdateInfoBoxTaskSpeedEst,
   },
 
+  // e_Home_AltDiff
+  {
+    N_("Home altitude difference"),
+    N_("Home AltD"),
+    N_("Arrival altitude at the home waypoint relative to the safety arrival height."),
+    UpdateInfoBoxHomeAltitudeDiff,
+  },
+
 };
 
 // static_assert(ARRAY_SIZE(meta_data) == NUM_TYPES, "Wrong InfoBox factory size");

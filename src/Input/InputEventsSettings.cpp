@@ -381,8 +381,8 @@ InputEvents::eventOrientationCruise(const char *misc)
   } else if (StringIsEqual(misc, "windup")) {
 	settings_map.cruise_orientation = MapOrientation::WIND_UP;
   }
-  
-  ActionInterface::SendMapSettings(true);  
+
+  ActionInterface::SendMapSettings(true);
 }
 
 void
@@ -401,8 +401,8 @@ InputEvents::eventOrientationCircling(const char *misc)
   } else if (StringIsEqual(misc, "windup")) {
 	settings_map.circling_orientation = MapOrientation::WIND_UP;
   }
-  
-  ActionInterface::SendMapSettings(true);  
+
+  ActionInterface::SendMapSettings(true);
 }
 
 /* Event_TerrainToplogy Changes

@@ -20,6 +20,7 @@
 #include "Device/Driver/Volkslogger.hpp"
 #include "Device/Driver/EWMicroRecorder.hpp"
 #include "Device/Driver/LX.hpp"
+#include "Device/Driver/LX_Eos.hpp"
 #include "Device/Driver/IMI.hpp"
 #include "Device/Driver/Zander.hpp"
 #include "Device/Driver/FlymasterF1.hpp"
@@ -92,6 +93,8 @@ static const struct DeviceRegister *const driver_list[] = {
   &acd_driver,
   &anemoi_driver,
   &ar62xx_driver,
+  &condor3_driver,
+  &lx_eos_driver,
   nullptr
 };
 

@@ -15,7 +15,6 @@ CONTEST_SOURCES = \
 	$(CONTEST_SRC_DIR)/Solvers/OLCTriangleRules.cpp \
 	$(CONTEST_SRC_DIR)/Solvers/OLCFAI.cpp \
 	$(CONTEST_SRC_DIR)/Solvers/OLCPlus.cpp \
-	$(CONTEST_SRC_DIR)/Solvers/DMStQuad.cpp \
 	$(CONTEST_SRC_DIR)/Solvers/XContestFree.cpp \
 	$(CONTEST_SRC_DIR)/Solvers/XContestTriangle.cpp \
 	$(CONTEST_SRC_DIR)/Solvers/OLCSISAT.cpp \
@@ -25,7 +24,7 @@ CONTEST_SOURCES = \
 	$(CONTEST_SRC_DIR)/Solvers/WeglideDistance.cpp \
 	$(CONTEST_SRC_DIR)/Solvers/WeglideFAI.cpp \
 	$(CONTEST_SRC_DIR)/Solvers/WeglideOR.cpp \
-	$(CONTEST_SRC_DIR)/Solvers/Charron.cpp \
+	$(CONTEST_SRC_DIR)/Solvers/Charron.cpp
 
 CONTEST_DEPENDS = GEO
 

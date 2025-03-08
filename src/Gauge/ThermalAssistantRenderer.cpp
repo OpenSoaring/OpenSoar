@@ -156,7 +156,7 @@ ThermalAssistantRenderer::PaintPoints(Canvas &canvas,
 #ifdef ENABLE_OPENGL
   const ScopeAlphaBlend alpha_blend;
 #elif defined(USE_GDI)
-  canvas.SetMixMask();
+  canvas.SetMixCopy();
 #endif /* GDI */
 
   canvas.Select(look.polygon_brush);
@@ -179,11 +179,13 @@ ThermalAssistantRenderer::PaintNotCircling(Canvas &canvas) const
 
   const char* str = _("Not Circling");
   canvas.Select(look.overlay_font);
+  PixelSize ts = canvas.CalcTextSize(str);
   canvas.SetTextColor(look.text_color);
-
-  DrawCircleLabel(canvas,
-                  radar_renderer.GetCenter().At(0u, radar_renderer.GetRadius() / 2),
-                  str);
+  canvas.DrawText(
+      radar_renderer.GetCenter() -
+          PixelSize{ts.width / 2, radar_renderer.GetRadius() -
+                                      radar_renderer.GetRadius() / 4},
+      str);
 }
 
 void

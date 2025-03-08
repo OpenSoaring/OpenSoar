@@ -38,6 +38,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef __APPLE__
+#import <Foundation/Foundation.h>
+#endif
+
 #define OPENSOAR_DATADIR "OpenSoarData"
 
 /**
@@ -255,14 +259,14 @@ FindDataPaths() noexcept
   /* on Unix, use ~/OpenSoarData too */
   if (const char *home = getenv("HOME"); home != nullptr) {
 #ifdef __APPLE__
-    /* Mac OS X users are not used to dot-files in their home
+    /* macOS users are not used to dot-files in their home
        directory - make it a little bit easier for them to find the
        files.  If target is an iOS device, use the already existing
        "Documents" folder inside the application's sandbox.  This
        folder can also be accessed via iTunes, if
        UIFileSharingEnabled is set to YES in Info.plist */
 #if (TARGET_OS_IPHONE)
-    constexpr const char *in_home = "Documents" OPENSOAR_DATADIR;
+    constexpr const char *in_home = "Documents/" OPENSOAR_DATADIR;
 #else
     constexpr const char *in_home = OPENSOAR_DATADIR;
 #endif
@@ -277,6 +281,11 @@ FindDataPaths() noexcept
   /* Linux (and others): allow global configuration in /etc/opensoar */
   if (Directory::Exists(Path{"/etc/opensoar"}))
     result.emplace_back(Path{"/etc/opensoar"});
+#else
+  if (!Directory::Exists(Path{result.back()})) {
+    id fileManager = [NSFileManager defaultManager];
+      [fileManager createDirectoryAtPath:[NSString stringWithCString:result.back().c_str()] withIntermediateDirectories:YES attributes:nil error:nil];
+  }
 #endif // !APPLE
 #endif // HAVE_POSIX
 

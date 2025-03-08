@@ -51,7 +51,7 @@ TextInBoxMoveInView(PixelRect &rc, const PixelRect &map_rc) noexcept
   return offset;
 }
 
-static void
+void
 RenderShadowedText(Canvas &canvas, const char *text,
                    PixelPoint p,
                    bool inverted) noexcept

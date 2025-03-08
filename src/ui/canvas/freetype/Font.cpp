@@ -73,7 +73,6 @@ FT_CEIL(FT_Long x) noexcept
   return FT_FLOOR(x + 63);
 }
 
-[[gnu::pure]]
 static unsigned
 NextChar(std::string_view &s) noexcept
 {

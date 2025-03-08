@@ -10,6 +10,7 @@ on:
       - 'python/**'
       - '.github/workflows/build-container.yml'
       - '.github/workflows/build-unix.yml'
+      - '.github/workflows/build-translation.yml'
       - '.readthedocs.yaml'
     branches:
       - master
@@ -26,6 +27,7 @@ on:
       - 'python/**'
       - '.github/workflows/build-container.yml'
       - '.github/workflows/build-unix.yml'
+      - '.github/workflows/build-translation.yml'
       - '.readthedocs.yaml'
     branches:
       - master
@@ -33,7 +35,7 @@ on:
 
 env:
   DEBUG: y
-  BOOST: boost_1_85_0
+  BOOST: boost_1_87_0
   BUILD: UNIX,WIN64,PC
   TEST: UNIX,KOBO
 
@@ -277,7 +279,7 @@ jobs:
             target_upload: false
             upload_artifact: true
             # w/o container
-          
+
           - os: macos-14
             target: MACOS
             target_bin: OpenSoar
@@ -342,7 +344,7 @@ jobs:
           submodules: true
   
       - name: Cache ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ matrix.target }}-ccache
   

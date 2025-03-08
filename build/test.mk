@@ -114,7 +114,9 @@ TEST_NAMES = \
 	TestLXNToIGC \
 	TestLeastSquares \
 	TestHexString \
-	TestThermalBand
+	TestThermalBand \
+	TestPackedFloat \
+	TestVersionNumber
 
 ifeq ($(TARGET_IS_ANDROID),n)
 # These programs are broken on Android because they require Java code
@@ -484,11 +486,13 @@ TEST_NMEA_FORMATTER_SOURCES = \
 	$(SRC)/Atmosphere/AirDensity.cpp \
 	$(SRC)/Device/Parser.cpp \
 	$(SRC)/Device/Driver/FLARM/StaticParser.cpp \
+	$(SRC)/FLARM/Error.cpp \
 	$(SRC)/FLARM/Traffic.cpp \
 	$(SRC)/FLARM/Id.cpp \
 	$(SRC)/Formatter/NMEAFormatter.cpp \
 	$(TEST_SRC_DIR)/tap.c \
 	$(TEST_SRC_DIR)/FakeGeoid.cpp \
+	$(TEST_SRC_DIR)/FakeMessage.cpp \
 	$(TEST_SRC_DIR)/TestNMEAFormatter.cpp
 TEST_NMEA_FORMATTER_DEPENDS = LIBNMEA GEO MATH IO UTIL TIME UNITS
 $(eval $(call link-program,TestNMEAFormatter,TEST_NMEA_FORMATTER))
@@ -650,6 +654,7 @@ TEST_DRIVER_SOURCES = \
 	$(SRC)/Device/Util/NMEAReader.cpp \
 	$(SRC)/Device/Declaration.cpp \
 	$(SRC)/Device/Config.cpp \
+	$(SRC)/FLARM/Error.cpp \
 	$(SRC)/FLARM/Traffic.cpp \
 	$(SRC)/FLARM/Id.cpp \
 	$(SRC)/FLARM/Calculations.cpp \
@@ -843,6 +848,7 @@ DEBUG_REPLAY_SOURCES = \
 	$(ENGINE_SRC_DIR)/ThermalBand/ThermalEncounterBand.cpp \
 	$(ENGINE_SRC_DIR)/ThermalBand/ThermalEncounterCollection.cpp \
 	$(SRC)/Engine/Navigation/TraceHistory.cpp \
+	$(SRC)/FLARM/Error.cpp \
 	$(SRC)/FLARM/Id.cpp \
 	$(SRC)/FLARM/Traffic.cpp \
 	$(SRC)/FLARM/List.cpp \
@@ -1233,6 +1239,7 @@ RUN_DEVICE_DRIVER_SOURCES = \
 	$(SRC)/Device/Util/NMEAWriter.cpp \
 	$(SRC)/Device/Util/NMEAReader.cpp \
 	$(SRC)/Device/Config.cpp \
+	$(SRC)/FLARM/Error.cpp \
 	$(SRC)/FLARM/Traffic.cpp \
 	$(SRC)/FLARM/List.cpp \
 	$(SRC)/IGC/IGCParser.cpp \
@@ -1416,6 +1423,7 @@ $(eval $(call link-program,lxn2igc,LXN2IGC))
 RUN_IGC_WRITER_SOURCES = \
 	$(DEBUG_REPLAY_SOURCES) \
 	$(SRC)/Version.cpp \
+	$(SRC)/FLARM/Error.cpp \
 	$(SRC)/FLARM/Calculations.cpp \
 	$(SRC)/Computer/ClimbAverageCalculator.cpp \
 	$(SRC)/IGC/IGCFix.cpp \
@@ -1436,6 +1444,7 @@ RUN_FLIGHT_LOGGER_SOURCES = \
 	$(DEBUG_REPLAY_SOURCES) \
 	$(SRC)/Computer/CirclingComputer.cpp \
 	$(SRC)/Logger/FlightLogger.cpp \
+	$(SRC)/FLARM/Error.cpp \
 	$(SRC)/TransponderCode.cpp \
 	$(SRC)/Formatter/NMEAFormatter.cpp \
 	$(TEST_SRC_DIR)/FakeLogFile.cpp \
@@ -1522,6 +1531,7 @@ RUN_TRACE_SOURCES = \
 	$(SRC)/IGC/IGCParser.cpp \
 	$(SRC)/TransponderCode.cpp \
 	$(SRC)/Formatter/NMEAFormatter.cpp \
+	$(SRC)/FLARM/Error.cpp \
 	$(ENGINE_SRC_DIR)/GlideSolvers/GlideSettings.cpp \
 	$(ENGINE_SRC_DIR)/Trace/Point.cpp \
 	$(ENGINE_SRC_DIR)/Trace/Trace.cpp \
@@ -1535,6 +1545,7 @@ RUN_CONTEST_SOURCES = \
 	$(SRC)/IGC/IGCParser.cpp \
 	$(SRC)/TransponderCode.cpp \
 	$(SRC)/Formatter/NMEAFormatter.cpp \
+	$(SRC)/FLARM/Error.cpp \
 	$(ENGINE_SRC_DIR)/Trace/Point.cpp \
 	$(ENGINE_SRC_DIR)/Trace/Trace.cpp \
 	$(TEST_SRC_DIR)/FakeTerrain.cpp \
@@ -1551,6 +1562,7 @@ RUN_WAVE_COMPUTER_SOURCES = \
 	$(SRC)/Formatter/GeoPointFormatter.cpp \
 	$(SRC)/TransponderCode.cpp \
 	$(SRC)/Formatter/NMEAFormatter.cpp \
+	$(SRC)/FLARM/Error.cpp \
 	$(ENGINE_SRC_DIR)/Trace/Point.cpp \
 	$(ENGINE_SRC_DIR)/Trace/Trace.cpp \
 	$(TEST_SRC_DIR)/RunWaveComputer.cpp
@@ -1585,6 +1597,7 @@ FLIGHT_PATH_SOURCES = \
 	$(SRC)/IGC/IGCParser.cpp \
 	$(SRC)/NMEA/Aircraft.cpp \
 	$(SRC)/Formatter/NMEAFormatter.cpp \
+	$(SRC)/FLARM/Error.cpp \
 	$(ENGINE_SRC_DIR)/GlideSolvers/GlideSettings.cpp \
 	$(ENGINE_SRC_DIR)/Trace/Point.cpp \
 	$(ENGINE_SRC_DIR)/Trace/Trace.cpp \
@@ -2105,7 +2118,7 @@ RUN_ANALYSIS_SOURCES = \
 	$(SRC)/Renderer/GlidePolarRenderer.cpp \
 	$(SRC)/Renderer/GlidePolarInfoRenderer.cpp \
 	$(SRC)/Renderer/MacCreadyRenderer.cpp \
-    $(SRC)/Renderer/VarioHistogramRenderer.cpp \
+	$(SRC)/Renderer/VarioHistogramRenderer.cpp \
 	$(SRC)/Renderer/TaskLegRenderer.cpp \
 	$(SRC)/Renderer/TaskSpeedRenderer.cpp \
 	$(SRC)/Renderer/ThermalBandRenderer.cpp \
@@ -2401,3 +2414,15 @@ TEST_REPLAY_RETROSPECTIVE_SOURCES = \
 	$(TEST_SRC_DIR)/test_replay_retrospective.cpp
 TEST_REPLAY_RETROSPECTIVE_DEPENDS = $(TEST1_DEPENDS) OPERATION WAYPOINTFILE
 $(eval $(call link-program,test_replay_retrospective,TEST_REPLAY_RETROSPECTIVE))
+
+TEST_PACKED_FLOAT_SOURCES = \
+	$(TEST_SRC_DIR)/tap.c \
+	$(TEST_SRC_DIR)/TestPackedFloat.cpp
+TEST_PACKED_FLOAT_DEPENDS = MATH
+$(eval $(call link-program,TestPackedFloat,TEST_PACKED_FLOAT))
+
+TEST_VERSION_NUMBER_SOURCES = \
+	$(TEST_SRC_DIR)/tap.c \
+	$(TEST_SRC_DIR)/TestVersionNumber.cpp
+TEST_VERSION_NUMBER_DEPENDS = MATH UTILS
+$(eval $(call link-program,TestVersionNumber,TEST_VERSION_NUMBER))

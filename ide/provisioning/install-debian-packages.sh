@@ -56,7 +56,7 @@ install_linux() {
     libfmt-dev \
     libdbus-1-dev \
     libsodium-dev \
-    libfreetype6-dev \
+    libfreetype-dev \
     libpng-dev libjpeg-dev \
     libtiff5-dev libgeotiff-dev \
     libssl-dev \
@@ -93,7 +93,7 @@ install_debian() {
 
 install_llvm() {
   echo Installing dependencies for compiling with LLVM / Clang...
-  apt-get install ${APTOPTS[*]} llvm clang libc++-dev libc++abi-dev
+  apt-get install ${APTOPTS[*]} llvm clang libc++-dev libc++abi-dev lld
   echo
 }
 
@@ -123,7 +123,8 @@ install_kobo() {
       texinfo \
       fakeroot \
       python3-setuptools \
-      ttf-bitstream-vera
+      ttf-bitstream-vera \
+      fonts-roboto-unhinted
   echo
 }
 
