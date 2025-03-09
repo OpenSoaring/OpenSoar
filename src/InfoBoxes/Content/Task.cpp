@@ -624,7 +624,7 @@ UpdateInfoBoxTaskAADistanceMax(InfoBoxData &data) noexcept
 
   if (map_settings.show_95_percent_rule_helpers) {
     auto distance = FormatUserDistanceSmart(0.95*task_stats.distance_max_total);
-    auto comment = std::basic_string<TCHAR>( _T("95% ") ) + distance.data();
+    auto comment = std::string("95% ") + distance.data();
     data.SetComment(comment.data());
   }
   else {
