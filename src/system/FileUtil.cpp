@@ -368,16 +368,10 @@ bool
 File::SetTime(Path path, time_t t) noexcept
 {
 #ifdef HAVE_POSIX
-  struct stat foo;
-  time_t mtime;
   struct utimbuf new_times;
-
-  stat(filename, &foo);
-  mtime = foo.st_mtime; /* seconds since the epoch */
-
-  new_times.actime = foo.st_atime; /* keep atime unchanged */
-  new_times.modtime = t;    /* set mtime defined time */
-  return utime(filename, &new_times) == 0;
+  new_times.actime = t ? t : std::time(0);
+  new_times.modtime = t ? t : std::time(0);
+  return utime(path.c_str(), &new_times) == 0;
 #else  // Windows:
 # if 0
   // change file time without creation time
