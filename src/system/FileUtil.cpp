@@ -2,12 +2,12 @@
 // Copyright The XCSoar Project
 
 #include "FileUtil.hpp"
-#include "time/FileTime.hxx"
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
 #include "Compatibility/path.h"
 
 #ifdef _WIN32
+#include "time/FileTime.hxx"
 #include "sys/utime.h"
 #endif
 
