@@ -31,16 +31,7 @@ add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
     ${SCRIPT_FILES}
 )
 
-# message(STATUS "CARES-Lib = ${CARES_LIB}")
-# message(STATUS "CARES-Lib = ${CARES_LIB}")
-# set(XCSOAR_CARES_VERSION c-ares-1.17.1)
-# set(CARES_LIB ${LINK_LIBS}/c-ares/${XCSOAR_CARES_VERSION}/lib/${TOOLCHAIN}/cares.lib)
-
-# message(STATUS "CARES-Lib = ${CARES_LIB}")
-# message(FATAL_ERROR "CARES-Lib = ${CARES_LIB} ")
-
-# target_link_libraries(${TARGET_NAME} PUBLIC ${CARES_LIB} system time)
-# target_link_libraries(${TARGET_NAME} PUBLIC system time ${CARES_LIB})
+# target_link_libraries(${TARGET_NAME} PUBLIC ${CARES_LIBS} system time)
 target_link_libraries(${TARGET_NAME} PUBLIC system time ${CARES_TARGET})
 
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)
