@@ -131,9 +131,7 @@ int main()
              2 * ARRAY_SIZE(length) +
              ARRAY_SIZE(latin1_chars) +
              4 * ARRAY_SIZE(crop) +
-#ifndef _UNICODE
              ARRAY_SIZE(truncate_string_tests) +
-#endif
              10 + 27);
 
   for (auto i : valid) {
