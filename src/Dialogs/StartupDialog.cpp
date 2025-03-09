@@ -159,7 +159,7 @@ SelectProfile(Path path) noexcept
        becomes the primary data path */
     SetPrimaryDataPath(path.GetParent());
 
-  File::Touch(path);
+  // File::Touch(path); // this change the filedate of profile file w/o touch
   return true;
 }
 
