@@ -36,8 +36,8 @@ on:
 env:
   DEBUG: y
   BOOST: boost_1_87_0
-  BUILD: UNIX,WIN64,PC
-  TEST: UNIX,KOBO
+  BUILD_TARGETS: UNIX,WIN64,PC
+  TEST_TARGETS: UNIX,KOBO
 
 jobs:
   release:
@@ -192,9 +192,9 @@ jobs:
         working-directory: ${{ github.workspace }}
 
   build: # step 2
+    # if: ${{ startsWith('UNIX,MACOS,WIN64', 'UNIX') }}
     runs-on: ${{ matrix.os }}
     needs: release
-    # if: contains('UNIX,WIN64' , ${{ matrix.target }})
     container: ${{ matrix.target_container }}
     strategy:
       fail-fast: false
@@ -202,11 +202,11 @@ jobs:
         include:
           - os: ubuntu-22.04
             target: ANDROIDAARCH64
+            target_hide: false
             target_bin: OpenSoar
-            target_bin_path: bin
             target_final: OpenSoar
             target_ext: .apk
-            target_test: true
+            target_test: false
             target_upload: true
             upload_artifact: true
             ndk: r27c
@@ -214,8 +214,20 @@ jobs:
           
           - os: ubuntu-24.04
             target: ANDROID
+            target_hide: false
             target_bin: OpenSoar
-            target_bin_path: bin
+            target_final: OpenSoar
+            target_ext: .apk
+            target_test: false
+            target_upload: true
+            upload_artifact: true
+            ndk: r26d
+            target_container: debian:bookworm-slim
+          #### needs very long time.. 
+          - os: ubuntu-24.04
+            target: ANDROIDFAT
+            target_hide: true  # ${{ REDUCED_BUILD }}
+            target_bin: OpenSoar
             target_final: OpenSoar
             target_ext: .apk
             target_test: false
@@ -227,8 +239,8 @@ jobs:
           - os: ubuntu-24.04
           # - os: ubuntu-22.04
             target: UNIX
+            target_hide: false
             target_bin: OpenSoar_${{ needs.release.outputs.version }}_amd64
-            target_bin_path: bin
             target_final: OpenSoar_
             target_ext: .deb
             target_test: true
@@ -237,20 +249,10 @@ jobs:
             target_container: debian:bookworm-slim    # => Ubuntu 24.04
             #  target_container: debian:bullseye-slim # => Ubuntu 22.04
 
-          #### needs long time.. - os: ubuntu-24.04
-          #### needs long time..   target: KOBO
-          #### needs long time..   target_bin: KoboRoot
-          #### needs long time..   target_bin_path: bin
-          #### needs long time..   target_final: KoboRoot
-          #### needs long time..   target_ext: .tgz
-          #### needs long time..   target_upload: true
-          #### needs long time..   upload_artifact: false
-          #### needs long time..   target_container: debian:bookworm-slim
-
           - os: ubuntu-24.04
             target: WIN64
+            target_hide: false
             target_bin: OpenSoar
-            target_bin_path: bin
             target_final: OpenSoar
             target_ext: .exe
             target_test: true
@@ -260,8 +262,8 @@ jobs:
           
           - os: ubuntu-24.04
             target: PC
+            target_hide: false
             target_bin: OpenSoar
-            target_bin_path: bin
             target_final: OpenSoar
             target_ext: .exe
             target_test: true
@@ -271,8 +273,8 @@ jobs:
           
           - os: macos-13
             target: OSX64
+            target_hide: false
             target_bin: OpenSoar
-            target_bin_path: bin
             target_final: OpenSoar
             target_ext: ''
             target_test: true
@@ -282,8 +284,8 @@ jobs:
 
           - os: macos-14
             target: MACOS
+            target_hide: false
             target_bin: OpenSoar
-            target_bin_path: bin
             target_final: OpenSoar
             target_ext: ''
             target_test: true
@@ -293,32 +295,75 @@ jobs:
           
           - os: macos-14
             target: IOS64
+            target_hide: false
             target_bin: OpenSoar
-            target_bin_path: bin
             target_final: OpenSoar
             target_ext: ''
             target_test: false
             target_upload: false
             upload_artifact: false
             # w/o container
+        # exclude:
+          #### needs long time.. 
+          - os: ubuntu-24.04
+            target: KOBO
+            target_hide: true  # ${{ REDUCED_BUILD }}
+            target_bin: OpenSoar
+            target_final: KoboRoot
+            target_ext: .tgz
+            target_test: false
+            target_upload: true
+            upload_artifact: false
+            target_container: debian:bookworm-slim
   
     steps:
       - name: Check Git Variables
+        # if: contains(env.BUILD_TARGETS, ${{ matrix.target }})
+        if: ${{ ! matrix.target_hide }}
         run: |
           echo "(No) Check Git variables"
           COMMIT=$(echo $GITHUB_SHA | head -c 7)
           echo "GIT_COMMIT=$COMMIT" >> $GITHUB_ENV
         
       - name: Install checkout dependencies
-        if: ${{ startsWith(matrix.os, 'ubuntu-') }}
+        if: ${{ startsWith(matrix.os, 'ubuntu-') && ! matrix.target_hide }}
         run: |
           echo "Install checkout dependencies: ${{ matrix.target }} "
           apt-get update
           apt-get install -y --no-install-recommends git \
             ca-certificates rsync openssh-client
   
+      - name: Set environment variables
+        if: ${{ ! matrix.target_hide }}
+        run: |
+            case ${{ matrix.target }} in
+                ANDROID | ANDROIDFAT | ANDROIDAARCH64)
+                  echo "BINARY_DIR=output/ANDROID/bin" >> $GITHUB_ENV
+                  ;;
+                KOBO)
+                  echo "BINARY_DIR=output/${{ matrix.target }}/KoboRoot" >> $GITHUB_ENV
+                  ;;
+                *)
+                  echo "BINARY_DIR=output/${{ matrix.target }}/bin" >> $GITHUB_ENV
+                  ;;
+            esac
+            
+            echo "DEBUG=$DEBUG"
+            case ${{ matrix.target }} in
+                OSX64 | IOS64 | MACOS)
+                  echo "BUILD_PARAMS=-j$(nproc) TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
+                  echo "BUILDER=gmake" >> $GITHUB_ENV
+                  ;;
+                *)
+                  echo "BUILD_PARAMS=-j$(nproc) TARGET=${{ matrix.target }} DEBUG=$DEBUG USE_CCACHE=y V=2" >> $GITHUB_ENV
+                  echo "BUILDER=make" >> $GITHUB_ENV
+                  ;;
+            esac
+            
+            if ${{ matrix.target_test }} ; then echo "IS_TEST=everything" >> $GITHUB_ENV; fi
+
       - name: Set vars for release
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && ! matrix.target_hide }}
         run: |
           echo "Set vars for release: ${{ matrix.target }} "
           if [ ${{ secrets.TEST }} = '123456' ]; then
@@ -337,18 +382,21 @@ jobs:
             echo "no DEBUG flag"
             echo "DEBUG=n" >> $GITHUB_ENV
           fi
-  
+
       - name: Checkout code
+        if: ${{ ! matrix.target_hide }}
         uses: actions/checkout@v4
         with:
           submodules: true
   
       - name: Cache ccache
+        if: ${{ ! matrix.target_hide }}
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ matrix.target }}-ccache
   
       - name: "Cache Boost"
+        if: ${{ ! matrix.target_hide }}
         uses: actions/cache@v4
         with:
           key: ${{ env.BOOST }}-${{ hashFiles('lib/boost/patches/**') }}
@@ -358,6 +406,7 @@ jobs:
             ${{ github.workspace }}/output/src/${{ env.BOOST }}/boost
   
       - name: Install dependencies
+        if: ${{ ! matrix.target_hide }}
         run: |
           echo "Install dependencies: ${{ matrix.target }}"
           echo "CurrDir = $(pwd)"
@@ -395,7 +444,7 @@ jobs:
   
       - name: Prepare signing key
         shell: bash
-        if: ${{ startsWith(matrix.target, 'ANDROID') && startsWith(github.ref, 'refs/tags/v') }}
+        if: ${{ startsWith(matrix.target, 'ANDROID') && startsWith(github.ref, 'refs/tags/v') && ! matrix.target_hide }}
         run: |
           echo "Prepare signing key: ${{ matrix.target }}"
           # please use secrets.XCSOAR_UPLOAD_KEY... for secrets.OPENSOAR_UPLOAD_KEY to be
@@ -407,72 +456,43 @@ jobs:
           fi
   
       - name: Compile OpenSoar - PR
-        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') && ! matrix.target_hide }}
         run: |
           echo "Compile OpenSoar - PR: ${{ matrix.target }}"
-            case ${{ matrix.target }} in
-              ANDROID | ANDROIDFAT | ANDROIDAARCH64)
-                echo "make TARGET= ${{ matrix.target }}..."
-                make -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 output/ANDROID/bin/${{ matrix.target_bin }}-debug${{ matrix.target_ext }}
-                mv output/ANDROID/bin/${{ matrix.target_bin }}-debug${{ matrix.target_ext }} \
-                output/ANDROID/bin/${{ matrix.target_bin }}${{ matrix.target_ext }}
-                ;;
-              WIN64 | WIN32 | PC | UNIX | KOBO)
-                echo "!!!!! make -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 everything"
-                make -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 everything
-                ;;
-              ### KOBO)
-              ###   echo "make TARGET = Kobo..."
-              ###   make -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 output/${{ matrix.target }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
-              ###   ;;
-              ### UNIX)
-              ###   echo "make TARGET = Unix..."
-              ###   mkdir -p output/UNIX/DPKG
-              ###   rsync -apt . output/UNIX/DPKG --exclude=output/UNIX/DPKG
-              ###   cd output/UNIX/DPKG
-              ###   DEB_BUILD_OPTIONS=ccache,noopt dpkg-buildpackage --jobs-force=$(nproc) --no-sign
-              ###   ;;
-              OSX64 | IOS64 | MACOS)
-                if [ ${{ matrix.target_test }} == 'true' ]; then 
-                  gmake -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2  OPTIMIZE="-O0" everything
-                else
-                  gmake -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2  OPTIMIZE="-O0"
-                fi
-                ;;
-            esac
+          ${{ env.BUILDER }} ${{ env.BUILD_PARAMS }} ${{ env.IS_TEST }} 
       - name: Test Directory (UNIX)
-        if: ${{ startsWith(matrix.target, 'UNIX') }}
+        if: ${{ startsWith(matrix.target, 'UNIX') && ! matrix.target_hide }}
         run: |
           # cd output/UNIX/DPKG
           echo "----------------------------------------------------------------"
-          if [ -d output/${{ matrix.target }}/${{ matrix.target_bin_path }} ]; then
-            echo "ls -l output/DEBIAN-${{ matrix.target }}/${{ matrix.target_bin_path }}"
+          if [ -d ${{ env.BINARY_DIR }} ]; then
+            echo "ls -l output/DEBIAN-${{ matrix.target }}/bin"
             echo "=============================================================="
-            ls -l output/${{ matrix.target }}/${{ matrix.target_bin_path }}
+            ls -l ${{ env.BINARY_DIR }}
           else
-            echo "dir 'output/${{ matrix.target }}/${{ matrix.target_bin_path }}' doesn't exist"
+            echo "dir '${{ env.BINARY_DIR }}' doesn't exist"
           fi
           echo "----------------------------------------------------------------"
       - name: Upload Test artifact
         uses: actions/upload-artifact@v4
-        if: ${{ matrix.target_test }}
+        if: ${{ matrix.target_test && ! matrix.target_hide }}
         ## if: ${{ matrix.target_test || startsWith(github.ref, 'refs/tags/v')}}
         with:
           name: Test-${{ env.GIT_COMMIT }}-${{ matrix.target }}
           path: |
             test/README
-            output/${{ matrix.target }}/${{ matrix.target_bin_path }}/Test*
-            output/${{ matrix.target }}/${{ matrix.target_bin_path }}/test_*
+            ${{ env.BINARY_DIR }}/Test*
+            ${{ env.BINARY_DIR }}/test_*
           retention-days: 1
 
       - name: Compile OpenSoar - Sanitizer Check
-        if: ${{ matrix.target == 'UNIX' && !startsWith(github.ref, 'refs/tags/v') && github.ref == 'refs/heads/master' }}
+        if: ${{ matrix.target == 'UNIX' && !startsWith(github.ref, 'refs/tags/v') && github.ref == 'refs/heads/master' && ! matrix.target_hide }}
         run: |
           echo "Unix - Sanitizer Check"
           make -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 everything VFB=y SANITIZE=y DEBUG_GLIBCXX=y
   
       - name: Compile OpenSoar - Release
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && ! matrix.target_hide }}
         # if: startsWith(github.ref, 'refs/tags/v')
         run: |
           echo "Compile OpenSoar - Release"
@@ -510,16 +530,19 @@ jobs:
   
       - name: Upload Release artifact
         uses: actions/upload-artifact@v4
-        if: ${{ (matrix.upload_artifact || startsWith(github.ref, 'refs/tags/v'))}}
+        if: ${{ (matrix.upload_artifact || startsWith(github.ref, 'refs/tags/v')) && ! matrix.target_hide }} 
         with:
           name: ${{ matrix.target_final }}-${{ env.GIT_COMMIT }}-${{ matrix.target }}${{ matrix.target_ext }}
-          # path: output/${{ matrix.target }}/${{ matrix.target_bin_path }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+          # path: output/${{ matrix.target }}/${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
           path: |
-            output/${{ matrix.target }}/${{ matrix.target_bin_path }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+            ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+            echo "Binary Directory: ${BINARY_SIR}"
+            echo "Binary Directory: $BINARY_SIR"
+            echo "Binary Directory: ${env.BINARY_SIR}"
           retention-days: 2
   
       - name: Test Directory (DEBIAN-UNIX)
-        if: ${{ startsWith(matrix.target, 'UNIX') }}
+        if: ${{ startsWith(matrix.target, 'UNIX') && ! matrix.target_hide }}
         run: |
           if [ -d output/UNIX/DPKG ]; then 
             cd output/UNIX/DPKG
@@ -528,12 +551,12 @@ jobs:
             TARGET_PATH=output/${{ matrix.target }}
           fi
           echo "----------------------------------------------------------------"
-          if [ -d $TARGET_PATH/${{ matrix.target_bin_path }} ]; then
-            echo "ls -l $TARGET_PATH/${{ matrix.target_bin_path }}"
+          if [ -d $TARGET_PATH/bin ]; then
+            echo "ls -l $TARGET_PATH/bin"
             echo "=============================================================="
-            ls -l $TARGET_PATH/${{ matrix.target_bin_path }}
+            ls -l $TARGET_PATH/bin
           else
-            echo "dir '$TARGET_PATH/${{ matrix.target_bin_path }}' doesn't exist"
+            echo "dir '$TARGET_PATH/bin' doesn't exist"
           fi
           echo "----------------------------------------------------------------"
   
@@ -545,29 +568,29 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: output/${{ matrix.target }}/${{ matrix.target_bin_path }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+          asset_path: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
           asset_name: ${{ matrix.target_final }}-${{ matrix.target }}${{ matrix.target_ext }}
           asset_content_type: application/zip
   
       - name: Deploy to Download server - testing
-        if: ${{ github.repository == 'August2111/OpenSoar' && github.ref == 'refs/heads/master' }}
+        if: ${{ github.repository == 'August2111/OpenSoar' && github.ref == 'refs/heads/master' && ! matrix.target_hide }}
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
           ARGS: "-rltgoDzvO"
-          SOURCE: output/${{ matrix.target }}/${{ matrix.target_bin_path }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+          SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
           REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
           REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
           TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}/
           SCRIPT_BEFORE: mkdir -p ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}
   
       - name: Deploy to Download server - release
-        if: ${{ github.repository == 'OpenSoaring/OpenSoar' && startsWith(github.ref, 'refs/tags/v') && matrix.target_upload == true }}
+        if: ${{ github.repository == 'OpenSoaring/OpenSoar' && startsWith(github.ref, 'refs/tags/v') && matrix.target_upload == true && ! matrix.target_hide }}
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
           ARGS: "-rltgoDzvO"
-          SOURCE: output/${{ matrix.target }}/${{ matrix.target_bin_path }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+          SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
           REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
           REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
           TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
