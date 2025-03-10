@@ -49,6 +49,10 @@ public:
     return value.c_str();
   }
 
+  const std::string str() const noexcept {
+    return value.c_str();
+  }
+
   /**
    * Convert the path to UTF-8.
    * Returns empty string on error or if this instance is "nulled".
