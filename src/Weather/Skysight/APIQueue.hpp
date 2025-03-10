@@ -8,6 +8,7 @@
 #include "Layers.hpp"
 #include "ui/event/PeriodicTimer.hpp"
 #include <vector>
+#include <memory>
 
 class SkysightAPIQueue final {
   std::vector<std::unique_ptr<SkysightAsyncRequest>> request_queue;
@@ -15,7 +16,7 @@ class SkysightAPIQueue final {
   bool is_busy = false;
   bool is_clearing = false;
   std::string key;
-  uint64_t key_expiry_time = 0;
+  time_t key_expiry_time = 0;
   std::string_view email;
   std::string_view password;
 

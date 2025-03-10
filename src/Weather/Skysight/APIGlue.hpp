@@ -12,7 +12,7 @@ typedef void (*SkysightCallback) (
   const std::string details,
   const bool  success, 
   const std::string layer,
-  const uint64_t time_index
+  const time_t time_index
 );
 
 enum class SkysightCallType {

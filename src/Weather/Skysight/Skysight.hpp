@@ -31,10 +31,10 @@ public:
   Path filename;
   std::string layer;
   std::string region;
-  uint64_t datetime;
-  uint64_t updatetime;
+  time_t datetime;
+  time_t updatetime;
   bool is_valid;
-  uint64_t mtime;
+  time_t mtime;
 };
 
 class Skysight final: private NullBlackboardListener {
@@ -48,10 +48,10 @@ public:
   Skysight(CurlGlobal &_curl);
 
   static void APIInited(const std::string details, const bool success,
-      const std::string layer_id, const uint64_t time_index);
+      const std::string layer_id, const time_t time_index);
 #if 1  // used in API (in ParseLastUpdates())
   static void DownloadComplete(const std::string details, const bool success,
-      const std::string layer_id, const uint64_t time_index);
+      const std::string layer_id, const time_t time_index);
 #endif
 
   std::map<std::string, std::string> GetRegions() {

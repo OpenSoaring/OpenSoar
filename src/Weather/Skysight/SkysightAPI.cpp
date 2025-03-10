@@ -36,7 +36,7 @@
 #include <string>
 #include <vector>
 
-#include <windef.h> /* for MAX_PATH */
+#include <windef.h>  // for MAX_PATH
 
 SkysightAPI *SkysightAPI::self;
 
@@ -140,7 +140,6 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
                      const time_t fctime, const GeoBitmap::TileData tile)
 {
   StaticString<256> filename;
-  BrokenDateTime fc;
   switch (type) {
   case SkysightCallType::Regions:
     filename = "regions.json";
@@ -179,7 +178,6 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
     else 
       filename = path + (GetLayer(layer_id)->live_layer ? ".jpg" : ".nc");
     } else {
-      auto layer = GetLayer(layer_id);
       filename.Format("%s-%s-%s-%s.nc",
         region.c_str(),
         layer_id.data(),
@@ -459,7 +457,7 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
         std::string id = j.second.get("layer_id", "");
         if (id.empty())
           continue;
-        uint64_t time = j.second.get("time", 0);
+        time_t time = j.second.get("time", 0);
         if (!time)
           continue;
 
@@ -630,11 +628,6 @@ SkysightAPI::ParseTile(const SkysightRequestArgs &args,
   return true;
 }
 
-// bool
-// SkysightAPI::GetData(SkysightCallType type, const std::string_view layer_id,
-//                      const time_t from, const time_t to,
-//                      [[maybe_unused]] const std::string_view link,
-//                      SkysightCallback cb, bool force_recache)
 bool
 SkysightAPI::GetTileData(const std::string_view layer_id,
     const time_t from, const time_t to,
@@ -645,7 +638,6 @@ SkysightAPI::GetTileData(const std::string_view layer_id,
   GeoBitmap::TileData base_tile;
   const SkysightCallType type = SkysightCallType::Tile;
   if (map_window) { // && map_window->IsPanning()) {
-    double scale = map_window->VisibleProjection().GetMapScale();
     base_tile = GeoBitmap::GetTile(map_window->VisibleProjection());
   }
   else {
@@ -709,7 +701,7 @@ SkysightAPI::GetData(SkysightCallType type, const std::string_view layer_id,
   const auto path = GetPath(type, layer_id, from);
 
   switch (type) {
-#if SKYSIGHT_DEBUG  // log the path in opensoar.log
+#ifdef SKYSIGHT_DEBUG  // log the path in opensoar.log
     case SkysightCallType::DataDetails:
     case SkysightCallType::Login:
     case SkysightCallType::LastUpdates:
@@ -720,12 +712,10 @@ SkysightAPI::GetData(SkysightCallType type, const std::string_view layer_id,
     case SkysightCallType::Tile:
     case SkysightCallType::Data:
         // ParseData(arg, path);
-      // const auto path = GetPath(SkysightCallType::Data, args.layer.data(), time_index);
+        // const auto path = GetPath(SkysightCallType::Data, args.layer.data(), time_index);
       if (File::Exists(path)) {
         MakeCallback(cb, path.c_str(), true, layer_id.data(), from);
-        //return false;  // no request if file exists
         return true;  // don't create request if file exists
-        //break;
       }
       break;
     default:

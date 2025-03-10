@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <thread>
 
 static uint16_t overlay_index = 0;
 /**
@@ -341,7 +342,7 @@ void
 Skysight::APIInited([[maybe_unused]] const std::string details,
   [[maybe_unused]] const bool success,
   [[maybe_unused]] const std::string layer_id,
-  [[maybe_unused]] const uint64_t time_index)
+  [[maybe_unused]] const time_t time_index)
 {
   if (!self)
     return;
@@ -362,9 +363,9 @@ Skysight::GetSelectedLayerState(const std::string_view layer_name,
   std::vector<SkysightImageFile> img_files = ScanFolder(search_pattern);
 
   if (img_files.size() > 0) {
-    uint64_t min_date = (uint64_t)std::numeric_limits<uint64_t>::max;
-    uint64_t max_date = 0;
-    uint64_t updated = 0;
+    time_t min_date = (time_t)std::numeric_limits<uint64_t>::max;
+    time_t max_date = 0;
+    time_t updated = 0;
 
     for (auto &i : img_files) {
       min_date = std::min(min_date, i.datetime);
@@ -428,7 +429,7 @@ Skysight::CleanupFiles()
   struct SkysightFileDeleter: public File::Visitor {
     explicit SkysightFileDeleter(const time_t _to): to(_to) {}
     const time_t to;
-    void Visit(Path fullpath, Path filename) override {
+    void Visit(Path fullpath, [[maybe_unused]] Path filename) override {
         auto mtime = File::GetTime(fullpath);
         if (mtime < to) { 
           File::Delete(fullpath);
@@ -440,13 +441,14 @@ Skysight::CleanupFiles()
   LogFmt("Time-Compare: {}, {}", buffer, DateTime::str_now());
   
   auto now = DateTime::now();
-  SkysightTIFVisitor  visitor_tif(now - (60 * 60 * 24));  // 1 day
-  SkysightFileDeleter deleter_tmp(now - 6 * 60 * 60);     // 6 hours
-  SkysightFileDeleter deleter_txt(now - 1 * 60 * 60);     // 1 hour
+  SkysightTIFVisitor  visitor_tif(now - 24 * _ONE_HOUR);  // 1 day
+  SkysightFileDeleter deleter_jpg(now - 12 * _ONE_HOUR);  // 1/2 day
+  SkysightFileDeleter deleter_tmp(now -  6 * _ONE_HOUR);  // 6 hours
+  SkysightFileDeleter deleter_txt(now -  1 * _ONE_HOUR);  // 1 hour
 
   auto path = GetLocalPath();
-  Directory::VisitSpecificFiles(path, "*.tif", visitor.tif);
-  Directory::VisitSpecificFiles(path, "*.jpg", visitor);
+  Directory::VisitSpecificFiles(path, "*.tif", visitor_tif);
+  Directory::VisitSpecificFiles(path, "*.jpg", deleter_jpg);
   Directory::VisitSpecificFiles(path, "*.tmp", deleter_tmp);
   Directory::VisitSpecificFiles(path, "*.txt;*.json", deleter_txt);
   Directory::VisitSpecificFiles(path, "*.json", deleter_txt);
@@ -471,9 +473,9 @@ Skysight::Render([[maybe_unused]] bool force_update)
 time_t
 Skysight::GetForecastTime(time_t time)
 {
-  time += _10MINUTES;
-  auto fctime = (time / _HALFHOUR + 1) * _HALFHOUR;
-  return fctime;
+  auto forecast_time = (time / _HALFHOUR + 1) * _HALFHOUR;
+  // is forecast_time plausible?
+  return forecast_time;
 }
 
 bool
@@ -495,7 +497,7 @@ Skysight::SetActiveLayer(const std::string_view id,
 void
 Skysight::DownloadComplete([[maybe_unused]] const std::string details,
   const bool success,  const std::string layer_id,
-  [[maybe_unused]] const uint64_t time_index)
+  [[maybe_unused]] const time_t time_index)
 {
   if (!self)
     return;
@@ -579,7 +581,6 @@ Skysight::ForecastActiveLayer()
   AllocatedPath filename;
   bool found = false;
 
-  int offset = 0;
   constexpr time_t preview = _10MINUTES;
   time_t test_time = ((DateTime::now() + preview) / _HALFHOUR + 1) * _HALFHOUR;
 
@@ -643,9 +644,7 @@ Skysight::TileActiveLayer()
 {
   GlueMapWindow *map_window = UIGlobals::GetMap();
   GeoBitmap::TileData base_tile;
-  const SkysightCallType type = SkysightCallType::Tile;
   if (map_window) { // && map_window->IsPanning()) {
-    double scale = map_window->VisibleProjection().GetMapScale();
     base_tile = GeoBitmap::GetTile(map_window->VisibleProjection());
   }
   else {
@@ -671,14 +670,12 @@ Skysight::TileActiveLayer()
       AllocatedPath filename;
       bool found = false;
 
-      int offset = 0;
       if (!active_layer->live_layer) { // osm
         UpdateActiveLayer(api->GetPath(SkysightCallType::Tile,
           active_layer->id, 0, tile), tile);
       } else {
-        constexpr time_t preview = _10MINUTES; // 
 
-        time_t test_time = (std::time(0) / _10MINUTES) * _10MINUTES;
+        time_t test_time = (DateTime::now() / _10MINUTES) * _10MINUTES;
 
         auto max_steps = 3;
 
@@ -720,8 +717,8 @@ Skysight::DisplayActiveLayer()
     found = File::Exists(filename);
   } else {
     // TODO: We're only searching w a max offset of 1 hr, simplify this!
-    return ForecastActiveLayer();
+    found = ForecastActiveLayer();
   }
   
-  return false;
+  return found;
 }
