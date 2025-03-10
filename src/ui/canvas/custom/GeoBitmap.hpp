@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 class GeoBounds;
-class GeoQuadrilateral;
+struct GeoQuadrilateral;
 class MapWindowProjection;
 
 namespace GeoBitmap {
