@@ -21,6 +21,7 @@
 
 #include <cassert>
 #include <span>
+#include <string_view>
 
 class Path;
 class ResourceId;
@@ -71,6 +72,7 @@ protected:
 #else
   HBITMAP bitmap = nullptr;
 #endif
+  GeoQuadrilateral SetTileKoordinates(std::string_view tile_string);
 
 public:
   Bitmap() = default;
