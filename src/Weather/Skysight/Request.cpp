@@ -15,9 +15,9 @@
 #include "system/Path.hpp"
 #include "thread/StandbyThread.hpp"
 #include "util/StaticString.hxx"
-#include "time/DateTime.hpp"
 
 #if defined(SKYSIGHT_FILE_DEBUG)
+# include "time/DateTime.hpp"
 # include <chrono>
 # include <filesystem>
 # include <fstream>
@@ -373,32 +373,31 @@ SkysightRequest::RequestToBuffer(std::string &response)
 #if defined(SKYSIGHT_FILE_DEBUG)
     std::string filename("skysight/");
 
-
     auto name = LocalPath(args.path).GetBase();
     filename += DateTime::str_now() + ' ';
     filename += name.str() + ".txt";
 
     AllocatedPath debug_path = LocalPath(filename);
 
-    std::fstream s;
-    s.open(debug_path.c_str(), std::fstream::out | std::fstream::app);
+    std::fstream fs;
+    fs.open(debug_path.c_str(), std::fstream::out | std::fstream::app);
 
-    s << "url:      " << args.url << std::endl;
-    s << "path:     " << args.path << std::endl;
-    s << "key:      " << key << std::endl;
-    s << "token:    " << OpenSoar_ProductToken << std::endl;
-    s << "calldate: " << DateTime::now() << " - "
+    fs << "url:      " << args.url << std::endl;
+    fs << "path:     " << args.path << std::endl;
+    fs << "key:      " << key << std::endl;
+    fs << "token:    " << OpenSoar_ProductToken << std::endl;
+    fs << "calldate: " << DateTime::now() << " - "
       << std::endl;
     if (args.url.find("from_time") != std::string::npos)
     {
-      s << "from:     "
-        << DateTime::time_str(from_time)
+      fs << "from:     "
+        << DateTime::str_now()
         << std::endl;
     }
-    s << "==================================== " << std::endl;
-    s << response;
+    fs << "==================================== " << std::endl;
+    fs << response;
 
-    s.close();
+    fs.close();
 #endif
   }
 
