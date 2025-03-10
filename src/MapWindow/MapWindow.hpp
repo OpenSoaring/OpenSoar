@@ -230,6 +230,7 @@ public:
   void SetOverlay(std::unique_ptr<MapOverlay> &&_overlay) noexcept;
   void SetOverlay(const uint16_t index, std::unique_ptr<MapOverlay> &&_overlay) noexcept;
 
+#ifdef HAVE_SKYSIGHT
   const MapOverlay *GetOverlay() const noexcept {
     return overlay[0].get();
   }
@@ -239,7 +240,11 @@ public:
     else
       return nullptr;
   }
-  // aug #endif
+#else
+  const MapOverlay *GetOverlay() const noexcept {
+    return overlay.get();
+  }
+#endif
 
 #ifdef HAVE_NOAA
   void SetNOAAStore(NOAAStore *_noaa_store) noexcept {
