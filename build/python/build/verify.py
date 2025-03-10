@@ -39,7 +39,8 @@ def guess_digest_algorithm(digest: str) -> Any:
 
 def verify_file_digest(path: str, expected_digest: str) -> bool:
     """Verify the digest of a file, and return True if the digest matches with the given expected digest."""
-
+    
+    expected_digest = expected_digest.lower()
     algorithm = guess_digest_algorithm(expected_digest)
     assert(algorithm is not None)
     return file_digest(algorithm, path) == expected_digest
