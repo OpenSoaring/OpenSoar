@@ -5,6 +5,7 @@
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
 #include "Compatibility/path.h"
+#include "time/DateTime.hpp"
 
 #ifdef _WIN32
 #include "time/FileTime.hxx"
@@ -369,15 +370,15 @@ File::SetTime(Path path, time_t t) noexcept
 {
 #ifdef HAVE_POSIX
   struct utimbuf new_times;
-  new_times.actime = t ? t : std::time(0);
-  new_times.modtime = t ? t : std::time(0);
+  new_times.actime = t ? t : DateTime::now();
+  new_times.modtime = t ? t : DateTime::now();
   return utime(path.c_str(), &new_times) == 0;
 #else  // Windows:
 # if 0
   // change file time without creation time
   struct _utimbuf ts;
-  ts.actime = t ? t : std::time(0);
-  ts.modtime = t ? t : std::time(0);
+  ts.actime = t ? t : DateTime::now();
+  ts.modtime = t ? t : DateTime::now();
   return _utime(path.c_str(), &ts) == 0;
 # else
   HANDLE handle = ::CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
@@ -386,6 +387,8 @@ File::SetTime(Path path, time_t t) noexcept
   if (handle == INVALID_HANDLE_VALUE)
     return false;
 
+  if (t == 0)
+    t = DateTime::now();
   FILETIME ft = UnixEpochTimeToFileTime(t);
   bool result = ::SetFileTime(handle, &ft, &ft, &ft);
 
