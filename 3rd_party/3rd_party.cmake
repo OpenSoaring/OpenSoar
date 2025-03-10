@@ -11,6 +11,7 @@ set(PNG_VERSION         "1.6.40")
 set(SODIUM_VERSION      "1.0.20") # 2024-05-25 (XCSoar since ...)
 set(LUA_VERSION         "5.4.4")  # "5.4.6") 08.11.2024: sollte gehen...
 set(FMT_VERSION         "10.2.1")
+set(FMT_VERSION         "11.1.4") # github latest
 
 if (1) # SkySight
   set(TIFF_VERSION        "4.6.0")
