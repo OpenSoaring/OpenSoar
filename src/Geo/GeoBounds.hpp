@@ -34,6 +34,10 @@ public:
     :longitude(north_west.longitude, south_east.longitude),
      latitude(south_east.latitude, north_west.latitude) {}
 
+  constexpr GeoBounds(const Angle &north, const Angle &east,
+                      const Angle &south, const Angle &west) noexcept
+    :longitude(west, east), latitude(south, north) {}
+
   /**
    * Construct an instance that is "invalid", i.e. IsValid() will
    * return false.  The return value must not be used in any
