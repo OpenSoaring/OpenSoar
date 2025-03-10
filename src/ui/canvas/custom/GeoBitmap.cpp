@@ -61,9 +61,9 @@ GeoBitmap::GetTile(const GeoBounds &bounds, const uint16_t zoom)
 GeoBitmap::TileData
 GeoBitmap::GetTile(const MapWindowProjection &proj)
 {
-  double ErdUmfang = 42e6;  // = 42.000 km
+  double Earth_circumference = 42e6;  // =~ 42.000 km
   double diagonale = proj.GetScreenDistanceMeters();
-  double t = ErdUmfang / proj.GetScreenDistanceMeters();
+  double t = Earth_circumference / diagonale;
   double _log = floor(log2(t));
   uint16_t zoom = _log + 1;
 
@@ -103,8 +103,6 @@ GeoBitmap::GetBounds(const TileData &tile) {
 GeoQuadrilateral
 Bitmap::SetTileKoordinates(std::string_view tile_string)
 {
-  GeoQuadrilateral bounds;
-
   std::vector<std::string> vec; //  = explode(tile_string, '-');
   boost::split(vec, tile_string, boost::is_any_of("-"));
 
@@ -114,29 +112,7 @@ Bitmap::SetTileKoordinates(std::string_view tile_string)
   tile.y = atol(vec[2].c_str());
 
   return GetGeoQuadrilateral(tile);
-/*/
-  double longitude[2] = {
-    tilex2lon(tile.x, tile.zoom),
-    tilex2lon(tile.x + 1, tile.zoom) };
-  double latitude[2] = {
-    tiley2lat(tile.y, tile.zoom),
-    tiley2lat(tile.y + 1, tile.zoom) };
-  // bounds.top_left.longitude = Angle::Radians(longitude[0]);
-  bounds.top_left.longitude = Angle::Degrees(longitude[0]);
-  bounds.top_left.latitude = Angle::Degrees(latitude[0]);
-  bounds.bottom_left.longitude = Angle::Degrees(longitude[0]);
-  bounds.bottom_left.latitude = Angle::Degrees(latitude[1]);
-
-  bounds.top_right.longitude = Angle::Degrees(longitude[1]);
-  bounds.top_right.latitude = Angle::Degrees(latitude[0]);
-  bounds.bottom_right.longitude = Angle::Degrees(longitude[1]);
-  bounds.bottom_right.latitude = Angle::Degrees(latitude[1]);
-
-  return bounds;
-  */
 }
-
-
 
 GeoQuadrilateral
 Bitmap::LoadGeoFile([[maybe_unused]] Path path)
