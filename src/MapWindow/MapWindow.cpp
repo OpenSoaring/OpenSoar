@@ -33,11 +33,26 @@ MapWindow::~MapWindow() noexcept
   delete topography_renderer;
 }
 
+#ifdef HAVE_SKYSIGHT
+void
+MapWindow::SetOverlay(std::unique_ptr<MapOverlay> &&_overlay) noexcept
+{
+  overlay[0] = std::move(_overlay);
+}
+
+void
+MapWindow::SetOverlay(const uint16_t index,std::unique_ptr<MapOverlay> &&_overlay) noexcept
+{
+  if (index < 9)
+  overlay[index] = std::move(_overlay);
+}
+#else
 void
 MapWindow::SetOverlay(std::unique_ptr<MapOverlay> &&_overlay) noexcept
 {
   overlay = std::move(_overlay);
 }
+#endif
 
 void
 MapWindow::SetGlideComputer(GlideComputer *_gc) noexcept

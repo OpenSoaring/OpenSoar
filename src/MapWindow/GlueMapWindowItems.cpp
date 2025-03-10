@@ -87,8 +87,9 @@ GlueMapWindow::ShowMapItems(const GeoPoint &location,
 #endif
 
 #ifdef HAVE_SKYSIGHT
-  if (!list.full() && overlay && overlay->IsInside(location))
-    list.push_back(new OverlayMapItem(*overlay));
+  for (uint16_t i = 0; i < 9; i++)
+  if (!list.full() && overlay[i] && overlay[i]->IsInside(location))
+    list.push_back(new OverlayMapItem(*overlay[i]));
 #endif
 
   if (!list.full()) {

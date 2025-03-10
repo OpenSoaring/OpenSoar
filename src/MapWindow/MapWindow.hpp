@@ -116,7 +116,11 @@ protected:
    * #DoubleBufferWindow::mutex.
    */
   std::unique_ptr<RaspRenderer> rasp_renderer;
+#ifdef HAVE_SKYSIGHT
+  std::unique_ptr<MapOverlay> overlay[9];
+#else
   std::unique_ptr<MapOverlay> overlay;
+#endif
 
   const TrafficLook &traffic_look;
 
@@ -224,9 +228,16 @@ public:
 
 // aug #ifdef ENABLE_OPENGL
   void SetOverlay(std::unique_ptr<MapOverlay> &&_overlay) noexcept;
+  void SetOverlay(const uint16_t index, std::unique_ptr<MapOverlay> &&_overlay) noexcept;
 
   const MapOverlay *GetOverlay() const noexcept {
-    return overlay.get();
+    return overlay[0].get();
+  }
+  const MapOverlay *GetOverlay(const uint16_t index) const noexcept {
+    if (index < 9)
+      return overlay[index].get();
+    else
+      return nullptr;
   }
   // aug #endif
 

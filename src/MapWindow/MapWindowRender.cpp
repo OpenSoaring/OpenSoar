@@ -103,8 +103,13 @@ MapWindow::RenderTopographyLabels(Canvas &canvas) noexcept
 inline void
 MapWindow::RenderOverlays([[maybe_unused]] Canvas &canvas) noexcept
 {
+#ifdef HAVE_SKYSIGHT
+  for (uint16_t i = 0; i < 9; i++) if (overlay[i])
+    overlay[i]->Draw(canvas, render_projection);
+#else
   if (overlay)
     overlay->Draw(canvas, render_projection);
+#endif
 }
 
 inline void
