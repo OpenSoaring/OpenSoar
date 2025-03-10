@@ -1767,7 +1767,7 @@ TestFlightList(const struct DeviceRegister &driver)
 
 int main()
 {
-  plan_tests(948);
+  plan_tests(951);
   TestGeneric();
   TestTasman();
   TestFLARM();
