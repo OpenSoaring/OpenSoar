@@ -20,6 +20,7 @@
 #include "io/FileLineReader.hpp"
 
 #include "LogFile.hpp"
+#include <string_view>
 
 class SkysightRequestError {};
 
@@ -32,8 +33,8 @@ public:
   bool ProcessToString(std::string &response);
 
   SkysightCallType GetType();
-  void SetCredentials(const char *_key, const char *_username = nullptr,
-                      const char *_password = nullptr);
+  void SetCredentials(const std::string_view _key, const std::string_view _username = "",
+                      const std::string_view _password = "");
 
   class FileHandler final: public CurlResponseHandler {
     FILE *file;
@@ -82,7 +83,7 @@ public:
 
 protected:
   const SkysightRequestArgs args;
-  std::string key, username, password;
+  std::string_view key, username, password;
   bool RequestToFile();
   bool RequestToBuffer(std::string &response);
 };
@@ -102,8 +103,8 @@ public:
   std::string GetMessage();
 
   SkysightCallType GetType();
-  void SetCredentials(const char *_key, const char *_username = nullptr,
-                      const char *_password = nullptr);
+  void SetCredentials(const std::string_view _key, const std::string_view _username = "",
+    const std::string_view _password = "");
 
   void TriggerNullCallback(std::string &&ErrText);
   
