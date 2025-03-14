@@ -16,6 +16,7 @@ class AutotoolsProject(MakeProject):
                  libs: str='',
                  install_prefix: Optional[str]=None,
                  use_destdir: bool=False,
+                 add_include: Iterable[str]=[],
                  subdirs: Optional[Collection[str]]=None,
                  **kwargs):
         MakeProject.__init__(self, url, md5, installed, **kwargs)
@@ -29,6 +30,7 @@ class AutotoolsProject(MakeProject):
         self.install_prefix = install_prefix
         self.use_destdir = use_destdir
         self.subdirs = subdirs
+        self.add_include = add_include
 
     def configure(self, toolchain: AnyToolchain, src: Optional[str]=None, build: Optional[str]=None, target_toolchain: Optional[AnyToolchain]=None) -> str:
         if src is None:
@@ -56,6 +58,9 @@ class AutotoolsProject(MakeProject):
             # of which probably point to the installation directory)
             import re
             cppflags = re.sub(r'\s*-isystem\s+\S+\s*', ' ', cppflags)
+
+        for inc_dir in self.add_include:
+            cppflags += ' -I' + toolchain.src_path + '/' + inc_dir 
 
         install_prefix = self.install_prefix
         if install_prefix is None:

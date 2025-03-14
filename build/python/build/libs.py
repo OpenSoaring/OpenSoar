@@ -510,4 +510,5 @@ netcdfcxx = AutotoolsProject(
         '--disable-valgrind-tests'
     ],
     autogen=True,
+    add_include=[ '../src/netcdf-c-4.6.2/include']
 )
