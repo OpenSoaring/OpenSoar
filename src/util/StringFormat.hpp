@@ -5,6 +5,11 @@
 
 #include <stdio.h>
 
+#ifndef __MSVC__
+// #if defined( __GNUC__ ) && (defined( __GXX_EXPERIMENTAL_CXX0X__ ) || (__cplusplus >= 201103L))
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 template<typename... Args>
 static inline int
 StringFormat(char *buffer, size_t size, const char *fmt,
