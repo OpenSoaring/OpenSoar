@@ -80,7 +80,7 @@ SkysightAPIQueue::Process()
     case SkysightRequest::Status::Idle:
       // Provide the job with the very latest API key just prior to execution
       if ((*job)->GetType() == SkysightCallType::Login) {
-        (*job)->SetCredentials(SKYSIGHT_USER_CLIENT, email.data(), password.data());
+        (*job)->SetCredentials(SKYSIGHT_USER_CLIENT, email, password);
         (*job)->Process();
       } else {
         if (!IsLoggedIn()) {
