@@ -4,8 +4,8 @@
 #pragma once
 
 #ifdef __MSVC__
-// fmt version: 10.2.1
-# define USE_STD_FORMAT
+// with fmt version 11.1.4 there is an runtime error ;-(
+// # define USE_STD_FORMAT  // only with fmt version: 10.2.1
 #endif
 
 # ifdef USE_STD_FORMAT
