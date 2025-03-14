@@ -208,7 +208,6 @@ jobs:
             target_ext: .apk
             target_test: false
             target_upload: true
-            upload_artifact: true
             ndk: r27c
             target_container: debian:bookworm-slim
           
@@ -220,8 +219,7 @@ jobs:
             target_ext: .apk
             target_test: false
             target_upload: true
-            upload_artifact: true
-            ndk: r26d
+            ndk: r27c
             target_container: debian:bookworm-slim
           #### needs very long time.. 
           - os: ubuntu-24.04
@@ -232,7 +230,6 @@ jobs:
             target_ext: .apk
             target_test: false
             target_upload: true
-            upload_artifact: true
             ndk: r27c
             target_container: debian:bookworm-slim
             # ------------------------------------------------------
@@ -245,7 +242,6 @@ jobs:
             target_ext: .deb
             target_test: true
             target_upload: true
-            upload_artifact: true
             target_container: debian:bookworm-slim    # => Ubuntu 24.04
             #  target_container: debian:bullseye-slim # => Ubuntu 22.04
 
@@ -257,7 +253,6 @@ jobs:
             target_ext: .exe
             target_test: true
             target_upload: true
-            upload_artifact: false
             target_container: debian:bookworm-slim
           
           - os: ubuntu-24.04
@@ -268,7 +263,6 @@ jobs:
             target_ext: .exe
             target_test: true
             target_upload: true
-            upload_artifact: true
             target_container: debian:bookworm-slim
           
           - os: macos-13
@@ -278,8 +272,7 @@ jobs:
             target_final: OpenSoar
             target_ext: ''
             target_test: true
-            target_upload: false
-            upload_artifact: true
+            target_upload: true
             # w/o container
 
           - os: macos-14
@@ -290,7 +283,6 @@ jobs:
             target_ext: ''
             target_test: true
             target_upload: false
-            upload_artifact: false
             # w/o container
           
           - os: macos-14
@@ -301,7 +293,6 @@ jobs:
             target_ext: ''
             target_test: false
             target_upload: false
-            upload_artifact: false
             # w/o container
         # exclude:
           #### needs long time.. 
@@ -313,7 +304,6 @@ jobs:
             target_ext: .tgz
             target_test: false
             target_upload: true
-            upload_artifact: false
             target_container: debian:bookworm-slim
   
     steps:
@@ -351,7 +341,8 @@ jobs:
             echo "DEBUG=$DEBUG"
             case ${{ matrix.target }} in
                 OSX64 | IOS64 | MACOS)
-                  echo "BUILD_PARAMS=-j$(nproc) TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
+                  # echo "BUILD_PARAMS=-j$(nproc) TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
+                  echo "BUILD_PARAMS=TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
                   echo "BUILDER=gmake" >> $GITHUB_ENV
                   ;;
                 *)
@@ -530,7 +521,7 @@ jobs:
   
       - name: Upload Release artifact
         uses: actions/upload-artifact@v4
-        if: ${{ (matrix.upload_artifact || startsWith(github.ref, 'refs/tags/v')) && ! matrix.target_hide }} 
+        if: ${{ (matrix.target_upload || startsWith(github.ref, 'refs/tags/v')) && ! matrix.target_hide }} 
         with:
           name: ${{ matrix.target_final }}-${{ env.GIT_COMMIT }}-${{ matrix.target }}${{ matrix.target_ext }}
           # path: output/${{ matrix.target }}/${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
