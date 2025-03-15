@@ -32,6 +32,7 @@ add_compile_definitions(BOOST_JSON_STANDALONE)
 
 # add_compile_definitions(HAVE_SKYSIGHT)
 set (HAVE_SKYSIGHT ON)
+set (SKYSIGHT_FORECAST ON)
 add_compile_definitions(STRICT)
 add_compile_definitions(_USE_MATH_DEFINES)   # necessary under C++17!
 add_compile_definitions(ZZIP_1_H)   # definition of uint32_t and Co.!

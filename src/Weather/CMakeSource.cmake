@@ -23,11 +23,13 @@ if(HAVE_SKYSIGHT)
         Weather/Skysight/SkysightRegions.cpp
 
         Weather/Skysight/Request.cpp
-        Weather/Skysight/CDFDecoder.cpp
         Weather/Skysight/APIQueue.cpp
 
         Weather/Skysight/SkysightRenderer.cpp
   )
+  if(SKYSIGHT_FORECAST)
+    list(APPEND _SOURCES Weather/Skysight/CDFDecoder.cpp    )
+  endif()
 endif()
 
 set(SCRIPT_FILES

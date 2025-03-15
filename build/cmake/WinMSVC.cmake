@@ -15,6 +15,8 @@ if (TARGET_IS_OPENVARIO)
 endif()
 
 set (HAVE_SKYSIGHT ON)
+set (SKYSIGHT_FORECAST ON)
+
 ###  see CMakeLists.txt, line 216: add_compile_definitions(HAVE_SKYSIGHT) 
 #-------------------------------
 add_compile_definitions(__MSVC__)
