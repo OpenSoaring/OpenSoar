@@ -633,7 +633,7 @@ Skysight::UpdateActiveLayer(const Path &filename, GeoBitmap::TileData tile)
   if (active_layer->tile_layer)
     label.AppendFormat(" - tile: %u (%u, %u)", tile.zoom, tile.x, tile.y);
   bmp->SetLabel(label);
-  bmp->SetAlpha(0.6);
+  bmp->SetAlpha(active_layer->name == "satellite" ? 1.0 : 0.6);
   map->SetOverlay(overlay_index, std::move(bmp));
   if (active_layer->tile_layer)
     overlay_index++;  // increasing in tile mode only...
