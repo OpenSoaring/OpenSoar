@@ -24,7 +24,8 @@ SkysightAPIQueue::~SkysightAPIQueue() {
 bool 
 SkysightAPIQueue::IsLoggedIn() {
   // the key is valid for 1000 sec ( = 16:40min)
-  return key_expiry_time >= DateTime::now();
+  auto now = DateTime::now();
+  return key_expiry_time >= now;
 }
 
 void 
