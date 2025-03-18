@@ -209,7 +209,7 @@ jobs:
             target_test: true
             target_upload: true
             upload_artifact: true
-            ndk: r26d
+            ndk: r27c
             target_container: debian:bookworm-slim
           
           - os: ubuntu-24.04
@@ -221,7 +221,7 @@ jobs:
             target_test: false
             target_upload: true
             upload_artifact: true
-            ndk: r26d
+            ndk: r27c
             target_container: debian:bookworm-slim
             # ------------------------------------------------------
           - os: ubuntu-24.04
