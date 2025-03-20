@@ -10,7 +10,10 @@
  # include <netcdfcpp.h>
  #define NETCDF_CPP
 #else
-# include <netcdf>
+// # include <netcdf>
+# include <netcdfcpp.h>
+# define NETCDF_CPP
+// # include <./output/UNIX/lib/x86_64/include/netcdfcpp.h>
 #endif
 #include <geotiffio.h>
 #include <xtiffio.h>
