@@ -1,5 +1,170 @@
-OpenSoar Version 7.43.23.1 - not released yet, PreRelease (1) for 7.43.23
+OpenSoar Version 7.43-2.23 - not yet released
 ---------------
+* Weather
+  - 1st SkySight support in OpenSoar
+  - SkySight Forecast available on targets Android, Windows (WIN64 and PC), Linux (but not OpenVario)
+  - SkySight live images (Satellite, Rain) available on Android, Windows, Linux, OpenVario, available - but untestet on Kobo and Darwin (MacOS, OSX64, iOS)
+  
+#### XCSoar Version 7.44(2) - dev state on 2024/08/12
+* 2nd merge xcsoar master '9a036c3725' -> xcsoar 7.43-2!
+* calculations
+  - update sprint/league time window to 2 hours (as per OLC and DMSt rules)
+  - update OLC League calculation to latest ruleset
+* tracking
+  - xcsoar-cloud-service: rebuild service, new domain cloud.xcsoar.org
+* data files
+  - fix problem (introduced in v7.42) of first waypoint in user.cup waypoint
+    file being ignored or being overwritten by any Waypoint Editor dialog
+    function.
+  - read PG landing waypoint type correctly in cup files
+* ui
+  - streamlined, and optimized icons
+  - apply dark mode settings to thermal assistant
+  - apply dark mode to large flarm radar
+  - add options to avoid infoboxes to flarm radar widget
+  - changed location of setting for flarm radar position
+  - Flarm gauge: when traffic is farther than 4 km away, it disappears
+  - add new gesture ULDR to access quick menu
+  - add quick menu page buttons in case of touch screen
+  - add quit button to quick menu
+  - infoboxen: new setting, allow scaling of title/comment font
+  - Radar / Thermalassistant Gauges: Placement to avoid InfoBoxen and Overlap
+  - Add new Infobox “Home altitude difference” (Home AltD)
+  - add helpers on infoboxes for Argentinean contests 95% distance rule
+  - Popup messages now appear at the top of the map
+  - FlarmTrafficWindow: align colors of FlarmTraffic with map for consistency
+  - BigTrafficWidget: Save/Restore FLARM radar zoom on page change
+  - BigTrafficWidget: zoom range to 5km when opening big radar via the FlarmGauge
+* Android
+  - fix crash on startup when loading icons on ldpi screens
+  - update 'white list' of USB devices with one more VID/PID pair for SoftRF Academy
+  - make xcsoar accessible from lock screen
+  - battery: use scale for charge percent calculation
+  - battery: prevent shutdown on devices without battery
+* Windows
+  - Popupmessages are now shown with full text again
+* devices
+  - Add driver for Condor 3
+  - Add driver for LX Navigation Eos / Era variometers
+  - Flarm: parse flarm error messages (PFLAE) and display them
+  - LXNAV: parse acceleration/g-load from PLXVF sentence
+  - LXNAV: Overload formula, use reference mass instead of dry mass
+  - OpenVario: Overload formula, use reference mass instead of dry mass
+  - Vaulter: use fraction instead of overload for ballast
+  - Devices: Switch to manual MC when set via external Device
+* Polar:
+  - LS8-15m: default polar, set to values according to flight manual
+
+#### XCSoar Version 7.43 - 2024/08/12
+* merge xcsoar 7.43 'a7770b624e'
+* calculations
+  - CRITICAL: reachable map labels show correct altitude with head wind #1424
+  - CRITICAL: fix reachability calculation with older compilers (OpenVario,..)
+* airspace
+  - add classes according the OpenAir extended format AY tag
+  - coloring is done according to the AC tag, or if present and allowed, according to the AY tag
+* data files
+  - new topology available from mapgen (including airport runways and rivers)
+  - fix loss of "home" waypoint designation in certain situations for a
+    non-airport home waypoint
+  - reworked sgs-233 polar
+* documentation
+  - clarify task speed calculation section
+  - lua reference updated
+* ui
+  - Airspace filter list can filter by type
+  - TC 30s Infobox shows now climb rate since start of thermal
+  - TL Gain Infobox shows now the overall climb rate of last thermal
+  - add new Infobox V Task Est (Speed task estimated)
+  - Status-Task panel: "Estimated task time", "Remaining time", and "Speed
+    estimated" now blank if MC>0 & can't finish task
+  - Status-Task panel: "Remaining time", "Remaining distance", "Speed
+    estimated", and "Speed remaining" now blank after task is finished
+  - add missing airspace to Select Airspace filter
+  - NumberEntry dialog value can now be accepted by enter
+  - Vario center gross label
+  - Vario use AutoFonts for lables and values
+  - Replace eventOrientation by two new events: eventOrientationCruise and eventOrientationCircling
+  - New artificial horizon
+  - Flarm gauge fix radar size
+  - infobox management page rename buttons for copying sets
+  - consistent naming of ok/close buttons and placement
+  - add PanTo button to waypoints dialog if opened from task related infoboxen
+  - always show black plane icon in thermal assistant
+* Lua scripting
+  - allow HTTPs client connections by setting project-wide Curl options
+  - fix next_eta and final_eta variables
+* Devices
+  - add Larus driver
+* Android
+  - CRITICAL: use user accessible android/media/org.xcsoar as data directory
+  - EGL graphics driver initialzation improvment for old android versions
+  - add SoftRF Eco, Ink and Card into 'white list' of USB devices
+  - fix rotation on wake from background
+* Kobo
+  - fix Wifi configuration
+  - fix oversized icons
+* Windows
+  - use cleartype font rendering
+  - highres application icon
+  - black text color in airspace list like all other systems
+
+##### Version 7.43-rc1 - 2024-06-15
+* Windows
+  - use cleartype font rendering
+  - rework application icon
+* calculations
+  - fix reachability calculation with older compilers (OpenVario,..)
+* ui
+  - Airspace filter list can filter by type
+* data files
+  - reworked sgs-233 polar
+  - new topology available from mapgen (incl rivers)
+* documentation
+  - clarify task speed calculation section
+* Android
+  - add SoftRF Eco, Ink and Card into 'white list' of USB devices
+
+##### Version 7.43-rc0 - 2024-06-02
+* map
+  - reachable map labels show correct altitude with head wind #1424
+* ui
+  - TC 30s Infobox shows now climb rate since start of thermal
+  - TL Gain Infobox shows now the overall climb rate of last thermal
+  - add new Infobox V Task Est (Speed task estimated)
+  - Status-Task panel: "Estimated task time", "Remaining time", and "Speed
+    estimated" now blank if MC>0 & can't finish task
+  - Status-Task panel: "Remaining time", "Remaining distance", "Speed
+    estimated", and "Speed remaining" now blank after task is finished
+  - add missing airspace to Select Airspace filter
+  - NumberEntry dialog value can now be accepted by enter
+  - Vario center gross label
+  - Vario use AutoFonts for lables and values
+  - Replace eventOrientation by two new events: eventOrientationCruise and eventOrientationCircling
+  - New artificial horizon
+  - Flarm gauge fix radar size
+  - infobox management page rename buttons for copying sets
+  - consistent naming of ok/close buttons and placement
+  - add PanTo button to waypoints dialog if opened from task related infoboxen
+* data files
+  - fix loss of "home" waypoint designation in certain situations for a
+    non-airport home waypoint
+* devices
+  - add Larus driver
+  - added driver for LX Navigation Eos57 variometer
+* windows
+ - black text color in airspace list like all other systems
+* Kobo
+  - fix Wifi configuration
+  - fix oversized icons
+* airspace
+  - add classes according the OpenAir extended format AY tag
+  - coloring is done according to the AC tag, or if present and allowed, according to the AY tag
+* Lua scripting
+  - allow HTTPs client connections by setting project-wide Curl options
+* Android
+  - EGL graphics driver initialzation improvment for old android versions
+
 
 OpenSoar Version 7.42.22 - 2024/05/21
 ---------------
