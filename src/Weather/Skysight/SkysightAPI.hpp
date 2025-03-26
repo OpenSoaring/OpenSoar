@@ -117,8 +117,10 @@ protected:
   bool ParseData(const SkysightRequestArgs &args, const std::string &result);
   bool ParseTile(const SkysightRequestArgs &args, const std::string &result);
   bool ParseLogin(const SkysightRequestArgs &args, const std::string &result);
+#ifdef SKYSIGHT_FORECAST 
   void CallCDFDecoder(const SkysightRequestArgs &args,
       const std::string_view &output_img);
+#endif  // SKYSIGHT_FORECAST 
 
   inline bool GetData(SkysightCallType t, SkysightCallback cb = nullptr,
 		      bool force_recache = false) {

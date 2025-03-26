@@ -61,12 +61,14 @@ SkysightAPIQueue::AddRequest(std::unique_ptr<SkysightAsyncRequest> request,
     Process();
 }
 
-void 
+#ifdef SKYSIGHT_FORECAST 
+void
 SkysightAPIQueue::AddDecodeJob(std::unique_ptr<CDFDecoder> &&job) {
   decode_queue.emplace_back(std::move(job));
   if(!is_busy)
     Process();
 }
+#endif  // SKYSIGHT_FORECAST 
 
 void 
 SkysightAPIQueue::Process()
@@ -107,6 +109,7 @@ SkysightAPIQueue::Process()
     }
   }
 
+#ifdef SKYSIGHT_FORECAST 
   if (!empty(decode_queue)) {
     auto &&decode_job = decode_queue.begin();
     switch ((*decode_job)->GetStatus()) {
@@ -132,8 +135,13 @@ SkysightAPIQueue::Process()
       break;
     }
   }
+#endif  // SKYSIGHT_FORECAST 
 
+#ifdef SKYSIGHT_FORECAST 
   if (empty(request_queue) && empty(decode_queue))
+#else  // SKYSIGHT_FORECAST 
+  if (empty(request_queue))
+#endif  // SKYSIGHT_FORECAST 
     timer.Cancel();
 
   is_busy = false;

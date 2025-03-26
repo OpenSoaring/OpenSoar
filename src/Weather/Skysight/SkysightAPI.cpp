@@ -368,6 +368,7 @@ SkysightAPI::ParseLayers(const SkysightRequestArgs &args,
   layers_vector[0].tile_layer = true;
 #endif
 
+#ifdef SKYSIGHT_FORECAST 
   for (auto &i: details) {
     boost::property_tree::ptree &node = i.second;
     auto id = node.find("id");
@@ -398,6 +399,8 @@ SkysightAPI::ParseLayers(const SkysightRequestArgs &args,
       }
     }
   }
+#endif  // SKYSIGHT_FORECAST 
+
 #ifdef SKYSIGHT_LIVE
   int i = 0;
   for (auto &layer : layers_vector) {
@@ -571,6 +574,7 @@ SkysightAPI::ParseLogin(const SkysightRequestArgs &args,
   return success;
 }
 
+#ifdef SKYSIGHT_FORECAST 
 void
 SkysightAPI::CallCDFDecoder(const SkysightRequestArgs &args,
   [[maybe_unused]] const std::string_view& output_img)
@@ -579,6 +583,7 @@ SkysightAPI::CallCDFDecoder(const SkysightRequestArgs &args,
     args.path.c_str(), output_img.data(), args.layer.c_str(), args.from,
     GetLayer(args.layer)->legend, args.cb));
 }
+#endif  // SKYSIGHT_FORECAST 
 
 bool
 SkysightAPI::ParseData(const SkysightRequestArgs &args,
@@ -594,11 +599,13 @@ SkysightAPI::ParseData(const SkysightRequestArgs &args,
   if (strncmp(buffer, "<?xml version=", 14) == 0) {
     // this is an (error) message, no zip file or CDF-File
     LogFmt("XML-File: {}", buffer);
+#ifdef SKYSIGHT_FORECAST 
   } else if (strncmp(buffer, "CDF", 3) == 0) {
     // only the CDF file has to be decoded
     if (result.ends_with(".nc")) {
       CallCDFDecoder(args, output_img);
     } // else {}
+#endif   // SKYSIGHT_FORECAST 
   }  else if (args.path.ends_with(".jpg")) {
     if (args.cb)
       args.cb(result, true, Skysight::GetActiveLayer()->id, 0);
@@ -607,10 +614,12 @@ SkysightAPI::ParseData(const SkysightRequestArgs &args,
     File::Rename(filepath, zip_file);
     ZipIO::UnzipSingleFile(zip_file, filepath);  // use the same name for unzipped file
     File::ReadString(filepath, buffer, sizeof(buffer));  // re-read again
+#ifdef SKYSIGHT_FORECAST 
     if (strncmp(buffer, "CDF", 3) == 0) {
       // and now it is a CDF file
       CallCDFDecoder(args, output_img);  // result); // 
     }
+#endif  // SKYSIGHT_FORECAST 
   }
    return true;
 }

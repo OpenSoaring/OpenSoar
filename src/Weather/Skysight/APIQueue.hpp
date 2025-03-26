@@ -4,7 +4,9 @@
 #pragma once
 
 #include "Request.hpp"
-#include "CDFDecoder.hpp"
+#ifdef SKYSIGHT_FORECAST 
+# include "CDFDecoder.hpp"
+#endif  // SKYSIGHT_FORECAST 
 #include "Layers.hpp"
 #include "ui/event/PeriodicTimer.hpp"
 #include <vector>
@@ -12,7 +14,9 @@
 
 class SkysightAPIQueue final {
   std::vector<std::unique_ptr<SkysightAsyncRequest>> request_queue;
+#ifdef SKYSIGHT_FORECAST 
   std::vector<std::unique_ptr<CDFDecoder>> decode_queue;
+#endif  // SKYSIGHT_FORECAST 
   bool is_busy = false;
   bool is_clearing = false;
   std::string key;
@@ -32,13 +36,25 @@ public:
   bool IsLoggedIn();
   void AddRequest(std::unique_ptr<SkysightAsyncRequest> request,
 		  bool append_end = true);
+#ifdef SKYSIGHT_FORECAST 
   void AddDecodeJob(std::unique_ptr<CDFDecoder> &&job);
+#endif  // SKYSIGHT_FORECAST 
   void Clear(const std::string msg);
+#ifdef SKYSIGHT_FORECAST 
   bool IsEmpty() {
     return (request_queue.empty() && decode_queue.empty());
   }
   bool IsLastJob() {
     return ((request_queue.size() + decode_queue.size()) <= 1) ;
   }
+#else  // SKYSIGHT_FORECAST 
+  bool IsEmpty() {
+    return (request_queue.empty());
+  }
+  bool IsLastJob() {
+    return (request_queue.size() <= 1) ;
+  }
+#endif // SKYSIGHT_FORECAST 
+
   void DoClearingQueue();
 };
