@@ -14,7 +14,7 @@ from .musl import MuslProject
 binutils = BinutilsProject(
     (
         "https://ftp.gnu.org/gnu/binutils/binutils-2.42.tar.xz",
-        "https://fossies.org/linux/misc/binutils-2.42.tar.xz",
+        # invalid- new 2.44: "https://fossies.org/linux/misc/binutils-2.42.tar.xz",
     ),
     "f6e4d41fd5fc778b06b7891457b3620da5ecea1006c6a4a41ae998109f85a800",
     "bin/as",
@@ -29,8 +29,10 @@ binutils = BinutilsProject(
 
 linux_headers = SabotageLinuxHeadersProject(
     (
+        # "http://ftp.barfooze.de/pub/sabotage/tarballs/linux-headers-4.19.88-2.tar.xz",
         "http://ftp.barfooze.de/pub/sabotage/tarballs/linux-headers-4.19.88.tar.xz",
-        "http://foss.aueb.gr/mirrors/linux/sabotage/tarballs/linux-headers-4.19.88.tar.xz",
+        # invalid: "http://foss.aueb.gr/mirrors/linux/sabotage/tarballs/linux-headers-4.19.88-2.tar.xz", 
+        # Fossies: "D3F3ACF6D16BDB005D3F2589ADE1DF8EFF2E1C537F92E6CD9222218EAD882FEB
     ),
     "5a975ba49b577869f2338aa80f44efd4e94f76e5b4bda11a6a1761a6d646848fdeaad7c820339b2c1c20d55f9bbf0e686121d621ac1cfa1dfc6cd71a166ade3a",
     "include/linux/input.h",
@@ -39,7 +41,8 @@ linux_headers = SabotageLinuxHeadersProject(
 gcc = GccProject(
     (
         "https://ftp.gnu.org/gnu/gcc/gcc-13.2.0/gcc-13.2.0.tar.xz",
-        "https://fossies.org/linux/misc/gcc-13.2.0.tar.xz",
+        # possible 12.4.0, 13.3.0, 14.2.0
+        # invalid - new 14.2.0: "https://fossies.org/linux/misc/gcc-14.2.0.tar.xz/", "a7b39bc69cbf9e25826c5a60ab26477001f7c08d85cec04bc0e29cabed6f3cc9"
     ),
     "e275e76442a6067341a27f04c5c6b83d8613144004c0413528863dc6b5c743da",
     "lib/libstdc++.a",
@@ -88,7 +91,7 @@ gcc_bootstrap = GccBootstrapProject(
 musl = MuslProject(
     (
         "https://www.musl-libc.org/releases/musl-1.1.18.tar.gz",
-        "https://fossies.org/linux/misc/musl-1.1.18.tar.gz",
+        # invalid - new 1.2.5: "https://fossies.org/linux/misc/musl-1.2.5.tar.gz", "a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4"
     ),
     "d017ee5d01aec0c522a1330fdff06b1e428cb409e1db819cc4935d5da4a5a118",
     "include/unistd.h",
@@ -100,8 +103,9 @@ musl = MuslProject(
 
 openssl = OpenSSLProject(
     (
+        # fossies https://fossies.org/linux/misc/openssl-3.0.16.tar.gz/, "57e03c50feab5d31b152af2b764f10379aecd8ee92f16c985983ce4a99f7ef86"
         "https://www.openssl.org/source/openssl-3.1.7.tar.gz",
-        "https://artfiles.org/openssl.org/source/openssl-3.1.7.tar.gz",
+        # invalid - not found..: "https://artfiles.org/openssl.org/source/openssl-3.1.7.tar.gz",
     ),
     "053a31fa80cf4aebe1068c987d2ef1e44ce418881427c4464751ae800c31d06c",
     "include/openssl/ossl_typ.h",
@@ -109,6 +113,7 @@ openssl = OpenSSLProject(
 
 openssh = AutotoolsProject(
     (
+        # fossies: https://fossies.org/linux/misc/openssh-9.9p2.tar.gz, "91aadb603e08cc285eddf965e1199d02585fa94d994d6cae5b41e1721e215673"
         "http://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-7.9p1.tar.gz",
         "http://ftp.nluug.nl/security/OpenSSH/openssh-7.9p1.tar.gz",
     ),
@@ -138,19 +143,20 @@ openssh = AutotoolsProject(
     use_destdir=True,
 )
 
-fmt_version  =  "11.1.4"
-fmt_hash  =  "AC366B7B4C2E9F0DDE63A59B3FEB5EE59B67974B14EE5DC9EA8AD78AA2C1EE1E"
-
-fmt_packg =  "https://github.com/fmtlib/fmt/archive/" + fmt_version +  ".tar.gz"
+fmt_version = "11.1.4"
 libfmt = CmakeProject(
-    fmt_packg,
-    fmt_hash,
+    (
+      "https://github.com/fmtlib/fmt/archive/" + fmt_version + ".tar.gz",
+      "https://fossies.org/linux/misc/fmt-" + fmt_version + ".tar.gz
+    ),
+    "ac366b7b4c2e9f0dde63a59b3feb5ee59b67974b14ee5dc9ea8ad78aa2c1ee1e",
     "lib/libfmt.a",
     [
         "-DBUILD_SHARED_LIBS=OFF",
         "-DFMT_DOC=OFF",
         "-DFMT_TEST=OFF",
     ],
+    # for KOBO:
     name="fmt",
     version=fmt_version,
     base="fmt-" + fmt_version,
@@ -158,6 +164,7 @@ libfmt = CmakeProject(
 
 libsodium = AutotoolsProject(
     (
+        # fossies: https://fossies.org/linux/misc/libsodium-1.0.20-RELEASE.tar.gz
         "https://download.libsodium.org/libsodium/releases/libsodium-1.0.20.tar.gz",
         "https://github.com/jedisct1/libsodium/releases/download/1.0.20-RELEASE/libsodium-1.0.20.tar.gz",
     ),
@@ -171,8 +178,9 @@ libsodium = AutotoolsProject(
         # workaround for https://github.com/jedisct1/libsodium/issues/1314
         "aarch64-linux-android": "-march=armv8-a+crypto",
     },
-    name="libsodium",
-    version="1.0.20",
+    # not necessary:
+    # name="libsodium",
+    # version="1.0.20",
     # suppress "visibility default" from sodium/export.h
     cppflags="-DSODIUM_STATIC",
 )
@@ -181,6 +189,7 @@ zlib = ZlibProject(
     (
         "http://zlib.net/zlib-1.3.1.tar.xz",
         "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.xz",
+        # fossies: https://fossies.org/linux/misc/zlib-1.3.1.tar.gz
     ),
     "38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32",
     "lib/libz.a",
@@ -190,6 +199,7 @@ freetype = MesonProject(
     (
         "http://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.xz",
         "http://downloads.sourceforge.net/project/freetype/freetype2/2.13.2/freetype-2.13.2.tar.xz",
+        # fossies: https://fossies.org/linux/misc/freetype-2.13.3.tar.xz/
     ),
     "2d8d5917a1983ebd04921f2993a88858d6f72dec",
     "lib/libfreetype.a",
@@ -203,8 +213,11 @@ freetype = MesonProject(
 )
 
 cares = CmakeProject(
-    "https://github.com/c-ares/c-ares/releases/download/cares-1_24_0/c-ares-1.24.0.tar.gz",
-    "c517de6d5ac9cd55a9b72c1541c3e25b84588421817b5f092850ac09a8df5103",
+    (
+	  "https://github.com/c-ares/c-ares/releases/download/cares-1_24_0/c-ares-1.24.0.tar.gz",
+      # fossies: https://fossies.org/linux/misc/dns/c-ares-1.34.4.tar.gz/
+    ),
+	"c517de6d5ac9cd55a9b72c1541c3e25b84588421817b5f092850ac09a8df5103",
     "lib/libcares.a",
     [
         "-DCARES_STATIC=ON",
@@ -220,6 +233,7 @@ curl = CmakeProject(
     (
         "https://curl.se/download/curl-8.5.0.tar.xz",
         "https://github.com/curl/curl/releases/download/curl-8_5_0/curl-8.5.0.tar.xz",
+        # fossies: https://fossies.org/linux/www/curl-8.12.1.tar.xz/
     ),
     "42ab8db9e20d8290a3b633e7fbb3cec15db34df65fd1015ef8ac1e4723750eeb",
     "lib/libcurl.a",
@@ -255,7 +269,7 @@ curl = CmakeProject(
 sqlite3 = AutotoolsProject(
     (
         "https://www.sqlite.org/2023/sqlite-autoconf-3420000.tar.gz",
-        "https://fossies.org/linux/misc/sqlite-autoconf-3420000.tar.gz",
+       # invalid - new 3490100: "https://fossies.org/linux/misc/sqlite-autoconf-3490100.tar.gz",
     ),
     "7abcfd161c6e2742ca5c6c0895d1f853c940f203304a0b49da4e1eca5d088ca6",
     "lib/libsqlite3.a",
@@ -268,14 +282,18 @@ sqlite3 = AutotoolsProject(
     autogen=True,
 )
 
+# suppress "visibility default" from geodesic.h
 proj = CmakeProject(
     (
         "http://download.osgeo.org/proj/proj-9.3.1.tar.gz",
-        "https://fossies.org/linux/privat/proj-9.3.1.tar.gz",
+        # invalid - new 9.6.0: "https://fossies.org/linux/privat/proj-9.6.0.tar.gz",
     ),
     "b0f919cb9e1f42f803a3e616c2b63a78e4d81ecfaed80978d570d3a5e29d10bc",
     "lib/libproj.a",
     [
+        "-DCMAKE_C_COMPILER_WORKS=ON",
+        "-DCMAKE_CXX_COMPILER_WORKS=ON",
+
         "-DBUILD_TESTING=OFF",
         "-DENABLE_TIFF=OFF",
         "-DENABLE_CURL=OFF",
@@ -289,17 +307,12 @@ proj = CmakeProject(
         "-DBUILD_SHARED_LIBS=OFF",
         "-DUSE_THREAD=OFF",
     ],
-    env={
-        # suppress "visibility default" from geodesic.h
-        "CFLAGS": "-DGEOD_DLL=",
-        "CXXFLAGS": "-DGEOD_DLL=",
-    },
     patches=abspath("lib/proj/patches"),
 )
 
 libpng = CmakeProject(
     (
-        "ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.43.tar.xz",
+        # invalid ??? : "ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.43.tar.xz",
         "http://downloads.sourceforge.net/project/libpng/libpng16/1.6.43/libpng-1.6.43.tar.xz",
     ),
     "6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c",
@@ -350,7 +363,7 @@ libusb = AutotoolsProject(
 simple_usbmodeswitch = AutotoolsProject(
     (
         "https://github.com/felixhaedicke/simple_usbmodeswitch/releases/download/v1.0/simple_usbmodeswitch-1.0.tar.bz2",
-        "http://s15356785.onlinehome-server.info/~felix/simple_usbmodeswitch/simple_usbmodeswitch-1.0.tar.bz2",
+        # invalid not found: "http://s15356785.onlinehome-server.info/~felix/simple_usbmodeswitch/simple_usbmodeswitch-1.0.tar.bz2",
     ),
     "35e8a6ed8551ef419baf7310e54d6d1a81e18bf44e111b07d74285001f18e98d",
     "bin/simple_usbmodeswitch",
@@ -360,7 +373,7 @@ simple_usbmodeswitch = AutotoolsProject(
 libtiff = CmakeProject(
     (
         "http://download.osgeo.org/libtiff/tiff-4.6.0.tar.xz",
-        "https://fossies.org/linux/misc/tiff-4.6.0.tar.xz",
+        # invalid new 4.7.0: "https://fossies.org/linux/misc/tiff-4.7.0.tar.xz",
     ),
     "e178649607d1e22b51cf361dd20a3753f244f022eefab1f2f218fc62ebaf87d2",
     "lib/libtiff.a",
@@ -403,11 +416,13 @@ libtiff = CmakeProject(
 libgeotiff = CmakeProject(
     (
         "http://download.osgeo.org/geotiff/libgeotiff/libgeotiff-1.7.1.tar.gz",
-        "https://fossies.org/linux/privat/libgeotiff-1.7.1.tar.gz",
+        # invalid - new 1.7.4:  "https://fossies.org/linux/privat/libgeotiff-1.7.4.tar.gz", SHA256: C598D04FDF2BA25C4352844DAFA81DDE3F7FD968DAA7AD131228CD91E9D3DC47
     ),
     "05ab1347aaa471fc97347d8d4269ff0c00f30fa666d956baba37948ec87e55d6",
     "lib/libgeotiff.a",
     [
+        "-DCMAKE_C_COMPILER_WORKS=ON",
+        "-DCMAKE_CXX_COMPILER_WORKS=ON",
         "-DWITH_UTILITIES=OFF",
         "-DBUILD_SHARED_LIBS=OFF",
         "-DTIFF_INCLUDE_DIR=${CMAKE_INSTALL_PREFIX}/include",
@@ -418,7 +433,7 @@ libgeotiff = CmakeProject(
 sdl2 = CmakeProject(
     (
         "http://www.libsdl.org/release/SDL2-2.30.0.tar.gz",
-        "https://fossies.org/linux/misc/SDL2-2.3.0.tar.gz",
+        # invalid : new - 2.32.2: "https://fossies.org/linux/misc/SDL2-2.32.2.tar.gz",
     ),
     "36e2e41557e0fa4a1519315c0f5958a87ccb27e25c51776beb6f1239526447b0",
     "lib/libSDL2.a",
@@ -460,7 +475,7 @@ sdl2 = CmakeProject(
 lua = LuaProject(
     (
         "http://www.lua.org/ftp/lua-5.4.6.tar.gz",
-        "https://fossies.org/linux/misc/lua-5.4.6.tar.gz",
+        # invalid : new - 5.4.7: "https://fossies.org/linux/misc/lua-5.4.7.tar.gz",
     ),
     "7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88",
     "lib/liblua.a",
@@ -479,7 +494,10 @@ libsalsa = AutotoolsProject(
 )
 
 netcdf = AutotoolsProject(
-    'https://storage.googleapis.com/lazyrasp.com/xcsoar/netcdf-c-4.6.2.tar.gz',
+    (
+       'https://storage.googleapis.com/lazyrasp.com/xcsoar/netcdf-c-4.6.2.tar.gz',
+      # invalide - new 4.9.3: 'https://fossies.org/linux/misc/netcdf-c-4.9.3.tar.gz',
+    ),
     'eda1be377fce86e5d91b30a00b15bb7ea9c97f5c5ef007901145549786781710',
     'lib/libnetcdf.a',
     [
@@ -500,7 +518,10 @@ netcdf = AutotoolsProject(
 )
 
 netcdfcxx = AutotoolsProject(
-    'https://storage.googleapis.com/lazyrasp.com/xcsoar/netcdf-cxx-4.2.tar.gz',
+    (
+      'https://storage.googleapis.com/lazyrasp.com/xcsoar/netcdf-cxx-4.2.tar.gz',
+      # invalide - new 4.3.1: 'https://fossies.org/linux/misc/netcdf-cxx4-4.3.1.tar.gz',
+    ),
     '95ed6ab49a0ee001255eac4e44aacb5ca4ea96ba850c08337a3e4c9a0872ccd1',
     'lib/libnetcdf_c++.a',
     [
