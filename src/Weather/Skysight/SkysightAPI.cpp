@@ -647,7 +647,7 @@ SkysightAPI::GetTileData(const std::string_view layer_id,
   GeoBitmap::TileData base_tile;
   const SkysightCallType type = SkysightCallType::Tile;
   if (map_window) { // && map_window->IsPanning()) {
-    base_tile = GeoBitmap::GetTile(map_window->VisibleProjection());
+    base_tile = GeoBitmap::GetTile(map_window->VisibleProjection(), 7, 8);
   }
   else {
     return false;

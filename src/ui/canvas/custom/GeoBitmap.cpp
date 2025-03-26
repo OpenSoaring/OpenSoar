@@ -59,13 +59,15 @@ GeoBitmap::GetTile(const GeoBounds &bounds, const uint16_t zoom)
   return tile;
 }
 GeoBitmap::TileData
-GeoBitmap::GetTile(const MapWindowProjection &proj)
+GeoBitmap::GetTile(const MapWindowProjection &proj, const uint16_t zoom_min,
+  const uint16_t zoom_max)
 {
   double Earth_circumference = 42e6;  // =~ 42.000 km
   double diagonale = proj.GetScreenDistanceMeters();
   double t = Earth_circumference / diagonale;
   double _log = floor(log2(t));
-  uint16_t zoom = _log + 1;
+  uint16_t zoom = std::min((uint16_t) ( _log + 1), zoom_max);
+  zoom = std::max(zoom, zoom_min);
 
   return GetTile(proj.GetScreenBounds(), zoom);
 }

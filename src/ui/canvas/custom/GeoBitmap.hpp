@@ -16,7 +16,8 @@ namespace GeoBitmap {
   };
 
   TileData GetTile(const GeoBounds &bounds, const uint16_t zoom);
-  TileData GetTile(const MapWindowProjection &proj);
+  TileData GetTile(const MapWindowProjection &proj,
+    const uint16_t zoom_min = 1, const uint16_t zoom_max = 20);
   GeoBounds GetBounds(const TileData &data);
   GeoQuadrilateral GetGeoQuadrilateral(const TileData &data);
 
