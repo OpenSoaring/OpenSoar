@@ -9,11 +9,13 @@ install-mo: mo
 		install -m 0644 $(OUT)/po/$$i.mo $(prefix)/share/locale/$$i/LC_MESSAGES/$(PROGRAM_NAME_LC).mo; \
 	done
 
-VALI_XCS_EXE = $(TARGET_BIN_DIR)/vali-xcs
+# OpenSoar: VALI_XCS_EXE = $(TARGET_BIN_DIR)/vali-xcs
+PROGRAM_EXE = $(TARGET_BIN_DIR)/$(PROGRAM_NAME)
 
 install-bin: all
 	install -d -m 0755 $(prefix)/bin
-	install -m 0755 $(TARGET_BIN_DIR)/$(PROGRAM_NAME) $(TARGET_BIN_DIR)/vali-xcs $(prefix)/bin
+	install -m 0755 $(PROGRAM_EXE) $(prefix)/bin
+	# install -m 0755 $(PROGRAM_EXE) $(VALI_XCS_EXE) $(prefix)/bin
 
 install-manual: manual
 	install -d -m 0755 $(prefix)/share/doc/$(PROGRAM_NAME)
