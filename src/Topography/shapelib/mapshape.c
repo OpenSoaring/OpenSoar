@@ -1696,6 +1696,7 @@ void msSHPReadShape( SHPHandle psSHP, int hEntity, shapeObj *shape )
 
 #if defined(__clang__) && __clang_major__ >= 18
 /* suppress clang 18 warning for using isnan() due to -ffast-math */
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wnan-infinity-disabled"
 #endif
 
