@@ -4,11 +4,23 @@
 #include "FLARM/Traffic.hpp"
 
 static constexpr const char *acTypes[] = {
-  "Unknown", "Glider", "TowPlane",
-    "Helicopter", "Parachute", "DropPlane", "HangGlider",
-    "ParaGlider", "PoweredAircraft", "JetAircraft",
-    "FlyingSaucer", "Balloon", "Airship", "UAV",
-    "Unknown", "StaticObject" };
+  "Unknown",
+  "Glider",
+  "TowPlane",
+  "Helicopter",
+  "Parachute",
+  "DropPlane",
+  "HangGlider",
+  "ParaGlider",
+  "PoweredAircraft",
+  "JetAircraft",
+  "FlyingSaucer",
+  "Balloon",
+  "Airship",
+  "UAV",
+  "Unknown",
+  "StaticObject"
+};
 
 const char *
 FlarmTraffic::GetTypeString(AircraftType type) noexcept
