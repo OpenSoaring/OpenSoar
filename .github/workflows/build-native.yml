@@ -245,6 +245,16 @@ jobs:
             target_container: debian:bookworm-slim    # => Ubuntu 24.04
             #  target_container: debian:bullseye-slim # => Ubuntu 22.04
 
+          - os: ubuntu-22.04
+            target: WIN64
+            target_hide: false
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext: .exe
+            target_test: false
+            target_upload: false
+            target_container: debian:bookworm-slim
+          
           - os: ubuntu-24.04
             target: WIN64
             target_hide: false
@@ -450,10 +460,21 @@ jobs:
         run: |
           echo "Compile OpenSoar - PR: ${{ matrix.target }}"
           ${{ env.BUILDER }} ${{ env.BUILD_PARAMS }} ${{ env.IS_TEST }} 
+          case ${{ matrix.target }} in
+              ANDROID | ANDROIDFAT | ANDROIDAARCH64)
+                mv output/ANDROID/bin/${{ matrix.target_bin }}-debug${{ matrix.target_ext }} ${{ matrix.target_bin }}${{ matrix.target_ext }}
+                ;;
+              KOBO | UNIX)
+                 # do noting with deb files or Kobo files...
+                ;;
+              *)
+                mv output/${{ matrix.target }}/bin/${{ matrix.target_bin }}${{ matrix.target_ext }} ${{ matrix.target_bin }}${{ matrix.target_ext }}
+                ;;
+          esac
+
       - name: Test Directory (UNIX)
         if: ${{ startsWith(matrix.target, 'UNIX') && ! matrix.target_hide }}
         run: |
-          # cd output/UNIX/DPKG
           echo "----------------------------------------------------------------"
           if [ -d ${{ env.BINARY_DIR }} ]; then
             echo "ls -l output/DEBIAN-${{ matrix.target }}/bin"
@@ -465,7 +486,8 @@ jobs:
           echo "----------------------------------------------------------------"
       - name: Upload Test artifact
         uses: actions/upload-artifact@v4
-        if: ${{ matrix.target_test && ! matrix.target_hide }}
+        # if: ${{ matrix.target_test && ! matrix.target_hide }}
+        if: ${{ matrix.target_test }}
         with:
           name: Test-${{ env.GIT_COMMIT }}-${{ matrix.target }}
           path: |
@@ -518,14 +540,13 @@ jobs:
   
       - name: Upload Release artifact
         uses: actions/upload-artifact@v4
-        if: ${{ (matrix.target_upload || startsWith(github.ref, 'refs/tags/v')) && ! matrix.target_hide }} 
+        if: ${{ matrix.target_upload }} 
         with:
           name: ${{ matrix.target_final }}-${{ env.GIT_COMMIT }}-${{ matrix.target }}${{ matrix.target_ext }}
           path: |
-            ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
-            echo "Binary Directory: ${BINARY_DIR}"
-            echo "Binary Directory: $BINARY_DIR"
-            echo "Binary Directory: ${env.BINARY_DIR}"
+            ${{ matrix.target_bin }}${{ matrix.target_ext }}
+            # ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+            echo "Binary Directory: ${{ env.BINARY_DIR }}"
           retention-days: 2
   
       - name: Test Directory (DEBIAN-UNIX)
@@ -555,7 +576,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+          # asset_path: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+          asset_path: ${{ matrix.target_bin }}${{ matrix.target_ext }}
           asset_name: ${{ matrix.target_final }}-${{ matrix.target }}${{ matrix.target_ext }}
           asset_content_type: application/zip
   
@@ -565,7 +587,8 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
           ARGS: "-rltgoDzvO"
-          SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+          # SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+          SOURCE: ${{ matrix.target_bin }}${{ matrix.target_ext }}
           REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
           REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
           TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}/
@@ -577,7 +600,8 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
           ARGS: "-rltgoDzvO"
-          SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+          # SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+          SOURCE: ${{ matrix.target_bin }}${{ matrix.target_ext }}
           REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
           REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
           TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
