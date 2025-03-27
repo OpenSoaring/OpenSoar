@@ -24,6 +24,7 @@ class NativeToolchain:
         self.is_android = False
         self.is_kobo = False
         self.is_unix = False
+        self.is_openvario = False
         self.is_darwin = sys.platform == 'darwin'
 
         self.cc = 'ccache gcc'
@@ -63,6 +64,7 @@ class Toolchain:
         self.is_android = '-android' in host_triplet
         self.is_unix = host_triplet == 'x86_64-linux-gnu'
         self.is_kobo = '-kobo-linux-' in host_triplet
+        self.is_openvario = '-ovlinux-' in host_triplet
         self.is_darwin = host_triplet.endswith('apple-darwin')
         self.is_target_ios = '-miphoneos' in arch_cflags or '-mios-simulator' in arch_cflags 
 
