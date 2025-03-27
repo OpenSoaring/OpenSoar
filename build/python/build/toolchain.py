@@ -22,6 +22,8 @@ class NativeToolchain:
         self.is_aarch64 = machine.startswith('aarch64')
         self.is_windows = False
         self.is_android = False
+        self.is_kobo = False
+        self.is_unix = False
         self.is_darwin = sys.platform == 'darwin'
 
         self.cc = 'ccache gcc'
@@ -44,7 +46,7 @@ class NativeToolchain:
 class Toolchain:
     def __init__(self, top_path: str, lib_path: str,
                  tarball_path: str, src_path: str, build_path: str, install_prefix: str,
-                 host_triplet: str, target_is_ios: bool,
+                 host_triplet: str,
                  arch_cflags: str, cppflags: str, arch_ldflags: str, 
                  cc: str, cxx: str, ar: str, arflags: str,
                  ranlib: str, strip: str, windres: str):
@@ -59,9 +61,10 @@ class Toolchain:
         self.is_aarch64 = host_triplet.startswith('aarch64')
         self.is_windows = 'mingw32' in host_triplet
         self.is_android = '-android' in host_triplet
-        self.is_darwin = '-darwin' in host_triplet
-        
-        self.is_target_ios = target_is_ios
+        self.is_unix = host_triplet == 'x86_64-linux-gnu'
+        self.is_kobo = '-kobo-linux-' in host_triplet
+        self.is_darwin = host_triplet.endswith('apple-darwin')
+        self.is_target_ios = '-miphoneos' in arch_cflags or '-mios-simulator' in arch_cflags 
 
         self.cc = cc
         self.cxx = cxx

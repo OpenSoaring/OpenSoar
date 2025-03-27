@@ -147,7 +147,7 @@ fmt_version = "11.1.4"
 libfmt = CmakeProject(
     (
       "https://github.com/fmtlib/fmt/archive/" + fmt_version + ".tar.gz",
-      "https://fossies.org/linux/misc/fmt-" + fmt_version + ".tar.gz
+      "https://fossies.org/linux/misc/fmt-" + fmt_version + ".tar.gz"
     ),
     "ac366b7b4c2e9f0dde63a59b3feb5ee59b67974b14ee5dc9ea8ad78aa2c1ee1e",
     "lib/libfmt.a",

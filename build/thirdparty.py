@@ -4,12 +4,27 @@ import os, os.path
 import re
 import sys
 
-if len(sys.argv) != 14:
-    print("Usage: build.py LIB_PATH HOST_TRIPLET TARGET_IS_IOS ARCH_CFLAGS CPPFLAGS ARCH_LDFLAGS CC CXX AR ARFLAGS RANLIB STRIP WINDRES", file=sys.stderr)
+if len(sys.argv) != 13  or True :
+    print("args    : ", len(sys.argv)) 
+    print("                 : ", sys.argv[0] ) 
+    print("arg LIB_PATH     : ", sys.argv[1] ) 
+    print("arg HOST_TRIPLET : ", sys.argv[2] )
+    print("arg ARCH_CFLAGS  : ", sys.argv[3] )
+    print("arg CPPFLAGS     : ", sys.argv[4] )
+    print("arg ARCH_LDFLAGS : ", sys.argv[5] )
+    print("arg CC           : ", sys.argv[6] )
+    print("arg CXX          : ", sys.argv[7] )
+    print("arg AR           : ", sys.argv[8] )
+    print("arg ARFLAGS      : ", sys.argv[9] )
+    print("arg RANLIB       : ", sys.argv[10] )
+    print("arg STRIP        : ", sys.argv[11] )
+    print("arg WINDRES      : ", sys.argv[12] )
+
+if len(sys.argv) != 13:
+    print("Usage: build.py LIB_PATH HOST_TRIPLET ARCH_CFLAGS CPPFLAGS ARCH_LDFLAGS CC CXX AR ARFLAGS RANLIB STRIP WINDRES", file=sys.stderr)
     sys.exit(1)
 
-lib_path, host_triplet, target_is_ios, arch_cflags, cppflags, arch_ldflags, cc, cxx, ar, arflags, ranlib, strip, windres = sys.argv[1:]
-target_is_ios = (target_is_ios == 'y') # convert to boolean
+lib_path, host_triplet, arch_cflags, cppflags, arch_ldflags, cc, cxx, ar, arflags, ranlib, strip, windres = sys.argv[1:]
 
 # the path to the XCSoar sources
 xcsoar_path = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]) or '.', '..'))
@@ -30,7 +45,7 @@ if 'MAKEFLAGS' in os.environ:
 from build.toolchain import Toolchain, NativeToolchain
 toolchain = Toolchain(xcsoar_path, lib_path,
                       tarball_path, src_path, build_path, install_prefix,
-                      host_triplet, target_is_ios,
+                      host_triplet,
                       arch_cflags, cppflags, arch_ldflags, cc, cxx, ar, arflags,
                       ranlib, strip, windres)
 
@@ -62,17 +77,18 @@ if toolchain.is_windows:
     # it.
     toolchain.cppflags += ' -D_FORTIFY_SOURCE=0'
     with_skysight = True
-elif toolchain.is_darwin:
-    with_geotiff = True
+elif toolchain.is_target_ios:
+    print('toolchain: iOS')
     thirdparty_libs.append(sdl2)
-    ## thirdparty_libs += [
-    ## ]
+elif toolchain.is_darwin:  # and not iOS!
+    print('toolchain: MacOS')
+    thirdparty_libs = []
 elif toolchain.is_android:
     with_skysight = True
     thirdparty_libs.remove(zlib)
     ## thirdparty_libs += [
     ## ]
-elif '-kobo-linux-' in host_triplet:
+elif toolchain.is_kobo: # '-kobo-linux-' in host_triplet:
     thirdparty_libs = [
         binutils,
         linux_headers,
@@ -88,7 +104,16 @@ elif '-kobo-linux-' in host_triplet:
         libusb,
         simple_usbmodeswitch
     ]
+elif toolchain.is_unix:
+    print('toolchain: UNIX')
+
+    thirdparty_libs = []
+    thirdparty_libs += [
+      netcdf,
+      netcdfcxx
+    ]
 else:
+    print('toolchain: ', toolchain.build_path, ' - ', toolchain.install_prefix, ' - ', toolchain.host_triplet)
     raise RuntimeError('Unrecognized target')
 
 # do it before(!) 'with_skysight'
