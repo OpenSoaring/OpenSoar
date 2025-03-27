@@ -663,13 +663,16 @@ XCSOAR_SOURCES += \
 	ifeq ($(HAVE_SKYSIGHT),y)
 		XCSOAR_SOURCES += \
 			$(SRC)/Weather/Skysight/Skysight.cpp \
-			$(SRC)/Weather/Skysight/CDFDecoder.cpp \
 			$(SRC)/Weather/Skysight/APIQueue.cpp \
 			$(SRC)/Weather/Skysight/SkysightAPI.cpp \
 			$(SRC)/Weather/Skysight/Request.cpp \
 			$(SRC)/Weather/Skysight/SkysightRegions.cpp \
-			\
 			$(SRC)/Weather/Skysight/SkysightRenderer.cpp
+
+			ifeq ($(SKYSIGHT_FORECAST),y)
+				XCSOAR_SOURCES += \
+					$(SRC)/Weather/Skysight/CDFDecoder.cpp 
+			endif
 	endif
 	
 	XCSOAR_SOURCES += \

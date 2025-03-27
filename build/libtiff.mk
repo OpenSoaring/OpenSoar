@@ -1,23 +1,20 @@
-ifeq ($(HAVE_SKYSIGHT),y)
+ifeq ($(HAVE_GEOTIFF),y)
     GEOTIFF ?= y
 
     $(eval $(call pkg-config-library,LIBTIFF,libtiff-4))
     LIBTIFF_CPPFLAGS += -DUSE_LIBTIFF
+    LIBTIFF_CPPFLAGS += -DUSE_GEOTIFF
   
-    ifeq ($(GEOTIFF),y)
-      LIBTIFF_CPPFLAGS += -DUSE_GEOTIFF
-      ifneq ($(USE_THIRDPARTY_LIBS),y)
-        LIBTIFF_CPPFLAGS += -isystem /usr/include/geotiff
-      endif
-      LIBTIFF_LDLIBS += -ltiff -lgeotiff
-    endif
-  
-    ifeq ($(GEOTIFF)$(USE_THIRDPARTY_LIBS),yy)
+    ifeq ($(USE_THIRDPARTY_LIBS),y)
       $(eval $(call pkg-config-library,PROJ,proj))
       LIBTIFF_CPPFLAGS += $(PROJ_CPPFLAGS)
       LIBTIFF_LDLIBS += $(PROJ_LDLIBS) -lsqlite3 -lproj
+    else
+      LIBTIFF_CPPFLAGS += -isystem /usr/include/geotiff
     endif
+    LIBTIFF_LDLIBS += -ltiff -lgeotiff
 else
+  # w/o SkySight Forecast you don't need the GeoTiff
   GEOTIFF ?= n
 endif
 
