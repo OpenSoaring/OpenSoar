@@ -3,18 +3,14 @@
 
 #include "CDFDecoder.hpp"
 
-#ifdef ANDROID
-# include <netcdfcpp.h>
-#define NETCDF_CPP
-#elif defined(_WIN32) && !defined(CMAKE_PROJECT) // && !defined(__MSVC__)
- # include <netcdfcpp.h>
- #define NETCDF_CPP
+// no forecast for Darwin, Kobo, OpenVario
+#if defined(CMAKE_PROJECT) || !(defined(ANDROID) || defined(_WIN32))
+# include <netcdf>
 #else
-// # include <netcdf>
 # include <netcdfcpp.h>
 # define NETCDF_CPP
-// # include <./output/UNIX/lib/x86_64/include/netcdfcpp.h>
 #endif
+
 #include <geotiffio.h>
 #include <xtiffio.h>
 
