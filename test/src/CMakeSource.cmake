@@ -227,6 +227,8 @@ ${SRC_DIR}/TestPolylineDecoder.cpp    # add 7.38
 set(TEST_LIST
     ${SRC_DIR}/UploadFile.cpp
     ${SRC_DIR}/RunWeGlideClient.cpp
+    ${SRC_DIR}/RunDownloadFlight.cpp
+    ${SRC_DIR}/RunDownloadToFile.cpp
     ${SRC_DIR}/DownloadFile.cpp
     ${SRC_DIR}/TestDriver.cpp
     ${SRC_DIR}/test_fixed.cpp
