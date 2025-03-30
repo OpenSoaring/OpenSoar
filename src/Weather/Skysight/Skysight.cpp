@@ -307,7 +307,9 @@ Skysight::Init()
   if (api) {
     delete api;
     api = nullptr;
+#if !defined(__GNUC__) || __GNUC__ >= 13
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+#endif
   }
   active_layer = nullptr;
 
@@ -507,7 +509,8 @@ Skysight::DownloadComplete([[maybe_unused]] const std::string details,
   self->RefreshSelectedLayer(layer_id);
 
   if (success && (self->GetActiveLayerId() == layer_id.c_str())) {
-    if (!self->update_flag && self->api->QueueIsLastJob()) {
+    //if (!self->update_flag && self->api->QueueIsLastJob()) {
+    if (!self->update_flag) {
       self->update_flag = true;
       GlueMapWindow *map_window = UIGlobals::GetMapIfActive();
       if (map_window)
