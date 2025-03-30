@@ -26,6 +26,7 @@ if(HAVE_SKYSIGHT)
         Weather/Skysight/APIQueue.cpp
 
         Weather/Skysight/SkysightRenderer.cpp
+        Weather/Skysight/SkySightCoRequest.cpp
   )
   if(SKYSIGHT_FORECAST)
     list(APPEND _SOURCES Weather/Skysight/CDFDecoder.cpp    )
