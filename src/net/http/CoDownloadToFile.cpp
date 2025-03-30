@@ -5,7 +5,7 @@
 #include "Progress.hpp"
 #include "lib/curl/Setup.hxx"
 #include "lib/curl/CoStreamRequest.hxx"
-#include "lib/curl/SList.hxx"
+#include "lib/curl/Slist.hxx"
 #include "io/DigestOutputStream.hxx"
 #include "io/FileOutputStream.hxx"
 #include "system/Path.hpp"
@@ -52,7 +52,7 @@ CoDownloadToFile(CurlGlobal &curl, const char *url,
 }
 
 Co::EagerTask<Curl::CoResponse>
-CoDownloadToFile(CurlGlobal &curl, const char *url, CurlSlist &slist,
+CoDownloadToFile(CurlGlobal &curl, const char *url, CurlSlist *slist,
   Path path, std::array<std::byte, 32> *sha256,
                  ProgressListener &progress)
 {
@@ -72,7 +72,8 @@ CoDownloadToFile(CurlGlobal &curl, const char *url, CurlSlist &slist,
   easy.SetFailOnError();
 
   // easy.SetOption(CURLOPT_USERNAME, username);
-  easy.SetRequestHeaders( slist.Get());
+  if (slist)
+     easy.SetRequestHeaders( slist->Get());
   easy.SetVerifyPeer(false);
 
   auto response = co_await Curl::CoStreamRequest(curl, std::move(easy), *os);

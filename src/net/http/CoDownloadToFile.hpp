@@ -29,6 +29,6 @@ CoDownloadToFile(CurlGlobal &curl, const char *url,
 
 Co::EagerTask<Curl::CoResponse>
 CoDownloadToFile(CurlGlobal &curl, const char *url,
-  CurlSlist &slist, Path path, std::array<std::byte, 32> *sha256,
+  CurlSlist *slist, Path path, std::array<std::byte, 32> *sha256,
   ProgressListener &progress);
 } // namespace Net
