@@ -5,12 +5,14 @@
 
 #include "lib/curl/CoRequest.hxx"
 #include "co/Task.hxx"
+#include "lib/curl/Slist.hxx"
 
 #include <array>
 #include <cstddef> // for std::byte
 
 class Path;
 class ProgressListener;
+//class CurlSList;
 
 namespace Net {
 
@@ -25,4 +27,8 @@ CoDownloadToFile(CurlGlobal &curl, const char *url,
                  Path path, std::array<std::byte, 32> *sha256,
                  ProgressListener &progress);
 
+Co::EagerTask<Curl::CoResponse>
+CoDownloadToFile(CurlGlobal &curl, const char *url,
+  CurlSlist &slist, Path path, std::array<std::byte, 32> *sha256,
+  ProgressListener &progress);
 } // namespace Net

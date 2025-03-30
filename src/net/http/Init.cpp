@@ -20,6 +20,7 @@ void
 Net::Deinitialise()
 {
   delete curl;
+  curl = nullptr;
 
   curl_global_cleanup();
 }
