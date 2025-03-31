@@ -648,8 +648,9 @@ Skysight::TileActiveLayer()
 {
   GlueMapWindow *map_window = UIGlobals::GetMap();
   GeoBitmap::TileData base_tile;
-  if (map_window) { // && map_window->IsPanning()) {
-    base_tile = GeoBitmap::GetTile(map_window->VisibleProjection());
+  if (map_window && active_layer) { // && map_window->IsPanning()) {
+    base_tile = GeoBitmap::GetTile(map_window->VisibleProjection(),
+	  active_layer->zoom_min, active_layer->zoom_max);
   }
   else {
     return false;
