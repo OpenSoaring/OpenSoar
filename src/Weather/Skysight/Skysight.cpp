@@ -658,19 +658,13 @@ Skysight::TileActiveLayer()
 
   MapOverlayReset();
 
+  auto map_bounds = map_window->VisibleProjection().GetScreenBounds();
   auto tile = base_tile;
   for (tile.x = base_tile.x - 1; tile.x <= base_tile.x + 1; tile.x++)
     for (tile.y = base_tile.y - 1; tile.y <= base_tile.y + 1; tile.y++) {
 
-      GeoBounds bounds = GeoBitmap::GetBounds(tile);
-      bool inside = false;
-      inside |= map_window->VisibleProjection().GeoVisible(bounds.GetNorthEast());
-      inside |= map_window->VisibleProjection().GeoVisible(bounds.GetNorthWest());
-      inside |= map_window->VisibleProjection().GeoVisible(bounds.GetSouthEast());
-      inside |= map_window->VisibleProjection().GeoVisible(bounds.GetSouthWest());
-
-      if (!inside)
-        continue;
+      if (!GeoBitmap::GetBounds(tile).Overlaps(map_bounds))
+         continue;
 
       AllocatedPath filename;
       bool found = false;
