@@ -271,8 +271,22 @@ SkysightWidget::UpdateList()
   update_button->SetEnabled(!item_updating);
   updateall_button->SetEnabled(!any_updating);
 #endif  // def _DEBUG
-  activate_button->SetEnabled(!item_active);  // item_updating);
-  deactivate_button->SetEnabled(item_active);
+  if (list.GetLength() == 0) {
+    activate_button->SetEnabled(false);
+    deactivate_button->SetEnabled(false);
+    activate_button->SetCaption(_("No Item"));
+    deactivate_button->SetCaption(_("No Item"));
+  } else if(item_active) {
+    activate_button->SetEnabled(false);
+    activate_button->SetCaption(_("(Activate)"));
+    deactivate_button->SetCaption(_("Deactivate"));
+    deactivate_button->SetEnabled(true);
+  } else {
+    activate_button->SetEnabled(true);
+    deactivate_button->SetEnabled(false);
+    activate_button->SetCaption(_("Activate"));
+    deactivate_button->SetCaption(_("(Deactivate)"));
+  }
 }
 
 void
@@ -363,13 +377,14 @@ SkysightWidget::ActivateClicked()
 {
   unsigned index = GetList().GetCursorIndex();
   assert(index < (unsigned)skysight->NumSelectedLayers());
-
-  // SkysightActiveLayer *layer = skysight->GetSelectedLayer(index);
-  SkysightLayer *layer = skysight->GetSelectedLayer(index);
-  if (!skysight->SetLayerActive(layer->id))
-    ShowMessageBox(_("Couldn't display data."),
-		   _("Display Error"), MB_OK);
-  UpdateList();
+  if (index < (unsigned)skysight->NumSelectedLayers()) {
+    // SkysightActiveLayer *layer = skysight->GetSelectedLayer(index);
+    SkysightLayer *layer = skysight->GetSelectedLayer(index);
+    if (!skysight->SetLayerActive(layer->id))
+      ShowMessageBox(_("Couldn't display data."),
+        _("Display Error"), MB_OK);
+    UpdateList();
+  }
 }
 
 inline void
