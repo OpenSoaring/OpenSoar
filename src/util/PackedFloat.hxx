@@ -36,8 +36,10 @@ public:
     bytes = std::bit_cast<uint32_t>(f);
 #elif defined(__has_builtin) && __has_builtin(__builtin_bit_cast)
     bytes = __builtin_bit_cast(uint32_t, f);
+#elif defined(__GNUC__) && __GNUC__ < 13
+    bytes = *(uint32_t *)&f;
 #else
-#error "No constexpr bit-cast available."
+# error "No constexpr bit-cast available."
 #endif
     a = uint8_t(bytes);
     b = uint8_t(bytes >> 8);
@@ -66,8 +68,10 @@ public:
     bytes = std::bit_cast<uint32_t>(f);
 #elif defined(__has_builtin) && __has_builtin(__builtin_bit_cast)
     bytes = __builtin_bit_cast(uint32_t, f);
+#elif defined(__GNUC__) && __GNUC__ < 13
+    bytes = *(uint32_t *)&f;
 #else
-#error "No constexpr bit-cast available."
+# error "No constexpr bit-cast available."
 #endif
     d = uint8_t(bytes);
     c = uint8_t(bytes >> 8);
