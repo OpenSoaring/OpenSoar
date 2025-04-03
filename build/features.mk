@@ -1,13 +1,16 @@
 ifeq ($(TARGET_IS_KOBO)$(TARGET_IS_DARWIN),nn)
-  # not for KOBO, DARWIN - but for:
-  # Android, UNIX, OV, Windows, OpenVario...:
+    # not for KOBO, DARWIN - but for:
+    # Android, UNIX, Windows, OpenVario...:
+    $(info Features for  Android, UNIX, Windows, OpenVario...)
+
     # for build:
     HAVE_SKYSIGHT := y
 
-    ifeq ($(TARGET_IS_OPENVARIO),n)
-       SKYSIGHT_FORECAST := y
+    ifneq ($(TARGET_IS_OPENVARIO),y)
+        SKYSIGHT_FORECAST := y
     endif
-    HAVE_GEOTIFF = y 
+
+    HAVE_GEOTIFF = y
     
     # for cpp sources:
     TARGET_CPPFLAGS += -DHAVE_SKYSIGHT
@@ -25,3 +28,5 @@ endif
 ifeq ($(HAVE_GEOTIFF),y)
    TARGET_CPPFLAGS += -DUSE_GEOTIFF
 endif
+
+$(info HAVE_GEOTIFF = '$(HAVE_GEOTIFF)')
