@@ -1,5 +1,6 @@
 ifeq ($(HAVE_GEOTIFF),y)
-    GEOTIFF ?= y
+
+    $(info libtiff is using HAVE_GEOTIFF)
 
     $(eval $(call pkg-config-library,LIBTIFF,libtiff-4))
     LIBTIFF_CPPFLAGS += -DUSE_LIBTIFF
@@ -15,8 +16,7 @@ ifeq ($(HAVE_GEOTIFF),y)
     LIBTIFF_LDLIBS += -ltiff -lgeotiff
 else
   # w/o SkySight Forecast you don't need the GeoTiff
-  GEOTIFF ?= n
 endif
 
 LDLIBS += $(LIBTIFF_LDLIBS)
-TIFF ?= $(GEOTIFF)
+TIFF ?= $(HAVE_GEOTIFF)
