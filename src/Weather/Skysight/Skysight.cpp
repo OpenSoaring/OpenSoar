@@ -601,6 +601,12 @@ Skysight::DisplayForecastLayer()
   AllocatedPath filename;
   bool found = false;
 
+  if (skysight_overlays != 1 /*max_skysight_overlays*/) {
+    MapOverlayReset();
+    skysight_overlays = 1 /*max_skysight_overlays*/;
+  }
+
+
   constexpr time_t preview = _10MINUTES;
   time_t test_time = ((DateTime::now() + preview) / _HALFHOUR + 1) * _HALFHOUR;
 
@@ -636,7 +642,7 @@ Skysight::UpdateActiveLayer(const uint32_t overlay_index, const Path &filename,
   if (map == nullptr)
     return false;
 
-  LogFmt("SkySight::DisplayForcastLayer {}", filename.c_str());
+  LogFmt("SkySight::UpdateActiveLayer {}", filename.c_str());
   std::unique_ptr<MapOverlayBitmap> bmp;
   try {
     bmp.reset(new MapOverlayBitmap(filename));
@@ -679,6 +685,11 @@ Skysight::DisplayTileLayer()
     return false;
   }
 
+  if (skysight_overlays != max_skysight_overlays) {
+    MapOverlayReset();
+    skysight_overlays = max_skysight_overlays;
+  }
+
   bool layer_changed = display_layer != active_layer;
 //  static uint16_t zoom = 0;
   if (layer_changed || map_tile_zoom != base_tile.zoom) {
@@ -693,10 +704,10 @@ Skysight::DisplayTileLayer()
   // the publishing is at least 10 minutes before
 //  refresh_time -= _10MINUTES;
 
-  if (skysight_overlays != max_skysight_overlays) {
-    MapOverlayReset();
-    skysight_overlays = max_skysight_overlays;
-  }
+//  if (skysight_overlays != max_skysight_overlays) {
+//    MapOverlayReset();
+//    skysight_overlays = max_skysight_overlays;
+//  }
 
   auto map_bounds = map_window->VisibleProjection().GetScreenBounds();
   if (!map_bounds.Check() || !map_bounds.IsValid())

@@ -766,6 +766,8 @@ SkysightAPI::GetData(SkysightCallType type, const std::string_view layer_id,
       break;
 #endif
     case SkysightCallType::Tile:
+      assert(false);
+      return false;
     case SkysightCallType::Data:
         // ParseData(arg, path);
         // const auto path = GetPath(SkysightCallType::Data, args.layer.data(), time_index);
@@ -773,9 +775,12 @@ SkysightAPI::GetData(SkysightCallType type, const std::string_view layer_id,
         MakeCallback(cb, path.c_str(), true, layer_id.data(), from);
         return true;  // don't create request if file exists
       } else {
-        // PluggableOperationEnvironment env;
-        // SkysightCoRequest::DownloadImage(url, path, ""); // , *Net::curl, env );
+#if 0
+        // das holt nur die nc-Datei, macht dann noch nicht die Tiff-Umwandlung
+        if (co_request)
+          co_request->DownloadImage(url, path);
         return true;
+#endif
       }
       break;
     default:
