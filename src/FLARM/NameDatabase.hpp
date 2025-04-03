@@ -56,6 +56,8 @@ public:
 
   bool Set(FlarmId id, const char *name) noexcept;
 
+  bool Remove(FlarmId id) noexcept;
+
 protected:
   [[gnu::pure]]
   int Find(FlarmId id) const noexcept;
