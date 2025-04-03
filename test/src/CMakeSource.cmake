@@ -291,6 +291,7 @@ set(TEST_LIST
     ${SRC_DIR}/TestUnitsFormatter.cpp
     ${SRC_DIR}/TestGeoPointFormatter.cpp
     ${SRC_DIR}/TestHexColorFormatter.cpp
+    ${SRC_DIR}/TestPackedFloat.cpp
     ${SRC_DIR}/TestByteSizeFormatter.cpp
     ${SRC_DIR}/TestTimeFormatter.cpp
     ${SRC_DIR}/TestIGCFilenameFormatter.cpp
