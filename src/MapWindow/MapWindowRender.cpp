@@ -214,7 +214,6 @@ MapWindow::Render(Canvas &canvas, const PixelRect &rc) noexcept
   RenderRasp(canvas);
 
 #ifdef HAVE_SKYSIGHT
-  LogFmt("HAVE_SKYSIGHT ok");
   draw_sw.Mark("RenderSkysight");
   RenderSkysight(canvas); 
 #else
