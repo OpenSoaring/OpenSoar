@@ -21,7 +21,7 @@ else ifeq ($(TARGET_IS_DARWIN),y)
 else
   # UNIX???
   HOST_TRIPLET = x86_64-linux-gnu
-  USE_THIRDPARTY_LIBS = y
+  USE_THIRDPARTY_LIBS = n
   TARGET_IS_UNIX = y
 endif
 
