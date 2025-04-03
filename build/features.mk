@@ -3,7 +3,12 @@ ifeq ($(TARGET_IS_KOBO)$(TARGET_IS_DARWIN),nn)
   # Android, UNIX, OV, Windows, OpenVario...:
     # for build:
     HAVE_SKYSIGHT := y
-    HAVE_GEOTIFF := y
+
+    ifeq ($(TARGET_IS_OPENVARIO),n)
+       SKYSIGHT_FORECAST := y
+    endif
+    HAVE_GEOTIFF = y 
+    
     # for cpp sources:
     TARGET_CPPFLAGS += -DHAVE_SKYSIGHT
     TARGET_CPPFLAGS += -DSKYSIGHT_LIVE
