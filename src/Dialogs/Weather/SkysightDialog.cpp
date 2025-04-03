@@ -149,7 +149,7 @@ class SkysightWidget final
 {
   ButtonPanelWidget *buttons_widget;
 
-  Button *activate_button, *deactivate_button, *add_button, *remove_button,
+  Button *activate_button, *add_button, *remove_button,
     *close_button;  // *cancel_button, 
 
   struct ListItem {
@@ -200,11 +200,14 @@ protected:
                            unsigned idx) noexcept override;
 
   /* virtual methods from ListCursorHandler */
-  bool CanActivateItem(__attribute__ ((unused)) unsigned index) const noexcept override {
+  bool CanActivateItem([[maybe_unused]] unsigned index) const noexcept override {
     return true;
   }
 
-  void OnActivateItem(__attribute__ ((unused)) unsigned index) noexcept override {};
+  void OnActivateItem([[maybe_unused]] unsigned index) noexcept override {};
+
+  Button::Callback activate_callback = [this]() { SkysightWidget::ActivateClicked(); };
+  Button::Callback deactivate_callback = [this]() { SkysightWidget::DeactivateClicked(); };
 
 private:
 
@@ -214,7 +217,6 @@ void
 SkysightWidget::CreateButtons(ButtonPanel &buttons)
 {
   activate_button = buttons.Add(_("Activate"), [this](){ ActivateClicked(); });
-  deactivate_button = buttons.Add(_("Deactivate"), [this](){ DeactivateClicked(); });
   add_button = buttons.Add(_("Add"), [this](){ AddClicked(); });
   remove_button = buttons.Add(_("Remove"), [this](){ RemoveClicked(); });
 #if 0  // def _DEBUG
@@ -256,36 +258,25 @@ SkysightWidget::UpdateList()
         item_active = (skysight->GetActiveLayer()->id == layer->id);
   }
 
-#if 0  // def _DEBUG
-  // unused:
-  bool any_updating = skysight->SelectedLayersUpdating();
-#endif  // def _DEBUG
-
   ListControl &list = GetList();
   list.SetLength(skysight->NumSelectedLayers());
   list.Invalidate();
 
   add_button->SetEnabled(!skysight->SelectedLayersFull());
   remove_button->SetEnabled(!item_updating);
-#if 0  // def _DEBUG
-  update_button->SetEnabled(!item_updating);
-  updateall_button->SetEnabled(!any_updating);
-#endif  // def _DEBUG
+
   if (list.GetLength() == 0) {
     activate_button->SetEnabled(false);
-    deactivate_button->SetEnabled(false);
     activate_button->SetCaption(_("No Item"));
-    deactivate_button->SetCaption(_("No Item"));
+    activate_button->SetCallback(nullptr);
   } else if(item_active) {
-    activate_button->SetEnabled(false);
-    activate_button->SetCaption(_("(Activate)"));
-    deactivate_button->SetCaption(_("Deactivate"));
-    deactivate_button->SetEnabled(true);
+    activate_button->SetEnabled(true);
+    activate_button->SetCaption(_("Deactivate"));
+    activate_button->SetCallback(deactivate_callback); //  [this]() { DeactivateClicked(); });
   } else {
     activate_button->SetEnabled(true);
-    deactivate_button->SetEnabled(false);
     activate_button->SetCaption(_("Activate"));
-    deactivate_button->SetCaption(_("(Deactivate)"));
+    activate_button->SetCallback(activate_callback);  //  [this]() { ActivateClicked(); });
   }
 }
 
@@ -329,35 +320,11 @@ void SkysightWidget::AddClicked()
   UpdateList();
 }
 
-#if 0  // def _DEBUG
-void SkysightWidget::UpdateClicked()
-{
-  unsigned index = GetList().GetCursorIndex();
-  assert(index < (unsigned)skysight->NumSelectedLayers());
-
-#if 0  // August2111
-  SkysightActiveLayer a = skysight->GetActiveLayer(index);  
-  if (!skysight->DownloadActiveLayer(a.layer->id))
-    ShowMessageBox(_("Couldn't update data."), _("Update Error"), MB_OK);
-#endif
-  UpdateList();
-}
-
-
-void SkysightWidget::UpdateAllClicked()
-{
-  if (!skysight->DownloadSelectedLayer("*"))
-    ShowMessageBox(_("Couldn't update data."), _("Update Error"), MB_OK);
-  UpdateList();
-}
-#endif
-
 void SkysightWidget::RemoveClicked()
 {
   unsigned index = GetList().GetCursorIndex();
   assert(index < (unsigned)skysight->NumSelectedLayers());
 
-  // SkysightActiveLayer *layer = skysight->GetSelectedLayer(index);
   SkysightLayer *layer = skysight->GetSelectedLayer(index);
   StaticString<256> tmp;
   tmp.Format(_("Do you want to remove \"%s\"?"),
@@ -367,7 +334,6 @@ void SkysightWidget::RemoveClicked()
     return;
 
   skysight->RemoveSelectedLayer(index);
-//  skysight->RemoveSelectedLayer(layer->id);
 
   UpdateList();
 }
@@ -378,7 +344,6 @@ SkysightWidget::ActivateClicked()
   unsigned index = GetList().GetCursorIndex();
   assert(index < (unsigned)skysight->NumSelectedLayers());
   if (index < (unsigned)skysight->NumSelectedLayers()) {
-    // SkysightActiveLayer *layer = skysight->GetSelectedLayer(index);
     SkysightLayer *layer = skysight->GetSelectedLayer(index);
     if (!skysight->SetLayerActive(layer->id))
       ShowMessageBox(_("Couldn't display data."),
