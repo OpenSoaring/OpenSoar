@@ -7,7 +7,7 @@
 #include "system/Path.hpp"
 #include "LocalPath.hpp"
 #include "Operation/VerboseOperationEnvironment.hpp"
-#include "time/BrokenDateTime.hpp"
+// #include "time/BrokenDateTime.hpp"
 #include "thread/StandbyThread.hpp"
 #include "ui/event/Timer.hpp"
 
@@ -19,9 +19,11 @@
 #include <vector>
 #include <string_view>
 
-struct BrokenDateTime;
+// struct BrokenDateTime;
 struct DisplayedLayer;
 class CurlGlobal;
+
+constexpr uint32_t max_skysight_overlays = 9;
 
 struct SkysightImageFile {
 public:
@@ -39,6 +41,10 @@ public:
 
 class Skysight final: private NullBlackboardListener {
   SkysightLayer *active_layer = nullptr;
+
+  uint32_t skysight_overlays = 1;
+
+  std::string tile_filenames[max_skysight_overlays];
 public:
   std::string region = "EUROPE";
   CurlGlobal *curl;
@@ -103,9 +109,9 @@ public:
 
   bool LayerExists(const std::string_view id);
   bool DisplayActiveLayer();
-  bool TileActiveLayer();
-  bool ForecastActiveLayer();
-  bool UpdateActiveLayer(const Path &filename,
+  bool DisplayTileLayer();
+  bool DisplayForecastLayer();
+  bool UpdateActiveLayer(const uint32_t overlay_index, const Path &filename,
     GeoBitmap::TileData tile = { 0 });
   
   void DeactivateLayer();
@@ -116,9 +122,9 @@ public:
   AllocatedPath GetLocalPath() {
     return MakeLocalPath("skysight");
   }
-
+#if 0
   BrokenDateTime GetNow(bool use_system_time = false);
-
+#endif // 0
   void Render(bool force_update = false);
 
   static inline Skysight *GetSkysight() { return self;}
@@ -139,6 +145,10 @@ public:
     }
   }
 
+  inline void SetUpdateFlag() {
+    update_flag = true;
+  }
+
 protected:
   SkysightAPI *api = nullptr;
   static Skysight *self;
@@ -147,11 +157,16 @@ private:
   std::string email;
   std::string password;
   bool update_flag = false;
-  BrokenDateTime curr_time;
+  uint16_t map_tile_zoom = 0;
+  SkysightLayer *display_layer = nullptr;
+  // std::string_view display_layer_id = "";
+  // BrokenDateTime curr_time;
 
+#if 0
   /* virtual methods from class BlackboardListener */
   virtual void OnCalculatedUpdate(const MoreData &basic,
                                   const DerivedInfo &calculated) override;
+#endif // 0
 
   bool SetActiveLayer(const std::string_view id,
         time_t forecast_time = 0);

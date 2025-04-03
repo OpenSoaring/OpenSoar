@@ -205,9 +205,12 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
   return AllocatedPath::Build(cache_path, filename);
 }
 
-SkysightAPI::SkysightAPI(std::string_view email, std::string_view password,
-                         std::string_view _region, SkysightCallback cb)
-    : cache_path(MakeLocalPath("skysight"))
+// SkysightAPI::SkysightAPI(std::string_view email, std::string_view password,
+//                         std::string_view _region, SkysightCallback cb)
+//    : cache_path(MakeLocalPath("skysight"))
+void
+SkysightAPI::InitAPI(std::string_view email, std::string_view password,
+                     std::string_view _region, SkysightCallback cb)
 {
   self = this;
   inited_regions = false;
@@ -433,7 +436,8 @@ SkysightAPI::ParseLayers(const SkysightRequestArgs &args,
     return true;
   }
 
-  MakeCallback(args.cb, "", false, "", 0);
+  MakeCallback(args.cb, "", layers_vector.size() >= 3, "", 0);
+  // MakeCallback(args.cb, "", false, "", 0);
 
   return false;
 }
@@ -576,7 +580,6 @@ SkysightAPI::ParseLogin(const SkysightRequestArgs &args,
     LogFormat("SkysightAPI::ParseLogin success with key %s",
               key->second.data().c_str());
 
-    // auto _key = key->second.data().c_str();
     std::string _key = key->second.data().c_str();
     if (co_request == nullptr)
       co_request = new SkysightCoRequest(_key);  // _key);
@@ -664,17 +667,27 @@ SkysightAPI::GetTileData(const std::string_view layer_id,
   GlueMapWindow *map_window = UIGlobals::GetMap();
   GeoBitmap::TileData base_tile;
   auto layer = GetLayer(layer_id);
+
+  if (layer->live_layer) {
+    if (!queue.IsLoggedIn())
+      // inject a login request at the front of the queue
+      SkysightAPI::GenerateLoginRequest();
+    }
+
   const SkysightCallType type = SkysightCallType::Tile;
-  if (map_window) { // && map_window->IsPanning()) {
-    base_tile = GeoBitmap::GetTile(map_window->VisibleProjection(), 
+  // if (map_window && map_window->HasFocus()) { // && map_window->IsPanning()) {
+  if (map_window && map_window->IsVisible()) {
+      base_tile = GeoBitmap::GetTile(map_window->VisibleProjection(),
       layer->zoom_min, layer->zoom_max);
-  }
-  else {
+  } else {
     return false;
   }
 
   auto tile = base_tile;
   auto map_bounds = map_window->VisibleProjection().GetScreenBounds();
+
+  if (!map_bounds.Check())
+    return false;
 
   for (tile.x = base_tile.x - 1; tile.x <= base_tile.x + 1; tile.x++)
     for (tile.y = base_tile.y - 1; tile.y <= base_tile.y + 1; tile.y++) {
@@ -693,6 +706,11 @@ SkysightAPI::GetTileData(const std::string_view layer_id,
         // static int counter = 0;
         // if (counter++ < 1) {
           // PluggableOperationEnvironment env;
+        if (co_request == nullptr)
+          break;
+          // queue.GetKey()
+          // co_request = new SkysightCoRequest("");  // _key);
+
         auto x = co_request->DownloadImage(url, path);  // , "");  //  , *Net::curl, env);
           if (x)
             continue;

@@ -33,6 +33,12 @@ public:
 
   void SetCredentials(const std::string_view _email, const std::string_view _pass);
   void SetKey(const std::string _key, const uint64_t _key_expiry_time);
+#if 0 // brauche ich erst einmal nicht!
+  std::string_view GetKey(uint64_t &expiry_time) {
+    expiry_time = key_expiry_time;
+    return key;
+  }
+#endif
   bool IsLoggedIn();
   void AddRequest(std::unique_ptr<SkysightAsyncRequest> request,
 		  bool append_end = true);

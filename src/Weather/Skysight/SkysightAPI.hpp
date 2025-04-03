@@ -47,11 +47,13 @@ public:
   std::vector<SkysightLayer> layers_vector;
   std::vector<SkysightLayer> selected_layers;
 
-  SkysightAPI(std::string_view email, std::string_view password,
-              std::string_view _region,
-    SkysightCallback cb);
+  SkysightAPI() : cache_path(MakeLocalPath("skysight")) {}
+//  SkysightAPI(std::string_view email, std::string_view password,
+//              std::string_view _region, SkysightCallback cb);
   ~SkysightAPI();
 
+  void InitAPI(std::string_view email, std::string_view password,
+    std::string_view _region, SkysightCallback cb);
   bool IsInited();
   SkysightLayer *GetLayer(size_t index);
   SkysightLayer *GetLayer(const std::string_view id);

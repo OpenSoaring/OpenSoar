@@ -29,7 +29,7 @@
 #include <memory>
 #include <thread>
 
-static uint16_t overlay_index = 0;
+// static uint16_t overlay_index = 0;
 /**
  * TODO:
  * -- overlay only shows following render -- no way to trigger from child 
@@ -333,9 +333,16 @@ Skysight::Init()
   email = settings.email.c_str();
   password = settings.password.c_str();
 
-  api = new SkysightAPI(email, password, region, APIInited);
+//  api = new SkysightAPI(email, password, region, APIInited);
+  api = new SkysightAPI;
+  api->InitAPI(email, password, region, APIInited);
   // APIInited();
   CleanupFiles();
+
+//  if (api) {
+//    LoadSelectedLayers();
+//    Render(true);
+//  }
 
 //  Invoke
 }
@@ -460,12 +467,15 @@ Skysight::CleanupFiles()
 void
 Skysight::Render([[maybe_unused]] bool force_update)
 {
+  //das ist nur ein Test!!!!!!!!!!!!!!!!!!!!!
+  update_flag = true;
+
   if (active_layer) {
     // set by dl callback
     if (update_flag) {
       DisplayActiveLayer();
+#if 0  // start the timer?
     } else {
-#if 1  // start the timer?
       if (api && api->QueueIsEmpty())
         api->TimerInvoke();
 #endif
@@ -522,12 +532,14 @@ Skysight::DownloadComplete([[maybe_unused]] const std::string details,
   }
 }
 
+#if 0
 void
 Skysight::OnCalculatedUpdate(const MoreData &basic,
                  [[maybe_unused]] const DerivedInfo &calculated)
 {
   // maintain current time -- for use in replays etc.
   // Cannot be accessed directly from child threads
+  [[maybe_unused]] BrokenDateTime
   curr_time = basic.date_time_utc;
 }
 
@@ -537,16 +549,19 @@ Skysight::GetNow(bool use_system_time)
   if (use_system_time)
     return BrokenDateTime::NowUTC();
 
-  return (curr_time.IsPlausible()) ? curr_time : BrokenDateTime::NowUTC();
+  return BrokenDateTime::NowUTC();
+  // return (curr_time.IsPlausible()) ? curr_time : BrokenDateTime::NowUTC();
 }
+#endif  // 0
 
 void
 Skysight::MapOverlayReset()
 {
   auto *map = UIGlobals::GetMap();
   if (map)
-    for (uint16_t i = 0; i < 9; i++) map->SetOverlay(i, nullptr);
-  overlay_index = 0;
+    for (uint16_t i = 0; i < skysight_overlays; i++) 
+      map->SetOverlay(i, nullptr);
+//  overlay_index = 0;
 }
 
 void
@@ -554,6 +569,7 @@ Skysight::DeactivateLayer()
 {
   active_layer = nullptr;
   MapOverlayReset();
+  skysight_overlays = 1;
   Profile::Set(ProfileKeys::WeatherLayerDisplayed, "");
 }
 
@@ -575,11 +591,11 @@ Skysight::SetLayerActive(const std::string_view id)
   if (!SetActiveLayer(id))
     return false;
 
-  return true;  // DisplayActiveLayer();
+  return true;  // SetLayerActive();
 }
 
 bool
-Skysight::ForecastActiveLayer()
+Skysight::DisplayForecastLayer()
 {
   // TODO: We're only searching w a max offset of 1 hr, simplify this!
   AllocatedPath filename;
@@ -597,7 +613,12 @@ Skysight::ForecastActiveLayer()
     if (File::Exists(filename)) {
       // needed for (selected) object view in map
       active_layer->forecast_time = test_time;
-      return UpdateActiveLayer(filename, {0, 0, 0});
+      if (UpdateActiveLayer(0, filename, { 0, 0, 0 })) {
+        update_flag = false;  // is already updated
+        return true;
+      } else {
+        return false;
+      }
     } else {
       test_time += _HALFHOUR;  // next possible forecast
     }
@@ -606,7 +627,8 @@ Skysight::ForecastActiveLayer()
 }
 
 bool
-Skysight::UpdateActiveLayer(const Path &filename, GeoBitmap::TileData tile)
+Skysight::UpdateActiveLayer(const uint32_t overlay_index, const Path &filename,
+  GeoBitmap::TileData tile)
 {
   if (!File::Exists(filename))
     return false;
@@ -614,7 +636,7 @@ Skysight::UpdateActiveLayer(const Path &filename, GeoBitmap::TileData tile)
   if (map == nullptr)
     return false;
 
-  LogFmt("SkySight::DisplayActiveLayer {}", filename.c_str());
+  LogFmt("SkySight::DisplayForcastLayer {}", filename.c_str());
   std::unique_ptr<MapOverlayBitmap> bmp;
   try {
     bmp.reset(new MapOverlayBitmap(filename));
@@ -636,47 +658,76 @@ Skysight::UpdateActiveLayer(const Path &filename, GeoBitmap::TileData tile)
   if (active_layer->tile_layer)
     label.AppendFormat(" - tile: %u (%u, %u)", tile.zoom, tile.x, tile.y);
   bmp->SetLabel(label);
-  bmp->SetAlpha(active_layer->name == "satellite" ? 1.0 : 0.6);
+  // bmp->SetAlpha(active_layer->name == "satellite" ? 1.0 : 0.6);
+  bmp->SetAlpha(active_layer->alpha);
   map->SetOverlay(overlay_index, std::move(bmp));
-  if (active_layer->tile_layer)
-    overlay_index++;  // increasing in tile mode only...
-  update_flag = false;  // is already updated
+//  if (active_layer->tile_layer)
+//    overlay_index++;  // increasing in tile mode only...
+  // update_flag = false;  // is already updated
   return true;
 }
+
 bool
-Skysight::TileActiveLayer()
+Skysight::DisplayTileLayer()
 {
   GlueMapWindow *map_window = UIGlobals::GetMap();
   GeoBitmap::TileData base_tile;
   if (map_window && active_layer) { // && map_window->IsPanning()) {
     base_tile = GeoBitmap::GetTile(map_window->VisibleProjection(),
 	  active_layer->zoom_min, active_layer->zoom_max);
-  }
-  else {
+  } else {
     return false;
   }
 
-  MapOverlayReset();
+  bool layer_changed = display_layer != active_layer;
+//  static uint16_t zoom = 0;
+  if (layer_changed || map_tile_zoom != base_tile.zoom) {
+    if (api && api->QueueIsEmpty())
+      api->TimerInvoke();
+    map_tile_zoom = base_tile.zoom;
+    if (layer_changed)
+      display_layer = active_layer;
+  }
+
+  time_t refresh_time = (DateTime::now() / _10MINUTES) * _10MINUTES;
+  // the publishing is at least 10 minutes before
+//  refresh_time -= _10MINUTES;
+
+  if (skysight_overlays != max_skysight_overlays) {
+    MapOverlayReset();
+    skysight_overlays = max_skysight_overlays;
+  }
 
   auto map_bounds = map_window->VisibleProjection().GetScreenBounds();
-  auto tile = base_tile;
-  for (tile.x = base_tile.x - 1; tile.x <= base_tile.x + 1; tile.x++)
-    for (tile.y = base_tile.y - 1; tile.y <= base_tile.y + 1; tile.y++) {
+  if (!map_bounds.Check() || !map_bounds.IsValid())
+    return false;
 
-      if (!GeoBitmap::GetBounds(tile).Overlaps(map_bounds))
-         continue;
+  auto tile = base_tile;
+  size_t tile_no = 0;
+  for (tile.x = base_tile.x - 1; tile.x <= base_tile.x + 1; tile.x++)
+    for (tile.y = base_tile.y - 1; tile.y <= base_tile.y + 1; tile.y++,
+      tile_no++) {
+
+      if (!GeoBitmap::GetBounds(tile).Overlaps(map_bounds)) {
+        map_window->SetOverlay(tile_no, nullptr);
+        tile_filenames[tile_no] = "";
+        continue;
+      }
 
       AllocatedPath filename;
       bool found = false;
 
       if (!active_layer->live_layer) { // osm
-        UpdateActiveLayer(api->GetPath(SkysightCallType::Tile,
-          active_layer->id, 0, tile), tile);
+        filename = api->GetPath(SkysightCallType::Tile,
+          active_layer->id, 0, tile);
+        if (tile_filenames[tile_no] != filename.c_str()) {
+          active_layer->forecast_time = 0;
+          if (UpdateActiveLayer(tile_no, filename, tile))
+            tile_filenames[tile_no] = filename.c_str();
+        }
       } else {
-
-        time_t test_time = (DateTime::now() / _10MINUTES) * _10MINUTES;
-
-        auto max_steps = 3;
+        time_t test_time = refresh_time;
+        constexpr auto max_steps = 3;
 
         for (int j = 0; !found && (j < max_steps); j++) {
           filename = api->GetPath(SkysightCallType::Tile, active_layer->id,
@@ -684,18 +735,19 @@ Skysight::TileActiveLayer()
 
           if (File::Exists(filename)) {
             // needed for (selected) object view in map
-            active_layer->forecast_time = test_time;
-            UpdateActiveLayer(filename, tile);
+            if (tile_filenames[tile_no] != filename.c_str()) {
+              active_layer->forecast_time = test_time;
+              if (UpdateActiveLayer(tile_no, filename, tile))
+                tile_filenames[tile_no] = filename.c_str();
+            }
             break;
           } else {
-            if (active_layer->live_layer)
-              test_time -= _10MINUTES;  // previous live picture
-            else
-              test_time += _HALFHOUR;  // next possible forecast
+            test_time -= _10MINUTES;  // previous live picture
           }
         }
       }
     }
+  update_flag = false;  // is already updated
   return false;
 }
 
@@ -709,14 +761,14 @@ Skysight::DisplayActiveLayer()
   bool found = false;
   if (active_layer->tile_layer) {
     // no time stamp...
-    return TileActiveLayer();
+    found = DisplayTileLayer();
   } else if (active_layer->id.starts_with("osm")) {
     // no time stamp...
     filename = api->GetPath(SkysightCallType::Image, active_layer->id, 0);
     found = File::Exists(filename);
   } else {
     // TODO: We're only searching w a max offset of 1 hr, simplify this!
-    found = ForecastActiveLayer();
+    found = DisplayForecastLayer();
   }
   
   return found;

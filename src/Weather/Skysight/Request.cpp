@@ -188,6 +188,12 @@ SkysightRequest::ProcessToString(std::string &response)
   return RequestToBuffer(response);
 }
 
+std::string_view
+SkysightRequest::GetCredentialKey()
+{
+  return key;
+}
+
 void
 SkysightAsyncRequest::Process()
 {

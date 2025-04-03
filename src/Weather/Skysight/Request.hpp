@@ -36,6 +36,8 @@ public:
   void SetCredentials(const std::string_view _key, const std::string_view _username = "",
                       const std::string_view _password = "");
 
+  std::string_view GetCredentialKey();
+
   class FileHandler final: public CurlResponseHandler {
     FILE *file;
     size_t received = 0;

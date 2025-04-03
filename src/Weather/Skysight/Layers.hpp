@@ -25,11 +25,12 @@ struct SkysightLayer {
   bool updating = false;
 #ifdef SKYSIGHT_LIVE
   bool live_layer = false;
-  uint16_t zoom_min = 0;
+  uint16_t zoom_min = 1;
   uint16_t zoom_max = 20;
 #endif
   bool tile_layer = false;
 
+  float alpha = 0.6;
   time_t forecast_time = 0;
 public:
   SkysightLayer(std::string _id, std::string _name, std::string _desc):

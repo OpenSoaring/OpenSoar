@@ -67,7 +67,7 @@ class SkysightCoRequest {
 private:
   std::string_view key; //  , username, password;
   //const 
-  CurlSlist request_headers;
+  CurlSlist *request_headers = nullptr;
   // CurlSlist *request_headers = nullptr;
 public:
   SkysightCoRequest(const std::string_view _key);
@@ -81,8 +81,10 @@ public:
   bool DownloadImage(const std::string_view url, const Path filename,
     const std::string_view cred_key) noexcept;
 #endif
-  bool RequestCredentialKey(const std::string_view user, const std::string_view password) noexcept;
+  bool RequestCredentialKey(const std::string_view user, 
+    const std::string_view password) noexcept;
 
-  bool DownloadImage(const std::string_view url, const Path filename) noexcept;
+  bool DownloadImage(const std::string_view url, const Path filename, 
+    bool with_auth = false) noexcept;
 
 };
