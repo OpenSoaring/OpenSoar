@@ -29,7 +29,11 @@ GeoBounds::IntersectWith(const GeoBounds &other) noexcept
 GeoPoint
 GeoBounds::GetCenter() const noexcept
 {
-  if (!IsValid())
+  if (!Check())
+    return GeoPoint::Invalid();
+  if (longitude.start.Radians() < -M_2PI)
+    return GeoPoint::Invalid();
+  if (longitude.start.Radians() > +M_2PI)
     return GeoPoint::Invalid();
 
   return GeoPoint(longitude.GetMiddle().AsDelta(), latitude.GetMiddle());
