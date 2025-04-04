@@ -90,7 +90,7 @@ $(DATA)/temp/graphics/%.svg: $(SVG_TITLE) $(topdir)/OpenSoar.config
 	# @$(NQ)echo "  TMP_SVG:   $< == $@"
 	@echo  "  TMP_SVG:   $< == $@"
 	$(Q)$(MKDIR) -p $(DATA)/temp/graphics
-	$(Q)python3 $(topdir)/tools/python/replace.py  $(topdir)/OpenSoar.config $< $@ $(OUT)/Test.tmp
+	$(Q)python3 $(topdir)/tools/python/replace.py  $(topdir)/OpenSoar.config $< $@
 
 PNG_TITLE_110 = $(patsubst $(DATA)/temp/graphics/%.svg,$(DATA)/graphics/%_110.png,$(SVG_TMP_TITLE))
 BMP_TITLE_110 = $(PNG_TITLE_110:.png=.bmp)

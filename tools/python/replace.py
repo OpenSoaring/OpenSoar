@@ -1,7 +1,6 @@
 import sys
 
 debug = False
-headerfile = None
 
 if debug:
   count = 0
@@ -14,12 +13,6 @@ if len(sys.argv) < 3:
 else:
     infile = open(sys.argv[2])
     outfile = open(sys.argv[3], 'w')
-    try:
-        headerfile = open(sys.argv[4], 'w')
-    except Exception as e:
-        print("Exception on creating '", sys.argv[4], "'")
-        print("Exception: ", e)
-        # no headerfile ? exit(-1)
 
     repl = []  
     count = 0
@@ -37,8 +30,6 @@ else:
       if len(param) == 2:
         if debug:
            print('param0 = ',param[0],', param1 = ',param[1])
-        if headerfile:
-           headerfile.write('#define ' + '{:24s}'.format(param[0]) + ' "' + param[1] + '"\n')
     
     for line in infile:
       for param in repl:
@@ -48,8 +39,6 @@ else:
     
     infile.close()
     outfile.close()
-    if headerfile:
-        headerfile.close()
 
 print('EOF replace.py')
 exit(0)
