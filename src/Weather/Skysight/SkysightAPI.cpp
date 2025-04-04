@@ -4,8 +4,14 @@
 #include "Weather/Skysight/SkysightAPI.hpp"
 #include "Weather/Skysight/Skysight.hpp"
 #include "Weather/Skysight/Request.hpp"
+#include "Weather/Skysight/SkySightCoRequest.hpp"
 #include "Weather/Skysight/SkysightRegions.hpp"
 #include "Weather/Skysight/Layers.hpp"
+
+#include "co/Task.hxx"
+#include "Weather/Skysight/SkySightCoRequest.hpp"
+#include "Operation/PluggableOperationEnvironment.hpp"
+#include "net/http/Init.hpp"
 
 #include "util/StaticString.hxx"
 
@@ -113,7 +119,7 @@ SkysightAPI::GetUrl(SkysightCallType type, const std::string_view layer_id,
         url.Format("%s/%s/", SKYSIGHTAPI_BASE_URL, layer_id.data());
       }
       url.AppendFormat("%u/%u/%u", tile.zoom, tile.x, tile.y);
-
+      // example: https://tile.openstreetmap.org/11/1103/685.png
       if (layer_id.starts_with("osm"))
         url.append(".png");
       else {
@@ -402,17 +408,20 @@ SkysightAPI::ParseLayers(const SkysightRequestArgs &args,
 #endif  // SKYSIGHT_FORECAST 
 
 #ifdef SKYSIGHT_LIVE
-  int i = 0;
   for (auto &layer : layers_vector) {
-    layer.tile_layer = (i < 3);
-    layer.live_layer = (i < 2);
-    if (++i >= 3) break;
+    if (layer.id == "satellite") {
+      layer.tile_layer = true;
+      layer.live_layer = true;
+      layer.zoom_max = 8;
+    } else if (layer.id == "rain") {
+      layer.tile_layer = true;
+      layer.live_layer = true;
+      layer.zoom_max = 8;
+    } else if (layer.id == "osm") {
+      layer.tile_layer = true;
+    }
   }
-//  if (layers_vector.size() >=2 )
-//     layers_vector[0].live_layer = layers_vector[1].live_layer = true;
 #endif  // SKYSIGHT_LIVE
-
-//  Skysight::GetSkysight()->LoadSelectedLayers();
 
   if (success) {
     if (!inited_lastupdates)
@@ -444,8 +453,9 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
   std::string_view layer_id;
   if (active_layer) {
     layer_id = active_layer->id;
-
-    for (auto &layer : layers_vector) {
+    if (active_layer->tile_layer) {
+      inited_lastupdates = success;
+    } else for (auto &layer : layers_vector) {
       for (auto &j : details)
       {
         /* std::string -  not std::string_view because after j.second.get the
@@ -492,7 +502,7 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
   }
 
   inited_lastupdates = success;
-  lastupdates_time = success ? std::time(0) : 0;
+  lastupdates_time = success ? DateTime::now() : 0;
   MakeCallback(args.cb, "", success, "", 0);
 
   return success;
@@ -565,6 +575,14 @@ SkysightAPI::ParseLogin(const SkysightRequestArgs &args,
     success = true;
     LogFormat("SkysightAPI::ParseLogin success with key %s",
               key->second.data().c_str());
+
+    // auto _key = key->second.data().c_str();
+    std::string _key = key->second.data().c_str();
+    if (co_request == nullptr)
+      co_request = new SkysightCoRequest(_key);  // _key);
+    else
+      co_request->SetCredentialKey(_key);  // key->second.data().c_str(), "", "");
+      // co_request->RequestCredentialKey("", "");  // key->second.data().c_str(), "", "");
 
     // TODO: trim available regions from allowed_regions
   } else {
@@ -645,9 +663,11 @@ SkysightAPI::GetTileData(const std::string_view layer_id,
 
   GlueMapWindow *map_window = UIGlobals::GetMap();
   GeoBitmap::TileData base_tile;
+  auto layer = GetLayer(layer_id);
   const SkysightCallType type = SkysightCallType::Tile;
   if (map_window) { // && map_window->IsPanning()) {
-    base_tile = GeoBitmap::GetTile(map_window->VisibleProjection(), 7, 8);
+    base_tile = GeoBitmap::GetTile(map_window->VisibleProjection(), 
+      layer->zoom_min, layer->zoom_max);
   }
   else {
     return false;
@@ -663,6 +683,9 @@ SkysightAPI::GetTileData(const std::string_view layer_id,
       inside |= map_window->VisibleProjection().GeoVisible(bounds.GetNorthWest());
       inside |= map_window->VisibleProjection().GeoVisible(bounds.GetSouthEast());
       inside |= map_window->VisibleProjection().GeoVisible(bounds.GetSouthWest());
+      
+      // Workaround August2111
+      inside |= true;
 
       if (!inside)
         continue;
@@ -673,6 +696,20 @@ SkysightAPI::GetTileData(const std::string_view layer_id,
         MakeCallback(cb, path.c_str(), true, layer_id.data(), from);
         continue;
       }
+/**/
+      else {
+        // static int counter = 0;
+        // if (counter++ < 1) {
+          // PluggableOperationEnvironment env;
+        auto x = co_request->DownloadImage(url, path);  // , "");  //  , *Net::curl, env);
+          if (x)
+            continue;
+          // }
+          else
+            break;
+        // continue;
+      }
+/* */
 
       SkysightRequestArgs ra(
         url.c_str(),
@@ -725,6 +762,10 @@ SkysightAPI::GetData(SkysightCallType type, const std::string_view layer_id,
       if (File::Exists(path)) {
         MakeCallback(cb, path.c_str(), true, layer_id.data(), from);
         return true;  // don't create request if file exists
+      } else {
+        // PluggableOperationEnvironment env;
+        // SkysightCoRequest::DownloadImage(url, path, ""); // , *Net::curl, env );
+        return true;
       }
       break;
     default:

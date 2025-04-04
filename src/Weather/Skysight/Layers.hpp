@@ -25,6 +25,8 @@ struct SkysightLayer {
   bool updating = false;
 #ifdef SKYSIGHT_LIVE
   bool live_layer = false;
+  uint16_t zoom_min = 0;
+  uint16_t zoom_max = 20;
 #endif
   bool tile_layer = false;
 
