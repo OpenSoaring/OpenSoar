@@ -239,9 +239,6 @@ ifeq ($(TARGET_IS_ANDROID),n)
 
 ifeq ($(USE_WIN32_RESOURCES),y)
 
-# old (10.03.2024): RESOURCE_TEXT = Data/$(PROGRAM_NAME).rc
-# old (10.03.2024): RESOURCE_BINARY = $(TARGET_OUTPUT_DIR)/$(notdir $(RESOURCE_TEXT:.rc=.rsc))
-# old (10.03.2024): RESOURCE_FILES += $(patsubst po/%.po,$(OUT)/po/%.mo,$(wildcard po/*.po))
 $(TARGET_OUTPUT_DIR)/OpenSoar.rc: $(TARGET_OUTPUT_DIR)/resources.txt Data/OpenSoar.rc tools/GenerateWindowsResources.pl
 	@$(NQ)echo "  GEN     $@"
 	$(Q)cp Data/OpenSoar.rc $@.tmp
@@ -261,7 +258,6 @@ $(TARGET_OUTPUT_DIR)/OpenSoar.rsc: %.rsc: %.rc $(TARGET_OUTPUT_DIR)/include/reso
 
 else # USE_WIN32_RESOURCES
 
-# old (10.03.2024): $(TARGET_OUTPUT_DIR)/resources.c: $(TARGET_OUTPUT_DIR)/$(PROGRAM_NAME).rc $(OUT)/include/resource.h $(RESOURCE_FILES) tools/LinkResources.pl tools/BinToC.pm | $(TARGET_OUTPUT_DIR)/resources/dirstamp
 $(TARGET_OUTPUT_DIR)/resources.c: export TARGET_IS_ANDROID:=$(TARGET_IS_ANDROID)
 $(TARGET_OUTPUT_DIR)/resources.c: export ENABLE_OPENGL:=$(OPENGL)
 $(TARGET_OUTPUT_DIR)/resources.c: $(TARGET_OUTPUT_DIR)/resources.txt $(RESOURCE_FILES) tools/LinkResources.pl tools/BinToC.pm | $(TARGET_OUTPUT_DIR)/resources/dirstamp
