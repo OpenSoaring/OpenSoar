@@ -100,11 +100,22 @@ add_custom_command(OUTPUT ${_TEMP_OUTPUT}/title.svg
           ${PROJECTGROUP_SOURCE_DIR}/OpenSoar.config
           ${_DATA_INPUT}/graphics/title.svg
           ${_TEMP_OUTPUT}/title.svg
-          ${_INCLUDE_OUTPUT}/ProgramVersion.h
   DEPENDS ${_DATA_INPUT}/graphics/title.svg
           ${PROJECTGROUP_SOURCE_DIR}/OpenSoar.config
           ${PROJECTGROUP_BINARY_DIR}/VERSION.txt
           ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
+  WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+)
+add_custom_command(OUTPUT ${_INCLUDE_OUTPUT}/ProgramVersion.h
+  COMMENT "Make Config file!"
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}
+  COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_config.py 
+          ${PROJECTGROUP_SOURCE_DIR}/OpenSoar.config
+          ${_INCLUDE_OUTPUT}/ProgramVersion.h
+          ${GIT_COMMIT_ID}
+  DEPENDS ${PROJECTGROUP_SOURCE_DIR}/OpenSoar.config
+          ${PROJECTGROUP_BINARY_DIR}/VERSION.txt
+          ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_config.py 
   WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
 )
 # ============================================================================   
@@ -332,6 +343,7 @@ add_library(${TARGET_NAME}  ${XCSOAR_LIB_TYPE}
    ${PROJECTGROUP_SOURCE_DIR}/tools/Char2GCE.pl
    ${INPUTEVENTS_CPP}
    ${_INCLUDE_OUTPUT}/InputCppFiles.txt
+   ${_INCLUDE_OUTPUT}/ProgramVersion.h
    # InputCppFiles    # role for input files
    # DefaultStatus # role for status defaults
    # EXCLUDE_FROM_ALL

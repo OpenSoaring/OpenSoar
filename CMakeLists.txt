@@ -246,6 +246,15 @@ if (MINGW)
   string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=return-local-addr")    # remove this with solving!
 endif(MINGW)
 
+# git commit hash macro
+execute_process(
+  COMMAND  git rev-parse --short HEAD
+  WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_ID
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+add_compile_definitions("GIT_COMMIT_ID=\"${GIT_COMMIT_ID}\"")
+
 ## if (MINGW)
 ##   set (HAVE_SKYSIGHT )
 ## endif(MINGW)
@@ -275,15 +284,6 @@ include_directories("${SRC}/lib/fmt") # ???!
 
 #3rd party components
 add_compile_definitions(CURL_STATICLIB)
-
-# git commit hash macro
-execute_process(
-  COMMAND  git rev-parse --short HEAD
-  WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
-  OUTPUT_VARIABLE GIT_COMMIT_ID
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-add_compile_definitions("GIT_COMMIT_ID=\"${GIT_COMMIT_ID}\"")
 
 # 3rd Party !!!!
 #=============================
