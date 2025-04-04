@@ -31,13 +31,14 @@ constexpr time_t  _10MINUTES = (60 * 10);
 constexpr char const *SKYSIGHTAPI_BASE_URL = "https://skysight.io/api";
 constexpr char const *OSM_BASE_URL = "https://tile.openstreetmap.org";
 
-struct BrokenDateTime;
+class SkysightCoRequest;
 
 class SkysightAPI final {
   friend struct SkysightRequest;
   friend struct SkysightAsyncRequest;
   friend class CDFDecoder;
   UI::PeriodicTimer timer{ [this] { OnTimer(); } };
+  SkysightCoRequest *co_request = nullptr;
 
 public:
   std::string region;
