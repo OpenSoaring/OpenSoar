@@ -97,5 +97,6 @@ endif # !TARGET_IS_ANDROID
 endif
 
 $(OUT)/include/ProgramVersion.h: OpenSoar.config
-	@$(NQ)echo "  VERSION:   $< ==> $@ "
-	$(Q)python3 $(topdir)/tools/python/replace.py $< Data/graphics/title.svg $(DATA)/temp/graphics/title.svg $@
+	@$(NQ)echo "  CONFIG:   $< ==> $@ "
+	$(Q)$(MKDIR) -p $(OUT)/include
+	$(Q)python3 $(topdir)/tools/python/create_config.py $< $@
