@@ -33,10 +33,12 @@
 
 #define VERSION_SUFFIX ""
 
-#ifdef GIT_COMMIT_ID
-# define GIT_SUFFIX "~git#" GIT_COMMIT_ID
+#ifdef GIT_COMMIT
+# define GIT_SUFFIX " git: " GIT_COMMIT
+  const char OpenSoar_GitCommit[] = GIT_COMMIT;
 #else
 # define GIT_SUFFIX
+  const char OpenSoar_GitCommit[] = "";
 #endif
 
 const char OpenSoar_Version[] = VERSION;

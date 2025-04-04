@@ -76,18 +76,18 @@ LogoPageWindow::OnPaint(Canvas &canvas) noexcept
   canvas.DrawText({x, y}, OpenSoar_VersionString);
 
 
-#ifdef GIT_COMMIT_ID
-  y += ts.height + Layout::FastScale(2);
-  x = middle;
-  const char *git = "git: ";
-  ts = canvas.CalcTextSize(git);
-  ts2 = canvas.CalcTextSize(GIT_COMMIT_ID);
-  x = middle - ((ts.width + ts2.width) / 2 );
-  canvas.DrawText({x, y}, git);
-  x += ts.width;
-  canvas.DrawText({x, y}, GIT_COMMIT_ID);
-  y += ts.height + Layout::FastScale(2);
-#endif
+  if (std::strlen(OpenSoar_GitCommit)) {
+    y += ts.height + Layout::FastScale(2);
+    x = middle;
+    const char *git = "git: ";
+    ts = canvas.CalcTextSize(git);
+    ts2 = canvas.CalcTextSize(OpenSoar_GitCommit);
+    x = middle - ((ts.width + ts2.width) / 2);
+    canvas.DrawText({ x, y }, git);
+    x += ts.width;
+    canvas.DrawText({ x, y }, OpenSoar_GitCommit);
+    y += ts.height + Layout::FastScale(2);
+  }
 
   y += Layout::FastScale(8);
   const char *visit = "Visit us at:";
