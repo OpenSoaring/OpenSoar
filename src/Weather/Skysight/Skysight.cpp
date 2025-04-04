@@ -499,8 +499,10 @@ Skysight::SetActiveLayer(const std::string_view id,
     active_layer = api->GetLayer(id);
     if (active_layer) {
       active_layer->forecast_time = forecast_time;
-      if (api)
+      if (api) {
+        api->ResetLastUpdate();
         api->TimerInvoke();
+      }
       return true;
     }
   }

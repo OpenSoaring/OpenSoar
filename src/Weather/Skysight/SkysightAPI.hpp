@@ -84,7 +84,10 @@ public:
   bool QueueIsLastJob() {
     return queue.IsLastJob();
   }
-
+  inline void ResetLastUpdate() {
+    inited_lastupdates = false;
+    // lastupdates_time = 0;
+  }
 protected:
   /// The mutex protects the Timer module.
   Mutex mutex;
