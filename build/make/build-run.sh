@@ -188,13 +188,14 @@ fi
 date
 
 
-if [ 1 == 0 ]; then
-apksigner verify --print-certs .\Github\ANDROIDAARCH64\bin\OpenSoar.apk
-
-apksigner sign --verbose --in .\Github\ANDROIDAARCH64\bin\OpenSoar.apk --out .\Github\ANDROIDAARCH64\bin\OpenSoarSigned.apk -ks D:\android\keystore\OpenSoar.jks --ks-key-alias opensoar --ks-pass pass:LibeLLe7B    
-
-apksigner verify --print-certs .\Github\ANDROIDAARCH64\bin\OpenSoarSigned.apk
-
+if [ ${DEPLOY_DIR} == "Android" ]; then
+### apksigner verify --print-certs .\Github\ANDROIDAARCH64\bin\OpenSoar.apk
+### 
+### apksigner sign --verbose --in .\Github\ANDROIDAARCH64\bin\OpenSoar.apk --out .\Github\ANDROIDAARCH64\bin\OpenSoarSigned.apk -ks D:\android\keystore\OpenSoar.jks --ks-key-alias opensoar --ks-pass pass:LibeLLe7B    
+### 
+### apksigner verify --print-certs .\Github\ANDROIDAARCH64\bin\OpenSoarSigned.apk
+### 
+  echo "Android..."  
 fi
 
 chmod +x  ./build/make/*
