@@ -99,4 +99,4 @@ endif
 $(OUT)/include/ProgramVersion.h: OpenSoar.config
 	@$(NQ)echo "  CONFIG:   $< ==> $@ "
 	$(Q)$(MKDIR) -p $(OUT)/include
-	$(Q)python3 $(topdir)/tools/python/create_config.py $< $@
+	$(Q)python3 $(topdir)/tools/python/create_config.py $< $@  $(GIT_COMMIT_ID)

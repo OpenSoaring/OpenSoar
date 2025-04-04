@@ -30,8 +30,10 @@ else:
       if len(param) == 2:
         if debug:
            print('param0 = ',param[0],', param1 = ',param[1])
-        if headerfile:
-           headerfile.write('#define ' + '{:24s}'.format(param[0]) + ' "' + param[1] + '"\n')
+        headerfile.write('#define ' + '{:24s}'.format(param[0]) + ' "' + param[1] + '"\n')
+    
+    if len(sys.argv) == 4:
+        headerfile.write('#define ' + '{:24s}'.format('GIT_COMMIT') + ' "' + sys.argv[3] + '"\n')
     
     headerfile.close()
 
