@@ -84,7 +84,11 @@ public:
   bool QueueIsLastJob() {
     return queue.IsLastJob();
   }
+
 protected:
+  /// The mutex protects the Timer module.
+  Mutex mutex;
+
   static SkysightAPI *self;
   bool inited_regions = false;
   bool inited_layers = false;

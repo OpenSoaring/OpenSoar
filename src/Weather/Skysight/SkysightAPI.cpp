@@ -940,6 +940,8 @@ SkysightAPI::TimerInvoke()
 void
 SkysightAPI::OnTimer()
 {
+  const std::lock_guard lock{ mutex };
+
   // various maintenance actions
   auto now = std::time(0);
 
