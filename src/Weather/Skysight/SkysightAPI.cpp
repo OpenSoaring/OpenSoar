@@ -123,7 +123,7 @@ SkysightAPI::GetUrl(SkysightCallType type, const std::string_view layer_id,
       if (layer_id.starts_with("osm"))
         url.append(".png");
       else {
-        auto last_time = (from / _10MINUTES - 1) * _10MINUTES;
+        auto last_time = (from / _10MINUTES) * _10MINUTES;
         url.AppendFormat("/%s", DateTime::time_str(last_time, "%Y/%m/%d/%H%M").c_str());
       }
 #else
@@ -205,9 +205,6 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
   return AllocatedPath::Build(cache_path, filename);
 }
 
-// SkysightAPI::SkysightAPI(std::string_view email, std::string_view password,
-//                         std::string_view _region, SkysightCallback cb)
-//    : cache_path(MakeLocalPath("skysight"))
 void
 SkysightAPI::InitAPI(std::string_view email, std::string_view password,
                      std::string_view _region, SkysightCallback cb)
@@ -229,8 +226,9 @@ SkysightAPI::InitAPI(std::string_view email, std::string_view password,
     return;
 
   queue.SetCredentials(email, password);
-
-//  GetData(SkysightCallType::Login, cb);
+#ifdef WITH_COREQUEST
+   co_request = new SkysightCoRequest(email, password);
+#endif
   GetData(SkysightCallType::Regions, cb);
 
   if (timer.IsActive()) {
@@ -468,8 +466,7 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
         std::string msg = j.second.data(); 
         if (!tst.empty() && (tst == "message") &&
              !msg.empty() && (msg == "Bad API Key")) {
-          queue.SetKey("", 0);
-          return false;
+          return queue.SetKey("", 0);
         }
         std::string id = j.second.get("layer_id", "");
         if (id.empty())
@@ -569,26 +566,22 @@ SkysightAPI::ParseLogin(const SkysightRequestArgs &args,
   }
 
   bool success = false;
-  auto key = details.find("key");
+  auto key_data = details.find("key");
   auto valid_until = details.find("valid_until");
 
-  if ((key != details.not_found()) && (valid_until != details.not_found())) {
-    queue.SetKey(key->second.data().c_str(),
-                 static_cast<time_t>(std::strtoull(
-                     valid_until->second.data().c_str(), NULL, 0)));
-    success = true;
-    LogFormat("SkysightAPI::ParseLogin success with key %s",
-              key->second.data().c_str());
-
-    std::string _key = key->second.data().c_str();
-    if (co_request == nullptr)
-      co_request = new SkysightCoRequest(_key);  // _key);
-    else
-      co_request->SetCredentialKey(_key);  // key->second.data().c_str(), "", "");
-      // co_request->RequestCredentialKey("", "");  // key->second.data().c_str(), "", "");
-
-    // TODO: trim available regions from allowed_regions
-  } else {
+  if ((key_data != details.not_found()) && (valid_until != details.not_found())) {
+    std::string key = key_data->second.data().c_str();
+    time_t expire_time =  std::atoll(valid_until->second.data().c_str());
+    success = queue.SetKey(key, expire_time);
+    if (success) {
+      LogFormat("SkysightAPI::ParseLogin success with key %s until %s",
+        key, DateTime::time_str(expire_time).c_str());
+#ifdef WITH_COREQUEST
+        co_request->SetCredentialKey(key, expire_time);
+#endif
+    }
+  } 
+  if (!success) {
     queue.Clear("Login error");
     LogFormat("SkysightAPI::ParseLogin failed");
   }
@@ -668,11 +661,10 @@ SkysightAPI::GetTileData(const std::string_view layer_id,
   GeoBitmap::TileData base_tile;
   auto layer = GetLayer(layer_id);
 
-  if (layer->live_layer) {
-    if (!queue.IsLoggedIn())
+  if (layer->live_layer && !queue.IsLoggedIn()) {
       // inject a login request at the front of the queue
       SkysightAPI::GenerateLoginRequest();
-    }
+  }
 
   const SkysightCallType type = SkysightCallType::Tile;
   // if (map_window && map_window->HasFocus()) { // && map_window->IsPanning()) {
@@ -703,24 +695,20 @@ SkysightAPI::GetTileData(const std::string_view layer_id,
       }
 /**/
       else {
-        // static int counter = 0;
-        // if (counter++ < 1) {
-          // PluggableOperationEnvironment env;
+#ifndef WITH_COREQUEST
+        // break;
+#else
         if (co_request == nullptr)
           break;
-          // queue.GetKey()
-          // co_request = new SkysightCoRequest("");  // _key);
-
-        auto x = co_request->DownloadImage(url, path);  // , "");  //  , *Net::curl, env);
+        auto x = true;
+        co_request->DownloadImage(url, path);  // , "");  //  , *Net::curl, env);
           if (x)
             continue;
-          // }
           else
             break;
-        // continue;
+#endif
       }
-/* */
-
+#ifndef WITH_COREQUEST
       SkysightRequestArgs ra(
         url.c_str(),
         path.c_str(),
@@ -743,6 +731,9 @@ SkysightAPI::GetTileData(const std::string_view layer_id,
 
       queue.AddRequest(std::make_unique<SkysightAsyncRequest>(ra),
         (type != SkysightCallType::Login));
+#else
+  return false;
+#endif
     }
   return true;
 }
@@ -944,7 +935,17 @@ SkysightAPI::OnTimer()
 
   // various maintenance actions
   auto now = std::time(0);
+  if (!queue.IsLoggedIn()) {
+    SkysightRequestArgs ra(
+      GetUrl(SkysightCallType::Login).c_str(),
+      GetPath(SkysightCallType::Login).c_str(),
+      SkysightCallType::Login,
+      "", "", 0, 0,
+      Skysight::GetSkysight()->DownloadComplete
+    );
 
+    queue.AddLoginRequest(std::make_unique<SkysightAsyncRequest>(ra));
+  }
   // refresh regions cache file if > 24h old
   auto p = GetPath(SkysightCallType::Regions);
   if (File::Exists(p) && (File::GetTime(p) + 24*60*60 < now))
@@ -961,8 +962,10 @@ SkysightAPI::OnTimer()
     if (active_layer->tile_layer) {
       // GetData(SkysightCallType::Tile, active_layer->id.c_str(), now,
       //   now, Skysight::DownloadComplete);
-      GetTileData(active_layer->id.c_str(), now,
-        now, Skysight::DownloadComplete);
+      if (queue.IsLoggedIn()) {
+        GetTileData(active_layer->id.c_str(), now,
+          now, Skysight::DownloadComplete);
+      }
     } else {
       /* the timer is called every minute, LastUpdate should only check after
       5 minutes to prevent too many server accesses */

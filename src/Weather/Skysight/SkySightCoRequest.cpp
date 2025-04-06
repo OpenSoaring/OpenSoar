@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
+#ifdef WITH_COREQUEST
+
 #include "SkySightCoRequest.hpp"
 #include "Skysight.hpp"
 #include "SkysightAPI.hpp"
@@ -17,11 +19,8 @@
 
 #include <string>
 
-struct Instance : CoInstance {
-  const Net::ScopeInit net_init{ GetEventLoop() };
-};
+// TODO(August2111): Not functional in the moment!
 
-#if 0
 static Co::InvokeTask
 DownloadTask(CurlGlobal &curl, const char *url, Path path,
   ProgressListener &progress)
@@ -32,10 +31,9 @@ DownloadTask(CurlGlobal &curl, const char *url, Path path,
     co_await Net::CoDownloadToFile(curl, url, nullptr, nullptr,
       path, &hash, progress);
 }
-#endif
 
 static Co::InvokeTask
-DownloadTask(CurlGlobal &curl, const char *url, Path path,
+_DownloadTask(CurlGlobal &curl, const char *url, Path path,
   CurlSlist *slist, ProgressListener &progress)
 {
   std::array<std::byte, 32> hash;
@@ -47,20 +45,6 @@ DownloadTask(CurlGlobal &curl, const char *url, Path path,
       slist, path, &hash, progress);
   Skysight::GetSkysight()->SetUpdateFlag();
 }
-
-#if 0 // not used up to now
-static Co::InvokeTask
-DownloadTask(CurlGlobal &curl, const char *url, Path path,
-  ProgressListener &progress)
-{
-  std::array<std::byte, 32> hash;
-
-  const auto response =
-    co_await Net::CoDownloadToFile(curl, url,
-      nullptr, path, &hash, progress);
-  Skysight::GetSkysight()->SetUpdateFlag();
-}
-#endif
 
 static Co::InvokeTask
 CredentialTask(CurlGlobal &curl,
@@ -81,22 +65,12 @@ CredentialTask(CurlGlobal &curl,
   Skysight::GetSkysight()->SetUpdateFlag();
 }
 
-// static Instance instance;
-
 void
-SkysightCoRequest::SetCredentialKey(const std::string_view _key)
-//  const std::string_view _username,
-//  const std::string_view _password)
+SkysightCoRequest::SetCredentialKey(const std::string_view _key,
+  time_t _expire_time)
 {
-  // std::lock_guard<Mutex> lock(mutex);
-  // SkysightRequest::SetCredentials(_key, _username, _password);
   key = _key;
-/*
-  if (!_username.empty())
-    username = _username;
-  if (!_password.empty())
-    password = _password;
-*/  
+  expire_time = _expire_time;
   if (!key.empty()) {
     if (request_headers == nullptr)
       request_headers = new  CurlSlist();
@@ -104,39 +78,17 @@ SkysightCoRequest::SetCredentialKey(const std::string_view _key)
       request_headers->Clear();
     request_headers->AppendFormat("%s: %s", "X-API-Key", key.data());
   }
-//  request_headers->AppendFormat("%s: %s", "User-Agent", OpenSoar_ProductToken);
-//  request_headers->AppendFormat("%s: %s", "Content-Type", "application/json");
 }
 
-#if 0
 bool
-SkysightCoRequest::DownloadImage(const std::string_view url, const Path filename,
-  const std::string_view cred_key) noexcept
+SkysightCoRequest::RequestCredentialKey() noexcept
 try {
-  Instance instance;
-  PluggableOperationEnvironment env;
-  instance.Run(DownloadTask(*Net::curl, url.data(), filename, env));
-  return true;
-}
-catch (...) {
-  PrintException(std::current_exception());
-  return false;
-}
-#endif
-
-bool
-SkysightCoRequest::RequestCredentialKey(
-  const std::string_view user, 
-  const std::string_view password) noexcept
-try {
-  Instance instance;
   PluggableOperationEnvironment env;
   CurlSlist cred_slist;
   //cred_slist.AppendFormat("%s: %s", "X-API-Key", _key.data());
   cred_slist.AppendFormat("%s: %s", "User-Agent", OpenSoar_ProductToken);
   cred_slist.AppendFormat("%s: %s", "Content-Type", "application/json");
-
-  instance.Run(CredentialTask(*Net::curl, user, password, cred_slist, env));
+  CredentialTask(*Net::curl, username, password, cred_slist, env);
   return true;
 }
 catch (...) {
@@ -144,20 +96,27 @@ catch (...) {
   return false;
 }
 
+Co::Task<Path>
+CoDownloadImage(const std::string_view url,
+  const Path filename, CurlSlist *request_headers, CurlGlobal &curl,
+  ProgressListener &progress) noexcept
+{
+  // co_await -> ???
+    _DownloadTask(curl, url.data(), filename, request_headers, progress);
+  co_return std::move(filename);
+}
 
 bool
 SkysightCoRequest::DownloadImage(const std::string_view url, 
   const Path filename, [[maybe_unused]] bool with_auth) noexcept
 try {
-  Instance instance;
   PluggableOperationEnvironment env;
-  // if (with_auth) {
-  //   if (request_headers == nullptr)
-  //     request_headers = new  CurlSlist();
-  //   request_headers->AppendFormat("%s: %s", "X-API-Key", key.data());
-  // }
-
-  instance.Run(DownloadTask(*Net::curl, url.data(), filename, request_headers, env));
+  auto task = CoDownloadImage(url.data(), filename, request_headers, *Net::curl, env);
+  ReturnValue<Path> value;
+  auto invoke = [&value](Co::Task<Path> task) -> Co::InvokeTask {
+    value.Set(co_await task);
+  };
+  invoke(std::move(task));
   return true;
 }
 catch (...) {
@@ -166,7 +125,11 @@ catch (...) {
 }
 
 
-SkysightCoRequest::SkysightCoRequest(const std::string_view _key) 
+SkysightCoRequest::SkysightCoRequest(
+  const std::string_view _username,
+  const std::string_view _password) : 
+  username(_username), password(_password) 
 {
-  SetCredentialKey(_key);
+  // RequestCredentialKey();
 }
+#endif  // WITH_COREQUEST

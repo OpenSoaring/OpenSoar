@@ -3,6 +3,8 @@
 
 #pragma once
 
+#ifdef WITH_COREQUEST
+
 #include "co/InvokeTask.hxx"
 #include "co/Task.hxx"
 #include "event/Loop.hxx"
@@ -16,6 +18,7 @@ class Path;
 class CurlGlobal;
 class CurlSlist;
 class ProgressListener;
+namespace Co { template<typename T> class Task; }
 
 class CoInstance {
   EventLoop event_loop;
@@ -65,26 +68,21 @@ private:
 class SkysightCoRequest {
 
 private:
-  std::string_view key; //  , username, password;
-  //const 
+  std::string_view key;
+  time_t expire_time;
+  const std::string_view username;
+  const std::string_view password;
   CurlSlist *request_headers = nullptr;
-  // CurlSlist *request_headers = nullptr;
 public:
-  SkysightCoRequest(const std::string_view _key);
+  SkysightCoRequest(
+     const std::string_view _username,
+     const std::string_view _password);
 
-  void SetCredentialKey(const std::string_view _key);
-//      const std::string_view _username,
-//      const std::string_view _password);
-
-#if 0
-  // bool DownloadImageTest(const std::string_view url, const Path filename,
-  bool DownloadImage(const std::string_view url, const Path filename,
-    const std::string_view cred_key) noexcept;
-#endif
-  bool RequestCredentialKey(const std::string_view user, 
-    const std::string_view password) noexcept;
+  void SetCredentialKey(const std::string_view _key, time_t expire_time);
+  bool RequestCredentialKey() noexcept;
 
   bool DownloadImage(const std::string_view url, const Path filename, 
     bool with_auth = false) noexcept;
-
 };
+#endif  //  WITH_COREQUEST
+
