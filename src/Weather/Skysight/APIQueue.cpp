@@ -61,6 +61,16 @@ SkysightAPIQueue::AddRequest(std::unique_ptr<SkysightAsyncRequest> request,
     Process();
 }
 
+void
+SkysightAPIQueue::AddLoginRequest(
+  std::unique_ptr<SkysightAsyncRequest> request)
+{
+  // add LoginRequest at the head of the queue
+  request_queue.insert(request_queue.begin(), std::move(request));
+  if (!is_busy)
+    Process();
+}
+
 #ifdef SKYSIGHT_FORECAST 
 void
 SkysightAPIQueue::AddDecodeJob(std::unique_ptr<CDFDecoder> &&job) {
@@ -147,15 +157,16 @@ SkysightAPIQueue::Process()
   is_busy = false;
 }
 
-void
+bool
 SkysightAPIQueue::SetKey(const std::string _key,
 			 const uint64_t _key_expiry_time)
 {
   key = _key;
   key_expiry_time = _key_expiry_time;
 
-  if (!IsLoggedIn())
-    SkysightAPI::GenerateLoginRequest();
+  return IsLoggedIn();
+//  if (!IsLoggedIn())
+//    SkysightAPI::GenerateLoginRequest();
 }
 
 void
