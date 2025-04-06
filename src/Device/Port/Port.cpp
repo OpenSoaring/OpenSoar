@@ -79,8 +79,9 @@ Port::FullWrite(std::span<const std::byte> src,
       throw DeviceTimeout{"Port write timeout"};
 
     std::size_t nbytes = Write(src);
+#ifndef _DEBUG
     assert(nbytes > 0);
-
+#endif
     if (env.IsCancelled())
       throw OperationCancelled{};
 
