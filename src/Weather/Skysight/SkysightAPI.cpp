@@ -54,7 +54,7 @@ static constexpr uint32_t forecast_count = 6;
 
 SkysightAPI::~SkysightAPI()
 {
-  LogFormat("SkysightAPI::~SkysightAPI %d", timer.IsActive());
+  LogFmt("SkysightAPI::~SkysightAPI {}", timer.IsActive());
   timer.Cancel();
 }
 
@@ -574,7 +574,7 @@ SkysightAPI::ParseLogin(const SkysightRequestArgs &args,
     time_t expire_time =  std::atoll(valid_until->second.data().c_str());
     success = queue.SetKey(key, expire_time);
     if (success) {
-      LogFormat("SkysightAPI::ParseLogin success with key %s until %s",
+      LogFmt("SkysightAPI::ParseLogin success with key {} until {}",
         key, DateTime::time_str(expire_time).c_str());
 #ifdef WITH_COREQUEST
         co_request->SetCredentialKey(key, expire_time);
@@ -583,7 +583,7 @@ SkysightAPI::ParseLogin(const SkysightRequestArgs &args,
   } 
   if (!success) {
     queue.Clear("Login error");
-    LogFormat("SkysightAPI::ParseLogin failed");
+    LogString("SkysightAPI::ParseLogin failed");
   }
   return success;
 }
