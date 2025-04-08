@@ -10,5 +10,5 @@ set(_SOURCES
 set(SCRIPT_FILES
     CMakeSource.cmake
 
-    ../../build/main.mk  # menu sorces in main.mk!
+    ../../build/main.mk  # menu sources in main.mk!
 )
