@@ -84,7 +84,6 @@ static const struct DeviceRegister *const driver_list[] = {
   &cai_lnav_driver,
   &open_vario_driver,
   &free_vario_driver,
-  &larus_driver,
   &vaulter_driver,
   &krt2_driver,
   &atr833_driver,
