@@ -1,11 +1,13 @@
-OpenSoar Version 7.43-2.23 - not yet released
+OpenSoar Version 7.43-2.23.1 - not yet released
+---------------
+OpenSoar Version 7.43-2.23 - released 2025/04/07
 ---------------
 * Weather
   - 1st SkySight support in OpenSoar
   - SkySight Forecast available on targets Android, Windows (WIN64 and PC), Linux (but not OpenVario)
-  - SkySight live images (Satellite, Rain) available on Android, Windows, Linux, OpenVario, available - but untestet on Kobo and Darwin (MacOS, OSX64, iOS)
+  - SkySight live images (Satellite, Rain) available on Android, Windows, Linux, unfortunately not available: OpenVario, Kobo and Darwin (MacOS, OSX64, iOS)
   
-#### XCSoar Version 7.44(2) - dev state on 2024/08/12
+#### XCSoar Version 7.44(2) - dev state on 2025/02/25
 * 2nd merge xcsoar master '9a036c3725' -> xcsoar 7.43-2!
 * calculations
   - update sprint/league time window to 2 hours (as per OLC and DMSt rules)
