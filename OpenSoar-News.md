@@ -1,5 +1,22 @@
-OpenSoar Version 7.43-2.23.1 - not yet released
+OpenSoar Version 7.43-3.23.1 - not yet released
 ---------------
+
+#### XCSoar Version 7.44(3) - dev state on 2025/04/07
+* 3rd merge xcsoar master '6e95a3849a' -> xcsoar 7.43-3!
+* WaypointDetails
+  - Add pan capability to the waypoint details image
+* ui
+  - Show transponder mode (if available) in transponder code InfoBox
+  - terrain: added 2 new terrain ramps for use in very flat countries
+  - add head wind component to V GND Infobox #1439
+* devices
+  - Flarm: add support for PowerFlarm configuration
+  - PowerFlarm: make range / vrange configurable for adbs and pcas
+  - PowerFlarm: support additional higher baud rates
+  - AirControlDisplay: Read-out transponder mode
+  - Larus: Protocol 0.1.4 add OAT,GLoad,Circling/Cruise
+  - SerialPorts: add 230400 baud support
+
 OpenSoar Version 7.43-2.23 - released 2025/04/07
 ---------------
 * Weather
