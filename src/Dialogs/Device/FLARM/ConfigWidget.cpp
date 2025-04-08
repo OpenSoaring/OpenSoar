@@ -66,13 +66,13 @@ FLARMConfigWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   };
 
   static constexpr StaticEnumChoice baud_list_pf[] = {
-    { 0, _T("4800") },
-    { 1, _T("9600") },
-    { 2, _T("19200") },
-    { 4, _T("38400") },
-    { 5, _T("57600") },
-    { 6, _T("115200") },
-    { 7, _T("230400") },
+    { 0, "4800" },
+    { 1, "9600" },
+    { 2, "19200" },
+    { 4, "38400" },
+    { 5, "57600" },
+    { 6, "115200" },
+    { 7, "230400" },
     nullptr
   };
 
@@ -90,7 +90,7 @@ FLARMConfigWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   if (wp_threshold != nullptr) {
     DataFieldEnum &df = *(DataFieldEnum *)wp_threshold->GetDataField();
     if (hardware.isPowerFlarm()) {
-      df.AddChoice(255, _T("Automatic"));
+      df.AddChoice(255, "Automatic");
     }
     char buffer[64];
     for (unsigned i = 0; i <= 20; ++i) {
@@ -129,7 +129,7 @@ FLARMConfigWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddButton(_("Range setup"), [this](){
     FLARMRangeConfigWidget widget(GetLook(), device, hardware);
     DefaultWidgetDialog(UIGlobals::GetMainWindow(), GetLook(),
-                        _T("FLARM range setup"), widget);
+                        "FLARM range setup", widget);
   });
 }
 

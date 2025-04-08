@@ -22,6 +22,7 @@
 #include "util/StaticString.hxx"
 
 #include <span>
+using std::string_view_literals::operator""sv;
 
 class LarusDevice : public AbstractDevice {
   Port &port;

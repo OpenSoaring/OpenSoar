@@ -34,6 +34,7 @@ set(_SOURCES
         Look/WaveLook.cpp
         Look/WaypointLook.cpp
         Look/WindArrowLook.cpp
+        Look/NextArrowLook.cpp
 )
 
 set(SCRIPT_FILES

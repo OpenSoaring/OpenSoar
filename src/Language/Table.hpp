@@ -8,7 +8,6 @@
 #ifdef HAVE_NLS
 
 #include <cstddef>
-#include <tchar.h>
 
 struct BuiltinLanguage {
 #ifdef _WIN32

@@ -300,7 +300,7 @@ FlarmTrafficDetailsWidget::OnCallsignClicked()
   newName.clear();
 
   // pre-fill the callsign from flarmnet database or userfile
-  const TCHAR* cs = FlarmDetails::LookupCallsign(target_id);
+  const char* cs = FlarmDetails::LookupCallsign(target_id);
   if (cs != nullptr && cs[0] != 0)
     newName = cs;
 

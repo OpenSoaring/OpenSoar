@@ -14,8 +14,8 @@
 struct FlarmHardware {
   Validity available;
 
-  NarrowString<32> device_type;
-  NarrowString<64> capabilities;
+  StaticString<32> device_type;
+  StaticString<64> capabilities;
 
   bool isPowerFlarm() noexcept {
     return device_type.Contains("PowerFLARM");
