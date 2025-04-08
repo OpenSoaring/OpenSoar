@@ -15,6 +15,7 @@ set(_SOURCES
         Dialogs/Device/DeviceEditWidget.cpp
         Dialogs/Device/DeviceListDialog.cpp
         Dialogs/Device/FLARM/ConfigWidget.cpp
+        Dialogs/Device/FLARM/RangeConfigWidget.cpp
         Dialogs/Device/LX/ManageLX16xxDialog.cpp
         Dialogs/Device/LX/ManageNanoDialog.cpp
         Dialogs/Device/LX/ManageLXNAVVarioDialog.cpp

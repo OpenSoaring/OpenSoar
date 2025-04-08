@@ -63,6 +63,7 @@ set(BASIC_SOURCES
     ${SRC}/TeamActions.cpp
 
     ${SRC}/Version.cpp
+    ${SRC}/TransponderMode.cpp
 )
 if (NOT TEST_APPLICATION)
     list(APPEND BASIC_SOURCES
