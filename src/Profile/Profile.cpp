@@ -55,21 +55,14 @@ Profile::LoadFile(Path path) noexcept
     else
        LoadFile(map, path);
     if (device_map.empty()) {
-      // ports loaded in map, not in device_map
-      // for (auto setting : map) {
       for (auto setting = map.begin(); setting != map.end(); ) {
         auto next = setting;
         next++;
         if (setting->first.starts_with("Port")) {
-          //device_map.Set(setting.first, setting.second);
           device_map.Set(setting->first, setting->second.c_str());
           map.Remove(setting->first);
-          // map.Set(setting.first, "");
-//        }
-//        else {
-//          setting++;
         }
-        setting = next;  // map.begin();
+        setting = next;
       }
     }
     LogFormat("Loaded profile from %s", path.c_str());
