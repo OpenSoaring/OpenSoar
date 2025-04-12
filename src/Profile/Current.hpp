@@ -7,4 +7,5 @@ class ProfileMap;
 
 namespace Profile {
   extern ProfileMap map;
+  extern ProfileMap device_map;
 }

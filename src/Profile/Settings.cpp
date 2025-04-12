@@ -10,7 +10,13 @@
 void
 Profile::Use(const ProfileMap &map)
 {
-  Load(map, CommonInterface::SetSystemSettings());
+  // Load(map, CommonInterface::SetSystemSettings());
   Load(map, CommonInterface::SetComputerSettings());
   Load(map, CommonInterface::SetUISettings());
+}
+
+void
+Profile::UseDevices(const ProfileMap &map)
+{
+  Load(map, CommonInterface::SetSystemSettings());
 }

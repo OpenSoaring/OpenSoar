@@ -60,6 +60,11 @@ public:
   }
 
   [[gnu::pure]]
+  bool empty() const noexcept {
+    return map.size() == 0;
+  }
+
+  [[gnu::pure]]
   auto end() const noexcept {
     return map.end();
   }

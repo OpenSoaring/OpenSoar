@@ -134,6 +134,7 @@ LoadProfile()
 
   Profile::Load();
   Profile::Use(Profile::map);
+  Profile::UseDevices(Profile::device_map);
 
   Units::SetConfig(CommonInterface::GetUISettings().format.units);
   SetUserCoordinateFormat(CommonInterface::GetUISettings().format.coordinate_format);

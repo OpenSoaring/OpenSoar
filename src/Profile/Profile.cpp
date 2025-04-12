@@ -19,9 +19,11 @@
 #include <cassert>
 
 #define XCSPROFILE "default.prf"
+#define DEVICE_MAP "device_map.map"
 #define OLDXCSPROFILE "xcsoar-registry.prf"
 
 static AllocatedPath startProfileFile = nullptr;
+static AllocatedPath portSettingFile = nullptr;
 
 Path
 Profile::GetPath() noexcept
@@ -38,6 +40,9 @@ Profile::Load() noexcept
 
   LogString("Loading profiles");
   LoadFile(startProfileFile);
+
+  if (File::Exists(portSettingFile))
+      LoadFile(portSettingFile);
   SetModified(false);
 }
 
@@ -45,7 +50,28 @@ void
 Profile::LoadFile(Path path) noexcept
 {
   try {
-    LoadFile(map, path);
+    if (path == portSettingFile)
+       LoadFile(device_map, path);
+    else
+       LoadFile(map, path);
+    if (device_map.empty()) {
+      // ports loaded in map, not in device_map
+      // for (auto setting : map) {
+      for (auto setting = map.begin(); setting != map.end(); ) {
+        auto next = setting;
+        next++;
+        if (setting->first.starts_with("Port")) {
+          //device_map.Set(setting.first, setting.second);
+          device_map.Set(setting->first, setting->second.c_str());
+          map.Remove(setting->first);
+          // map.Set(setting.first, "");
+//        }
+//        else {
+//          setting++;
+        }
+        setting = next;  // map.begin();
+      }
+    }
     LogFormat("Loaded profile from %s", path.c_str());
   } catch (...) {
     LogError(std::current_exception(), "Failed to load profile");
@@ -66,6 +92,7 @@ Profile::Save() noexcept
 
   try {
     SaveFile(startProfileFile);
+    SaveFile(portSettingFile);
   } catch (...) {
     LogError(std::current_exception(), "Failed to save profile");
   }
@@ -75,7 +102,10 @@ void
 Profile::SaveFile(Path path)
 {
   LogFormat("Saving profile to %s", path.c_str());
-  SaveFile(map, path);
+  if (path == portSettingFile)
+      SaveFile(device_map, path);
+  else
+      SaveFile(map, path);
 }
 
 void
@@ -84,6 +114,10 @@ Profile::SetFiles(Path override_path) noexcept
   /* set the "modified" flag, because we are potentially saving to a
      new file now */
   SetModified(true);
+
+  // Set the port profile file
+  // portSettingFile = AllocatedPath("D:/Data/OpenSoarData/" DEVICE_MAP);
+  portSettingFile = LocalPath(DEVICE_MAP);
 
   if (override_path != nullptr) {
     if (override_path.IsBase()) {

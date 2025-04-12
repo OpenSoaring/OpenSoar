@@ -6,4 +6,5 @@
 
 namespace Profile {
   ProfileMap map;
+  ProfileMap device_map;
 }
