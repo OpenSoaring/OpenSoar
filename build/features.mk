@@ -8,9 +8,9 @@ ifeq ($(TARGET_IS_KOBO)$(TARGET_IS_DARWIN),nn)
 
     ifneq ($(TARGET_IS_OPENVARIO),y)
         SKYSIGHT_FORECAST := y
+        HAVE_GEOTIFF = y
     endif
 
-    HAVE_GEOTIFF = y
     
     # for cpp sources:
     TARGET_CPPFLAGS += -DHAVE_SKYSIGHT
