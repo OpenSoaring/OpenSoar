@@ -119,9 +119,9 @@ Bitmap::SetTileKoordinates(std::string_view tile_string)
 GeoQuadrilateral
 Bitmap::LoadGeoFile([[maybe_unused]] Path path)
 {
-#ifdef USE_GEOTIFF
   LogFmt("Bitmap::LoadGeoFile: {}", path.c_str());
   // LogFmt("Bitmap::LoadGeoFile: USE_GEOTIFF");
+#ifdef USE_GEOTIFF
   if (path.EndsWithIgnoreCase(".tif") ||
       path.EndsWithIgnoreCase(".tiff")) {
     auto result = LoadGeoTiff(path);
@@ -131,7 +131,9 @@ Bitmap::LoadGeoFile([[maybe_unused]] Path path)
     assert(IsDefined());
 
     return result.second;
-  } else if (path.EndsWithIgnoreCase(".jpg") ||
+  } else 
+#endif  // USE_GEOTIFF
+  if (path.EndsWithIgnoreCase(".jpg") ||
     path.EndsWithIgnoreCase(".jpeg") ||
     path.EndsWithIgnoreCase(".jfif") ) {
     auto result = LoadFile(path);
@@ -154,9 +156,6 @@ Bitmap::LoadGeoFile([[maybe_unused]] Path path)
       return SetTileKoordinates(path.GetBase().c_str());
   }
   throw std::runtime_error("Unsupported geo image file");
-#else  // USE_GEOTIFF
-  LogFmt("Bitmap::LoadGeoFile: {}", path.c_str());
-#endif  // USE_GEOTIFF
   return {};
 
 }
