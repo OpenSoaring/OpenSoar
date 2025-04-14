@@ -189,7 +189,7 @@ QuickMenu::Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept
     }
   }
 
-  /* if the last page wasn't completley filled,
+  /* if the last page wasn't completely filled,
      still add the navigation buttons */
   if (buttons_added % page_size != 0 && HasTouchScreen())
   {
@@ -226,6 +226,15 @@ QuickMenu::AddNavigationButtons(GridView *grid_view,
                            });
   previous_button.SetEnabled(true);
   grid_view->AddItem(previous_button);
+
+  // Add "Cancel" button
+  auto &cancel_button = buttons.emplace_back(
+    *grid_view, button_rc, buttonStyle,
+    std::make_unique<QuickMenuButtonRenderer>(dialog_look, "Cancel"),
+    [this]() { dialog.SetModalResult(mrCancel); });
+  cancel_button.SetEnabled(true);
+  grid_view->AddItem(cancel_button);
+
   // Add "Next Page" button
   auto &next_button = buttons.emplace_back(
       *grid_view, button_rc, buttonStyle,
@@ -239,14 +248,6 @@ QuickMenu::AddNavigationButtons(GridView *grid_view,
       });
   next_button.SetEnabled(true);
   grid_view->AddItem(next_button);
-
-  // Add "Cancel" button
-  auto &cancel_button = buttons.emplace_back(
-      *grid_view, button_rc, buttonStyle,
-      std::make_unique<QuickMenuButtonRenderer>(dialog_look, "Cancel"),
-      [this]() { dialog.SetModalResult(mrCancel); });
-  cancel_button.SetEnabled(true);
-  grid_view->AddItem(cancel_button);
 }
 
 void
