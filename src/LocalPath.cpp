@@ -271,7 +271,12 @@ FindDataPaths() noexcept
     constexpr const char *in_home = OPENSOAR_DATADIR;
 #endif
 #else // !APPLE
+# ifdef IS_OPENVARIO
+    /* OpenVario has a 3rd partition on sdcard, mounted as 'data' */
+    constexpr const char *in_home = "data/" OPENSOAR_DATADIR;
+# else
     constexpr const char *in_home = OPENSOAR_DATADIR;
+# endif
 #endif
 
     result.emplace_back(AllocatedPath::Build(Path(home), in_home));
