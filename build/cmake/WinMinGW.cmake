@@ -15,19 +15,13 @@ endif()
 
 add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
 add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON)
-        # add_compile_definitions(HAVE_MSVCRT)
-# add_compile_definitions(UNICODE)  # ???
-# add_compile_definitions(_UNICODE)
+
 add_compile_definitions(STRICT)
 add_compile_definitions(_USE_MATH_DEFINES)   # necessary under C++17!
 add_compile_definitions(ZZIP_1_H)   # definition of uint32_t and Co.!
 add_compile_definitions(_WIN32_WINNT_WIN10=0x0A00)
 add_compile_definitions(_WIN32_WINDOWS=_WIN32_WINNT_WIN10)
 
-# string(APPEND CMAKE_CXX_FLAGS " -Og -funit-at-a-time -ffast-math -g -std=c++20 -fno-threadsafe-statics -fmerge-all-constants -fcoroutines -fconserve-space -fno-operator-names -fvisibility=hidden -finput-charset=utf-8 -Wall -Wextra -Wwrite-strings -Wcast-qual -Wpointer-arith -Wsign-compare -Wundef -Wmissing-declarations -Wredundant-decls -Wmissing-noreturn -Wvla -Wno-format-truncation -Wno-missing-field-initializers -Wcast-align -Werror -I./src/unix -I./_build/include -isystem /usr/lib/link_libs/boost/boost-1.80.0 ")
-# string(APPEND CMAKE_CXX_FLAGS " -c -Og -funit-at-a-time -ffast-math -g -std=c++20 -fno-threadsafe-statics -fmerge-all-constants -fcoroutines -fconserve-space -fno-operator-names -finput-charset=utf-8 -Wall -Wextra -Wwrite-strings -Wcast-qual -Wpointer-arith -Wsign-compare -Wundef -Wmissing-declarations -Wredundant-decls -Wmissing-noreturn -Wvla -Wno-format-truncation -Wno-missing-field-initializers -Wcast-align -Werror -m64 -mwin32 -mwindows -mms-bitfields")
-
-# 2024-12-12: w/o '-c': string(APPEND CMAKE_CXX_FLAGS   " -c -Og -funit-at-a-time -ffast-math -g")
 string(APPEND CMAKE_CXX_FLAGS   " -Og -funit-at-a-time -ffast-math -g")
 if (1)
   string(APPEND CMAKE_CXX_FLAGS   " -fno-threadsafe-statics")

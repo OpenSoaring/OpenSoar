@@ -147,8 +147,12 @@ else()
 endif()
 
 add_subdirectory(build/cmake)
-# add_subdirectory(Data)
-# add_subdirectory(po)
+
+if (TARGET_IS_OPENVARIO)
+    set(DEFAULT_XCI_FILE   defaultOV.xci)
+else()
+    set(DEFAULT_XCI_FILE   default.xci)
+endif()
 
 if(UNIX)
  set(ENABLE_OPENGL ON)  # better outside????
@@ -430,7 +434,7 @@ endif()
     add_subdirectory(src/lib)
 add_subdirectory(src)   # libOpenSoar!
 
-add_subdirectory(src/OpenVario)   # libOpenSoar!
+add_subdirectory(src/OpenVario)
 
 add_subdirectory(src/Android)  # Android  -> EXCLUDE_FROM_ALL TRUE
 

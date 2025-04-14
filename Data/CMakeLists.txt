@@ -255,8 +255,8 @@ endif()
         ${_INCLUDE_OUTPUT}/InputEvents_default.hpp
     )
 
-    set(DEFAULT_XCI   ${_DATA_INPUT}/Input/defaultOV.xci)
-    # set(DEFAULT_XCI   ${_DATA_INPUT}/Input/${DEFAULT_XCI_FILE})
+    set(DEFAULT_XCI   ${_DATA_INPUT}/Input/${DEFAULT_XCI_FILE})
+    message(STATUS "### DEFAULT_XCI = ${DEFAULT_XCI}")
     add_custom_command(OUTPUT  ${INPUTEVENTS_CPP} ${_INCLUDE_OUTPUT}/InputCppFiles.txt
         COMMENT Create InputEvents_*.hpp!
         COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT} 
