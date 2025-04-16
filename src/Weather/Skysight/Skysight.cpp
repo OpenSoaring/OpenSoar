@@ -316,7 +316,7 @@ Skysight::Init()
 #if defined(SKYSIGHT_FILE_DEBUG)
   // save in debug case an additional file in folder
   std::string _path("skysight/");
-  _path += DateTime::str_now() + " ====== Start-Skysight.txt";
+  _path += DateTime::str_now() + " ====== Start-SkySight.tmp";
   auto file = fopen(LocalPath(_path).c_str(), "wb");
 
 
