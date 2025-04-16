@@ -3,10 +3,6 @@
 
 #pragma once
 
-#define SKYSIGHT_REQUEST_LOG
-// #define SKYSIGHT_HTTP_LOG
-#define SKYSIGHT_FILE_DEBUG
-
 #include "APIGlue.hpp"
 #include "thread/StandbyThread.hpp"
 
