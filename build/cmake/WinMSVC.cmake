@@ -14,8 +14,16 @@ if (TARGET_IS_OPENVARIO)
   add_compile_definitions(IS_OPENVARIO) 
 endif()
 
+# SkySight support feature:
 set (HAVE_SKYSIGHT ON)
-set (SKYSIGHT_FORECAST ON)
+
+if (HAVE_SKYSIGHT)
+  set (SKYSIGHT_FORECAST ON)
+  # debug feature for SkySight:
+  set (SKYSIGHT_FILE_DEBUG OFF)
+  set (SKYSIGHT_REQUEST_LOG OFF)
+  set (SKYSIGHT_HTTP_LOG OFF)
+endif (HAVE_SKYSIGHT)
 
 ###  see CMakeLists.txt, line 216: add_compile_definitions(HAVE_SKYSIGHT) 
 #-------------------------------
