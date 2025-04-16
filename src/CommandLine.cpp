@@ -32,6 +32,9 @@ namespace CommandLine {
 void
 CommandLine::Parse(Args &args)
 {
+  std::string_view datapath;
+  std::string_view profilepath;
+  std::string_view testpath;
   while (!args.IsEmpty()) {
     const char *s = args.GetNext();
 
@@ -47,16 +50,18 @@ CommandLine::Parse(Args &args)
     if (s[1] == '-')
       s++;
 
-    if (StringIsEqual(s, "-profile=", 9)) {
-      s += 9;
-
-      if (StringIsEmpty(s))
-        args.UsageError();
-
-      Profile::SetFiles(Path(s));
-    } else if (StringIsEqual(s, "-datapath=", 10)) {
+    if (StringIsEqual(s, "-datapath=", 10)) {
       s += 10;
-      SetSingleDataPath(Path(s));
+      datapath = s;
+      // SetSingleDataPath(Path(s));
+    } else if (StringIsEqual(s, "-profile=", 9)) {
+        s += 9;
+
+        if (StringIsEmpty(s))
+          args.UsageError();
+
+        profilepath = s;
+        // Profile::SetFiles(Path(s));
 #ifdef HAVE_CMDLINE_REPLAY
     } else if (StringIsEqual(s, "-replay=", 8)) {
       replay_path = s + 8;
@@ -126,6 +131,11 @@ CommandLine::Parse(Args &args)
 #endif
     }
   }
+  /* This has to be set in the correct order: 1st Datapath, 2nd profile */
+  if (!datapath.empty())
+    SetSingleDataPath(Path(datapath.data()));
+  if (!profilepath.empty())
+    Profile::SetFiles(Path(profilepath.data()));
 
   if (width < 240 || width > 4096 ||
       height < 240 || height > 4096)
