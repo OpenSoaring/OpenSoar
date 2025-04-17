@@ -1278,32 +1278,6 @@ event=AirSpace toggle
 label=Airspace\n$(AirspaceToggleActionName)
 location=34
 
-mode=RemoteStick
-type=key
-data=0
-event=QuickMenu 57
-event=Mode default
-event=Sounds quieter
-label=Vario Audio Quieter$(CheckAudioQuiet)
-location=57
-
-mode=RemoteStick
-type=key
-data=0
-event=QuickMenu 58
-event=Mode default
-event=Sounds toggle
-label=Vario Audio\n$(AudioOnOff)
-location=58
-
-mode=RemoteStick
-type=key
-data=0
-event=QuickMenu 59
-event=Mode default
-event=Sounds louder
-label=Vario Audio Louder$(CheckAudioLoud)
-location=59
 
 mode=RemoteStick
 type=key
@@ -1323,42 +1297,94 @@ location=61
 
 
 # -------------
-# Define AudioMenu buttons for Audio app 
+# Define VarioAudioMenu buttons for Audio app 
 # - the PCM mixer controlled by OpenSoar 
 # -------------
 
-mode=AudioMenu
+mode=VarioAudioMenu
 type=key
 data=DOWN
 event=Sounds quieter
 label=VOL - (DOWN)$(CheckAudioQuiet)
 location=1
 
-mode=AudioMenu
+mode=VarioAudioMenu
 type=key
-data=RETURN
+data=M
 event=Sounds toggle
-label=VOLUME $(AudioOnOff)\n(ENTER)
+label=VOL On/Off\n(press M)
 location=2
 
-mode=AudioMenu
+mode=VarioAudioMenu
 type=key
 data=UP
 event=Sounds louder
 label=VOL + (UP)$(CheckAudioLoud)
 location=3
 
-mode=AudioMenu
+mode=VarioAudioMenu
+type=key
+data=RETURN
+event=Mode default
+label=Volume: $(AudioVolume)
+location=4
+
+## mode=VarioAudioMenu
+## type=key
+## data=S
+## event=SendNMEAPort1 POV,C,STF
+## event=StatusMessage Speed to Fly Mode
+## label=STF
+## location=5
+
+## mode=VarioAudioMenu
+## type=key
+## data=V
+## event=SendNMEAPort1 POV,C,VAR
+## event=StatusMessage Vario Mode
+## label=VARIO
+## location=6
+
+mode=VarioAudioMenu
+type=key
+data=LEFT
+event=MacCready down
+label=MC-\n(LEFT)
+location=6
+
+mode=VarioAudioMenu
+type=key
+data=RIGHT
+event=MacCready up
+label=MC+\n(RIGHT)
+location=7
+
+mode=VarioAudioMenu
+type=key
+data=RETURN
+event=Mode default
+label=MC: $(MC_Value)
+location=8
+
+mode=VarioAudioMenu
 type=key
 data=ESCAPE
 event=Mode default
 label=BACK (ESC)
-location=5
+location=9
+
 
 mode=default RemoteStick
 type=key
 data=M
-event=Mode AudioMenu 
+event=Mode VarioAudioMenu 
+
+mode=RemoteStick
+type=key
+data=0
+event=Mode VarioAudioMenu 
+label=Audio Menu
+location=59
 
 
 # -------------

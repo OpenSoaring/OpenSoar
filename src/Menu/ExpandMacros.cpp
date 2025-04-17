@@ -25,6 +25,9 @@
 #include "util/Macros.hpp"
 #include "net/http/Features.hpp"
 #include "UIState.hpp"
+#include "Units/Unit.hpp"
+#include "Units/Units.hpp"
+#include "Units/Descriptor.hpp"
 
 #include <stdlib.h>
 
@@ -178,6 +181,15 @@ ExpandTaskMacros(std::string_view name,
     invalid |= !task_stats.task_valid &&
       settings_computer.task.IsAutoMCFinalGlideEnabled();
     return "";
+  } else if (name == "MC_Value") {
+    char buffer[20];
+    const Unit unit = Units::GetUserUnitByGroup(UnitGroup::VERTICAL_SPEED);
+    auto value = Units::ToUserUnit(settings_computer.polar.glide_polar_task.GetMC(), unit);
+    auto unit_str = Units::GetUnitName(unit);
+    //     settings_computer.polar.glide_polar_task.GetMC(),
+    snprintf(buffer, sizeof(buffer), "%4.1f%s", value,unit_str);
+    invalid = false;
+    return buffer;
   } else if (name == "TaskAbortToggleActionName") {
     if (common_stats.task_type == TaskType::GOTO)
       return ordered_task_stats.task_valid
@@ -293,11 +305,18 @@ LookupMacro(std::string_view name, bool &invalid) noexcept
   } else if (name == "CheckTerrain") {
     invalid |= !Calculated().terrain_valid;
     return nullptr;
-  } else if (name == "AudioOnOff") {
+  } else if (name == "AudioVolume") {
     StaticString<10> s; 
-    s.Format("(%u/7)",
+    s.Format("%u / 7",
              vario_sound.volume > 0 ? 1 + (unsigned)log2(vario_sound.volume) : 0);
     return vario_sound.enabled ? s.c_str() : "-";
+  } else if (name == "AudioOnOff") {
+//    StaticString<10> s; 
+//    s.Format("%u / 7",
+//             vario_sound.volume > 0 ? 1 + (unsigned)log2(vario_sound.volume) : 0);
+//    return vario_sound.enabled ? s.c_str() : "-";
+    invalid |= !vario_sound.enabled || vario_sound.volume < 1;
+    return nullptr;
   } else if (name == "CheckAudioQuiet") {
     invalid |= !vario_sound.enabled || vario_sound.volume <= 1;
     return nullptr;

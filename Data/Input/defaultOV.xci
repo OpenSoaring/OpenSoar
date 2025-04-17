@@ -1316,33 +1316,6 @@ location=34
 mode=RemoteStick
 type=key
 data=0
-event=QuickMenu 57
-event=Mode default
-event=Sounds quieter
-label=Vario Audio Quieter$(CheckAudioQuiet)
-location=57
-
-mode=RemoteStick
-type=key
-data=0
-event=QuickMenu 58
-event=Mode default
-event=Sounds toggle
-label=Vario Audio\n$(AudioOnOff)
-location=58
-
-mode=RemoteStick
-type=key
-data=0
-event=QuickMenu 59
-event=Mode default
-event=Sounds louder
-label=Vario Audio Louder$(CheckAudioLoud)
-location=59
-
-mode=RemoteStick
-type=key
-data=0
 event=Exit restart
 event=Mode default
 label=Restart
@@ -1375,42 +1348,56 @@ label=Shutdown
 location=63
 
 # -------------
-# Define AudioMenu buttons for Audio app 
+# Define VarioMenu buttons for Audio app 
 # - the PCM mixer controlled by OpenSoar 
 # -------------
 
-mode=AudioMenu
+mode=VarioMenu
 type=key
 data=DOWN
 event=Sounds quieter
-label=VOLUME- (DOWN)$(CheckAudioQuiet)
+label=VOL - (DOWN)$(CheckAudioQuiet)
 location=1
 
-mode=AudioMenu
+mode=VarioMenu
 type=key
-data=RETURN
+data=M
 event=Sounds toggle
-label=VOLUME $(AudioOnOff)\n(ENTER)
+label=VOL On/Off\n(press M)
 location=2
 
-mode=AudioMenu
+mode=VarioMenu
 type=key
 data=UP
 event=Sounds louder
-label=VOLUME+ (UP)$(CheckAudioLoud)
+label=VOL + (UP)$(CheckAudioLoud)
 location=3
 
-mode=AudioMenu
+mode=VarioMenu
+type=key
+data=RETURN
+event=Mode default
+label=Volume: $(AudioVolume)
+location=5
+
+mode=VarioMenu
 type=key
 data=ESCAPE
 event=Mode default
 label=BACK (ESC)
-location=5
+location=6
 
 mode=default RemoteStick
 type=key
 data=M
-event=Mode AudioMenu 
+event=Mode VarioMenu 
+
+mode=RemoteStick
+type=key
+data=0
+event=Mode VarioMenu 
+label=Audio Menu
+location=59
 
 ## Shutdown looks line 85
 
