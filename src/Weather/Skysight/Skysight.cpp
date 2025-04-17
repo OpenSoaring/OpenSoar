@@ -15,12 +15,12 @@
 #include "UIGlobals.hpp"
 #include "Language/Language.hpp"
 #include "LogFile.hpp"
+#include "time/BrokenDateTime.hpp"
 #include "MapWindow/OverlayBitmap.hpp"
 #include "MapWindow/GlueMapWindow.hpp"
 #include "thread/Debug.hpp"
 #include "time/DateTime.hpp"
 #include "Formatter/TimeFormatter.hpp"
-#include "io/ZipArchive.hpp"
 
 #include "MainWindow.hpp"
 
@@ -601,7 +601,6 @@ Skysight::SetLayerActive(const std::string_view id)
   return true;  // SetLayerActive();
 }
 
-#ifdef SKYSIGHT_FORECAST 
 bool
 Skysight::DisplayForecastLayer()
 {
@@ -618,30 +617,12 @@ Skysight::DisplayForecastLayer()
   constexpr time_t preview = _10MINUTES;
   time_t test_time = ((DateTime::now() + preview) / _HALFHOUR + 1) * _HALFHOUR;
 
-  // TODO(August2111): this procedure to find the best image I have to analyze exactly!
   constexpr auto max_steps = 3;
+
   for (int j = 0; !found && (j < max_steps); j++) {
     filename = api->GetPath(SkysightCallType::Image, active_layer->id,
         test_time);
 
-    if (!File::Exists(filename)) {
-      auto zip_file = filename.WithSuffix(".zip");
-      auto nc_file = filename.WithSuffix(".nc");
-      if (!File::Exists(nc_file) &&
-        File::Exists(zip_file))
-        ZipIO::UnzipSingleFile(zip_file, nc_file);
-      if (File::Exists(nc_file)) {
-        char buffer[8];
-        File::ReadString(nc_file, buffer, sizeof(buffer));  // read buffer
-        if (strncmp(buffer, "CDF", 3) == 0) {
-          // and now it is a CDF file
-          api->CallCDFDecoder(active_layer, test_time,
-            nc_file.c_str(), filename.c_str(),
-            DownloadComplete);
-          found = true;
-        }
-      }
-    }
     if (File::Exists(filename)) {
       // needed for (selected) object view in map
       active_layer->forecast_time = test_time;
@@ -657,7 +638,6 @@ Skysight::DisplayForecastLayer()
   }
   return false;
 }
-#endif
 
 bool
 Skysight::UpdateActiveLayer(const uint32_t overlay_index, const Path &filename,
@@ -804,11 +784,9 @@ Skysight::DisplayActiveLayer()
     // no time stamp...
     filename = api->GetPath(SkysightCallType::Image, active_layer->id, 0);
     found = File::Exists(filename);
-#ifdef SKYSIGHT_FORECAST 
   } else {
     // TODO: We're only searching w a max offset of 1 hr, simplify this!
     found = DisplayForecastLayer();
-#endif  // SKYSIGHT_FORECAST 
   }
   if (found) {
     if (active_layer->forecast_time > 0) {
