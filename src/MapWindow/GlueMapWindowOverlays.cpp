@@ -351,7 +351,7 @@ GlueMapWindow::DrawMapScale(Canvas &canvas, const PixelRect &rc,
 #ifdef HAVE_SKYSIGHT
   } else if (skysight) {
     buffer += "SkySight: ";
-    buffer += skysight->GetActiveLayerName();
+    buffer += skysight->GetActiveLayerString();
 #endif
   }
 

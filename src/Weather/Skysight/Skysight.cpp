@@ -788,6 +788,14 @@ Skysight::DisplayActiveLayer()
     // TODO: We're only searching w a max offset of 1 hr, simplify this!
     found = DisplayForecastLayer();
   }
-  
+  if (found) {
+    if (active_layer->forecast_time > 0) {
+      active_layer->time_name = active_layer->name + ", ";
+      active_layer->time_name += DateTime::time_str(
+        active_layer->forecast_time, "%H:%M");
+    } else {
+      active_layer->time_name.clear();
+    }
+  }
   return found;
 }

@@ -18,6 +18,7 @@ struct SkysightLayer {
   const std::string desc;
   time_t last_update = 0;
   std::map<float, LegendColor> legend;
+  std::string time_name;
 
   double from = 0;
   double to = 0;

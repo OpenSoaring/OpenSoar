@@ -136,6 +136,17 @@ public:
     }
   }
 
+  std::string_view GetActiveLayerString() { 
+    if (active_layer) {
+      if (active_layer->time_name.empty())
+        return active_layer->name;
+      else
+        return active_layer->time_name;
+    } else {
+      return "n.a.";
+    }
+  }
+
   std::string_view GetActiveLayerId() { 
     if (active_layer) {
       return active_layer->id;
