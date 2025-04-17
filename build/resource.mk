@@ -9,7 +9,7 @@ endif
 
 ####### market icons
 
-SVG_MARKET_ICONS = Data/graphics/logo.svg Data/graphics/logo_red.svg
+SVG_MARKET_ICONS = Data/graphics/logo.svg Data/graphics/logo_red.svg Data/graphics/logo_stefly.svg
 PNG_MARKET_ICONS = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_market.png,$(SVG_MARKET_ICONS))
 
 market-icons: $(PNG_MARKET_ICONS)
@@ -56,7 +56,7 @@ $(eval $(call convert-to-bmp,$(BMP_ICONS_ALL),%.bmp,%_tile.png))
 
 ####### splash logo
 
-SVG_SPLASH = Data/graphics/logo.svg Data/graphics/logo_red.svg
+SVG_SPLASH = Data/graphics/logo.svg Data/graphics/logo_red.svg Data/graphics/logo_stefly.svg
 PNG_SPLASH_320 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_320.png,$(SVG_SPLASH))
 BMP_SPLASH_320 = $(PNG_SPLASH_320:.png=.bmp)
 PNG_SPLASH_160 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_160.png,$(SVG_SPLASH))
@@ -87,7 +87,6 @@ SVG_TITLE = Data/graphics/title.svg
 SVG_TMP_TITLE = $(DATA)/temp/graphics/title.svg $(DATA)/temp/graphics/title_red.svg
 # convert to title
 $(DATA)/temp/graphics/%.svg: $(SVG_TITLE) $(topdir)/OpenSoar.config $(OUT)/include/ProgramVersion.h
-	# @$(NQ)echo "  TMP_SVG:   $< == $@"
 	@echo  "  TMP_SVG:   $< == $@"
 	$(Q)$(MKDIR) -p $(DATA)/temp/graphics
 	$(Q)python3 $(topdir)/tools/python/replace.py  $(topdir)/OpenSoar.config $< $@

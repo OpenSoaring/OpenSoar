@@ -14,6 +14,8 @@ if (TARGET_IS_OPENVARIO)
   add_compile_definitions(IS_OPENVARIO) 
 endif()
 
+add_compile_definitions(TWO_LOGO_APP)
+
 # SkySight support feature:
 set (HAVE_SKYSIGHT ON)
 

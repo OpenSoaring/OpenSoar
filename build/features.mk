@@ -1,3 +1,8 @@
+# valid for which target?
+ifeq (y,y)
+    TARGET_CPPFLAGS += -DTWO_LOGO_APP
+endif
+
 ifeq ($(TARGET_IS_KOBO)$(TARGET_IS_DARWIN),nn)
     # not for KOBO, DARWIN - but for:
     # Android, UNIX, Windows, OpenVario...:

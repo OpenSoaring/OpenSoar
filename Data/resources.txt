@@ -98,6 +98,11 @@ bitmap_graphic IDB_LOGO "logo_red_80"
 bitmap_graphic IDB_LOGO_HD "logo_160"
 bitmap_graphic IDB_LOGO "logo_80"
 #endif
+#ifdef TWO_LOGO_APP
+bitmap_graphic IDB_LOGO2_HD "logo_stefly_160"
+bitmap_graphic IDB_LOGO2 "logo_stefly_80"
+#endif
+
 bitmap_icon_scaled IDB_TARGET "map_target"
 bitmap_icon_scaled IDB_TEAMMATE_POS "map_teammate"
 bitmap_icon_scaled IDB_TERRAINWARNING "map_terrainw"
