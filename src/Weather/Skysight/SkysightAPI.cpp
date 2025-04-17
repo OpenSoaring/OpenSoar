@@ -28,7 +28,6 @@
 #include "lib/curl/Handler.hxx"
 #include "lib/curl/Request.hxx"
 #include "time/DateTime.hpp"
-#include "io/ZipArchive.hpp"
 #include "ui/canvas/custom/GeoBitmap.hpp"
 #include "Geo/GeoBounds.hpp"
 #include "time/BrokenDateTime.hpp"
@@ -162,7 +161,7 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
      break;
   case SkysightCallType::Data: {
     auto layer = GetLayer(layer_id);
-    filename.Format("%s-%s-%llu-%s.nc", region.c_str(), layer_id.data(),
+    filename.Format("%s-%s-%llu-%s.zip", region.c_str(), layer_id.data(),
       layer ? layer->last_update : 0, 
       DateTime::time_str(fctime, "%d-%H%M").c_str());
     }
@@ -477,23 +476,24 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
 
         if (layer.id == id) {
           auto update_time = time;
-          if ((layer_id == layer.id))
-          {
 #if 0  // aug
             if (update_time > layer.last_update) {
 #else
             if (update_time >= layer.last_update) {
 #endif
               layer.last_update = update_time;
-              time_t forecast_time = ((std::time(0) / 1800) + 1) * 1800;
-              GetImageAt(layer, forecast_time, forecast_time
-                + forecast_count * 1800, update_time, Skysight::DownloadComplete);
+              if ((layer_id == layer.id))
+              {
+                time_t forecast_time = ((std::time(0) / 1800) + 1) * 1800;
+                GetImageAt(layer, forecast_time, forecast_time
+                  + forecast_count * 1800, update_time, Skysight::DownloadComplete);
+              }
               success = true;
             } else if (update_time == layer.last_update) { // no changes
               success =  ParseDataDetails(args, "");
             }
           }
-        }
+        
       }
     }
   } else {
@@ -533,6 +533,9 @@ SkysightAPI::ParseDataDetails(const SkysightRequestArgs &args,
       // if (File::Exists(path)) {
       //   MakeCallback(args.cb, path.c_str(), true, args.layer.data(), time_index);
       // }
+      auto layer = GetLayer(args.layer);
+      if (layer && layer->last_update == 0)
+        layer->last_update = time_index;
       success = GetData(SkysightCallType::Data, args.layer.c_str(), time_index,
         args.to, link->second.data().c_str(), args.cb);
 
@@ -589,13 +592,15 @@ SkysightAPI::ParseLogin(const SkysightRequestArgs &args,
 }
 
 #ifdef SKYSIGHT_FORECAST 
+
 void
-SkysightAPI::CallCDFDecoder(const SkysightRequestArgs &args,
-  [[maybe_unused]] const std::string_view& output_img)
+SkysightAPI::CallCDFDecoder(const SkysightLayer *layer, const time_t _time, 
+  const std::string_view &cdf_file,
+  const std::string_view& output_img, const SkysightCallback _callback)
 {
   queue.AddDecodeJob(std::make_unique<CDFDecoder>(
-    args.path.c_str(), output_img.data(), args.layer.c_str(), args.from,
-    GetLayer(args.layer)->legend, args.cb));
+    cdf_file.data(), output_img.data(), layer->id.c_str(), _time,
+    layer->legend, _callback));
 }
 #endif  // SKYSIGHT_FORECAST 
 
@@ -603,37 +608,29 @@ bool
 SkysightAPI::ParseData(const SkysightRequestArgs &args,
                        [[maybe_unused]] const std::string &result)
 {
+
   std::string output_img =
       GetPath(SkysightCallType::Image, args.layer.c_str(), args.from).c_str();
-//  std::string s = output_img.c_str();
-//  s = GetPath(SkysightCallType::Image, args.layer.c_str(), args.from).c_str();
   char buffer[16];  // a test buffer at beginning of file
   auto filepath = Path(args.path.c_str());
   File::ReadString(filepath, buffer, sizeof(buffer));
   if (strncmp(buffer, "<?xml version=", 14) == 0) {
     // this is an (error) message, no zip file or CDF-File
     LogFmt("XML-File: {}", buffer);
+    File::Rename(filepath, filepath.WithSuffix(".xml"));
 #ifdef SKYSIGHT_FORECAST 
   } else if (strncmp(buffer, "CDF", 3) == 0) {
     // only the CDF file has to be decoded
-    if (result.ends_with(".nc")) {
-      CallCDFDecoder(args, output_img);
-    } // else {}
+    if (result.ends_with(".zip")) {
+      auto nc_file = filepath.WithSuffix(".nc");
+      File::Rename(filepath, nc_file);
+    } else {
+      return false;
+    } // no zip-suffix, but no CDF-File???
 #endif   // SKYSIGHT_FORECAST 
   }  else if (args.path.ends_with(".jpg")) {
     if (args.cb)
       args.cb(result, true, Skysight::GetActiveLayer()->id, 0);
-  }  else { 
-    auto zip_file = filepath.WithSuffix(".zip");
-    File::Rename(filepath, zip_file);
-    ZipIO::UnzipSingleFile(zip_file, filepath);  // use the same name for unzipped file
-    File::ReadString(filepath, buffer, sizeof(buffer));  // re-read again
-#ifdef SKYSIGHT_FORECAST 
-    if (strncmp(buffer, "CDF", 3) == 0) {
-      // and now it is a CDF file
-      CallCDFDecoder(args, output_img);  // result); // 
-    }
-#endif  // SKYSIGHT_FORECAST 
   }
    return true;
 }
@@ -948,12 +945,12 @@ SkysightAPI::OnTimer()
   }
   // refresh regions cache file if > 24h old
   auto p = GetPath(SkysightCallType::Regions);
-  if (File::Exists(p) && (File::GetTime(p) + 24*60*60 < now))
+  if (File::Exists(p) && (File::GetTime(p) + _ONE_DAY < now))
     GetData(SkysightCallType::Regions, nullptr, true);
 
   // refresh layers cache file if > 24h old
   p = GetPath(SkysightCallType::Layers);
-  if (File::Exists(p) && (File::GetTime(p) + 24 * 60 * 60 < now))
+  if (File::Exists(p) && (File::GetTime(p) + _ONE_DAY < now))
     GetData(SkysightCallType::Layers, nullptr, true);
 
 

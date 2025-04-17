@@ -17,6 +17,7 @@
 #include <memory>
 #include <map>
 
+constexpr time_t  _ONE_DAY = (60 * 60 * 24);
 constexpr time_t  _HALFHOUR = (60 * 30);
 constexpr time_t  _ONE_HOUR = (60 * 60);
 constexpr time_t  _10MINUTES = (60 * 10);
@@ -88,6 +89,12 @@ public:
     inited_lastupdates = false;
     // lastupdates_time = 0;
   }
+#ifdef SKYSIGHT_FORECAST 
+  void CallCDFDecoder(const SkysightLayer *layer, const time_t _time,
+    const std::string_view &cdf_file, const std::string_view &output_img,
+    const SkysightCallback _callback);
+#endif  // SKYSIGHT_FORECAST 
+
 protected:
   /// The mutex protects the Timer module.
   Mutex mutex;
@@ -127,10 +134,6 @@ protected:
   bool ParseData(const SkysightRequestArgs &args, const std::string &result);
   bool ParseTile(const SkysightRequestArgs &args, const std::string &result);
   bool ParseLogin(const SkysightRequestArgs &args, const std::string &result);
-#ifdef SKYSIGHT_FORECAST 
-  void CallCDFDecoder(const SkysightRequestArgs &args,
-      const std::string_view &output_img);
-#endif  // SKYSIGHT_FORECAST 
 
   inline bool GetData(SkysightCallType t, SkysightCallback cb = nullptr,
 		      bool force_recache = false) {
