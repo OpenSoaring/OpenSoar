@@ -29,7 +29,7 @@ PlayResource(const char *resource_name)
 
 #elif defined(_WIN32)
 
-  if (strstr(resource_name, TEXT(".wav")))
+  if (strstr(resource_name, ".wav"))
     return sndPlaySound(resource_name, SND_ASYNC | SND_NODEFAULT);
 
   ResourceLoader::Data data = ResourceLoader::Load(resource_name, "WAVE");
