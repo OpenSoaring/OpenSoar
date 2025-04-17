@@ -534,27 +534,32 @@ Skysight::DownloadComplete([[maybe_unused]] const std::string details,
   }
 }
 
-#if 0
-void
-Skysight::OnCalculatedUpdate(const MoreData &basic,
-                 [[maybe_unused]] const DerivedInfo &calculated)
+#ifdef SKYSIGHT_OFFLINE_MODE
+bool
+Skysight::DownloadSelectedLayer(const std::string_view id = "*")
 {
-  // maintain current time -- for use in replays etc.
-  // Cannot be accessed directly from child threads
-  [[maybe_unused]] BrokenDateTime
-  curr_time = basic.date_time_utc;
+  if (id == "*") {
+    for (auto &layer : api->selected_layers) {
+      if (!layer.live_layer)
+           DownloadSelectedLayer(layer.id);
+    }
+  }
+  else {
+    auto layer = GetLayer(id);
+    if (layer && !layer->live_layer) {
+      time_t now = DateTime::now();
+      SetSelectedLayerUpdateState(id, true);
+#ifdef _DEBUG
+      api->GetImageAt(id.data(), now, now + _ONE_HOUR,
+#else
+      api->GetImageAt(id.data(), now, now + _ONE_DAY,
+#endif
+        DownloadComplete);
+    }
+  }
+  return true;
 }
-
-BrokenDateTime
-Skysight::GetNow(bool use_system_time)
-{
-  if (use_system_time)
-    return BrokenDateTime::NowUTC();
-
-  return BrokenDateTime::NowUTC();
-  // return (curr_time.IsPlausible()) ? curr_time : BrokenDateTime::NowUTC();
-}
-#endif  // 0
+#endif
 
 void
 Skysight::MapOverlayReset()
@@ -760,8 +765,8 @@ Skysight::DisplayTileLayer()
         }
       }
     }
-  update_flag = false;  // is already updated
-  return false;
+  // update_flag = false;  // is already updated
+  return true;
 }
 
 bool

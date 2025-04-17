@@ -19,7 +19,6 @@
 #include <vector>
 #include <string_view>
 
-// struct BrokenDateTime;
 struct DisplayedLayer;
 class CurlGlobal;
 
@@ -103,9 +102,9 @@ public:
   size_t NumSelectedLayers();
   bool SelectedLayersFull();
   size_t AddSelectedLayer(const std::string_view id);
-#if 0  // def _DEBUG
+#ifdef SKYSIGHT_OFFLINE_MODE
   bool DownloadSelectedLayer(const std::string_view id);
-#endif
+#endif // SKYSIGHT_OFFLINE_MODE
 
   bool LayerExists(const std::string_view id);
   bool DisplayActiveLayer();

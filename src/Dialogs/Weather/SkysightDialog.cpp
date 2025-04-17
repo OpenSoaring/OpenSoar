@@ -149,8 +149,15 @@ class SkysightWidget final
 {
   ButtonPanelWidget *buttons_widget;
 
-  Button *activate_button, *add_button, *remove_button,
-    *close_button;  // *cancel_button, 
+  Button *activate_button;
+  Button *add_button;
+  Button *remove_button;
+#ifdef SKYSIGHT_OFFLINE_MODE
+  Button *update_button;
+  Button *updateall_button;
+#endif  // SKYSIGHT_OFFLINE_MODE
+  Button *close_button;
+  // Button *cancel_button;
 
   struct ListItem {
     StaticString<255> name;
@@ -180,7 +187,7 @@ private:
   void ActivateClicked();
   void DeactivateClicked();
   void AddClicked();
-#if 0  // def _DEBUG
+#ifdef SKYSIGHT_OFFLINE_MODE
   void UpdateClicked();
   void UpdateAllClicked();
 #endif
@@ -219,11 +226,11 @@ SkysightWidget::CreateButtons(ButtonPanel &buttons)
   activate_button = buttons.Add(_("Activate"), [this](){ ActivateClicked(); });
   add_button = buttons.Add(_("Add"), [this](){ AddClicked(); });
   remove_button = buttons.Add(_("Remove"), [this](){ RemoveClicked(); });
-#if 0  // def _DEBUG
+#ifdef SKYSIGHT_OFFLINE_MODE
   update_button = buttons.Add(_("Update"), [this](){ UpdateClicked(); });
   updateall_button = buttons.Add(_("Update All"), [this](){ UpdateAllClicked(); });
 #endif
-//  cancel_button = buttons.Add(_("Cancel"), [this](){ CancelClicked(); });
+  //  cancel_button = buttons.Add(_("Cancel"), [this](){ CancelClicked(); });
   close_button = buttons.Add(_("Close"), [this](){ CloseClicked(); });
 }
 
@@ -319,6 +326,28 @@ void SkysightWidget::AddClicked()
 
   UpdateList();
 }
+
+#ifdef SKYSIGHT_OFFLINE_MODE
+void SkysightWidget::UpdateClicked()
+{
+  unsigned index = GetList().GetCursorIndex();
+  assert(index < (unsigned)skysight->NumSelectedLayers());
+
+  auto layer = skysight->GetLayer(index);
+  if (!skysight->DownloadSelectedLayer(layer->id))
+    ShowMessageBox(_("Couldn't update data."), _("Update Error"), MB_OK);
+
+  UpdateList();
+}
+
+
+void SkysightWidget::UpdateAllClicked()
+{
+  if (!skysight->DownloadSelectedLayer("*"))
+    ShowMessageBox(_("Couldn't update data."), _("Update Error"), MB_OK);
+  UpdateList();
+}
+#endif // SKYSIGHT_OFFLINE_MODE
 
 void SkysightWidget::RemoveClicked()
 {
