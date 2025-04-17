@@ -1310,7 +1310,8 @@ location=1
 
 mode=VarioAudioMenu
 type=key
-data=M
+# data=M  # on RemoteStick
+data=F1
 event=Sounds toggle
 label=VOL On/Off\n(press M)
 location=2
@@ -1326,7 +1327,7 @@ mode=VarioAudioMenu
 type=key
 data=RETURN
 event=Mode default
-label=Volume: $(AudioVolume)
+label=Volume:\n$(AudioVolume)
 location=4
 
 ## mode=VarioAudioMenu
@@ -1396,3 +1397,18 @@ mode=default
 type=gesture
 data=ULDR
 event=QuickMenu
+
+
+mode=default
+type=key
+data=S
+# event=SendNMEAPort2 g,s1
+# event=SendNMEAPort1 g,s1
+event=STFSwitch STF
+
+mode=default
+type=key
+data=V
+# event=SendNMEAPort2 g,s0
+# event=SendNMEAPort1 g,s0
+event=STFSwitch Vario

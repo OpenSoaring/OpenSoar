@@ -1348,54 +1348,70 @@ label=Shutdown
 location=63
 
 # -------------
-# Define VarioMenu buttons for Audio app 
+# Define VarioAudioMenu buttons for Audio app 
 # - the PCM mixer controlled by OpenSoar 
 # -------------
 
-mode=VarioMenu
+mode=VarioAudioMenu
 type=key
 data=DOWN
 event=Sounds quieter
 label=VOL - (DOWN)$(CheckAudioQuiet)
 location=1
 
-mode=VarioMenu
+mode=VarioAudioMenu
 type=key
-data=M
+# data=M  # on RemoteStick
+data=F1
 event=Sounds toggle
 label=VOL On/Off\n(press M)
 location=2
 
-mode=VarioMenu
+mode=VarioAudioMenu
 type=key
 data=UP
 event=Sounds louder
 label=VOL + (UP)$(CheckAudioLoud)
 location=3
 
-mode=VarioMenu
+mode=VarioAudioMenu
 type=key
 data=RETURN
 event=Mode default
-label=Volume: $(AudioVolume)
+label=Volume:\n$(AudioVolume)
+location=4
+
+mode=VarioAudioMenu
+type=key
+data=S
+event=SendNMEAPort1 POV,C,STF
+event=StatusMessage Speed to Fly Mode
+label=STF
 location=5
 
-mode=VarioMenu
+mode=VarioAudioMenu
+type=key
+data=V
+event=SendNMEAPort1 POV,C,VAR
+event=StatusMessage Vario Mode
+label=VARIO
+location=6
+mode=VarioAudioMenu
 type=key
 data=ESCAPE
 event=Mode default
 label=BACK (ESC)
-location=6
+location=9
 
 mode=default RemoteStick
 type=key
 data=M
-event=Mode VarioMenu 
+event=Mode VarioAudioMenu 
 
 mode=RemoteStick
 type=key
 data=0
-event=Mode VarioMenu 
+event=Mode VarioAudioMenu 
 label=Audio Menu
 location=59
 
@@ -1412,5 +1428,32 @@ mode=default RemoteStick
 type=key
 data=Z
 event=KeyPressed P
+
+
+
+# -------------
+# Define gesture to open Quickmenu without keyboard or remote
+# ("Draw a button on the screen")
+# -------------
+
+mode=default
+type=gesture
+data=ULDR
+event=QuickMenu
+
+
+mode=default
+type=key
+data=S
+# event=SendNMEAPort2 g,s1
+# event=SendNMEAPort1 g,s1
+event=STFSwitch STF
+
+mode=default
+type=key
+data=V
+# event=SendNMEAPort2 g,s0
+# event=SendNMEAPort1 g,s0
+event=STFSwitch Vario
 
 
