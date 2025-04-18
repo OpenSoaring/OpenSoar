@@ -344,7 +344,8 @@ add_library(${TARGET_NAME}  ${XCSOAR_LIB_TYPE}
    ${INPUTEVENTS_CPP}
    ${_INCLUDE_OUTPUT}/InputCppFiles.txt
    ${_INCLUDE_OUTPUT}/ProgramVersion.h
-   # InputCppFiles    # role for input files
+   ${_INCLUDE_OUTPUT}/MakeResource.hpp
+# InputCppFiles    # role for input files
    # DefaultStatus # role for status defaults
    # EXCLUDE_FROM_ALL
    # ${CMAKE_CURRENT_SOURCE_DIR}/${PROGRAM_NAME}.rc.in
