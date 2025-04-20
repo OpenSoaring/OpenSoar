@@ -109,7 +109,9 @@ public:
   bool LayerExists(const std::string_view id);
   bool DisplayActiveLayer();
   bool DisplayTileLayer();
+#ifdef SKYSIGHT_FORECAST 
   bool DisplayForecastLayer();
+#endif  // SKYSIGHT_FORECAST 
   bool UpdateActiveLayer(const uint32_t overlay_index, const Path &filename,
     GeoBitmap::TileData tile = { 0 });
   
