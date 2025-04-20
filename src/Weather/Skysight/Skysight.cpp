@@ -602,6 +602,7 @@ Skysight::SetLayerActive(const std::string_view id)
   return true;  // SetLayerActive();
 }
 
+#ifdef SKYSIGHT_FORECAST 
 bool
 Skysight::DisplayForecastLayer()
 {
@@ -657,6 +658,7 @@ Skysight::DisplayForecastLayer()
   }
   return false;
 }
+#endif
 
 bool
 Skysight::UpdateActiveLayer(const uint32_t overlay_index, const Path &filename,
@@ -803,9 +805,11 @@ Skysight::DisplayActiveLayer()
     // no time stamp...
     filename = api->GetPath(SkysightCallType::Image, active_layer->id, 0);
     found = File::Exists(filename);
+#ifdef SKYSIGHT_FORECAST 
   } else {
     // TODO: We're only searching w a max offset of 1 hr, simplify this!
     found = DisplayForecastLayer();
+#endif  // SKYSIGHT_FORECAST 
   }
   if (found) {
     if (active_layer->forecast_time > 0) {
