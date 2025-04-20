@@ -97,12 +97,19 @@ $(ABI_OUTPUT_DIR)/%$(OBJ_SUFFIX): %.c | $(ABI_OUTPUT_DIR)/%/../dirstamp $(compil
 	@$(NQ)echo "  CC      $@"
 	$(Q)$(WRAPPED_CC) $< -c -o $@ $(cc-flags)
 
-$(ABI_OUTPUT_DIR)/%$(OBJ_SUFFIX): %.cpp | $(ABI_OUTPUT_DIR)/%/../dirstamp $(compile-depends)
+$(ABI_OUTPUT_DIR)/%$(OBJ_SUFFIX): %.cpp | $(ABI_OUTPUT_DIR)/%/../dirstamp $(compile-depends)  $(OUT)/include/ProgramVersion.h
 	@$(NQ)echo "  CXX     $@"
 	$(Q)$(WRAPPED_CXX) $< -c -o $@ $(cxx-flags)
 ifeq ($(IWYU),y)
 	$(Q)iwyu $< $(cxx-flags)
 endif
+
+##  $(ABI_OUTPUT_DIR)/src/Version$(OBJ_SUFFIX): src/Version.cpp | $(compile-depends) $(OUT)/include/ProgramVersion.h
+##  	@$(NQ)echo "  CPP     $@"
+##  	$(Q)$(WRAPPED_CXX) $< -c -o $@ $(cxx-flags) $(GIT_COMMIT_ID)
+##  ifeq ($(IWYU),y)
+##  	$(Q)iwyu $< $(cxx-flags)
+##  endif
 
 $(ABI_OUTPUT_DIR)/%$(OBJ_SUFFIX): %.cxx | $(ABI_OUTPUT_DIR)/%/../dirstamp $(compile-depends)
 	@$(NQ)echo "  CXX     $@"
