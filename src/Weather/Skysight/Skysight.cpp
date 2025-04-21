@@ -15,7 +15,6 @@
 #include "UIGlobals.hpp"
 #include "Language/Language.hpp"
 #include "LogFile.hpp"
-#include "time/BrokenDateTime.hpp"
 #include "MapWindow/OverlayBitmap.hpp"
 #include "MapWindow/GlueMapWindow.hpp"
 #include "thread/Debug.hpp"
