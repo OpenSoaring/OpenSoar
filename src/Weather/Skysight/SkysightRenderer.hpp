@@ -8,7 +8,6 @@
 #if SKYSIGHT_PREPERED
 // #include "SkysightCache.hpp"
 #include "Terrain/RasterRenderer.hpp"
-#include "time/BrokenTime.hpp"
 
 class SkysightCache;
 class SkysightStore;
@@ -63,11 +62,11 @@ public:
     return cache.IsInside(p);
   }
 
-  void SetTime(BrokenTime t) {
+  void SetTime(time_t t) {
     cache.SetTime(t);
   }
 
-  void Update(BrokenTime time_local, OperationEnvironment &operation) {
+  void Update(time_t time_local, OperationEnvironment &operation) {
     cache.Reload(time_local, operation);
   }
 

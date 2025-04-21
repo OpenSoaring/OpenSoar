@@ -7,7 +7,6 @@
 #include "system/Path.hpp"
 #include "LocalPath.hpp"
 #include "Operation/VerboseOperationEnvironment.hpp"
-// #include "time/BrokenDateTime.hpp"
 #include "thread/StandbyThread.hpp"
 #include "ui/event/Timer.hpp"
 
@@ -123,9 +122,6 @@ public:
   AllocatedPath GetLocalPath() {
     return MakeLocalPath("skysight");
   }
-#if 0
-  BrokenDateTime GetNow(bool use_system_time = false);
-#endif // 0
   void Render(bool force_update = false);
 
   static inline Skysight *GetSkysight() { return self;}
@@ -171,8 +167,6 @@ private:
   bool update_flag = false;
   uint16_t map_tile_zoom = 0;
   SkysightLayer *display_layer = nullptr;
-  // std::string_view display_layer_id = "";
-  // BrokenDateTime curr_time;
 
 #if 0
   /* virtual methods from class BlackboardListener */
