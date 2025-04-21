@@ -69,6 +69,7 @@ set(_SOURCES
 
         Renderer/ProgressBarRenderer.cpp
         Renderer/RadarRenderer.cpp
+        Renderer/FrequencyListRenderer.cpp
 )
 
 set(SCRIPT_FILES

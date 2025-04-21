@@ -155,6 +155,7 @@ set(_SOURCES
         Dialogs/WidgetDialog.cpp
 
         Dialogs/CoDialog.cpp
+        Dialogs/FrequencyDialog.cpp
 )
 
 if(HAVE_SKYSIGHT)
