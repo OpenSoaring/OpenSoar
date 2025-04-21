@@ -12,9 +12,10 @@
 #include "Profile/Profile.hpp"
 #include "UtilsSettings.hpp"
 #include "io/FileLineReader.hpp"
-#include "util/ExtractParameters.hpp"
 #include "util/StringCompare.hxx"
 #include "util/Macros.hpp"
+
+#include <string>
 
 class FrequencyListWidget final
   : public ListWidget {
@@ -25,7 +26,7 @@ class FrequencyListWidget final
 
 public:
   struct RadioChannel {
-	  tstring name;
+	  std::string name;
 	  RadioFrequency radio_frequency;
   };
   std::vector<RadioChannel> *channels;
@@ -60,9 +61,9 @@ public:
 
     if (channel.radio_frequency.IsDefined()) {
     	StaticString<30> buffer;
-    	TCHAR radio[20];
+    	char radio[20];
       channel.radio_frequency.Format(radio, ARRAY_SIZE(radio));
-      buffer.Format(_T("%s MHz"), radio);
+      buffer.Format("%s MHz", radio);
       row_renderer.DrawRightColumn(canvas, rc, buffer);
       }
 
@@ -126,22 +127,27 @@ FrequencyListWidget::UpdateList() noexcept
     return false;
   }
 
-  FileLineReader reader(path, Charset::AUTO);
+  FileLineReaderA reader(path);  // , Charset::AUTO);
 
-  TCHAR *line;
+  char *line;
   while ((line = reader.ReadLine()) != NULL) {
 
 	if (StringIsEmpty(line))
 	  continue;
 
-	TCHAR ctemp[4096];
-	if (_tcslen(line) >= ARRAY_SIZE(ctemp))
+	char ctemp[4096];
+	if (strlen(line) >= ARRAY_SIZE(ctemp))
 	  /* line too long for buffer */
 	  continue;
 
-	const TCHAR *params[2];
+	const char *params[2];
+#if 1 // Test only, ExtractParameters isn't available anymore!
+  // wie muss das gelesen werden ???
+  size_t n_params = 0;
+#else
     size_t n_params = ExtractParameters(line, ctemp, params,
-                                      ARRAY_SIZE(params), true, _T('"'));
+                                      ARRAY_SIZE(params), true, '"');
+#endif
     if (n_params != 2)
       continue;
 
