@@ -4,7 +4,7 @@ OpenSoar Version 7.43-3.24 - not yet released (24.04.2025)
   - SkySight:(Re-)Activation 'Update' and 'Update All'-Buttons in SkySight dialog for downloading offline charts
   - SkySight: Enable live view (Satellite and Rain) for OpenVario too (Forecast not available yet)
 * Data files
-  - create a audio and MC in default xci for all devices
+  - create a audio and MC in default xci for all devices (not only for OpenVario)
 * Commandline
   - datapath and profile can be used independend from each other (the order no longer needs to be observed)
 * Profile
