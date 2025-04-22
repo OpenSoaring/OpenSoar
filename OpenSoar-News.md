@@ -1,5 +1,4 @@
-OpenSoar Version 7.43-3.24 - not yet released
----------------
+OpenSoar Version 7.43-3.24 - released 2025/11/20
 OpenSoar Version 7.43-3.23.8 - released 2025/07/09 (prerelease for 7.43-3.24)
 * Weather
   - SkySight:(Re-)Activation 'Update' and 'Update All'-Buttons in SkySight dialog for downloading offline charts
