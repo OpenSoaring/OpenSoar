@@ -1,5 +1,15 @@
-OpenSoar Version 7.43-3.23.1 - not yet released
+OpenSoar Version 7.43-3.24 - 22.04.2025
 ---------------
+* Weather
+  - SkySight:(Re-)Activation 'Update' and 'Update All'-Buttons in SkySight dialog for downloading offline charts
+  - SkySight: Enable live view (Satellite and Rain) for OpenVario too (Forecast not available yet)
+* Data files
+  - create a audio and MC in default xci for all devices
+* Commandline
+  - datapath and profile can be used independend from each other (the order no longer needs to be observed)
+* Profile
+  - splitting profile files in device file (hardcoded device_map.map) and normal profile *.prf, so you copy only the personal settings from device to device, not the port settings anymore
+  - ATTENTION: The (re-)copy of a new profile to an older program version behaves differently than before
 
 #### XCSoar Version 7.44(3) - dev state on 2025/04/07
 * 3rd merge xcsoar master '6e95a3849a' -> xcsoar 7.43-3!

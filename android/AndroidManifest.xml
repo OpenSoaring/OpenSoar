@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="de.opensoar"
           android:installLocation="auto"
-          android:versionCode="22"
-          android:versionName="7.42.22">
+          android:versionCode="24"
+          android:versionName="7.43-3.24">
   <application
       android:requestLegacyExternalStorage="true"
       android:preserveLegacyExternalStorage="true"
