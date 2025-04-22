@@ -236,9 +236,12 @@ jobs:
             
             echo "DEBUG=$DEBUG"
             case ${{ matrix.target }} in
-                OSX64 | IOS64 | MACOS)
-                  # echo "BUILD_PARAMS=-j$(nproc) TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
+                OSX64 | MACOS)
                   echo "BUILD_PARAMS=-j$(nproc) TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
+                  echo "BUILDER=gmake" >> $GITHUB_ENV
+                  ;;
+                IOS64)
+                  echo "BUILD_PARAMS=-j1 TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
                   echo "BUILDER=gmake" >> $GITHUB_ENV
                   ;;
                 *)
