@@ -15,6 +15,9 @@
 #include "util/StringCompare.hxx"
 #include "util/Macros.hpp"
 
+#include "io/KeyValueFileReader.hpp"
+
+#include "boost/algorithm/string.hpp"
 #include <string>
 
 class FrequencyListWidget final
@@ -127,37 +130,20 @@ FrequencyListWidget::UpdateList() noexcept
     return false;
   }
 
-  FileLineReaderA reader(path);  // , Charset::AUTO);
+  FileLineReaderA reader(path);
+  /* TODO(August2111): KeyValueFileReader with different split character and 
+     key and value trimmed internal*/
+  KeyValueFileReader freq_reader(reader);
+  KeyValuePair pair;
+  while (freq_reader.Read(pair)) {
+    RadioChannel *channel = new RadioChannel();
+    channel->name = pair.key;
+    boost::trim(channel->name);
+    std::string freq_str = pair.value;
+    boost::trim(freq_str);
 
-  char *line;
-  while ((line = reader.ReadLine()) != NULL) {
-
-	if (StringIsEmpty(line))
-	  continue;
-
-	char ctemp[4096];
-	if (strlen(line) >= ARRAY_SIZE(ctemp))
-	  /* line too long for buffer */
-	  continue;
-
-	const char *params[2];
-#if 1 // Test only, ExtractParameters isn't available anymore!
-  // wie muss das gelesen werden ???
-  size_t n_params = 0;
-#else
-    size_t n_params = ExtractParameters(line, ctemp, params,
-                                      ARRAY_SIZE(params), true, '"');
-#endif
-    if (n_params != 2)
-      continue;
-
-    RadioFrequency radio_frequency = RadioFrequency::Parse(params[1]);
-    if (radio_frequency.IsDefined()) {
-      RadioChannel *channel = new RadioChannel();
-      channel->name = params[0];
-      channel->radio_frequency = radio_frequency;
-      channels->push_back(*channel);
-    }
+    channel->radio_frequency = RadioFrequency::Parse(freq_str);
+    channels->push_back(*channel);
   }
   return !channels->empty();
 }
