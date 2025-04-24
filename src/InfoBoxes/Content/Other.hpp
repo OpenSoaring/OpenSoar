@@ -29,6 +29,9 @@ UpdateInfoBoxFreeRAM(InfoBoxData &data) noexcept;
 void
 UpdateInfoBoxNbrSat(InfoBoxData &data) noexcept;
 
+void
+UpdateInfoBoxPageIndex(InfoBoxData &data) noexcept;
+
 class InfoBoxContentHorizon : public InfoBoxContent
 {
 public:

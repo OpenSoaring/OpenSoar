@@ -1231,6 +1231,14 @@ static constexpr MetaData meta_data_2nd[] = {
         wind_infobox_panels,
     },
 
+    // e_PageNo
+    {
+        N_("Page No"),
+        N_("Page No"),
+        N_("Index of displayed page."),
+        UpdateInfoBoxPageIndex,
+    },
+
 };
 
 // static_assert(ARRAY_SIZE(meta_data_2nd) == NUM_TYPES_2nd - e_NUM_AREA_2nd, "Wrong InfoBox factory size");

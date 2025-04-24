@@ -157,6 +157,7 @@ namespace InfoBoxFactory
     e_InstantaneousWindBearing,
     e_InternalWind,
     e_InternalZigZagWind,
+    e_PageNo,
 
     e_NUM_TYPES_2nd  // Last item 2nd area
   };
