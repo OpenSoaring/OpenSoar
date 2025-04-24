@@ -78,7 +78,8 @@ InterfaceConfigPanel::Prepare(ContainerWindow &parent,
                                   "font size, landable size and more."));
   if (wp_dpi != nullptr) {
     static constexpr unsigned dpi_choices[] = {
-      120, 160, 240, 260, 280, 300, 340, 360, 400, 420, 520,
+      // Is a custom_dpi smaller than 120 sensible and useful ?
+        80, 120, 160, 240, 260, 280, 300, 340, 360, 400, 420, 520,
     };
     const unsigned *dpi_choices_end =
       dpi_choices + sizeof(dpi_choices) / sizeof(dpi_choices[0]);

@@ -110,7 +110,8 @@ Profile::Load(const ProfileMap &map, UISettings &settings)
     settings.scale = 100;
 
   map.Get(ProfileKeys::CustomDPI, settings.custom_dpi);
-  if (settings.custom_dpi < 120 || settings.custom_dpi > 520)
+  // Is a custom_dpi smaller than 120 sensible and useful?
+  if (settings.custom_dpi < 80 || settings.custom_dpi > 520)
     settings.custom_dpi = 0;
 
   /* Migrate old data if TA enabled */
