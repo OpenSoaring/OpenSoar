@@ -467,28 +467,32 @@ jobs:
           asset_name: ${{ matrix.target_final }}-${{ matrix.target }}${{ matrix.target_ext }}
           asset_content_type: application/zip
   
-      - name: Deploy to Download server - testing
-        if: ${{ github.repository == 'August2111/OpenSoar' && github.ref == 'refs/heads/master' }}
-        uses: easingthemes/ssh-deploy@main
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
-          ARGS: "-rltgoDzvO"
-          # SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
-          SOURCE: ${{ matrix.target_bin }}${{ matrix.target_ext }}
-          REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
-          REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
-          TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}/
-          SCRIPT_BEFORE: mkdir -p ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}
+      ## XCSoar - name: Deploy to Download server - testing
+      ## XCSoar   # if: ${{ github.repository == 'August2111/OpenSoar' && github.ref == 'refs/heads/master' }}
+      ## XCSoar   # this is only available on XCSoar! OpenSoar has no automatic access to the Download Server
+      ## XCSoar   if: ${{ github.repository == 'XCSoar/XCSoar' && github.ref == 'refs/heads/master' }}
+      ## XCSoar   uses: easingthemes/ssh-deploy@main
+      ## XCSoar   env:
+      ## XCSoar     SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
+      ## XCSoar     ARGS: "-rltgoDzvO"
+      ## XCSoar     # SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+      ## XCSoar     SOURCE: ${{ matrix.target_bin }}${{ matrix.target_ext }}
+      ## XCSoar     REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
+      ## XCSoar     REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
+      ## XCSoar     TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}/
+      ## XCSoar     SCRIPT_BEFORE: mkdir -p ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}
   
-      - name: Deploy to Download server - release
-        if: ${{ github.repository == 'OpenSoaring/OpenSoar' && startsWith(github.ref, 'refs/tags/v') && matrix.target_upload == true }}
-        uses: easingthemes/ssh-deploy@main
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
-          ARGS: "-rltgoDzvO"
-          # SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
-          SOURCE: ${{ matrix.target_bin }}${{ matrix.target_ext }}
-          REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
-          REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
-          TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
-          SCRIPT_BEFORE: mkdir -p ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
+      ## XCSoar - name: Deploy to Download server - release
+      ## XCSoar   # if: ${{ github.repository == 'OpenSoaring/OpenSoar' && startsWith(github.ref, 'refs/tags/v') && matrix.target_upload == true }}
+      ## XCSoar   # this is only available on XCSoar! OpenSoar has no automatic access to the Download Server
+      ## XCSoar   if: ${{ github.repository == 'XCSoar/XCSoar' && startsWith(github.ref, 'refs/tags/v') && matrix.target_upload == true }}
+      ## XCSoar   uses: easingthemes/ssh-deploy@main
+      ## XCSoar   env:
+      ## XCSoar     SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
+      ## XCSoar     ARGS: "-rltgoDzvO"
+      ## XCSoar     # SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+      ## XCSoar     SOURCE: ${{ matrix.target_bin }}${{ matrix.target_ext }}
+      ## XCSoar     REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
+      ## XCSoar     REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
+      ## XCSoar     TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
+      ## XCSoar     SCRIPT_BEFORE: mkdir -p ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
