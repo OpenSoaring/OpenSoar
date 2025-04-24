@@ -89,14 +89,14 @@ struct MetaData {
                      const char *_description,
                      InfoBoxContent *(*_create)() noexcept) noexcept
     :name(_name), caption(_caption), description(_description),
-     create(_create), update(nullptr), panels(nullptr) {}
+     create(_create), update(nullptr), panels(infobox_panel) {}
 
   constexpr MetaData(const char *_name,
                      const char *_caption,
                      const char *_description,
                      void (*_update)(InfoBoxData &data) noexcept) noexcept
     :name(_name), caption(_caption), description(_description),
-     create(nullptr), update(_update), panels(nullptr) {}
+     create(nullptr), update(_update), panels(infobox_panel) {}
 
   constexpr MetaData(const char *_name,
                      const char *_caption,

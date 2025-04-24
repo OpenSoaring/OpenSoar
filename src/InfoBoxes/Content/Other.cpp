@@ -3,6 +3,7 @@
 
 #include "InfoBoxes/Content/Other.hpp"
 #include "InfoBoxes/Data.hpp"
+#include "InfoBoxes/Panel/Panel.hpp"
 #include "Interface.hpp"
 #include "Renderer/HorizonRenderer.hpp"
 #include "Hardware/PowerGlobal.hpp"
@@ -17,6 +18,9 @@
 #include "Hardware/PowerInfo.hpp"
 #endif
 
+const InfoBoxPanel infobox_panel[] = {
+   { nullptr, nullptr }
+};
 
 void
 UpdateInfoBoxHeartRate(InfoBoxData &data) noexcept
@@ -133,6 +137,12 @@ UpdateInfoBoxFreeRAM(InfoBoxData &data) noexcept
 {
   // used to be implemented on WinCE
   data.SetInvalid();
+}
+
+const InfoBoxPanel *
+InfoBoxContentHorizon::GetDialogContent() noexcept
+{
+  return infobox_panel;  // the general empty InfoBoxSet
 }
 
 void
