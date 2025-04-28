@@ -496,9 +496,7 @@ SkysightAPI::ParseLastUpdates(const SkysightRequestArgs &args,
       }
     }
   } else {
-    // layer_id = Profile::Get(ProfileKeys::WeatherLayerDisplayed);
     layer_id = "n.a.";
-    ///  success = true;
   }
 
   inited_lastupdates = success;
