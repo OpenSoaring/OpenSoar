@@ -153,6 +153,11 @@ public:
     }
   }
 
+  bool Enabled() {
+    return active_layer != nullptr &&
+      !email.empty() && !password.empty();
+  }
+
   inline void SetUpdateFlag() {
     update_flag = true;
   }
