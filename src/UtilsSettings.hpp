@@ -12,6 +12,9 @@ extern bool AirfieldFileChanged;
 extern bool InputFileChanged;
 extern bool MapFileChanged;
 extern bool FlarmFileChanged;
+#if 0  // FLARM_FILE2_SETTING,  GLB-FLARM-DeviceDatabase-UNITED is solving this merge
+extern bool FlarmFile2Changed;
+#endif  // GLB-FLARM-DeviceDatabase-UNITED is solving this merge
 extern bool RaspFileChanged;
 extern bool LanguageChanged;
 extern bool require_restart;
