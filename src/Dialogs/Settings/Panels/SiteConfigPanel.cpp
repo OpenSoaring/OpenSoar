@@ -12,6 +12,9 @@
 #include "Waypoint/Patterns.hpp"
 #include "system/Path.hpp"
 
+#define RASP_FILE_SETTING 0
+#define FLARM_FILE2_SETTING 0
+
 enum ControlIndex {
   DataPath,
   MapFile,
@@ -22,7 +25,13 @@ enum ControlIndex {
   AdditionalAirspaceFile,
   AirfieldFile,
   FlarmFile,
+#if  FLARM_FILE2_SETTING  
+  // GLB-FLARM-DeviceDatabase-UNITED is solving this merge
+  FlarmFile2,
+#endif
+#if RASP_FILE_SETTING
   RaspFile,
+#endif
 };
 
 class SiteConfigPanel final : public RowFormWidget {
@@ -40,33 +49,36 @@ public:
 };
 
 void
-SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent, [[maybe_unused]] const PixelRect &rc) noexcept
+SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent,
+  [[maybe_unused]] const PixelRect &rc) noexcept
 {
   WndProperty *wp = Add("", 0, true);
   wp->SetText(GetPrimaryDataPath().c_str());
   wp->SetEnabled(false);
 
   AddFile(_("Map database"),
-          _("The name of the file (.xcm) containing terrain, topography, and optionally "
-            "waypoints, their details and airspaces."),
+          _("The name of the file (.xcm) containing terrain, topography, "
+            "and optionally waypoints, their details and airspaces."),
           ProfileKeys::MapFile, "*.xcm\0*.lkm\0", FileType::MAP);
 
   AddFile(_("Waypoints"),
-          _("Primary waypoints file.  Supported file types are Cambridge/WinPilot files (.dat), "
-            "Zander files (.wpz) or SeeYou files (.cup)."),
+          _("Primary waypoints file.  Supported file types are Cambridge "
+            "files (.dat), Zander files (.wpz) or SeeYou files (.cup)."),
           ProfileKeys::WaypointFile, WAYPOINT_FILE_PATTERNS,
           FileType::WAYPOINT);
 
   AddFile(_("More waypoints"),
-          _("Secondary waypoints file.  This may be used to add waypoints for a competition."),
+          _("Secondary waypoints file.  This may be used to add waypoints "
+            "for a competition."),
           ProfileKeys::AdditionalWaypointFile, WAYPOINT_FILE_PATTERNS,
           FileType::WAYPOINT);
   SetExpertRow(AdditionalWaypointFile);
 
   AddFile(_("Watched waypoints"),
-          _("Waypoint file containing special waypoints for which additional computations like "
-            "calculation of arrival height in map display always takes place. Useful for "
-            "waypoints like known reliable thermal sources (e.g. powerplants) or mountain passes."),
+          _("Waypoint file containing special waypoints for which additional "
+            "computations like calculation of arrival height in map display "
+            "always takes place. Useful for waypoints like known reliable "
+            "thermal sources (e.g. powerplants) or mountain passes."),
           ProfileKeys::WatchedWaypointFile, WAYPOINT_FILE_PATTERNS,
           FileType::WAYPOINT);
   SetExpertRow(WatchedWaypointFile);
@@ -75,26 +87,41 @@ SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent, [[maybe_unuse
           ProfileKeys::AirspaceFile, "*.txt\0*.air\0*.sua\0",
           FileType::AIRSPACE);
 
-  AddFile(_("More airspaces"), _("The file name of the secondary airspace file."),
+  AddFile(_("More airspaces"),
+          _("The file name of the secondary airspace file."),
           ProfileKeys::AdditionalAirspaceFile, "*.txt\0*.air\0*.sua\0",
           FileType::AIRSPACE);
   SetExpertRow(AdditionalAirspaceFile);
 
   AddFile(_("Waypoint details"),
-          _("The file may contain extracts from enroute supplements or other contributed "
-            "information about individual waypoints and airfields."),
+          _("The file may contain extracts from enroute supplements or other "
+            "contributed information about individual "
+            "waypoints and airfields."),
           ProfileKeys::AirfieldFile, "*.txt\0",
           FileType::WAYPOINTDETAILS);
   SetExpertRow(AirfieldFile);
 
   AddFile(_("FLARM Device Database"),
-          _("The name of the file containing information about registered FLARM devices."),
+          _("The name of the file containing information about registered "
+            "FLARM devices."),
           ProfileKeys::FlarmFile, "*.fln\0",
           FileType::FLARMNET);
 
+#if 0 // GLB-FLARM-DeviceDatabase-UNITED is solving this merge
+  AddFile(_("Alt. FLARM Device Database"),
+          _("The name of the file containing information about alternative "
+            "registered FLARM devices."),
+          ProfileKeys::FlarmFile2, "*.fln\0",
+          FileType::FLARMNET);
+#endif  // GLB-FLARM-DeviceDatabase-UNITED is solving this merge
+
+#if RASP_FILE_SETTING
+  /* TODO(August2111) : remove RASP setting - personally I cannot see any input
+   * on weather page */
   AddFile("RASP", nullptr,
           ProfileKeys::RaspFile, "*-rasp*.dat\0",
           FileType::RASP);
+#endif
 }
 
 bool
@@ -105,23 +132,41 @@ SiteConfigPanel::Save(bool &_changed) noexcept
   MapFileChanged = SaveValueFileReader(MapFile, ProfileKeys::MapFile);
 
   // WaypointFileChanged has already a meaningful value
-  WaypointFileChanged |= SaveValueFileReader(WaypointFile, ProfileKeys::WaypointFile);
-  WaypointFileChanged |= SaveValueFileReader(AdditionalWaypointFile, ProfileKeys::AdditionalWaypointFile);
-  WaypointFileChanged |= SaveValueFileReader(WatchedWaypointFile, ProfileKeys::WatchedWaypointFile);
+  WaypointFileChanged |= SaveValueFileReader(WaypointFile,
+    ProfileKeys::WaypointFile);
+  WaypointFileChanged |= SaveValueFileReader(AdditionalWaypointFile,
+    ProfileKeys::AdditionalWaypointFile);
+  WaypointFileChanged |= SaveValueFileReader(WatchedWaypointFile,
+    ProfileKeys::WatchedWaypointFile);
 
-  AirspaceFileChanged = SaveValueFileReader(AirspaceFile, ProfileKeys::AirspaceFile);
-  AirspaceFileChanged |= SaveValueFileReader(AdditionalAirspaceFile, ProfileKeys::AdditionalAirspaceFile);
+  AirspaceFileChanged = SaveValueFileReader(AirspaceFile,
+    ProfileKeys::AirspaceFile);
+  AirspaceFileChanged |= SaveValueFileReader(AdditionalAirspaceFile,
+    ProfileKeys::AdditionalAirspaceFile);
 
-  FlarmFileChanged = SaveValueFileReader(FlarmFile, ProfileKeys::FlarmFile);
+  FlarmFileChanged = SaveValueFileReader(FlarmFile,
+    ProfileKeys::FlarmFile);
+#if FLARM_FILE2_SETTING
+  // GLB-FLARM-DeviceDatabase-UNITED is solving this merge
+  FlarmFile2Changed = SaveValueFileReader(FlarmFile2,
+    ProfileKeys::FlarmFile2);
+#endif
+  AirfieldFileChanged = SaveValueFileReader(AirfieldFile,
+    ProfileKeys::AirfieldFile);
 
-  AirfieldFileChanged = SaveValueFileReader(AirfieldFile, ProfileKeys::AirfieldFile);
-
+#if RASP_FILE_SETTING
   RaspFileChanged = SaveValueFileReader(RaspFile, ProfileKeys::RaspFile);
+#endif
 
   changed = WaypointFileChanged || AirfieldFileChanged || MapFileChanged ||
-    FlarmFileChanged ||
-    RaspFileChanged;
-
+    FlarmFileChanged
+#if  FLARM_FILE2_SETTING
+    || FlarmFile2Changed
+#endif
+#if  RASP_FILE_SETTING
+    || RaspFileChanged
+#endif
+  ;
   _changed |= changed;
 
   return true;
