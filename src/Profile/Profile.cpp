@@ -41,6 +41,12 @@ Profile::Load() noexcept
   LogString("Loading profiles");
   LoadFile(startProfileFile);
 
+  if (File::Exists(portSettingFile)) {
+    // if portSettingFile exist load port information from this
+    LogString("Loading device port information");
+    LoadFile(portSettingFile);
+  }
+
   if (File::Exists(portSettingFile))
       LoadFile(portSettingFile);
   SetModified(false);
@@ -55,15 +61,19 @@ Profile::LoadFile(Path path) noexcept
     else
        LoadFile(map, path);
     if (device_map.empty()) {
+      /* if no device_map exist, load port information from normal 
+       * profile file - and move it to the device_map */
       for (auto setting = map.begin(); setting != map.end(); ) {
         auto next = setting;
         next++;
-        if (setting->first.starts_with("Port")) {
+        if (setting->first.starts_with("Port") || 
+          setting->first.starts_with("Device")) {
           device_map.Set(setting->first, setting->second.c_str());
           map.Remove(setting->first);
         }
         setting = next;
       }
+      SaveFile(device_map, portSettingFile);
     }
     LogFormat("Loaded profile from %s", path.c_str());
   } catch (...) {
@@ -84,8 +94,8 @@ Profile::Save() noexcept
   assert(startProfileFile != nullptr);
 
   try {
-    SaveFile(startProfileFile);
-    SaveFile(portSettingFile);
+    SaveFile(map, startProfileFile);
+    SaveFile(device_map, portSettingFile);
   } catch (...) {
     LogError(std::current_exception(), "Failed to save profile");
   }
@@ -94,11 +104,9 @@ Profile::Save() noexcept
 void
 Profile::SaveFile(Path path)
 {
+  // save Profile only (not the port setting!)
   LogFormat("Saving profile to %s", path.c_str());
-  if (path == portSettingFile)
-      SaveFile(device_map, path);
-  else
-      SaveFile(map, path);
+  SaveFile(map, path);
 }
 
 void
