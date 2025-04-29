@@ -38,17 +38,15 @@ Profile::Load() noexcept
     SetFiles(nullptr);
   assert(startProfileFile != nullptr);
 
-  LogString("Loading profiles");
-  LoadFile(startProfileFile);
-
   if (File::Exists(portSettingFile)) {
     // if portSettingFile exist load port information from this
     LogString("Loading device port information");
     LoadFile(portSettingFile);
   }
 
-  if (File::Exists(portSettingFile))
-      LoadFile(portSettingFile);
+  LogString("Loading profiles");
+  LoadFile(startProfileFile);
+
   SetModified(false);
 }
 
@@ -73,11 +71,32 @@ Profile::LoadFile(Path path) noexcept
         }
         setting = next;
       }
-      SaveFile(device_map, portSettingFile);
+      if (!device_map.empty())
+        SaveFile(device_map, portSettingFile);
     }
     LogFormat("Loaded profile from %s", path.c_str());
   } catch (...) {
     LogError(std::current_exception(), "Failed to load profile");
+  }
+}
+
+void
+Profile::Save(const ProfileMap &_map) noexcept
+{
+  if (!IsModified())
+    return;
+
+  Path path = (&_map == &device_map) ? portSettingFile : startProfileFile;
+  LogString("Saving profiles");
+  if (path == nullptr)
+    SetFiles(nullptr);
+
+  assert(startProfileFile != nullptr);
+
+  try {
+    SaveFile(_map, path);
+  } catch (...) {
+    LogError(std::current_exception(), "Failed to save profile");
   }
 }
 

@@ -12,6 +12,7 @@
 
 class Path;
 class AllocatedPath;
+class ProfileMap;
 
 namespace Profile {
 
@@ -41,6 +42,14 @@ LoadFile(Path path) noexcept;
  */
 void
 Save() noexcept;
+
+/**
+ * Saves the profile into the correct profile files
+ *
+ * Errors will be caught and logged.
+ */
+void
+Save(const ProfileMap &map) noexcept;
 
 /**
  * Saves the profile into the given profile file
