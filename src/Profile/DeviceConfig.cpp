@@ -159,7 +159,7 @@ Profile::GetDeviceConfig(const ProfileMap &map, unsigned n,
     config.bulk_baud_rate = 0;
 
   strcpy(buffer, "DeviceA");
-  buffer[strlen(buffer) - 1] += n;
+  buffer[strlen(buffer) - 1] += n;  // DeviceA - DeviceF
   map.Get(buffer, config.driver_name);
 
   MakeDeviceSettingName(buffer, "Port", n, "Enabled");
