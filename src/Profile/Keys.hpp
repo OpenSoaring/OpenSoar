@@ -73,6 +73,9 @@ constexpr std::string_view AirfieldFile = "AirfieldFile"; // pL
 constexpr std::string_view AirspaceFile = "AirspaceFile"; // pL
 constexpr std::string_view AdditionalAirspaceFile = "AdditionalAirspaceFile"; // pL
 constexpr std::string_view FlarmFile = "FlarmFile";
+#if 0 // = FLARM_FILE2_SETTING, GLB-FLARM-DeviceDatabase-UNITED is solving this merge
+constexpr std::string_view FlarmFile2 = "FlarmFile2";
+#endif
 constexpr std::string_view PolarFile = "PolarFile"; // pL
 constexpr std::string_view WaypointFile = "WPFile"; // pL
 constexpr std::string_view AdditionalWaypointFile = "AdditionalWPFile"; // pL
