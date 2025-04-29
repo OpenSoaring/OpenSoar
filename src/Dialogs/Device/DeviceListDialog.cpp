@@ -504,8 +504,8 @@ DeviceListWidget::EnableDisableCurrent()
   /* save new config to profile .. */
 
   config.enabled = !config.enabled;
-  Profile::SetDeviceConfig(Profile::map, index, config);
-  Profile::Save();
+  Profile::SetDeviceConfig(Profile::device_map, index, config);
+  Profile::Save(Profile::device_map);
 
   /* update the UI */
 
@@ -612,8 +612,8 @@ DeviceListWidget::EditCurrent()
   /* save new config to profile .. */
 
   config = widget.GetConfig();
-  Profile::SetDeviceConfig(Profile::map, index, config);
-  Profile::Save();
+  Profile::SetDeviceConfig(Profile::device_map, index, config);
+  Profile::Save(Profile::device_map);
 
   /* update the UI */
 
