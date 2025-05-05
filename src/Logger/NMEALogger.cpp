@@ -8,6 +8,7 @@
 #include "system/Path.hpp"
 #include "util/SpanCast.hxx"
 #include "util/StaticString.hxx"
+#include "time/DateTime.hpp"
 
 NMEALogger::NMEALogger() noexcept {}
 NMEALogger::~NMEALogger() noexcept = default;
@@ -18,19 +19,10 @@ NMEALogger::Start()
   if (file != nullptr)
     return;
 
-  BrokenDateTime dt = BrokenDateTime::NowUTC();
-  assert(dt.IsPlausible());
-
-  StaticString<64> name;
-  name.Format("%04u-%02u-%02u_%02u-%02u.nmea",
-              dt.year, dt.month, dt.day,
-              dt.hour, dt.minute);
-
-  const auto logs_path = MakeLocalPath("logs");
-
-  const auto path = AllocatedPath::Build(logs_path, name);
-  file = std::make_unique<FileOutputStream>(path,
-                                            FileOutputStream::Mode::APPEND_OR_CREATE);
+  file = std::make_unique<FileOutputStream>(
+      AllocatedPath::Build(MakeLocalPath("logs"),
+      (DateTime::str_now("%Y%m%d-%H%M%S") + ".nmea").c_str()),
+  FileOutputStream::Mode::APPEND_OR_CREATE);
 }
 
 static void
