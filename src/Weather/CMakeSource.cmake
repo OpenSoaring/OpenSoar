@@ -21,12 +21,10 @@ if(HAVE_SKYSIGHT)
         Weather/Skysight/Skysight.cpp
         Weather/Skysight/SkysightAPI.cpp
         Weather/Skysight/SkysightRegions.cpp
-
-        Weather/Skysight/Request.cpp
         Weather/Skysight/APIQueue.cpp
 
         Weather/Skysight/SkysightRenderer.cpp
-        Weather/Skysight/SkySightCoRequest.cpp
+        Weather/Skysight/SkySightRequest.cpp
   )
   if(SKYSIGHT_FORECAST)
     list(APPEND _SOURCES Weather/Skysight/CDFDecoder.cpp    )

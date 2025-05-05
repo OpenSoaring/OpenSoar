@@ -8,8 +8,6 @@ endif()
 include(CMakeSource.cmake)
 # organize the files in subdirectories
 
-add_compile_definitions(SKYSIGHT_LIVE) 
-
 set(SOURCE_FILES )
 foreach(source_file ${_SOURCES})
     string(REPLACE "${TARGET_NAME}/" "" source_file ${source_file})
