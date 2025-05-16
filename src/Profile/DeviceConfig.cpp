@@ -134,7 +134,11 @@ Profile::GetDeviceConfig(const ProfileMap &map, unsigned n,
 
   MakeDeviceSettingName(buffer, "Port", n, "TCPPort");
   if (!map.Get(buffer, config.tcp_port))
+#ifdef OPENVARIO
+    config.tcp_port = n == 0 ? 4352: 4353;
+#else
     config.tcp_port = 4353;
+#endif
 
   config.path.clear();
   if ((!have_port_type ||
@@ -147,7 +151,6 @@ Profile::GetDeviceConfig(const ProfileMap &map, unsigned n,
        config.port_type == DeviceConfig::PortType::SERIAL) &&
        !LoadPath(map, config, n))
     config.port_type = DeviceConfig::PortType::SERIAL;
-    // config.port_type = DeviceConfig::PortType::BLE_HM10;
 
   MakeDeviceSettingName(buffer, "Port", n, "BaudRate");
   if (!map.Get(buffer, config.baud_rate)) {
@@ -160,10 +163,16 @@ Profile::GetDeviceConfig(const ProfileMap &map, unsigned n,
 
   strcpy(buffer, "DeviceA");
   buffer[strlen(buffer) - 1] += n;  // DeviceA - DeviceF
-  map.Get(buffer, config.driver_name);
-
+  if (!map.Get(buffer, config.driver_name))
+#ifdef OPENVARIO
+    config.driver_name = n == 0 ? "OpenVario" : "Disabled";
+#else
+    config.driver_name = "Disabled";
+#endif
+  
   MakeDeviceSettingName(buffer, "Port", n, "Enabled");
-  map.Get(buffer, config.enabled);
+  if (!map.Get(buffer, config.enabled))
+    config.enabled = false;
 
   MakeDeviceSettingName(buffer, "Port", n, "SyncFromDevice");
   map.Get(buffer, config.sync_from_device);
