@@ -92,6 +92,106 @@ jobs:
           echo "Get OpenSoar Version"
           echo "CurrDir = $(pwd)"
 
+  test: # step3, but aligned with 'build-dev-test.yml'
+    runs-on: ${{ matrix.os }}
+    needs: build # step2
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: UNIX
+            target_container: debian:bookworm-slim
+
+          - os: ubuntu-24.04
+            target: UNIX
+
+          - os: macos-13
+            target: OSX64
+
+          - os: macos-14
+            target: OSX64
+
+          - os: macos-14
+            target: MACOS
+
+          - os: macos-15
+            target: MACOS
+
+          - os: windows-2022
+            target: WIN64
+
+          - os: windows-2019
+            target: PC
+
+    container: ${{ matrix.target_container }}
+    continue-on-error: true
+    steps:
+      - id: checkout
+        uses: actions/checkout@v4
+
+      - name: Install checkout dependencies (Ubuntu)
+        if: ${{ startsWith(matrix.os, 'ubuntu-') }}
+        run: |
+          echo "Install checkout dependencies: ${{ matrix.target }} "
+          if [ -z ${{ matrix.target_container }} ]; then
+            # test w/o container:
+            sudo apt-get update
+            sudo apt-get install -y libfmt-dev libgeotiff-dev
+          else
+            ./ide/provisioning/install-debian-packages.sh UPDATE BASE LINUX
+          fi
+
+      - name: Install checkout dependencies (MacOS)
+        if: ${{ startsWith(matrix.os, 'macos-') }}
+        run: |
+          echo "Install checkout dependencies: ${{ matrix.target }} "
+          brew install fmt
+
+      - name: Set Git Variables
+        if: ${{ ! startsWith(matrix.os, 'windows-') && (env.TEST_COMMIT == '') }}
+        run: |
+          echo "Set Git Variables"
+          COMMIT=$(echo $GITHUB_SHA | head -c 7)
+          RUN_ID=${{ github.run_id }}
+          echo "GIT_COMMIT=$COMMIT" >> $GITHUB_ENV
+          echo "TEST_COMMIT=$COMMIT" >> $GITHUB_ENV
+          echo "TEST_RUN_ID=$RUN_ID" >> $GITHUB_ENV
+      
+      - name: Set Git Variables (Windows)
+        if: ${{ startsWith(matrix.os, 'windows-')  && (env.TEST_COMMIT == '') }}
+        run: |
+          echo "Set Git Variables (Windows)"
+          $COMMIT = $env:GITHUB_SHA.substring(0,7)
+          $RUN_ID=${{ github.run_id }}
+          echo "GIT_COMMIT=$COMMIT" >> $env:GITHUB_ENV
+          echo "TEST_COMMIT=$COMMIT" >> $env:GITHUB_ENV
+          echo "TEST_RUN_ID=$RUN_ID" >> $env:GITHUB_ENV
+          echo "========================"
+
+      - name: Test Variables
+        run: |
+          echo "test-run-id: ${{ env.TEST_RUN_ID }}"
+          echo "current run-id: ${{ github.run_id }}"
+          echo "github-token: ${{ github.token }}"
+          echo "name: Test-${{ env.TEST_COMMIT }}-${{ matrix.target }}"
+          echo "path: ${{ github.workspace }}"
+
+      - name: Fetch Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ env.TEST_RUN_ID }}  
+          github-token: ${{ github.token }}
+          name: Test-${{ env.TEST_COMMIT }}-${{ matrix.target }}
+          path: ${{ github.workspace }}
+
+      - name: Run Test Programs on ${{ matrix.target }}
+        run: |
+          echo "Run Test Programs on ${{ matrix.target }}"
+          chmod +x ./output/${{ matrix.target }}/bin/*
+          echo "run tests on Target '${{ matrix.target }}'"
+          make check-no-build TARGET=${{ matrix.target }}
+        working-directory: ${{ github.workspace }}
+
   build: # step 2
     # if: ${{ startsWith('UNIX,MACOS,WIN64', 'UNIX') }}
     runs-on: ${{ matrix.os }}
@@ -127,7 +227,7 @@ jobs:
             target_bin: OpenSoar_${{ needs.release.outputs.version }}_amd64
             target_final: OpenSoar_
             target_ext: .deb
-            target_test: false
+            target_test: true
             # temporary false: target_upload: true
             target_upload: false
             target_container: debian:bookworm-slim    # => Ubuntu 24.04
@@ -138,7 +238,7 @@ jobs:
             target_bin: OpenSoar
             target_final: OpenSoar
             target_ext: .exe
-            target_test: false
+            target_test: true
             target_upload: false
             target_container: debian:bookworm-slim
           
@@ -157,7 +257,7 @@ jobs:
             target_bin: OpenSoar
             target_final: OpenSoar
             target_ext: .exe
-            target_test: false
+            target_test: true
             # temporary false: target_upload: true
             target_upload: false
             target_container: debian:bookworm-slim
@@ -167,7 +267,7 @@ jobs:
             target_bin: OpenSoar
             target_final: OpenSoar
             target_ext: ''
-            target_test: false
+            target_test: true
             # temporary false: target_upload: true
             target_upload: false
             # w/o container
@@ -177,7 +277,7 @@ jobs:
             target_bin: OpenSoar
             target_final: OpenSoar
             target_ext: ''
-            target_test: false
+            target_test: true
             # temporary false: target_upload: true
             target_upload: false
             # w/o container
@@ -237,7 +337,8 @@ jobs:
             echo "DEBUG=$DEBUG"
             case ${{ matrix.target }} in
                 OSX64 | MACOS)
-                  echo "BUILD_PARAMS=-j$(nproc) TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
+                  echo "BUILD_PARAMS=-j1 TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
+                  # echo "BUILD_PARAMS=-j$(nproc) TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
                   echo "BUILDER=gmake" >> $GITHUB_ENV
                   ;;
                 IOS64)
