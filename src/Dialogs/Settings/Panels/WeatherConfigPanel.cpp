@@ -60,7 +60,7 @@ FillRegionControl(WndProperty &wp, const char *setting)
   auto skysight = DataGlobals::GetSkysight();
 
   for (auto &i: skysight->GetRegions())
-    df->addEnumText(i.first.c_str(), i.second.c_str());
+    df->addEnumText(i.first.data(), i.second.name.data());
 
   // if old region doesn't exist any more this will fall back to first element
   df->SetValue(setting);
@@ -139,15 +139,21 @@ WeatherConfigPanel::Save(bool &_changed) noexcept
 #endif
 
 #ifdef HAVE_SKYSIGHT
-  changed |= SaveValue(SKYSIGHT_EMAIL, ProfileKeys::SkysightEmail,
-                       settings.skysight.email);
+  bool skysight_changed = false;
+  skysight_changed |= SaveValue(SKYSIGHT_EMAIL, 
+    ProfileKeys::SkysightEmail, settings.skysight.email);
 
-  changed |= SaveValue(SKYSIGHT_PASSWORD, ProfileKeys::SkysightPassword,
-                       settings.skysight.password);
+  skysight_changed |= SaveValue(SKYSIGHT_PASSWORD, 
+    ProfileKeys::SkysightPassword, settings.skysight.password);
 
-  changed |= SaveValue(SKYSIGHT_REGION, ProfileKeys::SkysightRegion,
-                    settings.skysight.region);        
-  DataGlobals::GetSkysight()->Init();         
+  skysight_changed |= SaveValue(SKYSIGHT_REGION, 
+    ProfileKeys::SkysightRegion, settings.skysight.region);   
+
+  if (skysight_changed) {
+    // new SkySight if the skysight settings changed only
+    DataGlobals::GetSkysight()->Init();
+  }
+  changed |= skysight_changed;
 #endif
 
   _changed |= changed;
