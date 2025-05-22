@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
+#ifdef NO_ANDROID  // aug: new
+
 #include "DownloadManager.hpp"
 #include "Main.hpp"
 #include "net/http/DownloadManager.hpp"
+#include "net/http/CoDownload.hpp"  // aug because Net::CurlData
 #include "Context.hpp"
 #include "java/Class.hxx"
 #include "java/Env.hxx"
@@ -98,18 +101,19 @@ AndroidDownloadManager::RemoveListener(Net::DownloadListener &listener) noexcept
 }
 
 void
-AndroidDownloadManager::OnDownloadComplete(Path path_relative,
+// AndroidDownloadManager::OnDownloadComplete(Path path_relative,
+AndroidDownloadManager::OnDownloadComplete(const std::string_view name,
                                            bool success) noexcept
 {
   const std::lock_guard lock{mutex};
 
   if (success)
     for (auto i = listeners.begin(), end = listeners.end(); i != end; ++i)
-      (*i)->OnDownloadComplete(path_relative);
+      (*i)->OnDownloadComplete(name.data());
   else
     for (auto i = listeners.begin(), end = listeners.end(); i != end; ++i)
       // TODO obtain error details
-      (*i)->OnDownloadError(path_relative, {});
+      (*i)->OnDownloadError(name.data(), {});
 }
 
 JNIEXPORT void JNICALL
@@ -120,7 +124,7 @@ Java_de_opensoar_DownloadUtil_onDownloadAdded(JNIEnv *env, [[maybe_unused]] jobj
   const auto relative_path = Java::ToPath(env, j_path);
 
   Net::DownloadListener &handler = *(Net::DownloadListener *)(size_t)j_handler;
-  handler.OnDownloadAdded(relative_path, size, position);
+  handler.OnDownloadAdded(relative_path.c_str(), size, position);
 }
 
 JNIEXPORT void JNICALL
@@ -145,7 +149,8 @@ Java_de_opensoar_DownloadUtil_onDownloadComplete(JNIEnv *env, [[maybe_unused]] j
     }
   }
 
-  dm.OnDownloadComplete(relative_path, success);
+// aug   dm.OnDownloadComplete(relative_path, success);
+  dm.OnDownloadComplete(relative_path.c_str(), success);
 }
 
 void
@@ -159,15 +164,60 @@ AndroidDownloadManager::Enumerate(JNIEnv *env,
 }
 
 void
-AndroidDownloadManager::Enqueue(JNIEnv *env, const char *uri,
-                                Path path_relative) noexcept
+AndroidDownloadManager::Enqueue(JNIEnv *env, const std::string_view uri,
+  Path path_relative) noexcept
 {
   assert(env != nullptr);
-  assert(uri != nullptr);
+  assert(!uri.empty());
   assert(path_relative != nullptr);
 
-  Java::String j_uri(env, uri);
+  Java::String j_uri(env, uri.data());
   Java::String j_path(env, path_relative.c_str());
+
+  env->CallLongMethod(util, enqueue_method,
+    j_uri.Get(), j_path.Get());
+
+  try {
+    /* the method DownloadManager.enqueue() can throw
+       SecurityException if Android doesn't like the destination path
+       ("Unsupported path") */
+    Java::RethrowException(env);
+  }
+  catch (...) {
+    const auto error = std::current_exception();
+
+    const std::lock_guard lock{ mutex };
+    for (auto *i : listeners)
+    //  i->OnDownloadError(path_relative, error);
+    // aug      
+      i->OnDownloadError(path_relative.c_str(), error);
+      // i->OnDownloadError(name.data(), error);
+    return;
+  }
+
+  const std::lock_guard lock{ mutex };
+  for (auto i = listeners.begin(), end = listeners.end(); i != end; ++i)
+    // aug    (*i)->OnDownloadAdded(path_relative, -1, -1);
+    (*i)->OnDownloadAdded(path_relative.c_str(), -1, -1);
+    // (*i)->OnDownloadAdded(name.data(), -1, -1);
+}
+
+void
+AndroidDownloadManager::Enqueue(JNIEnv *env, const std::string_view uri,
+                                [[maybe_unused]] const std::string_view name,
+  [[maybe_unused]] boost::json::value &json) noexcept
+{
+  assert(env != nullptr);
+  assert(!uri.empty());
+  assert(!name.empty());
+
+  [[maybe_unused]] Java::String j_uri(env, uri.data());
+#if 0
+  // Android get json without path...
+  // aug: Möglicherweise gar nicht mit Java notwendig???
+
+//  Java::String j_path(env, path_relative.c_str());
+  Java::String j_path(env, name.data());
 
   env->CallLongMethod(util, enqueue_method,
                       j_uri.Get(), j_path.Get());
@@ -182,21 +232,48 @@ AndroidDownloadManager::Enqueue(JNIEnv *env, const char *uri,
 
     const std::lock_guard lock{mutex};
     for (auto *i : listeners)
-      i->OnDownloadError(path_relative, error);
+// aug      i->OnDownloadError(path_relative, error);
+//      i->OnDownloadError(path_relative.c_str(), error);
+      i->OnDownloadError(name.data(), error);
     return;
   }
 
   const std::lock_guard lock{mutex};
   for (auto i = listeners.begin(), end = listeners.end(); i != end; ++i)
-    (*i)->OnDownloadAdded(path_relative, -1, -1);
+    // aug    (*i)->OnDownloadAdded(path_relative, -1, -1);
+    // (*i)->OnDownloadAdded(path_relative.c_str(), -1, -1);
+    (*i)->OnDownloadAdded(name.data(), -1, -1);
+#endif
 }
 
 void
-AndroidDownloadManager::Cancel(JNIEnv *env, Path path_relative) noexcept
+AndroidDownloadManager::Enqueue(JNIEnv *env, const std::string_view uri,
+  const std::string_view name, [[maybe_unused]] Net::CurlData *data) noexcept
 {
   assert(env != nullptr);
-  assert(path_relative != nullptr);
+  assert(!uri.empty());
+  assert(!name.empty());
 
-  Java::String j_path(env, path_relative.c_str());
+  [[maybe_unused]] Java::String j_uri(env, uri);
+  // [[maybe_unused]] Java::String j_uri(env, uri.data());
+#if 0
+  // Android get json without path...
+  // aug: Möglicherweise gar nicht mit Java notwendig???
+#endif
+}
+
+void
+// AndroidDownloadManager::Cancel(JNIEnv *env, Path path_relative) noexcept
+AndroidDownloadManager::Cancel(JNIEnv *env, std::string_view name) noexcept
+{
+  assert(env != nullptr);
+//  assert(path_relative != nullptr);
+  assert(!name.empty());
+
+//  Java::String j_path(env, path_relative.c_str());
+//  Java::String j_path(env, name.data());
+  Java::String j_path(env, name);
   env->CallVoidMethod(util, cancel_method, j_path.Get());
 }
+
+#endif  // ifdef NO_ANDROID
