@@ -5,7 +5,6 @@
 #include "Progress.hpp"
 #include "lib/curl/Setup.hxx"
 #include "lib/curl/CoStreamRequest.hxx"
-#include "lib/curl/Slist.hxx"
 #include "io/DigestOutputStream.hxx"
 #include "io/FileOutputStream.hxx"
 #include "system/Path.hpp"
@@ -41,40 +40,6 @@ CoDownloadToFile(CurlGlobal &curl, const char *url,
     easy.SetOption(CURLOPT_USERNAME, username);
   if (password != nullptr)
     easy.SetOption(CURLOPT_PASSWORD, password);
-
-  auto response = co_await Curl::CoStreamRequest(curl, std::move(easy), *os);
-  file.Commit();
-
-  if (sha256 != nullptr)
-    digest->Final(std::span{*sha256});
-
-  co_return response;
-}
-
-Co::EagerTask<Curl::CoResponse>
-CoDownloadToFile(CurlGlobal &curl, const char *url, CurlSlist *slist,
-  Path path, std::array<std::byte, 32> *sha256,
-                 ProgressListener &progress)
-{
-  assert(url != nullptr);
-  assert(path != nullptr);
-
-  FileOutputStream file(path);
-  OutputStream *os = &file;
-
-  std::optional<DigestOutputStream<SHA256State>> digest;
-  if (sha256 != nullptr)
-    os = &digest.emplace(*os);
-
-  CurlEasy easy{url};
-  Curl::Setup(easy);
-  const Net::ProgressAdapter progress_adapter{easy, progress};
-  easy.SetFailOnError();
-
-  // easy.SetOption(CURLOPT_USERNAME, username);
-  if (slist)
-     easy.SetRequestHeaders( slist->Get());
-  easy.SetVerifyPeer(false);
 
   auto response = co_await Curl::CoStreamRequest(curl, std::move(easy), *os);
   file.Commit();
