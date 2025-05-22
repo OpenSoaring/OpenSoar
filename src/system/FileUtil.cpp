@@ -30,6 +30,7 @@
 # include <BaseTsd.h>
   typedef SSIZE_T ssize_t;
 #endif
+#include <filesystem>
 
 void
 Directory::Create(Path path) noexcept
@@ -289,9 +290,7 @@ File::Exists(Path path) noexcept
 
   return (st.st_mode & S_IFREG);
 #else
-  DWORD attributes = GetFileAttributes(path.c_str());
-  return attributes != INVALID_FILE_ATTRIBUTES &&
-    (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+  return std::filesystem::exists(path.c_str());
 #endif
 }
 
