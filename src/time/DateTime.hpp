@@ -63,6 +63,11 @@ namespace DateTime {
 # endif
   }
 
+  static inline time_t
+    TimeRaster(time_t t, time_t raster, uint16_t offset = 0) {
+    return (((t - 1) / raster) + offset) * raster;
+  }
+
   // static_assert(std::is_trivial<DateTime>::value, "type is not trivial");
 
 };
