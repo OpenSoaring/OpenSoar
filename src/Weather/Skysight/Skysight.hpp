@@ -38,7 +38,7 @@ public:
 };
 
 class Skysight final: private NullBlackboardListener {
-  SkysightLayer *active_layer = nullptr;
+  SkySight::Layer *active_layer = nullptr;
 
   uint32_t skysight_overlays = 1;
 
@@ -47,18 +47,18 @@ public:
   std::string region = "EUROPE";
   CurlGlobal *curl;
 
-  static SkysightLayer *GetActiveLayer() { return self->active_layer; }
+  static SkySight::Layer *GetActiveLayer() { return self->active_layer; }
 
   Skysight(CurlGlobal &_curl);
 
   static void APIInited(const std::string details, const bool success,
       const std::string layer_id, const time_t time_index);
-#if 1  // used in API (in ParseLastUpdates())
+#if 1  // used in API (in ParseLastUpdates())   //TODO(aug)
   static void DownloadComplete(const std::string details, const bool success,
       const std::string layer_id, const time_t time_index);
 #endif
 
-  std::map<std::string, std::string> GetRegions() {
+  std::map<std::string, SkySight::Region> GetRegions() {
     return api->regions;
   }
 
@@ -66,11 +66,11 @@ public:
     return api->region;
   }
 
-  SkysightLayer *GetLayer(size_t index) {
+  SkySight::Layer *GetLayer(size_t index) {
     return api->GetLayer(index);
   }
 
-  SkysightLayer *GetLayer(const std::string_view id) {
+  SkySight::Layer *GetLayer(const std::string_view id) {
     return api->GetLayer(id);
   }
 
@@ -91,13 +91,13 @@ public:
   void RemoveSelectedLayer(size_t index);
   void RemoveSelectedLayer(const std::string_view id);
   bool SelectedLayersUpdating();
-  bool GetSelectedLayerState(const std::string_view layer_name, SkysightLayer &m);
-#if 1  // used in API (in ParseLastUpdates())
+  bool GetSelectedLayerState(const std::string_view layer_name, SkySight::Layer &m);
+#if 1  // used in API (in ParseLastUpdates())  //TODO(aug)
   void SetSelectedLayerUpdateState(const std::string_view id, bool state = false);
 #endif
   void RefreshSelectedLayer(const std::string_view id);
-  SkysightLayer *GetSelectedLayer(int index);
-  SkysightLayer *GetSelectedLayer(const std::string_view id);
+  SkySight::Layer *GetSelectedLayer(int index);
+  SkySight::Layer *GetSelectedLayer(const std::string_view id);
   size_t NumSelectedLayers();
   bool SelectedLayersFull();
   size_t AddSelectedLayer(const std::string_view id);
@@ -120,7 +120,7 @@ public:
 
   static inline 
   AllocatedPath GetLocalPath() {
-    return MakeLocalPath("skysight");
+    return MakeCacheDirectory("skysight");
   }
   void Render(bool force_update = false);
 
@@ -162,6 +162,8 @@ public:
     update_flag = true;
   }
 
+  void KeyIsNew();
+
 protected:
   SkysightAPI *api = nullptr;
   static Skysight *self;
@@ -171,13 +173,7 @@ private:
   std::string password;
   bool update_flag = false;
   uint16_t map_tile_zoom = 0;
-  SkysightLayer *display_layer = nullptr;
-
-#if 0
-  /* virtual methods from class BlackboardListener */
-  virtual void OnCalculatedUpdate(const MoreData &basic,
-                                  const DerivedInfo &calculated) override;
-#endif // 0
+  SkySight::Layer *display_layer = nullptr;
 
   bool SetActiveLayer(const std::string_view id,
         time_t forecast_time = 0);

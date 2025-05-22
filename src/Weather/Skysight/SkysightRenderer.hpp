@@ -6,7 +6,6 @@
 #define SKYSIGHT_PREPERED 0
 
 #if SKYSIGHT_PREPERED
-// #include "SkysightCache.hpp"
 #include "Terrain/RasterRenderer.hpp"
 
 class SkysightCache;

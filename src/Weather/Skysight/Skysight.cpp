@@ -3,7 +3,6 @@
 
 #include "Skysight.hpp"
 #include "system/Path.hpp"
-#include "LocalPath.hpp"
 #include "system/FileUtil.hpp"
 #include "util/StringCompare.hxx"
 #include "util/Macros.hpp"
@@ -29,9 +28,8 @@
 #include <memory>
 #include <thread>
 
-// static uint16_t overlay_index = 0;
 /**
- * TODO:
+ * TODO(Caz, 2020):
  * -- overlay only shows following render -- no way to trigger from child 
  *    thread
  * -- no transparent bg on overlay on android
@@ -59,9 +57,7 @@
 Skysight *Skysight::self = nullptr;
 
 /*
- *
  * Img File
- *
  */
 SkysightImageFile::SkysightImageFile(Path _filename) {
   filename = _filename;
@@ -105,7 +101,6 @@ SkysightImageFile::SkysightImageFile(Path _filename, Path _path) {
 
 /*
  * ******   SELECTED LAYERS ************
- *
  */
 bool
 Skysight::SelectedLayersFull()
@@ -135,7 +130,7 @@ Skysight::AddSelectedLayer(const std::string_view id)
   if (api->SelectedLayersFull())
     return -2;
 
-  SkysightLayer *m = api->GetLayer(id);
+  SkySight::Layer *m = api->GetLayer(id);
   if (m) {
     GetSelectedLayerState(id, *m);
 
@@ -154,20 +149,16 @@ Skysight::RefreshSelectedLayer(const std::string_view id)
 
 }
 
-SkysightLayer *
+SkySight::Layer *
 Skysight::GetSelectedLayer(int index)
 {
-#if 1
   assert(index < (int)api->selected_layers.size());
   auto &layer = api->selected_layers.at(index);
 
   return &layer;
-#else
-  return nullptr;
-#endif
 }
 
-SkysightLayer *
+SkySight::Layer *
 Skysight::GetSelectedLayer(const std::string_view id)
 {
   for (auto &layer : api->selected_layers)
@@ -177,7 +168,7 @@ Skysight::GetSelectedLayer(const std::string_view id)
   return nullptr;
 }
 
-#if 1
+#if 1  // TODO(aug): possible not needed anymore...
 void
 Skysight::SetSelectedLayerUpdateState(const std::string_view id, bool state)
 {
@@ -198,7 +189,7 @@ Skysight::RemoveSelectedLayer(size_t index)
 void
 Skysight::RemoveSelectedLayer(const std::string_view id)
 {
-  for (std::vector<SkysightLayer>::const_iterator iter = api->selected_layers.begin();
+  for (std::vector<SkySight::Layer>::const_iterator iter = api->selected_layers.begin();
     iter < api->selected_layers.end(); ++iter) {
     if (iter->id == id) {
       api->selected_layers.erase(iter);
@@ -227,11 +218,6 @@ Skysight::NumSelectedLayers()
 void
 Skysight::SaveSelectedLayers()
 {
-#if 0
-  StaticString<128> s;
-  // api->SaveSelectedLayers(s);
-  Profile::Set(ProfileKeys::SkysightSelectedLayers, s);
-#else
   std::string am_list;
 
   if (NumSelectedLayers()) {
@@ -244,23 +230,11 @@ Skysight::SaveSelectedLayers()
     am_list = "";
   }
   Profile::Set(ProfileKeys::SkysightSelectedLayers, am_list.c_str());
-#endif
 }
 
 void
 Skysight::LoadSelectedLayers()
 {
-#if 0
-  std::string_view layer_ids =
-    Profile::Get(ProfileKeys::SkysightSelectedLayers);
-  std::string_view active_id = 
-    Profile::Get(ProfileKeys::WeatherLayerDisplayed);
-  // api->SaveSelectedLayers(layer_ids);
-  if (!active_id.empty()) {
-    SetActiveLayer(active_id);
-  }
-#else
-
   const char *id = Profile::Get(ProfileKeys::SkysightSelectedLayers);
   if (id == nullptr)
     return;
@@ -282,7 +256,6 @@ Skysight::LoadSelectedLayers()
     return;
 
   SetActiveLayer(d);
-#endif
 }
 
 bool
@@ -317,14 +290,9 @@ Skysight::Init()
   // save in debug case an additional file in folder
   std::string _path("skysight/");
   _path += DateTime::str_now() + " ====== Start-SkySight.tmp";
-  auto file = fopen(LocalPath(_path).c_str(), "wb");
-
-
-    if (file) {
-      std::string file_text = DateTime::str_now();
-      fwrite(file_text.c_str(), 1, file_text.length(), file);
-      fclose(file);
-    }
+  auto filename = LocalPath(_path);
+  if (File::CreateExclusive(filename))
+      File::WriteExisting(filename, DateTime::str_now().c_str());
 #endif
  
   const auto settings =
@@ -333,18 +301,9 @@ Skysight::Init()
   email = settings.email.c_str();
   password = settings.password.c_str();
 
-//  api = new SkysightAPI(email, password, region, APIInited);
   api = new SkysightAPI;
   api->InitAPI(email, password, region, APIInited);
-  // APIInited();
   CleanupFiles();
-
-//  if (api) {
-//    LoadSelectedLayers();
-//    Render(true);
-//  }
-
-//  Invoke
 }
 
 void
@@ -362,11 +321,10 @@ Skysight::APIInited([[maybe_unused]] const std::string details,
   }
 }
 
-
 // TODO(August2111): use layer_name or layer only...
 bool
 Skysight::GetSelectedLayerState(const std::string_view layer_name,
-  [[maybe_unused]] SkysightLayer &layer)
+  [[maybe_unused]] SkySight::Layer &layer)
 {
   std::string search_pattern = region + "-" + layer_name.data() + "*";
   std::vector<SkysightImageFile> img_files = ScanFolder(search_pattern);
@@ -447,13 +405,13 @@ Skysight::CleanupFiles()
   };
   char buffer[30];
   FormatISO8601(buffer, std::time(0));
-  LogFmt("Time-Compare: {}, {}", buffer, DateTime::str_now());
+  LogFmt("Time-Compare: {}, {} ({})", buffer, DateTime::str_now(), DateTime::now());
   
   auto now = DateTime::now();
-  SkysightTIFVisitor  visitor_tif(now - 24 * _ONE_HOUR);  // 1 day
-  SkysightFileDeleter deleter_jpg(now - 12 * _ONE_HOUR);  // 1/2 day
-  SkysightFileDeleter deleter_tmp(now -  6 * _ONE_HOUR);  // 6 hours
-  SkysightFileDeleter deleter_txt(now -  _ONE_HOUR);  // 1 hour
+  SkysightTIFVisitor  visitor_tif(now - 24 * ONE_HOUR);  // 1 day
+  SkysightFileDeleter deleter_jpg(now - 12 * ONE_HOUR);  // 1/2 day
+  SkysightFileDeleter deleter_tmp(now -  6 * ONE_HOUR);  // 6 hours
+  SkysightFileDeleter deleter_txt(now -  ONE_HOUR);  // 1 hour
 
   auto path = GetLocalPath();
   Directory::VisitSpecificFiles(path, "*.tif", visitor_tif);
@@ -467,18 +425,12 @@ Skysight::CleanupFiles()
 void
 Skysight::Render([[maybe_unused]] bool force_update)
 {
-  //das ist nur ein Test!!!!!!!!!!!!!!!!!!!!!
-  update_flag = true;
+  // das ist nur ein Test!!!!!!!!!!!!!!!!!!!!!
+  // update_flag = true;
 
   if (active_layer) {
-    // set by dl callback
-    if (update_flag) {
+    if (update_flag) {  // set by download OnComplete
       DisplayActiveLayer();
-#if 0  // start the timer?
-    } else {
-      if (api && api->QueueIsEmpty())
-        api->TimerInvoke();
-#endif
     }
   }
 }
@@ -486,7 +438,7 @@ Skysight::Render([[maybe_unused]] bool force_update)
 time_t
 Skysight::GetForecastTime(time_t time)
 {
-  auto forecast_time = (time / _HALFHOUR + 1) * _HALFHOUR;
+  auto forecast_time = (time / HALF_HOUR + 1) * HALF_HOUR;
   // is forecast_time plausible?
   return forecast_time;
 }
@@ -501,7 +453,6 @@ Skysight::SetActiveLayer(const std::string_view id,
       active_layer->forecast_time = forecast_time;
       if (api) {
         api->ResetLastUpdate();
-        api->TimerInvoke();
       }
       return true;
     }
@@ -509,6 +460,7 @@ Skysight::SetActiveLayer(const std::string_view id,
   return false;
 }
 
+#if 1  // TODO(aug): possible not needed anymore...
 void
 Skysight::DownloadComplete([[maybe_unused]] const std::string details,
   const bool success,  const std::string layer_id,
@@ -521,7 +473,6 @@ Skysight::DownloadComplete([[maybe_unused]] const std::string details,
   self->RefreshSelectedLayer(layer_id);
 
   if (success && (self->GetActiveLayerId() == layer_id.c_str())) {
-    //if (!self->update_flag && self->api->QueueIsLastJob()) {
     if (!self->update_flag) {
       self->update_flag = true;
       GlueMapWindow *map_window = UIGlobals::GetMapIfActive();
@@ -533,31 +484,34 @@ Skysight::DownloadComplete([[maybe_unused]] const std::string details,
     }
   }
 }
+#endif
 
 #ifdef SKYSIGHT_OFFLINE_MODE
 bool
 Skysight::DownloadSelectedLayer(const std::string_view id = "*")
 {
   if (id == "*") {
+    bool bret = true;
     for (auto &layer : api->selected_layers) {
-      if (!layer.live_layer)
-           DownloadSelectedLayer(layer.id);
+      if (!layer.tile_layer)
+        bret &= DownloadSelectedLayer(layer.id);
     }
-  }
-  else {
+    return bret;
+  }  else {
     auto layer = GetLayer(id);
-    if (layer && !layer->live_layer) {
+    if (layer && !layer->tile_layer) {
       time_t now = DateTime::now();
       SetSelectedLayerUpdateState(id, true);
 #ifdef _DEBUG
-      api->GetImageAt(id.data(), now, now + _ONE_HOUR,
+      api->GetImageAt(id.data(), now, now + ONE_HOUR,
 #else
-      api->GetImageAt(id.data(), now, now + _ONE_DAY,
+      api->GetImageAt(id.data(), now, now + ONE_DAY,
 #endif
         DownloadComplete);
+      return true;
     }
   }
-  return true;
+  return false;
 }
 #endif
 
@@ -568,7 +522,6 @@ Skysight::MapOverlayReset()
   if (map)
     for (uint16_t i = 0; i < skysight_overlays; i++) 
       map->SetOverlay(i, nullptr);
-//  overlay_index = 0;
 }
 
 void
@@ -598,14 +551,20 @@ Skysight::SetLayerActive(const std::string_view id)
   if (!SetActiveLayer(id))
     return false;
 
-  return true;  // SetLayerActive();
+  return true;
+}
+
+void Skysight::KeyIsNew() {
+  if (api)
+    // now you can get all data from server 
+    api->TimerInvoke();
 }
 
 #ifdef SKYSIGHT_FORECAST 
 bool
 Skysight::DisplayForecastLayer()
 {
-  // TODO: We're only searching w a max offset of 1 hr, simplify this!
+  // TODO: We're only searching w/ a max offset of 1 hr, simplify this!
   AllocatedPath filename;
   bool found = false;
 
@@ -615,10 +574,11 @@ Skysight::DisplayForecastLayer()
   }
 
 
-  constexpr time_t preview = _10MINUTES;
-  time_t test_time = ((DateTime::now() + preview) / _HALFHOUR + 1) * _HALFHOUR;
+  time_t test_time = DateTime::TimeRaster(DateTime::now() + TEN_MINUTES,
+    HALF_HOUR, 1);
 
-  // TODO(August2111): this procedure to find the best image I have to analyze exactly!
+  // TODO(August2111): this procedure to find the best image I have to
+  // analyze exactly!
   constexpr auto max_steps = 3;
   for (int j = 0; !found && (j < max_steps); j++) {
     filename = api->GetPath(SkysightCallType::Image, active_layer->id,
@@ -652,7 +612,7 @@ Skysight::DisplayForecastLayer()
         return false;
       }
     } else {
-      test_time += _HALFHOUR;  // next possible forecast
+      test_time += HALF_HOUR;  // next possible forecast
     }
   }
   return false;
@@ -691,11 +651,8 @@ Skysight::UpdateActiveLayer(const uint32_t overlay_index, const Path &filename,
   if (active_layer->tile_layer)
     label.AppendFormat(" - tile: %u (%u, %u)", tile.zoom, tile.x, tile.y);
   bmp->SetLabel(label);
-  // bmp->SetAlpha(active_layer->name == "satellite" ? 1.0 : 0.6);
   bmp->SetAlpha(active_layer->alpha);
   map->SetOverlay(overlay_index, std::move(bmp));
-//  if (active_layer->tile_layer)
-//    overlay_index++;  // increasing in tile mode only...
   // update_flag = false;  // is already updated
   return true;
 }
@@ -718,23 +675,15 @@ Skysight::DisplayTileLayer()
   }
 
   bool layer_changed = display_layer != active_layer;
-//  static uint16_t zoom = 0;
   if (layer_changed || map_tile_zoom != base_tile.zoom) {
-    if (api && api->QueueIsEmpty())
+    if (api)
       api->TimerInvoke();
     map_tile_zoom = base_tile.zoom;
     if (layer_changed)
       display_layer = active_layer;
   }
 
-  time_t refresh_time = (DateTime::now() / _10MINUTES) * _10MINUTES;
-  // the publishing is at least 10 minutes before
-//  refresh_time -= _10MINUTES;
-
-//  if (skysight_overlays != max_skysight_overlays) {
-//    MapOverlayReset();
-//    skysight_overlays = max_skysight_overlays;
-//  }
+  time_t refresh_time = (DateTime::now() / TEN_MINUTES) * TEN_MINUTES;
 
   auto map_bounds = map_window->VisibleProjection().GetScreenBounds();
   if (!map_bounds.Check() || !map_bounds.IsValid())
@@ -768,8 +717,7 @@ Skysight::DisplayTileLayer()
         constexpr auto max_steps = 3;
 
         for (int j = 0; !found && (j < max_steps); j++) {
-          filename = api->GetPath(SkysightCallType::Tile, active_layer->id,
-              test_time, tile);
+          filename = api->GetPath(SkysightCallType::Tile, active_layer->id, test_time, tile);
 
           if (File::Exists(filename)) {
             // needed for (selected) object view in map
@@ -780,12 +728,11 @@ Skysight::DisplayTileLayer()
             }
             break;
           } else {
-            test_time -= _10MINUTES;  // previous live picture
+            test_time -= TEN_MINUTES;  // previous live picture
           }
         }
       }
     }
-  // update_flag = false;  // is already updated
   return true;
 }
 

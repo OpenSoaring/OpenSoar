@@ -3,8 +3,6 @@
 
 #include "SkysightRenderer.hpp"
 #if SKYSIGHT_PREPERED 
-// #include "SkysightCache.hpp"
-// #include "SkysightStyle.hpp"
 #include "Terrain/RasterMap.hpp"
 #include "Terrain/TerrainSettings.hpp"
 #include "ui/canvas/Ramp.hpp"

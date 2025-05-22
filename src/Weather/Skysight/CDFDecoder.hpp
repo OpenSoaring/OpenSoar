@@ -3,6 +3,12 @@
 
 #pragma once
 
+// #ifdef SKYSIGHT_FORECAST 
+/*
+*  TODO(August2111) : remove this w/o FORECAST!For this the SkysightAPI has
+*  to be prepared...
+*/
+
 #include "APIGlue.hpp"
 #include "thread/StandbyThread.hpp"
 #include "Layers.hpp"
@@ -42,3 +48,4 @@ public:
   void Done();
   Status GetStatus();
 };
+// #endif
