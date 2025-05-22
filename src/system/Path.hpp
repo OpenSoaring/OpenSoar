@@ -163,6 +163,9 @@ public:
   AllocatedPath(Path src) noexcept
     :value(src == nullptr ? nullptr : value_type(src.c_str())) {}
 
+  AllocatedPath(const std::string_view src) noexcept
+    :value(src.empty() ? nullptr : value_type(src.data())) {}
+
   explicit AllocatedPath(const_pointer src) noexcept
     :AllocatedPath(Path(src)) {}
 
