@@ -35,7 +35,8 @@
 class DownloadProgress final : Net::DownloadListener {
   ProgressDialog &dialog;
   ThreadedOperationEnvironment env;
-  const Path path_relative;
+//  const Path path_relative;
+  const std::string name;
 
   UI::PeriodicTimer update_timer{[this]{ Net::DownloadManager::Enumerate(*this); }};
 
@@ -46,9 +47,9 @@ class DownloadProgress final : Net::DownloadListener {
   bool got_size = false, complete = false, success;
 
 public:
-  DownloadProgress(ProgressDialog &_dialog,
-                   const Path _path_relative)
-    :dialog(_dialog), env(_dialog), path_relative(_path_relative) {
+  DownloadProgress(ProgressDialog &_dialog, const std::string_view _name)
+                   //const Path _path_relative)
+    :dialog(_dialog), env(_dialog), name(_name) { // path_relative(_path_relative) {
     update_timer.Schedule(std::chrono::seconds(1));
     Net::DownloadManager::AddListener(*this);
   }
@@ -64,9 +65,10 @@ public:
 
 private:
   /* virtual methods from class Net::DownloadListener */
-  void OnDownloadAdded(Path _path_relative,
-                       int64_t size, int64_t position) noexcept override {
-    if (!complete && path_relative == _path_relative) {
+  void OnDownloadAdded(const std::string_view _name, // const DownloadType type, // Path _path_relative,
+                       size_t size, size_t position) noexcept override {
+//    if (!complete && path_relative == _path_relative) {
+    if (!complete && name == _name) {
       if (!got_size && size >= 0) {
         got_size = true;
         env.SetProgressRange(uint64_t(size) / 1024u);
@@ -77,17 +79,18 @@ private:
     }
   }
 
-  void OnDownloadComplete(Path _path_relative) noexcept override {
-    if (!complete && path_relative == _path_relative) {
+  void OnDownloadComplete(const std::string_view _name) noexcept override {
+    if (!complete && name == _name) {
       complete = true;
       success = true;
       download_complete_notify.SendNotification();
     }
   }
 
-  void OnDownloadError(Path _path_relative,
+  void OnDownloadError(const std::string_view _name,
                        std::exception_ptr _error) noexcept override {
-    if (!complete && path_relative == _path_relative) {
+    //if (!complete && path_relative == _path_relative) {
+    if (!complete && name == _name) {
       complete = true;
       success = false;
       error = std::move(_error);
@@ -118,13 +121,13 @@ DownloadFile(const char *uri, const char *base)
 
   dialog.AddCancelButton();
 
-  const DownloadProgress dp(dialog, Path(base));
+  const DownloadProgress dp(dialog, base);
 
   Net::DownloadManager::Enqueue(uri, Path(base));
 
   int result = dialog.ShowModal();
   if (result != mrOK) {
-    Net::DownloadManager::Cancel(Path(base));
+    Net::DownloadManager::Cancel(base);
     dp.Rethrow();
     return nullptr;
   }
@@ -209,10 +212,11 @@ public:
   }
 
   /* virtual methods from class Net::DownloadListener */
-  void OnDownloadAdded(Path path_relative,
-                       int64_t size, int64_t position) noexcept override;
-  void OnDownloadComplete(Path path_relative) noexcept override;
-  void OnDownloadError(Path path_relative,
+  // void OnDownloadAdded(Path path_relative,
+  void OnDownloadAdded(const std::string_view name,
+                       size_t size, size_t position) noexcept override;
+  void OnDownloadComplete(const std::string_view name) noexcept override;
+  void OnDownloadError(const std::string_view name,
                        std::exception_ptr error) noexcept override;
 
   void OnDownloadCompleteNotification() noexcept;
@@ -306,20 +310,22 @@ DownloadFilePickerWidget::Download()
 }
 
 void
-DownloadFilePickerWidget::OnDownloadAdded([[maybe_unused]] Path path_relative,
-                                          [[maybe_unused]] int64_t size,
-                                          [[maybe_unused]] int64_t position) noexcept
+DownloadFilePickerWidget::OnDownloadAdded([[maybe_unused]] const std::string_view name,
+                                          [[maybe_unused]] size_t size,
+                                          [[maybe_unused]] size_t position) noexcept
 {
 }
 
 void
-DownloadFilePickerWidget::OnDownloadComplete(Path path_relative) noexcept
+DownloadFilePickerWidget::OnDownloadComplete(const std::string_view name) noexcept
 {
-  const auto name = path_relative.GetBase();
-  if (name == nullptr)
+//  const auto name = path_relative.GetBase();
+  if (name.empty())
+//  if (name == nullptr)
     return;
 
-  if (name == Path("repository")) {
+//  if (name == Path("repository")) {
+  if (name == "repository") {
     const std::lock_guard lock{mutex};
     repository_failed = false;
     repository_modified = true;
@@ -329,14 +335,15 @@ DownloadFilePickerWidget::OnDownloadComplete(Path path_relative) noexcept
 }
 
 void
-DownloadFilePickerWidget::OnDownloadError(Path path_relative,
+DownloadFilePickerWidget::OnDownloadError(const std::string_view name,
                                           std::exception_ptr error) noexcept
 {
-  const auto name = path_relative.GetBase();
-  if (name == nullptr)
+//  const auto name = path_relative.GetBase();
+  if (name.empty())
     return;
 
-  if (name == Path("repository")) {
+  //if (name == Path("repository")) {
+  if (name == "repository") {
     const std::lock_guard lock{mutex};
     repository_failed = true;
     repository_error = std::move(error);
