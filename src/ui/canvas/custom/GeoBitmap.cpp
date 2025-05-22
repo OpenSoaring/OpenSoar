@@ -6,6 +6,7 @@
 #include "UncompressedImage.hpp"
 #include "Geo/Quadrilateral.hpp"
 #include "system/Path.hpp"
+#include "system/FileUtil.hpp"
 #include "Geo/GeoBounds.hpp"
 #include "MapWindow/MapWindow.hpp"
 
@@ -119,8 +120,9 @@ Bitmap::SetTileKoordinates(std::string_view tile_string)
 GeoQuadrilateral
 Bitmap::LoadGeoFile([[maybe_unused]] Path path)
 {
-  LogFmt("Bitmap::LoadGeoFile: {}", path.c_str());
-  // LogFmt("Bitmap::LoadGeoFile: USE_GEOTIFF");
+//  LogFmt("Bitmap::LoadGeoFile: {}", path.c_str());
+  if (File::GetSize(path) < 100) // this couldn't be for a geo file
+    return {};
 #ifdef USE_GEOTIFF
   if (path.EndsWithIgnoreCase(".tif") ||
       path.EndsWithIgnoreCase(".tiff")) {
