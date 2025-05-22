@@ -88,7 +88,7 @@ class ManagedFileListWidget
 #endif
 {
   struct DownloadStatus {
-    int64_t size, position;
+    size_t size, position;
   };
 
   struct FileItem {
@@ -257,10 +257,10 @@ public:
   void OnTimer();
 
   /* virtual methods from class Net::DownloadListener */
-  void OnDownloadAdded(Path path_relative,
-                       int64_t size, int64_t position) noexcept override;
-  void OnDownloadComplete(Path path_relative) noexcept override;
-  void OnDownloadError(Path path_relative,
+  void OnDownloadAdded(const std::string_view uri,
+                       size_t size, size_t position) noexcept override;
+  void OnDownloadComplete(const std::string_view uri) noexcept override;
+  void OnDownloadError(const std::string_view uri,
                        std::exception_ptr error) noexcept override;
 
   void OnDownloadNotification() noexcept;
@@ -618,7 +618,7 @@ ManagedFileListWidget::Cancel()
   assert(current < items.size());
 
   const FileItem &item = items[current];
-  Net::DownloadManager::Cancel(Path(item.name));
+  Net::DownloadManager::Cancel(item.name);
 #endif
 }
 
@@ -643,35 +643,35 @@ ManagedFileListWidget::OnTimer()
 }
 
 void
-ManagedFileListWidget::OnDownloadAdded(Path path_relative,
-                                       int64_t size, int64_t position) noexcept
+ManagedFileListWidget::OnDownloadAdded(const std::string_view name,
+                                       size_t size, size_t position) noexcept
 {
-  const auto name = path_relative.GetBase();
-  if (name == nullptr)
+//  const auto name = path_relative.GetBase();
+  if (name.empty())
     return;
 
   {
     const std::lock_guard lock{mutex};
-    downloads[name.c_str()] = DownloadStatus{size, position};
-    failures.erase(name.c_str());
+    downloads[name.data()] = DownloadStatus{size, position};
+    failures.erase(name.data());
   }
 
   download_notify.SendNotification();
 }
 
 void
-ManagedFileListWidget::OnDownloadComplete(Path path_relative) noexcept
+ManagedFileListWidget::OnDownloadComplete(const std::string_view name) noexcept
 {
-  const auto name = path_relative.GetBase();
-  if (name == nullptr)
+  // const auto name = path_relative.GetBase();
+  if (name.empty())
     return;
 
   {
     const std::lock_guard lock{mutex};
 
-    downloads.erase(name.c_str());
+    downloads.erase(name.data());
 
-    if (StringIsEqual(name.c_str(), "repository")) {
+    if (name == "repository") {
       repository_failed = false;
       repository_modified = true;
     }
@@ -681,10 +681,10 @@ ManagedFileListWidget::OnDownloadComplete(Path path_relative) noexcept
 }
 
 void
-ManagedFileListWidget::OnDownloadError(Path path_relative,
+ManagedFileListWidget::OnDownloadError(const std::string_view name,
                                        [[maybe_unused]] std::exception_ptr error) noexcept
 {
-  const auto name = path_relative.GetBase();
+  // const auto name = path_relative.GetBase();
   if (name == nullptr)
     return;
 
@@ -692,13 +692,13 @@ ManagedFileListWidget::OnDownloadError(Path path_relative,
   {
     const std::lock_guard lock{mutex};
 
-    downloads.erase(name.c_str());
+    downloads.erase(name.data());
 
     // TODO: store the error
-    if (StringIsEqual(name.c_str(), "repository")) {
+    if (name == "repository") {
       repository_failed = true;
     } else
-      failures.insert(name.c_str());
+      failures.insert(name.data());
   }
 
   download_notify.SendNotification();
