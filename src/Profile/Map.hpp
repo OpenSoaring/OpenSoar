@@ -107,6 +107,8 @@ public:
     return Get(key, std::span{value.data(), value.capacity()});
   }
 
+  bool Get(std::string_view key, std::string_view &value) const noexcept;
+
   // numeric values
 
   bool Get(std::string_view key, int &value) const noexcept;

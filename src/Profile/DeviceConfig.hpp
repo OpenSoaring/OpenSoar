@@ -8,7 +8,7 @@ struct DeviceConfig;
 
 namespace Profile
 {
-  void GetDeviceConfig(const ProfileMap &map, unsigned n,
+  void GetDeviceConfig(ProfileMap &map, unsigned n,
                        DeviceConfig &config);
   void SetDeviceConfig(ProfileMap &map, unsigned n,
                        const DeviceConfig &config);

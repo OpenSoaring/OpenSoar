@@ -8,7 +8,7 @@
 #include "SystemSettings.hpp"
 
 void
-Profile::Load(const ProfileMap &map, SystemSettings &settings)
+Profile::Load(ProfileMap &map, SystemSettings &settings)
 {
   for (unsigned i = 0; i < settings.devices.size(); ++i)
     GetDeviceConfig(map, i, settings.devices[i]);

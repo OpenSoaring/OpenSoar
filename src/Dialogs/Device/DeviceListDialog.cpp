@@ -377,9 +377,8 @@ DeviceListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
   text[0u] += idx;
 
   if (config.UsesDriver()) {
-    const char *driver_name = FindDriverDisplayName(config.driver_name);
-
-    text.AppendFormat(_("%s on %s"), driver_name, port_name);
+    const std::string_view driver_name = FindDriverDisplayName(config.driver_name);
+    text.AppendFormat(_("%s on %s"), driver_name.data(), port_name);
   } else {
     text.append(port_name);
   }
@@ -504,8 +503,8 @@ DeviceListWidget::EnableDisableCurrent()
   /* save new config to profile .. */
 
   config.enabled = !config.enabled;
-  Profile::SetDeviceConfig(Profile::device_map, index, config);
-  Profile::Save(Profile::device_map);
+  Profile::SetDeviceConfig(Profile::device_ports, index, config);
+  Profile::Save(Profile::device_ports);
 
   /* update the UI */
 
@@ -612,8 +611,8 @@ DeviceListWidget::EditCurrent()
   /* save new config to profile .. */
 
   config = widget.GetConfig();
-  Profile::SetDeviceConfig(Profile::device_map, index, config);
-  Profile::Save(Profile::device_map);
+  Profile::SetDeviceConfig(Profile::device_ports, index, config);
+  Profile::Save(Profile::device_ports);
 
   /* update the UI */
 

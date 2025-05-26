@@ -7,5 +7,5 @@ class ProfileMap;
 struct SystemSettings;
 
 namespace Profile {
-  void Load(const ProfileMap &map, SystemSettings &settings);
+  void Load(ProfileMap &map, SystemSettings &settings);
 };

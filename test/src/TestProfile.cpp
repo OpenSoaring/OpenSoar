@@ -8,8 +8,17 @@
 #include "util/StringAPI.hxx"
 #include "util/StaticString.hxx"
 #include "util/PrintException.hxx"
+#include "system/FileUtil.hpp"
 
 #include <stdlib.h>
+
+// TODO(aug): with splitting in startProfile and portProfile some tests missing
+
+#ifdef __DEBUG
+#define LOG_PRINT(x) printf("%s\n", x);
+#else
+#define LOG_PRINT(x) 
+#endif
 
 static void
 TestMap()
@@ -69,9 +78,12 @@ TestWriter()
   Profile::Set("key1", 4);
   Profile::Set("key2", "value2");
 
-  Profile::SaveFile(Path("output/TestProfileWriter.prf"));
+  auto path = Path("output/results/TestProfileWriter.prf");
+  Directory::Create(path.GetParent());
+  File::CreateExclusive(path);
+  Profile::SaveFile(path);
 
-  FileLineReaderA reader(Path("output/TestProfileWriter.prf"));
+  FileLineReaderA reader(path);
 
   unsigned count = 0;
   bool found1 = false, found2 = false;
@@ -95,7 +107,8 @@ static void
 TestReader()
 {
   Profile::Clear();
-  Profile::LoadFile(Path("test/data/TestProfileReader.prf"));
+  auto path = Path("test/data/TestProfileReader.prf");
+  Profile::LoadFile(path);
 
   {
     int value;
@@ -123,9 +136,13 @@ int main()
 try {
   plan_tests(31);
 
+  LOG_PRINT("------------------------ TestMap");
   TestMap();
-  TestWriter();
+  LOG_PRINT("------------------------ TestReader");
   TestReader();
+  LOG_PRINT("------------------------ TestWriter");
+  TestWriter();
+  LOG_PRINT("------------------------ TestEnd");
 
   return exit_status();
 } catch (...) {

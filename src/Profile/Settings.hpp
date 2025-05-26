@@ -11,5 +11,5 @@ namespace Profile
    * Adjusts the application settings according to the profile settings
    */
   void Use(const ProfileMap &map);
-  void UseDevices(const ProfileMap &map);
+  void UseDevices(ProfileMap &map);
 };

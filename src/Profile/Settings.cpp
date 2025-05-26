@@ -16,7 +16,7 @@ Profile::Use(const ProfileMap &map)
 }
 
 void
-Profile::UseDevices(const ProfileMap &map)
+Profile::UseDevices(ProfileMap &map)
 {
   Load(map, CommonInterface::SetSystemSettings());
 }
