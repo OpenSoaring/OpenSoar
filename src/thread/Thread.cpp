@@ -78,7 +78,7 @@ Thread::Join() noexcept
   pthread_join(handle, nullptr);
   defined = false;
 #else
-  DWORD result = ::WaitForSingleObject(handle, 1000);
+  DWORD result = ::WaitForSingleObject(handle, 10000);  // INFINITE);
   if (result != WAIT_OBJECT_0) {  // TODO(August2111): Too much? INFINITE);
 # ifdef __MSVC__
     // TODO(August2111) commented out for PC and WIN64:
