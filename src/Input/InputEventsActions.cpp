@@ -542,7 +542,7 @@ InputEvents::eventBeep([[maybe_unused]] const char *misc)
   MessageBeep(MB_ICONEXCLAMATION);
 #else
   PlayResource("IDR_WAV_CLEAR");
-  #endif
+#endif
 }
 
 // Setup
