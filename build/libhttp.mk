@@ -13,7 +13,7 @@ LIBHTTP_SOURCES = \
 	$(SRC)/lib/curl/Request.cxx \
 	$(SRC)/lib/curl/CoRequest.cxx \
 	$(SRC)/lib/curl/CoStreamRequest.cxx \
-	$(SRC)/net/http/CoDownloadToFile.cpp \
+	$(SRC)/net/http/CoDownload.cpp \
 	$(SRC)/lib/curl/Global.cxx \
 	$(SRC)/net/http/Init.cpp
 
