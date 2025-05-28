@@ -17,17 +17,19 @@ list(APPEND _SOURCES
         net/client/tim/Glue.cpp
 )
 list(APPEND _SOURCES
-        net/http/DownloadManager.cpp
-        net/http/Progress.cpp
-        ../lib/curl/OutputStreamHandler.cxx
-        ../lib/curl/Adapter.cxx
-        ../lib/curl/Setup.cxx
-        ../lib/curl/Request.cxx
-        ../lib/curl/CoRequest.cxx
-        ../lib/curl/CoStreamRequest.cxx
-        net/http/CoDownloadToFile.cpp
-        ../lib/curl/Global.cxx
-        net/http/Init.cpp
+        http/DownloadManager.cpp
+        http/Progress.cpp
+        http/CoDownload.cpp
+        http/Init.cpp
+
+        # lib_curl:
+        ${SRC}/lib/curl/OutputStreamHandler.cxx
+        ${SRC}/lib/curl/Adapter.cxx
+        ${SRC}/lib/curl/Setup.cxx
+        ${SRC}/lib/curl/Request.cxx
+        ${SRC}/lib/curl/CoRequest.cxx
+        ${SRC}/lib/curl/CoStreamRequest.cxx
+        ${SRC}/lib/curl/Global.cxx
 )
 
 set (SCRIPT_FILES
