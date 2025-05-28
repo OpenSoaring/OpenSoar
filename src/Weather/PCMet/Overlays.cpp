@@ -4,7 +4,7 @@
 #include "Overlays.hpp"
 #include "Settings.hpp"
 #include "ui/canvas/Bitmap.hpp"
-#include "net/http/CoDownloadToFile.hpp"
+#include "net/http/CoDownload.hpp"
 #include "Job/Runner.hpp"
 #include "co/Task.hxx"
 #include "system/FileUtil.hpp"
@@ -131,9 +131,17 @@ PCMet::DownloadOverlay(const OverlayInfo &info, BrokenDateTime now_utc,
                                    url.c_str() + sizeof(PCMET_FTP));
 
   {
+    auto data = new Net::CurlData;
+    data->username = settings.ftp_credentials.username;
+    data->password = settings.ftp_credentials.password;
+    data->type = Net::FILE;
+
     const auto ignored_response = co_await Net::CoDownloadToFile(
-        curl, url, settings.ftp_credentials.username,
-        settings.ftp_credentials.password, path, nullptr, progress);
+      curl, url, path, data, progress);
+
+//    const auto ignored_response = co_await Net::CoDownloadToFile(
+//        curl, url, settings.ftp_credentials.username,
+//        settings.ftp_credentials.password, path, nullptr, progress);
   }
 
   BrokenDateTime run_time(now_utc.GetDate(), BrokenTime(run_hour, 0));

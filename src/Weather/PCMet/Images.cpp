@@ -3,7 +3,7 @@
 
 #include "Images.hpp"
 #include "Settings.hpp"
-#include "net/http/CoDownloadToFile.hpp"
+#include "net/http/CoDownload.hpp"
 #include "net/http/Progress.hpp"
 #include "lib/curl/CoRequest.hxx"
 #include "lib/curl/Setup.hxx"
@@ -147,10 +147,13 @@ PCMet::DownloadLatestImage(const char *type, const char *area,
     // to the latest image and the namelist array of all stored images
     snprintf(url, sizeof(url), PCMET_URI "%.*s", int(src.size()), src.data());
 
+    auto data = new Net::CurlData;
+    data->username = settings.www_credentials.username;
+    data->password = settings.www_credentials.password;
+    data->type = Net::FILE;
+
     const auto ignored_response = co_await Net::CoDownloadToFile(
-        curl, url, settings.www_credentials.username,
-        settings.www_credentials.password,
-                            path, nullptr, progress);
+        curl, url, path, data, progress);
   }
 
   co_return std::move(path);
