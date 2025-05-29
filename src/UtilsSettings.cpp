@@ -50,9 +50,6 @@ bool AirspaceFileChanged = false;
 bool AirfieldFileChanged = false;
 bool WaypointFileChanged = false;
 bool FlarmFileChanged = false;
-#if 0  // FLARM_FILE2_SETTING,  GLB-FLARM-DeviceDatabase-UNITED is solving this merge
-bool FlarmFile2Changed = false;
-#endif  // GLB-FLARM-DeviceDatabase-UNITED is solving this merge
 bool RaspFileChanged = false;
 bool InputFileChanged = false;
 bool LanguageChanged = false;
