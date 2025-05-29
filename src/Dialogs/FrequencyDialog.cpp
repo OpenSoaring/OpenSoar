@@ -17,7 +17,6 @@
 
 #include "io/KeyValueFileReader.hpp"
 
-#include "boost/algorithm/string.hpp"
 #include <string>
 
 class FrequencyListWidget final
@@ -131,18 +130,12 @@ FrequencyListWidget::UpdateList() noexcept
   }
 
   FileLineReaderA reader(path);
-  /* TODO(August2111): KeyValueFileReader with different split character and 
-     key and value trimmed internal*/
   KeyValueFileReader freq_reader(reader);
   KeyValuePair pair;
-  while (freq_reader.Read(pair)) {
+  while (freq_reader.Read(pair, ':')) {
     RadioChannel *channel = new RadioChannel();
     channel->name = pair.key;
-    boost::trim(channel->name);
-    std::string freq_str = pair.value;
-    boost::trim(freq_str);
-
-    channel->radio_frequency = RadioFrequency::Parse(freq_str);
+    channel->radio_frequency = RadioFrequency::Parse(pair.value);
     channels->push_back(*channel);
   }
   return !channels->empty();
