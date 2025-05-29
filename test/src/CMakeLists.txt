@@ -20,6 +20,7 @@ foreach(source_file ${TEST_LIST})
     list(APPEND source_file ${PROJECTGROUP_SOURCE_DIR}/src/Operation/ConsoleOperationEnvironment.cpp)
     add_executable(${test}  ${source_file} 
       ${test_path}/tap.c 
+      ${test_path}/FakeLogFile.cpp 
       ${SCRIPT_FILES}
     )
     set_target_properties(${test} PROPERTIES 

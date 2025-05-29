@@ -270,6 +270,7 @@ set(TEST_LIST
     ${SRC_DIR}/TestCSVLine.cpp
     ${SRC_DIR}/TestGlidePolar.cpp
     ${SRC_DIR}/test_replay_task.cpp
+    ${SRC_DIR}/TestProfile.cpp
     ${SRC_DIR}/TestProjection.cpp
     ${SRC_DIR}/TestFlatPoint.cpp
     ${SRC_DIR}/TestFlatLine.cpp
