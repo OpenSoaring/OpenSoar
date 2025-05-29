@@ -3,6 +3,9 @@
 
 #include "OverlayBitmap.hpp"
 #include "ui/canvas/Canvas.hpp"
+#if 1  // only temporary for Debug purposes
+# include "LogFile.hpp"
+#endif
 #ifdef ENABLE_OPENGL
 # include "ui/canvas/opengl/Texture.hpp"
 # include "ui/canvas/opengl/Scope.hpp"
@@ -168,8 +171,17 @@ MapOverlayBitmap::Draw([[maybe_unused]] Canvas &canvas,
       const auto v = GeoFrom2D(ring[i]);
 
       auto p = MapInQuadrilateral(bounds, v);
-
+#ifdef ANDROID
+      // TODO(August2111): In Android Bitmap does not set the flip value!
+      // if (!bitmap.IsFlipped())
+#if 1  // only temporary for Debug purposes
+      static uint64_t counter = 0;
+      if (counter++ < 3)  LogFmt("Bitmap is {}",
+        bitmap.IsFlipped() ? "FLIPPED" : "not flipped!");
+#endif
+#else
       if (bitmap.IsFlipped())
+#endif
         p.y = 1 - p.y;
       coord[i].x = p.x * x_factor;
       coord[i].y = p.y * y_factor;
