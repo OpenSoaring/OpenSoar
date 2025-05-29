@@ -1,4 +1,4 @@
-OpenSoar Version 7.43-3.24 - 22.04.2025
+OpenSoar Version 7.43-3.24 - not yet released (24.04.2025)
 ---------------
 * Weather
   - SkySight:(Re-)Activation 'Update' and 'Update All'-Buttons in SkySight dialog for downloading offline charts
@@ -10,6 +10,17 @@ OpenSoar Version 7.43-3.24 - 22.04.2025
 * Profile
   - splitting profile files in device file (hardcoded device_map.map) and normal profile *.prf, so you copy only the personal settings from device to device, not the port settings anymore
   - ATTENTION: The (re-)copy of a new profile to an older program version behaves differently than before
+* Audio
+  - CRITICAL: fix crash on Android devices at switch off audio pcm mixer
+* ui
+  - reduce adjustable minimum resolution (custom_dpi) to 80 dpi (Is this smaller than 120 sensible and useful ?)
+  - new info box 'page index'
+  - 2 new info boxes 'port data' for displaying the special data logger data for at least 2 loggers
+  - every info box can be changed after clicking the box
+* FreuencyCard
+  - Implement Frequency Card Dialog - displays a list of radio channels (name, frequency) and allows a connected radio to be tuned to the frequency selected. Activated from Info Menu #2 or pressing F9
+  - Frequency list loaded from .xcf file specified in Site File ( System Setup->Basic Settings) 
+  - File format "Name :  nnn.nnn"   - one entry per line, with split char ':'
 
 #### XCSoar Version 7.44(3) - dev state on 2025/04/07
 * 3rd merge xcsoar master '6e95a3849a' -> xcsoar 7.43-3!

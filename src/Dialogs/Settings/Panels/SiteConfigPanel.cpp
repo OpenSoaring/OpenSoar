@@ -112,7 +112,7 @@ SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent,
 #endif
   AddFile(_("Radio Frequency Database"),
           _("Radio frequencies file."),
-          ProfileKeys::FrequenciesFile, "*.frq\0",
+          ProfileKeys::FrequenciesFile, "*.xcf\0",
           FileType::FREQUENCIES);
 }
 
