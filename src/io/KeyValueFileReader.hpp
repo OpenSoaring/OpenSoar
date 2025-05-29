@@ -18,5 +18,5 @@ protected:
 
 public:
   KeyValueFileReader(NLineReader &_reader):reader(_reader) {}
-  bool Read(KeyValuePair &pair);
+  bool Read(KeyValuePair &pair, char split_character = '=');
 };
