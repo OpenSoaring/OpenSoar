@@ -221,13 +221,27 @@ OpenVario_Device::GetBrightness() noexcept
 void 
 OpenVario_Device::SetBrightness(uint_least8_t value) noexcept
 {
+  std::map<std::string, std::string, std::less<>> map;
+  LoadConfigFile(map, system_config); // Path("/boot/config.uEnv"));
+
   if (value < 1) { value = 1; }
   if (value > 10) { value = 10; }
 
   brightness = value;
-  settings.insert_or_assign("Brightness",
-                                     std::to_string(value));
-  File::WriteExisting(Path("/sys/class/backlight/lcd/brightness"), fmt::format_int{value}.c_str());
+  std::string brightness_string = fmt::format_int{ brightness }.c_str();
+  settings.insert_or_assign("Brightness", // brightness_string); 
+                                      std::to_string(value));
+  File::WriteExisting(Path("/sys/class/backlight/lcd/brightness"),
+    brightness_string.c_str());  // fmt::format_int{ value }.c_str());
+
+  if (map["brightness"] != brightness_string) {
+    map.insert_or_assign("brightness", brightness_string);
+    WriteConfigFile(map, system_config);
+
+//    WriteConfigFile(map, system_config, Path("/boot/config.uEnv"));
+    LogFormat("Set Rotation '%s' vs. '%s' (%d)", map["brightness"].c_str(),
+      brightness_string.c_str(), brightness);
+  }
 }
 
 DisplayOrientation
@@ -284,7 +298,6 @@ OpenVario_Device::SetRotation(DisplayOrientation orientation, int mode)
     LogFormat("Set Rotation '%s' vs. '%s' (%d)", map["rotation"].c_str(),
       rot_string.c_str(), rotation);
   }
-
 
   if (map["rotation"] != rot_string) {
     if (mode & 2) {
