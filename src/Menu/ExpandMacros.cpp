@@ -305,6 +305,9 @@ LookupMacro(std::string_view name, bool &invalid) noexcept
   } else if (name == "CheckTerrain") {
     invalid |= !Calculated().terrain_valid;
     return nullptr;
+  } else if (name == "CheckSTF") {
+    auto stf_switch = const_cast<STFSettings *>(&CommonInterface::GetComputerSettings().stf_switch);
+    return (stf_switch->stf_mode == TriState::TRUE) ? "-> Vario" : "-> STF";
   } else if (name == "AudioVolume") {
     StaticString<10> s; 
     s.Format("%u / 7",

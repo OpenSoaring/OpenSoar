@@ -51,6 +51,9 @@ UpdateInfoBoxNextLegEqThermal(InfoBoxData &data) noexcept;
 void
 UpdateInfoBoxCircleDiameter(InfoBoxData &data) noexcept;
 
+void
+UpdateInfoBoxSTFSwitch(InfoBoxData &data) noexcept;
+
 class InfoBoxContentThermalAssistant: public InfoBoxContent
 {
   ThermalAssistantRenderer renderer;

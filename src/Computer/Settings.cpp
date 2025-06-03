@@ -73,4 +73,5 @@ ComputerSettings::SetDefaults()
   radio.SetDefaults();
   transponder.SetDefaults();
   weglide.SetDefaults();
+  stf_switch.SetDefaults();
 }

@@ -251,6 +251,12 @@ event=Mode default
 
 mode=default
 type=key
+data=F9
+event=FrequencyCard
+event=Mode default
+
+mode=default
+type=key
 data=MENU
 event=Mode Menu
 
@@ -884,6 +890,14 @@ location=5
 
 mode=Info2
 type=key
+data=7
+event=FrequencyCard
+event=Mode default
+label=Frequency Card
+location=6
+
+mode=Info2
+type=key
 data=8
 event=Setup Teamcode
 event=Mode default
@@ -1383,19 +1397,32 @@ location=4
 
 mode=VarioAudioMenu
 type=key
-data=S
-event=SendNMEAPort1 POV,C,STF
-event=StatusMessage Speed to Fly Mode
-label=STF
+data=0
+event=STFSwitch toggle
+label=$(CheckSTF)
 location=5
 
 mode=VarioAudioMenu
 type=key
-data=V
-event=SendNMEAPort1 POV,C,VAR
-event=StatusMessage Vario Mode
-label=VARIO
+data=LEFT
+event=MacCready down
+label=MC-\n(LEFT)
 location=6
+
+mode=VarioAudioMenu
+type=key
+data=RIGHT
+event=MacCready up
+label=MC+\n(RIGHT)
+location=7
+
+mode=VarioAudioMenu
+type=key
+data=RETURN
+event=Mode default
+label=MC: $(MC_Value)
+location=8
+
 mode=VarioAudioMenu
 type=key
 data=ESCAPE
@@ -1445,15 +1472,11 @@ event=QuickMenu
 mode=default
 type=key
 data=S
-# event=SendNMEAPort2 g,s1
-# event=SendNMEAPort1 g,s1
 event=STFSwitch STF
 
 mode=default
 type=key
 data=V
-# event=SendNMEAPort2 g,s0
-# event=SendNMEAPort1 g,s0
 event=STFSwitch Vario
 
 

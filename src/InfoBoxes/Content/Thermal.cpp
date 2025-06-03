@@ -186,6 +186,23 @@ UpdateInfoBoxNextLegEqThermal(InfoBoxData &data) noexcept
 }
 
 void
+UpdateInfoBoxSTFSwitch(InfoBoxData &data) noexcept {
+  if (!CommonInterface::GetComputerSettings().stf_switch.IsValid()) {
+    data.SetInvalid();
+    data.SetValue("Unknown");
+    return;
+  }
+
+  switch (CommonInterface::GetComputerSettings().stf_switch.stf_mode)
+  {
+    case TriState::FALSE: data.SetValue("Vario"); break;
+    case TriState::TRUE: data.SetValue("STF"); break;
+    default:
+    case TriState::UNKNOWN: data.SetValue("Unknown"); break;
+  }
+}
+
+void
 UpdateInfoBoxCircleDiameter(InfoBoxData &data) noexcept
 {
   if (!CommonInterface::Basic().airspeed_available.IsValid()) {

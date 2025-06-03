@@ -197,6 +197,9 @@ void eventExchangeFrequencies(const char *misc);
 void eventShutdown(const char *misc);
 #endif
 void eventUploadIGCFile(const char *misc);
+void eventSTFSwitch(const char* misc);
+// void eventSTFSwitch(std::string_view misc);
+
 void eventKeyPressed(const char *misc);
 // -------
 

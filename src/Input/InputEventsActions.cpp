@@ -64,6 +64,7 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "Simulator.hpp"
 #include "Formatter/TimeFormatter.hpp"
 #include "Operation/MessageOperationEnvironment.hpp"
+#include "Operation/PopupOperationEnvironment.hpp"
 #include "Device/MultipleDevices.hpp"
 #include "Form/DataField/File.hpp"
 #include "Dialogs/FilePicker.hpp"
@@ -71,6 +72,10 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "Components.hpp"
 #include "BackendComponents.hpp"
 #include "DataComponents.hpp"
+#include "Device/Descriptor.hpp"
+
+#include "Interface.hpp"
+#include "InfoBoxes/Content/Thermal.hpp"
 
 #include <cassert>
 #include <algorithm>
@@ -83,6 +88,8 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include <processthreadsapi.h> // for CreateProcess()
 #include <winbase.h> // for INFINITE
 #endif
+
+using std::string_view_literals::operator""sv;
 
 /**
  * Determine the reference location of the current map display.
@@ -832,5 +839,58 @@ InputEvents::eventUploadIGCFile([[maybe_unused]] const char *misc) {
       if (WeGlide::UploadIGCFile(path)) {
         // success!
       }
+  }
+}
+
+/* TODO(August2111): The NMEA output should be defined in the driver itself 
+   and called with a special function SwitchTo(VARIO) if available */
+void
+InputEvents::eventSTFSwitch(const char* misc) {
+  std::string mode = misc;
+  PopupOperationEnvironment env;
+  auto stf_switch = const_cast<STFSettings*>(&CommonInterface::
+    GetComputerSettings().stf_switch);
+  if (mode == "toggle") {
+    mode = (stf_switch->stf_mode == TriState::TRUE) ? "Vario" : "STF";
+  }
+  if ((mode == "S") || (mode == "STF")) {
+    if (stf_switch->stf_mode != TriState::TRUE) {
+      stf_switch->Set(TriState::TRUE);
+      Message::AddMessage(_("Speed To Fly Mode"));
+      for (DeviceDescriptor *device : *backend_components->devices) {
+        if (device->GetDevice()) { //device->IsNMEAOut()) {
+          if (device->IsDriver("Larus")) {
+            if (device->WriteNMEA("g,s1", env))
+              Message::AddMessage(_("Speed To Fly -> Larus"));
+          } else if (device->IsDriver("OpenVario") ||
+            device->IsDriver("FreeVario") ||
+            device->IsDriver("NmeaOut")) {
+            device->WriteNMEA("POV,C,STF", env);
+          }
+        }
+      }
+    }
+  } else if ((mode == "V") || (mode == "Vario")) {
+    if (stf_switch->stf_mode != TriState::FALSE) {
+      stf_switch->Set(TriState::FALSE);
+      Message::AddMessage(_("Vario Mode"));
+      for (DeviceDescriptor *device : *backend_components->devices) {
+        if (device->GetDevice()) { //device->IsNMEAOut()) {
+          if (device->IsDriver("Larus")) {
+            if (device->WriteNMEA("g,s0", env))
+              Message::AddMessage(_("Vario Mode -> Larus"));
+          } else if (device->IsDriver("OpenVario") ||
+            device->IsDriver("FreeVario") ||
+            device->IsDriver("NmeaOut")) {
+            device->WriteNMEA("POV,C,VAR", env);
+          }
+        }
+      }
+    }
+  } else {
+      stf_switch->Set(TriState::UNKNOWN);
+      std::string msg = "Unknown STF State: '";
+      msg += mode + "'!";
+      eventStatusMessage(msg.c_str());
   }
 }

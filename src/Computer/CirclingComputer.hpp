@@ -89,4 +89,7 @@ public:
 
   void MaxHeightGain(const MoreData &basic, const FlyingState &flight,
                      CirclingInfo &circling_info);
+  
+  int16_t STFSwitchState = 0;  // 0 = Circling, 1 = Cruising
 };
+

@@ -1344,21 +1344,12 @@ event=Mode default
 label=Volume:\n$(AudioVolume)
 location=4
 
-## mode=VarioAudioMenu
-## type=key
-## data=S
-## event=SendNMEAPort1 POV,C,STF
-## event=StatusMessage Speed to Fly Mode
-## label=STF
-## location=5
-
-## mode=VarioAudioMenu
-## type=key
-## data=V
-## event=SendNMEAPort1 POV,C,VAR
-## event=StatusMessage Vario Mode
-## label=VARIO
-## location=6
+mode=VarioAudioMenu
+type=key
+data=0
+event=STFSwitch toggle
+label=$(CheckSTF)
+location=5
 
 mode=VarioAudioMenu
 type=key
@@ -1388,7 +1379,6 @@ event=Mode default
 label=BACK (ESC)
 location=9
 
-
 mode=default RemoteStick
 type=key
 data=M
@@ -1416,13 +1406,9 @@ event=QuickMenu
 mode=default
 type=key
 data=S
-# event=SendNMEAPort2 g,s1
-# event=SendNMEAPort1 g,s1
 event=STFSwitch STF
 
 mode=default
 type=key
 data=V
-# event=SendNMEAPort2 g,s0
-# event=SendNMEAPort1 g,s0
 event=STFSwitch Vario

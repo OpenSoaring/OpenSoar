@@ -182,6 +182,25 @@ struct CirclingSettings {
   }
 };
 
+struct STFSettings {
+  TriState stf_mode;
+  FloatDuration switch_threshold;
+
+  void SetDefaults() {
+    stf_mode = TriState::UNKNOWN;
+    switch_threshold = std::chrono::seconds{1};
+  }
+
+  void Set(TriState value) {
+    stf_mode = value;
+    switch_threshold = std::chrono::seconds{60};
+  }
+
+  constexpr bool IsValid() const {
+    return true;  // always... or in flight only 
+  }
+};
+
 enum class AverageEffTime : uint8_t{
   ae15seconds = 15,
   ae30seconds = 30,
@@ -203,6 +222,7 @@ struct ComputerSettings {
   FeaturesSettings features;
 
   CirclingSettings circling;
+  STFSettings stf_switch;
 
   WaveSettings wave;
 
