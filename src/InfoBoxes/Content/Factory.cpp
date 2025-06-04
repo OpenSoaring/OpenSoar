@@ -1376,6 +1376,15 @@ static constexpr MetaData meta_data_2nd[] = {
         UpdateInfoBoxPageIndex,
     },
 
+    // e_STFSwitch
+    {
+        "System", 
+        N_("STF Switch"),
+        N_("STF Switch"),
+        N_("State of the STV/Vario switch."),
+        UpdateInfoBoxSTFSwitch,
+    },
+
 };
 
 // static_assert(ARRAY_SIZE(meta_data_2nd) == NUM_TYPES_2nd - e_NUM_AREA_2nd, "Wrong InfoBox factory size");
