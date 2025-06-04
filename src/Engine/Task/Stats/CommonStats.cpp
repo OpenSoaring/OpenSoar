@@ -35,5 +35,9 @@ CommonStats::Reset() noexcept
   vario_scale_positive = 0;
   vario_scale_negative = 0;
 
+  pev_start = 0;
+  pev_open = 0;
+  pev_closed = 0;
+
   ResetTask();
 }

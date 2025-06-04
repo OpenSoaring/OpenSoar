@@ -54,6 +54,11 @@ struct StartConstraints {
    */
   std::chrono::duration<unsigned> pev_start_window;
 
+  /* temporary start constraints*/
+  time_t pev_start;
+  time_t pev_open;
+  time_t pev_closed;
+
   void SetDefaults();
 
   /**

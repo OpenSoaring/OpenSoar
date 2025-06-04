@@ -17,7 +17,7 @@
  * have per-task instances, and where access to certain statistics
  * is required whatever mode the task manager is in.
  */
-class CommonStats 
+class CommonStats
 {
 public:
   /**
@@ -71,6 +71,12 @@ public:
 
   /** Summary of ordered task progress */
   TaskSummary ordered_summary;
+
+  /** PEV times */
+  time_t pev_start;
+  time_t pev_open;
+  time_t pev_closed;
+
 
   /**
    * Reset the stats as if never flown

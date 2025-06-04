@@ -38,6 +38,18 @@ ProtectedTaskManager::SetStartTimeSpan(const RoughTimeSpan &open_time_span) noex
   lease->SetOrderedTaskSettings(otb);
 }
 
+void
+ProtectedTaskManager::SetPevStartTimes(const time_t start, const time_t begin,
+  const time_t end) noexcept
+{
+  ExclusiveLease lease(*this);
+  OrderedTaskSettings otb = lease->GetOrderedTask().GetOrderedTaskSettings();
+  otb.start_constraints.pev_start = start;
+  otb.start_constraints.pev_open = begin;
+  otb.start_constraints.pev_closed= end;
+  lease->SetOrderedTaskSettings(otb);
+}
+
 const OrderedTaskSettings
 ProtectedTaskManager::GetOrderedTaskSettings() const noexcept
 {

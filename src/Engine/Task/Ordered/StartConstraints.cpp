@@ -17,6 +17,10 @@ StartConstraints::SetDefaults()
   fai_finish = false;
   pev_start_wait_time = {};
   pev_start_window = {};
+
+  pev_start = 0;
+  pev_open = 0;
+  pev_closed = 0;
 }
 
 bool

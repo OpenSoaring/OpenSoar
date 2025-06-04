@@ -77,6 +77,8 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "Interface.hpp"
 #include "InfoBoxes/Content/Thermal.hpp"
 
+#include "time/DateTime.hpp"
+
 #include <cassert>
 #include <algorithm>
 
@@ -195,31 +197,24 @@ InputEvents::eventMarkLocation(const char *misc)
 
 void
 InputEvents::eventPilotEvent([[maybe_unused]] const char *misc)
-try {
-  // Configure start window
+try {  // Configure PEV start window
   const OrderedTaskSettings &ots =
     backend_components->protected_task_manager->GetOrderedTaskSettings();
   const StartConstraints &start = ots.start_constraints;
 
-  const BrokenTime bt = BrokenDateTime::NowUTC();
-  RoughTime new_start = RoughTime(bt.hour, bt.minute);
-  RoughTime new_end = RoughTime::Invalid();
+  time_t pev_time = DateTime::now();
+  time_t new_start = pev_time;
+  time_t new_end = -1;
 
   if (start.pev_start_wait_time.count() > 0) {
-    auto t = std::chrono::duration_cast<std::chrono::minutes>(start.pev_start_wait_time);
-    // Set start time to the next full minute after wait time.
-    // This way we make sure wait time is passed before xcsoar opens the start.
-    if (bt.second > 0)
-      t += std::chrono::minutes{1};
-    new_start = new_start + RoughTimeDelta::FromDuration(t);
+    new_start = pev_time + start.pev_start_wait_time.count();
   }
 
   if (start.pev_start_window.count() > 0) {
-    new_end = new_start + RoughTimeDelta::FromDuration(start.pev_start_window);
+    new_end = new_start + start.pev_start_window.count();
   }
-  const RoughTimeSpan ts = RoughTimeSpan(new_start, new_end);
-
-  backend_components->protected_task_manager->SetStartTimeSpan(ts);
+  backend_components->protected_task_manager->SetPevStartTimes(
+    pev_time, new_start, new_end);
 
   // Log pilot event
   if (backend_components->igc_logger)

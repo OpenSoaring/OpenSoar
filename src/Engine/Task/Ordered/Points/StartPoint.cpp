@@ -6,6 +6,7 @@
 #include "Task/ObservationZones/Boundary.hpp"
 #include "Task/TaskBehaviour.hpp"
 #include "Geo/Math.hpp"
+#include "time/DateTime.hpp"
 
 #include <cassert>
 
@@ -98,6 +99,10 @@ StartPoint::CheckExitTransition(const AircraftState &ref_now,
 
   if (constraints.open_time_span.HasEnded(RoughTime{ref_now.time}))
     /* the start gate was already closed when we left the OZ */
+    return false;
+  if (constraints.pev_open < DateTime::now())
+    return false;
+  if (constraints.pev_closed > DateTime::now())
     return false;
 
   if (!constraints.CheckSpeed(ref_now.ground_speed, &margins) ||

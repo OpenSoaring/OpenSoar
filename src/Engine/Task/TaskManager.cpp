@@ -139,6 +139,9 @@ TaskManager::UpdateCommonStatsTimes(const AircraftState &state) noexcept
     const StartConstraints &start_constraints =
       ordered_task->GetOrderedTaskSettings().start_constraints;
     common_stats.start_open_time_span = start_constraints.open_time_span;
+    common_stats.pev_start = start_constraints.pev_start;
+    common_stats.pev_open = start_constraints.pev_open;
+    common_stats.pev_closed = start_constraints.pev_closed;
     const auto start_max_height =
       start_constraints.max_height +
       (start_constraints.max_height_ref == AltitudeReference::MSL
