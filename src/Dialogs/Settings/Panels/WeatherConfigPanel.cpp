@@ -18,14 +18,18 @@
 # include "Weather/Skysight/Skysight.hpp"
 #endif
 
+#ifdef HAVE_PCMET
+// not yet: # define HAVE_PCMET_OVERLAY
+#endif
+
 enum ControlIndex {
 #ifdef HAVE_PCMET
   PCMET_USER,
   PCMET_PASSWORD,
-#if 0
+# ifdef HAVE_PCMET_OVERLAY
   PCMET_FTP_USER,
   PCMET_FTP_PASSWORD,
-#endif
+# endif
 #endif
 
 #ifdef HAVE_HTTP
@@ -59,11 +63,14 @@ FillRegionControl(WndProperty &wp, const char *setting)
   DataFieldEnum *df = (DataFieldEnum *)wp.GetDataField();
   auto skysight = DataGlobals::GetSkysight();
 
-  for (auto &i: skysight->GetRegions())
-    df->addEnumText(i.first.data(), i.second.name.data());
+  for (auto &i : skysight->GetRegions()) {
+    auto displaystring = i.second.name;
+    if (displaystring.empty())
+      displaystring = i.second.id;
+    df->addEnumText(i.first.data(), displaystring.data());
+  }
 
-  // if old region doesn't exist any more this will fall back to first element
-  df->SetValue(setting);
+  df->SetValue(skysight->GetRegion().c_str());
   wp.RefreshDisplay();
 }
 #endif
@@ -82,7 +89,7 @@ WeatherConfigPanel::Prepare(ContainerWindow &parent,
   AddPassword("pc_met Password", "",
               settings.pcmet.www_credentials.password);
 
-#if 0
+#ifdef HAVE_PCMET_OVERLAY
   // code disabled because DWD has terminated our access */
   AddText("pc_met FTP Username", "",
           settings.pcmet.ftp_credentials.username);
@@ -123,14 +130,14 @@ WeatherConfigPanel::Save(bool &_changed) noexcept
   changed |= SaveValue(PCMET_PASSWORD, ProfileKeys::PCMetPassword,
                        settings.pcmet.www_credentials.password);
 
-#if 0
+# ifdef HAVE_PCMET_OVERLAY
   // code disabled because DWD has terminated our access */
   changed |= SaveValue(PCMET_FTP_USER, ProfileKeys::PCMetFtpUsername,
                        settings.pcmet.ftp_credentials.username);
 
   changed |= SaveValue(PCMET_FTP_PASSWORD, ProfileKeys::PCMetFtpPassword,
                        settings.pcmet.ftp_credentials.password);
-#endif
+# endif
 #endif
 
 #ifdef HAVE_HTTP

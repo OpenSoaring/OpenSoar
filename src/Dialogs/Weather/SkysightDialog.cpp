@@ -71,8 +71,7 @@ private:
 void
 SkysightListItemRenderer::Draw(Canvas &canvas, const PixelRect rc, unsigned index) {
   const ComputerSettings &settings = CommonInterface::GetComputerSettings();
-  // SkysightLayer m = SkysightSelectedLayer(skysight->GetActiveLayer(i));
-  SkysightLayer *layer = skysight->GetSelectedLayer(index);
+  SkySight::Layer *layer = skysight->GetSelectedLayer(index);
 
   std::string first_row = std::string(layer->name);
   if (skysight->GetActiveLayerId() == layer->id)
@@ -333,7 +332,8 @@ void SkysightWidget::UpdateClicked()
   unsigned index = GetList().GetCursorIndex();
   assert(index < (unsigned)skysight->NumSelectedLayers());
 
-  auto layer = skysight->GetLayer(index);
+  auto layer = skysight->GetSelectedLayer(index);
+  // skysight->GetLayer(index);
   if (!skysight->DownloadSelectedLayer(layer->id))
     ShowMessageBox(_("Couldn't update data."), _("Update Error"), MB_OK);
 
@@ -354,7 +354,7 @@ void SkysightWidget::RemoveClicked()
   unsigned index = GetList().GetCursorIndex();
   assert(index < (unsigned)skysight->NumSelectedLayers());
 
-  SkysightLayer *layer = skysight->GetSelectedLayer(index);
+  SkySight::Layer *layer = skysight->GetSelectedLayer(index);
   StaticString<256> tmp;
   tmp.Format(_("Do you want to remove \"%s\"?"),
              layer->name.c_str());
@@ -373,7 +373,7 @@ SkysightWidget::ActivateClicked()
   unsigned index = GetList().GetCursorIndex();
   assert(index < (unsigned)skysight->NumSelectedLayers());
   if (index < (unsigned)skysight->NumSelectedLayers()) {
-    SkysightLayer *layer = skysight->GetSelectedLayer(index);
+    SkySight::Layer *layer = skysight->GetSelectedLayer(index);
     if (!skysight->SetLayerActive(layer->id))
       ShowMessageBox(_("Couldn't display data."),
         _("Display Error"), MB_OK);
