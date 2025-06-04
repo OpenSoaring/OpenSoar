@@ -38,7 +38,7 @@ Directory::Create(Path path) noexcept
 #ifdef HAVE_POSIX
   mkdir(path.c_str(), 0777);
 #else /* !HAVE_POSIX */
-  CreateDirectory(path.c_str(), nullptr);
+  std::filesystem::create_directories(path.c_str());
 #endif /* !HAVE_POSIX */
 }
 
