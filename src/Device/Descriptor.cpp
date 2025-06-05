@@ -397,10 +397,15 @@ try {
       StaticString<256> msg;
       LockSetErrorMessage(what.c_str());
       msg.Format("%s: %s (%s)", _("Unable to open port"), name, what.c_str());
-      if (!env.IsCancelled())
-        env.SetErrorMessage(msg);
-      else
-        LogFmt("Device-Error without Env: {}", msg.data());
+      try {
+        if (!env.IsCancelled())
+          env.SetErrorMessage(msg);
+        else
+          LogFmt("Device-Error without Env: {}", msg.data());
+      }
+      catch ([[maybe_unused]] std::exception &e) {
+        LogFmt("Device-Exception without Env: {}", msg.data());
+      }
     }
 
     return false;
