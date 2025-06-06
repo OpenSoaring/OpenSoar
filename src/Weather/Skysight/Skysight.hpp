@@ -120,7 +120,12 @@ public:
 
   static inline 
   AllocatedPath GetLocalPath() {
+#ifdef ANDROID
     return MakeCacheDirectory("skysight");
+    // return LocalPath("skysight");
+#else
+    return MakeCacheDirectory("skysight");
+#endif
   }
   void Render(bool force_update = false);
 

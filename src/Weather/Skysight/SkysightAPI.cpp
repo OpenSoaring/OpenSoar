@@ -53,8 +53,6 @@ static constexpr uint32_t forecast_count = 2;
 #else
 static constexpr uint32_t forecast_count = 6;
 #endif
-//static const std::string skysight_path = "skysight/";
-static const Path skysight_path("skysight");
 
 #ifdef THREAD_TIMER_START
 // =======================================================
@@ -349,12 +347,12 @@ SkysightAPI::UpdateLayers(const boost::json::value &_layers)
     layer.data_type = _layer.at("data_type").get_string().data();
 
       auto _legend = _layer.at("legend");
-      auto color_mode = _legend.at("color_mode").get_string().data();
-      auto units = _legend.at("units").get_string().data();
+      [[maybe_unused]] auto color_mode = _legend.at("color_mode").get_string().data();
+      [[maybe_unused]] auto units = _legend.at("units").get_string().data();
 
 
       for (auto _colors : _legend.at("colors").get_array()) {
-        auto name = _colors.at("name").get_string().data();
+        [[maybe_unused]] auto name = _colors.at("name").get_string().data();
         auto value = std::atof(_colors.at("value").get_string().data());
         auto _legend_colors = _colors.at("color").as_array();
         layer.legend[value] = LegendColor(
@@ -372,11 +370,14 @@ SkysightAPI::UpdateLayers(const boost::json::value &_layers)
     inited_layers = success;
     std::string str;
     int i = 0;
+	/* TODO(August2111): do I have to use the reference or better the layer?
+	 * It is nor clear about the behaviour 
+	 */
     for (auto &layer : layers_vector) {
       if (i++ < 3)
         str += layer.id + ", ";
-      if (&layer)
-         layers[layer.id] = &layer;
+      //if (&layer)
+      layers[layer.id] = &layer;
     }
 
     LogFmt("SkySight::Layers count = {}: {}... ",
