@@ -64,7 +64,7 @@ public:
   std::vector<SkySight::Layer> layers_vector;
   std::vector<SkySight::Layer> selected_layers;
 
-  SkysightAPI() : cache_path(MakeLocalPath("cache/skysight")) {}
+  SkysightAPI(Path _path) : cache_path(_path) {}
   ~SkysightAPI();
 
   void InitAPI(std::string_view email, std::string_view password,

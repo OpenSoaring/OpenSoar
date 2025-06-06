@@ -288,9 +288,8 @@ Skysight::Init()
 
 #if defined(SKYSIGHT_FILE_DEBUG)
   // save in debug case an additional file in folder
-  std::string _path("skysight/");
-  _path += DateTime::str_now() + " ====== Start-SkySight.tmp";
-  auto filename = LocalPath(_path);
+  auto filename = AllocatedPath::Build(GetLocalPath(), 
+    (DateTime::str_now() + " ====== Start-SkySight.tmp").c_str());
   if (File::CreateExclusive(filename))
       File::WriteExisting(filename, DateTime::str_now().c_str());
 #endif
@@ -301,7 +300,7 @@ Skysight::Init()
   email = settings.email.c_str();
   password = settings.password.c_str();
 
-  api = new SkysightAPI;
+  api = new SkysightAPI(GetLocalPath());
   api->InitAPI(email, password, region, APIInited);
   CleanupFiles();
 }
@@ -413,7 +412,7 @@ Skysight::CleanupFiles()
   SkysightFileDeleter deleter_tmp(now -  6 * ONE_HOUR);  // 6 hours
   SkysightFileDeleter deleter_txt(now -  ONE_HOUR);  // 1 hour
 
-  auto path = GetLocalPath();
+  auto path = GetLocalPath();  // local SkySight (cache) path
   Directory::VisitSpecificFiles(path, "*.tif", visitor_tif);
   Directory::VisitSpecificFiles(path, "*.jpg", deleter_jpg);
   Directory::VisitSpecificFiles(path, "*.tmp", deleter_tmp);
