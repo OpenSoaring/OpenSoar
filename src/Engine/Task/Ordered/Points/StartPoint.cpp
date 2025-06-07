@@ -100,10 +100,11 @@ StartPoint::CheckExitTransition(const AircraftState &ref_now,
   if (constraints.open_time_span.HasEnded(RoughTime{ref_now.time}))
     /* the start gate was already closed when we left the OZ */
     return false;
-  if (constraints.pev_open < DateTime::now())
-    return false;
-  if (constraints.pev_closed > DateTime::now())
-    return false;
+  auto now = DateTime::now();
+  if (constraints.pev_open > now)
+    return false;  // is defined and has not begun
+  if (constraints.pev_closed > 0 && constraints.pev_closed < now)
+    return false;  // is defined and has ended
 
   if (!constraints.CheckSpeed(ref_now.ground_speed, &margins) ||
       !constraints.CheckSpeed(ref_last.ground_speed, &margins))

@@ -850,7 +850,10 @@ UpdateInfoBoxStartOpen(InfoBoxData &data) noexcept
   time_t now = DateTime::now();
   if (!basic.time_available || !task_stats.task_valid ||
       common_stats.ordered_summary.active != 0 ||
-      pev_open == 0 || pev_closed== 0) {  // || !open.IsDefined()) {
+#ifdef CHECK_START_GATE
+    !open.IsDefined()) ||
+#endif
+    pev_open == 0 || pev_closed== 0) {
     data.SetInvalid();
     return;
   }
