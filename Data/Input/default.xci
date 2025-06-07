@@ -1108,7 +1108,7 @@ type=key
 data=0
 event=Pan on
 label=Pan Mode
-location=11
+location=36
 
 mode=RemoteStick
 type=key
@@ -1279,11 +1279,9 @@ mode=RemoteStick
 type=key
 data=0
 event=Mode default
-event=StatusMessage Pilot event announced
-event=Logger note PEV
 event=PilotEvent
-label=Pilot Event Announce
-location=33
+label=PEV Announce
+location=11
 
 mode=RemoteStick
 type=key
@@ -1291,6 +1289,14 @@ data=0
 event=AirSpace toggle
 label=Airspace\n$(AirspaceToggleActionName)
 location=34
+
+mode=RemoteStick
+type=key
+data=0
+event=Setup Replay
+label=Replay$(CheckReplay)
+# label=Replay
+location=37
 
 
 mode=RemoteStick

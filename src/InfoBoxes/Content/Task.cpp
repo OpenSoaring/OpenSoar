@@ -777,9 +777,7 @@ UpdateInfoBoxNextETAVMG(InfoBoxData &data) noexcept
     data.FmtValue("{:02}:{:02}", t.hour, t.minute);
     data.FmtComment("{:02}", t.second);
   }
-  
   data.SetValueColor(5);
-
 }
 
 void
@@ -828,17 +826,14 @@ SecondsUntil(TimeStamp now, RoughTime until) noexcept
   return std::chrono::duration_cast<std::chrono::duration<unsigned>>(d).count();
 }
 
-#define NO_CHECK_START_GATE
-void
-UpdateInfoBoxStartOpen(InfoBoxData &data) noexcept
+static void
+UpdateInfoBoxStartOpen(InfoBoxData &data, bool is_arrival) noexcept
 {
   const NMEAInfo &basic = CommonInterface::Basic();
   const auto &calculated = CommonInterface::Calculated();
   const TaskStats &task_stats = calculated.ordered_task_stats;
   const CommonStats &common_stats = CommonInterface::Calculated().common_stats;
-#ifdef CHECK_START_GATE
   const RoughTimeSpan &open = common_stats.start_open_time_span;
-#endif
 
   const time_t pev_start = common_stats.pev_start;
   const time_t pev_open = common_stats.pev_open;
@@ -846,114 +841,101 @@ UpdateInfoBoxStartOpen(InfoBoxData &data) noexcept
 
   /* reset color that may have been set by a previous call */
   data.SetValueColor(0);
-
-  time_t now = DateTime::now();
   if (!basic.time_available || !task_stats.task_valid ||
-      common_stats.ordered_summary.active != 0 ||
-      pev_open == 0 || pev_closed== 0) {  // || !open.IsDefined()) {
+    common_stats.ordered_summary.active != 0) {
     data.SetInvalid();
     return;
   }
-#ifdef CHECK_START_GATE
-  const auto now_s = basic.time;
-  const RoughTime now_r{ now_s };
-#endif
 
-  if ( pev_start == 0 || pev_closed == 0 || pev_open == 0 ||
-      (pev_closed + (20 * 60) < now) ||  // 20 min after closing
-      (pev_start + (2 * 60 * 60) < now)) {  // or 2 hour after starting
-    data.SetValueInvalid();
-    data.SetTitle(_("PEV Invalid"));
-#ifdef CHECK_START_GATE 
-  } else if (open.HasEnded(now_r) && pev_closed < now) {
-#else
-  } else if (pev_closed < now) {
-#endif
-    data.SetValueInvalid();
-    data.SetTitle(_("PEV Closed"));
-#ifdef CHECK_START_GATE 
-  } else if (open.HasBegun(now_r)  && pev_open < now) {
-#else
-  } else if (pev_open < now) {
-#endif
-    unsigned seconds = pev_closed - now;
-    data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
-    data.SetValueColor(3);
-    data.SetTitle(_("PEV Open"));
-  } else if (pev_open >= now) {
-    unsigned seconds = pev_open - now;
-    data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
-    data.SetValueColor(2);
-    data.SetTitle(_("PEV Wait"));
-  } else {
-    unsigned seconds = now - pev_open;
-    data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
-    data.SetValueColor(2);
-    data.SetTitle(_("Start PEV"));
+  if (pev_start == 0 || pev_closed == 0 || pev_open == 0) {
+    // No PEV is started, so the check is for start open span
+    if (!open.IsDefined()) {
+      data.SetInvalid();
+      return;
+    }
+    const auto time_s = basic.time + (is_arrival ? FloatDuration() :
+      task_stats.current_leg.solution_remaining.time_elapsed);
+    const RoughTime time_r{ time_s };
+
+    if (open.HasEnded(time_r)) {
+      data.SetValueInvalid();
+      data.SetComment(_("Closed"));
+    } else if (open.HasBegun(time_r)) {
+      if (open.GetEnd().IsValid()) {
+        unsigned seconds = SecondsUntil(time_s, open.GetEnd());
+        seconds %= 3600 * 24;
+        data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
+        data.SetValueColor(3);
+      } else
+        data.SetValueInvalid();
+
+      data.SetComment(_("Open"));
+    } else {
+      unsigned seconds = SecondsUntil(time_s, open.GetStart());
+      data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
+      data.SetValueColor(2);
+      data.SetComment(_("Waiting"));
+    }
+    return;  // -> w/o PEV
+  }  else {
+    time_t _time = DateTime::now();
+    if (is_arrival) {
+      _time += round(task_stats.current_leg.solution_remaining.
+        time_elapsed.count());
+    }
+    std::string new_title;
+    if ((pev_closed + (20 * 60) < _time) ||  // 20 min after closing
+      (pev_start + (2 * 60 * 60) < _time)) {  // or 2 hour after starting
+      data.SetValueInvalid();
+      new_title = "PEV Invalid";
+    } else if (pev_closed < _time) {
+      data.SetValueInvalid();
+      new_title = _("PEV Closed");
+    } else if (pev_open < _time) {
+      unsigned seconds = pev_closed - _time;
+      data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
+      data.SetValueColor(3);
+      new_title = _("PEV Open");
+    } else if (pev_open >= _time) {
+      unsigned seconds = pev_open - _time;
+      data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
+      data.SetValueColor(2);
+      new_title = _("PEV Wait");
+    } else {
+      unsigned seconds = _time - pev_open;
+      data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
+      data.SetValueColor(2);
+      new_title = _("Start PEV");
+    }
+    if (!new_title.empty()) {
+      if (is_arrival)
+        data.SetComment(new_title.c_str());
+      else
+      data.SetTitle(new_title.c_str());
+    }
+
   }
-  if (pev_start > 0) {
-    std::string str = _("PEV: ");
-    str += DateTime::time_str(pev_start, "%H:%M:%S");
-    data.SetComment(str.c_str());
-  } else {
-    data.SetComment("Invalid");
+  if (!is_arrival) {
+    if (pev_start > 0) {
+      std::string str = _("PEV: ");
+      str += DateTime::time_str(pev_start, "%H:%M:%S");
+      data.SetComment(str.c_str());
+    } else {
+      data.SetComment("Invalid");
+    }
   }
+}
+
+void
+UpdateInfoBoxStartOpen(InfoBoxData &data) noexcept
+{
+  UpdateInfoBoxStartOpen(data, false);
 }
 
 void
 UpdateInfoBoxStartOpenArrival(InfoBoxData &data) noexcept
 {
-  const NMEAInfo &basic = CommonInterface::Basic();
-  const auto &calculated = CommonInterface::Calculated();
-  const TaskStats &task_stats = calculated.ordered_task_stats;
-  const GlideResult &current_remaining =
-    task_stats.current_leg.solution_remaining;
-  const CommonStats &common_stats = CommonInterface::Calculated().common_stats;
-  const time_t pev_start = common_stats.pev_start;
-  const time_t pev_open = common_stats.pev_open;
-  const time_t pev_closed = common_stats.pev_closed;
-
-  /* reset color that may have been set by a previous call */
-  data.SetValueColor(0);
-  // time_t now = DateTime::now();
-
-  if (!basic.time_available || !task_stats.task_valid ||
-      common_stats.ordered_summary.active != 0 ||
-    pev_open == 0 || pev_closed == 0 ||
-      !current_remaining.IsOk()) {
-    data.SetInvalid();
-    return;
-  }
-
-  auto arrival = DateTime::now() + 
-    round(current_remaining.time_elapsed.count());
-  if ((pev_closed + (20 * 60) < arrival) ||  // 20 min after closing
-    (pev_start + (2 * 60 * 60) < arrival)) {  // or 2 hour after starting
-    data.SetValueInvalid();
-    data.SetComment(_("Invalid"));
-  }
-  else if (pev_closed < arrival) {
-    data.SetValueInvalid();
-    data.SetComment(_("*Closed*"));
-  }
-  else if (pev_open < arrival) {
-    unsigned seconds = pev_closed - arrival;
-    data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
-    data.SetValueColor(3);
-    data.SetComment(_("*Open*"));
-  }
-  else if (pev_open >= arrival) {
-    unsigned seconds = pev_open - arrival;
-    data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
-    data.SetValueColor(2);
-    data.SetComment(_("*Waiting*"));
-  }
-  else {
-    unsigned seconds = arrival - pev_open;
-    data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
-    data.SetValueColor(2);
-    data.SetComment(_("Start PEV"));
-  }
+  UpdateInfoBoxStartOpen(data, true);
 }
 
 /*

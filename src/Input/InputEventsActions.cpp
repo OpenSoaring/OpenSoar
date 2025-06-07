@@ -210,6 +210,18 @@ try {  // Configure PEV start window
     new_start = pev_time + start.pev_start_wait_time.count();
   }
 
+  // check the start open gate w/ disabling if PEV outside
+  const TimeStamp time_s = CommonInterface::Basic().time + start.pev_start_wait_time;
+  const RoughTime time_r{ time_s };
+  const RoughTimeSpan &open = CommonInterface::Calculated().common_stats.
+    start_open_time_span;
+
+  if (open.HasEnded(time_r) || !open.HasBegun(time_r)) {
+    Message::AddMessage(_("PEV started on wrong time!"));
+    return;
+  }
+
+
   if (start.pev_start_window.count() > 0) {
     new_end = new_start + start.pev_start_window.count();
   }
@@ -225,6 +237,8 @@ try {  // Configure PEV start window
     MessageOperationEnvironment env;
     backend_components->devices->PutPilotEvent(env);
   }
+  eventLogger(_("note PEV"));
+  Message::AddMessage(_("Pilot EVent announced"));
 } catch (...) {
   ShowError(std::current_exception(), _("Logger Error"));
 }
@@ -888,4 +902,8 @@ InputEvents::eventSTFSwitch(const char* misc) {
       msg += mode + "'!";
       eventStatusMessage(msg.c_str());
   }
+}
+
+void
+InputEvents::eventReplay(const char *misc) {
 }
