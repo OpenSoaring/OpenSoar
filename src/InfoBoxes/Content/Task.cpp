@@ -819,14 +819,14 @@ UpdateInfoBoxCruiseEfficiency(InfoBoxData &data) noexcept
   data.SetCommentFromVerticalSpeed(task_stats.effective_mc, false);
 }
 
-static constexpr unsigned
-SecondsUntil(TimeStamp now, RoughTime until) noexcept
-{
-  auto d = TimeStamp{until} - now;
-  if (d.count() < 0)
-    d += std::chrono::hours{24};
-  return std::chrono::duration_cast<std::chrono::duration<unsigned>>(d).count();
-}
+//static constexpr unsigned
+//SecondsUntil(TimeStamp now, RoughTime until) noexcept
+//{
+//  auto d = TimeStamp{until} - now;
+//  if (d.count() < 0)
+//    d += std::chrono::hours{24};
+//  return std::chrono::duration_cast<std::chrono::duration<unsigned>>(d).count();
+//}
 
 #define NO_CHECK_START_GATE
 void

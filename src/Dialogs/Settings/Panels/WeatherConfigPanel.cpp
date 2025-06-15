@@ -58,7 +58,7 @@ public:
 
 #ifdef HAVE_SKYSIGHT
 static void
-FillRegionControl(WndProperty &wp, const char *setting)
+FillRegionControl(WndProperty &wp, [[maybe_unused]] const char *setting)
 {
   DataFieldEnum *df = (DataFieldEnum *)wp.GetDataField();
   auto skysight = DataGlobals::GetSkysight();

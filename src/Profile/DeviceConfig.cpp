@@ -81,6 +81,7 @@ static const char *const port_type_strings[] = {
   NULL
 };
 
+[[maybe_unused]]
 static const char *
 MakeDeviceSettingName(char *buffer, const char *prefix, unsigned n,
                       const char *suffix)
@@ -121,7 +122,7 @@ ReadPortType(ProfileMap &map, unsigned n, DeviceConfig::PortType &type)
 
   snprintf(buffer, sizeof(buffer), "Port%u%s", n + 1, "Type");
 
-  int _type = 0;
+  [[maybe_unused]] int _type = 0;
   auto _default = port_type_strings[(int)StandardPort.port_type];
   std::string value = map.Get(buffer, _default);
   if (n== 0 && value == _default) {
