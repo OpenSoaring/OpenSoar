@@ -13,9 +13,9 @@
 
   namespace SkySight {
     struct Layer {
-    const std::string id;
-    const std::string name;
-    const std::string desc;
+    std::string id;
+    std::string name;
+    std::string desc;
     std::string projection;
     std::string data_type;
     time_t last_update = 0;
@@ -49,7 +49,7 @@
       id(_id), name(""), desc(""), tile_layer(false), live_layer(false),
       zoom_max(20) {}
 
-    const Layer &operator =(const Layer &layer) { return layer; }
+    //const Layer &operator =(const Layer &layer) { return layer; }
 
     bool operator==(std::string_view _id) {
       if (_id.empty()) return false;
