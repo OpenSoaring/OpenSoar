@@ -50,7 +50,6 @@ public:
    * cancellation)
    */
   virtual void OnDownloadError(const std::string_view name,
-    // const DownloadType type,
                                std::exception_ptr error) noexcept = 0;
 };
 

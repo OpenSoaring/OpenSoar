@@ -6,114 +6,6 @@
 #include "LogFile.hpp"
 #include "Version.hpp"
 #include "system/FileUtil.hpp"
-#include <string>
-
-// #ifdef ANDROID
-#ifdef NO_ANDROID
-
-#include "Android/DownloadManager.hpp"
-#include "Android/Main.hpp"
-
-static AndroidDownloadManager *download_manager;
-
-bool
-Net::DownloadManager::Initialise() noexcept
-{
-  assert(download_manager == nullptr);
-
-  if (!AndroidDownloadManager::Initialise(Java::GetEnv()))
-    return false;
-
-  try {
-    download_manager = new AndroidDownloadManager(Java::GetEnv(), *context);
-    return true;
-  } catch (...) {
-    LogError(std::current_exception(),
-             "Failed to initialise the DownloadManager");
-    return false;
-  }
-}
-
-void
-Net::DownloadManager::BeginDeinitialise() noexcept
-{
-}
-
-void
-Net::DownloadManager::Deinitialise() noexcept
-{
-  delete download_manager;
-  download_manager = nullptr;
-  AndroidDownloadManager::Deinitialise(Java::GetEnv());
-}
-
-bool
-Net::DownloadManager::IsAvailable() noexcept
-{
-  return download_manager != nullptr;
-}
-
-void
-Net::DownloadManager::AddListener(DownloadListener &listener) noexcept
-{
-  assert(download_manager != nullptr);
-
-  download_manager->AddListener(listener);
-}
-
-void
-Net::DownloadManager::RemoveListener(DownloadListener &listener) noexcept
-{
-  assert(download_manager != nullptr);
-
-  download_manager->RemoveListener(listener);
-}
-
-void
-Net::DownloadManager::Enumerate(DownloadListener &listener) noexcept
-{
-  assert(download_manager != nullptr);
-
-  download_manager->Enumerate(Java::GetEnv(), listener);
-}
-
-void
-Net::DownloadManager::Enqueue(const std::string_view uri, const std::string_view name,
-  boost::json::value &json) noexcept
-  // Net::DownloadManager::Enqueue(const std::string_view uri, const Path path_relative) noexcept
-{
-  assert(download_manager != nullptr);
-
-  download_manager->Enqueue(Java::GetEnv(), uri, name, json);
-}
-
-void
-Net::DownloadManager::Enqueue(const std::string_view uri, const Path path_relative) noexcept
-{
-  assert(download_manager != nullptr);
-
-  download_manager->Enqueue(Java::GetEnv(), uri, path_relative);
-    // Net::DownloadListener::FILE);
-}
-
-void
-// Net::DownloadManager::Enqueue(const std::string_view uri, boost::json::value json) noexcept
-Net::DownloadManager::Enqueue(const std::string_view uri, const std::string_view name,
-  Net::CurlData *data) noexcept {
-  assert(download_manager != nullptr);
-
-  download_manager->Enqueue(Java::GetEnv(), uri, name, data);
-}
-
-void
-Net::DownloadManager::Cancel(const std::string_view name) noexcept
-{
-  assert(download_manager != nullptr);
-
-  download_manager->Cancel(Java::GetEnv(), name);
-}
-
-#else /* !ANDROID */
 
 #include "Init.hpp"
 #include "CoDownload.hpp"
@@ -128,19 +20,14 @@ Net::DownloadManager::Cancel(const std::string_view name) noexcept
 #include <list>
 #include <algorithm>
 
-#include <string.h>
-
   struct Item {
     std::string uri;
-    // AllocatedPath path_relative;
     std::string name;
     const Net::DownloadType type;
     boost::json::value* json;
     boost::json::value  tmp_json;
     Net::CurlData *data;
 
-//    Item(const Item &other) = delete;
-    // aug: Copy-constructor...
     Item(const Item &other) : uri(other.uri), name(other.name),
       type(other.type), json(other.json), data(other.data) {}
 
@@ -164,7 +51,6 @@ Net::DownloadManager::Cancel(const std::string_view name) noexcept
 
     [[gnu::pure]]
     bool operator==(std::string_view  other) const noexcept {
-      // return path_relative == other;
       return name == other;
     }
   };
@@ -208,7 +94,6 @@ public:
         position = current_position;
       }
 
-      // listener.OnDownloadAdded(item.name, item.type, size, position);
       listener.OnDownloadAdded(item.name, size, position);
     }
   }
@@ -216,10 +101,9 @@ public:
   void 
   Enqueue(const std::string_view uri, Path path_relative) noexcept
   {
-    const std::string name = path_relative.c_str();
     queue.emplace_back(uri, LocalPath(path_relative));
 
-    listeners.ForEach([name](auto *listener){
+    listeners.ForEach([name = path_relative.c_str()](auto *listener){
       listener->OnDownloadAdded(name, -1, -1);
     });
 
@@ -228,8 +112,8 @@ public:
   }
 
   void
-    Enqueue(const std::string_view uri, const Path path,
-      Net::CurlData *data) noexcept
+  Enqueue(const std::string_view uri, const Path path,
+    Net::CurlData *data) noexcept
   {
     if (data) 
         data->name = path.c_str();
@@ -301,7 +185,6 @@ public:
 private:
   void Start() noexcept;
   void OnCompletion(std::exception_ptr error) noexcept;
-  // void OnCompletionJson(std::exception_ptr error) noexcept;
 
   /* methods from class ProgressListener */
   void SetProgressRange(unsigned range) noexcept override {
@@ -315,42 +198,6 @@ private:
   }
 };
 
-#if 0  // aug!!!!!!!!!!!!!!!!!
-static Co::InvokeTask
-DownloadToFile(CurlGlobal &curl,
-               const std::string_view url, AllocatedPath path,
-               std::array<std::byte, 32> *sha256,
-               ProgressListener &progress)
-{
-  const auto ignored_response = co_await
-    Net::CoDownloadToFile(curl, url.data(), nullptr, nullptr,
-                          path, sha256, progress);
-}
-static Co::InvokeTask
-DownloadToFile2(CurlGlobal &curl,
-  const std::string_view url, AllocatedPath path,
-  const Net::CurlData *data,
-  ProgressListener &progress)
-{
-  const auto ignored_response = co_await
-    Net::CoDownloadToFile(curl, url.data(),
-      path, data, progress);
-}
-
-static Co::InvokeTask
-DownloadToJson3(CurlGlobal &curl,
-  const std::string_view url,
-  boost::json::value &json_body,
-  const Net::CurlData *data,
-  ProgressListener &progress)
-{
-  // const auto 
-    json_body = co_await
-    Net::CoDownloadToJson(curl, url, data, //username, password, &cred_slist,
-                          progress);
-}
-#endif  // 0 - aug
-
 static Co::InvokeTask
 DownloadTask(CurlGlobal &curl,
   const Item *item,
@@ -363,22 +210,9 @@ DownloadTask(CurlGlobal &curl,
         Net::CoDownloadToJson(curl, item->uri, std::move(item->data), progress);
       break;
     case Net::FILE: {
-#if 1
-      auto path = AllocatedPath(item->name);
-      const auto ignored_response = co_await
-      Net::CoDownloadToFile(curl, item->uri, path, std::move(item->data), progress);
-#else
-      const auto ignored_response = co_await
-        Net::CoDownloadToFile(curl, item->uri.data(),
-          AllocatedPath(item->name.data()), item->data, progress);
-
-
-      // Net::CoDownloadToFile(curl, item->uri, item->data->curl_list, Path(item->name.c_str()),nullptr, progress);
-//      auto path = AllocatedPath(item->name.c_str());
-//      Net::CoDownloadToFile(curl, item->uri.data(), path, item->data, progress);
-//      auto path = AllocatedPath(item->name.c_str());
-//      Net::CoDownloadToFile(curl, item->uri.data(), nullptr, nullptr, path, nullptr, progress);
-#endif
+        auto path = AllocatedPath(item->name);
+        const auto ignored_response = co_await
+        Net::CoDownloadToFile(curl, item->uri, path, std::move(item->data), progress);
       }
       break;
     default:
@@ -386,18 +220,6 @@ DownloadTask(CurlGlobal &curl,
 
   }
 }
-/*
-static Co::InvokeTask
-DownloadToFile5(CurlGlobal &curl,
-  const Item *item,
-  ProgressListener &progress)
-{
-  const auto ignored_response = co_await
-    Net::CoDownloadToFile(curl, item->uri.data(),
-      AllocatedPath(item->name.data()), item->data, progress);
-}
-
-*/
 
 void
 DownloadManagerThread::Start() noexcept
@@ -409,7 +231,6 @@ DownloadManagerThread::Start() noexcept
   assert(current_size == -1);
   assert(current_position == -1);
 
-  // const Item &item = queue.front();
   const Item *item = new Item(queue.front());
   current_position = 0;
   task.Start(DownloadTask(*Net::curl, std::move(item), *this), BIND_THIS_METHOD(OnCompletion));
@@ -428,18 +249,19 @@ DownloadManagerThread::OnCompletion(std::exception_ptr error) noexcept
 
   current_size = current_position = -1;
 
-  if (error) {
+  if (error) {  // Error case:
     LogError(error);
-    listeners.ForEach([_name=name, &error](auto *listener){
+    LogFmt("OnCompletion-Error with {}", name);
+    listeners.ForEach([_name = name, &error](auto *listener) {
       listener->OnDownloadError(_name, error);
     });
-  } else {
+  } else {  // complete w/o error:
     listeners.ForEach([_name = name](auto *listener) {
       listener->OnDownloadComplete(_name);
     });
   }
 
-  // start the next download
+  // start the next download:
   if (!queue.empty())
     Start();
 }
@@ -548,5 +370,3 @@ Net::DownloadManager::Cancel(const std::string_view name) noexcept
 
   thread->Cancel(name);
 }
-
-#endif
