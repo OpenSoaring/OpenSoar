@@ -89,50 +89,46 @@ private:
 
   void OnDownloadComplete(const std::string_view name) noexcept override {
     boost::json::value _json = json_null;
-    if (!json_values[name].is_null()) {
+    if (json_values.contains(name)) {
       _json = json_values[name];
-      if (name == "authent") {
-        success = owner->SetCredentialKey(_json);
-      } else if (name == "regions") {
-        success = owner->GetAPI()->UpdateRegions(_json);
-      } else if (name.starts_with("layers")) {
-        success = owner->GetAPI()->UpdateLayers(_json);
-      } else if (name.starts_with("last_updated")) {
-        success = owner->GetAPI()->UpdateLastUpdates(_json);
-      } else if (name.starts_with("datafiles")) {
-        success = owner->GetAPI()->UpdateDatafiles(_json);
-      } else {
-        // owner->GetAPI()->SetUpdateFlag();
-        Skysight::GetSkysight()->SetUpdateFlag();
-        success = true;
-#ifdef _DEBUG
-        LogFmt("OnDownloadComplete {} - {}", complete ? "complete" : "not compl", name);
+      if (!_json.is_null()) {
+        if (name == "authent") {
+          success = owner->SetCredentialKey(_json);
+        } else if (name == "regions") {
+          success = owner->GetAPI()->UpdateRegions(_json);
+        } else if (name.starts_with("layers")) {
+          success = owner->GetAPI()->UpdateLayers(_json);
+        } else if (name.starts_with("last_updated")) {
+          success = owner->GetAPI()->UpdateLastUpdates(_json);
+        } else if (name.starts_with("datafiles")) {
+          success = owner->GetAPI()->UpdateDatafiles(_json);
+        } else {
+          Skysight::GetSkysight()->SetUpdateFlag();
+          success = true;
+        }
+#if defined(SKYSIGHT_FILE_DEBUG)
+        std::string now_str = DateTime::str_now();
+        std::stringstream s;
+        s << Skysight::GetLocalPath().c_str() << '/' << now_str << " " << name << " .json";
+        auto path = AllocatedPath(s.str().c_str());
+        auto file = File::CreateExclusive(path);
+        if (file) {
+          auto json_text = boost::json::serialize(_json);
+          if (!File::WriteExisting(path, json_text.c_str()))
+            LogFmt("File write not successfully!");
+        }
 #endif
       }
+      json_values[name] = json_null;  // erasing content
     } else {
-      // File-Download...
+      // this is a File-Download...
       success = true;
     }
+#ifdef _DEBUG
+    LogFmt("OnDownloadComplete {} - {}", complete ? "complete" : "not compl", name);
+#endif
     if (!complete)
       complete = true;
-
-    // download_complete_notify.SendNotification();   
-    if (!_json.is_null()) {
-#if defined(SKYSIGHT_FILE_DEBUG)
-      std::string now_str = DateTime::str_now();
-      std::stringstream s;
-      s << Skysight::GetLocalPath().c_str() << '/' << now_str << " " << name << " .json";
-      auto path = AllocatedPath(s.str().c_str());
-      auto file = File::CreateExclusive(path);
-      if (file) {
-        auto json_text = boost::json::serialize(_json);
-        if (!File::WriteExisting(path, json_text.c_str()))
-          LogFmt("File write not successfully!");
-      }
-#endif
-      // 
-      json_values[name] = json_null;  // erasing content
-    }
   }
 
   void OnDownloadError(const std::string_view name,
