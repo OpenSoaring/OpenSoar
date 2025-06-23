@@ -627,7 +627,6 @@ XCSOAR_SOURCES += \
 	$(SRC)/Android/NativeSensorListener.cpp \
 	$(SRC)/Android/Battery.cpp \
 	$(SRC)/Android/GliderLink.cpp \
-	$(SRC)/Android/DownloadManager.cpp \
 	$(SRC)/Android/Vibrator.cpp \
 	$(SRC)/Android/Context.cpp \
 	$(SRC)/Android/BMP085Device.cpp \
@@ -645,9 +644,9 @@ else
 XCSOAR_SOURCES += \
 	$(SRC)/CommandLine.cpp \
 	$(SRC)/OpenSoar.cpp
-
-#	$(SRC)/XCSoar.cpp
 endif
+
+## $(SRC)/Android/DownloadManager.cpp
 
 
 ifeq ($(HAVE_HTTP),y)
