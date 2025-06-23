@@ -6,7 +6,7 @@
 #include "system/Path.hpp"
 
 
-#define REPOSITORY_URI "http://download.xcsoar.org/repository"
+#define REPOSITORY_URI "https://download.xcsoar.org/repository"
 
 static bool repository_downloaded = false;
 
