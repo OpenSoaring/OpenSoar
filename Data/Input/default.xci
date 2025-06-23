@@ -857,8 +857,8 @@ location=5
 mode=Info2
 type=key
 data=7
-event=FrequencyCard
 event=Mode default
+event=FrequencyCard
 label=Frequency Card
 location=6
 
@@ -1293,11 +1293,19 @@ location=34
 mode=RemoteStick
 type=key
 data=0
-event=Setup Replay
-label=Replay$(CheckReplay)
-# label=Replay
+event=Setup FrequencyCard
+label=Frequency\nCard
 location=37
 
+#-----------------------
+
+# Test purpose:
+mode=RemoteStick
+type=key
+data=0
+event=Setup Replay
+label=Replay$(CheckReplay)
+location=58
 
 mode=RemoteStick
 type=key
@@ -1397,7 +1405,6 @@ event=Mode VarioAudioMenu
 label=Audio Menu
 location=59
 
-
 # -------------
 # Define gesture to open Quickmenu without keyboard or remote
 # ("Draw a button on the screen")
@@ -1407,7 +1414,6 @@ mode=default
 type=gesture
 data=ULDR
 event=QuickMenu
-
 
 mode=default
 type=key

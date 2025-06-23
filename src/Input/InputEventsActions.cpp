@@ -597,6 +597,8 @@ InputEvents::eventSetup(const char *misc)
       ShowReplayDialog(*backend_components->replay);
   } else if (StringIsEqual(misc, "Switches"))
     dlgSwitchesShowModal();
+  else if (StringIsEqual(misc, "FrequencyCard"))
+    FrequencyDialogShowModal();
   else if (StringIsEqual(misc, "Teamcode"))
     dlgTeamCodeShowModal();
   else if (StringIsEqual(misc, "Target"))
