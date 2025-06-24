@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
+/* TODO(August2111) : Use a general Listener for the download requests, not 
+ * the special SkySight one  (f.e. download repository...) from this listener
+ * you should call some special SkySight functions... */
 
 #include "SkySightRequest.hpp"
 #include "Skysight.hpp"
