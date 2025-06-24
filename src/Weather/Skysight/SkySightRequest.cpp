@@ -135,10 +135,11 @@ private:
   }
 
   void OnDownloadError(const std::string_view name,
-    std::exception_ptr _error) noexcept override {
+    std::exception_ptr _error) noexcept override
+  {
+    LogFmt("SkySightRequest error with {}", name);
     if (!complete) {
       complete = true;
-      LogFmt("SkySightRequest error with {}", name);
       if (name == "authent") {
         // make Credential to invalid, if the Request goes fail
         owner->SetCredentialKey(nullptr);
