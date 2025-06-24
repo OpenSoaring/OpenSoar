@@ -50,9 +50,21 @@ OpenLog()
 
     /* delete the obsolete log file */
     File::Delete(path + "-startup.log");
-    auto back_path = path + "-old.log";
+    File::Delete(path + "-old.log");  // if available
+    /* copy up to 9 old log files to debug folder  */
+    Directory::Create(LocalPath("debug"));
+    auto old_log = LocalPath("debug/OpenSoar-9.log");
+    std::string back_path = old_log.c_str();
+    size_t pos = back_path.size() - 5;
+    for (char c = '9'; c > '1'; ) {
+      c--;
+      back_path[pos] = c;
+      auto temp_path = Path(back_path.c_str());
+      File::Replace(temp_path, old_log);
+      old_log = temp_path;
+    }
     path = path + ".log";
-    File::Replace(path, back_path);
+    File::Replace(path, old_log);
 
 #ifdef ANDROID
     /* redirect stdout/stderr to xcsoar-startup.log on Android so we
