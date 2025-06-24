@@ -3,7 +3,7 @@
           package="de.opensoar.testing"
           android:installLocation="auto"
           android:versionCode="23"
-          android:versionName="7.43-3.23.6">
+          android:versionName="7.43-3.23.7">
   <application
       android:requestLegacyExternalStorage="true"
       android:preserveLegacyExternalStorage="true"

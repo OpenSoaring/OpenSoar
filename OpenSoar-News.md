@@ -1,8 +1,11 @@
-OpenSoar Version 7.43-3.24 - not yet released (24.04.2025)
+OpenSoar Version 7.43-3.24 - not yet released
 ---------------
+OpenSoar Version 7.43-3.23.7 - released 2025/06/26 (prerelease for 7.43-3.24)
 * Weather
   - SkySight:(Re-)Activation 'Update' and 'Update All'-Buttons in SkySight dialog for downloading offline charts
-  - SkySight: Enable live view (Satellite and Rain) for OpenVario too (Forecast not available yet)
+  - SkySight: Enable live view (Satellite and Rain) for OpenVario too (unfortunataly forecast not available yet)
+  - SkySight: satview with alpha channel 1.0 (better contrast)
+  - RASP: remove all RASP settings and accesses w/o HAVE_RASP (Weather/Features.hpp) temporary
 * Data files
   - create a audio and MC in default xci for all devices (not only for OpenVario)
 * Commandline
@@ -17,10 +20,28 @@ OpenSoar Version 7.43-3.24 - not yet released (24.04.2025)
   - new info box 'page index'
   - 2 new info boxes 'port data' for displaying the special data logger data for at least 2 loggers
   - every info box can be changed after clicking the box
-* FreuencyCard
+* Frequency Card
   - Implement Frequency Card Dialog - displays a list of radio channels (name, frequency) and allows a connected radio to be tuned to the frequency selected. Activated from Info Menu #2 or pressing F9
   - Frequency list loaded from .xcf file specified in Site File ( System Setup->Basic Settings) 
   - File format "Name :  nnn.nnn"   - one entry per line, with split char ':'
+  - usefull for: better overview and setting to radio, team frequency, airspace and much more 
+* PEV (Pilots EVent in competitions)
+  - removed from RoughTimeSpan, 
+  - worked with second granularty
+  - the 'normel' start gate works like before
+  - show the timestamp of event in the InfoBox
+  - move PEV button in QuickMenu to a better position (faster selectable)
+* Weglide:
+  - also add button to trigger IGC upload in QuickMenu too
+* SpeedToFly/Vario flag
+  - starting point for a flag to distinguish between speed-to-fly and vario mode
+  - sources for this flag could be: external variometer(s), flaps, automatic cruise and curve detector, switch (on remote stick) and other inputs
+  - destination for this flag could be external variometer(s) (too), page display, vario display, vario audio ...
+  
+#### XCSoar Version 7.44(3) - dev state on 2025/06/25
+cherry pick:
+* Weglide:
+  - add button under config menu to trigger IGC upload
 
 #### XCSoar Version 7.44(3) - dev state on 2025/04/07
 * 3rd merge xcsoar master '6e95a3849a' -> xcsoar 7.43-3!
