@@ -129,8 +129,10 @@ static bool
 LoadProfile()
 {
   if (Profile::GetPath() == nullptr &&
-      !dlgStartupShowModal())
+    !dlgStartupShowModal()) {
+    LogFmt("LoadProfile: dlgStartupShowModal == false {} ", Profile::GetPath().c_str());
     return false;
+  }
 
   Profile::Load();
   Profile::Use(Profile::map);
