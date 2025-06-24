@@ -646,7 +646,6 @@ void
 ManagedFileListWidget::OnDownloadAdded(const std::string_view name,
                                        size_t size, size_t position) noexcept
 {
-//  const auto name = path_relative.GetBase();
   if (name.empty())
     return;
 
@@ -662,7 +661,6 @@ ManagedFileListWidget::OnDownloadAdded(const std::string_view name,
 void
 ManagedFileListWidget::OnDownloadComplete(const std::string_view name) noexcept
 {
-  // const auto name = path_relative.GetBase();
   if (name.empty())
     return;
 
@@ -684,10 +682,8 @@ void
 ManagedFileListWidget::OnDownloadError(const std::string_view name,
                                        [[maybe_unused]] std::exception_ptr error) noexcept
 {
-  // const auto name = path_relative.GetBase();
-  if (name == nullptr)
+  if (name.empty())
     return;
-
 
   {
     const std::lock_guard lock{mutex};
