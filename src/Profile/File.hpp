@@ -9,11 +9,13 @@ class Path;
 namespace Profile {
   /**
    * Throws std::runtime_errror on error.
+   * Load the map and marked as not modified
    */
   void LoadFile(ProfileMap &map, Path path);
 
-/**
- * Throws std::runtime_errror on error.
- */
-void SaveFile(const ProfileMap &map, Path path);
+  /**
+   * Throws std::runtime_errror on error.
+   * Saved the map and marked as not modified
+   */
+  void SaveFile(ProfileMap &map, const Path &path);
 }

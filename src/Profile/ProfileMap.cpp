@@ -8,13 +8,14 @@
 bool
 Profile::IsModified() noexcept
 {
-  return map.IsModified();
+  return map.IsModified() || device_ports.IsModified();
 }
 
 void
 Profile::SetModified(bool _modified) noexcept
 {
   map.SetModified(_modified);
+  device_ports.SetModified(_modified);
 }
 
 const char *

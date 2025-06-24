@@ -45,100 +45,92 @@ Profile::GetPath() noexcept
 void
 Profile::Load() noexcept
 {
+#ifdef _DEBUG
+  LogFmt("LoadProfile {} ", Profile::GetPath().c_str());
+#endif
   if (startProfileFile == nullptr)
     SetFiles(nullptr);
   assert(startProfileFile != nullptr);
 
 #ifdef TEMP_FILE_RENAME_ACTION
   auto old_dev_file = LocalPath(DEVICE_MAP);
-  if (File::Exists(old_dev_file) &&
-    !File::Exists(portSettingFile))
-    LoadFile(old_dev_file);
-  // File::Rename(old_dev_file, portSettingFile);
+  if (File::Exists(old_dev_file)) {
+    if (!File::Exists(portSettingFile))
+      File::Rename(old_dev_file, portSettingFile);
+    else
+      File::Delete(old_dev_file);
+  }
 #endif
-
-  LogString("Loading profiles");
-  LoadFile(startProfileFile);
 
   if (File::Exists(portSettingFile)) {
     // if portSettingFile exist load port information from this
+#ifdef _DEBUG
     LogString("Loading device port information");
+#endif
     LoadFile(portSettingFile);
   }
 
+#ifdef _DEBUG
+  LogString("Loading profile information");
+#endif
+  LoadFile(startProfileFile);
+
   SetModified(false);
 }
+
+namespace Profile {
+static void
+MovePortSettings() noexcept
+{
+  /* if no device_ports exist, load port information from normal
+   * profile file - and move it to the device_ports */
+  for (auto setting : map) { // don't use this with 'Remove'!
+    if (setting.first.starts_with("Port")) {
+      if (std::isdigit(setting.first[4]))
+         device_ports.Set(setting.first, setting.second.c_str());
+      else {
+        std::string first = "Port1" + setting.first.substr(4);
+        device_ports.Set(first, setting.second.c_str());
+      }
+    } if (setting.first.starts_with("Device")) {
+      std::string first = "PortXDriver";
+      first[4] = setting.first[6] - 'A' + '1';  // set the correct port
+      device_ports.Set(first, setting.second.c_str());
+    }
+  }
+  device_ports.SetModified(true);
+}
+};
 
 void
 Profile::LoadFile(Path path) noexcept
 {
   try {
- 
     if (path == portSettingFile) {
       LoadFile(device_ports, path);
     } else if (path == startProfileFile) {
       // normal Profile file
       LoadFile(map, path);
+      if (device_ports.empty()) 
+        MovePortSettings();
+    } else if (path.str().starts_with("test/data")) {
+      LoadFile(map, path);  // test-data
     } else {
-#ifdef TEMP_FILE_RENAME_ACTION
-      if (!old_dev_file.empty() && File::Exists(old_dev_file))
-        LoadFile(device_ports, old_dev_file);
-      else
-#endif
-        LoadFile(map, path);
+      LogFmt("LoadFile with wrong file: {}!", path.c_str());
     }
-
-    if (device_ports.empty()) {
-      /* if no device_ports exist, load port information from normal 
-       * profile file - and move it to the device_ports */
-#if 1
-      for (auto setting : map) {
-        // auto next = &setting;
-        // next++;
-        if (setting.first.starts_with("Port") ||
-          setting.first.starts_with("Device")) {
-          device_ports.Set(setting.first, setting.second.c_str());
-          map.Remove(setting.first);
-#ifdef _DEBUG
-        } else {
-          LogFmt("PortSetting: {} = {}", setting.first, setting.second);
-#endif
-        }
-        // setting = *next;
-      }
-#else
-      for (auto setting = map.begin(); setting != map.end(); ) {
-        auto next = setting;
-        next++;
-        if (setting->first.starts_with("Port") || 
-          setting->first.starts_with("Device")) {
-          device_ports.Set(setting->first, setting->second.c_str());
-          map.Remove(setting->first);
-#ifdef _DEBUG
-        } else {
-            LogFmt("PortSetting: {} = {}", setting->first, setting->second);
-#endif
-        }
-        setting = next;
-      }
-#endif
-    }
-#if 1  // def _DEBUG
-    LogFormat("Loaded profile from %s", path.c_str());
-#endif
   } catch (...) {
     LogError(std::current_exception(), "Failed to load profile");
   }
 }
 
 void
-Profile::Save(const ProfileMap &_map) noexcept
+Profile::Save(ProfileMap &_map) noexcept
 {
-  if (!IsModified())
+  if (!map.IsModified())
     return;
 
   Path path = (&_map == &device_ports) ? portSettingFile : startProfileFile;
-#if 1  // def _DEBUG
+#ifdef _DEBUG
   LogString("Saving profiles");
 #endif
   if (path == nullptr)
@@ -155,11 +147,11 @@ Profile::Save(const ProfileMap &_map) noexcept
 
 void
 Profile::Save() noexcept
-{
-  if (!IsModified() && File::Exists(portSettingFile))
+{ 
+  if (!IsModified())
     return;
 
-#if 1  // def _DEBUG
+#ifdef _DEBUG
   LogString("Saving profiles");
 #endif
   if (startProfileFile == nullptr)
@@ -168,14 +160,11 @@ Profile::Save() noexcept
   assert(startProfileFile != nullptr);
 
   try {
-    SaveFile(map, startProfileFile);
-    SaveFile(device_ports, portSettingFile);
-#ifdef TEMP_FILE_RENAME_ACTION
-    // not before saving the new portSettingFile
-    old_dev_file = LocalPath(DEVICE_MAP);
-    if (File::Exists(old_dev_file))
-      File::Delete(old_dev_file);
-#endif
+    if (map.IsModified())
+      SaveFile(map, startProfileFile);
+    if (device_ports.IsModified())
+      SaveFile(device_ports, portSettingFile);
+    SetModified(false);  // set both to 'saved'
   } catch (...) {
     LogError(std::current_exception(), "Failed to save profile");
   }
@@ -185,9 +174,9 @@ void
 Profile::SaveFile(Path path)
 {
   // save Profile only (not the port setting!)
-  // caller is InputEventsSettings
-#if 1  // def _DEBUG
-  LogFormat("Saving profile to %s", path.c_str());
+  // caller could be InputEventsSettings
+#ifdef _DEBUG
+  LogFmt("Saving profile to {}", path.c_str());
 #endif
   SaveFile(map, path);
 }
@@ -195,12 +184,7 @@ Profile::SaveFile(Path path)
 void
 Profile::SetFiles(Path override_path) noexcept
 {
-  /* set the "modified" flag, because we are potentially saving to a
-     new file now */
-  SetModified(true);
-
   // Set the port profile file
-  // portSettingFile = AllocatedPath("D:/Data/OpenSoarData/" DEVICE_PORTS);
   portSettingFile = LocalPath(DEVICE_PORTS);
 
   if (override_path != nullptr) {

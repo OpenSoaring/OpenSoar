@@ -12,6 +12,7 @@
 #include "system/FileUtil.hpp"
 #include "system/Path.hpp"
 #include "LocalPath.hpp"
+#include "Profile/Profile.hpp"
 #include "Profile/Map.hpp"
 #include "Profile/File.hpp"
 #include "UIGlobals.hpp"
@@ -252,6 +253,7 @@ ProfileListWidget::CopyClicked()
 
   try {
     Profile::SaveFile(data, new_path);
+    // data.SetModified(false);
   } catch (...) {
     ShowError(std::current_exception(), _("Failed to save file."));
     return;

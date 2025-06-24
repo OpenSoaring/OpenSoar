@@ -23,11 +23,14 @@ Profile::LoadFile(ProfileMap &map, Path path)
        interface */
     if (!StringIsEqual(pair.key, "Vega", 4))
       map.Set(pair.key, pair.value);
+  map.SetModified(false);
 }
 
 void
-Profile::SaveFile(const ProfileMap &map, Path path)
+Profile::SaveFile(ProfileMap &map, const Path &path)
 {
+  if (!map.IsModified())
+    return;
   FileOutputStream file(path);
   BufferedOutputStream buffered(file);
   KeyValueFileWriter kvwriter(buffered);
@@ -43,4 +46,6 @@ Profile::SaveFile(const ProfileMap &map, Path path)
   file.Sync();
 
   file.Commit();
+
+  map.SetModified(false);
 }

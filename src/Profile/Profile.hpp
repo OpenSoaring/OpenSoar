@@ -49,7 +49,7 @@ Save() noexcept;
  * Errors will be caught and logged.
  */
 void
-Save(const ProfileMap &map) noexcept;
+Save(ProfileMap &map) noexcept;
 
 /**
  * Saves the profile into the given profile file
