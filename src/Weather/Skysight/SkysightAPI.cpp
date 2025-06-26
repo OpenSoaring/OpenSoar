@@ -331,6 +331,7 @@ SkysightAPI::UpdateLayers(const boost::json::value &_layers)
 #ifdef SKYSIGHT_LIVE
   layers_vector.push_back(SkySight::Layer(
     "satellite", "Satellite", "live satellite images", true, true, 8));
+  layers_vector[0].alpha = 1.0; // 1st layer is 'Satellite'
   layers_vector.push_back(SkySight::Layer(
     "rain", "Rain", "live rain layer", true, true, 8));
   layers_vector.push_back(SkySight::Layer(
