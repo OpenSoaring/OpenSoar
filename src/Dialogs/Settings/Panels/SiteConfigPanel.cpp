@@ -12,7 +12,9 @@
 #include "Waypoint/Patterns.hpp"
 #include "system/Path.hpp"
 
-#define RASP_FILE_SETTING 0
+#ifdef HAVE_RASP
+# define RASP_FILE_SETTING 0
+#endif
 
 enum ControlIndex {
   DataPath,
@@ -103,7 +105,7 @@ SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent,
           ProfileKeys::FlarmFile, "*.fln\0",
           FileType::FLARMNET);
 
-#if RASP_FILE_SETTING
+#ifdef HAVE_RASP
   /* TODO(August2111) : remove RASP setting - personally I cannot see any input
    * on weather page */
   AddFile("RASP", nullptr,

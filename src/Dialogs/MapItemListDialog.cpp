@@ -49,7 +49,9 @@ HasDetails(const MapItem &item)
   case MapItem::Type::WEATHER:
 #endif
   case MapItem::Type::OVERLAY:
+#ifdef HAVE_RASP
   case MapItem::Type::RASP:
+#endif
     return true;
   }
 
@@ -287,9 +289,11 @@ ShowMapItemDialog(const MapItem &item,
     ShowWeatherDialog("overlay");
     break;
 
+#ifdef HAVE_RASP
   case MapItem::Type::RASP:
     ShowWeatherDialog("rasp");
     break;
+#endif
   }
 }
 

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
+#ifdef HAVE_RASP
+
 #include "RASPDialog.hpp"
 #include "Widget/RowFormWidget.hpp"
 #include "Weather/Rasp/Configured.hpp"
@@ -163,3 +165,4 @@ CreateRaspWidget() noexcept
   - Draw a legend on screen?
   - Auto-advance time index of forecast if before current time
 */
+#endif

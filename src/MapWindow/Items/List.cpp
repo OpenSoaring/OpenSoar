@@ -75,7 +75,9 @@ CompareMapItems(const MapItem *a, const MapItem *b)
 
   case MapItem::Type::SKYLINES_TRAFFIC:
   case MapItem::Type::OVERLAY:
+#ifdef HAVE_RASP
   case MapItem::Type::RASP:
+#endif
     break;
   }
 

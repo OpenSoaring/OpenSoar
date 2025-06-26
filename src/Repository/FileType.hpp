@@ -13,7 +13,9 @@ enum class FileType : uint8_t {
   MAP,
   FLARMNET,
   IGC,
+#ifdef HAVE_RASP
   RASP,
+#endif
   XCI,
   TASK,
   IMAGE,

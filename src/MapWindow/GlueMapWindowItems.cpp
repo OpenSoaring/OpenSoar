@@ -97,8 +97,10 @@ GlueMapWindow::ShowMapItems(const GeoPoint &location,
     const std::lock_guard lock{mutex};
 #endif
 
+#ifdef HAVE_RASP
     if (rasp_renderer && rasp_renderer->IsInside(location))
       list.push_back(new RaspMapItem(rasp_renderer->GetLabel()));
+#endif
   }
 
   // Sort the list of map items

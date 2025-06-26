@@ -6,7 +6,9 @@
 #include "Screen/Layout.hpp"
 #include "MapWindow/Items/MapItem.hpp"
 #include "MapWindow/Items/OverlayMapItem.hpp"
-#include "MapWindow/Items/RaspMapItem.hpp"
+#ifdef HAVE_RASP
+# include "MapWindow/Items/RaspMapItem.hpp"
+#endif
 #include "Look/DialogLook.hpp"
 #include "Look/MapLook.hpp"
 #include "Renderer/AircraftRenderer.hpp"
@@ -423,6 +425,7 @@ Draw(Canvas &canvas, PixelRect rc,
   row_renderer.DrawFirstRow(canvas, rc, item.label.c_str());
 }
 
+#ifdef HAVE_RASP
 static void
 Draw(Canvas &canvas, PixelRect rc,
      const RaspMapItem &item,
@@ -430,6 +433,7 @@ Draw(Canvas &canvas, PixelRect rc,
 {
   row_renderer.DrawFirstRow(canvas, rc, item.label.c_str());
 }
+#endif  // HAVE_RASP
 
 void
 MapItemListRenderer::Draw(Canvas &canvas, const PixelRect rc,
@@ -491,8 +495,10 @@ MapItemListRenderer::Draw(Canvas &canvas, const PixelRect rc,
     ::Draw(canvas, rc, (const OverlayMapItem &)item, row_renderer);
     break;
 
+#ifdef HAVE_RASP
   case MapItem::Type::RASP:
     ::Draw(canvas, rc, (const RaspMapItem &)item, row_renderer);
+#endif
     break;
   }
 }

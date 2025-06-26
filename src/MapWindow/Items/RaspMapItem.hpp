@@ -7,6 +7,7 @@
 
 class MapOverlay;
 
+#ifdef HAVE_RASP
 /**
  * A #MapItem describing a #MapOverlay.
  */
@@ -17,3 +18,4 @@ struct RaspMapItem : public MapItem
   explicit RaspMapItem(const char *_label)
     :MapItem(Type::RASP), label(_label) {}
 };
+#endif

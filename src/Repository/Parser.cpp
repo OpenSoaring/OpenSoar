@@ -86,8 +86,10 @@ ParseFileRepository(FileRepository &repository, NLineReader &reader)
         file.type = FileType::MAP;
       else if (StringIsEqual(value, "flarmnet"))
         file.type = FileType::FLARMNET;
+#ifdef HAVE_RASP
       else if (StringIsEqual(value, "rasp"))
         file.type = FileType::RASP;
+#endif  // HAVE_RASP
       else if (StringIsEqual(value, "xci"))
         file.type = FileType::XCI;
       else if (StringIsEqual(value, "task"))

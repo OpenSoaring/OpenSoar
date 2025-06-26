@@ -71,10 +71,12 @@ ShowWeatherDialog(const char *page)
   widget.AddTab(CreateNOAAListWidget(), _("METAR and TAF"));
 #endif
 
+#ifdef HAVE_RASP
   if (page != nullptr && StringIsEqual(page, "rasp"))
     start_page = widget.GetSize();
 
   widget.AddTab(CreateRaspWidget(), "RASP");
+#endif 
 
 #ifdef HAVE_PCMET
   if (page != nullptr && StringIsEqual(page, "pc_met"))
