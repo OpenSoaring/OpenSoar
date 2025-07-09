@@ -139,12 +139,6 @@ UpdateInfoBoxFreeRAM(InfoBoxData &data) noexcept
   data.SetInvalid();
 }
 
-const InfoBoxPanel *
-InfoBoxContentHorizon::GetDialogContent() noexcept
-{
-  return infobox_panel;  // the general empty InfoBoxSet
-}
-
 void
 InfoBoxContentHorizon::OnCustomPaint(Canvas &canvas,
                                      const PixelRect &rc) noexcept

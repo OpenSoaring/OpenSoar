@@ -15,6 +15,8 @@
 #include "Asset.hpp"
 
 #include <algorithm>
+extern const struct InfoBoxPanel infobox_panel[];
+
 
 /** timeout of infobox focus */
 static constexpr std::chrono::steady_clock::duration FOCUS_TIMEOUT_MAX = std::chrono::seconds(20);
@@ -272,7 +274,7 @@ InfoBoxWindow::GetDialogContent() const
   if (content)
     return content->GetDialogContent();
 
-  return NULL;
+  return infobox_panel;
 }
 
 void

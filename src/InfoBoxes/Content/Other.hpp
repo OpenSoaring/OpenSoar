@@ -38,7 +38,6 @@ UpdateInfoBoxPageIndex(InfoBoxData &data) noexcept;
 class InfoBoxContentHorizon : public InfoBoxContent
 {
 public:
-  const InfoBoxPanel *GetDialogContent() noexcept override;
   void Update(InfoBoxData &data) noexcept override;
   void OnCustomPaint(Canvas &canvas, const PixelRect &rc) noexcept override;
 };

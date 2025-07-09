@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "Base.hpp"
+extern const struct InfoBoxPanel infobox_panel[];
 
 InfoBoxContent::~InfoBoxContent() noexcept = default;
 
@@ -19,5 +20,5 @@ InfoBoxContent::OnCustomPaint([[maybe_unused]] Canvas &canvas, [[maybe_unused]] 
 const InfoBoxPanel *
 InfoBoxContent::GetDialogContent() noexcept
 {
-  return nullptr;
+  return infobox_panel;  // the general empty InfoBoxSet
 }
