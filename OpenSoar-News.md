@@ -1,6 +1,6 @@
 OpenSoar Version 7.43-3.24 - not yet released
 ---------------
-OpenSoar Version 7.43-3.23.7 - released 2025/06/26 (prerelease for 7.43-3.24)
+OpenSoar Version 7.43-3.23.8 - released 2025/07/09 (prerelease for 7.43-3.24)
 * Weather
   - SkySight:(Re-)Activation 'Update' and 'Update All'-Buttons in SkySight dialog for downloading offline charts
   - SkySight: Enable live view (Satellite and Rain) for OpenVario too (unfortunataly forecast not available yet)
@@ -37,6 +37,9 @@ OpenSoar Version 7.43-3.23.7 - released 2025/06/26 (prerelease for 7.43-3.24)
   - starting point for a flag to distinguish between speed-to-fly and vario mode
   - sources for this flag could be: external variometer(s), flaps, automatic cruise and curve detector, switch (on remote stick) and other inputs
   - destination for this flag could be external variometer(s) (too), page display, vario display, vario audio ...
+* Devices 
+  - bugfix ClearNav task declaration (coming with utf-8 changes after v7.42.22)
+
   
 #### XCSoar Version 7.44(3) - dev state on 2025/06/25
 cherry pick:
