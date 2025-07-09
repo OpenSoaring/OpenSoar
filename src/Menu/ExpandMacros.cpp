@@ -182,11 +182,11 @@ ExpandTaskMacros(std::string_view name,
       settings_computer.task.IsAutoMCFinalGlideEnabled();
     return "";
   } else if (name == "MC_Value") {
-    char buffer[20];
+    // attention: only one buffer per time is allowed (TODO: mutex?)
+    static char buffer[20];
     const Unit unit = Units::GetUserUnitByGroup(UnitGroup::VERTICAL_SPEED);
     auto value = Units::ToUserUnit(settings_computer.polar.glide_polar_task.GetMC(), unit);
     auto unit_str = Units::GetUnitName(unit);
-    //     settings_computer.polar.glide_polar_task.GetMC(),
     snprintf(buffer, sizeof(buffer), "%4.1f%s", value,unit_str);
     invalid = false;
     return buffer;
