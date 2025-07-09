@@ -9,11 +9,10 @@
 #include <stdio.h>
 
 static void
-convert_string(char *dest, size_t size , const char *src)
+convert_string(char *dest, size_t size, const char *src)
 {
-  strncat(dest, src, size - 1);
-//  strncpy(dest, src, size - 1);
-//  dest[size - 1] = '\0';
+  strncpy(dest, src, size - 1);
+  dest[size - 1] = '\0';
 }
 
 static void
