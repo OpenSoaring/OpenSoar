@@ -182,6 +182,20 @@ PageLayoutEditWidget::Prepare([[maybe_unused]] ContainerWindow &parent, [[maybe_
           main_list,
           (unsigned)PageLayout::Main::MAP, this);
 
+/*-----------------------------------------------------*/
+  static constexpr StaticEnumChoice overlay_list[] = {
+    { 0, N_("SkySight-Satellite") },
+    { 1, N_("SkySight-Rain") },
+    { 2, N_("SkySight-PFD") },
+    { 3, N_("SkySight-XCSpeed") },
+    nullptr
+  };
+  AddEnum(_("Map Overlay"),
+          _("Specifies the (weather) overlay in the map."),
+          overlay_list,
+          2, this);
+  /*-----------------------------------------------------*/
+
   static constexpr StaticEnumChoice ib_list[] = {
     { IBP_AUTO, N_("Auto"), N_("Displays either the Circling, Cruise or Final glide infoxboxes") },
     { IBP_NONE, N_("None"), N_("Show fullscreen (no InfoBoxes)") },

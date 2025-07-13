@@ -8,6 +8,8 @@
 #include <span>
 #include <type_traits>
 
+#include <string.h>
+
 
 struct InfoBoxSettings;
 
@@ -21,12 +23,21 @@ struct PageLayout
 
     bool auto_switch;
     unsigned panel;
-
+#if 0
+    // std::string overlay;
+    //StaticString[64] overlay;
+    char overlay[64];
+#endif
     constexpr InfoBoxConfig() noexcept = default;
 
+#if 0
+    /*constexpr*/ InfoBoxConfig(bool _auto_switch, unsigned _panel) noexcept
+      :enabled(true), auto_switch(_auto_switch), panel(_panel)
+      { std::strncpy(overlay, "SkySight-Rain", sizeof(overlay)); }
+#else
     constexpr InfoBoxConfig(bool _auto_switch, unsigned _panel) noexcept
       :enabled(true), auto_switch(_auto_switch), panel(_panel) {}
-
+#endif
     constexpr void SetDefaults() noexcept {
       auto_switch = true;
       panel = 0;
