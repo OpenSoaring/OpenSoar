@@ -7,7 +7,7 @@ set(CARES_VERSION       "1.24.0")  # not valid!
 # 25.12.23 
 set(CARES_VERSION       "1.17.1")  # old version necessary...
 set(CURL_VERSION        "8.5.0")
-set(PNG_VERSION         "1.6.40")
+set(PNG_VERSION         "1.6.50")
 set(SODIUM_VERSION      "1.0.20") # 2024-05-25 (XCSoar since ...)
 set(LUA_VERSION         "5.4.4")  # "5.4.6") 08.11.2024: sollte gehen...
 set(FMT_VERSION         "10.2.1")
