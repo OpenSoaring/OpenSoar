@@ -751,8 +751,14 @@ DeviceDescriptor::ForwardLine(const char *line)
 
   if (IsNMEAOut() && port != nullptr) {
     Port *p = port.get();
-    p->Write(line);
-    p->Write("\r\n");
+    std::string s(line);
+    s += "\r\n";
+    p->Write(s.c_str());
+    if (monitor != nullptr) {
+      monitor->DataReceived( {
+        reinterpret_cast<const std::byte *>(s.c_str()),
+        s.length() });
+    }
   }
 }
 
