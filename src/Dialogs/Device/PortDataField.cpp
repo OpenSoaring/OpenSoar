@@ -170,7 +170,7 @@ try {
     DWORD type;
     if (!serialcomm.EnumValue(i, std::span{name}, &type,
                               std::as_writable_bytes(std::span{value})))
-      break;
+      break;  //  end of the list
 
     if (type != REG_SZ)
       // weird
@@ -181,7 +181,7 @@ try {
     char name1[0x200];
 
     if (!devices.GetValue(value, name1))
-      break;
+      continue;
 
     // Registry "COM Name Arbiter\Devices" starts with
     // BlueTooth: "\\?\bthenum#"
