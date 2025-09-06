@@ -407,9 +407,11 @@ def create_opensoar(args):
       # opensoar_app = 'XCSoarAug-MinGW.exe'
     elif toolchain.startswith('clang'):
       opensoar_app = project_name + '-Clang.exe'
+    # display_format = '1400x700' # big, landscape
+    # display_format = '800x1024' # 7.0", portrait
+    display_format = '640x480'  # 5.7", landscape
 
-    # arguments = [build_dir + '/' + opensoar_app, '-1400x700', '-fly', '-profile=D:/Data/OpenSoarData/August.prf', '-datapath=D:/Data/OpenSoarData']
-    arguments = [build_dir + '/' + opensoar_app, '-600x480', '-profile=August.prf', '-datapath=D:/Data/OpenSoarData']
+    arguments = [build_dir + '/' + opensoar_app, display_format,  '-profile=August.prf', '-datapath=D:/Data/OpenSoarData']
     if not os.path.exists(arguments[0]):
         print("App '", arguments[0], "' doesn't exist!")
         creation = 0
