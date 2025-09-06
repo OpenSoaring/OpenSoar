@@ -69,13 +69,24 @@ NmeaReplay::ReadUntilRMC(NMEAInfo &data)
   char *buffer;
 
   while ((buffer = reader->ReadLine()) != nullptr) {
-    ParseLine(buffer, data);
 
-    if ((StringLength(buffer) >= 6 &&
-         StringStartsWith(buffer, "$G") &&
-         StringStartsWith(buffer + 3, "RMC")) ||
-        StringStartsWith(buffer, "$FLYSEN"))
-      return true;
+    const char *line;
+    if (buffer[0] == '$') {
+      line = buffer;
+    } else {
+      line = strstr(buffer, ": $");
+      if (line)
+        line += 2; // ':' and ' '
+    }
+
+    if (line && line[0] == '$') {
+      ParseLine(line, data);
+      if ((StringLength(line) >= 6 &&
+        StringStartsWith(line, "$G") &&
+        StringStartsWith(line + 3, "RMC")) ||
+        StringStartsWith(line, "$FLYSEN"))
+        return true;
+    }
   }
 
   return false;
