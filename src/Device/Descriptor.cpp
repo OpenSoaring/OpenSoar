@@ -26,6 +26,7 @@
 #include "Input/InputQueue.hpp"
 #include "LogFile.hpp"
 #include "Job/Job.hpp"
+#include "time/DateTime.hpp"
 
 #ifdef ANDROID
 #include "java/Closeable.hxx"
@@ -1316,8 +1317,15 @@ DeviceDescriptor::DataReceived(std::span<const std::byte> s) noexcept
 bool
 DeviceDescriptor::LineReceived(const char *line) noexcept
 {
-  if (nmea_logger != nullptr)
-    nmea_logger->Log(line);
+  if (nmea_logger != nullptr) {
+    std::string log_line = DateTime::ms_time_str(
+      std::chrono::system_clock::now(), "%H%M%S");
+    log_line += " - ";
+    log_line += config.driver_name.c_str();
+    log_line += ": ";
+    log_line += line;
+    nmea_logger->Log(log_line.c_str());
+  }
 
   if (dispatcher != nullptr)
     dispatcher->LineReceived(line);
