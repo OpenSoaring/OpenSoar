@@ -1312,6 +1312,15 @@ event=Mode default
 event=UploadIGCFile
 label=Weglide Upload
 location=38
+
+mode=RemoteStick
+type=key
+data=0
+event=Mode default
+event=Setup Replay
+label=Replay$(CheckReplay)
+location=39
+
 #-----------------------
 
 # Test purpose:
