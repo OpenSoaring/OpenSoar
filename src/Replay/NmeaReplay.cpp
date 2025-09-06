@@ -7,8 +7,12 @@
 #include "Device/Driver.hpp"
 #include "Device/Register.hpp"
 #include "Device/Config.hpp"
+#include "Device/Descriptor.hpp"
+#include "Device/MultipleDevices.hpp"
 #include "NMEA/Info.hpp"
 #include "util/StringCompare.hxx"
+#include "BackendComponents.hpp"
+#include "Components.hpp"
 
 NmeaReplay::NmeaReplay(std::unique_ptr<NLineReader> &&_reader,
                        const DeviceConfig &config)
@@ -38,6 +42,13 @@ NmeaReplay::~NmeaReplay()
 bool
 NmeaReplay::ParseLine(const char *line, NMEAInfo &data)
 {
+  for (DeviceDescriptor *i : *backend_components->devices) {
+    DeviceDescriptor &device = *i;
+    if (device.IsDriver("NmeaOut")) {
+      device.ForwardLine(line);
+    }
+  }
+
   data.clock = clock.NextClock(data.time_available
                                ? data.time
                                : TimeStamp::Undefined());
