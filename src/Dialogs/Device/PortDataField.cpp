@@ -186,6 +186,7 @@ try {
     // Registry "COM Name Arbiter\Devices" starts with
     // BlueTooth: "\\?\bthenum#"
     // USB:       "\\?\usb#"
+    // root:       "\\?\root#" - possible virtual port
     // Normal:    "\\?\acpi#"   - an Kupschis Rechner!
     std::string dev = name1;
     if (dev.starts_with("\\\\?\\usb#")) {
@@ -198,6 +199,16 @@ try {
       port_name += ")";
 
       AddPort(df, DeviceConfig::PortType::USB_SERIAL, value, port_name.c_str());
+    } else if (dev.starts_with("\\\\?\\root#")) {
+      std::vector<std::string> strs;
+      std::string port_name;
+      boost::split(strs, name, boost::is_any_of("\\"));
+      port_name = value;
+      port_name += " (";
+      port_name += strs[2];
+      port_name += ")";
+
+      AddPort(df, DeviceConfig::PortType::SERIAL, value, port_name.c_str());
     } else if (dev.starts_with("\\\\?\\bthenum#")) {
       std::vector<std::string> strs;
       std::string port_name;
@@ -217,7 +228,7 @@ try {
           } else if (bthmap.find(strs[3]) != bthmap.end()) {
             port_type = DeviceConfig::PortType::RFCOMM;
             port_name += bthmap[strs[3]];
-          } 
+          }
 
           port_name += ")";
           if (port_type != DeviceConfig::PortType::DISABLED)
