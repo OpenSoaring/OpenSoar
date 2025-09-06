@@ -63,6 +63,23 @@ namespace DateTime {
 # endif
   }
 
+  [[maybe_unused]]
+  static std::string
+  ms_time_str(std::chrono::system_clock::time_point time = std::chrono::system_clock::now(),
+      std::string_view fmt_str = "%Y%m%d_%H%M%S") {
+    char buffer[80];
+
+    auto transformed = time.time_since_epoch().count() / 1000000;
+
+    int millis = transformed % 1000;
+
+    std::time_t tt = std::chrono::system_clock::to_time_t(time);
+    auto size = strftime(buffer, sizeof(buffer), fmt_str.data(), localtime(&tt));
+    snprintf(buffer+size, sizeof(buffer)-size, ".%03d", millis);
+
+    return std::string(buffer);
+  }
+
   static inline time_t
     TimeRaster(time_t t, time_t raster, uint16_t offset = 0) {
     return (((t - 1) / raster) + offset) * raster;
