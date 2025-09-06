@@ -8,7 +8,7 @@ add_compile_definitions(DEBUG_CONSOLE_OUTPUT)
 set(LIB_PREFIX "lib" )  # "lib")
 set(LIB_SUFFIX ".a")    # "a")
 
-set(TARGET_IS_OPENVARIO OFF)  # no OpenVario menu
+set(TARGET_IS_OPENVARIO OFF)  # OpenVario menu On/Off
 if (TARGET_IS_OPENVARIO)
   add_compile_definitions(IS_OPENVARIO) 
 endif()

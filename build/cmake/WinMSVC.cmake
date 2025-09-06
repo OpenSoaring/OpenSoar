@@ -8,7 +8,7 @@ set(LIB_SUFFIX ".lib")    # "a")
 # ??? add_compile_definitions(PROJECT_OUTPUT_FOLDER=${OUTPUT_FOLDER})
 
 # only in DEBUG-Version---
-set(TARGET_IS_OPENVARIO OFF)
+set(TARGET_IS_OPENVARIO OFF)  # OpenVario menu On/Off
 # add special OpenVario functions
 if (TARGET_IS_OPENVARIO)
   add_compile_definitions(IS_OPENVARIO) 
