@@ -79,7 +79,9 @@ SkysightListItemRenderer::Draw(Canvas &canvas, const PixelRect rc, unsigned inde
 
   StaticString<256> second_row;
 
-  if (layer->updating) {
+  if (layer->live_layer || layer->tile_layer ) {
+    second_row.Format("%s", _("Not a Forecast Layer!"));
+  } else if (layer->updating) {
     second_row.Format("%s", _("Updating..."));
   } else {
     if (!layer->from || !layer->to || !layer->mtime) {
