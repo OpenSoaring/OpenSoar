@@ -411,14 +411,18 @@ Skysight::CleanupFiles()
   SkysightFileDeleter deleter_jpg(now - 12 * ONE_HOUR);  // 1/2 day
   SkysightFileDeleter deleter_tmp(now -  6 * ONE_HOUR);  // 6 hours
   SkysightFileDeleter deleter_txt(now -  ONE_HOUR);  // 1 hour
+  SkysightFileDeleter deleter_zip(now - 12 * ONE_HOUR);  // 1/2 day
+  SkysightFileDeleter deleter_nc (now - 12 * ONE_HOUR);  // 1/2 day
 
   auto path = GetLocalPath();  // local SkySight (cache) path
-  Directory::VisitSpecificFiles(path, "*.tif", visitor_tif);
-  Directory::VisitSpecificFiles(path, "*.jpg", deleter_jpg);
-  Directory::VisitSpecificFiles(path, "*.tmp", deleter_tmp);
+  Directory::VisitSpecificFiles(path, "*.tif",  visitor_tif);
+  Directory::VisitSpecificFiles(path, "*.jpg",  deleter_jpg);
+  Directory::VisitSpecificFiles(path, "*.tmp",  deleter_tmp);
   // "*.txt;*.json" is not possible...
-  Directory::VisitSpecificFiles(path, "*.txt", deleter_txt);
+  Directory::VisitSpecificFiles(path, "*.txt",  deleter_txt);
   Directory::VisitSpecificFiles(path, "*.json", deleter_txt);
+  Directory::VisitSpecificFiles(path, "*.zip",  deleter_zip);
+  Directory::VisitSpecificFiles(path, "*.nc",   deleter_nc);
 }
 
 void
