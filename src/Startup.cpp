@@ -130,7 +130,9 @@ LoadProfile()
 {
   if (Profile::GetPath() == nullptr &&
     !dlgStartupShowModal()) {
-    LogFmt("LoadProfile: dlgStartupShowModal == false {} ", Profile::GetPath().c_str());
+    const char *text_arg = (Profile::GetPath() == nullptr) ? "nullptr" :
+	                        Profile::GetPath().c_str();
+    LogFmt("LoadProfile: dlgStartupShowModal == false {} ", text_arg);
     return false;
   }
 
@@ -139,7 +141,8 @@ LoadProfile()
   Profile::UseDevices(Profile::device_ports);
 
   Units::SetConfig(CommonInterface::GetUISettings().format.units);
-  SetUserCoordinateFormat(CommonInterface::GetUISettings().format.coordinate_format);
+  SetUserCoordinateFormat(CommonInterface::GetUISettings()
+                          .format.coordinate_format);
 
   return true;
 }
@@ -162,8 +165,8 @@ AfterStartup()
 
   auto &way_points = *data_components->waypoints;
 
-  const auto defaultTask = LoadDefaultTask(CommonInterface::GetComputerSettings().task,
-                                           &way_points);
+  const auto defaultTask = LoadDefaultTask(
+    CommonInterface::GetComputerSettings().task, &way_points);
   if (defaultTask) {
     {
       ScopeSuspendAllThreads suspend;
@@ -219,7 +222,8 @@ MainWindow::OnTerrainLoaded() noexcept
 try {
   assert(terrain_loader != nullptr);
 
-  std::unique_ptr<AsyncTerrainOverviewLoader> loader{std::exchange(terrain_loader, nullptr)};
+  std::unique_ptr<AsyncTerrainOverviewLoader> loader{
+    std::exchange(terrain_loader, nullptr)};
   auto new_terrain = loader->Wait();
   loader.reset();
 
@@ -306,7 +310,8 @@ Startup(UI::Display &display)
   main_window->Initialise();
 
 #ifdef SIMULATOR_AVAILABLE
-  // prompt for simulator if not set by command line argument "-simulator" or "-fly"
+  /* prompt for simulator if not set by command line argument "-simulator"
+   or "-fly" */
   if (!sim_set_in_cmd_line_flag) {
     SimulatorPromptResult result = dlgSimulatorPromptShowModal();
     switch (result) {
@@ -379,9 +384,10 @@ Startup(UI::Display &display)
 #endif
   };
 
-  backend_components->devices = std::make_unique<MultipleDevices>(*backend_components->device_blackboard,
-                                                                  backend_components->nmea_logger.get(),
-                                                                  *device_factory);
+  backend_components->devices = std::make_unique<MultipleDevices>(
+    *backend_components->device_blackboard,
+    backend_components->nmea_logger.get(),
+    *device_factory);
 
   // Initialize main blackboard data
   task_events = new GlideComputerTaskEvents();
