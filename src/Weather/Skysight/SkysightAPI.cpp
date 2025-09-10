@@ -209,7 +209,7 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
     if (GetLayer(layer_id)->tile_layer)
       return GetPath(SkysightCallType::Tile, layer_id, fctime).WithSuffix(".jpg");
     else 
-      return GetPath(SkysightCallType::Data, layer_id, fctime).WithSuffix(".tif");
+      return GetPath(SkysightCallType::Data, layer_id, fctime).WithSuffix(".zip");
   default:
     break;
   }
@@ -455,16 +455,16 @@ bool
 SkysightAPI::UpdateDatafiles(const boost::json::value &_datafiles)
 {
   bool success = false;
-  auto active_layer = Skysight::GetActiveLayer();
-  if (active_layer) {
-    std::string_view active_layer_id = active_layer->id;
+  // auto active_layer = Skysight::GetActiveLayer();
+  // if (active_layer) {
+  //  std::string_view active_layer_id = active_layer->id;
 
     for (auto &_filepoint : _datafiles.as_array()) {
       std::string layer_id = _filepoint.at("layer_id").get_string().data();
       time_t time_index = _filepoint.at("time").to_number<time_t>();
       std::string link = _filepoint.at("link").get_string().data();
 
-      if ((time_index > 0) && !link.empty() && layer_id == active_layer_id ) {
+      if ((time_index > 0) && !link.empty()) {  //  &&layer_id == active_layer_id ) {
         auto layer = GetLayer(layer_id);
         if (layer && layer->last_update == 0)
           layer->last_update = time_index;
@@ -475,7 +475,7 @@ SkysightAPI::UpdateDatafiles(const boost::json::value &_datafiles)
           return false;
       }
     }
-  }
+  // }
   return success;
 }
 
