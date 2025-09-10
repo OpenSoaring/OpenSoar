@@ -73,10 +73,14 @@ FillI2CAddr(DataFieldEnum &dfe) noexcept
 static void
 FillPress(DataFieldEnum &dfe) noexcept
 {
-  dfe.addEnumText("Static & Vario", (unsigned)DeviceConfig::PressureUse::STATIC_WITH_VARIO);
-  dfe.addEnumText("Static", (unsigned)DeviceConfig::PressureUse::STATIC_ONLY);
-  dfe.addEnumText("TE probe (compensated vario)", (unsigned)DeviceConfig::PressureUse::TEK_PRESSURE);
-  dfe.addEnumText("Pitot (airspeed)", (unsigned)DeviceConfig::PressureUse::PITOT);
+  dfe.addEnumText("Static & Vario", (unsigned)
+    DeviceConfig::PressureUse::STATIC_WITH_VARIO);
+  dfe.addEnumText("Static", (unsigned)
+    DeviceConfig::PressureUse::STATIC_ONLY);
+  dfe.addEnumText("TE probe (compensated vario)", (unsigned)
+    DeviceConfig::PressureUse::TEK_PRESSURE);
+  dfe.addEnumText("Pitot (airspeed)", (unsigned)
+    DeviceConfig::PressureUse::PITOT);
 }
 
 /**
@@ -89,10 +93,14 @@ FillPress(DataFieldEnum &dfe) noexcept
 static void
 FillEngineType(DataFieldEnum &dfe) noexcept
 {
-  dfe.addEnumText("None", static_cast<unsigned>(DeviceConfig::EngineType::NONE));
-  dfe.addEnumText("2S1I", static_cast<unsigned>(DeviceConfig::EngineType::TWO_STROKE_1_IGN));
-  dfe.addEnumText("2S2I", static_cast<unsigned>(DeviceConfig::EngineType::TWO_STROKE_2_IGN));
-  dfe.addEnumText("4S1I", static_cast<unsigned>(DeviceConfig::EngineType::FOUR_STROKE_1_IGN));
+  dfe.addEnumText("None", static_cast<unsigned>
+    (DeviceConfig::EngineType::NONE));
+  dfe.addEnumText("2S1I", static_cast<unsigned>
+    (DeviceConfig::EngineType::TWO_STROKE_1_IGN));
+  dfe.addEnumText("2S2I", static_cast<unsigned>
+    (DeviceConfig::EngineType::TWO_STROKE_2_IGN));
+  dfe.addEnumText("4S1I", static_cast<unsigned>
+    (DeviceConfig::EngineType::FOUR_STROKE_1_IGN));
 }
 
 static bool
@@ -262,7 +270,8 @@ DeviceEditWidget::Prepare(ContainerWindow &parent,
   FillBaudRates(*bulk_baud_rate_df);
   bulk_baud_rate_df->SetValue(config.bulk_baud_rate);
   Add(_("Bulk baud rate"),
-      _("The baud rate used for bulk transfers, such as task declaration or flight download."),
+      _("The baud rate used for bulk transfers, such as task declaration or "
+	  "flight download."),
       bulk_baud_rate_df);
 
   DataFieldString *ip_address_df = new DataFieldString("", this);
@@ -277,24 +286,25 @@ DeviceEditWidget::Prepare(ContainerWindow &parent,
   DataFieldEnum *i2c_bus_df = new DataFieldEnum(this);
   FillI2CBus(*i2c_bus_df);
   i2c_bus_df->SetValue(config.i2c_bus);
-  Add(_("I²C bus"), _("Select the description or bus number that matches your configuration."),
-                      i2c_bus_df);
+  Add(_("I²C bus"), _("Select the description or bus number that matches "
+                      "your configuration."), i2c_bus_df);
 
   DataFieldEnum *i2c_addr_df = new DataFieldEnum(this);
   FillI2CAddr(*i2c_addr_df);
   i2c_addr_df->SetValue(config.i2c_addr);
   Add(_("I²C addr"), _("The I²C address that matches your configuration. "
-                        "This field is not used when your selection in the \"I²C bus\" field is not an I²C bus number. "
-                        "Assume this field is not in use if that doesn\'t make sense to you."),
-                        i2c_addr_df);
+    "This field is not used when your selection in the \"I²C bus\" field is "
+	"not an I²C bus number. Assume this field is not in use if that doesn\'t "
+	"make sense to you."),
+    i2c_addr_df);
 
   DataFieldEnum *press_df = new DataFieldEnum(this);
   FillPress(*press_df);
   press_df->SetValue(config.press_use);
   Add(_("Pressure use"), _("Select the purpose of this pressure sensor. "
-                           "This sensor measures some pressure. Here you tell the system "
-                           "what pressure this is and what it should be used for."),
-                           press_df);
+    "This sensor measures some pressure. Here you tell the system "
+    "what pressure this is and what it should be used for."),
+    press_df);
 
   DataFieldEnum *driver_df = new DataFieldEnum(this);
 
@@ -432,9 +442,11 @@ DeviceEditWidget::Save(bool &_changed) noexcept
 {
   bool changed = false;
 
-  changed |= FinishPortField(config, (const DataFieldEnum &)GetDataField(Port));
+  changed |= FinishPortField(config,
+             (const DataFieldEnum &)GetDataField(Port));
 
-  const bool maybe_engine_sensor = config.port_type == DeviceConfig::PortType::BLE_SENSOR;
+  const bool maybe_engine_sensor = config.port_type == 
+                                         DeviceConfig::PortType::BLE_SENSOR;
   if (maybe_engine_sensor)
     changed |= SaveValueEnum(EngineTypes, config.engine_type);
 
