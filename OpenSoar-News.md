@@ -1,4 +1,5 @@
 OpenSoar Version 7.43-3.24 - not yet released
+OpenSoar Version 7.43-3.23.9 - not yet released
 ---------------
 OpenSoar Version 7.43-3.23.8 - released 2025/07/09 (prerelease for 7.43-3.24)
 * Weather
