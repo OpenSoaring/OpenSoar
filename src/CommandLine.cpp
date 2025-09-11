@@ -30,7 +30,7 @@ namespace CommandLine {
 }
 
 void
-CommandLine::Parse(Args &args)
+CommandLine::Parse(Args &args, bool with_profile)
 {
   std::string_view datapath;
   std::string_view profilepath;
@@ -61,7 +61,6 @@ CommandLine::Parse(Args &args)
           args.UsageError();
 
         profilepath = s;
-        // Profile::SetFiles(Path(s));
 #ifdef HAVE_CMDLINE_REPLAY
     } else if (StringIsEqual(s, "-replay=", 8)) {
       replay_path = s + 8;
@@ -134,10 +133,13 @@ CommandLine::Parse(Args &args)
   /* This has to be set in the correct order: 1st Datapath, 2nd profile */
   if (!datapath.empty())
     SetSingleDataPath(Path(datapath.data()));
-  if (!profilepath.empty())
+  if (!profilepath.empty()  && with_profile)
+    /* use profilepath with this flag only: In rerun mode you have to take the
+       'best' ( = last modified)  item */
     Profile::SetFiles(Path(profilepath.data()));
 
   if (width < 240 || width > 4096 ||
       height < 240 || height > 4096)
     args.UsageError();
 }
+ 
