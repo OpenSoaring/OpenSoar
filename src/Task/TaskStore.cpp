@@ -71,11 +71,11 @@ TaskStore::Scan(bool extra)
 
   // scan files
   TaskFileVisitor tfv(store);
-  VisitDataFiles("*.tsk", tfv);
+  VisitDataFiles("*.tsk", tfv, true);
 
   if (extra) {
-    VisitDataFiles("*.cup", tfv);
-    VisitDataFiles("*.igc", tfv);
+    VisitDataFiles("*.cup", tfv, true);
+    VisitDataFiles("*.igc", tfv, true);
   }
 
   std::sort(store.begin(), store.end());

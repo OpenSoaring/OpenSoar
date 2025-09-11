@@ -106,7 +106,7 @@ PlaneListWidget::UpdateList() noexcept
   list.clear();
 
   PlaneFileVisitor pfv(list);
-  VisitDataFiles("*.xcp", pfv);
+  VisitDataFiles("*.xcp", pfv, false);
 
   unsigned len = list.size();
 

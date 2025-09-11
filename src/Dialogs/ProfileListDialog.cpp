@@ -110,7 +110,7 @@ ProfileListWidget::UpdateList()
   list.clear();
 
   ProfileFileVisitor pfv(list);
-  VisitDataFiles("*.prf", pfv);
+  VisitDataFiles("*.prf", pfv, false);
 
   unsigned len = list.size();
 

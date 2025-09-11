@@ -122,7 +122,7 @@ InterfaceConfigPanel::Prepare(ContainerWindow &parent,
 
 #ifdef HAVE_BUILTIN_LANGUAGES
     LanguageFileVisitor lfv(df);
-    VisitDataFiles("*.mo", lfv);
+    VisitDataFiles("*.mo", lfv, true);
 #endif
 
     df.Sort(2);

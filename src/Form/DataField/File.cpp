@@ -85,7 +85,7 @@ FileDataField::ScanDirectoryTop(const char *filter) noexcept
   }
 
   FileVisitor fv(*this);
-  VisitDataFiles(filter, fv);
+  VisitDataFiles(filter, fv, true);
 
   Sort();
 }

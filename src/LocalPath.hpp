@@ -99,7 +99,8 @@ ExpandLocalPath(Path src) noexcept;
 AllocatedPath
 ContractLocalPath(Path src) noexcept;
 
-void VisitDataFiles(const char* filter, File::Visitor &visitor);
+void VisitDataFiles(const char* filter, File::Visitor &visitor,
+  bool recursive);
 
 [[gnu::pure]]
 Path
