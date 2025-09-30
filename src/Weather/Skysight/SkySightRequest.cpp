@@ -33,6 +33,10 @@
 # include <boost/format.hpp>
 #endif
 
+#ifdef _DEBUG
+# define SKYSIGHT_FILE_DEBUG
+#endif
+
 static const boost::json::value json_null;  //boost::json::null{};
 static std::map<std::string_view, boost::json::value> json_values;
 
