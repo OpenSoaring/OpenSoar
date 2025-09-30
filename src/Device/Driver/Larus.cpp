@@ -7,7 +7,6 @@
 * and an emulator is here https://github.com/larus-breeze/sw_tools
 */
 
-
 #include "Device/Driver/Larus.hpp"
 #include "Device/Driver.hpp"
 #include "Device/Port/Port.hpp"
@@ -21,6 +20,12 @@
 #include "LogFile.hpp"
 #include "util/StaticString.hxx"
 #include "Message.hpp"
+
+#define LARUS_SENSORBOX_SETTING 0
+#if LARUS_SENSORBOX_SETTING  // August: part of LarusSensor-Box-Protocol
+// TODO(August2111) (re)move Interface - to the caller
+# include "Interface.hpp"
+#endif
 
 #include <span>
 using std::string_view_literals::operator""sv;
@@ -389,41 +394,47 @@ bool
 LarusDevice::PLARS(NMEAInputLine &line, NMEAInfo &info)
 { // the line starts with the host indicator
   if (line.ReadOneChar() == 'L') {
+    // detect count of digits to interpret correct protocol
+    auto r = line.Rest();
+    size_t digit = r.length();
+    digit -= r.find_first_of(".") + 1;
     auto field = line.ReadView();
-
-    if (field == "MC"sv) {
-      // - value is MacCReady in m/s [0.0 - 9.9]
-      double value;
-      if (line.ReadChecked(value))
+    double value;
+    if (line.ReadChecked(value)) {
+      if (field == "MC") {
+        // - value is MacCReady in m/s [0.0 - 9.9]
         return info.settings.ProvideMacCready(value, info.clock);
-
-    } else if (field == "BUGS"sv) {
-      // - value is bugs in % [0 - 50]
-      double value;
-      if (line.ReadChecked(value))
-        return info.settings.ProvideBugs(1.0 - value/100.0, info.clock);
-
-    } else if (field == "BAL"sv) {
-      // - value is ballast fraction [0.00 - 1.00]
-      double value;
-      if (line.ReadChecked(value))
-        return info.settings.ProvideBallastFraction(value, info.clock);
-
-    } else if (field == "QNH"sv) {
-      // - value is pressure in hPa
-      double value;
-      if (line.ReadChecked(value))
-        return info.settings.ProvideQNH(AtmosphericPressure::HectoPascal(value), info.clock);
-
-    } else if (field == "CIR"sv) {
-      // - value is 1: Circling, 0: Cruise
-      int value;
-      if (line.ReadChecked(value)) {
-        if (value == 1) {
-          info.switch_state.flight_mode = SwitchState::FlightMode::CIRCLING;
+      } else if (field == "BUGS") {
+        if (digit == 2  && value >= 1.0 && value < 2.0)
+          // - value is bugs in % [1.0 - 2.0] with added fraction  ;-(
+          /* TODO(August2111): This part is a wrong implementation from Larus
+          * Sensor Box, has to be removed 2 years later (after 01.11.2025) with
+          * a new version > 0.5.3
+          */
+          return info.settings.ProvideBugs(
+            roundf(200 - value * 100) / 100.0, info.clock);
+        else if (digit == 2  && value > 0 && value <= 1.0)
+          // - value is bugs in % [0.5 - 1.0] with fraction
+          return info.settings.ProvideBugs(value, info.clock); 
+        else
+          // - value is bugs in % [0 - 50]
+          return info.settings.ProvideBugs(1.0 - value/100.0, info.clock);
+      } else if (field == "BAL") {
+        if (digit == 3 && value > 0 && value <= 1.0) {
+           // - value is ballast fraction [0.00 - 1.00]
+           return info.settings.ProvideBallastFraction(value, info.clock);
         } else {
-          info.switch_state.flight_mode = SwitchState::FlightMode::CRUISE;
+        // - value is ballast in liter [0.00 - 250.00]
+          return info.settings.ProvideBallastLitres(value, info.clock);
         }
+      } else if (field == "QNH") {
+        // - value is pressure in hPa
+        return info.settings.ProvideQNH(AtmosphericPressure::HectoPascal(value), info.clock);
+      } else if (field == "CIR") {
+        // - value is 1: Circling, 0: Cruise
+        info.switch_state.flight_mode = (value > 0.5) ?
+          SwitchState::FlightMode::CIRCLING :
+          SwitchState::FlightMode::CRUISE;
         return true;
       }
     }
@@ -437,9 +448,13 @@ LarusDevice::PutBugs(double bugs, OperationEnvironment &env)
 {
   // $PLARS,H,BUGS,0*0B
   // OpenSoar/XCSoar has values between [0.5 ..1.0]
-  if ((bugs < 0.7) || (bugs > 1.0))
+  if ((bugs < 0.5) || (bugs > 1.0))
     return false;
-  return SendCmd("BUGS,%u", uround((1.0-bugs) * 100), env);
+#if LARUS_SENSORBOX_SETTING
+  return SendCmd("BUGS,%0.2f", (2.0 - bugs), env);
+#else  // LARUS_SENSORBOX_SETTING
+  return SendCmd("BUGS,%1.0f", round((1.0-bugs) * 100), env);
+#endif
 }
 
 bool
@@ -450,13 +465,17 @@ LarusDevice::PutMacCready(double mc, OperationEnvironment &env)
 }
 
 bool
-LarusDevice::PutBallast([[maybe_unused]] double fraction, double overload, 
+LarusDevice::PutBallast([[maybe_unused]] double fraction, [[maybe_unused]] double overload,
                         OperationEnvironment &env)
 { 
-  // $PLARS,H,BAL,1.00*68
-  if ((overload < 1.0) || (overload > 1.60))
-    return false;
-  return SendCmd("BAL,%0.2f", overload, env);
+#if LARUS_SENSORBOX_SETTING  // August: part of LarusSensor-Box-Protocol
+  // $PLARS,H,BAL,1.00*68 - with 2 digits
+  auto value = CommonInterface::SetComputerSettings().polar.glide_polar_task.GetBallastLitres(); //
+  return SendCmd("BAL,%0.2f", value, env);
+#else  // LARUS_DISPLAY_SETTING
+  // $PLARS,H,BAL,0.752*XX - with 3 digits
+  return SendCmd("BAL,%0.3f", fraction, env);
+#endif
 }
 
 bool
@@ -499,6 +518,6 @@ LarusCreateOnPort([[maybe_unused]] const DeviceConfig &config, Port &com_port)
 const struct DeviceRegister larus_driver = {
   "Larus",
   "Larus",
-  DeviceRegister::SEND_SETTINGS,
+  DeviceRegister::SEND_SETTINGS | DeviceRegister::RECEIVE_SETTINGS ,
   LarusCreateOnPort,
 };
