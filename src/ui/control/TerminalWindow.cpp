@@ -21,7 +21,8 @@ TerminalWindow::Write(const char *p, size_t length)
       if (!IsASCII(ch) || !IsPrintableASCII(ch))
         ch = '.';
       data.Get(cursor_x, cursor_y) = ch;
-      Advance();
+      if (*p != '\r' && *p != '\n')
+        Advance();
     }
   }
 
@@ -121,7 +122,12 @@ TerminalWindow::OnPaint(Canvas &canvas, const PixelRect &p_dirty) noexcept
   };
 
   const int x(cell_dirty.left * cell_size.width);
+#ifdef _WIN32
+  // At Win the length has to be one less, otherwise a drawing the next char
+  const size_t length = cell_dirty.GetWidth() - 1;
+#else
   const size_t length = cell_dirty.GetWidth();
+#endif
 
   auto text = data.GetPointerAt(cell_dirty.left, cell_dirty.top);
   for (int cell_y = cell_dirty.top, p_y = cell_y * cell_size.height;
