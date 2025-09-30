@@ -11,3 +11,7 @@ public:
   const InfoBoxPanel *GetDialogContent() noexcept override;
   void Update(InfoBoxData &data) noexcept override;
 };
+
+void
+UpdateInfoBoxBugs(InfoBoxData &data) noexcept;
+

@@ -55,3 +55,17 @@ InfoBoxContentMacCready::Update(InfoBoxData &data) noexcept
   const CommonStats &common_stats = CommonInterface::Calculated().common_stats;
   data.SetCommentFromSpeed(common_stats.V_block, false);
 }
+
+void
+UpdateInfoBoxBugs(InfoBoxData &data) noexcept {
+  if (!CommonInterface::GetComputerSettings().stf_switch.IsValid()) {
+    data.SetInvalid();
+    data.SetValue("Unknown");
+    return;
+  }
+  uint32_t bugs = (uint32_t)
+    ((1.0 - CommonInterface::GetComputerSettings().polar.bugs) * 100);
+  std::string str = std::to_string(bugs) + " %";
+  data.SetValue(str.data());
+}
+

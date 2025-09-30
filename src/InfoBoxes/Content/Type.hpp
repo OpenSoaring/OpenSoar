@@ -159,6 +159,7 @@ namespace InfoBoxFactory
     e_InternalZigZagWind,
     e_PageNo,
     e_STFSwitch,
+    e_BugsSetting,
 
     e_NUM_TYPES_2nd  // Last item 2nd area
   };

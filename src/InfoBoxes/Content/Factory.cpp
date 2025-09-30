@@ -1378,11 +1378,20 @@ static constexpr MetaData meta_data_2nd[] = {
 
     // e_STFSwitch
     {
-        "System", 
+        "Setting", 
         N_("STF Switch"),
         N_("STF Switch"),
         N_("State of the STV/Vario switch."),
         UpdateInfoBoxSTFSwitch,
+    },
+
+    // e_BugsSetting
+    {
+        "Setting", 
+        N_("Bugs Setting"),
+        N_("Bugs"),
+        N_("Bugs in percentage."),
+        UpdateInfoBoxBugs,
     },
 
 };
