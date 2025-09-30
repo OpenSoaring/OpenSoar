@@ -77,7 +77,11 @@ void
 TerminalWindow::OnCreate()
 {
   PaintWindow::OnCreate();
+#ifdef _WIN32
+  cell_size = { 9, 17 };  // August2111: 1/3 of original size´, why?
+#else 
   cell_size = look.font.TextSize("W");
+#endif
   cursor_x = 0;
   cursor_y = 0;
   data.Reset();
@@ -122,12 +126,7 @@ TerminalWindow::OnPaint(Canvas &canvas, const PixelRect &p_dirty) noexcept
   };
 
   const int x(cell_dirty.left * cell_size.width);
-#ifdef _WIN32
-  // At Win the length has to be one less, otherwise a drawing the next char
-  const size_t length = cell_dirty.GetWidth() - 1;
-#else
   const size_t length = cell_dirty.GetWidth();
-#endif
 
   auto text = data.GetPointerAt(cell_dirty.left, cell_dirty.top);
   for (int cell_y = cell_dirty.top, p_y = cell_y * cell_size.height;
