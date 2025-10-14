@@ -14,4 +14,6 @@ public:
 
 void
 UpdateInfoBoxBugs(InfoBoxData &data) noexcept;
+void
+UpdateInfoBoxWaterBallast(InfoBoxData &data) noexcept;
 

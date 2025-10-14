@@ -16,3 +16,6 @@ class InfoBoxDrift : public InfoBoxContent {
 public:
   void Update(InfoBoxData &data) noexcept override;
 };
+
+void
+UpdateInfoBoxTrueHeading(InfoBoxData &data) noexcept;

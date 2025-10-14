@@ -160,6 +160,8 @@ namespace InfoBoxFactory
     e_PageNo,
     e_STFSwitch,
     e_BugsSetting,
+    e_TrueHeading,
+    e_WaterBallast,
 
     e_NUM_TYPES_2nd  // Last item 2nd area
   };

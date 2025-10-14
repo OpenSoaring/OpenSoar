@@ -54,3 +54,16 @@ void InfoBoxDrift::Update(InfoBoxData &data) noexcept {
   Angle Value = basic.track - basic.attitude.heading;
   data.SetValueFromBearingDifference(Value);
 }
+
+void
+UpdateInfoBoxTrueHeading(InfoBoxData &data) noexcept
+{
+  const auto &basic = CommonInterface::Basic();
+  if (!basic.attitude.heading_available) {
+    data.SetInvalid();
+    return;
+  }
+
+  // Set Value
+  data.SetValue(basic.attitude.heading);
+}

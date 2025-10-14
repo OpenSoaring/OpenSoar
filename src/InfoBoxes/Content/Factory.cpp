@@ -1394,6 +1394,24 @@ static constexpr MetaData meta_data_2nd[] = {
         UpdateInfoBoxBugs,
     },
 
+    // e_TrueHeading
+    {
+        "Setting", 
+        N_("Heading"),
+        N_("True Heading"),
+        N_("True Heading in Degrees."),
+        UpdateInfoBoxTrueHeading,
+    },
+
+    // e_WaterBallast
+    {
+        "Setting", 
+        N_("Water Ballast"),
+        N_("Water Ballast"),
+        N_("Water Ballast."),
+        UpdateInfoBoxWaterBallast,
+    },
+
 };
 
 // static_assert(ARRAY_SIZE(meta_data_2nd) == NUM_TYPES_2nd - e_NUM_AREA_2nd, "Wrong InfoBox factory size");
