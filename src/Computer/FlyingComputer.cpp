@@ -67,6 +67,7 @@ FlyingComputer::Check(FlyingState &state, TimeStamp time) noexcept
   if (!state.flying) {
     // We are moving for 10sec now
     if (moving_clock >= std::chrono::seconds{10}) {
+    // if (!state.on_ground || moving_clock >= std::chrono::seconds{10}) {
       // We certainly must be flying after 10sec movement
       assert(moving_since.IsDefined());
 
@@ -112,6 +113,8 @@ FlyingComputer::Moving(FlyingState &state, TimeStamp time, FloatDuration dt,
 {
   // Increase InFlight countdown for further evaluation
   moving_clock.Add(dt);
+  
+  // if (!state.on_ground
 
   if (!moving_since.IsDefined()) {
     moving_since = time;
