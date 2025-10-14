@@ -73,6 +73,7 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "BackendComponents.hpp"
 #include "DataComponents.hpp"
 #include "Device/Descriptor.hpp"
+#include "Device/Driver.hpp"
 
 #include "Interface.hpp"
 #include "InfoBoxes/Content/Thermal.hpp"
@@ -869,34 +870,22 @@ InputEvents::eventSTFSwitch(const char* misc) {
   if ((mode == "S") || (mode == "STF")) {
     if (stf_switch->stf_mode != TriState::TRUE) {
       stf_switch->Set(TriState::TRUE);
-      Message::AddMessage(_("Speed To Fly Mode"));
       for (DeviceDescriptor *device : *backend_components->devices) {
-        if (device->GetDevice()) { //device->IsNMEAOut()) {
-          if (device->IsDriver("Larus")) {
-            if (device->WriteNMEA("g,s1", env))
-              Message::AddMessage(_("Speed To Fly -> Larus"));
-          } else if (device->IsDriver("OpenVario") ||
-            device->IsDriver("FreeVario") ||
-            device->IsDriver("NmeaOut")) {
-            device->WriteNMEA("POV,C,STF", env);
-          }
+        AbstractDevice *dev = (AbstractDevice *)device->GetDevice();
+        if (dev && device->IsAlive()) { //device->IsNMEAOut()) {
+          if (dev->HaveVarioSTFSwitch())
+            dev->VarioSTFSwitch(false, env);
         }
       }
     }
   } else if ((mode == "V") || (mode == "Vario")) {
     if (stf_switch->stf_mode != TriState::FALSE) {
       stf_switch->Set(TriState::FALSE);
-      Message::AddMessage(_("Vario Mode"));
       for (DeviceDescriptor *device : *backend_components->devices) {
-        if (device->GetDevice()) { //device->IsNMEAOut()) {
-          if (device->IsDriver("Larus")) {
-            if (device->WriteNMEA("g,s0", env))
-              Message::AddMessage(_("Vario Mode -> Larus"));
-          } else if (device->IsDriver("OpenVario") ||
-            device->IsDriver("FreeVario") ||
-            device->IsDriver("NmeaOut")) {
-            device->WriteNMEA("POV,C,VAR", env);
-          }
+        AbstractDevice *dev = (AbstractDevice*) device->GetDevice();
+        if (dev && device->IsAlive()) { //device->IsNMEAOut()) {
+          if (dev->HaveVarioSTFSwitch())
+            dev->VarioSTFSwitch(true, env);
         }
       }
     }

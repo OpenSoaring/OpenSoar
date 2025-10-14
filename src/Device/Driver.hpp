@@ -226,6 +226,8 @@ public:
    */
   virtual void OnCalculatedUpdate(const MoreData &basic,
                                   const DerivedInfo &calculated) = 0;
+  virtual void VarioSTFSwitch(bool vario_mode, OperationEnvironment &env) = 0;
+  virtual bool HaveVarioSTFSwitch() = 0;
 };
 
 /**
@@ -277,6 +279,11 @@ public:
 
   void OnCalculatedUpdate([[maybe_unused]] const MoreData &basic,
                           [[maybe_unused]] const DerivedInfo &calculated) override {}
+
+  void VarioSTFSwitch([[maybe_unused]] bool vario_mode, 
+    [[maybe_unused]] OperationEnvironment &env) override {}
+
+  bool HaveVarioSTFSwitch() override { return false;}
 };
 
 /**
