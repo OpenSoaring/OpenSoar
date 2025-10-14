@@ -114,7 +114,8 @@ struct ExternalSettings {
    */
   bool CompareBallastFraction(double value) const {
     return ballast_fraction_available &&
-      fabs(ballast_fraction - value) <= 0.01;
+      fabs(ballast_fraction - value) < 0.0005;  // 0.01;
+    /* August2111: 0.01 is to much for 1 kg settings at <= 200kg ballast */
   }
 
   /**
@@ -129,7 +130,7 @@ struct ExternalSettings {
   }
 
   /**
-   * Compare the absolure ballast in kg (litres) setting with the specified value.
+   * Compare the absolute ballast in kg (litres) setting with the specified value.
    *
    * @return true if the current setting is the same, false if the
    * value is different or if there is no value
