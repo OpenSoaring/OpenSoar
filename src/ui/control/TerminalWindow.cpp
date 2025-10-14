@@ -55,8 +55,16 @@ TerminalWindow::Scroll()
 void
 TerminalWindow::NewLine()
 {
-  cursor_x = 0;
+#if 0  // def _DEBUG
+  auto text = data.GetPointerAt(0, cursor_y);
+  if (!std::strncmp(text, "$PLARS,", 6))
+    ++cursor_y;
+  else for (unsigned int i=0; i <= cursor_x; i++)
+    data.Get(i, cursor_y) = ' ';
+#else
   ++cursor_y;
+#endif
+  cursor_x = 0;
 
   if (cursor_y >= data.GetHeight()) {
     cursor_y = data.GetHeight() - 1;
@@ -78,7 +86,7 @@ TerminalWindow::OnCreate()
 {
   PaintWindow::OnCreate();
 #ifdef _WIN32
-  cell_size = { 9, 17 };  // August2111: 1/3 of original size´, why?
+  cell_size = { 9, 17 };  // August2111: 1/3 of original size, why?
 #else 
   cell_size = look.font.TextSize("W");
 #endif
@@ -136,11 +144,22 @@ TerminalWindow::OnPaint(Canvas &canvas, const PixelRect &p_dirty) noexcept
   auto text = data.GetPointerAt(cell_dirty.left, cell_dirty.top);
   for (int cell_y = cell_dirty.top, p_y = cell_y * cell_size.height;
        cell_y < cell_dirty.bottom;
-       ++cell_y, p_y += cell_size.height, text += data.GetWidth()) {
-    canvas.DrawFilledRectangle({p_dirty.left, p_y,
+       ++cell_y, /* p_y += cell_size.height, */ text += data.GetWidth()) {
+      canvas.DrawFilledRectangle({ p_dirty.left, p_y,
         p_dirty.right, p_y + (int)cell_size.height},
-                          look.background_color);
-    canvas.DrawText({x, p_y}, {text, length});
+        look.background_color);
+      // while (length > 6 &&  strncmp(text, "$PLARS,", 6))     // if (strcmp(data.data(), "$PLARS,") == 0)
+      // while (length > 6 && strncmp(text, "$PLARA,", 6))     // if (strcmp(data.data(), "$PLARS,") == 0)
+      {
+        // text += p_dirty.GetWidth(); length -= p_dirty.GetWidth();
+      }
+      // return;
+    // if (length > 6 && !strncmp(text, "$PLARS,", 6))     // if (strcmp(data.data(), "$PLARS,") == 0)
+      {     // if (strcmp(data.data(), "$PLARS,") == 0)
+        canvas.DrawText({ x, p_y }, { text, length });
+      }
+      p_y += (int)cell_size.height;
+      // }
   }
 
   int cell_bottom_y(cell_dirty.bottom * cell_size.height);
