@@ -21,6 +21,7 @@ namespace Profile {
   static void Load(const ProfileMap &map, CirclingSettings &settings);
   static void Load(const ProfileMap &map, WaveSettings &settings);
   static void Load(const ProfileMap &map, WeGlideSettings &settings);
+  static void Load(const ProfileMap &config, ConfigurationSettings &settings);
 };
 
 void
@@ -80,6 +81,16 @@ Profile::Load(const ProfileMap &map, WeGlideSettings &settings)
     if (sscanf(date, "%04u-%02u-%02u", &year, &month, &day) == 3)
       settings.pilot_birthdate = {year, month, day};
   }
+}
+
+void
+Profile::Load(const ProfileMap &map, ConfigurationSettings &settings)
+{
+  map.Get(ProfileKeys::ConfigurationEnabled, settings.enabled);
+  map.Get(ProfileKeys::ConfigurationClubEnabled, settings.club_usage_enabled);
+  // const char *buffer = map.Get(ProfileKeys::ConfigurationClubProfileFile); 
+  // settings.club_profile_file = Path(buffer);
+
 }
 
 void
@@ -167,6 +178,7 @@ Profile::Load(const ProfileMap &map, ComputerSettings &settings)
   Load(map, settings.contest);
   Load(map, settings.logger);
   Load(map, settings.weglide);
+  Load(map, settings.configuration);
 
 #ifdef HAVE_TRACKING
   Load(map, settings.tracking);
