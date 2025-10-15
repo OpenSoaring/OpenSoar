@@ -18,6 +18,7 @@
 #include "UIGlobals.hpp"
 #include "Language/Language.hpp"
 #include "util/StaticString.hxx"
+#include "ui/window/TopWindow.hpp"
 
 #include <vector>
 #include <cassert>
@@ -71,9 +72,11 @@ public:
   }
 
   void SelectPath(Path path);
+  size_t GetListSize() { return list.size(); }
 
 private:
   void UpdateList();
+  uint32_t BestProfileItem();
 
   [[gnu::pure]]
   int FindPath(Path path) const;
@@ -104,6 +107,28 @@ protected:
   }
 };
 
+/* preselect the most recently used profile */
+uint32_t
+ProfileListWidget::BestProfileItem()
+{
+  uint32_t best_index = 0;
+
+  std::chrono::system_clock::time_point best_timestamp =
+    std::chrono::system_clock::time_point::min();
+
+  int i = -1;
+  for (auto &item : list) {
+    i++;
+    const auto timestamp = File::GetLastModification(item.path);
+    if (timestamp > best_timestamp) {
+      best_timestamp = timestamp;
+      best_index = i;
+    }
+  }
+
+  return best_index;
+}
+
 void
 ProfileListWidget::UpdateList()
 {
@@ -120,6 +145,11 @@ ProfileListWidget::UpdateList()
   ListControl &list_control = GetList();
   list_control.SetLength(len);
   list_control.Invalidate();
+  
+  const uint32_t index  = BestProfileItem();
+  if (index < len) {
+    GetList().SetCursorIndex(index);
+  }
 
   const bool empty = list.empty();
   password_button->SetEnabled(!empty);
@@ -149,11 +179,12 @@ void
 ProfileListWidget::CreateButtons(WidgetDialog &dialog)
 {
   form = &dialog;
-
+  dialog.AddButton(_("Select"), mrOK);
   dialog.AddButton(_("New"), [this](){ NewClicked(); });
   password_button = dialog.AddButton(_("Password"), [this](){ PasswordClicked(); });
   copy_button = dialog.AddButton(_("Copy"), [this](){ CopyClicked(); });
   delete_button = dialog.AddButton(_("Delete"), [this](){ DeleteClicked(); });
+  dialog.AddButton(_("Cancel"), mrCancel);
 }
 
 void
@@ -312,15 +343,28 @@ ProfileListWidget::DeleteClicked()
 void
 ProfileListDialog()
 {
+  auto profile_path = Profile::GetPath();
+
   TWidgetDialog<ProfileListWidget>
     dialog(WidgetDialog::Full{}, UIGlobals::GetMainWindow(),
            UIGlobals::GetDialogLook(), _("Profiles"));
   dialog.SetWidget(false);
   dialog.GetWidget().CreateButtons(dialog);
-  dialog.AddButton(_("Close"), mrOK);
   dialog.EnableCursorSelection();
 
-  dialog.ShowModal();
+  if (dialog.ShowModal() == mrOK) {
+    if (dialog.GetWidget().GetSelectedPath() != profile_path) {
+      profile_path = dialog.GetWidget().GetSelectedPath();
+      if (!profile_path.empty() && File::Exists(profile_path)) {
+        // The profile has been changed
+        Profile::Save();  // don't save the changed values in the sel. profile
+        Profile::SetFiles(profile_path);  // a 'pre touch'
+
+        File::Touch(profile_path);
+        UI::TopWindow::SetExitValue(EXIT_RESTART);
+      }
+    }
+  }
 }
 
 AllocatedPath
@@ -330,9 +374,7 @@ SelectProfileDialog(Path selected_path)
     dialog(WidgetDialog::Full{}, UIGlobals::GetMainWindow(),
            UIGlobals::GetDialogLook(), _("Select profile"));
   dialog.SetWidget(true);
-  dialog.AddButton(_("Select"), mrOK);
   dialog.GetWidget().CreateButtons(dialog);
-  dialog.AddButton(_("Cancel"), mrCancel);
   dialog.EnableCursorSelection();
 
   if (selected_path != nullptr) {
@@ -340,7 +382,13 @@ SelectProfileDialog(Path selected_path)
     dialog.GetWidget().SelectPath(selected_path);
   }
 
-  auto result = dialog.ShowModal();
+  // with zero or one list entry don't call the dialog
+  auto result =
+    /* */
+    dialog.GetWidget().GetListSize() < 2 ? 
+    mrOK : 
+ /* */
+    dialog.ShowModal();
 
   return result == mrOK
     ? dialog.GetWidget().GetSelectedPath()
