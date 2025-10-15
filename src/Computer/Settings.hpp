@@ -22,6 +22,7 @@
 #include "TransponderCode.hpp"
 #include "TransponderMode.hpp"
 #include "net/client/WeGlide/Settings.hpp"
+#include "system/Path.hpp"
 
 #include <cstdint>
 #include <type_traits>
@@ -30,6 +31,28 @@ struct Waypoint;
 
 // control of calculations, these only changed by user interface
 // but are used read-only by calculations
+
+struct ConfigurationSettings {
+  /**
+   * Enable the general configuration ???
+   */
+  bool enabled;
+
+  /**
+   * Club usage enabled ...
+   */
+  bool club_usage_enabled;
+
+  Path club_profile_file;
+  Path IGC_file_folder;
+
+  void SetDefaults() {
+    enabled = true;
+    club_usage_enabled = false;
+    club_profile_file = Path("ClubProfile");
+    IGC_file_folder = Path("");
+  }
+};
 
 /**
  * Glide polar settings
@@ -255,6 +278,8 @@ struct ComputerSettings {
   LoggerSettings logger;
 
   WeGlideSettings weglide;
+  
+  ConfigurationSettings configuration;
 
 #ifdef HAVE_TRACKING
   TrackingSettings tracking;
