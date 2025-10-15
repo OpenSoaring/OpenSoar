@@ -128,8 +128,7 @@ static DeviceFactory *device_factory;
 static bool
 LoadProfile()
 {
-  if (Profile::GetPath() == nullptr &&
-    !dlgStartupShowModal()) {
+  if (!dlgStartupShowModal(Profile::GetPath())) {
     const char *text_arg = (Profile::GetPath() == nullptr) ? "nullptr" :
 	                        Profile::GetPath().c_str();
     LogFmt("LoadProfile: dlgStartupShowModal == false {} ", text_arg);
