@@ -38,6 +38,7 @@
 #include "Panels/TaskDefaultsConfigPanel.hpp"
 #include "Panels/ScoringConfigPanel.hpp"
 #include "Panels/InfoBoxesConfigPanel.hpp"
+#include "Panels/ConfigurationConfigPanel.hpp"
 #include "Interface.hpp"
 #include "Language/Language.hpp"
 #include "Audio/Features.hpp"
@@ -91,6 +92,7 @@ static ArrowPagerWidget *pager;
 
 static constexpr TabMenuPage basic_pages[] = {
   { N_("Site Files"), CreateSiteConfigPanel },
+  { N_("Device Configuration"), CreateConfigurationConfigPanel},
 #if defined(IS_OPENVARIO) && 0  // defined (__AUGUST__)
   { N_("TestOpenVario"), CreateSystemMenuWidget},
 #endif
