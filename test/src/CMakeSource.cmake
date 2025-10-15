@@ -305,11 +305,12 @@ set(TEST_LIST
     ${SRC_DIR}/RunSkysightCredential.cpp
 )
 
-set(GUI_TEST_LIST
+set(GUI_TEST_LIST 
     # not valid yet with cmake: 
     ${SRC_DIR}/RunMapWindow.cpp
     ${SRC_DIR}/RunWindArrowRenderer.cpp
     ${SRC_DIR}/DebugDisplay.cpp
+    ${SRC_DIR}/RunProfileListDialog.cpp
 )
 
 set(SCRIPT_FILES
