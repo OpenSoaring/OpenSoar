@@ -30,11 +30,8 @@ namespace CommandLine {
 }
 
 void
-CommandLine::Parse(Args &args, bool with_profile)
+CommandLine::Parse(Args &args, start_settings &sx)
 {
-  std::string_view datapath;
-  std::string_view profilepath;
-  std::string_view testpath;
   while (!args.IsEmpty()) {
     const char *s = args.GetNext();
 
@@ -52,7 +49,7 @@ CommandLine::Parse(Args &args, bool with_profile)
 
     if (StringIsEqual(s, "-datapath=", 10)) {
       s += 10;
-      datapath = s;
+      sx.datapath = s;
       // SetSingleDataPath(Path(s));
     } else if (StringIsEqual(s, "-profile=", 9)) {
         s += 9;
@@ -60,7 +57,7 @@ CommandLine::Parse(Args &args, bool with_profile)
         if (StringIsEmpty(s))
           args.UsageError();
 
-        profilepath = s;
+        sx.profilepath = s;
 #ifdef HAVE_CMDLINE_REPLAY
     } else if (StringIsEqual(s, "-replay=", 8)) {
       replay_path = s + 8;
@@ -130,13 +127,8 @@ CommandLine::Parse(Args &args, bool with_profile)
 #endif
     }
   }
-  /* This has to be set in the correct order: 1st Datapath, 2nd profile */
-  if (!datapath.empty())
-    SetSingleDataPath(Path(datapath.data()));
-  if (!profilepath.empty()  && with_profile)
-    /* use profilepath with this flag only: In rerun mode you have to take the
-       'best' ( = last modified)  item */
-    Profile::SetFiles(Path(profilepath.data()));
+  if (!sx.datapath.empty())
+    SetSingleDataPath(Path(sx.datapath.data()));
 
   if (width < 240 || width > 4096 ||
       height < 240 || height > 4096)

@@ -3,7 +3,14 @@
 
 #pragma once
 
+#include <string>
+
 class Args;
+
+struct start_settings {
+  std::string_view datapath;
+  std::string_view profilepath;
+};
 
 namespace CommandLine {
   extern unsigned width, height;
@@ -25,6 +32,7 @@ namespace CommandLine {
 /**
  * Reads and parses arguments/options from the command line
  * @param CommandLine command line argument string
+ * fill the struct start_settings with datapath and profilepath
  */
-  void Parse(Args &args, bool with_profile = true);
+  void Parse(Args &args, start_settings &s);
 }

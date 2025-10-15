@@ -30,6 +30,7 @@
 
 #include "UIGlobals.hpp"
 #include "system/Process.hpp"
+#include "Profile/Profile.hpp"
 
 // see MinGW.cmake: #define DEBUG_CONSOLE_OUTPUT
 #ifdef DEBUG_CONSOLE_OUTPUT
@@ -169,20 +170,31 @@ try {
   bool rerun = false;
   do {
     {
-      rerun = false;
-      // UI::TopWindow::SetExitValue(0);
-
+      Profile::LoadConfiguration();
 #ifdef _WIN32
-      if (UIGlobals::CommandLine == nullptr)
-        UIGlobals::CommandLine = GetCommandLine();
-      Args args(UIGlobals::CommandLine, Usage);
+        if (UIGlobals::CommandLine == nullptr)
+          UIGlobals::CommandLine = GetCommandLine();
+        Args args(UIGlobals::CommandLine, Usage);
 #else
-      Args args(argc, argv, Usage);
+        Args args(argc, argv, Usage);
 #endif
-      CommandLine::Parse(args);
-    }
+        /* at ReRun don't use the profile from command line - in this case
+           use the last modified profile */
+        start_settings sx;
+        CommandLine::Parse(args, sx);
 
-    InitialiseDataPath();
+        if (!sx.datapath.empty())
+          SetSingleDataPath(Path(sx.datapath.data()));
+
+        if (!rerun && !sx.profilepath.empty()) {
+          Profile::SetFiles(Path(sx.profilepath.data()));
+        }
+    }
+    // InitialiseDataPath();  // Re-Initialise with new datapath
+    auto p = Profile::GetConfigPath(ProfileKeys::ConfigurationClubProfileFile);
+
+    rerun = false;
+
 
 #ifdef USE_WIN32_RESOURCES
     if (!ResourceLoader::Initialized())
@@ -191,7 +203,6 @@ try {
     // Write startup note + version to logfile
     LogFormat("Starting OpenSoar %s", OpenSoar_ProductToken);
 
-    // int
     ret = Main();
 
 #if defined(__APPLE__) && TARGET_OS_IPHONE
@@ -200,10 +211,9 @@ try {
     exit(ret);
 #endif
 
-#ifdef IS_OPENVARIO
     if (ret == 0)
       ret = UI::TopWindow::GetExitValue();
-#endif
+
     rerun = (ret == EXIT_RESTART);
     if (rerun)
       UI::TopWindow::SetExitValue(0);
