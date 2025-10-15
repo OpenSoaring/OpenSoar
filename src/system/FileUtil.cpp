@@ -20,11 +20,11 @@
 #include <fcntl.h>
 
 #ifdef HAVE_POSIX
-#include <dirent.h>
-#include <unistd.h>
-#include <fnmatch.h>
-#include <utime.h>
-#include <time.h>
+# include <dirent.h>
+# include <unistd.h>
+# include <fnmatch.h>
+# include <utime.h>
+# include <time.h>
 #elif defined( _MSC_VER)
 # include <corecrt_io.h>
 # include <BaseTsd.h>
@@ -367,67 +367,25 @@ File::GetTime(Path path) noexcept
 bool
 File::SetTime(Path path, time_t t) noexcept
 {
+  // change file time without creation time
 #ifdef HAVE_POSIX
   struct utimbuf new_times;
+#else  // Windows:
+  struct _utimbuf new_times;
+# endif  // HAVE_POSIX
   new_times.actime = t ? t : DateTime::now();
   new_times.modtime = t ? t : DateTime::now();
-  return utime(path.c_str(), &new_times) == 0;
+#ifdef HAVE_POSIX
+  return  utime(path.c_str(), &new_times) == 0;
 #else  // Windows:
-# if 0
-  // change file time without creation time
-  struct _utimbuf ts;
-  ts.actime = t ? t : DateTime::now();
-  ts.modtime = t ? t : DateTime::now();
-  return _utime(path.c_str(), &ts) == 0;
-# else
-  HANDLE handle = ::CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
-    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-
-  if (handle == INVALID_HANDLE_VALUE)
-    return false;
-
-  if (t == 0)
-    t = DateTime::now();
-  FILETIME ft = UnixEpochTimeToFileTime(t);
-  bool result = ::SetFileTime(handle, &ft, &ft, &ft);
-
-  CloseHandle(handle);
-
-  return result;
-# endif
+  return _utime(path.c_str(), &new_times) == 0;
+# endif  // HAVE_POSIX
 }
 
 bool
 File::Touch(Path path) noexcept
 {
-#ifdef HAVE_POSIX
-  return utime(path.c_str(), nullptr) == 0;
-#else
-  /// @see http://msdn.microsoft.com/en-us/library/windows/desktop/ms724205(v=vs.85).aspx
-
-  // Create a file handle
-  HANDLE handle = ::CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
-                               OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-
-  if (handle == INVALID_HANDLE_VALUE)
-    return false;
-
-  // Gets the current system time
-  SYSTEMTIME st;
-  ::GetSystemTime(&st);
-
-  // Converts the current system time to file time format
-  FILETIME ft;
-  ::SystemTimeToFileTime( &st, &ft);
-
-  // Sets last-write time of the file to the converted current system time
-  bool result = ::SetFileTime(handle, (LPFILETIME)nullptr, (LPFILETIME)nullptr,
-                              &ft);
-  CloseHandle(handle);
-
-  return result;
-# endif  // 0
-#endif // POSIX / Windows
+  return SetTime(path, 0);
 }
 
 bool
