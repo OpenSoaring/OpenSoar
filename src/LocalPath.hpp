@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <string>
 #include <filesystem>
 
 class Path;
@@ -105,6 +106,11 @@ void VisitDataFiles(const char* filter, File::Visitor &visitor,
 [[gnu::pure]]
 Path
 GetCachePath() noexcept;
+
+[[gnu::pure]]
+AllocatedPath
+GetCachePath(std::string_view path_name) noexcept;
+
 
 [[gnu::pure]]
 AllocatedPath

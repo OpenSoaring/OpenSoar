@@ -76,10 +76,6 @@ SetPrimaryDataPath(Path path) noexcept
     data_paths.erase(i);
 
   data_paths.emplace_front(path);
-
-#ifndef ANDROID
-  cache_path = LocalPath("cache");
-#endif
 }
 
 void
@@ -90,10 +86,6 @@ SetSingleDataPath(Path path) noexcept
 
   data_paths.clear();
   data_paths.emplace_front(path);
-
-#ifndef ANDROID
-  cache_path = LocalPath("cache");
-#endif
 }
 
 AllocatedPath
@@ -311,6 +303,14 @@ GetCachePath() noexcept
 }
 
 AllocatedPath
+GetCachePath(std::string_view path_name) noexcept
+{
+  if (cache_path == nullptr)
+    InitialiseDataPath();
+  return AllocatedPath::Build(cache_path, path_name.data());
+}
+
+AllocatedPath
 MakeCacheDirectory(const char *name) noexcept
 {
   Directory::Create(cache_path);
@@ -334,7 +334,8 @@ InitialiseDataPath()
     throw std::runtime_error("No Android cache directory");
 
 #else
-  cache_path = LocalPath("cache");
+  if (cache_path == nullptr)
+    cache_path = LocalPath("cache");
 #endif
 }
 
