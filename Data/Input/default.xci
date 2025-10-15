@@ -1328,6 +1328,13 @@ event=Setup Profile
 label=Profile
 location=40
 
+mode=RemoteStick
+type=key
+data=0
+event=Mode Menu
+label=Main Menu
+location=41
+
 #-----------------------
 
 # Test purpose:
