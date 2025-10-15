@@ -2233,6 +2233,7 @@ RUN_PROFILE_LIST_DIALOG_SOURCES = \
 	$(SRC)/Look/DialogLook.cpp \
 	$(SRC)/Look/ButtonLook.cpp \
 	$(SRC)/Look/CheckBoxLook.cpp \
+	$(SRC)/Profile/Profile.cpp \
 	$(SRC)/LocalPath.cpp \
 	$(SRC)/Formatter/HexColor.cpp \
 	$(MORE_SCREEN_SOURCES) \
