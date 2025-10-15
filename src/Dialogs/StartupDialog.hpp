@@ -3,9 +3,12 @@
 
 #pragma once
 
+class Path;
 /**
  * @return true on success, false if the user has pressed the "Quit"
  * button
  */
+// bool
+// dlgStartupShowModal() noexcept;
 bool
-dlgStartupShowModal() noexcept;
+dlgStartupShowModal(Path profile) noexcept;
