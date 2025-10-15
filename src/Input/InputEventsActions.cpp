@@ -605,9 +605,11 @@ InputEvents::eventSetup(const char *misc)
     dlgTargetShowModal();
   else if (StringIsEqual(misc, "Plane"))
     dlgPlanesShowModal();
-  else if (StringIsEqual(misc, "Profile"))
+  else if (StringIsEqual(misc, "Profile")) {
     ProfileListDialog();
-  else if (StringIsEqual(misc, "Alternates"))
+     if (UI::TopWindow::GetExitValue() == EXIT_RESTART)
+     UIActions::SignalShutdown(true);
+  } else if (StringIsEqual(misc, "Alternates"))
     dlgAlternatesListShowModal(data_components->waypoints.get());
 
   trigger_redraw();
