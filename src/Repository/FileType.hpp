@@ -20,4 +20,5 @@ enum class FileType : uint8_t {
   TASK,
   IMAGE,
   FREQUENCIES,
+  PROFILE,
 };
