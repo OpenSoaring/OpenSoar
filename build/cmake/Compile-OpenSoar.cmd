@@ -19,5 +19,6 @@ REM pause
 python build/cmake/python/Start-CMake-OpenSoar.py  opensoar %OPENSOAR_TOOLCHAIN% %COMPILE_PARTS%
 
 :: if errorlevel 1 pause
-if errorlevel 1 echp "!!! ERROR !!! ERROR !!! ERROR !!! ERROR !!! ERROR"
+if errorlevel 1 echo "!!! ERROR !!! ERROR !!! ERROR !!! ERROR !!! ERROR"
+echo "??? ERROR !!! ERROR !!! ERROR !!! ERROR !!! ERROR"
 

@@ -112,7 +112,8 @@ set(ZZIP_OUTSIDE        OFF)
 add_definitions(-DCMAKE_PROJECT)  # to decide if make or cmake...
 
 # find all necessary programs/apps
-find_program(PYTHON_APP         NAMES python3 python REQUIRED)
+# find_program(PYTHON_APP         NAMES python3 python REQUIRED)
+find_program(PYTHON_APP         NAMES python REQUIRED)
 find_program(PERL_APP           NAMES perl   REQUIRED)
 # find_program(BMP_CONVERT_APP    NAMES ImageMagick/convert )
     list(APPEND CMAKE_PROGRAM_PATH "${USER_PROGRAM_PATH}/GnuWin/libxslt/bin")
@@ -677,29 +678,33 @@ add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${directory} ${CMAKE_CURRENT_BINARY_DIR}/po
 )
 
-foreach(translation ${TRANSLATIONS})
-        add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECTGROUP_SOURCE_DIR}/src/_Deprecated/${translation}.mo ${CMAKE_CURRENT_BINARY_DIR}/po/${translation}.mo
-            # TODO(aug): later do the creation here...
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECTGROUP_SOURCE_DIR}/src/_Deprecated/${translation}.mo.c ${CMAKE_CURRENT_BINARY_DIR}/po/${translation}.mo.c
-        )
-endforeach()
+## delete this! ## if (0)
+## delete this! ## foreach(translation ${TRANSLATIONS})
+## delete this! ##         add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+## delete this! ##             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECTGROUP_SOURCE_DIR}/src/_Deprecated/${translation}.mo ${CMAKE_CURRENT_BINARY_DIR}/po/${translation}.mo
+## delete this! ##             # TODO(aug): later do the creation here...
+## delete this! ##             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECTGROUP_SOURCE_DIR}/src/_Deprecated/${translation}.mo.c ${CMAKE_CURRENT_BINARY_DIR}/po/${translation}.mo.c
+## delete this! ##         )
+## delete this! ## endforeach()
+## delete this! ## endif()
 
 add_dependencies(${TARGET_NAME} util libOpenSoar)
 
 add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${directory} ${CMAKE_CURRENT_BINARY_DIR}/po
 )
-add_custom_command(OUTPUT  ${RES_TEST} "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc"
-        COMMENT Create Resource!
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc" "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc" 
-        DEPENDS "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc"
-        WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
-)
 
-list(APPEND SOURCE_FILES ${RES_TEST})  ## "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
-# list(APPEND SOURCE_FILES ${RESOURCE_FILES})
-# target_sources(${TARGET_NAME} PRIVATE "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
+## delete this! ## if(0)  ## Copy from A to A not necessary...
+## delete this! ## add_custom_command(OUTPUT  ${RES_TEST} "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc"
+## delete this! ##         COMMENT "Copy Resource!"
+## delete this! ##         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc" "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc" 
+## delete this! ##         # COMMAND echo "Wrong OpenSoar.rc location "
+## delete this! ##         DEPENDS "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc"
+## delete this! ##         WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+## delete this! ## )
+## delete this! ## endif()
+## delete this! ## 
+## delete this! ## list(APPEND SOURCE_FILES ${RES_TEST})  ## "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
 
 # Test-Folder !!!!
 #=============================

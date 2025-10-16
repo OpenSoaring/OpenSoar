@@ -26,9 +26,10 @@ if (_COMPLETE_INSTALL)
         CMAKE_ARGS ${CMAKE_ARGS}
         ${_BINARY_STEP}
 
-        PATCH_COMMAND ${PYTHON_APP}
-              ${PROJECTGROUP_SOURCE_DIR}/3rd_party/cmake_patch.py 
-              ${PROJECTGROUP_SOURCE_DIR} <SOURCE_DIR>
+# ?? #        PATCH_COMMAND ${PYTHON_APP}
+# ?? #              ${PROJECTGROUP_SOURCE_DIR}/3rd_party/cmake_patch.py 
+# ?? #              ${PROJECTGROUP_SOURCE_DIR} <SOURCE_DIR>
+
         # SZConfig.h is 'stolen' from ./szip/szip-2.1/src/szip_build/windows/szipproj.zip/szip/src/SZConfig.h
         INSTALL_DIR "${_INSTALL_DIR}"
         # BUILD_ALWAYS ${EP_BUILD_ALWAYS}

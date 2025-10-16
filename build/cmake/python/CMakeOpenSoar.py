@@ -2,10 +2,10 @@
 
 import os, sys, subprocess
 
-# 
-Configuration = 'Release'
+# Configuration = 'Release'
 # Configuration = 'Debug'
-# Configuration = 'Multi'
+# 
+Configuration = 'Multi'
 
 
 # if len(sys.argv) > 1:
@@ -80,6 +80,7 @@ generator = {
            'mgw103' : 'MinGW Makefiles',
            'mgw112' : 'MinGW Makefiles',
            'mgw122' : 'MinGW Makefiles',
+           'mgw143' : 'MinGW Makefiles',
            # 'ninja' : 'MinGW Makefiles',
            'ninja' : 'Ninja',
            'unix' : 'Unix Makefiles',
@@ -117,6 +118,7 @@ compiler_setup = {
            'mgw103' : gcc,
            'mgw112' : gcc,
            'mgw122' : gcc,
+           'mgw143' : gcc,
            # 'ninja' : gcc,
            'ninja' : clang,
            'unix' : gcc,
@@ -361,8 +363,8 @@ def create_opensoar(args):
     #if not (toolchain.startswith('msvc') or toolchain.startswith('clang')):
         arguments.append('--')  # nachfolgende Befehle werden zum Build tool durchgereicht
         arguments.append('-j')
-        # arguments.append('1')  # jobs...
-        arguments.append('8')  # jobs...
+        arguments.append('1')  # jobs...
+        # arguments.append('8')  # jobs...
     myprocess = subprocess.Popen(arguments, env = my_env, shell = False)
     myprocess.wait()
     if myprocess.returncode != 0:
