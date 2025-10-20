@@ -441,6 +441,10 @@ public:
                    nullable);
   }
 
+  WndProperty *AddDirectory(const char *label, const char *help,
+    std::string_view profile_key, bool nullable = true) noexcept;
+
+
   /**
    * Add a label panel control, not editable, only for some explanations,
    *  descriptions or messages. You can use SetText() to update its text.

@@ -36,6 +36,31 @@ RowFormWidget::AddFile(const char *label, const char *help,
   return edit;
 }
 
+WndProperty *
+RowFormWidget::AddDirectory(const char *label, const char *help,
+                       std::string_view profile_key, bool nullable) noexcept
+{
+  WndProperty *edit = Add(label, help);
+  auto *df = new FileDataField();
+  df->SetFileType(FileType::UNKNOWN);
+  edit->SetDataField(df);
+
+  if (nullable)
+    df->AddNull();
+
+  df->ScanMultiplePatterns("*.*");
+
+  if (profile_key.data() != nullptr) {
+    const auto path = Profile::GetPath(profile_key);
+    if (path != nullptr)
+      df->SetValue(path);
+  }
+
+  edit->RefreshDisplay();
+
+  return edit;
+}
+
 void
 RowFormWidget::SetProfile(std::string_view profile_key, unsigned value) noexcept
 {
