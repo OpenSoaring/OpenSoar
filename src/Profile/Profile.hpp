@@ -82,4 +82,14 @@ SetPath(std::string_view key, Path value) noexcept;
 bool
 GetPathIsEqual(std::string_view key, Path value) noexcept;
 
+void
+LoadConfiguration() noexcept;
+
+void
+SaveConfiguration() noexcept;
+
+AllocatedPath
+GetConfigPath(std::string_view key) noexcept;
+
+
 } // namespace Profile

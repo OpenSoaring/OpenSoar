@@ -8,4 +8,6 @@ class ProfileMap;
 namespace Profile {
   extern ProfileMap map;
   extern ProfileMap device_ports;
+
+  extern ProfileMap system_config;
 }

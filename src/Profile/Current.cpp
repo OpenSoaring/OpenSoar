@@ -7,4 +7,6 @@
 namespace Profile {
   ProfileMap map;
   ProfileMap device_ports;
+
+  ProfileMap system_config;
 }

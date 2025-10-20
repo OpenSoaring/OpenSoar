@@ -104,6 +104,11 @@ constexpr std::string_view AccelerometerZero = "AccelerometerZero";
 constexpr std::string_view AverEffTime = "AverEffTime";
 constexpr std::string_view VarioGauge = "VarioGauge";
 
+constexpr std::string_view ConfigurationEnabled = "ConfigurationEnabled";  // ???
+constexpr std::string_view ConfigurationClubEnabled = "ConfigurationClubEnabled";  // ???
+constexpr std::string_view ConfigurationClubProfileFile = "ConfigurationClubProfileFile";
+constexpr std::string_view ConfigurationIGCFileFolder = "ConfigurationIGCFileFolder";  // ???
+
 constexpr std::string_view AppIndLandable = "AppIndLandable";
 constexpr std::string_view AppUseSWLandablesRendering = "AppUseSWLandablesRendering";
 constexpr std::string_view AppLandableRenderingScale = "AppLandableRenderingScale";

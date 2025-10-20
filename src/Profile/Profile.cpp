@@ -33,6 +33,7 @@
 
 static AllocatedPath startProfileFile = nullptr;
 static AllocatedPath portSettingFile = nullptr;
+// static AllocatedPath configSettingFile = nullptr;
 #ifdef TEMP_FILE_RENAME_ACTION
 static AllocatedPath old_dev_file;
 #endif
@@ -140,6 +141,7 @@ Profile::Save(ProfileMap &_map) noexcept
 
   try {
     SaveFile(_map, path);
+    _map.SetModified(false);
   } catch (...) {
     LogError(std::current_exception(), "Failed to save profile");
   }
@@ -222,3 +224,26 @@ Profile::SetPath(std::string_view key, Path value) noexcept
 {
   map.SetPath(key, value);
 }
+
+void
+Profile::LoadConfiguration() noexcept
+{
+  auto path = GetCachePath("system_config.xcc");
+
+  if (File::Exists(path))
+      LoadFile(system_config, path);
+}
+
+void
+Profile::SaveConfiguration() noexcept
+{
+  
+
+}
+
+AllocatedPath
+Profile::GetConfigPath(std::string_view key) noexcept
+{
+  return system_config.GetPath(key);
+}
+
