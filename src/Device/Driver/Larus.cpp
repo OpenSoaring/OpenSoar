@@ -20,6 +20,7 @@
 #include "Operation/Operation.hpp"
 #include "LogFile.hpp"
 #include "util/StaticString.hxx"
+#include "Message.hpp"
 
 #include <span>
 using std::string_view_literals::operator""sv;
@@ -28,7 +29,9 @@ class LarusDevice : public AbstractDevice {
   Port &port;
 
 public:
-  LarusDevice(Port &_port) : port(_port) {}
+  LarusDevice(Port &_port) : port(_port) {
+    // VarioSTFSwitch = *LarusVarioSTFSwitch;
+  }
 
   /* virtual methods from class Device */
   bool ParseNMEA(const char *line, NMEAInfo &info) override;
@@ -38,6 +41,9 @@ public:
                   OperationEnvironment &env) override;
   bool PutQNH(const AtmosphericPressure &pres,
               OperationEnvironment &env) override;
+  void VarioSTFSwitch(bool vario_mode, OperationEnvironment &env) override;
+  bool HaveVarioSTFSwitch()  override { return true; }
+
 
 private:
   static bool PLARA(NMEAInputLine &line, NMEAInfo &info);
@@ -49,6 +55,7 @@ private:
   static bool HCHDT(NMEAInputLine &line, NMEAInfo &info);
 
   bool SendCmd(const char *cmd, double value, OperationEnvironment &env);
+  // virtual void LarusVarioSTFSwitch(bool vario_mode);
 };
 
 //-----------------------------------------------------------------------------
@@ -465,11 +472,23 @@ LarusDevice::SendCmd(const char *cmd, double value,
                               OperationEnvironment &env) {
   StaticString<80> buffer("PLARS,H,");
   buffer.AppendFormat(cmd, value);
+  char buffer2[80];
+  sprintf(buffer2, cmd, value);
 
   PortWriteNMEA(port, buffer.c_str(), env);
+  Message::AddMessage(buffer);
   return true;
 }
 
+void
+LarusDevice::VarioSTFSwitch(bool vario_mode,
+  OperationEnvironment &env) {
+  if (SendCmd("CIR,%1.0f", vario_mode, env)) {
+    std::string msg = "Larus: Switched to ";
+    msg += vario_mode ? "Vario" : "SpeedToFly";
+    Message::AddMessage(msg.c_str());
+  }
+}
 
 static Device *
 LarusCreateOnPort([[maybe_unused]] const DeviceConfig &config, Port &com_port)
