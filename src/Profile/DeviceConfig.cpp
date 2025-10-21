@@ -81,22 +81,6 @@ static const char *const port_type_strings[] = {
   NULL
 };
 
-static const char *
-MakeDeviceSettingName(char *buffer, const char *prefix, unsigned n,
-                      const char *suffix)
-{
-#if 1
-  sprintf(buffer, "%s%u%s", prefix, n + 1,  suffix);
-#else
-  strcpy(buffer, prefix);
-
-  if (n > 0)
-    sprintf(buffer + strlen(buffer), "%u", n + 1);
-
-  strcat(buffer, suffix);
-#endif
-  return buffer;
-}
 
 static bool
 StringToPortType(std::string_view value, DeviceConfig::PortType &type)
@@ -121,7 +105,7 @@ ReadPortType(ProfileMap &map, unsigned n, DeviceConfig::PortType &type)
 
   snprintf(buffer, sizeof(buffer), "Port%u%s", n + 1, "Type");
 
-  int _type = 0;
+  // int _type = 0;
   auto _default = port_type_strings[(int)StandardPort.port_type];
   std::string value = map.Get(buffer, _default);
   if (n== 0 && value == _default) {
@@ -324,11 +308,9 @@ WritePortType(ProfileMap &map, unsigned n, DeviceConfig::PortType type)
 
   char buffer[64];
   snprintf(buffer, sizeof(buffer), "Port%u%s", n + 1, "Type");
-//  MakeDeviceSettingName(buffer, "Port", n, "Type");
   map.Set(buffer, value);
 }
 
-// MakeDeviceSettingName(buffer, "Port", n, name);
 
 void
 Profile::SetDeviceConfig(ProfileMap &map,
