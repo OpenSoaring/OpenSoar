@@ -3,7 +3,9 @@ set(_SOURCES
         json/ParserOutputStream.cxx
         json/Serialize.cxx
         json/Parse.cxx  # add 7.38
+	
         json/Get.cpp  # add OpenSoar 7.43-3.23.9
+        json/File.cpp  # add OpenSoar 7.43-3.23.9
 )
 
 set(SCRIPT_FILES
