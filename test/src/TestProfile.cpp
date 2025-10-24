@@ -10,14 +10,16 @@
 #include "util/PrintException.hxx"
 #include "system/FileUtil.hpp"
 
+#include "LogFile.hpp"
+
 #include <stdlib.h>
 
-// TODO(aug): with splitting in startProfile and portProfile some tests missing
-
-#ifdef __DEBUG
-#define LOG_PRINT(x) printf("%s\n", x);
+/* TODO(aug) : with splitting in startProfile and portProfile some tests are
+ * missing */ 
+#ifdef _DEBUG
+# define LOG_PRINT(x) LogString(x)
 #else
-#define LOG_PRINT(x) 
+# define LOG_PRINT(x) 
 #endif
 
 static void
