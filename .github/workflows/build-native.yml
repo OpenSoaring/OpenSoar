@@ -472,7 +472,7 @@ jobs:
           fi
           echo "----------------------------------------------------------------"
       - name: Upload Test artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: ${{ matrix.target_test }}
         with:
           name: Test-${{ env.GIT_COMMIT }}-${{ matrix.target }}
@@ -525,7 +525,7 @@ jobs:
             esac
   
       - name: Upload Release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         # if: ${{ (matrix.target_upload || startsWith(github.ref, 'refs/tags/v')) }} 
         if: ${{ matrix.target_upload }} 
         with:
