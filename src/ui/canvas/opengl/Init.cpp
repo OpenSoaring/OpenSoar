@@ -110,7 +110,11 @@ OpenGL::SetupContext()
     LogFormat("GL renderer: %s", s);
 
   if (auto s = (const char *)glGetString(GL_EXTENSIONS))
+#ifdef _DEBUG
     LogFormat("GL extensions: %s", s);
+#else
+    LogString("GL extensions: ...");
+#endif
 
   texture_non_power_of_two = SupportsNonPowerOfTwoTextures();
 

@@ -57,7 +57,11 @@ Display::InitDisplay(EGLNativeDisplayType native_display)
     LogFormat("EGL version: %s", s);
 
   if (const char *s = eglQueryString(display, EGL_EXTENSIONS))
+#ifdef _DEBUG
     LogFormat("EGL extensions: %s", s);
+#else
+    LogString("EGL extensions: ...");
+#endif
 
   if (!eglBindAPI(EGL_OPENGL_ES_API))
     throw std::runtime_error("eglBindAPI() failed");
