@@ -18,7 +18,7 @@ LogString(std::string_view s) noexcept
 }
 
 void
-LogVFmt([[maybe_unused]] fmt::string_view format_str,
+LogVFmt(fmt::string_view format_str,
   [[maybe_unused]] fmt::format_args args) noexcept
 {
 #if 0  // FakeLogFile: do nothing!
@@ -29,7 +29,16 @@ LogVFmt([[maybe_unused]] fmt::string_view format_str,
 	fmt::vformat_to(buffer, format_str, args);
 #endif
 	LogString({buffer.data(), buffer.size()});
+#else
+  LogString(format_str.data());
 #endif
+}
+
+void
+LogFmt(fmt::string_view format_str,
+  [[maybe_unused]] fmt::format_args args) noexcept
+{
+  LogString(format_str.data());
 }
 
 void
