@@ -670,4 +670,13 @@ UTF8ToWide(const std::string_view s)
   return w;
 }
 
+std::string 
+WideToUTF8(const std::wstring_view wstr)
+{
+  int length = WideCharToMultiByte(CP_UTF8, 0, wstr.data(), -1, nullptr, 0, nullptr, nullptr);
+  std::string str(length + 1, '\0');
+  WideCharToMultiByte(CP_UTF8, 0, wstr.data(), -1, str.data(), length, nullptr, nullptr);
+  return str;
+}
+
 #endif

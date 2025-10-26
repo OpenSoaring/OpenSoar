@@ -152,7 +152,8 @@ NextUTF8(const char *p) noexcept;
 #include <locale>
 #include <string>
 
-std::wstring 
-UTF8ToWide(const std::string_view s);
+std::wstring UTF8ToWide(const std::string_view s);
+std::string WideToUTF8(const std::wstring_view wstr);
+
 
 #endif
