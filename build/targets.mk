@@ -612,7 +612,7 @@ ifeq ($(TARGET),ANDROID)
 endif
 
 ifeq ($(HAVE_WIN32),y)
-  TARGET_LDLIBS += -lwinmm
+  TARGET_LDLIBS += -lwinmm  -lole32  -luuid
 endif
 
 ifeq ($(TARGET),UNIX)
