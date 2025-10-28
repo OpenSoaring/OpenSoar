@@ -10,6 +10,10 @@
 #include <cstdarg>
 #include <cstdio>
 
+//void LogFmt(const  std::string_view &format_str, Args&&... args) noexcept;
+void LogFmt(fmt::string_view format_str,
+  [[maybe_unused]] fmt::format_args args) noexcept;
+
 void
 LogString(std::string_view s) noexcept
 {
