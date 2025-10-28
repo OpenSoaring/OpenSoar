@@ -898,5 +898,5 @@ InputEvents::eventSTFSwitch(const char* misc) {
 }
 
 void
-InputEvents::eventReplay(const char *misc) {
+InputEvents::eventReplay([[maybe_unused]] const char *misc) {
 }
