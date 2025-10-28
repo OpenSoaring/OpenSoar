@@ -27,7 +27,20 @@
 
 #include <memory>
 #include <stdio.h>
-#include <tchar.h>
+
+class SoundUtil {
+public:
+  static bool Play(const std::string_view resource_name);
+};
+
+bool
+SoundUtil::Play([[maybe_unused]] const std::string_view resource_name)
+{
+  return false;
+}
+
+
+void VisitDataFiles(const char *filter, File::Visitor &visitor);
 
 void VisitDataFiles([[maybe_unused]] const char* filter,
                     [[maybe_unused]] File::Visitor &visitor) {}
