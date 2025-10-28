@@ -109,7 +109,7 @@ OpenGL::SetupContext()
   if (auto s = (const char *)glGetString(GL_RENDERER))
     LogFormat("GL renderer: %s", s);
 
-  if (auto s = (const char *)glGetString(GL_EXTENSIONS))
+  if ([[maybe_unused]] auto s = (const char *)glGetString(GL_EXTENSIONS))
 #ifdef _DEBUG
     LogFormat("GL extensions: %s", s);
 #else
