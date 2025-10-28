@@ -26,7 +26,7 @@ enum ControlIndex {
   AdditionalAirspaceFile,
   AirfieldFile,
   FlarmFile,
-#if RASP_FILE_SETTING
+#ifdef RASP_FILE_SETTING
   RaspFile,
 #endif
   FrequenciesFile
@@ -144,14 +144,14 @@ SiteConfigPanel::Save(bool &_changed) noexcept
     ProfileKeys::AirfieldFile);
 
   FrequenciesFileChanged = SaveValueFileReader(FrequenciesFile, ProfileKeys::FrequenciesFile);
-#if RASP_FILE_SETTING
+#ifdef RASP_FILE_SETTING
   RaspFileChanged = SaveValueFileReader(RaspFile, ProfileKeys::RaspFile);
 #endif
 
   changed = WaypointFileChanged || AirfieldFileChanged || MapFileChanged ||
     FlarmFileChanged
     || FrequenciesFileChanged;
-#if  RASP_FILE_SETTING
+#ifdef  RASP_FILE_SETTING
     || RaspFileChanged
 #endif
   ;
