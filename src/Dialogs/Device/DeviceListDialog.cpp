@@ -215,7 +215,8 @@ public:
     CommonInterface::GetLiveBlackboard().AddListener(*this);
 
     RefreshList();
-    UpdateButtons();
+    // UpdateButtons();
+    timer.Schedule(std::chrono::milliseconds(500));
   }
 
   void Hide() noexcept override {
@@ -225,6 +226,8 @@ public:
 
     if (devices != nullptr)
       devices->RemovePortListener(*this);
+
+    timer.Cancel();
   }
 
   /* virtual methods from class List::Handler */
@@ -240,6 +243,8 @@ private:
   void PortStateChanged() noexcept override {
     port_state_notify.SendNotification();
   }
+
+  UI::PeriodicTimer timer{ [this] { UpdateButtons(); } };
 };
 
 void

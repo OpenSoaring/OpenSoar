@@ -44,6 +44,7 @@
 #include "Device/Driver/XCTracer.hpp"
 #include "Device/Driver/KRT2.hpp"
 #include "Device/Driver/AR62xx.hpp"
+#include "Device/Driver/RemoteStick.hpp"
 #include "util/Macros.hpp"
 #include "util/StringAPI.hxx"
 
@@ -94,6 +95,7 @@ static const struct DeviceRegister *const driver_list[] = {
   &ar62xx_driver,
   &condor3_driver,
   &lx_eos_driver,
+  &remote_stick_driver,
   nullptr
 };
 

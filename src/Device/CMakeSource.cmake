@@ -111,6 +111,8 @@ set(_SOURCES
         Device/Driver/LX_EOS/LXEosDownload.cpp
         Device/Driver/LX_EOS/LXEosParser.cpp
         Device/Driver/LX_EOS/LXEosRegister.cpp
+        
+        Device/Driver/RemoteStick.cpp
 
         Device/MultipleDevices.cpp
         Device/Parser.cpp
