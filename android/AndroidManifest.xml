@@ -5,6 +5,7 @@
           android:versionCode="23"
           android:versionName="7.43-3.23.9">
   <application
+      android:usesCleartextTraffic="true"
       android:requestLegacyExternalStorage="true"
       android:preserveLegacyExternalStorage="true"
       android:hasFragileUserData="true"
