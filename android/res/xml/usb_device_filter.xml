@@ -34,4 +34,6 @@
   <usb-device vendor-id="1659" product-id="8963"/> <!-- PL2303 -->
 
   <usb-device vendor-id="5446" product-id="423"/> <!-- U-BLOX 7 USB GPS -->
+
+  <usb-device vendor-id="9025" product-id="32822"/> <!-- Arduino Leonardo: VID_2341, PID_8036 -->
 </resources>
