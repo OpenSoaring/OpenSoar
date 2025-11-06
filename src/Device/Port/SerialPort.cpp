@@ -151,9 +151,8 @@ SerialPort::GetDataQueued() const noexcept
 
   COMSTAT com_stat;
   DWORD errors;
-  return ::ClearCommError(hPort, &errors, &com_stat)
-    ? (int)com_stat.cbOutQue
-    : -1;
+  bool ok = ::ClearCommError(hPort, &errors, &com_stat);
+  return ok ? (int)com_stat.cbInQue : -1;
 }
 
 int
