@@ -214,10 +214,12 @@ SerialPort::WaitDataPending(OverlappedEvent &overlapped,
     throw std::runtime_error{"No EV_RXCHAR"};
 
   nbytes = GetDataPending();
-  if (nbytes < 0)
+  if (nbytes < 0) {
     throw MakeLastError("ClearCommError() failed");
-  else if (nbytes == 0)
-    throw std::runtime_error{"No data"};
+
+  } else if (nbytes == 0) {
+    throw std::runtime_error{ "No data" };
+  }
 }
 
 void
