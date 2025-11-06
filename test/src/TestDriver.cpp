@@ -33,6 +33,7 @@
 #include "Device/Driver/Westerboer.hpp"
 #include "Device/Driver/XCTracer.hpp"
 #include "Device/Driver/Zander.hpp"
+#include "Device/Driver/RemoteStick.hpp"
 #include "Device/Driver.hpp"
 #include "Device/RecordedFlight.hpp"
 #include "Device/Parser.hpp"
@@ -1838,6 +1839,7 @@ int main()
   TestDeclare(lx_eos_driver);
   TestDeclare(imi_driver);
   TestDeclare(flarm_driver);
+  TestDeclare(remote_stick_driver);
   //TestDeclare(vega_driver);
 
   /* XXX Volkslogger doesn't do well with this test case */
