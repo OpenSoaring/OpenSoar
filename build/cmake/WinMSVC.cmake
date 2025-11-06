@@ -16,6 +16,11 @@ endif()
 
 add_compile_definitions(TWO_LOGO_APP)
 
+set(TARGET_TESTING ON)  # Testing App On/Off
+if (TARGET_TESTING)
+  add_compile_definitions(XCSOAR_TESTING)
+endif()
+
 # SkySight support feature:
 set (HAVE_SKYSIGHT ON)
 
