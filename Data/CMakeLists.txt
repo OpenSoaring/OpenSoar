@@ -29,6 +29,7 @@ set(GRAPHIC_FILES
     ${_DATA_INPUT}/graphics/logo.svg
     ${_DATA_INPUT}/graphics/progress_border.svg
     ${_DATA_INPUT}/graphics/title.svg
+    ${_DATA_INPUT}/graphics/title_red.svg
 
     # ${_DATA_INPUT}/graphics/dialog_title.svg
     # ${_DATA_INPUT}/graphics/launcher.svg
@@ -106,6 +107,19 @@ add_custom_command(OUTPUT ${_TEMP_OUTPUT}/title.svg
           ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
   WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
 )
+add_custom_command(OUTPUT ${_TEMP_OUTPUT}/title_red.svg
+  COMMENT "Replace Strings!"
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}
+  COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
+          ${PROJECTGROUP_SOURCE_DIR}/OpenSoar.config
+          ${_DATA_INPUT}/graphics/title_red.svg
+          ${_TEMP_OUTPUT}/title_red.svg
+  DEPENDS ${_DATA_INPUT}/graphics/title.svg
+          ${PROJECTGROUP_SOURCE_DIR}/OpenSoar.config
+          ${PROJECTGROUP_BINARY_DIR}/VERSION.txt
+          ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
+  WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+)
 add_custom_command(OUTPUT ${_INCLUDE_OUTPUT}/ProgramVersion.h
   COMMENT "Make Config file!"
   COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}
@@ -142,32 +156,51 @@ set(GRAPHIC_BITMAPS
    ${_GRAPHICS_OUTPUT}/launcher_640_2.bmp
    ${_GRAPHICS_OUTPUT}/title_320.bmp
    ${_GRAPHICS_OUTPUT}/title_110.bmp
+
+   ${_GRAPHICS_OUTPUT}/logo_red_160.bmp
+   ${_GRAPHICS_OUTPUT}/logo_red_80.bmp
+   ${_GRAPHICS_OUTPUT}/logo_stefly_160.bmp
+   ${_GRAPHICS_OUTPUT}/logo_stefly_80.bmp
+   ${_GRAPHICS_OUTPUT}/launcher_red_640.bmp
+   ${_GRAPHICS_OUTPUT}/launcher_red_640_1.bmp
+   ${_GRAPHICS_OUTPUT}/launcher_red_640_2.bmp
+   ${_GRAPHICS_OUTPUT}/title_red_320.bmp
+   ${_GRAPHICS_OUTPUT}/title_red_110.bmp
 ) # set
 
 # ============================================================================   
 add_custom_command(OUTPUT ${GRAPHIC_BITMAPS}
   COMMENT "Convert graphics!"
   COMMAND ${CMAKE_COMMAND} -E make_directory ${_GRAPHICS_OUTPUT}
-  COMMAND ${BMP_CONVERT_APP} -size 160 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_160.bmp
-  COMMAND ${BMP_CONVERT_APP} -size 80 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_80.bmp
   COMMAND ${BMP_CONVERT_APP} -size 160 Data/graphics/logo_stefly.svg bmp3:${_GRAPHICS_OUTPUT}/logo_stefly_160.bmp
   COMMAND ${BMP_CONVERT_APP} -size 80 Data/graphics/logo_stefly.svg bmp3:${_GRAPHICS_OUTPUT}/logo_stefly_80.bmp
+
+  COMMAND ${BMP_CONVERT_APP} -size 160 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_160.bmp
+  COMMAND ${BMP_CONVERT_APP} -size 80 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_80.bmp
+  COMMAND ${BMP_CONVERT_APP} -size 160 Data/graphics/logo_red.svg bmp3:${_GRAPHICS_OUTPUT}/logo_red_160.bmp
+  COMMAND ${BMP_CONVERT_APP} -size 80 Data/graphics/logo_red.svg bmp3:${_GRAPHICS_OUTPUT}/logo_red_80.bmp
+
   COMMAND ${BMP_CONVERT_APP} -background white -layers flatten +matte +dither -compress none -type optimize -colors 256  Data/graphics/launcher.svg bmp3:${_GRAPHICS_OUTPUT}/launcher_640.bmp
   COMMAND ${BMP_CONVERT_APP} -crop "50${PERCENT_CHAR}x100${PERCENT_CHAR}" -scene 1  ${_GRAPHICS_OUTPUT}/launcher_640.bmp "bmp3:${_GRAPHICS_OUTPUT}/launcher_640_${PERCENT_CHAR}d.bmp"
+  COMMAND ${BMP_CONVERT_APP} -background white -layers flatten +matte +dither -compress none -type optimize -colors 256  Data/graphics/launcher_red.svg bmp3:${_GRAPHICS_OUTPUT}/launcher_red_640.bmp
+  COMMAND ${BMP_CONVERT_APP} -crop "50${PERCENT_CHAR}x100${PERCENT_CHAR}" -scene 1  ${_GRAPHICS_OUTPUT}/launcher_red_640.bmp "bmp3:${_GRAPHICS_OUTPUT}/launcher_red_640_${PERCENT_CHAR}d.bmp"
+  
   COMMAND ${BMP_CONVERT_APP}  Data/graphics/progress_border.svg bmp3:${_GRAPHICS_OUTPUT}/progress_border.bmp
+  COMMAND ${BMP_CONVERT_APP}  Data/graphics/progress_border_red.svg bmp3:${_GRAPHICS_OUTPUT}/progress_border_red.bmp
+  
   COMMAND ${BMP_CONVERT_APP}  -size 110x110 ${_TEMP_OUTPUT}/title.svg bmp3:${_GRAPHICS_OUTPUT}/title_110.bmp 
   COMMAND ${BMP_CONVERT_APP}  -size 320x320 ${_TEMP_OUTPUT}/title.svg bmp3:${_GRAPHICS_OUTPUT}/title_320.bmp
+  COMMAND ${BMP_CONVERT_APP}  -size 110x110 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_110.bmp 
+  COMMAND ${BMP_CONVERT_APP}  -size 320x320 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_320.bmp
   
-  # COMMAND ${BMP_CONVERT_APP}  -size 320 -background white -layers flatten +matte +dither -compress none -type optimize -colors 256  Data/graphics/title.svg bmp3:${_GRAPHICS_OUTPUT}/title_320.bmp
-  # WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
   DEPENDS ${_DATA_INPUT}/graphics/logo.svg
           ${_DATA_INPUT}/graphics/logo_xcs.svg
           ${_DATA_INPUT}/graphics/progress_border.svg
           ${_DATA_INPUT}/graphics/launcher.svg
           ${_TEMP_OUTPUT}/title.svg
+          ${_TEMP_OUTPUT}/title_red.svg
   WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
-) #add_custom_command
-# endif()
+) 
 
 set(ICON_BITMAPS ) # set to empty
 if(ON) # ==>  for test it only with few icons!
