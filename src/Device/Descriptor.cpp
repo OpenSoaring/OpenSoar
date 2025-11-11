@@ -524,6 +524,8 @@ DeviceDescriptor::Close() noexcept
 
   port.reset();
 
+  PortError("Disconnected");
+
   has_failed = false;
   ticker = false;
 
