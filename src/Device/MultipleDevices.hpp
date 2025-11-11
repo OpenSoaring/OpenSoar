@@ -107,6 +107,9 @@ public:
   void AddPortListener(PortListener &listener) noexcept;
   void RemovePortListener(PortListener &listener) noexcept;
 
+  void DetectedPort(std::string_view portname, OperationEnvironment &env) noexcept;
+  void RemovedPort(std::string_view portname, OperationEnvironment &env) noexcept;
+
 private:
   /* virtual methods from class PortListener */
   void PortStateChanged() noexcept override;

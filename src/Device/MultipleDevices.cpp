@@ -255,3 +255,43 @@ MultipleDevices::PortError(const char *msg) noexcept
   for (auto *listener : listeners)
     listener->PortError(msg);
 }
+
+/**
+ * USB / serial port hotplug hooks.
+ * Called from platform-specific event sources:
+ *   - Windows: WM_DEVICECHANGE in src/ui/window/gdi/Window.cpp
+ *   - Linux:   libudev monitor (src/Device/PortMonitorLinux)
+ *   - Android: USB_DEVICE_ATTACHED/DETACHED via UsbSerialHelper.java + JNI
+ */
+void
+MultipleDevices::DetectedPort(std::string_view portname,
+  OperationEnvironment &env) noexcept
+{
+  for (DeviceDescriptor *device : devices) {
+    if (device == nullptr)
+      continue;
+
+    if (device->GetConfig().path == portname) {
+      device->Reopen(env);  // device->Open(env);
+    }
+  }
+}
+
+void
+MultipleDevices::RemovedPort(std::string_view portname,
+  OperationEnvironment &env) noexcept
+{
+  for (DeviceDescriptor *device : devices) {
+    if (device == nullptr)
+      continue;
+    if (device->GetDevice() == nullptr)
+      continue;
+
+    if (device->GetConfig().path == portname) {
+#ifdef _WIN32
+      Beep(440, 300);  // audible cue on Windows
+#endif
+      device->Close();  // ?
+    }
+  }
+}
