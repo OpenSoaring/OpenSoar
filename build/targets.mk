@@ -547,6 +547,7 @@ ifeq ($(TARGET),ANDROID)
   CXXFLAGS += -D__STDC_VERSION__=199901L
   # disable pretty printer embedding
   CXXFLAGS += -DBOOST_ALL_NO_EMBEDDED_GDB_SCRIPTS
+  CXXFLAGS += -Wno-deprecated-copy-with-user-provided-copy
   ifeq ($(X86),y)
     # On NDK r6, the macro _BYTE_ORDER never gets defined - workaround:
     TARGET_CPPFLAGS += -D_BYTE_ORDER=_LITTLE_ENDIAN
