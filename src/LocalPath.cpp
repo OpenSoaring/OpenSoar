@@ -18,12 +18,9 @@
 #endif
 
 #ifdef _WIN32
+#include "util/UTF8.hpp"
 #include "system/PathName.hpp"
 #endif
-#include <string>
-
-#include <algorithm>
-#include <list>
 
 #include <cassert>
 #include <stdlib.h>
@@ -38,9 +35,15 @@
 #include <unistd.h>
 #endif
 
+#include <string>
+#include <algorithm>
+#include <list>
+
 #ifdef __APPLE__
 #import <Foundation/Foundation.h>
 #endif
+
+#include "LogFile.hpp"
 
 #define OPENSOAR_DATADIR "OpenSoarData"
 
@@ -56,6 +59,7 @@
 static std::list<AllocatedPath> data_paths;
 
 static AllocatedPath cache_path;
+static AllocatedPath home_path;
 
 Path
 GetPrimaryDataPath() noexcept
@@ -242,14 +246,19 @@ FindDataPaths() noexcept
   {
     char buffer[MAX_PATH];
     if (SHGetSpecialFolderPath(nullptr, buffer, CSIDL_PERSONAL,
-                               result.empty()))
-      result.emplace_back(AllocatedPath::Build(buffer, OPENSOAR_DATADIR));
+      result.empty()))
+    {
+      std::string text = buffer;
+      std::replace(text.begin(), text.end(), '\\', '/'); 
+      result.emplace_back(AllocatedPath::Build(text.data(), OPENSOAR_DATADIR));
+    }
   }
 #endif // _WIN32
 
 #ifdef HAVE_POSIX
   /* on Unix, use ~/OpenSoarData too */
   if (const char *home = getenv("HOME"); home != nullptr) {
+    home_path = AllocatedPath(home);
 #ifdef __APPLE__
     /* macOS users are not used to dot-files in their home
        directory - make it a little bit easier for them to find the
@@ -328,15 +337,40 @@ InitialiseDataPath()
       throw std::runtime_error("No data path found");
   }
   // TODO: delete the old cache directory in OpenSoarData?
+  if (cache_path == nullptr) {
 #ifdef ANDROID
-  cache_path = context->GetExternalCacheDir(Java::GetEnv());
-  if (cache_path == nullptr)
-    throw std::runtime_error("No Android cache directory");
+    cache_path = context->GetExternalCacheDir(Java::GetEnv());
 
-#else
-  if (cache_path == nullptr)
-    cache_path = LocalPath("cache");
+#elif defined( _WIN32)  // Windows: Win32, Win64
+    PWSTR path = nullptr;
+    HRESULT hres = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path);
+    if (SUCCEEDED(hres)) {
+      /* cache path inside LocalAppData(e.g.
+       * 'C:/Users/${USER}/AppData/Local/OpenSoar/.cache' ) */
+      std::string str = WideToUTF8(path);
+      CoTaskMemFree(path);
+      std::replace(str.begin(), str.end(), '\\', '/');
+      cache_path = AllocatedPath::Build(str.c_str(), "OpenSoar/.cache");
+    } else {
+      // cache path inside the data path
+      cache_path = LocalPath(".cache");
+    }
+#elif defined(HAVE_POSIX)
+    // OpenVario: own folder of 3rd partition '~/data/.cache'
+    // Linux and others: ~/.cache
+    cache_path = AllocatedPath::Build(home_path, ".cache");
 #endif
+    if (cache_path == nullptr)
+      throw std::runtime_error("Cache directory not available");
+    else {
+      Directory::Create(cache_path);
+    }
+
+#ifndef TESTING_APP
+    LogFmt("Cache path: {}", cache_path.c_str());
+    // not allowed (gcc) LogFmt("Cache path:  {}", cache_path.c_str());
+#endif
+  }
 }
 
 void
