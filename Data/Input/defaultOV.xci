@@ -1004,9 +1004,9 @@ location=8
 mode=Menu
 type=key
 data=0
-event=Exit system
+event=Shutdown shutdown
 event=Mode default
-label=Quit
+label=Shutdown
 location=9
 
 # ----------------------------------
