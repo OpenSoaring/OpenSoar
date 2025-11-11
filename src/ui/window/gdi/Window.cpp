@@ -7,6 +7,17 @@
 #include "Screen/Debug.hpp"
 #include "ui/event/Idle.hpp"
 #include "Asset.hpp"
+#include "LogFile.hpp"
+
+// new with usb detection:
+#include "Components.hpp"
+#include "BackendComponents.hpp"
+#include "Device/MultipleDevices.hpp"
+#include "Operation/PopupOperationEnvironment.hpp"
+// #include <initguid.h>
+// #include <usbiodef.h>
+#include <Dbt.h>
+// #include "ProcessTimer.hpp"  
 
 #include <cassert>
 #include <windowsx.h>
@@ -162,112 +173,154 @@ Window::OnMessage([[maybe_unused]] HWND _hWnd, UINT message,
                   WPARAM wParam, LPARAM lParam) noexcept
 {
   switch (message) {
-  case WM_CREATE:
-    OnCreate();
-    return 0;
-
-  case WM_DESTROY:
-    OnDestroy();
-    return 0;
-
-  case WM_SIZE:
-    OnResize({LOWORD(lParam), HIWORD(lParam)});
-    return 0;
-
-  case WM_MOUSEMOVE:
-    if (OnMouseMove(PixelPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)),
-                    wParam))
+    case WM_CREATE:
+      OnCreate();
       return 0;
-    break;
 
-  case WM_LBUTTONDOWN:
-    if (OnMouseDown(PixelPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)))) {
-      /* true returned: message was handled */
-      ResetUserIdle();
+    case WM_DESTROY:
+      OnDestroy();
       return 0;
-    }
-    break;
 
-  case WM_LBUTTONUP:
-    if (OnMouseUp(PixelPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)))) {
-      /* true returned: message was handled */
-      ResetUserIdle();
+    case WM_SIZE:
+      OnResize({ LOWORD(lParam), HIWORD(lParam) });
       return 0;
-    }
-    break;
 
-  case WM_LBUTTONDBLCLK:
-    if (OnMouseDouble(PixelPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)))) {
-      /* true returned: message was handled */
-      ResetUserIdle();
-      return 0;
-    }
+    case WM_MOUSEMOVE:
+      if (OnMouseMove(PixelPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)),
+        wParam))
+        return 0;
+      break;
 
-    break;
+    case WM_LBUTTONDOWN:
+      if (OnMouseDown(PixelPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)))) {
+        /* true returned: message was handled */
+        ResetUserIdle();
+        return 0;
+      }
+      break;
+
+    case WM_LBUTTONUP:
+      if (OnMouseUp(PixelPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)))) {
+        /* true returned: message was handled */
+        ResetUserIdle();
+        return 0;
+      }
+      break;
+
+    case WM_LBUTTONDBLCLK:
+      if (OnMouseDouble(PixelPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)))) {
+        /* true returned: message was handled */
+        ResetUserIdle();
+        return 0;
+      }
+
+      break;
 
 #ifdef WM_MOUSEWHEEL
-  case WM_MOUSEWHEEL:
-    if (OnMouseWheel(PixelPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)),
-                     GET_WHEEL_DELTA_WPARAM(wParam))) {
-      /* true returned: message was handled */
-      ResetUserIdle();
-      return 0;
-    }
-    break;
+    case WM_MOUSEWHEEL:
+      if (OnMouseWheel(PixelPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)),
+        GET_WHEEL_DELTA_WPARAM(wParam))) {
+        /* true returned: message was handled */
+        ResetUserIdle();
+        return 0;
+      }
+      break;
 #endif
 
-  case WM_KEYDOWN:
-    if (OnKeyDown(wParam)) {
-      /* true returned: message was handled */
-      ResetUserIdle();
-      return 0;
+    case WM_KEYDOWN:
+      if (OnKeyDown(wParam)) {
+        /* true returned: message was handled */
+        ResetUserIdle();
+        return 0;
+      }
+      break;
+
+    case WM_KEYUP:
+      if (OnKeyUp(wParam)) {
+        /* true returned: message was handled */
+        ResetUserIdle();
+        return 0;
+      }
+      break;
+
+    case WM_CHAR:
+      if (OnCharacter((char)wParam))
+        /* true returned: message was handled */
+        return 0;
+
+      break;
+
+    case WM_COMMAND:
+      if (OnCommand(LOWORD(wParam), HIWORD(wParam))) {
+        /* true returned: message was handled */
+        ResetUserIdle();
+        return 0;
+      }
+      break;
+
+    case WM_CANCELMODE:
+      OnCancelMode();
+      /* pass on to DefWindowProc(), there may be more to do */
+      break;
+
+    case WM_SETFOCUS:
+      OnSetFocus();
+      /* pass on to DefWindowProc() so the underlying window class knows
+         it's focused */
+      break;
+
+    case WM_KILLFOCUS:
+      OnKillFocus();
+      /* pass on to DefWindowProc() so the underlying window class knows
+         it's not focused anymore */
+      break;
+
+    case WM_GETDLGCODE:
+      if (OnKeyCheck(wParam))
+        return DLGC_WANTMESSAGE;
+      break;
+    case WM_DEVICECHANGE:
+    {
+      // PDEV_BROADCAST_HDR lpdb = (PDEV_BROADCAST_HDR)lParam;
+      if (lParam) switch (((PDEV_BROADCAST_HDR)lParam)->dbch_devicetype) {
+        case DBT_DEVTYP_DEVICEINTERFACE:
+        {
+          PDEV_BROADCAST_DEVICEINTERFACE lpdbv = (PDEV_BROADCAST_DEVICEINTERFACE)lParam;
+          std::string path = std::string(lpdbv->dbcc_name);
+          switch (wParam)
+          {
+            case DBT_DEVICEARRIVAL:
+              LogFmt("new device connected: {}", lpdbv->dbcc_name);
+              break;
+            case DBT_DEVICEREMOVECOMPLETE:
+              LogFmt("new device disconnected: {}", lpdbv->dbcc_name);
+              break;
+          }
+          break;
+        }
+        case DBT_DEVTYP_PORT: // serial or parallel (usb) port
+        {
+          PDEV_BROADCAST_PORT pDevPort = (PDEV_BROADCAST_PORT)lParam;
+          static PopupOperationEnvironment env;
+          switch (wParam)
+          {
+            case DBT_DEVICEARRIVAL:
+              backend_components->devices->DetectedPort(pDevPort->dbcp_name, env);
+              LogFmt("new device connected: {}", "device");
+              break;
+
+            case DBT_DEVICEREMOVECOMPLETE:
+              backend_components->devices->RemovedPort(pDevPort->dbcp_name, env);
+              LogFmt("device disconnected: {}", "device");
+              break;
+          }
+          break;
+        }
+        default:
+          LogFmt("WM_DEVICECHANGE: wParam={}, lParam={}", wParam, lParam);
+          break;
+        }
     }
-    break;
-
-  case WM_KEYUP:
-    if (OnKeyUp(wParam)) {
-      /* true returned: message was handled */
-      ResetUserIdle();
-      return 0;
-    }
-    break;
-
-  case WM_CHAR:
-    if (OnCharacter((char)wParam))
-      /* true returned: message was handled */
-      return 0;
-
-    break;
-
-  case WM_COMMAND:
-    if (OnCommand(LOWORD(wParam), HIWORD(wParam))) {
-      /* true returned: message was handled */
-      ResetUserIdle();
-      return 0;
-    }
-    break;
-
-  case WM_CANCELMODE:
-    OnCancelMode();
-    /* pass on to DefWindowProc(), there may be more to do */
-    break;
-
-  case WM_SETFOCUS:
-    OnSetFocus();
-    /* pass on to DefWindowProc() so the underlying window class knows
-       it's focused */
-    break;
-
-  case WM_KILLFOCUS:
-    OnKillFocus();
-    /* pass on to DefWindowProc() so the underlying window class knows
-       it's not focused anymore */
-    break;
-
-  case WM_GETDLGCODE:
-    if (OnKeyCheck(wParam))
-      return DLGC_WANTMESSAGE;
-    break;
   }
 
   if (message >= WM_USER && message <= 0x7FFF && OnUser(message - WM_USER))

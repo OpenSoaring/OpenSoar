@@ -14,6 +14,9 @@
 
 #include <array>
 #include <list>
+#ifdef _WIN32
+# include <string>
+#endif
 
 class DeviceBlackboard;
 class NMEALogger;
@@ -89,6 +92,11 @@ public:
 
   void AddPortListener(PortListener &listener) noexcept;
   void RemovePortListener(PortListener &listener) noexcept;
+
+#ifdef _WIN32
+  void DetectedPort(std::string_view portname, OperationEnvironment &env) noexcept;
+  void RemovedPort(std::string_view portname, OperationEnvironment &env) noexcept;
+#endif  // _WIN32
 
 private:
   /* virtual methods from class PortListener */

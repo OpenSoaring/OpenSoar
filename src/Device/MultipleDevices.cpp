@@ -196,3 +196,36 @@ MultipleDevices::PortError(const char *msg) noexcept
   for (auto *listener : listeners)
     listener->PortError(msg);
 }
+
+#ifdef  _WIN32
+void 
+MultipleDevices::DetectedPort(std::string_view portname,
+  OperationEnvironment &env) noexcept
+{
+  for (DeviceDescriptor *device : devices) {
+    if (device == nullptr)
+      continue;
+
+    if (device->GetConfig().path == portname) {
+      device->Reopen(env);  // device->Open(env);
+    }
+  }
+}
+void 
+MultipleDevices::RemovedPort(std::string_view portname,
+  OperationEnvironment &env) noexcept
+{
+  for (DeviceDescriptor *device : devices) {
+    if (device == nullptr)
+      continue;
+    if (device->GetDevice() == nullptr)
+      continue;
+
+    if (device->GetConfig().path == portname) {
+      Beep(440,300);
+      device->Close();  // ?
+    }
+  }
+}
+
+#endif  // _WIN32
