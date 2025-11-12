@@ -118,57 +118,28 @@ SiteConfigPanel::Save(bool &_changed) noexcept
   MapFileChanged = SaveValueFileReader(MapFile, ProfileKeys::MapFile);
 
   // WaypointFileChanged has already a meaningful value
-<<<<<<< HEAD
-  WaypointFileChanged |= SaveValueFileReader(WaypointFile,
-    ProfileKeys::WaypointFile);
-  WaypointFileChanged |= SaveValueFileReader(AdditionalWaypointFile,
-    ProfileKeys::AdditionalWaypointFile);
-  WaypointFileChanged |= SaveValueFileReader(WatchedWaypointFile,
-    ProfileKeys::WatchedWaypointFile);
-
-  AirspaceFileChanged = SaveValueFileReader(AirspaceFile,
-    ProfileKeys::AirspaceFile);
-  AirspaceFileChanged |= SaveValueFileReader(AdditionalAirspaceFile,
-    ProfileKeys::AdditionalAirspaceFile);
-
-  FlarmFileChanged = SaveValueFileReader(FlarmFile,
-    ProfileKeys::FlarmFile);
-  AirfieldFileChanged = SaveValueFileReader(AirfieldFile,
-    ProfileKeys::AirfieldFile);
-
-  FrequenciesFileChanged = SaveValueFileReader(FrequenciesFile, ProfileKeys::FrequenciesFile);
-#ifdef RASP_FILE_SETTING
-=======
   WaypointFileChanged |= SaveValueMultiFileReader(
       WaypointFileList, ProfileKeys::WaypointFileList);
   WaypointFileChanged |= SaveValueMultiFileReader(
       WatchedWaypointFileList, ProfileKeys::WatchedWaypointFileList);
+
+  AirfieldFileChanged = SaveValueMultiFileReader(
+    AirfieldFileList, ProfileKeys::AirfieldFileList);
 
   AirspaceFileChanged |= SaveValueMultiFileReader(
       AirspaceFileList, ProfileKeys::AirspaceFileList);
 
   FlarmFileChanged = SaveValueFileReader(FlarmFile, ProfileKeys::FlarmFile);
 
-  AirfieldFileChanged = SaveValueMultiFileReader(
-      AirfieldFileList, ProfileKeys::AirfieldFileList);
+  FrequenciesFileChanged = SaveValueFileReader(FrequenciesFile, ProfileKeys::FrequenciesFile);
 
->>>>>>> 76f7b7150df1d6ad9e4b93e6e54747b8df8a0ec9
-  RaspFileChanged = SaveValueFileReader(RaspFile, ProfileKeys::RaspFile);
-#endif
-
-<<<<<<< HEAD
-  changed = WaypointFileChanged || AirfieldFileChanged || MapFileChanged ||
-    FlarmFileChanged
-    || FrequenciesFileChanged;
-#ifdef  RASP_FILE_SETTING
-    || RaspFileChanged
-#endif
-  ;
-=======
   changed = WaypointFileChanged || AirfieldFileChanged ||
-            AirspaceFileChanged || MapFileChanged || FlarmFileChanged ||
-            RaspFileChanged;
->>>>>>> 76f7b7150df1d6ad9e4b93e6e54747b8df8a0ec9
+            AirspaceFileChanged || MapFileChanged || FlarmFileChanged || 
+            FrequenciesFileChanged;
+#ifdef  RASP_FILE_SETTING
+  RaspFileChanged = SaveValueFileReader(RaspFile, ProfileKeys::RaspFile);
+  changed |= RaspFileChanged;
+#endif
 
   _changed |= changed;
 
