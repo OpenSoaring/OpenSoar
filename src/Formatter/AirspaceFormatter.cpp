@@ -53,7 +53,7 @@ static const char *const airspace_class_names[] = {
   "Flight Information Sector",
   "Lower Traffic Area",
   "Upper Traffic Area",
-  "Aerial Sporting Or Recreational Activity"),
+  "Aerial Sporting Or Recreational Activity",
   "NOTAM Affected Area",
   "Airspace without type",
   "TRA/TSA Feeding Route",
