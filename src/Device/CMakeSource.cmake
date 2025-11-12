@@ -133,7 +133,7 @@ set(_SOURCES
         Device/Util/NMEAWriter.cpp
 
         Device/Driver/Stratux/Driver.cpp
-        Device/SmartDeviceSensors.cpp
+        # Android or Apple only: Device/SmartDeviceSensors.cpp
 )
 if(UNIX)
   list(APPEND _SOURCES
