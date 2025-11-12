@@ -1313,6 +1313,7 @@ static constexpr MetaData meta_data[] = {
 
   // e_SpeedTaskLeg
   {
+    "Task",
     N_("Speed task leg"),
     N_("V Task Leg"),
     N_("Average cross-country speed while on current task leg, not compensated for altitude."),
@@ -1321,6 +1322,7 @@ static constexpr MetaData meta_data[] = {
 
   // e_Alternate_1_AltDiff
   {
+    "Waypoint",
     N_("Alternate 1 altitude difference"),
     N_("Altn 1 AltD"),
     N_("Arrival altitude at the best alternate landing location relative to the safety arrival height."),
@@ -1329,6 +1331,7 @@ static constexpr MetaData meta_data[] = {
 
   // e_Alternate_2_AltDiff
   {
+    "Waypoint",
     N_("Alternate 2 altitude difference"),
     N_("Altn 2 AltD"),
     N_("Arrival altitude at the second-best alternate landing location relative to the safety arrival height."),
