@@ -51,7 +51,7 @@ public:
   [[gnu::pure]]
   const OrderedTaskSettings GetOrderedTaskSettings() const noexcept;
 
-  void SetStartTimeSpan(const RoughTimeSpan &open_time_span) noexcept;
+  void SetStartTimeSpan(const TimeSpan &open_time_span) noexcept;
 
   void SetPevStartTimes(const time_t start, const time_t begin,
                         const time_t end) noexcept;

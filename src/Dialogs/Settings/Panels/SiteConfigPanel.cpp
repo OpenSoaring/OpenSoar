@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#include "Profile/Keys.hpp"
+#include "SiteConfigPanel.hpp"
+#include "Airspace/Patterns.hpp"
+#include "ConfigPanel.hpp"
 #include "Language/Language.hpp"
 #include "LocalPath.hpp"
-#include "UtilsSettings.hpp"
-#include "ConfigPanel.hpp"
-#include "SiteConfigPanel.hpp"
-#include "Widget/RowFormWidget.hpp"
+#include "Profile/Keys.hpp"
 #include "UIGlobals.hpp"
+#include "UtilsSettings.hpp"
 #include "Waypoint/Patterns.hpp"
+#include "Widget/RowFormWidget.hpp"
 #include "system/Path.hpp"
 
 #ifdef HAVE_RASP
@@ -19,12 +20,10 @@
 enum ControlIndex {
   DataPath,
   MapFile,
-  WaypointFile,
-  AdditionalWaypointFile,
-  WatchedWaypointFile,
-  AirspaceFile,
-  AdditionalAirspaceFile,
-  AirfieldFile,
+  WaypointFileList,
+  WatchedWaypointFileList,
+  AirfieldFileList,
+  AirspaceFileList,
   FlarmFile,
 #ifdef RASP_FILE_SETTING
   RaspFile,
@@ -59,46 +58,39 @@ SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent,
             "and optionally waypoints, their details and airspaces."),
           ProfileKeys::MapFile, "*.xcm\0*.lkm\0", FileType::MAP);
 
-  AddFile(_("Waypoints"),
-          _("Primary waypoints file.  Supported file types are Cambridge "
-            "files (.dat), Zander files (.wpz) or SeeYou files (.cup)."),
-          ProfileKeys::WaypointFile, WAYPOINT_FILE_PATTERNS,
-          FileType::WAYPOINT);
+  AddMultipleFiles(_("Waypoints"),
+                   _("Primary waypoints files.  Supported file types are "
+                     "Cambridge/WinPilot files (.dat), "
+                     "Zander files (.wpz) or SeeYou files (.cup)."),
+                   ProfileKeys::WaypointFileList, WAYPOINT_FILE_PATTERNS,
+                   FileType::WAYPOINT);
 
-  AddFile(_("More waypoints"),
-          _("Secondary waypoints file.  This may be used to add waypoints "
-            "for a competition."),
-          ProfileKeys::AdditionalWaypointFile, WAYPOINT_FILE_PATTERNS,
-          FileType::WAYPOINT);
-  SetExpertRow(AdditionalWaypointFile);
+  AddMultipleFiles(_("Watched waypoints"),
+                   _("Waypoint files containing special waypoints for which "
+                     "additional computations like "
+                     "calculation of arrival height in map display always "
+                     "takes place. Useful for "
+                     "waypoints like known reliable thermal sources (e.g. "
+                     "powerplants) or mountain passes."),
+                   ProfileKeys::WatchedWaypointFileList,
+                   WAYPOINT_FILE_PATTERNS, FileType::WAYPOINT);
+  SetExpertRow(WatchedWaypointFileList);
 
-  AddFile(_("Watched waypoints"),
-          _("Waypoint file containing special waypoints for which additional "
-            "computations like calculation of arrival height in map display "
-            "always takes place. Useful for waypoints like known reliable "
-            "thermal sources (e.g. powerplants) or mountain passes."),
-          ProfileKeys::WatchedWaypointFile, WAYPOINT_FILE_PATTERNS,
-          FileType::WAYPOINT);
-  SetExpertRow(WatchedWaypointFile);
+  AddMultipleFiles(_("Airfields or Waypoint details"),
+                   _("The files may contain extracts from enroute supplements "
+                     "or other contributed "
+                     "information about individual waypoints and airfields."),
+                   ProfileKeys::AirfieldFileList, _T("*.txt\0"),
+                   FileType::WAYPOINTDETAILS);
+  SetExpertRow(AirfieldFileList);
 
-  AddFile(_("Airspaces"), _("The file name of the primary airspace file."),
-          ProfileKeys::AirspaceFile, "*.txt\0*.air\0*.sua\0",
-          FileType::AIRSPACE);
-
-  AddFile(_("More airspaces"),
-          _("The file name of the secondary airspace file."),
-          ProfileKeys::AdditionalAirspaceFile, "*.txt\0*.air\0*.sua\0",
-          FileType::AIRSPACE);
-  SetExpertRow(AdditionalAirspaceFile);
-
-  AddFile(_("Waypoint details"),
-          _("The file may contain extracts from enroute supplements or other "
-            "contributed information about individual "
-            "waypoints and airfields."),
-          ProfileKeys::AirfieldFile, "*.txt\0",
-          FileType::WAYPOINTDETAILS);
-  SetExpertRow(AirfieldFile);
-
+  AddMultipleFiles(_("Selected Airspace Files"),
+                   _("List of active airspace files. Use the Add and Remove "
+                     "buttons to activate or deactivate"
+                     " airspace files respectively. Supported file types are: "
+                     "Openair (.txt /.air), and Tim Newport-Pearce (.sua)."),
+                   ProfileKeys::AirspaceFileList, AIRSPACE_FILE_PATTERNS,
+                   FileType::AIRSPACE);
   AddFile(_("FLARM Device Database"),
           _("The name of the file containing information about registered "
             "FLARM devices."),
@@ -126,6 +118,7 @@ SiteConfigPanel::Save(bool &_changed) noexcept
   MapFileChanged = SaveValueFileReader(MapFile, ProfileKeys::MapFile);
 
   // WaypointFileChanged has already a meaningful value
+<<<<<<< HEAD
   WaypointFileChanged |= SaveValueFileReader(WaypointFile,
     ProfileKeys::WaypointFile);
   WaypointFileChanged |= SaveValueFileReader(AdditionalWaypointFile,
@@ -145,9 +138,25 @@ SiteConfigPanel::Save(bool &_changed) noexcept
 
   FrequenciesFileChanged = SaveValueFileReader(FrequenciesFile, ProfileKeys::FrequenciesFile);
 #ifdef RASP_FILE_SETTING
+=======
+  WaypointFileChanged |= SaveValueMultiFileReader(
+      WaypointFileList, ProfileKeys::WaypointFileList);
+  WaypointFileChanged |= SaveValueMultiFileReader(
+      WatchedWaypointFileList, ProfileKeys::WatchedWaypointFileList);
+
+  AirspaceFileChanged |= SaveValueMultiFileReader(
+      AirspaceFileList, ProfileKeys::AirspaceFileList);
+
+  FlarmFileChanged = SaveValueFileReader(FlarmFile, ProfileKeys::FlarmFile);
+
+  AirfieldFileChanged = SaveValueMultiFileReader(
+      AirfieldFileList, ProfileKeys::AirfieldFileList);
+
+>>>>>>> 76f7b7150df1d6ad9e4b93e6e54747b8df8a0ec9
   RaspFileChanged = SaveValueFileReader(RaspFile, ProfileKeys::RaspFile);
 #endif
 
+<<<<<<< HEAD
   changed = WaypointFileChanged || AirfieldFileChanged || MapFileChanged ||
     FlarmFileChanged
     || FrequenciesFileChanged;
@@ -155,6 +164,11 @@ SiteConfigPanel::Save(bool &_changed) noexcept
     || RaspFileChanged
 #endif
   ;
+=======
+  changed = WaypointFileChanged || AirfieldFileChanged ||
+            AirspaceFileChanged || MapFileChanged || FlarmFileChanged ||
+            RaspFileChanged;
+>>>>>>> 76f7b7150df1d6ad9e4b93e6e54747b8df8a0ec9
 
   _changed |= changed;
 

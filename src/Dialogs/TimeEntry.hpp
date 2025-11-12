@@ -4,7 +4,8 @@
 #pragma once
 
 
-class RoughTime;
+#include "time/RoughTimeDecl.hpp"
+
 class RoughTimeDelta;
 
 bool

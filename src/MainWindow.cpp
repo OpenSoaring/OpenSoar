@@ -219,7 +219,7 @@ MainWindow::InitialiseConfigured()
 {
   const UISettings &ui_settings = CommonInterface::GetUISettings();
 
-  if ((ui_settings.scale != 100) || (ui_settings.info_boxes.scale_title_font != 100))
+  if ((ui_settings.scale != 100) || (ui_settings.info_boxes.scale_title_font != 100) || (ui_settings.custom_dpi != 0))
     /* call Initialise() again to reload fonts with the new scale */
     Initialise();
 
@@ -338,6 +338,37 @@ MainWindow::ReinitialiseLayoutTA(PixelRect rc,
     rc.right = GetMainRect().right;
     rc.left = rc.right - dia;
     break;
+  case (UISettings::ThermalAssistantPosition::TOP_LEFT):
+    rc.right = rc.left + dia;
+    rc.bottom = rc.top + dia;
+    break;
+  case (UISettings::ThermalAssistantPosition::TOP_RIGHT):
+    rc.left = rc.right - dia;
+    rc.bottom = rc.top + dia;
+    break;
+  case (UISettings::ThermalAssistantPosition::CENTER_TOP):
+    rc.left = (rc.left + rc.right - dia) / 2 - 1;
+    rc.right = rc.left + dia;
+    rc.bottom = rc.top + dia;
+    break;
+  case (UISettings::ThermalAssistantPosition::TOP_LEFT_AVOID_IB):
+    rc.top = GetMainRect().top;
+    rc.left = GetMainRect().left;
+    rc.right = rc.left + dia;
+    rc.bottom = rc.top + dia;
+    break;
+  case (UISettings::ThermalAssistantPosition::TOP_RIGHT_AVOID_IB):
+    rc.top = GetMainRect().top;
+    rc.right = GetMainRect().right;
+    rc.left = rc.right - dia;
+    rc.bottom = rc.top + dia;
+    break;
+  case (UISettings::ThermalAssistantPosition::CENTER_TOP_AVOID_IB):
+    rc.top = GetMainRect().top;
+    rc.left = (GetMainRect().left + GetMainRect().right - dia) / 2 - 1;
+    rc.right = rc.left + dia;
+    rc.bottom = rc.top + dia;
+    break; 
   default: // BOTTOM_LEFT
     rc.left = GetMainRect().left;
     rc.right = rc.left + dia;

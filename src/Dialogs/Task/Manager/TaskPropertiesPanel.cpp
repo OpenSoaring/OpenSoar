@@ -55,8 +55,8 @@ TaskPropertiesPanel::RefreshView()
   LoadValue(START_REQUIRES_ARM, p.start_constraints.require_arm);
   LoadValue(START_SCORE_EXIT, p.start_constraints.score_exit);
 
-  LoadValue(START_OPEN_TIME, p.start_constraints.open_time_span.GetStart());
-  LoadValue(START_CLOSE_TIME, p.start_constraints.open_time_span.GetEnd());
+  LoadValue(START_OPEN_TIME, p.start_constraints.open_time_span.GetRoughStart());
+  LoadValue(START_CLOSE_TIME, p.start_constraints.open_time_span.GetRoughEnd());
 
   SetRowVisible(START_MAX_SPEED, !fai_start_finish);
   LoadValue(START_MAX_SPEED, p.start_constraints.max_speed,
@@ -110,12 +110,12 @@ TaskPropertiesPanel::ReadValues()
 
   changed |= SaveValue(START_SCORE_EXIT, p.start_constraints.score_exit);
 
-  RoughTime new_open = p.start_constraints.open_time_span.GetStart();
-  RoughTime new_close = p.start_constraints.open_time_span.GetEnd();
+  RoughTime new_open = p.start_constraints.open_time_span.GetRoughStart();
+  RoughTime new_close = p.start_constraints.open_time_span.GetRoughEnd();
   const bool start_open_modified = SaveValue(START_OPEN_TIME, new_open);
   const bool start_close_modified = SaveValue(START_CLOSE_TIME, new_close);
   if (start_open_modified || start_close_modified) {
-    p.start_constraints.open_time_span = RoughTimeSpan(new_open, new_close);
+    p.start_constraints.open_time_span = TimeSpan::FromRoughTimes(new_open, new_close);
     changed = true;
   }
 
@@ -232,7 +232,7 @@ TaskPropertiesPanel::Prepare([[maybe_unused]] ContainerWindow &parent,
            0, 300, 5, false, 0);
 
   AddFloat(_("Start max. height"),
-           _("Maximum height based on start height reference (AGL or MSL) while starting the task.  Set to 0 for no limit."),
+           _("Maximum height based on start height reference (AGL or MSL) while starting the task. Set to 0 for no limit."),
            "%.0f %s", "%.0f",
            0, 10000, 25, false, 0);
 
@@ -249,7 +249,7 @@ TaskPropertiesPanel::Prepare([[maybe_unused]] ContainerWindow &parent,
           altitude_reference_list);
 
   AddFloat(_("Finish min. height"),
-           _("Minimum height based on finish height reference (AGL or MSL) while finishing the task.  Set to 0 for no limit."),
+           _("Minimum height based on finish height reference (AGL or MSL) while finishing the task. Set to 0 for no limit."),
            "%.0f %s", "%.0f",
            0, 10000, 25, false, 0);
 
@@ -262,7 +262,7 @@ TaskPropertiesPanel::Prepare([[maybe_unused]] ContainerWindow &parent,
                 "0 means start opens immediately."),
               {}, minutes{30}, minutes{1}, {});
   AddDuration(_("PEV start window"),
-              _("Number of minutes start remains open after Pilot Event and PEV wait time."
+              _("Number of minutes the start remains open after Pilot Event and PEV wait time. "
                 "0 means start will never close after it opens."),
               {}, minutes{30}, minutes{1}, {});
 

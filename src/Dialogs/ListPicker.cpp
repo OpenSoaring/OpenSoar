@@ -3,17 +3,18 @@
 
 #include "Dialogs/ListPicker.hpp"
 #include "HelpDialog.hpp"
-#include "WidgetDialog.hpp"
+#include "Language/Language.hpp"
+#include "UIGlobals.hpp"
 #include "Widget/ListWidget.hpp"
 #include "Widget/TextWidget.hpp"
 #include "Widget/TwoWidgets.hpp"
-#include "UIGlobals.hpp"
-#include "Language/Language.hpp"
-#include "ui/event/Timer.hpp"
+#include "WidgetDialog.hpp"
 #include "ui/event/PeriodicTimer.hpp"
+#include "ui/event/Timer.hpp"
 
 #include <cassert>
 
+#ifdef NOT_REMOVED // <<<<<<< HEAD
 class ListPickerWidget : public ListWidget {
   unsigned num_items;
   unsigned initial_value;
@@ -117,6 +118,8 @@ public:
     dialog.SetModalResult(mrOK);
   }
 };
+
+#endif // NOT_REMOVED // >>>>>>> 76f7b7150df1d6ad9e4b93e6e54747b8df8a0ec9
 
 int
 ListPicker(const char *caption,

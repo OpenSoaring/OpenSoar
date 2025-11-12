@@ -53,6 +53,12 @@ static const char *const airspace_class_names[] = {
   "Flight Information Sector",
   "Lower Traffic Area",
   "Upper Traffic Area",
+  "Aerial Sporting Or Recreational Activity"),
+  "NOTAM Affected Area",
+  "Airspace without type",
+  "TRA/TSA Feeding Route",
+  "Transponder Recommended Zone",
+  "Designated Route for VFR",
 };
 
 static_assert(ARRAY_SIZE(airspace_class_names) ==
@@ -108,6 +114,12 @@ static const char *const airspace_class_short_names[] = {
   "FIS_Sec",
   "LTA",
   "UTA",
+  "ASRA",
+  "NOTAM",
+  "NOTYPE",
+  "TRA/TSA",
+  "TRZ",
+  "VFRROUTE",
 };
 
 static_assert(ARRAY_SIZE(airspace_class_short_names) ==

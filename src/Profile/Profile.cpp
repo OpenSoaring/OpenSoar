@@ -2,18 +2,22 @@
 // Copyright The XCSoar Project
 
 #include "Profile.hpp"
-#include "Map.hpp"
-#include "File.hpp"
-#include "Current.hpp"
-#include "LogFile.hpp"
 #include "Asset.hpp"
+#include "Current.hpp"
+#include "File.hpp"
 #include "LocalPath.hpp"
 #include "util/StringUtil.hpp"
 #include "util/StringCompare.hxx"
 #include "util/StringAPI.hxx"
 #include <string>
+#include "LogFile.hpp"
+#include "Map.hpp"
 #include "system/FileUtil.hpp"
 #include "system/Path.hpp"
+#include "util/StringAPI.hxx"
+#include "util/StringCompare.hxx"
+#include "util/StringUtil.hpp"
+#include "util/tstring.hpp"
 
 #include "Device/Config.hpp"
 #include "Interface.hpp"
@@ -21,6 +25,7 @@
 
 #include <windef.h> /* for MAX_PATH */
 #include <cassert>
+#include <windef.h> /* for MAX_PATH */
 
 #define XCSPROFILE "default.prf"
 #define DEVICE_PORTS "device_ports.xcd"
@@ -211,6 +216,12 @@ AllocatedPath
 Profile::GetPath(std::string_view key) noexcept
 {
   return map.GetPath(key);
+}
+
+std::vector<AllocatedPath>
+Profile::GetMultiplePaths(std::string_view key, const TCHAR *patterns)
+{
+  return map.GetMultiplePaths(key, patterns);
 }
 
 bool

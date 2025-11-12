@@ -62,6 +62,7 @@ $(1)_SOURCES = \
 	$(SRC)/Atmosphere/AirDensity.cpp \
 	$(SRC)/Atmosphere/Pressure.cpp \
 	$(SRC)/Formatter/AirspaceFormatter.cpp \
+	$(SRC)/TransponderCode.cpp \
 	$(TEST_SRC_DIR)/FakeTerrain.cpp \
 	$(TEST_SRC_DIR)/$(1).cpp
 $(1)_DEPENDS = $(TEST1_DEPENDS)
@@ -184,6 +185,7 @@ TEST_AIRSPACE_PARSER_SOURCES = \
 	$(SRC)/Airspace/AirspaceParser.cpp \
 	$(SRC)/Atmosphere/Pressure.cpp \
 	$(SRC)/RadioFrequency.cpp \
+	$(SRC)/TransponderCode.cpp \
 	$(TEST_SRC_DIR)/FakeDialogs.cpp \
 	$(TEST_SRC_DIR)/FakeTerrain.cpp \
 	$(TEST_SRC_DIR)/FakeLanguage.cpp \
@@ -326,6 +328,7 @@ TEST_ROUTE_SOURCES = \
 	$(SRC)/Engine/Util/Gradient.cpp \
 	$(SRC)/NMEA/FlyingState.cpp \
 	$(SRC)/Formatter/AirspaceFormatter.cpp \
+	$(SRC)/TransponderCode.cpp \
 	$(SRC)/Atmosphere/Pressure.cpp \
 	$(TEST_SRC_DIR)/Printing.cpp \
 	$(TEST_SRC_DIR)/AirspacePrinting.cpp \
@@ -1177,6 +1180,7 @@ RUN_AIRSPACE_PARSER_SOURCES = \
 	$(SRC)/Airspace/AirspaceParser.cpp \
 	$(SRC)/Atmosphere/Pressure.cpp \
 	$(SRC)/RadioFrequency.cpp \
+	$(SRC)/TransponderCode.cpp \
 	$(TEST_SRC_DIR)/FakeTerrain.cpp \
 	$(TEST_SRC_DIR)/FakeLanguage.cpp \
 	$(TEST_SRC_DIR)/RunAirspaceParser.cpp
@@ -1661,6 +1665,7 @@ RUN_MAP_WINDOW_SOURCES = \
 	$(SRC)/Airspace/ActivePredicate.cpp \
 	$(SRC)/Airspace/ProtectedAirspaceWarningManager.cpp \
 	$(SRC)/Airspace/AirspaceParser.cpp \
+	$(SRC)/Airspace/AirspaceGlue.cpp \
 	$(SRC)/Airspace/AirspaceVisibility.cpp \
 	$(SRC)/Airspace/AirspaceComputerSettings.cpp \
 	$(SRC)/Renderer/GeoBitmapRenderer.cpp \
@@ -1746,6 +1751,7 @@ RUN_MAP_WINDOW_SOURCES = \
 	$(SRC)/Atmosphere/Pressure.cpp \
 	$(SRC)/Atmosphere/AirDensity.cpp \
 	$(SRC)/Operation/ConsoleOperationEnvironment.cpp \
+	$(SRC)/TransponderCode.cpp \
 	$(TEST_SRC_DIR)/Fonts.cpp \
 	$(TEST_SRC_DIR)/FakeAsset.cpp \
 	$(TEST_SRC_DIR)/FakeDialogs.cpp \
@@ -2199,6 +2205,8 @@ RUN_AIRSPACE_WARNING_DIALOG_SOURCES = \
 	$(SRC)/Dialogs/DialogSettings.cpp \
 	$(SRC)/Dialogs/WidgetDialog.cpp \
 	$(SRC)/Airspace/AirspaceParser.cpp \
+	$(SRC)/Airspace/AirspaceGlue.cpp \
+	$(SRC)/TransponderCode.cpp \
 	$(SRC)/Audio/Sound.cpp \
 	$(MORE_SCREEN_SOURCES) \
 	$(SRC)/Atmosphere/Pressure.cpp \
@@ -2216,7 +2224,7 @@ RUN_AIRSPACE_WARNING_DIALOG_SOURCES = \
 	$(TEST_SRC_DIR)/Fonts.cpp \
 	$(TEST_SRC_DIR)/RunAirspaceWarningDialog.cpp
 RUN_AIRSPACE_WARNING_DIALOG_LDADD = $(FAKE_LIBS)
-RUN_AIRSPACE_WARNING_DIALOG_DEPENDS = FORM WIDGET DATA_FIELD SCREEN AUDIO EVENT RESOURCE ASYNC IO OS THREAD AIRSPACE ZZIP UTIL GEO MATH TIME UNITS
+RUN_AIRSPACE_WARNING_DIALOG_DEPENDS = FORM WIDGET OPERATION DATA_FIELD SCREEN AUDIO EVENT RESOURCE ASYNC IO OS THREAD AIRSPACE ZZIP UTIL GEO MATH TIME UNITS
 $(eval $(call link-program,RunAirspaceWarningDialog,RUN_AIRSPACE_WARNING_DIALOG))
 
 RUN_PROFILE_LIST_DIALOG_SOURCES = \

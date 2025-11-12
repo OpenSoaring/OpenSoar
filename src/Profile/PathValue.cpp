@@ -1,14 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#include "Map.hpp"
-#include "LocalPath.hpp"
-#include "system/Path.hpp"
 #include "Compatibility/path.h"
+#include "LocalPath.hpp"
+#include "Map.hpp"
+#include "system/Path.hpp"
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringPointer.hxx"
 
+#ifdef HAVE_POSIX
+#include <fnmatch.h>
+#endif
+
+#include "Language/Language.hpp"
+#include "util/IterableSplitString.hxx"
 #include <windef.h> /* for MAX_PATH */
 
 AllocatedPath
@@ -22,6 +28,48 @@ ProfileMap::GetPath(std::string_view key) const noexcept
     return nullptr;
 
   return ExpandLocalPath(Path(buffer));
+}
+
+std::vector<AllocatedPath>
+ProfileMap::GetMultiplePaths(std::string_view key, const TCHAR *patterns) const
+{
+
+  std::vector<AllocatedPath> paths;
+  BasicStringBuffer<TCHAR, MAX_PATH> buffer;
+
+  if (!Get(key, buffer)) return paths;
+
+  if (buffer.empty()) return paths;
+
+  for (auto i : TIterableSplitString(buffer.c_str(), '|')) {
+
+    if (i.empty()) continue;
+
+    tstring file_string(i);
+
+    Path path(file_string.c_str());
+
+    size_t length;
+    const TCHAR *patterns_iterator = patterns;
+    if (patterns == nullptr) {
+      paths.push_back(ExpandLocalPath(AllocatedPath(path)));
+      continue;
+    }
+    while ((length = _tcslen(patterns_iterator)) > 0) {
+#ifdef HAVE_POSIX
+      if (!fnmatch(patterns_iterator, path.c_str(), 0))
+#else
+      if (StringEndsWithIgnoreCase(path.c_str(), patterns_iterator + 1))
+#endif
+      {
+        paths.push_back(ExpandLocalPath(AllocatedPath(path)));
+        break;
+      }
+      patterns_iterator += length + 1;
+    }
+  }
+
+  return paths;
 }
 
 bool

@@ -26,7 +26,7 @@ jobs:
 
     steps:
      - id: checkout
-       uses: actions/checkout@v4
+       uses: actions/checkout@v5
        with:
          submodules: false
      - id: repository
@@ -58,7 +58,7 @@ jobs:
          make manual V=2
 
      - name: upload artifact
-       uses: actions/upload-artifact@v4
+       uses: actions/upload-artifact@v5
        with:
          name: ${{ env.TARGET_FINAL }}-${{ env.git_hash }}
          path: output/${{ env.TARGET }}/*.${{ env.TARGET_EXT }}

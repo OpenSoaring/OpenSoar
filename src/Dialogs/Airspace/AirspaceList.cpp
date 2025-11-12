@@ -192,10 +192,16 @@ static constexpr StaticEnumChoice type_filter_list[] = {
   { OVERFLIGHT_RESTRICTION, "Overflight Restriction" },
   { MRT, "MRT" },
   { TFR, "TFR" },
+  { VFR_ROUTE, "Designated Route for VFR" },
   { VFR_SECTOR, "VFR Sector" },
   { FIS_SECTOR, "FIS Sector" },
   { LTA, "Lower Traffic Area" },
   { UTA, "Upper Traffic Area" },
+  { ASRA, "Aerial Sporting Or Recreational Activity") },
+  { NOTAM, "NTOAM Affected Area" },
+  { NONE, "None" },
+  { TRAFR, "TRA/TSA Feeding Route" },
+  { TRZ, "Transponder Recommended Zone" },
    nullptr
 };
 

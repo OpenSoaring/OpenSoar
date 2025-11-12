@@ -21,7 +21,7 @@ BMP_BITMAPS = $(wildcard Data/bitmaps/*.bmp)
 PNG_BITMAPS = $(patsubst Data/bitmaps/%.bmp,$(DATA)/bitmaps/%.png,$(BMP_BITMAPS))
 
 $(PNG_BITMAPS): $(DATA)/bitmaps/%.png: Data/bitmaps/%.bmp | $(DATA)/bitmaps/dirstamp
-	$(Q)$(IM_PREFIX)convert +dither -type GrayScale -define png:color-type=0 $< $@
+	$(Q)$(IM_CONVERT) +dither -type GrayScale -define png:color-type=0 $< $@
 
 ####### icons
 
@@ -78,7 +78,7 @@ $(eval $(call convert-to-bmp-white,$(BMP_SPLASH_160) $(BMP_SPLASH_80),%.bmp,%.pn
 # convert to icns (macOS icon)
 $(ICNS_SPLASH_1024): %.icns: %.png
 	@$(NQ)echo "  ICNS    $@"
-	$(Q)$(IM_PREFIX)png2icns $@ $<
+	$(Q)png2icns $@ $<
 
 ####### version
 
@@ -156,11 +156,12 @@ $(BMP_LAUNCH_DLL_SIM_640): $(BMP_LAUNCH_DLL_FLY_640)
 
 PNG_LAUNCH_ALL = $(patsubst %.bmp,%.png,$(BMP_LAUNCH_ALL))
 $(PNG_LAUNCH_ALL): %.png: %.bmp
-	$(Q)$(IM_PREFIX)convert $< $@
+	$(Q)$(IM_CONVERT) $< $@
 
 ####### sounds
 
 ifneq ($(TARGET),ANDROID)
+ifneq ($(TARGET),IOS)
 ifneq ($(HAVE_WIN32),y)
 
 WAV_SOUNDS = $(wildcard Data/sound/*.wav)
@@ -170,6 +171,7 @@ $(RAW_SOUNDS): $(DATA)/sound/%.raw: Data/sound/%.wav | $(DATA)/sound/dirstamp
 	@$(NQ)echo "  SOX     $@"
 	$(Q)sox -V1 $< --bits 16 --rate 44100 --channels 1 $@
 
+endif
 endif
 endif
 
@@ -204,6 +206,8 @@ $(TARGET_OUTPUT_DIR)/include/MakeResource.hpp: $(TARGET_OUTPUT_DIR)/resources.tx
 	$(Q)$(PERL) tools/GenerateMakeResource.pl <$< >$@.$(RANDOM_NUMBER).tmp
 	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
 
+ifeq ($(TARGET_IS_ANDROID),n)
+ifneq ($(TARGET),IOS)
 
 ifeq ($(USE_WIN32_RESOURCES),y)
 RESOURCE_FILES += $(BMP_BITMAPS)
@@ -222,17 +226,18 @@ RESOURCE_FILES += $(RAW_SOUNDS)
 ifeq ($(USE_WIN32_RESOURCES),n)
 
 $(patsubst $(DATA)/icons/%.bmp,$(DATA)/icons2/%.png,$(filter $(DATA)/icons/%.bmp,$(RESOURCE_FILES))): $(DATA)/icons2/%.png: $(DATA)/icons/%.bmp | $(DATA)/icons2/dirstamp
-	$(Q)$(IM_PREFIX)convert $< $@
+	$(Q)$(IM_CONVERT) $< $@
 
 $(patsubst $(DATA)/graphics/%.bmp,$(DATA)/graphics2/%.png,$(filter $(DATA)/graphics/%.bmp,$(RESOURCE_FILES))): $(DATA)/graphics2/%.png: $(DATA)/graphics/%.bmp | $(DATA)/graphics2/dirstamp
-	$(Q)$(IM_PREFIX)convert $< $@
+	$(Q)$(IM_CONVERT) $< $@
 
 RESOURCE_FILES := $(patsubst $(DATA)/graphics/%.bmp,$(DATA)/graphics2/%.png,$(RESOURCE_FILES))
 RESOURCE_FILES := $(patsubst $(DATA)/icons/%.bmp,$(DATA)/icons2/%.png,$(RESOURCE_FILES))
 RESOURCE_FILES := $(patsubst %.bmp,%.png,$(RESOURCE_FILES))
-endif
+endif #!USE_WIN32_RESOURCES
 
-endif
+endif #TARGET!=IOS
+endif #!TARGET_IS_ANDROID
 
 ifeq ($(TARGET_IS_ANDROID),n)
 

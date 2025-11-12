@@ -176,7 +176,11 @@ include $(topdir)/build/link.mk
 include $(topdir)/build/resource.mk
 include $(topdir)/build/libdata.mk
 include $(topdir)/build/java.mk
+ifeq ($(ANDROID_BUNDLE_BUILD),y)
+include $(topdir)/build/android_bundle.mk
+else
 include $(topdir)/build/android.mk
+endif
 include $(topdir)/build/llvm.mk
 include $(topdir)/build/tools.mk
 include $(topdir)/build/darwin.mk
@@ -255,6 +259,7 @@ include $(topdir)/build/libtopo.mk
 include $(topdir)/build/libterrain.mk
 include $(topdir)/build/lua.mk
 include $(topdir)/build/harness.mk
+include $(topdir)/build/flarm.mk
 endif # FAT_BINARY=n
 
 ifeq ($(FUZZER),y)

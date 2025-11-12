@@ -50,12 +50,7 @@ PortNMEAReader::GetLine()
 
   /* verify the checksum following the asterisk (two hex digits) */
 
-#if defined(__APPLE__) && (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
-  // MacOS workaround
-  const uint8_t calculated_checksum = NMEAChecksum(start);
-#else  // MacOS
   const uint8_t calculated_checksum = NMEAChecksum({start, asterisk});
-#endif // MacOS
 
   const char checksum_buffer[3] = { asterisk[1], asterisk[2], 0 };
   char *endptr;

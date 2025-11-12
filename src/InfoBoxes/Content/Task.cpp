@@ -20,8 +20,6 @@
 #include "Look/Look.hpp"
 #include "BackendComponents.hpp"
 #include "DataComponents.hpp"
-#include "time/DateTime.hpp"
-
 
 static void
 ShowNextWaypointDetails() noexcept
@@ -65,7 +63,7 @@ UpdateInfoBoxBearing(InfoBoxData &data) noexcept
 
   // Set Value
   data.SetValue(vector_remaining.bearing);
-  data.SetValueColor(task_stats.inside_oz ? 3 : 5);
+  data.SetValueColor(task_stats.inside_oz ? 3 : 0);
 }
 
 void
@@ -98,7 +96,7 @@ UpdateInfoBoxRadial(InfoBoxData &data) noexcept
 
   // Set Value
   data.SetValue(vector_remaining.bearing.Reciprocal());
-  data.SetValueColor(task_stats.inside_oz ? 3 : 5);
+  data.SetValueColor(task_stats.inside_oz ? 3 : 0);
 
   data.SetCommentFromDistance(vector_remaining.distance);
 }
@@ -145,7 +143,7 @@ InfoBoxContentNextWaypoint::Update(InfoBoxData &data) noexcept
   data.SetValueFromBearingDifference(Value);
 
   // Set Color (blue/black)
-  data.SetValueColor(solution_remaining.IsFinalGlide() ? 2 : 5);
+  data.SetValueColor(solution_remaining.IsFinalGlide() ? 2 : 0);
 }
 
 const InfoBoxPanel *
@@ -179,7 +177,7 @@ UpdateInfoBoxNextDistance(InfoBoxData &data) noexcept
 
   // Set Value
   data.SetValueFromDistance(vector_remaining.distance);
-  data.SetValueColor(task_stats.inside_oz ? 3 : 5);
+  data.SetValueColor(task_stats.inside_oz ? 3 : 0);
 
   if (basic.track_available) {
     Angle bd = vector_remaining.bearing - basic.track;
@@ -217,7 +215,7 @@ UpdateInfoBoxNextDistanceNominal(InfoBoxData &data) noexcept
 
   // Set Value
   data.SetValueFromDistance(vector.distance);
-  data.SetValueColor(task_stats.inside_oz ? 3 : 5);
+  data.SetValueColor(task_stats.inside_oz ? 3 : 0);
   data.SetComment(vector.bearing);
 }
 
@@ -235,7 +233,6 @@ UpdateInfoBoxNextETE(InfoBoxData &data) noexcept
   assert(task_stats.current_leg.time_remaining_now.count() >= 0);
 
   data.SetValueFromTimeTwoLines(task_stats.current_leg.time_remaining_now);
-  data.SetValueColor(5);
 }
 
 void
@@ -260,7 +257,6 @@ UpdateInfoBoxNextETA(InfoBoxData &data) noexcept
 
   // Set Comment
   data.FmtComment("{:02}", t.second);
-  data.SetValueColor(5);
 }
 
 static void
@@ -287,7 +283,6 @@ UpdateInfoBoxNextAltitudeDiff(InfoBoxData &data) noexcept
   const auto &next_solution = task_stats.current_leg.solution_remaining;
 
   SetValueFromAltDiff(data, task_stats, next_solution);
-  data.SetValueColor(5);
 }
 
 void
@@ -297,7 +292,6 @@ UpdateInfoBoxNextMC0AltitudeDiff(InfoBoxData &data) noexcept
 
   SetValueFromAltDiff(data, task_stats,
                       task_stats.current_leg.solution_mc0);
-  data.SetValueColor(5);
 }
 
 void
@@ -313,7 +307,6 @@ UpdateInfoBoxNextAltitudeRequire(InfoBoxData &data) noexcept
   }
 
   data.SetValueFromAltitude(next_solution.GetRequiredAltitude());
-  data.SetValueColor(5);
 }
 
 void
@@ -331,7 +324,6 @@ UpdateInfoBoxNextAltitudeArrival(InfoBoxData &data) noexcept
   }
 
   data.SetValueFromAltitude(next_solution.GetArrivalAltitude(basic.nav_altitude));
-  data.SetValueColor(5);
 }
 
 
@@ -340,7 +332,6 @@ UpdateInfoBoxNextGR(InfoBoxData &data) noexcept
 {
   // pilots want this to be assuming terminal flight to this wp, and this
   // is what current_leg gradient does.
-  data.SetValueColor(5);
 
   if (!CommonInterface::Calculated().task_stats.task_valid) {
     data.SetInvalid();
@@ -457,6 +448,19 @@ UpdateInfoBoxTaskSpeed(InfoBoxData &data) noexcept
 
   // Set Value and unit
   data.SetValueFromTaskSpeed(task_stats.total.travelled.GetSpeed());
+}
+
+void
+UpdateInfoBoxTaskSpeedLeg(InfoBoxData &data) noexcept
+{
+  const TaskStats &task_stats = CommonInterface::Calculated().task_stats;
+  if (!task_stats.task_valid || !task_stats.current_leg.travelled.IsDefined()) {
+    data.SetInvalid();
+    return;
+  }
+
+  // Set Value and unit
+  data.SetValueFromTaskSpeed(task_stats.current_leg.travelled.GetSpeed());
 }
 
 void
@@ -746,7 +750,6 @@ UpdateInfoBoxNextETEVMG(InfoBoxData &data) noexcept
   }
 
   data.SetValueFromTimeTwoLines(FloatDuration{d / v});
-  data.SetValueColor(5);
 }
 
 void
@@ -774,10 +777,10 @@ UpdateInfoBoxNextETAVMG(InfoBoxData &data) noexcept
   if (now_local.IsPlausible()) {
     const std::chrono::seconds dd{long(d/v)};
     const BrokenTime t = now_local + dd;
-    data.FmtValue("{:02}:{:02}", t.hour, t.minute);
-    data.FmtComment("{:02}", t.second);
+    data.FmtValue(_T("{:02}:{:02}"), t.hour, t.minute);
+    data.FmtComment(_T("{:02}"), t.second);
   }
-  data.SetValueColor(5);
+
 }
 
 void
@@ -818,7 +821,7 @@ UpdateInfoBoxCruiseEfficiency(InfoBoxData &data) noexcept
 }
 
 static constexpr unsigned
-SecondsUntil(TimeStamp now, RoughTime until) noexcept
+SecondsUntil(TimeStamp now, FineTime until) noexcept
 {
   auto d = TimeStamp{until} - now;
   if (d.count() < 0)
@@ -826,116 +829,91 @@ SecondsUntil(TimeStamp now, RoughTime until) noexcept
   return std::chrono::duration_cast<std::chrono::duration<unsigned>>(d).count();
 }
 
-static void
-UpdateInfoBoxStartOpen(InfoBoxData &data, bool is_arrival) noexcept
+void
+UpdateInfoBoxStartOpen(InfoBoxData &data) noexcept
 {
   const NMEAInfo &basic = CommonInterface::Basic();
   const auto &calculated = CommonInterface::Calculated();
   const TaskStats &task_stats = calculated.ordered_task_stats;
   const CommonStats &common_stats = CommonInterface::Calculated().common_stats;
-  const RoughTimeSpan &open = common_stats.start_open_time_span;
-
-  const time_t pev_start = common_stats.pev_start;
-  const time_t pev_open = common_stats.pev_open;
-  const time_t pev_closed = common_stats.pev_closed;
+  const TimeSpan &open = common_stats.start_open_time_span;
 
   /* reset color that may have been set by a previous call */
   data.SetValueColor(0);
+
   if (!basic.time_available || !task_stats.task_valid ||
-    common_stats.ordered_summary.active != 0) {
+      common_stats.ordered_summary.active != 0 ||
+      !open.IsDefined()) {
     data.SetInvalid();
     return;
   }
 
-  if (pev_start == 0 || pev_closed == 0 || pev_open == 0) {
-    // No PEV is started, so the check is for start open span
-    if (!open.IsDefined()) {
-      data.SetInvalid();
-      return;
-    }
-    const auto time_s = basic.time + (is_arrival ? FloatDuration() :
-      task_stats.current_leg.solution_remaining.time_elapsed);
-    const RoughTime time_r{ time_s };
+  const auto now_s = basic.time;
+  const FineTime now{now_s};
 
-    if (open.HasEnded(time_r)) {
-      data.SetValueInvalid();
-      data.SetComment(_("Closed"));
-    } else if (open.HasBegun(time_r)) {
-      if (open.GetEnd().IsValid()) {
-        unsigned seconds = SecondsUntil(time_s, open.GetEnd());
-        seconds %= 3600 * 24;
-        data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
-        data.SetValueColor(3);
-      } else
-        data.SetValueInvalid();
-
-      data.SetComment(_("Open"));
-    } else {
-      unsigned seconds = SecondsUntil(time_s, open.GetStart());
-      data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
-      data.SetValueColor(2);
-      data.SetComment(_("Waiting"));
-    }
-    return;  // -> w/o PEV
-  }  else {
-    time_t _time = DateTime::now();
-    if (is_arrival) {
-      _time += round(task_stats.current_leg.solution_remaining.
-        time_elapsed.count());
-    }
-    std::string new_title;
-    if ((pev_closed + (20 * 60) < _time) ||  // 20 min after closing
-      (pev_start + (2 * 60 * 60) < _time)) {  // or 2 hour after starting
-      data.SetValueInvalid();
-      new_title = "PEV Invalid";
-    } else if (pev_closed < _time) {
-      data.SetValueInvalid();
-      new_title = _("PEV Closed");
-    } else if (pev_open < _time) {
-      unsigned seconds = pev_closed - _time;
-      data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
+  if (open.HasEnded(now)) {
+    data.SetValueInvalid();
+    data.SetComment(_("Closed"));
+  } else if (open.HasBegun(now)) {
+    if (open.GetEnd().IsValid()) {
+      unsigned seconds = SecondsUntil(now_s, open.GetEnd());
+      data.FmtValue(_T("{:02}:{:02}"), seconds / 60, seconds % 60);
       data.SetValueColor(3);
-      new_title = _("PEV Open");
-    } else if (pev_open >= _time) {
-      unsigned seconds = pev_open - _time;
-      data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
-      data.SetValueColor(2);
-      new_title = _("PEV Wait");
-    } else {
-      unsigned seconds = _time - pev_open;
-      data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
-      data.SetValueColor(2);
-      new_title = _("Start PEV");
-    }
-    if (!new_title.empty()) {
-      if (is_arrival)
-        data.SetComment(new_title.c_str());
-      else
-      data.SetTitle(new_title.c_str());
-    }
+    } else
+      data.SetValueInvalid();
 
+    data.SetComment(_("Open"));
+  } else {
+    unsigned seconds = SecondsUntil(now_s, open.GetStart());
+    data.FmtValue(_T("{:02}:{:02}"), seconds / 60, seconds % 60);
+    data.SetValueColor(2);
+    data.SetComment(_("Waiting"));
   }
-  if (!is_arrival) {
-    if (pev_start > 0) {
-      std::string str = _("PEV: ");
-      str += DateTime::time_str(pev_start, "%H:%M:%S");
-      data.SetComment(str.c_str());
-    } else {
-      data.SetComment("Invalid");
-    }
-  }
-}
-
-void
-UpdateInfoBoxStartOpen(InfoBoxData &data) noexcept
-{
-  UpdateInfoBoxStartOpen(data, false);
 }
 
 void
 UpdateInfoBoxStartOpenArrival(InfoBoxData &data) noexcept
 {
-  UpdateInfoBoxStartOpen(data, true);
+  const NMEAInfo &basic = CommonInterface::Basic();
+  const auto &calculated = CommonInterface::Calculated();
+  const TaskStats &task_stats = calculated.ordered_task_stats;
+  const GlideResult &current_remaining =
+    task_stats.current_leg.solution_remaining;
+  const CommonStats &common_stats = CommonInterface::Calculated().common_stats;
+  const TimeSpan &open = common_stats.start_open_time_span;
+
+  /* reset color that may have been set by a previous call */
+  data.SetValueColor(0);
+
+  if (!basic.time_available || !task_stats.task_valid ||
+      common_stats.ordered_summary.active != 0 ||
+      !open.IsDefined() ||
+      !current_remaining.IsOk()) {
+    data.SetInvalid();
+    return;
+  }
+
+  const auto arrival_s = basic.time + current_remaining.time_elapsed;
+  const FineTime arrival{arrival_s};
+
+  if (open.HasEnded(arrival)) {
+    data.SetValueInvalid();
+    data.SetComment(_("Closed"));
+  } else if (open.HasBegun(arrival)) {
+    if (open.GetEnd().IsValid()) {
+      unsigned seconds = SecondsUntil(arrival_s, open.GetEnd());
+      data.FmtValue(_T("{:02}:{:02}"), seconds / 60, seconds % 60);
+      data.SetValueColor(3);
+    } else
+      data.SetValueInvalid();
+
+    data.SetComment(_("Open"));
+  } else {
+    unsigned seconds = SecondsUntil(arrival_s, open.GetStart());
+    data.FmtValue(_T("{:02}:{:02}"), seconds / 60, seconds % 60);
+    data.SetValueColor(2);
+    data.SetComment(_("Waiting"));
+  }
 }
 
 /*
@@ -1022,7 +1000,7 @@ UpdateInfoTaskETAorAATdT(InfoBoxData& data) noexcept
     UpdateInfoBoxTaskAATimeDelta(data);
     data.SetComment(eta_text);
 
-    data.SetTitle("AAT delta time");
+    data.SetTitle(_T("AAT delta time"));
   } else
-    data.SetTitle("Task arrival time");
+    data.SetTitle(_T("Task arrival time"));
 }
