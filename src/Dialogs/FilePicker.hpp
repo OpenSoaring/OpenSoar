@@ -8,7 +8,7 @@ class AllocatedPath;
 class FileDataField;
 
 bool
-bool FilePicker(const char *caption, FileDataField &df,
+FilePicker(const char *caption, FileDataField &df,
            const char *help_text = nullptr, bool nullable = true);
 
 /**
