@@ -50,7 +50,7 @@ AirspaceDetailsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddMultiLine(airspace->GetName());
 
   const TransponderCode transponderCode = airspace->GetTransponderCode();
-  TCHAR buffer2[5];
+  char buffer2[5];
 
   transponderCode.Format(buffer2, sizeof(buffer2));
 
@@ -67,8 +67,8 @@ AirspaceDetailsWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     buffer += " MHz";
     AddReadOnly(_("Radio"), nullptr, buffer);
 
-    const TCHAR *frequencyName = airspace->GetName();
-    const TCHAR *stationName = airspace->GetStationName();
+    const char *frequencyName = airspace->GetName();
+    const char *stationName = airspace->GetStationName();
 
     if (stationName != nullptr && stationName[0] != '\0') {
       AddReadOnly(_("Station"), nullptr, stationName);

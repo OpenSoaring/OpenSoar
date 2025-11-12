@@ -280,7 +280,7 @@ InfoBoxContentThermalAssistant::HandleClick() noexcept
   if (pages.special_page.IsDefined() && pages.special_page.main == PageLayout::Main::THERMAL_ASSISTANT) {
     PageActions::Restore();
   } else {
-	InputEvents::eventThermalAssistant(_T(""));
+	InputEvents::eventThermalAssistant("");
   }
 
   return true;

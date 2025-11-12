@@ -154,7 +154,7 @@ InfoBoxContentAlternateAltDiff::Update(InfoBoxData &data) noexcept
     alternate = NULL;
   }
 
-  data.FmtTitle(_T("Altn {} AltD"), index + 1);
+  data.FmtTitle("Altn {} AltD", index + 1);
 
   if (alternate == NULL) {
     data.SetInvalid();

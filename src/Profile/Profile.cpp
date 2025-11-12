@@ -17,7 +17,6 @@
 #include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringUtil.hpp"
-#include "util/tstring.hpp"
 
 #include "Device/Config.hpp"
 #include "Interface.hpp"

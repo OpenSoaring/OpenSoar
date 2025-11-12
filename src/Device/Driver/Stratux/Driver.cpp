@@ -58,8 +58,8 @@ StratuxCreateOnPort([[maybe_unused]] const DeviceConfig &config, [[maybe_unused]
 }
 
 const struct DeviceRegister stratux_driver = {
-  _T("Stratux"),
-  _T("Stratux"),
+  "Stratux",
+  "Stratux",
   DeviceRegister::MANAGE,
   StratuxCreateOnPort,
 };

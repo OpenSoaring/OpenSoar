@@ -31,11 +31,11 @@ ProfileMap::GetPath(std::string_view key) const noexcept
 }
 
 std::vector<AllocatedPath>
-ProfileMap::GetMultiplePaths(std::string_view key, const TCHAR *patterns) const
+ProfileMap::GetMultiplePaths(std::string_view key, const char *patterns) const
 {
 
   std::vector<AllocatedPath> paths;
-  BasicStringBuffer<TCHAR, MAX_PATH> buffer;
+  BasicStringBuffer<char, MAX_PATH> buffer;
 
   if (!Get(key, buffer)) return paths;
 
@@ -45,17 +45,17 @@ ProfileMap::GetMultiplePaths(std::string_view key, const TCHAR *patterns) const
 
     if (i.empty()) continue;
 
-    tstring file_string(i);
+    std::string file_string(i);
 
     Path path(file_string.c_str());
 
     size_t length;
-    const TCHAR *patterns_iterator = patterns;
+    const char *patterns_iterator = patterns;
     if (patterns == nullptr) {
       paths.push_back(ExpandLocalPath(AllocatedPath(path)));
       continue;
     }
-    while ((length = _tcslen(patterns_iterator)) > 0) {
+    while ((length = strlen(patterns_iterator)) > 0) {
 #ifdef HAVE_POSIX
       if (!fnmatch(patterns_iterator, path.c_str(), 0))
 #else

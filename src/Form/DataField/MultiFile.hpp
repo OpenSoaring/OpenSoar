@@ -8,9 +8,9 @@
 #include "File.hpp"
 #include "Repository/FileType.hpp"
 #include "system/Path.hpp"
-#include "util/tstring.hpp"
 
 #include <vector>
+#include <string>
 
 /**
  * FileDataField wrapper that allows for selection of multiple files at once
@@ -28,7 +28,7 @@ class MultiFileDataField final : public DataField {
 
   FileType file_type;
 
-  tstring display_string;
+  std::string display_string;
 
 public:
   explicit MultiFileDataField(DataFieldListener *listener = nullptr);
@@ -71,19 +71,19 @@ public:
    * Scan multiple shell patterns.  Each pattern is terminated by a
    * null byte, and the list ends with an empty pattern.
    */
-  void ScanMultiplePatterns(const TCHAR *patterns);
+  void ScanMultiplePatterns(const char *patterns);
 
   Path GetItem(unsigned index) const;
 
   /**
    * Virtual methods from the DataField class
    */
-  const TCHAR *GetAsString() const noexcept override;
-  const TCHAR *GetAsDisplayString() const noexcept override;
+  const char *GetAsString() const noexcept override;
+  const char *GetAsDisplayString() const noexcept override;
 
-  ComboList CreateComboList(const TCHAR *reference) const noexcept override;
+  ComboList CreateComboList(const char *reference) const noexcept override;
   void SetFromCombo(int datafield_index,
-                    const TCHAR *string_value) noexcept override;
+                    const char *string_value) noexcept override;
 
   /*
    * Stub implementations for virtual methods from DataField class, because

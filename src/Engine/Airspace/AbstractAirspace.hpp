@@ -58,7 +58,7 @@ protected:
   AirspaceClass astype;
 
   /** Airspace Station name */
-  tstring station_name;
+  std::string station_name;
 
   /** Radio frequency (optional) */
   RadioFrequency radio_frequency = RadioFrequency::Null();
@@ -204,8 +204,9 @@ public:
    * @param _top Upper limit
    */
 
-  void SetProperties(std::string &&_name, const AirspaceClass _class,
-                     const AirspaceClass _type,
+  void SetProperties(std::string &&_name, const std::string_view _station_name,
+                     const TransponderCode &_transponder_code,
+                     const AirspaceClass _class, const AirspaceClass _type,
                      const AirspaceAltitude &_base,
                      const AirspaceAltitude &_top) noexcept
   {
@@ -364,7 +365,7 @@ public:
   }
 
   [[gnu::pure]]
-  const TCHAR *GetStationName() const noexcept {
+  const char *GetStationName() const noexcept {
     return station_name.c_str();
   }
 

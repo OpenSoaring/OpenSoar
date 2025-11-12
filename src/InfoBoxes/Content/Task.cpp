@@ -777,8 +777,8 @@ UpdateInfoBoxNextETAVMG(InfoBoxData &data) noexcept
   if (now_local.IsPlausible()) {
     const std::chrono::seconds dd{long(d/v)};
     const BrokenTime t = now_local + dd;
-    data.FmtValue(_T("{:02}:{:02}"), t.hour, t.minute);
-    data.FmtComment(_T("{:02}"), t.second);
+    data.FmtValue("{:02}:{:02}", t.hour, t.minute);
+    data.FmtComment("{:02}", t.second);
   }
 
 }
@@ -857,7 +857,7 @@ UpdateInfoBoxStartOpen(InfoBoxData &data) noexcept
   } else if (open.HasBegun(now)) {
     if (open.GetEnd().IsValid()) {
       unsigned seconds = SecondsUntil(now_s, open.GetEnd());
-      data.FmtValue(_T("{:02}:{:02}"), seconds / 60, seconds % 60);
+      data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
       data.SetValueColor(3);
     } else
       data.SetValueInvalid();
@@ -865,7 +865,7 @@ UpdateInfoBoxStartOpen(InfoBoxData &data) noexcept
     data.SetComment(_("Open"));
   } else {
     unsigned seconds = SecondsUntil(now_s, open.GetStart());
-    data.FmtValue(_T("{:02}:{:02}"), seconds / 60, seconds % 60);
+    data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
     data.SetValueColor(2);
     data.SetComment(_("Waiting"));
   }
@@ -902,7 +902,7 @@ UpdateInfoBoxStartOpenArrival(InfoBoxData &data) noexcept
   } else if (open.HasBegun(arrival)) {
     if (open.GetEnd().IsValid()) {
       unsigned seconds = SecondsUntil(arrival_s, open.GetEnd());
-      data.FmtValue(_T("{:02}:{:02}"), seconds / 60, seconds % 60);
+      data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
       data.SetValueColor(3);
     } else
       data.SetValueInvalid();
@@ -910,7 +910,7 @@ UpdateInfoBoxStartOpenArrival(InfoBoxData &data) noexcept
     data.SetComment(_("Open"));
   } else {
     unsigned seconds = SecondsUntil(arrival_s, open.GetStart());
-    data.FmtValue(_T("{:02}:{:02}"), seconds / 60, seconds % 60);
+    data.FmtValue("{:02}:{:02}", seconds / 60, seconds % 60);
     data.SetValueColor(2);
     data.SetComment(_("Waiting"));
   }
@@ -1000,7 +1000,7 @@ UpdateInfoTaskETAorAATdT(InfoBoxData& data) noexcept
     UpdateInfoBoxTaskAATimeDelta(data);
     data.SetComment(eta_text);
 
-    data.SetTitle(_T("AAT delta time"));
+    data.SetTitle("AAT delta time");
   } else
-    data.SetTitle(_T("Task arrival time"));
+    data.SetTitle("Task arrival time");
 }

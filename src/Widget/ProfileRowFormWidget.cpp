@@ -7,10 +7,8 @@
 #include "Form/Edit.hpp"
 #include "Formatter/TimeFormatter.hpp"
 #include "LocalPath.hpp"
-#include "Formatter/TimeFormatter.hpp"
-
-// #include "Profile/Profile.hpp"
-// #include "RowFormWidget.hpp"
+#include "Profile/Profile.hpp"
+#include "RowFormWidget.hpp"
 
 WndProperty *
 RowFormWidget::AddFile(const char *label, const char *help,
@@ -40,9 +38,9 @@ RowFormWidget::AddFile(const char *label, const char *help,
 }
 
 WndProperty *
-RowFormWidget::AddMultipleFiles(const TCHAR *label, const TCHAR *help,
+RowFormWidget::AddMultipleFiles(const char *label, const char *help,
                                 std::string_view registry_key,
-                                const TCHAR *filters, FileType file_type)
+                                const char *filters, FileType file_type)
 {
 
   WndProperty *edit = Add(label, help);
@@ -202,8 +200,10 @@ RowFormWidget::SaveValueMultiFileReader(unsigned i,
     const auto contracted = ContractLocalPath(value);
     Path final_path = contracted != nullptr ? Path(contracted) : value;
 
-    const WideToUTF8Converter value_to_add(final_path.c_str());
-    if (!value_to_add.IsValid()) continue;
+    // const WideToUTF8Converter value_to_add(final_path.c_str());
+    // August2111: No conversion necessary!
+    // August2111(?): if (!value_to_add.IsValid()) continue;
+    const auto value_to_add(final_path.c_str());
 
     new_output += value_to_add;
     new_output += "|";
