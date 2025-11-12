@@ -111,7 +111,7 @@ dlgConfigurationBlueFlyVarioShowModal(Device &_device)
                       "BlueFly Vario");
   // unfortunately this internal declaration isn't possible with MSVC!
   // so I have to set this widget later... 
-  // (BlueFlyConfigurationWidget(.., dialog,..) with dialog from paren funktion
+  // (BlueFlyConfigurationWidget(.., dialog,..) with dialog from parent function
   dialog.FinishPreliminary(
       new BlueFlyConfigurationWidget(look, dialog, device));
 
