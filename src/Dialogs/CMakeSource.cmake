@@ -30,6 +30,8 @@ set(_SOURCES
         Dialogs/Device/Vega/VegaConfigurationDialog.cpp
         Dialogs/Device/Vega/VegaDemoDialog.cpp
         Dialogs/Device/Vega/VegaParametersWidget.cpp
+        Dialogs/Device/Stratux/ConfigurationDialog.cpp
+        Dialogs/MultiFilePicker.cpp
         Dialogs/DialogSettings.cpp
         Dialogs/dlgAnalysis.cpp
         Dialogs/dlgChecklist.cpp

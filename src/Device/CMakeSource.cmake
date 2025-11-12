@@ -131,6 +131,9 @@ set(_SOURCES
         Device/Util/LineSplitter.cpp
         Device/Util/NMEAReader.cpp
         Device/Util/NMEAWriter.cpp
+
+        Device/Driver/Stratux/Driver.cpp
+        Device/SmartDeviceSensors.cpp
 )
 if(UNIX)
   list(APPEND _SOURCES

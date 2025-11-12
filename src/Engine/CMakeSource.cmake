@@ -24,7 +24,7 @@ set(_SOURCES
         Engine/Contest/Solvers/Contests.cpp
         Engine/Contest/Solvers/Charron.cpp
         Engine/Contest/Solvers/DMStQuad.cpp
-        Engine/Contest/Solvers/NetCoupe.cpp
+        # Engine/Contest/Solvers/NetCoupe.cpp
         Engine/Contest/Solvers/OLCClassic.cpp
         Engine/Contest/Solvers/OLCFAI.cpp
         Engine/Contest/Solvers/OLCLeague.cpp

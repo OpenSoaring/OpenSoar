@@ -20,6 +20,7 @@ set(_SOURCES
         Form/DataField/String.cpp
         Form/DataField/Time.cpp
         Form/DataField/Date.cpp
+        Form/DataField/MultiFile.cpp
         Form/DigitEntry.cpp
         Form/Draw.cpp
         Form/Edit.cpp
