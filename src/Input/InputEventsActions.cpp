@@ -214,14 +214,15 @@ try {  // Configure PEV start window
   // check the start open gate w/ disabling if PEV outside
   const TimeStamp time_s = CommonInterface::Basic().time + start.pev_start_wait_time;
   const RoughTime time_r{ time_s };
-  const RoughTimeSpan &open = CommonInterface::Calculated().common_stats.
+/* New PEV: ====================================================
+const RoughTimeSpan &open = CommonInterface::Calculated().common_stats.
     start_open_time_span;
 
   if (open.HasEnded(time_r) || !open.HasBegun(time_r)) {
     Message::AddMessage(_("PEV started on wrong time!"));
     return;
   }
-
+/** */
 
   if (start.pev_start_window.count() > 0) {
     new_end = new_start + start.pev_start_window.count();
