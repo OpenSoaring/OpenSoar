@@ -58,8 +58,24 @@ CoDownloadToJson(CurlGlobal &curl, const std::string_view url,
   Json::ParserOutputStream parser;
   const auto response =
     co_await Curl::CoStreamRequest(curl, std::move(easy), parser);
-  if ((response.status < 200) || (response.status > 201))
-    throw FmtRuntimeError("CoDownloadToJson {} status {}", url, response.status);
+  switch (response.status) {
+
+    case 200:
+    case 201: // Ok!
+        break;
+    case 401:   // 'Unauthorized'
+      throw FmtRuntimeError("CoDownloadToJson 'Unauthorized': "
+        "{} status {}", url, response.status);
+      break;
+    
+    case 429:   // 'Too Many Requests'
+      throw FmtRuntimeError("CoDownloadToJson 'Too Many Requests': "
+      "{} status {}", url, response.status);
+      break;
+    default:
+      throw FmtRuntimeError("CoDownloadToJson {} status {}", url, response.status);
+      break;
+  }
 
   co_return parser.Finish();
 }
@@ -125,6 +141,15 @@ CoDownloadToFile(CurlGlobal &curl, const std::string_view url,
         }
         break;
       case 401: {  // 'Unauthorized'
+        auto file_size = file.Tell();
+        if (file_size > 0) {
+          file.Commit();  // mostly this is a json file with error description
+          File::Rename(file.GetPath(), file.GetPath().WithSuffix(".json"));
+        }
+        throw FmtRuntimeError("CoDownloadToFile {} status {}", url,
+          response.status);
+      }
+      case 429: {  // 'Too Many Requests', often at SkySight server
         auto file_size = file.Tell();
         if (file_size > 0) {
           file.Commit();  // mostly this is a json file with error description
