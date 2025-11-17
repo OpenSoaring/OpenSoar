@@ -273,6 +273,6 @@ RESOURCES_SOURCES = $(TARGET_OUTPUT_DIR)/resources.c
 $(eval $(call link-library,resources,RESOURCES))
 RESOURCE_BINARY = $(RESOURCES_BIN)
 
-endif
+# endif
 
 endif # !TARGET_IS_ANDROID
