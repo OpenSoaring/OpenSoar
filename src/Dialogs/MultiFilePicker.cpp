@@ -44,8 +44,8 @@ public:
 };
 
 static bool
-MultiFilePickerAdd(const TCHAR *caption, MultiFileDataField &df,
-                   const TCHAR *help_text)
+MultiFilePickerAdd(const char *caption, MultiFileDataField &df,
+                   const char *help_text)
 {
 
   if (FilePicker(caption, df.GetFileDataField(), help_text, false)) {
@@ -57,8 +57,8 @@ MultiFilePickerAdd(const TCHAR *caption, MultiFileDataField &df,
 }
 
 static int
-MultiFilePickerMain(const TCHAR *caption, MultiFileDataField &df,
-                    const TCHAR *help_text)
+MultiFilePickerMain(const char *caption, MultiFileDataField &df,
+                    const char *help_text)
 {
 
   WidgetDialog dialog(WidgetDialog::Full{}, UIGlobals::GetMainWindow(),
@@ -96,8 +96,8 @@ MultiFilePickerMain(const TCHAR *caption, MultiFileDataField &df,
 }
 
 bool
-MultiFilePicker(const TCHAR *caption, MultiFileDataField &df,
-                const TCHAR *help_text)
+MultiFilePicker(const char *caption, MultiFileDataField &df,
+                const char *help_text)
 {
   int result;
 
