@@ -589,9 +589,9 @@ SkysightAPI::GetTileData(const std::string_view layer_id,
 
 bool
 SkysightAPI::GetData(SkysightCallType type, const std::string_view layer_id,
-    const time_t from, const time_t to,
+    const time_t from, const time_t /*to*/,
     [[maybe_unused]] const std::string_view link,
-    SkysightCallback cb, bool force_recache)
+    SkysightCallback cb, bool /*force_recache*/)
 {
   const 
     std::string url = link.empty() ? GetUrl(type, layer_id, from) : std::string(link);
