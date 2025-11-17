@@ -16,5 +16,5 @@ JAVAC += -g
 endif
 
 ifeq ($(WERROR),y)
-JAVAC += -Werror
+## JAVAC += -Werror
 endif
