@@ -138,24 +138,27 @@ Bitmap::LoadGeoFile([[maybe_unused]] Path path)
   if (path.EndsWithIgnoreCase(".jpg") ||
     path.EndsWithIgnoreCase(".jpeg") ||
     path.EndsWithIgnoreCase(".jfif") ) {
-    auto result = LoadFile(path);
-    assert(IsDefined());
-    if (result) {
-      auto name = path.GetBase();
-      int offset = 0;
-      if (strncmp(name.c_str(), "satellite-", strlen("satellite-")) == 0)
-        offset = strlen("satellite-");
-      else if (strncmp(name.c_str(), "rain-", strlen("rain-")) == 0)
-        offset = strlen("rain-");
- 
-      return SetTileKoordinates(name.c_str() + offset);
+    if (File::Exists(path)) {
+      auto result = LoadFile(path);
+      if (result) {
+        assert(IsDefined());
+        auto name = path.GetBase();
+        int offset = 0;
+        if (strncmp(name.c_str(), "satellite-", strlen("satellite-")) == 0)
+          offset = strlen("satellite-");
+        else if (strncmp(name.c_str(), "rain-", strlen("rain-")) == 0)
+          offset = strlen("rain-");
+
+        return SetTileKoordinates(name.c_str() + offset);
+      }
     }
   } else if (path.EndsWithIgnoreCase(".png"))
   {
     auto result = LoadFile(path);
-    assert(IsDefined());
-    if (result)
+    if (result) {
+      assert(IsDefined());
       return SetTileKoordinates(path.GetBase().c_str());
+    }
   }
   throw std::runtime_error("Unsupported geo image file");
   return {};
