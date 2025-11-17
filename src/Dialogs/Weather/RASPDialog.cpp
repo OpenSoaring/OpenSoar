@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
+#include "Weather/Features.hpp"
 #ifdef HAVE_RASP
-
 #include "RASPDialog.hpp"
 #include "Widget/RowFormWidget.hpp"
 #include "Weather/Rasp/Configured.hpp"
@@ -110,7 +110,7 @@ RASPSettingsPanel::Prepare([[maybe_unused]] ContainerWindow &parent,
   WndProperty *wp;
 
   wp = AddFile(_("File"), nullptr,
-               ProfileKeys::RaspFile, "*-rasp*.dat\0",
+               ProfileKeys::RaspFile, "*-RASP-*.dat\0",
                FileType::RASP);
   wp->GetDataField()->SetOnModified([this]{
     if (SaveValueFileReader(FILE, ProfileKeys::RaspFile)) {
