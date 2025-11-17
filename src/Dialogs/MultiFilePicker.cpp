@@ -36,7 +36,7 @@ public:
                            unsigned i) noexcept override
   {
     if (active_files.empty()) {
-      row_renderer.DrawTextRow(canvas, rc, _T(""));
+      row_renderer.DrawTextRow(canvas, rc, "");
       return;
     }
     row_renderer.DrawTextRow(canvas, rc, active_files[i].GetBase().c_str());

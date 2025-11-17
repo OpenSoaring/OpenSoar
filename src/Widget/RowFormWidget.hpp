@@ -452,9 +452,9 @@ public:
    */
   void AddLabel(const char *label, unsigned lines = 1) noexcept;
 
-  WndProperty *AddMultipleFiles(const TCHAR *label, const TCHAR *help,
+  WndProperty *AddMultipleFiles(const char *label, const char *help,
                                 std::string_view profile_key,
-                                const TCHAR *filters, FileType file_type);
+                                const char *filters, FileType file_type);
   /**
    * Add a read-only multi-line control.  You can use
    * SetMultiLineText() to update its text.

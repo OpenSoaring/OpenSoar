@@ -10,8 +10,6 @@
 #include "Widget/TextWidget.hpp"
 #include "Widget/TwoWidgets.hpp"
 
-#include <tchar.h>
-
 class ListItemRenderer;
 
 /** returns string of item's help text **/
@@ -36,7 +34,7 @@ class ListPickerWidget : public ListWidget {
   UI::Timer postpone_update_help{
       [this] { UpdateHelp(GetList().GetCursorIndex()); }};
 
-  const TCHAR *const caption, *const help_text;
+  const char*const caption, *const help_text;
   ItemHelpCallback_t item_help_callback;
   TextWidget *help_widget;
   TwoWidgets *two_widgets;
@@ -44,8 +42,8 @@ class ListPickerWidget : public ListWidget {
 public:
   ListPickerWidget(unsigned _num_items, unsigned _initial_value,
                    unsigned _row_height, ListItemRenderer &_item_renderer,
-                   WndForm &_dialog, const TCHAR *_caption,
-                   const TCHAR *_help_text) noexcept
+                   WndForm &_dialog, const char*_caption,
+                   const char*_help_text) noexcept
       : num_items(_num_items),
         initial_value(_initial_value),
         row_height(_row_height),

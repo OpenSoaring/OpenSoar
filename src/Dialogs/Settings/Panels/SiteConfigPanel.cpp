@@ -80,7 +80,7 @@ SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent,
                    _("The files may contain extracts from enroute supplements "
                      "or other contributed "
                      "information about individual waypoints and airfields."),
-                   ProfileKeys::AirfieldFileList, _T("*.txt\0"),
+                   ProfileKeys::AirfieldFileList, "*.txt\0",
                    FileType::WAYPOINTDETAILS);
   SetExpertRow(AirfieldFileList);
 
