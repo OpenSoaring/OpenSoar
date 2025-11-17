@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "Weather/Features.hpp"
 #include <cstdint>
 
 enum class FileType : uint8_t {
