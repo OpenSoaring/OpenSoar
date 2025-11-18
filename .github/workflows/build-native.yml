@@ -208,7 +208,7 @@ jobs:
             target_ext: .apk
             target_test: false
             target_upload: true
-            ndk: r27d
+            ndk: r29
             target_container: debian:bookworm-slim
           
           - os: ubuntu-24.04
@@ -218,7 +218,7 @@ jobs:
             target_ext: .apk
             target_test: false
             target_upload: false
-            ndk: r27d
+            ndk: r29
             target_container: debian:bookworm-slim
           #### needs very long time.. 
           - os: ubuntu-24.04
