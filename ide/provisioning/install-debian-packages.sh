@@ -135,7 +135,13 @@ install_kobo() {
 
 install_android() {
   echo Installing dependencies for the Android target, not including SDK / NDK...
-  apt-get install ${APTOPTS[*]} default-jdk-headless vorbis-tools adb libtool \
+  # there is an error with jdk 21, the default jdk at ubuntu 24.04.3 (and later)
+  # At least fix this error (the .class files couldn't use from DEX tool d8!)
+  # (normally: default-jdk-headless)
+  apt-get install ${APTOPTS[*]} openjdk-17-jdk-headless \
+      vorbis-tools \
+      adb \
+      libtool \
       unzip
   echo
 }
