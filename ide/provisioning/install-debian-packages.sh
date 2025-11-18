@@ -75,10 +75,8 @@ install_linux() {
     fonts-roboto-unhinted \
     xz-utils
     
-    # not longer installed...
+    # installed for SkySight:
     apt-get install ${APTOPTS[*]} netcdf-bin libnetcdf-c++4-dev  libnetcdf-dev
-    # apt-get remove -y netcdf-bin libnetcdf-c++4-dev  libnetcdf-dev
-    
 echo
 }
 
@@ -138,7 +136,14 @@ install_kobo() {
 
 install_android() {
   echo Installing dependencies for the Android target, not including SDK / NDK...
-  apt-get install ${APTOPTS[*]} default-jdk-headless vorbis-tools adb libtool \
+  # there is an error with jdk 21, the default jdk at ubuntu 24.04.3 (and later)
+  # At least fix this error (the .class files couldn't use from DEX tool d8!)
+  # (normally: default-jdk-headless)
+  # apt-get install ${APTOPTS[*]} openjdk-24-jdk-headless \
+  apt-get install ${APTOPTS[*]} default-jdk-headless \
+      vorbis-tools \
+      adb \
+      libtool \
       unzip
   echo
 }
