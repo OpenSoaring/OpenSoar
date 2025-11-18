@@ -373,9 +373,9 @@ endif
 ifeq ($(TARGET),ANDROID)
   ifeq ($(HOST_IS_DARWIN),y)
     ANDROID_SDK ?= $(HOME)/Library/Android/sdk
-    ANDROID_NDK ?= $(shell ls -d $(ANDROID_SDK)/ndk/28.* 2>/dev/null | head -n 1)
+    ANDROID_NDK ?= $(shell ls -d $(ANDROID_SDK)/ndk/27.* 2>/dev/null | head -n 1)
   else
-    ANDROID_NDK ?= $(HOME)/opt/android-ndk-r28
+    ANDROID_NDK ?= $(HOME)/opt/android-ndk-r27d
   endif
 
   ANDROID_SDK_PLATFORM = android-33
