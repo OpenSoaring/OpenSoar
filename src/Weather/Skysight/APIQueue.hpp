@@ -17,10 +17,12 @@ class SkysightAPIQueue final {
   bool is_busy = false;
   bool is_clearing = false;
   std::string key;
-  time_t key_expiry_time = 0;
   std::string_view email;
   std::string_view password;
+  /* unused up to now:
+  time_t key_expiry_time = 0;
   SkysightRequest *co_request;
+  */
 
   void Process();
   UI::PeriodicTimer timer{[this]{ Process(); }};
