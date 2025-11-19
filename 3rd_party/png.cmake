@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.15)
+
 # get_filename_component(LIB_TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
 
  set(INCLUDE_WITH_TOOLCHAIN 0)  # special include path for every toolchain!
 if (MSVC)  # unfortunately the lib name is a little bit 'tricky' at libPng..
-  set(_LIB_NAME png16_static)
+  # at MSVC the LIB_PREFIX is empty normally
+  set(_LIB_NAME libpng16_static)
  else()
   set(_LIB_NAME png16)
 endif()
@@ -18,7 +20,6 @@ if (_COMPLETE_INSTALL)
   
             "-DPNG_ZLIB_BUILD=OFF"
             "-DZLIB_INCLUDE_DIR=${ZLIB_INCLUDE_DIR}"
-            # "-DZLIB_LIBRARY=${ZLIB_LIBRARY}"   # ZLIB_LIB is 'optimized;ReleaseLib;debug;DebugLib'--
             "-DZLIB_LIBRARY=${ZLIB_LIBRARY}"   # ZLIB_LIB is 'optimized;ReleaseLib;debug;DebugLib'--
 
             "-DPNG_SHARED=OFF"
