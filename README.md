@@ -6,22 +6,20 @@
 
 OpenSoar - is an experimental fork of the wellknown gliding software XCSoar.
 
-... and XCSoar is a tactical glide computer for Android, Linux, Mac OS X,
-and Windows.
+... and XCSoar is a tactical glide computer for Android, Linux, Mac OS X and Windows.
 
-This file is aimed at developers.  Developers should [read the
+This file is aimed at developers.  Developers should [read the (XCSoar-)
 developer manual](https://xcsoar.readthedocs.io/en/latest/).
 
 Users can refer to the Users' Manual which, for the latest release, can be
-downloaded via the [XCSoar home page](https://xcsoar.org/discover/manual.html).
+downloaded via the [XCSoar home page](https://xcsoar.org/discover/manual.html), because there is no difference yet.
 
 ## Getting the source
 
-The XCSoar source code is managed with git. It can be fetched with the
-following command:
+The OpenSoar source code is managed with git. It can be fetched with the following command:
 
 ```bash
-git clone --recurse-submodules https://github.com/XCSoar/XCSoar
+git clone --recurse-submodules https://github.com/Opensoaring/OpenSoar
 ```
 
 To update your repository, use the following command:
