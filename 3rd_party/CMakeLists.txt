@@ -217,6 +217,7 @@ if(EXISTS ${_TARGET_LIBRARY})
     set(_COMPLETE_INSTALL OFF)
 else()
     set(_COMPLETE_INSTALL ON)
+    ##   message(FATAL_ERROR "### PNG: _TARGET_LIBRARY = ${_TARGET_LIBRARY} ")
 endif()
 #### set(_COMPLETE_INSTALL ON) ## test only (03.11.2024)!!!!!!!!
 # -------------------------------------------------
