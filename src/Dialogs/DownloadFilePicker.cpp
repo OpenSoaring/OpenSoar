@@ -67,9 +67,8 @@ private:
   /* virtual methods from class Net::DownloadListener */
   void OnDownloadAdded(const std::string_view _name, // const DownloadType type, // Path _path_relative,
                        size_t size, size_t position) noexcept override {
-//    if (!complete && path_relative == _path_relative) {
     if (!complete && name == _name) {
-      if (!got_size && size >= 0) {
+      if (!got_size && (int)size >= 0) {
         got_size = true;
         env.SetProgressRange(uint64_t(size) / 1024u);
       }
