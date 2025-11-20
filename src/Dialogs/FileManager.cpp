@@ -420,7 +420,7 @@ ManagedFileListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
 
   if (file.downloading) {
     StaticString<64> text;
-    if (file.download_status.position < 0) {
+    if ((int)file.download_status.position < 0) {
       text = _("Queued");
     } else if (file.download_status.size > 0) {
       text.Format("%s (%u%%)", _("Downloading"),
