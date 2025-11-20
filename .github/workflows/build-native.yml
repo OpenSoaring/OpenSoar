@@ -1,4 +1,4 @@
-# for dev-branch only
+# complete build, release upload and test
 ---
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ on:
       - '.github/workflows/build-translation.yml'
       - '.readthedocs.yaml'
     branches:
-     # - master
+      - master
       - dev-branch
     tags:
       - 'v*'
@@ -31,14 +31,17 @@ on:
       - '.github/workflows/build-translation.yml'
       - '.readthedocs.yaml'
     branches:
-     # - master
-       - dev-branch
+      - master
+      # - dev-branch
 
 env:
-  DEBUG: n
+  DEBUG: y
   BOOST: boost_1_87_0
   BUILD_TARGETS: UNIX,WIN64,PC
   TEST_TARGETS: UNIX,KOBO
+  VERBOSE: 2
+  # EXPORT: false = ${{ vars.EXPORT }}
+  # WITH_TEST: false  = ${{ vars.WITH_TEST }}
 
 jobs:
   release:
@@ -93,6 +96,8 @@ jobs:
           echo "CurrDir = $(pwd)"
 
   test: # step3, but aligned with 'build-dev-test.yml'
+    # if: false
+    if: ${{ vars.WITH_TEST != 'false' }}
     runs-on: ${{ matrix.os }}
     needs: build # step2
     strategy:
@@ -100,34 +105,53 @@ jobs:
         include:
           - os: ubuntu-latest
             target: UNIX
+            # target_container: debian:bookworm-slim
+
+          - os: ubuntu-22.04
+            target: UNIX
             target_container: debian:bookworm-slim
 
           - os: ubuntu-24.04
             target: UNIX
 
-          - os: macos-13
-            target: OSX64
-
           - os: macos-14
             target: OSX64
-
-          - os: macos-14
-            target: MACOS
 
           - os: macos-15
+            target: OSX64
+
+          - os: macos-15-intel
+            target: OSX64
+
+          - os: macos-14
             target: MACOS
+ 
+          - os: macos-15
+            target: MACOS
+
+          - os: macos-14
+            target: IOS64
+
+          - os: macos-15
+            target: IOS64
 
           - os: windows-2022
             target: WIN64
 
-          - os: windows-2019
+          - os: windows-2022
             target: PC
+
+          - os: windows-2025
+            target: WIN64
+
+          - os: windows-latest
+            target: WIN64
 
     container: ${{ matrix.target_container }}
     continue-on-error: true
     steps:
       - id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install checkout dependencies (Ubuntu)
         if: ${{ startsWith(matrix.os, 'ubuntu-') }}
@@ -168,21 +192,24 @@ jobs:
           echo "TEST_RUN_ID=$RUN_ID" >> $env:GITHUB_ENV
           echo "========================"
 
-      - name: Test Variables
-        run: |
-          echo "test-run-id: ${{ env.TEST_RUN_ID }}"
-          echo "current run-id: ${{ github.run_id }}"
-          echo "github-token: ${{ github.token }}"
-          echo "name: Test-${{ env.TEST_COMMIT }}-${{ matrix.target }}"
-          echo "path: ${{ github.workspace }}"
-
       - name: Fetch Artifacts
         uses: actions/download-artifact@v4
         with:
           run-id: ${{ env.TEST_RUN_ID }}  
           github-token: ${{ github.token }}
           name: Test-${{ env.TEST_COMMIT }}-${{ matrix.target }}
-          path: ${{ github.workspace }}
+          path: ${{ github.workspace }}/output/${{ matrix.target }}/bin
+
+      - name: Test Variables
+        run: |
+          echo "test-run-id: ${{ env.TEST_RUN_ID }}"
+          echo "current run-id: ${{ github.run_id }}"
+          echo "github-token: ${{ github.token }}"
+          echo "name: Test-${{ env.TEST_COMMIT }}-${{ matrix.target }}"
+          # echo "path: ${{ github.workspace }}/output/${{ matrix.target }}/bin"
+          # ls -l ${{ github.workspace }}/output/${{ matrix.target }}/bin
+          echo "path: output/${{ matrix.target }}/bin"
+          ls -l output/${{ matrix.target }}/bin
 
       - name: Run Test Programs on ${{ matrix.target }}
         run: |
@@ -210,109 +237,140 @@ jobs:
             target_upload: true
             ndk: r28
             target_container: debian:bookworm-slim
-          
+
           - os: ubuntu-24.04
             target: ANDROID
             target_bin: OpenSoar
             target_final: OpenSoar
             target_ext: .apk
             target_test: false
-            target_upload: false
+            target_upload: true
             ndk: r28
             target_container: debian:bookworm-slim
           #### needs very long time.. 
           - os: ubuntu-24.04
-          # - os: ubuntu-22.04
+            target: ANDROIDFAT
+            no_build: true
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext: .apk
+            target_test: false
+            target_upload: false
+            # target_upload: true
+            ndk: r28
+            target_container: debian:bookworm-slim
+            # ------------------------------------------------------
+          - os: ubuntu-22.04
             target: UNIX
-            target_bin: OpenSoar_${{ needs.release.outputs.version }}_amd64
-            target_final: OpenSoar_
+            no_build: true
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext: .deb
+            target_test: false
+            target_upload: false
+            target_container: debian:bookworm-slim    # => Ubuntu 24.04
+            # target_container: debian:bullseye-slim # => Ubuntu 22.04
+
+          - os: ubuntu-24.04      # - os: ubuntu-22.04
+            target: UNIX
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            # target_bin: OpenSoar_${{ needs.release.outputs.version }}_amd64
+            # target_final: OpenSoar_
             target_ext: .deb
             target_test: true
-            # temporary false: target_upload: true
-            target_upload: false
+            target_upload: true
+            # target_container: ubuntu:24.04
             target_container: debian:bookworm-slim    # => Ubuntu 24.04
             #  target_container: debian:bullseye-slim # => Ubuntu 22.04
 
+          - os: ubuntu-24.04      # - os: ubuntu-22.04
+            target: UNIX
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext:
+            target_test: false
+            target_upload: false
+            sanitizer: true
+            target_container: debian:bookworm-slim    # => Ubuntu 24.04
+            #  target_container: debian:bullseye-slim # => Ubuntu 22.04
+          
           - os: ubuntu-22.04
             target: WIN64
             target_bin: OpenSoar
             target_final: OpenSoar
             target_ext: .exe
-            target_test: true
+            target_test: false
             target_upload: false
             target_container: debian:bookworm-slim
-          
+
           - os: ubuntu-24.04
             target: WIN64
             target_bin: OpenSoar
             target_final: OpenSoar
             target_ext: .exe
-            target_test: false
-            # temporary false: target_upload: true
-            target_upload: false
+            target_test: true
+            target_upload: true
             target_container: debian:bookworm-slim
-          
+
           - os: ubuntu-24.04
             target: PC
             target_bin: OpenSoar
             target_final: OpenSoar
             target_ext: .exe
             target_test: true
-            # temporary false: target_upload: true
-            target_upload: false
+            target_upload: true
             target_container: debian:bookworm-slim
-          
-          - os: macos-13
+
+          - os: macos-15-intel
             target: OSX64
             target_bin: OpenSoar
             target_final: OpenSoar
             target_ext: ''
             target_test: true
-            # temporary false: target_upload: true
-            target_upload: false
+            target_upload: true
             # w/o container
 
-          - os: macos-14
+          - os: macos-15
             target: MACOS
             target_bin: OpenSoar
             target_final: OpenSoar
             target_ext: ''
             target_test: true
-            # temporary false: target_upload: true
-            target_upload: false
+            target_upload: true
             # w/o container
           
-          - os: macos-14
+          - os: macos-15
             target: IOS64
             target_bin: OpenSoar
             target_final: OpenSoar
             target_ext: ''
-            target_test: false
-            # temporary false: target_upload: true
-            target_upload: false
+            target_test: true
+            target_upload: true
             # w/o container
         # exclude:
           #### needs long time.. 
-          - os: ubuntu-24.04
+          - os: ubuntu-22.04
             target: KOBO
             target_bin: OpenSoar
+            no_build: true
             target_final: KoboRoot
             target_ext: .tgz
             target_test: false
-            # temporary false: target_upload: true
-            # how is uploaded target working at KOBO?
-            target_upload: false
+            target_upload: true
             target_container: debian:bookworm-slim
   
     steps:
       - name: Check Git Variables
         # if: contains(env.BUILD_TARGETS, ${{ matrix.target }})
+        #### if: ${{ !matrix.no_build }}
         run: |
           echo "(No) Check Git variables"
           COMMIT=$(echo $GITHUB_SHA | head -c 7)
           echo "GIT_COMMIT=$COMMIT" >> $GITHUB_ENV
         
       - name: Install checkout dependencies
+        # if: ${{ startsWith(matrix.os, 'ubuntu-') && !matrix.no_build }}
         if: ${{ startsWith(matrix.os, 'ubuntu-') }}
         run: |
           echo "Install checkout dependencies: ${{ matrix.target }} "
@@ -321,39 +379,37 @@ jobs:
             ca-certificates rsync openssh-client
   
       - name: Set environment variables
+        # if: ${{ !matrix.no_build }}
         run: |
             case ${{ matrix.target }} in
                 ANDROID | ANDROIDFAT | ANDROIDAARCH64)
                   echo "BINARY_DIR=output/ANDROID/bin" >> $GITHUB_ENV
-                  ;;
-                KOBO)
-                  echo "BINARY_DIR=output/${{ matrix.target }}/KoboRoot" >> $GITHUB_ENV
                   ;;
                 *)
                   echo "BINARY_DIR=output/${{ matrix.target }}/bin" >> $GITHUB_ENV
                   ;;
             esac
             
-            echo "DEBUG=$DEBUG"
+            echo "DEBUG=${{ env.DEBUG }}"
             case ${{ matrix.target }} in
-                OSX64 | MACOS)
-                  echo "BUILD_PARAMS=-j1 TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
-                  # echo "BUILD_PARAMS=-j$(nproc) TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
-                  echo "BUILDER=gmake" >> $GITHUB_ENV
-                  ;;
-                IOS64)
-                  echo "BUILD_PARAMS=-j1 TARGET=${{ matrix.target }} DEBUG=$DEBUG} USE_CCACHE=y V=2 OPTIMIZE=-O0" >> $GITHUB_ENV
+                OSX64 | IOS64 | MACOS)
+                  PHYS_KERNELS=$(sysctl -n hw.physicalcpu)
+                  echo "BUILD_PARAMS=-j$PHYS_KERNELS TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=${{ env.VERBOSE }} OPTIMIZE=-O0" >> $GITHUB_ENV
                   echo "BUILDER=gmake" >> $GITHUB_ENV
                   ;;
                 *)
-                  echo "BUILD_PARAMS=-j$(nproc) TARGET=${{ matrix.target }} DEBUG=$DEBUG USE_CCACHE=y V=2" >> $GITHUB_ENV
+                  PHYS_KERNELS=$(nproc)
+                  echo "BUILD_PARAMS=-j$PHYS_KERNELS TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=${{ env.VERBOSE }}" >> $GITHUB_ENV
                   echo "BUILDER=make" >> $GITHUB_ENV
                   ;;
             esac
             
+            echo "PHYS_KERNELS=$PHYS_KERNELS" >> $GITHUB_ENV
+            echo "DEPLOY_DIR=deploy/${{ matrix.target }}" >> $GITHUB_ENV
             if ${{ matrix.target_test }} ; then echo "IS_TEST=everything" >> $GITHUB_ENV; fi
 
       - name: Set vars for release
+        # if: ${{ startsWith(github.ref, 'refs/tags/v') && !matrix.no_build }}
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         run: |
           echo "Set vars for release: ${{ matrix.target }} "
@@ -364,27 +420,40 @@ jobs:
           fi
           
           if [ ${{ startsWith(github.ref, 'refs/tags/v') }} = true ]; then
-            echo "DEBUG=n" >> $GITHUB_ENV
+            echo "DEBUG=y" >> $GITHUB_ENV
             if [ ${{ matrix.target_final }} = "OpenSoar" ]; then
               echo "TARGET_FINAL=${{ matrix.target_final }}" >> $GITHUB_ENV
             fi
           elif [ ${{ matrix.target }} = 'WIN64' ]; then
             # August2111: with WIN64 don't use the Debug option
             echo "no DEBUG flag"
-            echo "DEBUG=n" >> $GITHUB_ENV
+            echo "DEBUG=y" >> $GITHUB_ENV
           fi
 
       - name: Checkout code
+        # if: ${{ !matrix.no_build }}
         uses: actions/checkout@v5
         with:
           submodules: true
   
+####      - name: Early exit
+####        if: ${{ matrix.target !=  'PC' }}
+####        run: |
+####          sleep 30
+####          gh run cancel ${{ github.run_id }}
+####          gh run watch ${{ github.run_id }}
+####        env:
+####          # GH_TOKEN: ${{ github.token }}
+####          GH_TOKEN: ${{ secrets. GITHUB_TOKEN }}
+
       - name: Cache ccache
+        if: ${{ !matrix.no_build }}
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ matrix.target }}-ccache
   
       - name: "Cache Boost"
+        if: ${{ !matrix.no_build }}
         uses: actions/cache@v4
         with:
           key: ${{ env.BOOST }}-${{ hashFiles('lib/boost/patches/**') }}
@@ -394,6 +463,7 @@ jobs:
             ${{ github.workspace }}/output/src/${{ env.BOOST }}/boost
   
       - name: Install dependencies
+        if: ${{ !matrix.no_build }}
         run: |
           echo "Install dependencies: ${{ matrix.target }}"
           echo "CurrDir = $(pwd)"
@@ -417,7 +487,8 @@ jobs:
                 ./ide/provisioning/install-debian-packages.sh WIN
                 ;;
               UNIX)
-                ./ide/provisioning/install-debian-packages.sh LIBINPUT_GBM DEBIAN
+                ./ide/provisioning/install-debian-packages.sh
+                ### ./ide/provisioning/install-debian-packages.sh LIBINPUT_GBM DEBIAN
                 ;;
               KOBO)
                 ./ide/provisioning/install-debian-packages.sh ARM KOBO
@@ -431,7 +502,7 @@ jobs:
   
       - name: Prepare signing key
         shell: bash
-        if: ${{ startsWith(matrix.target, 'ANDROID') && startsWith(github.ref, 'refs/tags/v') }}
+        if: ${{ startsWith(matrix.target, 'ANDROID') && startsWith(github.ref, 'refs/tags/v') && !matrix.no_build }}
         run: |
           echo "Prepare signing key: ${{ matrix.target }}"
           # please use secrets.XCSOAR_UPLOAD_KEY... for secrets.OPENSOAR_UPLOAD_KEY to be
@@ -443,53 +514,50 @@ jobs:
           fi
   
       - name: Compile OpenSoar - PR
-        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') && !matrix.no_build && !matrix.sanitizer }}
         run: |
           echo "Compile OpenSoar - PR: ${{ matrix.target }}"
-          ${{ env.BUILDER }} ${{ env.BUILD_PARAMS }} ${{ env.IS_TEST }} 
+          # ===========================================================
+          mkdir -p ${{ env.DEPLOY_DIR }} 
+          # Build:
           case ${{ matrix.target }} in
               ANDROID | ANDROIDFAT | ANDROIDAARCH64)
-                mv output/ANDROID/bin/${{ matrix.target_bin }}-debug${{ matrix.target_ext }} ${{ matrix.target_bin }}${{ matrix.target_ext }}
+                ${{ env.BUILDER }} ${{ env.BUILD_PARAMS }} ${{ env.IS_TEST }} 
+                echo "mv ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}-debug${{ matrix.target_ext }} deploy/${{ matrix.target }}/${{ matrix.target_bin }}${{ matrix.target_ext }}"
+                mv -v ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}-debug${{ matrix.target_ext }} deploy/${{ matrix.target }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
                 ;;
-              KOBO | UNIX)
-                 # do noting with deb files or Kobo files...
+              KOBO)
+                ${{ env.BUILDER }} ${{ env.BUILD_PARAMS }} ${{ env.IS_TEST }} output/${{ matrix.target }}/${{ matrix.target_final }}${{ matrix.target_ext }}
+                echo "mv -v output/${{ matrix.target }}/${{ matrix.target_final }}${{ matrix.target_ext }} deploy/${{ matrix.target }}"
+                mv -v output/${{ matrix.target }}/${{ matrix.target_final }}${{ matrix.target_ext }} ${{ env.DEPLOY_DIR }} 
                 ;;
+                
+              UNIX)
+                 # no exra build before necessary!
+                 dpkg-buildpackage --version
+                 DEB_BUILD_OPTIONS="ccache=y debug=n verbose=2 mo all ${{ env.IS_TEST }}" dpkg-buildpackage --jobs=${{ env.PHYS_KERNELS }} --no-sign
+                 # copy deb files files to a 'deploy' folder...
+                 mv -v ../*.dsc ${{ env.DEPLOY_DIR }} 
+                 mv -v ../*.deb ${{ env.DEPLOY_DIR }} 
+                ;;
+                
               *)
-                mv output/${{ matrix.target }}/bin/${{ matrix.target_bin }}${{ matrix.target_ext }} ${{ matrix.target_bin }}${{ matrix.target_ext }}
+                ${{ env.BUILDER }} ${{ env.BUILD_PARAMS }} ${{ env.IS_TEST }} 
+                echo "cp -v output/${{ matrix.target }}/bin/${{ matrix.target_bin }}${{ matrix.target_ext }} deploy/${{ matrix.target }}"
+                mv -v ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }} ${{ env.DEPLOY_DIR }} 
+                mv -v ${{ env.BINARY_DIR }}/vali-xcs${{ matrix.target_ext }} ${{ env.DEPLOY_DIR }} 
                 ;;
           esac
 
-      - name: Test Directory (UNIX)
-        if: ${{ startsWith(matrix.target, 'UNIX') }}
-        run: |
-          echo "----------------------------------------------------------------"
-          if [ -d ${{ env.BINARY_DIR }} ]; then
-            echo "ls -l output/DEBIAN-${{ matrix.target }}/bin"
-            echo "=============================================================="
-            ls -l ${{ env.BINARY_DIR }}
-          else
-            echo "dir '${{ env.BINARY_DIR }}' doesn't exist"
-          fi
-          echo "----------------------------------------------------------------"
-      - name: Upload Test artifact
-        uses: actions/upload-artifact@v5
-        if: ${{ matrix.target_test }}
-        with:
-          name: Test-${{ env.GIT_COMMIT }}-${{ matrix.target }}
-          path: |
-            test/README
-            ${{ env.BINARY_DIR }}/Test*
-            ${{ env.BINARY_DIR }}/test_*
-          retention-days: 1
-
       - name: Compile OpenSoar - Sanitizer Check
-        if: ${{ matrix.target == 'UNIX' && !startsWith(github.ref, 'refs/tags/v') && github.ref == 'refs/heads/master'  }}
+        # if: ${{ matrix.sanitizer == 'yes' }}  # !!!!August2111:
+        if: ${{ matrix.sanitizer }}  # !!!!August2111:
         run: |
           echo "Unix - Sanitizer Check"
-          make -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 everything VFB=y SANITIZE=y DEBUG_GLIBCXX=y
+          ${{ env.BUILDER }} -j${{ env.PHYS_KERNELS }} TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=${{ env.VERBOSE }} everything VFB=y SANITIZE=y DEBUG_GLIBCXX=y
   
       - name: Compile OpenSoar - Release
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && !matrix.no_build && !matrix.sanitizer }}
         run: |
           echo "Compile OpenSoar - Release"
           # please use secrets.XCSOAR_UPLOAD_KEY... for secrets.OPENSOAR_UPLOAD_KEY to be
@@ -498,102 +566,100 @@ jobs:
               ANDROID | ANDROIDFAT | ANDROIDAARCH64))
                 if [ -n "${{ secrets.XCSOAR_UPLOAD_KEY_JKS_PASSWORD }}" ] && [ -n "${{ secrets.XCSOAR_UPLOAD_KEY_JKS_KEY_ALIAS }}" ]; then
                   ANDROID_KEYSTORE_PASS=${{ secrets.XCSOAR_UPLOAD_KEY_JKS_PASSWORD }} \
-                  make -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 \
+                  ${{ env.BUILDER }} -j${{ env.PHYS_KERNELS }} TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=${{ env.VERBOSE }} \
                   output/ANDROID/bin/${{ matrix.target_bin }}${{ matrix.target_ext }} \
                   ANDROID_KEYSTORE=~/.android/signing-key.jks ANDROID_KEY_ALIAS=${{ secrets.XCSOAR_UPLOAD_KEY_JKS_KEY_ALIAS }}
                 else
-                  make -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 \
+                  ${{ env.BUILDER }} -j${{ env.PHYS_KERNELS }} TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=${{ env.VERBOSE }} \
                   output/ANDROID/bin/${{ matrix.target_bin }}${{ matrix.target_ext }}
                 fi
                 ;;
               WIN64 | WIN32 | PC)
-                make -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 everything
+                ${{ env.BUILDER }} -j${{ env.PHYS_KERNELS }} TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=${{ env.VERBOSE }} everything
                 ;;
               KOBO)
-                make -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 output/${{ matrix.target }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
+                ${{ env.BUILDER }} -j${{ env.PHYS_KERNELS }} TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=${{ env.VERBOSE }} output/${{ matrix.target }}/${{ matrix.target_final }}${{ matrix.target_ext }}
                 ;;
               UNIX)
-                mkdir -p output/UNIX/DPKG
-                rsync -apt . output/UNIX/DPKG --exclude=output/UNIX/DPKG
-                cd output/UNIX/DPKG
-                DEB_BUILD_OPTIONS=ccache dpkg-buildpackage --jobs-force=$(nproc) --no-sign
-                cp *.deb ../
+                dpkg-buildpackage --version
+                DEB_BUILD_OPTIONS="ccache" dpkg-buildpackage --jobs-force=${{ env.PHYS_KERNELS }} --no-sign
                 ;;
               OSX64 | IOS64 | MACOS)
-                gmake -j$(nproc) TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=2 OPTIMIZE="-O0"
+                ${{ env.BUILDER }} -j${{ env.PHYS_KERNELS }} TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=${{ env.VERBOSE }} OPTIMIZE="-O0"
                 ;;
             esac
   
+      - name: Test Directory
+        if: ${{ !matrix.no_build}}
+        run: |
+          if [ -d ./${{ env.DEPLOY_DIR }}  ]; then
+             echo "----------------------------------------------------------------"
+             ls -l ./${{ env.DEPLOY_DIR }} 
+             echo "----------------------------------------------------------------"
+          fi
+          if [ -d ./${{ env.BINARY_DIR }}  ]; then
+             ls -l ${{ env.BINARY_DIR }}
+             echo "----------------------------------------------------------------"
+          fi
+      - name: Upload Test artifact
+        if: ${{ matrix.target_test && (vars.EXPORT  == 'true') && (vars.WITH_TEST != 'false') }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: Test-${{ env.GIT_COMMIT }}-${{ matrix.target }}
+          path: |
+            ${{ env.BINARY_DIR }}/Test*
+            ${{ env.BINARY_DIR }}/test_*
+          retention-days: 1
+
       - name: Upload Release artifact
         uses: actions/upload-artifact@v5
-        # if: ${{ (matrix.target_upload || startsWith(github.ref, 'refs/tags/v')) }} 
-        if: ${{ matrix.target_upload }} 
+        if: ${{ (matrix.target_upload &&(vars.EXPORT == 'true') || startsWith(github.ref, 'refs/tags/v')) }} 
         with:
-          name: ${{ matrix.target_final }}-${{ env.GIT_COMMIT }}-${{ matrix.target }}${{ matrix.target_ext }}
+          name: ${{ matrix.target_bin }}-${{ env.GIT_COMMIT }}-${{ matrix.target }}
           path: |
-            ${{ matrix.target_bin }}${{ matrix.target_ext }}
-            # ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
-            echo "Binary Directory: ${{ env.BINARY_DIR }}"
+            deploy/${{ matrix.target }}/*.*
           retention-days: 2
-  
-      - name: Test Directory (DEBIAN-UNIX)
-        if: ${{ startsWith(matrix.target, 'UNIX') }}
-        run: |
-          if [ -d output/UNIX/DPKG ]; then 
-            cd output/UNIX/DPKG
-            TARGET_PATH=output/DEBIAN-${{ matrix.target }}
-          else
-            TARGET_PATH=output/${{ matrix.target }}
-          fi
-          echo "----------------------------------------------------------------"
-          if [ -d $TARGET_PATH/bin ]; then
-            echo "ls -l $TARGET_PATH/bin"
-            echo "=============================================================="
-            ls -l $TARGET_PATH/bin
-          else
-            echo "dir '$TARGET_PATH/bin' doesn't exist"
-          fi
-          echo "----------------------------------------------------------------"
-  
+
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
-        if: ${{ startsWith(github.ref, 'refs/tags/v') && matrix.target_upload == true && needs.release.outputs.upload_url != '' }}
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.target_upload && (vars.EXPORT == 'true')) && needs.release.outputs.upload_url != '' && !matrix.no_build && !matrix.sanitizer }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          # asset_path: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
           asset_path: ${{ matrix.target_bin }}${{ matrix.target_ext }}
           asset_name: ${{ matrix.target_final }}-${{ matrix.target }}${{ matrix.target_ext }}
           asset_content_type: application/zip
   
-      ## XCSoar - name: Deploy to Download server - testing
-      ## XCSoar   # if: ${{ github.repository == 'August2111/OpenSoar' && github.ref == 'refs/heads/master' }}
-      ## XCSoar   # this is only available on XCSoar! OpenSoar has no automatic access to the Download Server
-      ## XCSoar   if: ${{ github.repository == 'XCSoar/XCSoar' && github.ref == 'refs/heads/master' }}
-      ## XCSoar   uses: easingthemes/ssh-deploy@main
-      ## XCSoar   env:
-      ## XCSoar     SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
-      ## XCSoar     ARGS: "-rltgoDzvO"
-      ## XCSoar     # SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
-      ## XCSoar     SOURCE: ${{ matrix.target_bin }}${{ matrix.target_ext }}
-      ## XCSoar     REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
-      ## XCSoar     REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
-      ## XCSoar     TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}/
-      ## XCSoar     SCRIPT_BEFORE: mkdir -p ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}
-  
-      ## XCSoar - name: Deploy to Download server - release
-      ## XCSoar   # if: ${{ github.repository == 'OpenSoaring/OpenSoar' && startsWith(github.ref, 'refs/tags/v') && matrix.target_upload == true }}
-      ## XCSoar   # this is only available on XCSoar! OpenSoar has no automatic access to the Download Server
-      ## XCSoar   if: ${{ github.repository == 'XCSoar/XCSoar' && startsWith(github.ref, 'refs/tags/v') && matrix.target_upload == true }}
-      ## XCSoar   uses: easingthemes/ssh-deploy@main
-      ## XCSoar   env:
-      ## XCSoar     SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
-      ## XCSoar     ARGS: "-rltgoDzvO"
-      ## XCSoar     # SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
-      ## XCSoar     SOURCE: ${{ matrix.target_bin }}${{ matrix.target_ext }}
-      ## XCSoar     REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
-      ## XCSoar     REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
-      ## XCSoar     TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
-      ## XCSoar     SCRIPT_BEFORE: mkdir -p ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
+      - name: Deploy to OpenSoar  / Download server
+        if: ${{ !matrix.no_build && !matrix.sanitizer && matrix.target_upload && (vars.DEPLOY == 'true') }}
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          ARGS: "-rltgoDzvO"
+          SOURCE: deploy/${{ matrix.target }}/
+          REMOTE_HOST: ${{ secrets.DEPLOY_HOST }}
+          REMOTE_USER: ${{ secrets.DEPLOY_USER }}
+          TARGET: ${{ secrets.DEPLOY_PATH }}/testing/${{ matrix.target }}/
+          SCRIPT_BEFORE: |
+            echo "Script Before: ================"
+            mkdir -p ${{ secrets.DEPLOY_PATH }}/testing/${{ matrix.target }}
+          SCRIPT_AFTER: |
+            echo "Script After: ================"
+
+      - name: Deploy to Download server - release
+        if: ${{ github.repository == 'OpenSoaring/OpenSoar' && startsWith(github.ref, 'refs/tags/v') && matrix.target_upload && (vars.DEPLOY == 'true') && !matrix.no_build && !matrix.sanitizer  }}
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
+          ARGS: "-rltgoDzvO"
+          SOURCE: deploy/${{ matrix.target }}/
+          REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
+          REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
+          TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
+          SCRIPT_BEFORE: |
+            echo "Script Before: ================"
+            mkdir -p ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
+          SCRIPT_AFTER: |
+            echo "Script After: ================"
