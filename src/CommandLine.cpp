@@ -34,7 +34,6 @@ CommandLine::Parse(Args &args)
 {
   std::string_view datapath;
   std::string_view profilepath;
-  std::string_view testpath;
   while (!args.IsEmpty()) {
     const char *s = args.GetNext();
 
