@@ -28,7 +28,7 @@ else:
 if len(sys.argv) > 2:
   toolchain = sys.argv[2]
 else:
-  toolchain = "msvc2022"
+  toolchain = "msvc2026"
   
 if len(sys.argv) > 3:
   creation_flag = sys.argv[3]
@@ -37,7 +37,7 @@ if len(sys.argv) > 3:
 
 
 if sys.platform.startswith('win'):
-    if not toolchain in ['mgw73', 'mgw103', 'mgw112', 'mgw122', 'ninja', 'msvc2019', 'msvc2022',
+    if not toolchain in ['mgw73', 'mgw103', 'mgw112', 'mgw122', 'ninja', 'msvc2019', 'msvc2022', 'msvc2026',
         'clang10', 'clang11', 'clang12', 'clang13', 'clang14', 'clang15', 'clang16' , 'clang17' ]:
         toolchain = 'mgw112'  # standard toolchain on windows
 else:
