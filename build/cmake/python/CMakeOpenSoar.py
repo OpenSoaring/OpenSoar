@@ -2,10 +2,10 @@
 
 import os, sys, subprocess
 
-# 
-Configuration = 'Release'
+# Configuration = 'Release'
 # Configuration = 'Debug'
-# Configuration = 'Multi'
+# 
+Configuration = 'Multi'
 
 
 # if len(sys.argv) > 1:
@@ -96,6 +96,7 @@ generator = {
            'msvc2017' : 'Visual Studio 15',
            'msvc2019' : 'Visual Studio 16',
            'msvc2022' : 'Visual Studio 17',
+           'msvc2026' : 'Visual Studio 18',
 }
 
 def visual_studio(toolchain, env):
@@ -103,6 +104,8 @@ def visual_studio(toolchain, env):
   #prev_batch = 'C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/VC/Auxiliary/Build/vcvars64.bat'
   if toolchain == 'msvc2022':
     prev_batch = program_dir + '/Microsoft Visual Studio/2022/Preview/VC/Auxiliary/Build/vcvars64.bat'
+  elif toolchain == 'msvc2026':
+    prev_batch = program_dir + '/Microsoft Visual Studio/18/Insiders/VC/Auxiliary/Build/vcvarsx64.bat'
   else:
     print('wrong toolchain: ', toolchain, '!')
     exit(1)
@@ -133,6 +136,7 @@ compiler_setup = {
            'msvc2017' : visual_studio,
            'msvc2019' : visual_studio,
            'msvc2022' : visual_studio,
+           'msvc2026' : visual_studio,
 }
 
 def create_opensoar(args):
@@ -258,7 +262,7 @@ def create_opensoar(args):
   if prev_batch:
     print(prev_batch)
     
-  if build_dir.endswith('msvc2022'):
+  if build_dir.endswith('msvc2022') or build_dir.endswith('msvc2026') or false:
     if Configuration == 'Release':
       build_dir = build_dir + 'release'
     elif Configuration == 'Debug':
