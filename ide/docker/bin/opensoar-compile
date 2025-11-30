@@ -2,7 +2,7 @@
 
 CPUS=$(lscpu -p | tail -n1 | cut -f1 -d,)
 (( CPUS++ ))
-cd /opt/xcsoar || exit 1
+cd /opt/OpenSoar || exit 1
 
 ARGS=($@)
 TARGET=${ARGS[0]}
