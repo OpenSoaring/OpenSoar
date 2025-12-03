@@ -40,7 +40,8 @@ linux_headers = SabotageLinuxHeadersProject(
 
 gcc = GccProject(
     (
-        "https://ftp.gnu.org/gnu/gcc/gcc-13.2.0/gcc-13.2.0.tar.xz",
+        "https://ftpmirror.gnu.org/gcc/gcc-13.2.0/gcc-13.2.0.tar.xz",
+        "https://sourceware.org/ftp/gcc/releases/gcc-13.2.0/gcc-13.2.0.tar.xz",
         # possible 12.4.0, 13.3.0, 14.2.0
         # invalid - new 14.2.0: "https://fossies.org/linux/misc/gcc-14.2.0.tar.xz/", "a7b39bc69cbf9e25826c5a60ab26477001f7c08d85cec04bc0e29cabed6f3cc9"
     ),
@@ -91,6 +92,8 @@ gcc_bootstrap = GccBootstrapProject(
 musl = MuslProject(
     (
         "https://www.musl-libc.org/releases/musl-1.1.18.tar.gz",
+        # Ubuntu distfiles mirror as fallback
+        "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/musl/1.1.18-1/musl_1.1.18.orig.tar.gz",
         # invalid - new 1.2.5: "https://fossies.org/linux/misc/musl-1.2.5.tar.gz", "a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4"
     ),
     "d017ee5d01aec0c522a1330fdff06b1e428cb409e1db819cc4935d5da4a5a118",
