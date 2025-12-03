@@ -1,14 +1,15 @@
 #!/usr/bin/make -f
 # -*- mode: makefile; coding: utf-8 -*-
 
+SAVE_BUILD_OPTIONS=$(DEB_BUILD_OPTIONS)
 OPTIONS =
 
 TARGET = UNIX
 OPTIONS += TARGET=$(TARGET)
 
-# allow Debian builds in the same repository as normal builds
-TARGET_OUTPUT_DIR = output/DEBIAN-$(TARGET)
-OPTIONS += TARGET_OUTPUT_DIR=$(TARGET_OUTPUT_DIR)
+# Debian builds should be a normal build in normal folder 'UNIX':
+# TARGET_OUTPUT_DIR = output/DEBIAN-$(TARGET)
+# OPTIONS += TARGET_OUTPUT_DIR=$(TARGET_OUTPUT_DIR)
 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
   OPTIONS += DEBUG=y
@@ -34,7 +35,9 @@ endif
 
 .PHONY: override_dh_auto_build
 override_dh_auto_build:
-	$(MAKE) $(OPTIONS) all mo
+	echo "$(MAKE) $(OPTIONS)"
+	$(MAKE) $(OPTIONS)
+	# $(MAKE) $(OPTIONS) all mo
 
 .PHONY: override_dh_auto_test
 override_dh_auto_test:
@@ -42,7 +45,8 @@ override_dh_auto_test:
 
 .PHONY: override_dh_auto_clean
 override_dh_auto_clean:
-	rm -rf $(TARGET_OUTPUT_DIR) output/data output/host output/include output/po output/test
+	echo "SAVE_BUILD_OPTIONS: '$(SAVE_BUILD_OPTIONS)'"
+	rm -rf output/$(TARGET) output/data output/host output/include output/po output/test
 
 .PHONY: override_dh_auto_install
 override_dh_auto_install:
