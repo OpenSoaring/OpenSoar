@@ -491,7 +491,8 @@ jobs:
                  # do nothing with deb files or Kobo files...
                  DEB_BUILD_OPTIONS=ccache,noopt dpkg-buildpackage --jobs-force=${{ env.PHYS_KERNELS }} --no-sign
                  mkdir -p public/${{ matrix.target }}
-                 cp -vf ../opensoar_7.43-3.24.* public/${{ matrix.target }}
+                 # to big: cp -vf ../opensoar_7.43-3.24.* public/${{ matrix.target }}
+                 cp -v ../*.dsc public/${{ matrix.target }}
                  cp -v ../*.deb public/${{ matrix.target }}
                 ;;
                 
