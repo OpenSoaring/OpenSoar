@@ -2,31 +2,60 @@
 # -*- mode: makefile; coding: utf-8 -*-
 
 OPTIONS =
+NUMJOBS =
 
 TARGET = UNIX
 OPTIONS += TARGET=$(TARGET)
+export DEB_DH_SHLIBDEPS_ARGS_ALL=--dpkg-shlibdeps-params=--ignore-missing-info
 
-# allow Debian builds in the same repository as normal builds
-TARGET_OUTPUT_DIR = output/DEBIAN-$(TARGET)
-OPTIONS += TARGET_OUTPUT_DIR=$(TARGET_OUTPUT_DIR)
 
-ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-  OPTIONS += DEBUG=y
-else
-  OPTIONS += DEBUG=n
+
+ifneq (,$(filter output=%,$(DEB_BUILD_OPTIONS)))
+  OPTIONS += $(patsubst output=%,TARGET_OUTPUT_DIR==%,$(filter output=%,$(DEB_BUILD_OPTIONS)))
 endif
 
-ifneq (,$(findstring clang,$(DEB_BUILD_OPTIONS)))
-  OPTIONS += CLANG=y
+ifneq (,$(filter debug=%,$(DEB_BUILD_OPTIONS)))
+  OPTIONS += $(patsubst debug=%,DEBUG=%,$(filter debug=%,$(DEB_BUILD_OPTIONS)))
 endif
 
-ifneq (,$(findstring ccache,$(DEB_BUILD_OPTIONS)))
-  OPTIONS += USE_CCACHE=y
+ifneq (,$(filter clang=%,$(DEB_BUILD_OPTIONS)))
+  OPTIONS += $(patsubst clang=%,CLANG=%,$(filter clang=%,$(DEB_BUILD_OPTIONS)))
+endif
+
+ifneq (,$(filter ccache=%,$(DEB_BUILD_OPTIONS)))
+  OPTIONS += $(patsubst ccache=%,USE_CCACHE=%,$(filter ccache=%,$(DEB_BUILD_OPTIONS)))
 endif
 
 ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
-  NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
-  OPTIONS += -j$(NUMJOBS)
+  OPTIONS += -j$(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+endif
+
+BUILD_OPTIONS += $(OPTIONS) 
+#=========================
+ifneq (,$(filter verbose=%,$(DEB_BUILD_OPTIONS)))
+  BUILD_OPTIONS += $(patsubst verbose=%,V=%,$(filter verbose=%,$(DEB_BUILD_OPTIONS)))
+endif
+
+ifneq (,$(filter lto=%,$(DEB_BUILD_OPTIONS)))
+  LTO = $(patsubst lto=%,%,$(filter lto=%,$(DEB_BUILD_OPTIONS)))
+  BUILD_OPTIONS += LTO=$(LTO)
+  BUILD_OPTIONS += THIN_LTO=$(LTO)
+endif
+
+ifneq (,$(filter optimize=%,$(DEB_BUILD_OPTIONS)))
+  BUILD_OPTIONS += $(patsubst optimize=%,-O%,$(filter optimize=%,$(DEB_BUILD_OPTIONS)))
+endif
+
+ifneq (,$(findstring everything,$(DEB_BUILD_OPTIONS)))
+  BUILD_OPTIONS += everything
+endif
+
+ifneq (,$(findstring all,$(DEB_BUILD_OPTIONS)))
+  BUILD_OPTIONS += all
+endif
+
+ifneq (,$(findstring mo,$(DEB_BUILD_OPTIONS)))
+  BUILD_OPTIONS += mo
 endif
 
 %:
@@ -34,15 +63,27 @@ endif
 
 .PHONY: override_dh_auto_build
 override_dh_auto_build:
-	$(MAKE) $(OPTIONS) all mo
+	$(MAKE) $(BUILD_OPTIONS)
+#  all mo
 
-.PHONY: override_dh_auto_test
+
+ .PHONY: override_dh_auto_test
 override_dh_auto_test:
-	$(MAKE) $(OPTIONS) check
+	# $(MAKE) $(OPTIONS) check
+	@echo "no check"
 
 .PHONY: override_dh_auto_clean
 override_dh_auto_clean:
-	rm -rf $(TARGET_OUTPUT_DIR) output/data output/host output/include output/po output/test
+	dpkg-buildpackage --version
+	@echo "DEB_DH_SHLIBDE... : '$(DEB_DH_SHLIBDEPS_ARGS_ALL)'"
+	@echo "DEB_BUILD_OPTIONS : '$(DEB_BUILD_OPTIONS)'"
+	@echo "OPTIONS           : '$(OPTIONS)'"
+	@echo "BUILD_OPTIONS     : '$(BUILD_OPTIONS)'"
+	# rm -fv output/UNIX/include/*
+	# rm -fv output/UNIX/*/output/data/egm96s.dem.*
+	rm -rf output/$(TARGET) output/data output/host output/include output/po output/test
+	# rm -rf output
+
 
 .PHONY: override_dh_auto_install
 override_dh_auto_install:
