@@ -46,6 +46,7 @@ override_dh_auto_test:
 .PHONY: override_dh_auto_clean
 override_dh_auto_clean:
 	echo "SAVE_BUILD_OPTIONS: '$(SAVE_BUILD_OPTIONS)'"
+	echo "OPTIONS           : '$(SAVE_BUILD_OPTIONS)'"
 	rm -rf output/$(TARGET) output/data output/host output/include output/po output/test
 
 .PHONY: override_dh_auto_install
