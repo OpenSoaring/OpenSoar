@@ -67,6 +67,8 @@
 # Make Caller Info:
 RUN_ARGS := $(wordlist 1,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 
+echo "CFLAGS: $CFLAGS"
+
 ifneq ($(TARGET),)
   ARGS := $(ARGS) TARGET=$(TARGET)
   $(info  *  TARGET =       $(TARGET))
