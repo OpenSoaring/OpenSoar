@@ -221,13 +221,13 @@ VLAPI_DATA::DECLARATION::get(const DBB &dbb)
   plt3[0] = 0;
   plt4[0] = 0;
   if ((p = dbb.fdf_findfield(FLDPLT1))>=0)
-    strncpy(plt1, (const char *)dbb.GetFDF(p + 2), sizeof(plt1));
+    strncpy(plt1, (const char *)dbb.GetFDF(p + 2), sizeof(plt1) - 1);
   if ((p = dbb.fdf_findfield(FLDPLT2))>=0)
-    strncpy(plt2, (const char *)dbb.GetFDF(p + 2), sizeof(plt2));
+    strncpy(plt2, (const char *)dbb.GetFDF(p + 2), sizeof(plt2) - 1);
   if ((p = dbb.fdf_findfield(FLDPLT3))>=0)
-    strncpy(plt3, (const char *)dbb.GetFDF(p + 2), sizeof(plt3));
+    strncpy(plt3, (const char *)dbb.GetFDF(p + 2), sizeof(plt3) - 1);
   if ((p = dbb.fdf_findfield(FLDPLT4))>=0)
-    strncpy(plt4, (const char *)dbb.GetFDF(p + 2), sizeof(plt4));
+    strncpy(plt4, (const char *)dbb.GetFDF(p + 2), sizeof(plt4) - 1);
   flightinfo.pilot[0] = 0;
   strcat(flightinfo.pilot,plt1);
   strcat(flightinfo.pilot,plt2);
@@ -235,16 +235,16 @@ VLAPI_DATA::DECLARATION::get(const DBB &dbb)
   strcat(flightinfo.pilot,plt4);
   if ((p = dbb.fdf_findfield(FLDGTY))>=0)
     strncpy(flightinfo.glidertype, (const char *)dbb.GetFDF(p + 2),
-            sizeof(flightinfo.glidertype));
+            sizeof(flightinfo.glidertype) - 1);
   if ((p = dbb.fdf_findfield(FLDGID))>=0)
     strncpy(flightinfo.gliderid, (const char *)dbb.GetFDF(p + 2),
-            sizeof(flightinfo.gliderid));
+            sizeof(flightinfo.gliderid) - 1);
   if ((p = dbb.fdf_findfield(FLDCCL))>=0)
     strncpy(flightinfo.competitionclass, (const char *)dbb.GetFDF(p + 2),
-            sizeof(flightinfo.competitionclass));
+            sizeof(flightinfo.competitionclass) - 1);
   if ((p = dbb.fdf_findfield(FLDCID))>=0)
     strncpy(flightinfo.competitionid, (const char *)dbb.GetFDF(p + 2),
-            sizeof(flightinfo.competitionid));
+            sizeof(flightinfo.competitionid) - 1);
   if ((p = dbb.fdf_findfield(FLDTKF))>=0)
     flightinfo.homepoint.get(dbb.GetFDF(p + 2));
 
