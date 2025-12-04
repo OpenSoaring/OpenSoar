@@ -94,10 +94,12 @@ WRAPPED_CC = $(strip $(CCACHE) $(CC))
 WRAPPED_CXX = $(strip $(CCACHE) $(CXX))
 
 $(ABI_OUTPUT_DIR)/%$(OBJ_SUFFIX): %.c | $(ABI_OUTPUT_DIR)/%/../dirstamp $(compile-depends)
+    echo "CFLAGS: $CFLAGS"
 	@$(NQ)echo "  CC      $@"
 	$(Q)$(WRAPPED_CC) $< -c -o $@ $(cc-flags)
 
 $(ABI_OUTPUT_DIR)/%$(OBJ_SUFFIX): %.cpp | $(ABI_OUTPUT_DIR)/%/../dirstamp $(compile-depends)  $(OUT)/include/ProgramVersion.h
+    echo "CFLAGS: $CFLAGS"
 	@$(NQ)echo "  CXX     $@"
 	$(Q)$(WRAPPED_CXX) $< -c -o $@ $(cxx-flags)
 ifeq ($(IWYU),y)
