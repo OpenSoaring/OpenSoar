@@ -106,42 +106,41 @@ jobs:
             target: UNIX
             target_container: debian:bookworm-slim
 
-### w/o mac          - os: ubuntu-24.04
-### w/o mac            target: UNIX
-### w/o mac
-### w/o mac          - os: macos-14
-### w/o mac            target: OSX64
-### w/o mac
-### w/o mac          - os: macos-15
-### w/o mac            target: OSX64
-### w/o mac
-### w/o mac          - os: macos-15-intel
-### w/o mac            target: OSX64
-### w/o mac
-### w/o mac          - os: macos-14
-### w/o mac            target: MACOS
-### w/o mac 
-### w/o mac          - os: macos-15
-### w/o mac            target: MACOS
-### w/o mac
-### w/o mac          - os: macos-14
-### w/o mac            target: IOS64
-### w/o mac
-### w/o mac          - os: macos-15
-### w/o mac            target: IOS64
+          - os: ubuntu-24.04
+            target: UNIX
 
-          ### macos only: - os: windows-2022
-          ### macos only:   target: WIN64
-          ### macos only: 
-          ### macos only: - os: windows-2022
-          ### macos only:   target: PC
-          ### macos only: 
-          ### macos only: - os: windows-2025
-          ### macos only:   target: WIN64
-          ### macos only: 
-          ### macos only: - os: windows-latest
-          ### macos only:   target: WIN64
+          - os: macos-14
+            target: OSX64
 
+          - os: macos-15
+            target: OSX64
+
+          - os: macos-15-intel
+            target: OSX64
+
+          - os: macos-14
+            target: MACOS
+ 
+          - os: macos-15
+            target: MACOS
+
+          - os: macos-14
+            target: IOS64
+
+          - os: macos-15
+            target: IOS64
+
+          - os: windows-2022
+            target: WIN64
+
+          - os: windows-2022
+            target: PC
+
+          - os: windows-2025
+            target: WIN64
+
+          - os: windows-latest
+            target: WIN64
 
     container: ${{ matrix.target_container }}
     continue-on-error: true
@@ -222,38 +221,38 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          ### macos only:- os: ubuntu-22.04
-          ### macos only:  target: ANDROIDAARCH64
-          ### macos only:  target_bin: OpenSoar
-          ### macos only:  target_final: OpenSoar
-          ### macos only:  target_ext: .apk
-          ### macos only:  target_test: false
-          ### macos only:  target_upload: true
-          ### macos only:  ndk: r28
-          ### macos only:  target_container: debian:bookworm-slim
-          ### macos only:
-          ### macos only:- os: ubuntu-24.04
-          ### macos only:  target: ANDROID
-          ### macos only:  target_bin: OpenSoar
-          ### macos only:  target_final: OpenSoar
-          ### macos only:  target_ext: .apk
-          ### macos only:  target_test: false
-          ### macos only:  target_upload: true
-          ### macos only:  ndk: r28
-          ### macos only:  target_container: debian:bookworm-slim
-          ### macos only:#### needs very long time.. 
-          ### macos only:### August2111: Disabled because long time...
-          ### macos only:- os: ubuntu-24.04
-          ### macos only:  target: ANDROIDFAT
-          ### macos only:  target_hide: true  # ${{ REDUCED_BUILD }}
-          ### macos only:  target_bin: OpenSoar
-          ### macos only:  target_final: OpenSoar
-          ### macos only:  target_ext: .apk
-          ### macos only:  target_test: false
-          ### macos only:  target_upload: true
-          ### macos only:  ndk: r28
-          ### macos only:  target_container: debian:bookworm-slim
-          ### macos only:  # ------------------------------------------------------
+          - os: ubuntu-22.04
+            target: ANDROIDAARCH64
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext: .apk
+            target_test: false
+            target_upload: true
+            ndk: r28
+            target_container: debian:bookworm-slim
+          
+          - os: ubuntu-24.04
+            target: ANDROID
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext: .apk
+            target_test: false
+            target_upload: true
+            ndk: r28
+            target_container: debian:bookworm-slim
+          #### needs very long time.. 
+          ### August2111: Disabled because long time...
+          - os: ubuntu-24.04
+            target: ANDROIDFAT
+            target_hide: true  # ${{ REDUCED_BUILD }}
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext: .apk
+            target_test: false
+            target_upload: true
+            ndk: r28
+            target_container: debian:bookworm-slim
+            # ------------------------------------------------------
           - os: ubuntu-24.04      # - os: ubuntu-22.04
             target: UNIX
             target_bin: OpenSoar
@@ -265,70 +264,70 @@ jobs:
             target_upload: true
             target_container: debian:bookworm-slim    # => Ubuntu 24.04
             #  target_container: debian:bullseye-slim # => Ubuntu 22.04
-          ### macos only:
-          ### macos only:- os: ubuntu-22.04
-          ### macos only:  target: WIN64
-          ### macos only:  target_bin: OpenSoar
-          ### macos only:  target_final: OpenSoar
-          ### macos only:  target_ext: .exe
-          ### macos only:  target_test: false
-          ### macos only:  target_upload: false
-          ### macos only:  target_container: debian:bookworm-slim
-          ### macos only:
-          ### macos only:- os: ubuntu-24.04
-          ### macos only:  target: WIN64
-          ### macos only:  target_bin: OpenSoar
-          ### macos only:  target_final: OpenSoar
-          ### macos only:  target_ext: .exe
-          ### macos only:  target_test: true
-          ### macos only:  target_upload: true
-          ### macos only:  target_container: debian:bookworm-slim
-          ### macos only:
-          ### macos only:- os: ubuntu-24.04
-          ### macos only:  target: PC
-          ### macos only:  target_bin: OpenSoar
-          ### macos only:  target_final: OpenSoar
-          ### macos only:  target_ext: .exe
-          ### macos only:  target_test: true
-          ### macos only:  target_upload: true
-          ### macos only:  target_container: debian:bookworm-slim
+          
+          - os: ubuntu-22.04
+            target: WIN64
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext: .exe
+            target_test: false
+            target_upload: false
+            target_container: debian:bookworm-slim
+          
+          - os: ubuntu-24.04
+            target: WIN64
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext: .exe
+            target_test: true
+            target_upload: true
+            target_container: debian:bookworm-slim
+          
+          - os: ubuntu-24.04
+            target: PC
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext: .exe
+            target_test: true
+            target_upload: true
+            target_container: debian:bookworm-slim
 
-### w/o mac          - os: macos-15-intel
-### w/o mac            target: OSX64
-### w/o mac            target_bin: OpenSoar
-### w/o mac            target_final: OpenSoar
-### w/o mac            target_ext: ''
-### w/o mac            target_test: true
-### w/o mac            target_upload: true
-### w/o mac            # w/o container
-### w/o mac
-### w/o mac          - os: macos-15
-### w/o mac            target: MACOS
-### w/o mac            target_bin: OpenSoar
-### w/o mac            target_final: OpenSoar
-### w/o mac            target_ext: ''
-### w/o mac            target_test: true
-### w/o mac            target_upload: true
-### w/o mac            # w/o container
-### w/o mac          
-### w/o mac          - os: macos-15
-### w/o mac            target: IOS64
-### w/o mac            target_bin: OpenSoar
-### w/o mac            target_final: OpenSoar
-### w/o mac            target_ext: ''
-### w/o mac            target_test: true
-### w/o mac            target_upload: true
-### w/o mac            # w/o container
+          - os: macos-15-intel
+            target: OSX64
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext: ''
+            target_test: true
+            target_upload: true
+            # w/o container
+
+          - os: macos-15
+            target: MACOS
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext: ''
+            target_test: true
+            target_upload: true
+            # w/o container
+          
+          - os: macos-15
+            target: IOS64
+            target_bin: OpenSoar
+            target_final: OpenSoar
+            target_ext: ''
+            target_test: true
+            target_upload: true
+            # w/o container
         # exclude:
           #### needs long time.. 
-          ### macos only:- os: ubuntu-22.04
-          ### macos only:  target: KOBO
-          ### macos only:  target_bin: OpenSoar
-          ### macos only:  target_final: KoboRoot
-          ### macos only:  target_ext: .tgz
-          ### macos only:  target_test: false
-          ### macos only:  target_upload: true
-          ### macos only:  target_container: debian:bookworm-slim
+          - os: ubuntu-22.04
+            target: KOBO
+            target_bin: OpenSoar
+            target_final: KoboRoot
+            target_ext: .tgz
+            target_test: false
+            target_upload: true
+            target_container: debian:bookworm-slim
   
     steps:
       - name: Check Git Variables
