@@ -23,6 +23,16 @@ endif
 CXX_WARNINGS += -Wno-missing-field-initializers
 CXX_WARNINGS += -Wcast-align
 
+# August2111 (2025-12-05): new errors (in dpkg-buildpackage):
+ifeq ($(TARGET_IS_LINUX ),y)
+CXX_WARNINGS += -Wno-error=stringop-truncation
+CXX_WARNINGS += -Wno-error=maybe-uninitialized
+CXX_WARNINGS += -Wno-odr
+CXX_WARNINGS += -Wno-ignored-optimization-argument
+
+C_WARNINGS += -Wno-ignored-optimization-argument
+endif
+
 # plain C warnings
 
 C_WARNINGS = $(WARNINGS)
