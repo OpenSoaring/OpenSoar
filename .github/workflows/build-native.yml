@@ -502,7 +502,7 @@ jobs:
           esac
 
       - name: Test Directory (UNIX)
-        ### if: ${{ startsWith(matrix.target, 'UNIX') }}
+        if: ${{ startsWith(matrix.target, 'UNIX') }}
         run: |
           echo "----------------------------------------------------------------"
           ### echo "find . -name '*.deb'"
