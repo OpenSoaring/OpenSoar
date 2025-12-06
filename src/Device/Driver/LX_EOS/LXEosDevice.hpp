@@ -186,7 +186,7 @@ static_assert(alignof(EosFlightBlockResponseHeader) == 1);
  * @brief Struct to hold last known settings of the device
  *
  */
-struct VarioSettings
+struct LXVarioSettings
 {
   float mc = 0;          // Mc Cready in m/s
   float bugs = 0;        // Bugs in percent (lower value = less bugs)
@@ -225,7 +225,7 @@ public:
   }
 
 private:
-  VarioSettings vario_settings; // last known settings of the device
+  LXVarioSettings vario_settings; // last known settings of the device
   Mutex settings_mutex;
 
   AltitudeOffset altitude_offset; // last known settings of the device
@@ -254,7 +254,7 @@ private:
    *
    * @param settings
    */
-  static void CalculateDevicePolarReferenceMass(VarioSettings& settings);
+  static void CalculateDevicePolarReferenceMass(LXVarioSettings& settings);
 
   /**
    * @brief Compare coefficients of polars
