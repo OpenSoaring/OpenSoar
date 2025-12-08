@@ -9,7 +9,9 @@
 // Application Icons
 //------------------
 
+#ifdef _WIN32
 app_icon IDI_XCSOAR "OpenSoar"
+#endif
 
 // Bitmaps
 //------------------
