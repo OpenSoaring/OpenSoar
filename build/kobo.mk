@@ -163,20 +163,20 @@ $(TARGET_OUTPUT_DIR)/KoboRoot.tgz: $(XCSOAR_BIN) \
 	$(CLARAHD_DRIVERS_DOWNLOAD)
 	@$(NQ)echo "  TAR     $@"
 	$(Q)rm -rf $(@D)/KoboRoot
-	$(Q)install -m 0755 -d $(@D)/KoboRoot/etc/udev/rules.d $(@D)/KoboRoot/opt/xcsoar/bin $(@D)/KoboRoot/opt/xcsoar/lib/kernel $(@D)/KoboRoot/opt/xcsoar/share/fonts
-	$(Q)install -m 0755 $(XCSOAR_BIN) $(KOBO_MENU_BIN) $(KOBO_POWER_OFF_BIN) $(topdir)/kobo/rcS $(@D)/KoboRoot/opt/xcsoar/bin
-	$(Q)install -m 0755 --strip --strip-program=$(STRIP) $(THIRDPARTY_TOOL_FILES) $(@D)/KoboRoot/opt/xcsoar/bin
-	$(Q)if test -f $(KOBO_KERNEL_DOWNLOAD); then install -T -m 0644 $(KOBO_KERNEL_DOWNLOAD) $(@D)/KoboRoot/opt/xcsoar/lib/kernel/uImage.kobo; fi
-	$(Q)if test -f $(KOBOOTG_KERNEL_DOWNLOAD); then install -T -m 0644 $(KOBOOTG_KERNEL_DOWNLOAD) $(@D)/KoboRoot/opt/xcsoar/lib/kernel/uImage.otg; fi
-	$(Q)if test -f $(GLOHD_KERNEL_DOWNLOAD); then install -T -m 0644 $(GLOHD_KERNEL_DOWNLOAD) $(@D)/KoboRoot/opt/xcsoar/lib/kernel/uImage.glohd; fi
-	$(Q)if test -f $(GLOHDOTG_KERNEL_DOWNLOAD); then install -T -m 0644 $(GLOHDOTG_KERNEL_DOWNLOAD) $(@D)/KoboRoot/opt/xcsoar/lib/kernel/uImage.glohd.otg; fi
-	$(Q)if test -f $(AURA2_KERNEL_DOWNLOAD); then install -T -m 0644 $(AURA2_KERNEL_DOWNLOAD) $(@D)/KoboRoot/opt/xcsoar/lib/kernel/uImage.aura2; fi
-	$(Q)if test -f $(AURA2OTG_KERNEL_DOWNLOAD); then install -T -m 0644 $(AURA2OTG_KERNEL_DOWNLOAD) $(@D)/KoboRoot/opt/xcsoar/lib/kernel/uImage.aura2.otg; fi
-	$(Q)if test -f $(CLARAHD_DRIVERS_DOWNLOAD); then tar -xzf $(CLARAHD_DRIVERS_DOWNLOAD) -C $(@D)/KoboRoot/opt/xcsoar/lib; fi
+	$(Q)install -m 0755 -d $(@D)/KoboRoot/etc/udev/rules.d $(@D)/KoboRoot/opt/opensoar/bin $(@D)/KoboRoot/opt/opensoar/lib/kernel $(@D)/KoboRoot/opt/opensoar/share/fonts
+	$(Q)install -m 0755 $(XCSOAR_BIN) $(KOBO_MENU_BIN) $(KOBO_POWER_OFF_BIN) $(topdir)/kobo/rcS $(@D)/KoboRoot/opt/opensoar/bin
+	$(Q)install -m 0755 --strip --strip-program=$(STRIP) $(THIRDPARTY_TOOL_FILES) $(@D)/KoboRoot/opt/opensoar/bin
+	$(Q)if test -f $(KOBO_KERNEL_DOWNLOAD); then install -T -m 0644 $(KOBO_KERNEL_DOWNLOAD) $(@D)/KoboRoot/opt/opensoar/lib/kernel/uImage.kobo; fi
+	$(Q)if test -f $(KOBOOTG_KERNEL_DOWNLOAD); then install -T -m 0644 $(KOBOOTG_KERNEL_DOWNLOAD) $(@D)/KoboRoot/opt/opensoar/lib/kernel/uImage.otg; fi
+	$(Q)if test -f $(GLOHD_KERNEL_DOWNLOAD); then install -T -m 0644 $(GLOHD_KERNEL_DOWNLOAD) $(@D)/KoboRoot/opt/opensoar/lib/kernel/uImage.glohd; fi
+	$(Q)if test -f $(GLOHDOTG_KERNEL_DOWNLOAD); then install -T -m 0644 $(GLOHDOTG_KERNEL_DOWNLOAD) $(@D)/KoboRoot/opt/opensoar/lib/kernel/uImage.glohd.otg; fi
+	$(Q)if test -f $(AURA2_KERNEL_DOWNLOAD); then install -T -m 0644 $(AURA2_KERNEL_DOWNLOAD) $(@D)/KoboRoot/opt/opensoar/lib/kernel/uImage.aura2; fi
+	$(Q)if test -f $(AURA2OTG_KERNEL_DOWNLOAD); then install -T -m 0644 $(AURA2OTG_KERNEL_DOWNLOAD) $(@D)/KoboRoot/opt/opensoar/lib/kernel/uImage.aura2.otg; fi
+	$(Q)if test -f $(CLARAHD_DRIVERS_DOWNLOAD); then tar -xzf $(CLARAHD_DRIVERS_DOWNLOAD) -C $(@D)/KoboRoot/opt/opensoar/lib; fi
 	$(Q)install -m 0644 $(topdir)/kobo/inittab $(@D)/KoboRoot/etc
-	$(Q)install -m 0644 $(topdir)/kobo/udev.rules $(@D)/KoboRoot/etc/udev/rules.d/99-xcsoar.rules
-	$(Q)install -m 0644 $(BITSTREAM_VERA_FILES) $(@D)/KoboRoot/opt/xcsoar/share/fonts
-	$(Q)install -m 0644 $(ROBOTO_FILES) $(@D)/KoboRoot/opt/xcsoar/share/fonts
+	$(Q)install -m 0644 $(topdir)/kobo/udev.rules $(@D)/KoboRoot/etc/udev/rules.d/99-opensoar.rules
+	$(Q)install -m 0644 $(BITSTREAM_VERA_FILES) $(@D)/KoboRoot/opt/opensoar/share/fonts
+	$(Q)install -m 0644 $(ROBOTO_FILES) $(@D)/KoboRoot/opt/opensoar/share/fonts
 	$(Q)fakeroot tar czfC $@ $(@D)/KoboRoot .
 
 endif
