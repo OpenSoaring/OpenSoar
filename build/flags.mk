@@ -69,6 +69,8 @@ ifeq ($(LTO),y)
   # Pass warning flags to the linker when using LTO optimizations. LTO means that second stage compilation happens here,
   # and compiler warnings can occur here too.
   ALL_LDFLAGS += $(CXX_WARNINGS)
+else
+  ALL_LDFLAGS += -fno-lto
 endif
 ALL_LDFLAGS += $(TARGET_LDFLAGS) $(FLAGS_PROFILE) $(SANITIZE_FLAGS) $(LDFLAGS)
 
