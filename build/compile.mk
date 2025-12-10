@@ -63,7 +63,16 @@ SRC_TO_OBJ = $(subst /./,/,$(patsubst %.cpp,%$(OBJ_SUFFIX),$(patsubst %.cxx,%$(O
 
 DEPFILE = $(@:$(OBJ_SUFFIX)=.d)
 DEPFLAGS = -Wp,-MD,$(DEPFILE),-MT,$@
-cc-flags = $(DEPFLAGS) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(TARGET_ARCH) $(FLAGS_COVERAGE)  $(EXTRA_CPPFLAGS)  $(EXTRA_CFLAGS)
+
+# Workaround: on local PC with Ubuntu 22.04-3 the flag '-flto=auto' make problems at linking
+# Unfortunately t it is not clear, why
+ifeq ($(LTO),y)
+	ALL_CFLAGS2 = $(ALL_CFLAGS)
+else
+	ALL_CFLAGS2 = $(patsubst -flto=%,,$(ALL_CFLAGS))
+endif
+
+cc-flags = $(DEPFLAGS) $(ALL_CFLAGS2) $(ALL_CPPFLAGS) $(TARGET_ARCH) $(FLAGS_COVERAGE)  $(EXTRA_CPPFLAGS)  $(EXTRA_CFLAGS)
 cxx-flags = $(DEPFLAGS) $(ALL_CXXFLAGS) $(ALL_CPPFLAGS) $(TARGET_ARCH) $(FLAGS_COVERAGE)  $(EXTRA_CPPFLAGS)  $(EXTRA_CXXFLAGS)
 
 #
@@ -103,13 +112,6 @@ $(ABI_OUTPUT_DIR)/%$(OBJ_SUFFIX): %.cpp | $(ABI_OUTPUT_DIR)/%/../dirstamp $(comp
 ifeq ($(IWYU),y)
 	$(Q)iwyu $< $(cxx-flags)
 endif
-
-##  $(ABI_OUTPUT_DIR)/src/Version$(OBJ_SUFFIX): src/Version.cpp | $(compile-depends) $(OUT)/include/ProgramVersion.h
-##  	@$(NQ)echo "  CPP     $@"
-##  	$(Q)$(WRAPPED_CXX) $< -c -o $@ $(cxx-flags) $(GIT_COMMIT_ID)
-##  ifeq ($(IWYU),y)
-##  	$(Q)iwyu $< $(cxx-flags)
-##  endif
 
 $(ABI_OUTPUT_DIR)/%$(OBJ_SUFFIX): %.cxx | $(ABI_OUTPUT_DIR)/%/../dirstamp $(compile-depends)
 	@$(NQ)echo "  CXX     $@"
