@@ -2,6 +2,7 @@
 # -*- mode: makefile; coding: utf-8 -*-
 
 OPTIONS =
+NUMJOBS =
 
 TARGET = UNIX
 OPTIONS += TARGET=$(TARGET)
@@ -63,12 +64,13 @@ endif
 .PHONY: override_dh_auto_build
 override_dh_auto_build:
 	$(MAKE) $(BUILD_OPTIONS)
+#  all mo
 
 
  .PHONY: override_dh_auto_test
 override_dh_auto_test:
 	# $(MAKE) $(OPTIONS) check
-	@echo "no check of test programs"
+	@echo "no check"
 
 .PHONY: override_dh_auto_clean
 override_dh_auto_clean:
@@ -77,7 +79,8 @@ override_dh_auto_clean:
 	@echo "DEB_BUILD_OPTIONS : '$(DEB_BUILD_OPTIONS)'"
 	@echo "OPTIONS           : '$(OPTIONS)'"
 	@echo "BUILD_OPTIONS     : '$(BUILD_OPTIONS)'"
-	# rm -fv output/UNIX/include/* output/UNIX/dbg/output/data/egm96s.dem.*
+	# rm -fv output/UNIX/include/*
+	# rm -fv output/UNIX/*/output/data/egm96s.dem.*
 	rm -rf output/$(TARGET) output/data output/host output/include output/po output/test
 	# rm -rf output
 
