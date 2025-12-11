@@ -106,7 +106,6 @@ musl = MuslProject(
 
 openssl = OpenSSLProject(
     (
-        # fossies https://fossies.org/linux/misc/openssl-3.0.16.tar.gz/, "57e03c50feab5d31b152af2b764f10379aecd8ee92f16c985983ce4a99f7ef86"
         "https://www.openssl.org/source/openssl-3.1.7.tar.gz",
         # invalid - not found..: "https://artfiles.org/openssl.org/source/openssl-3.1.7.tar.gz",
     ),
