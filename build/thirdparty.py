@@ -136,4 +136,5 @@ if with_skysight:
 # build the third-party libraries
 for x in thirdparty_libs:
     if not x.is_installed(toolchain):
+        print("lib-url(s): ", x.url)
         x.build(toolchain)
