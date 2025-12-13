@@ -624,15 +624,15 @@ jobs:
         if: ${{ !matrix.no_build && !matrix.sanitizer && matrix.target_upload && (vars.EXPORT == 'true') }}
         uses: easingthemes/ssh-deploy@main
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           ARGS: "-rltgoDzvO"
           SOURCE: deploy/${{ matrix.target }}/
-          REMOTE_HOST: ${{ vars.REPOSITORY_HOST }}
-          REMOTE_USER: ${{ vars.REPOSITORY_SSH_USER }}
-          TARGET: ${{ vars.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}/
+          REMOTE_HOST: ${{ secrets.DEPLOY_HOST }}
+          REMOTE_USER: ${{ secrets.DEPLOY_USER }}
+          TARGET: ${{ secrets.DEPLOY_PATH }}/testing/${{ matrix.target }}/
           SCRIPT_BEFORE: |
             echo "Script Before: ================"
-            mkdir -p ${{ vars.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}
+            mkdir -p ${{ secrets.DEPLOY_PATH }}/testing/${{ matrix.target }}
           SCRIPT_AFTER: |
             echo "Script After: ================"
 
