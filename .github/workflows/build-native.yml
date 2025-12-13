@@ -620,47 +620,21 @@ jobs:
           asset_name: ${{ matrix.target_final }}-${{ matrix.target }}${{ matrix.target_ext }}
           asset_content_type: application/zip
   
-      ### - name: Deploy to OpenSoar  / Download server
-      ###   if: ${{ github.repository == 'OpenSoaring/OpenSoar' && github.ref == 'refs/heads/master' }}
-      ###   uses: easingthemes/ssh-deploy@main
-      ###   env:
-      ###     SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
-      ###     ARGS: "-rltgoDzvO"
-      ###     # SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
-      ###     SOURCE: ${{ matrix.target_bin }}${{ matrix.target_ext }}
-      ###     REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
-      ###     REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
-      ###     TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}/
-      ###     SCRIPT_BEFORE: mkdir -p ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}
-
-      - name: Upload Program Files via FTP
-        # if: false
-        if: ${{ (vars.FTP_DEPLOY == 'true') && !matrix.no_build && !matrix.sanitizer }}
-        uses: airvzxf/ftp-deployment-action@master
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          user: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local_dir: ${{ env.DEPLOY_DIR }} 
-          # local_dir: ${{ env.BINARY_DIR }}
-          # remote_dir: "./"
-          max_retries: 1
-          ftp_ssl_allow: "true"
-          ftp_use_feat: "true"
-          # lftp_settings: "set ftp:ssl-allow true; set ftp:use-feat false; set ftp:nop-interval 2; set net:max-retries 1; set net:persist-retries 5; set net:timeout 15s; set dns:max-retries 8; set dns:fatal-timeout 10s;"
-
-      - name: Deploy to Download server - testing
-        if: ${{ github.repository == 'August2111/OpenSoar' && github.ref == 'refs/heads/master' && !matrix.no_build && !matrix.sanitizer }}
+      - name: Deploy to OpenSoar  / Download server
+        if: ${{ !matrix.no_build && !matrix.sanitizer && matrix.target_upload && (vars.EXPORT == 'true') }}
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
           ARGS: "-rltgoDzvO"
-          # SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
-          SOURCE: ${{ matrix.target_bin }}${{ matrix.target_ext }}
-          REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
-          REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
-          TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}/
-          SCRIPT_BEFORE: mkdir -p ${{ secrets.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}
+          SOURCE: deploy/${{ matrix.target }}/
+          REMOTE_HOST: ${{ vars.REPOSITORY_HOST }}
+          REMOTE_USER: ${{ vars.REPOSITORY_SSH_USER }}
+          TARGET: ${{ vars.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}/
+          SCRIPT_BEFORE: |
+            echo "Script Before: ================"
+            mkdir -p ${{ vars.REPOSITORY_REMOTE_PATH }}/testing/${{ matrix.target }}
+          SCRIPT_AFTER: |
+            echo "Script After: ================"
 
       - name: Deploy to Download server - release
         if: ${{ github.repository == 'OpenSoaring/OpenSoar' && startsWith(github.ref, 'refs/tags/v') && matrix.target_upload && (vars.EXPORT == 'true') && !matrix.no_build && !matrix.sanitizer  }}
@@ -668,9 +642,12 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.REPOSITORY_SSH_KEY }}
           ARGS: "-rltgoDzvO"
-          # SOURCE: ${{ env.BINARY_DIR }}/${{ matrix.target_bin }}${{ matrix.target_ext }}
-          SOURCE: ${{ matrix.target_bin }}${{ matrix.target_ext }}
+          SOURCE: deploy/${{ matrix.target }}/
           REMOTE_HOST: ${{ secrets.REPOSITORY_HOST }}
           REMOTE_USER: ${{ secrets.REPOSITORY_SSH_USER }}
           TARGET: ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
-          SCRIPT_BEFORE: mkdir -p ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
+          SCRIPT_BEFORE: |
+            echo "Script Before: ================"
+            mkdir -p ${{ secrets.REPOSITORY_REMOTE_PATH }}/releases/${{ needs.release.outputs.version }}/${{ matrix.target }}/
+          SCRIPT_AFTER: |
+            echo "Script After: ================"
