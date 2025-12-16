@@ -61,6 +61,7 @@ if(MINGW)
   set(_LINK_LIBRARIES  "gdiplus ${COMPILER_LIB_PATH}/libmsimg32.a")
   # set(_LINK_LIBRARIES  "gdiplus")
 endif(MINGW)
+
 if (HAVE_SKYSIGHT)
   message(STATUS "TIFF_TARGET = ${TIFF_TARGET}!")
   message(STATUS "TIFF_LIBRARY = ${TIFF_LIBRARY}!")

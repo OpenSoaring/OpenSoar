@@ -20,12 +20,12 @@ if (_COMPLETE_INSTALL)
 
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
         ${_BINARY_STEP}
-        INSTALL_DIR "${_INSTALL_DIR}"   # ${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}"
+        INSTALL_DIR "${_INSTALL_DIR}"
 
         PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_SOURCE_DIR}/3rd_party/${LIB_TARGET_NAME}_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
         CMAKE_ARGS ${CMAKE_ARGS}
         # INSTALL_COMMAND   cmake --build . --target install --config Release
-        ${_INSTALL_COMMAND}
+        INSTALL_COMMAND ${_INSTALL_COMMAND}
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
         BUILD_BYPRODUCTS  ${_TARGET_LIBS} # ${${TARGET_CNAME}_LIB}

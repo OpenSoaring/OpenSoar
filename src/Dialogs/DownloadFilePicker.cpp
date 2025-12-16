@@ -25,7 +25,6 @@
 #include "Operation/ThreadedOperationEnvironment.hpp"
 
 #include <vector>
-
 #include <cassert>
 
 /**

@@ -71,7 +71,7 @@ if (_COMPLETE_INSTALL)
         # PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/LIBPNG/CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
         CMAKE_ARGS ${CMAKE_ARGS}
         # INSTALL_COMMAND   cmake --build . --target install --config Release
-        ${_INSTALL_COMMAND}
+        INSTALL_COMMAND ${_INSTALL_COMMAND}
   
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}

@@ -1,4 +1,4 @@
-set(TARGET_NAME "XCSoarAug-MinGW")  # hardcoded yet
+set(TARGET_NAME "OpenSoar-MinGW")  # hardcoded yet
 
 message(STATUS "+++ System = WIN32 / MinGW (${TOOLCHAIN})! on ${CMAKE_HOST_SYSTEM_NAME} ")
 
@@ -24,11 +24,9 @@ add_compile_definitions(_WIN32_WINDOWS=0x0600)
 add_compile_definitions(_WIN32_WINNT=0x0600)
 add_compile_definitions(_WIN32_IE=0x0600)
 add_compile_definitions(WIN32_LEAN_AND_MEAN)
-add_compile_definitions(NOMINMAX)
+# this is a general macro add_compile_definitions(NOMINMAX)
 add_compile_definitions(HAVE_STRUCT_POLLFD)
 add_compile_definitions(HAVE_MSVCRT)
-# add_compile_definitions(UNICODE)  # ???
-# add_compile_definitions(_UNICODE)
 add_compile_definitions(STRICT)
 add_compile_definitions(EYE_CANDY)
 add_compile_definitions(USE_WIN32_RESOURCES)

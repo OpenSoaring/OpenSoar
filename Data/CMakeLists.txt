@@ -78,7 +78,7 @@ foreach(bin_file ${BIN_FILES})
     message(STATUS "UNMATCHES!!!! ${bin_file}  --- ${txt_file}")
     message(STATUS "OUTPUT: ${bin_file} --> ${c_file}")
     add_custom_command(OUTPUT ${c_file}
-      COMMENT BIN2C: ${bin_file}, 
+      COMMENT "BIN2C: ${bin_file}, "
       # COMMAND echo "Cmd: '${PYTHON_APP} tools/python/bin2c.py  ${bin_file}   ${_DATA_OUTPUT}' ==> ${c_file}"
       COMMAND ${CMAKE_COMMAND} -E make_directory ${_DATA_OUTPUT}
       COMMAND ${PYTHON_APP} tools/python/bin2c.py  ${bin_file}  ${_DATA_OUTPUT}
@@ -246,7 +246,7 @@ foreach(icon_file ${ICON_FILES})
    endif()
    # =========================================================================
    add_custom_command(OUTPUT ${icon_file_std}.bmp  ${icon_file_hd}.bmp ${icon_file_uhd}.bmp
-     COMMENT File aus 'icons': ${icon_file_uhd}.bmp
+     COMMENT "File aus 'icons': ${icon_file_uhd}.bmp"
      COMMAND ${CMAKE_COMMAND} -E make_directory ${_ICONS_OUTPUT}
      COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}/icons
      COMMAND ${CMAKE_COMMAND} -E copy ${icon_file} ${icon_file_out}.svg
@@ -296,7 +296,7 @@ endif()
     set(DEFAULT_XCI   ${_DATA_INPUT}/Input/${DEFAULT_XCI_FILE})
     message(STATUS "### DEFAULT_XCI = ${DEFAULT_XCI}")
     add_custom_command(OUTPUT  ${INPUTEVENTS_CPP} ${_INCLUDE_OUTPUT}/InputCppFiles.txt
-        COMMENT Create InputEvents_*.hpp!
+        COMMENT "Create InputEvents_*.hpp!"
         COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT} 
         COMMAND perl tools/Char2GCE.pl    src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.hpp
         COMMAND perl tools/Char2NE.pl     src/Input/InputQueue.hpp >${_INCLUDE_OUTPUT}/InputEvents_Char2NE.hpp
@@ -343,26 +343,18 @@ endif()
 
 
 if(MSVC)
-  set(RESOURCE_FILES
-    ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
-  )
+  set(RESOURCE_FILES  ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc )
 elseif(MINGW)
-  set(RESOURCE_FILES
-     D:/Projects/Binaries/OpenSoar/dev-branch/mgw122/OpenSoar.rc
-  )
-#  message(FATAL_ERROR "MINGW!")
+  # set(RESOURCE_FILES  D:/Projects/Binaries/OpenSoar/dev-branch/${TOOLCHAIN}/OpenSoar.rc
+  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc)
+  #  message(FATAL_ERROR "MINGW!")
 elseif(CLANG)
-  set(RESOURCE_FILES
-     # ${OUTPUT}/${PROGRAM_NAME}.rc
-     # ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
-  # Clang:?    ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc
-)
+  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc)
+  # set(RESOURCE_FILES D:/Projects/Binaries/OpenSoar/dev-branch/clang15/OpenSoar.rc)
+  # set(RESOURCE_FILES ${OUTPUT}/${PROGRAM_NAME}.rc)
 else()
-    # ${_DATA_OUTPUT}/OpenSoar.rc
-    # ${PROGRAM_NAME}.rc
-#  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
-  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc
-)
+  #  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc)
+  #  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc)
 endif()
 
 set(RESOURCE_FILES ${RESOURCE_FILES} PARENT_SCOPE)

@@ -36,7 +36,7 @@ if (_COMPLETE_INSTALL)
  
         # BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # INSTALL_COMMAND   cmake --build . --target install --config Release
-        ${_INSTALL_COMMAND}
+        INSTALL_COMMAND ${_INSTALL_COMMAND}
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         CONFIGURE_HANDLED_BY_BUILD  ON
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}

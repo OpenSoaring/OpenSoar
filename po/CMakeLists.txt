@@ -43,7 +43,7 @@ endif()
 ### add_custom_target(TARGET ${TARGET_NAME} PRE_BUILD
 ###     COMMAND ${CMAKE_COMMAND} -E make_directory  ${output_dir}/temp
 ###     WORKING_DIRECTORY  ${PROJECTGROUP_SOURCE_DIR}
-###     COMMENT Make dir '${output_dir}'
+###     COMMENT "Make dir '${output_dir}'"
 ### )
 
 if(MSVC)

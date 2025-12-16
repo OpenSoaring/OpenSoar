@@ -32,7 +32,9 @@ ENDIF(ENABLE_BLOCKING_RANDOM)
 IF(LIBSODIUM_BUILD_SHARED_LIBRARIES)
     ADD_LIBRARY(libsodium SHARED ${libsodium_HEADERS} ${libsodium_SOURCE})
 ELSE(LIBSODIUM_BUILD_SHARED_LIBRARIES)
-    ADD_DEFINITIONS("-DSODIUM_STATIC")
+    add_compile_definitions(SODIUM_STATIC)
+    # add_compile_definitions(SODIUM_EXPORT=)
+    # ADD_DEFINITIONS("-DSODIUM_STATIC")
     ADD_LIBRARY(libsodium STATIC ${libsodium_HEADERS} ${libsodium_SOURCE})
 ENDIF(LIBSODIUM_BUILD_SHARED_LIBRARIES)
 
@@ -41,7 +43,7 @@ SET_TARGET_PROPERTIES(libsodium PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
     PROJECT_LABEL "libsodium"
 )
-else (1)
+else ()
 set(_INCLUDE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include)
 file(GLOB_RECURSE ${TARGET_NAME}_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.c")
 file(GLOB_RECURSE HEADER_FILES "${_INCLUDE_DIR}/*.h")
@@ -52,14 +54,10 @@ foreach(SRC ${${TARGET_NAME}_SOURCES})
      message(STATUS -- Sodium:  ${SRC})
 endforeach()
 
-add_compile_definitions(SODIUM_STATIC)
-add_compile_definitions(SODIUM_EXPORT=)
-
 ### geht nicht: # Clang only...:
 ### geht nicht: set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mssse3")
 
 add_compile_definitions(__AVX512F__)  # ???
-
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -89,6 +87,14 @@ configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium/version.h
 )
 
+if(MINGW)
+  #MinGW 14.3:
+  # string(APPEND CMAKE_C_FLAGS     " -Wno-implicit-function-declaration")
+  string(APPEND CMAKE_C_FLAGS   " -Wno-error=implicit-function-declaration")
+endif(MINGW)
+
+## message(FATAL_ERROR CMAKE_C_FLAGS  = ${CMAKE_C_FLAGS})
+
 # add_definitions(-DLUA_ANSI=1)
 add_library(${TARGET_NAME} STATIC ${${TARGET_NAME}_LIBRARY} ${HEADER_FILES})
 
@@ -107,7 +113,7 @@ foreach(header ${HEADER_FILES})
     install(FILES ${header}  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${inc_path}")
 endforeach()
 
-##message(FATAL_ERROR +++ Sodium: Stop!)
+## message(FATAL_ERROR +++ Sodium: Stop!)
 
 
-endif(1)
+endif()  # : 1 or 0

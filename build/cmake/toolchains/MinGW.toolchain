@@ -8,6 +8,10 @@ set(CMAKE_SYSTEM_NAME Windows)
  
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL Windows)
     set(WIN_HOST ON)
+#mgw143 ??:    
+    set(CMAKE_C_COMPILER_WORKS 1)
+    set(CMAKE_CXX_COMPILER_WORKS 1)
+    
 else()
     # here is the target environment located
     set(CMAKE_FIND_ROOT_PATH  /usr/bin ) 

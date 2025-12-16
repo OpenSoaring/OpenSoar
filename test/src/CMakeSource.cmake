@@ -233,16 +233,16 @@ set(TEST_LIST
     ${SRC_DIR}/DownloadFile.cpp
     ${SRC_DIR}/TestDriver.cpp
     ${SRC_DIR}/test_fixed.cpp
-    ${SRC_DIR}/TestWaypoints.cpp
-    ${SRC_DIR}/test_pressure.cpp
-    ${SRC_DIR}/test_task.cpp
+    # needs ParseArgs with getopt.h: ${SRC_DIR}/TestWaypoints.cpp
+    # needs ParseArgs with getopt.h: ${SRC_DIR}/test_pressure.cpp
+    # needs ParseArgs with getopt.h: ${SRC_DIR}/test_task.cpp
     ${SRC_DIR}/TestOverwritingRingBuffer.cpp
     ${SRC_DIR}/TestDateTime.cpp
     ${SRC_DIR}/TestRoughTime.cpp
     ${SRC_DIR}/TestWrapClock.cpp
     ${SRC_DIR}/TestPolylineDecoder.cpp
     ${SRC_DIR}/TestTransponderCode.cpp
-    ${SRC_DIR}/TestMath.cpp
+    # needs TestQuadrilateral.cpp... ${SRC_DIR}/TestMath.cpp
     ${SRC_DIR}/TestMathTables.cpp
     ${SRC_DIR}/TestAngle.cpp
     ${SRC_DIR}/TestARange.cpp
@@ -269,7 +269,7 @@ set(TEST_LIST
     ${SRC_DIR}/TestPolars.cpp
     ${SRC_DIR}/TestCSVLine.cpp
     ${SRC_DIR}/TestGlidePolar.cpp
-    ${SRC_DIR}/test_replay_task.cpp
+    # needs ParseArgs with getopt.h: ${SRC_DIR}/test_replay_task.cpp
     ${SRC_DIR}/TestProfile.cpp
     ${SRC_DIR}/TestProjection.cpp
     ${SRC_DIR}/TestFlatPoint.cpp

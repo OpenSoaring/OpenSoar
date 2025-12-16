@@ -1,4 +1,4 @@
-set(TARGET_NAME "XCSoarAug-Clang")  # hardcoded
+set(TARGET_NAME "OpenSoar-Clang")  # hardcoded
 
 message(STATUS "+++ System = WIN32 / Clang!")
 
@@ -10,6 +10,22 @@ set(TARGET_IS_OPENVARIO OFF)
 if (TARGET_IS_OPENVARIO)
   add_compile_definitions(IS_OPENVARIO) 
 endif()
+
+# SkySight support feature:
+set (HAVE_SKYSIGHT ON)
+## set (HAVE_SKYSIGHT OFF)
+###  see CMakeLists.txt, line 216: add_compile_definitions(HAVE_SKYSIGHT) 
+
+if (HAVE_SKYSIGHT)
+  set (SKYSIGHT_FORECAST ON)
+  set (SKYSIGHT_OFFLINE_MODE ON)
+  # debug feature for SkySight:
+  set (SKYSIGHT_FILE_DEBUG OFF)
+  set (SKYSIGHT_REQUEST_LOG OFF)
+  set (SKYSIGHT_HTTP_LOG OFF)
+endif (HAVE_SKYSIGHT)
+
+#-------------------------------
 
 # set(CMAKE_BUILD_TYPE Release)
 
@@ -27,12 +43,9 @@ set(LIB_SUFFIX ".a")
 # Why????:
 set(LIB_PREFIX "")
 set(LIB_SUFFIX ".lib")
-# add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
-add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
-add_compile_definitions(BOOST_JSON_HEADER_ONLY)
-add_compile_definitions(BOOST_JSON_STANDALONE)
-add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON) 
+# add_compile_options(-SUBSYSTEM:WINDOWS)
 
+# set(CLANG ON)
 add_compile_definitions(__CLANG__)
 add_compile_definitions(_WIN32) # this should be by default?
 # add_compile_definitions(HAVE_MSVCRT)
@@ -48,27 +61,18 @@ add_compile_definitions(_USE_MATH_DEFINES)   # necessary under C++17!
 ## add_compile_options(-fconserve-space)
 ## add_compile_options(-fno-operator-names)
 
-# gibt es nicht mehr: --- include_directories("${PROJECTGROUP_SOURCE_DIR}/temp/data")  # temporary data!
+
+########### WorkAround section ###############################
+#           Please check all this settings
+# string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=unknown-attributes")
+string(APPEND CMAKE_CXX_FLAGS   " -Wno-unknown-attributes")  # WORKAROUND (August2111)
+# add_compile_definitions(no_unique_address=maybe_unused)  # this is wrong(!), but helps
+
 if (ON OR WIN64)  # momentan kein Flag verfügbar!
     add_compile_definitions(WIN64)  ## ????
     add_compile_definitions(_AMD64_)
 else()
     message(FATAL_ERROR "Error: WIN32 not implemented?")
-endif()
-
-list(APPEND XCSOAR_LINK_LIBRARIES
-    wsock32
-    ws2_32
-    gdi32
-    gdiplus
-    crypt32
-#    winpthread
-)
-if (0)
-list(APPEND XCSOAR_LINK_LIBRARIES
-    /usr/lib/link_libs/boost/boost-1.81.0/lib/clang15/libboost_container-clang15-mt-d-x64-1_81.lib
-    /usr/lib/link_libs/boost/boost-1.81.0/lib/clang15/libboost_json-clang15-mt-d-x64-1_81.lib
-)
 endif()
 
 add_compile_definitions(__CLANG__)
@@ -86,10 +90,14 @@ if(AUGUST_SPECIAL)
     add_compile_definitions(_AUG_CLANG)
     add_compile_definitions(__AUGUST__)
 endif()
+
+add_compile_definitions(SODIUM_STATIC=1)  # Clng too...
+
 #********************************************************************************
 set(CMAKE_C_FLAGS    "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
 # list(APPEND CMAKE_CXX_FLAGS  -msse4.1)
-list(APPEND CMAKE_CXX_FLAGS  -std=c++20)  ## c++20 - only for cpp and not for c - "add_compile_options(-std=c++20)"!
+# list(APPEND CMAKE_CXX_FLAGS  -std=c++20)  ## c++20 - only for cpp and not for c - "add_compile_options(-std=c++20)"!
+string(APPEND CMAKE_CXX_FLAGS  " -std=c++20")  ## c++20 - only for cpp and not for c - "add_compile_options(-std=c++20)"!
 # set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ -m64 -lwsock32 -lws2_32 -lgdi32 -lgdiplus -lcrypt32 ${CMAKE_CXX_STANDARD_LIBRARIES}")
 set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -m64")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static  -v")
@@ -99,8 +107,45 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static  -v")
 
 set(SSL_LIBS )  # no ssl lib on windows! == Use Schannel
 set(CRYPTO_LIBS Crypt32.lib BCrypt.lib) # no (OpenSSL-)crypto lib on windows!
+# set(CARES_ADD_LIBS Iphlpapi.lib)
 
-# set(PERCENT_CHAR "%%" GLOBAL)
+set(BASIC_LINK_LIBRARIES
+    wsock32
+    ws2_32
+    gdi32
+    msimg32
+    winmm
+#        ws2_32.lib
+    gdiplus
+
+        msimg32
+        winmm
+        # dl
+  #??      pthread
+  #??      stdc++
+        user32
+  ###      gdi32
+  ###      gdiplus
+  ###      ws2_32
+        mswsock
+        kernel32
+        # ?? msvcrt32
+        shell32
+  #??      gcc_s
+
+    # ??? necessary?
+    crypt32
+)
+# list(APPEND XCSOAR_LINK_LIBRARIES
+#    wsock32
+#    ws2_32
+#    gdi32
+#    gdiplus
+#    crypt32
+#    winpthread
+# )
+
+
 set(PERCENT_CHAR "%%") # GLOBAL)
 set(DOLLAR_CHAR  "$$") # GLOBAL)
 ### message(FATAL_ERROR "Stop clang")

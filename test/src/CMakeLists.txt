@@ -20,11 +20,12 @@ foreach(source_file ${TEST_LIST})
     list(APPEND source_file ${PROJECTGROUP_SOURCE_DIR}/src/Operation/ConsoleOperationEnvironment.cpp)
     add_executable(${test}  ${source_file} 
       ${test_path}/tap.c 
+      # ${test_path}/test_debug.cpp  needs getopt
       ${test_path}/FakeLogFile.cpp 
       ${SCRIPT_FILES}
     )
     set_target_properties(${test} PROPERTIES 
-                FOLDER _ConsoleTest
+                FOLDER _Test/Console
                 EXCLUDE_FROM_ALL TRUE
     )
     target_link_libraries(${test} PUBLIC ${XCSOAR_LINK_LIBRARIES})
@@ -53,7 +54,7 @@ foreach(source_file ${GUI_TEST_LIST})
       ${SCRIPT_FILES}
     )
     set_target_properties(${test} PROPERTIES 
-                FOLDER _GuiTest
+                FOLDER _Test/Gui
                 EXCLUDE_FROM_ALL TRUE
     )
     if(MSVC)
@@ -210,19 +211,19 @@ set(RUN_MAP_WINDOW_DEPENDS
 	TASK ROUTE GLIDE WAYPOINT WAYPOINTFILE AIRSPACE 
 	JASPER ZZIP LIBNMEA GEO MATH TIME UTIL
 )
-# ${eval ${call link-program,RunMapWindow,RUN_MAP_WINDOW))
 
-    # list(APPEND RUN_MAP_WINDOW_SOURCES ${SRC_DIR}/DebugPort.cpp)
-    # list(APPEND RUN_MAP_WINDOW_SOURCES ${PROJECTGROUP_SOURCE_DIR}/src/Operation/ConsoleOperationEnvironment.cpp)
-    # list(APPEND RUN_MAP_WINDOW_SOURCES ${SRC_DIR}/Fonts.cpp)
-    add_executable(${TEST_NAME}  ${RUN_MAP_WINDOW_SOURCES} 
+# list(APPEND RUN_MAP_WINDOW_SOURCES ${SRC_DIR}/DebugPort.cpp)
+# list(APPEND RUN_MAP_WINDOW_SOURCES ${PROJECTGROUP_SOURCE_DIR}/src/Operation/ConsoleOperationEnvironment.cpp)
+# list(APPEND RUN_MAP_WINDOW_SOURCES ${SRC_DIR}/Fonts.cpp)
+
+add_executable(${TEST_NAME}  ${RUN_MAP_WINDOW_SOURCES} 
       ${test_path}/tap.c 
       # ${SCRIPT_FILES}
-    )
-    set_target_properties(${TEST_NAME}  PROPERTIES 
+ )
+set_target_properties(${TEST_NAME}  PROPERTIES 
                 FOLDER _GuiTest
                 EXCLUDE_FROM_ALL TRUE
-    )
+ )
  set (RUN_MAP_LINK_LIBS ) ## ${XCSOAR_LINK_LIBRARIES} )
  # list(REMOVE_ITEM RUN_MAP_LINK_LIBS libOpenSoar)
 
@@ -244,7 +245,4 @@ set(RUN_MAP_WINDOW_DEPENDS
 target_link_libraries(${TEST_NAME} PUBLIC ${RUN_MAP_LINK_LIBS} )
 
 # add_dependencies(${test} util libOpenSoar)
-# add_dependencies(${test} util libOpenSoar)
-
-
 endif()

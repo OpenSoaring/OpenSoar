@@ -20,9 +20,9 @@ endif (NOT LINK_LIBS)
 
 # message(FATAL_ERROR "+++ Stop !!!")
 
-include_directories($(TIFF_INCLUDE_DIR))
-# include_directories($(GEOTIFF_INCLUDE_DIR))
-include_directories(${LINK_LIBS}/tiff/tiff-4.6.0/include)
+include_directories(${TIFF_INCLUDE_DIR})
+# include_directories(${GEOTIFF_INCLUDE_DIR})
+# include_directories(${LINK_LIBS}/tiff/tiff-4.6.0/include)
 
 
 ADD_SUBDIRECTORY(libgeotiff)

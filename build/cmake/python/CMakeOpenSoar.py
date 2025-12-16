@@ -2,10 +2,9 @@
 
 import os, sys, subprocess
 
-# Configuration = 'Release'
+Configuration = 'Release'
 # Configuration = 'Debug'
-# 
-Configuration = 'Multi'
+# Configuration = 'Multi'
 
 
 # if len(sys.argv) > 1:
@@ -61,11 +60,9 @@ def clang(toolchain, env):
         ### Android: env_path = program_dir + '/Android/android-ndk-r25b/toolchains/llvm/prebuilt/windows-x86_64/bin;' + env_path
         # toolchain_file = src_dir.replace('\\','/') + '/build/cmake/toolchains/MinGW.toolchain'
      elif toolchain == 'clang12': 
-        # env_path = program_dir.replace('/', '\\') + '\\MinGW\\mgw112\\bin;' + env_path
         env_path = program_dir.replace('/', '\\') + '\\LLVM\\' + toolchain + '\\bin;' + env_path  # ['PATH']
      else: 
         env_path = program_dir.replace('/', '\\') + '\\LLVM\\' + toolchain + '\\bin;' + env_path  # ['PATH']
-        # env_path = program_dir.replace('/', '\\') + '\\MinGW\\mgw112\\bin;' + env_path
      # toolchain_file = os.getcwd().replace('\\','/') + '/build/cmake/toolchains/Android/x86_64.toolchain'
      toolchain_file = os.getcwd().replace('\\','/') + '/build/cmake/toolchains/WinClang.toolchain'
   else:
@@ -81,6 +78,7 @@ generator = {
            'mgw112' : 'MinGW Makefiles',
            'mgw122' : 'MinGW Makefiles',
            'mgw143' : 'MinGW Makefiles',
+           'mgw152' : 'MinGW Makefiles',
            # 'ninja' : 'MinGW Makefiles',
            'ninja' : 'Ninja',
            'unix' : 'Unix Makefiles',
@@ -93,6 +91,8 @@ generator = {
            'clang15' : 'Clang',
            'clang16' : 'Clang',
            'clang17' : 'Clang',
+           'clang19' : 'Clang',
+           'clang21' : 'Clang',
            'msvc2015' : 'Visual Studio 14',
            'msvc2017' : 'Visual Studio 15',
            'msvc2019' : 'Visual Studio 16',
@@ -122,6 +122,7 @@ compiler_setup = {
            'mgw112' : gcc,
            'mgw122' : gcc,
            'mgw143' : gcc,
+           'mgw152' : gcc,
            # 'ninja' : gcc,
            'ninja' : clang,
            'unix' : gcc,
@@ -134,6 +135,8 @@ compiler_setup = {
            'clang15' : clang,
            'clang16' : clang,
            'clang17' : clang,
+           'clang19' : clang,
+           'clang21' : clang,
            'msvc2015' : visual_studio,
            'msvc2017' : visual_studio,
            'msvc2019' : visual_studio,
@@ -202,7 +205,8 @@ def create_opensoar(args):
 
     
     # TODO(August2111): delete: third_party = binary_dir + 'D:/Projects/3rd_Party'  # Windows!
-    third_party = binary_dir + '/3rd_Party'  # Windows!
+    # old 2026-01-08: third_party = binary_dir + '/3rd_Party'  # Windows!
+    third_party = 'D:/Libs'
     install_dir = program_dir + '/Install/' + project_name
   else:
     src_dir = start_dir
@@ -217,24 +221,27 @@ def create_opensoar(args):
     build_dir = binary_dir + '/'+ toolchain
     link_libs = project_dir + '/link_libs'
     # third_party = project_dir + '/3rd_Party'
-    third_party = binary_dir + '/3rd_Party'  # Windows!
+    #old 2026-01-08:third_party = binary_dir + '/3rd_Party'  # Windows!
+    third_party = 'D:/LibsX'
     install_dir = program_dir + '/Install/' + project_name
 
   toolset = None
 
-  python_exe = ''
+  python_exe = None
+  
   try:
     myprocess = subprocess.Popen(['python', '--version'], env = my_env)
     myprocess.wait()
     python_exe = 'python'
   except:
     print('"python" not callable')
-  try:
-    myprocess = subprocess.Popen(['python3', '--version'], env = my_env)
-    myprocess.wait()
-    python_exe = 'python3'
-  except:
-    print('"python3" not callable')
+  if not python_exe:
+    try:
+      myprocess = subprocess.Popen(['python3', '--version'], env = my_env)
+      myprocess.wait()
+      python_exe = 'python3'
+    except:
+      print('"python3" not callable')
 
   if sys.platform.startswith('win'):
     cmake_exe = (program_dir  + '/CMake/bin/') + 'cmake.exe'
@@ -264,7 +271,7 @@ def create_opensoar(args):
   if prev_batch:
     print(prev_batch)
     
-  if build_dir.endswith('msvc2022') or build_dir.endswith('msvc2026') or false:
+  if build_dir.endswith('msvc2022') or build_dir.endswith('msvc2026') or False:
     if Configuration == 'Release':
       build_dir = build_dir + 'release'
     elif Configuration == 'Debug':
@@ -353,14 +360,19 @@ def create_opensoar(args):
     arguments.append(cmake_exe)  # 'cmake')
     arguments.append('--build')
     arguments.append(build_dir)
-    # if toolchain.startswith('msvc') or toolchain.startswith('mgw'):
-    arguments.append('--config')
-    if Configuration == 'Release' or Configuration == 'Debug':
-      arguments.append(Configuration) 
-    elif toolchain.startswith('msvc'): # Visual Studio -> Debug
-        arguments.append('Debug') 
-    else : # in other Multi-Configuration make 'Release'
-        arguments.append('Release') 
+    if toolchain.startswith('msvc'): #  or toolchain.startswith('mgw'):
+      arguments.append('--config')
+      if Configuration == 'Release' or Configuration == 'Debug':
+        arguments.append(Configuration) 
+      elif toolchain.startswith('msvc'): # Visual Studio -> Debug
+          arguments.append('Debug') 
+      else : # in other Multi-Configuration make 'Release'
+          arguments.append('Release') 
+    else : # not msvc or mgw:
+      print("no multiconfig toolchain: no '--Config Release'!")
+      # arguments.append('--help')
+      # arguments.append('--config')
+      # arguments.append('Release') 
 
     # if False:  # toolchain MinGW/GCC...
     if not toolchain.startswith('msvc'):
@@ -369,6 +381,8 @@ def create_opensoar(args):
         arguments.append('-j')
         arguments.append('1')  # jobs...
         # arguments.append('8')  # jobs...
+        # arguments.append('-v')  # verbose output?
+    print("Arguments: ", arguments)
     myprocess = subprocess.Popen(arguments, env = my_env, shell = False)
     myprocess.wait()
     if myprocess.returncode != 0:
@@ -413,11 +427,9 @@ def create_opensoar(args):
       # opensoar_app = 'XCSoarAug-MinGW.exe'
     elif toolchain.startswith('clang'):
       opensoar_app = project_name + '-Clang.exe'
-    # display_format = '1400x700' # big, landscape
-    # display_format = '800x1024' # 7.0", portrait
-    display_format = '640x480'  # 5.7", landscape
 
-    arguments = [build_dir + '/' + opensoar_app, display_format,  '-profile=August.prf', '-datapath=D:/Data/OpenSoarData']
+    # arguments = [build_dir + '/' + opensoar_app, '-1400x700', '-fly', '-profile=D:/Data/OpenSoarData/August.prf', '-datapath=D:/Data/OpenSoarData']
+    arguments = [build_dir + '/' + opensoar_app, '-600x480', '-profile=August.prf', '-datapath=D:/Data/OpenSoarData']
     if not os.path.exists(arguments[0]):
         print("App '", arguments[0], "' doesn't exist!")
         creation = 0

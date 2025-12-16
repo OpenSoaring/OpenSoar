@@ -46,8 +46,8 @@ if (_COMPLETE_INSTALL)
        ${_BUILD_TARGET}
 
         GIT_REPOSITORY "https://github.com/jedisct1/libsodium.git"
-        # GIT_TAG  ${SODIUM_VERSION}
         GIT_TAG  ${SODIUM_VERSION}-RELEASE
+        # GIT_TAG  ${SODIUM_VERSION}-RELEASE
 
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
         ${_BINARY_STEP}
@@ -55,8 +55,8 @@ if (_COMPLETE_INSTALL)
 
         PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_SOURCE_DIR}/3rd_party/sodium_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
         CMAKE_ARGS ${CMAKE_ARGS}
-        # INSTALL_COMMAND   cmake --build . --target install --config Release
-        ${_INSTALL_COMMAND}
+
+        INSTALL_COMMAND ${_INSTALL_COMMAND}
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
         BUILD_BYPRODUCTS  ${_TARGET_LIBS} # ${${TARGET_CNAME}_LIB}

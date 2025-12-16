@@ -3,14 +3,19 @@ cmake_minimum_required(VERSION 3.15)
 # get_filename_component(LIB_TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
 
  set(INCLUDE_WITH_TOOLCHAIN 0)  # special include path for every toolchain!
-if (MSVC)  # unfortunately the lib name is a little bit 'tricky' at libPng..
+if (MSVC AND CLANG)  # unfortunately the lib name is a little bit 'tricky' at libPng..
   # at MSVC the LIB_PREFIX is empty normally
   set(_LIB_NAME libpng16_static)
  else()
   set(_LIB_NAME png16)
 endif()
 
-prepare_3rdparty(png ${_LIB_NAME} ${_LIB_NAME}d)
+if (MINGW)
+  prepare_3rdparty(png png16)  # png16d)
+else()  # MSVC and CLANG
+  prepare_3rdparty(png libpng16_static libpng16_staticd)
+endif()
+
 if (_COMPLETE_INSTALL)
     set(CMAKE_ARGS
              "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
@@ -26,6 +31,9 @@ if (_COMPLETE_INSTALL)
             "-DPNG_STATIC=ON"
             "-DPNG_TESTS=OFF"
     )
+    if(${TARGET_CNAME}_VERSION VERSION_LESS 1.6.43)
+        list(APPEND CMAKE_ARGS "-DCMAKE_POLICY_VERSION_MINIMUM=3.5")
+    endif()
 
     ExternalProject_Add(
         ${_BUILD_TARGET}
@@ -39,8 +47,9 @@ if (_COMPLETE_INSTALL)
   
         # PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/LIBPNG/CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
         CMAKE_ARGS ${CMAKE_ARGS}
-        ${_INSTALL_COMMAND}
-  
+
+        INSTALL_COMMAND ${_INSTALL_COMMAND}
+
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
         DEPENDS ${ZLIB_TARGET}

@@ -1,7 +1,7 @@
 s
 
 
-set(TARGET_NAME "XCSoarAug-Clang")  # hardcoded
+# set(TARGET_NAME "OpenSoar-Clang")  # hardcoded
 
 message(STATUS "+++ System = WIN32 / Clang!")
 
@@ -27,6 +27,8 @@ if (ON OR WIN64)  # momentan kein Flag verfügbar!
 else()
     message(FATAL_ERROR "Error: WIN32 not implemented?")
 endif()
+
+message(FATAL_ERROR "Error: Build-Test!!!")
 
 set(SSL_LIBS )
 set(CRYPTO_LIBS )

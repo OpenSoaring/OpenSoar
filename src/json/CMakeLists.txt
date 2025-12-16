@@ -32,7 +32,7 @@ foreach(header_file ${HEADER_FILES_TEMP})
     source_group("Header\\${src_path}" FILES  ${header_file})
     ## message(STATUS "### ### ${src_path}  --- ${header_file}" )
 endforeach()
-#     message(FATAL_ERROR "### ### Header-Liste  --- ${HEADER_FILES}" )
+#     message(FATAL_ERROR "### ### Header list  --- ${HEADER_FILES}" )
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
