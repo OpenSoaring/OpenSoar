@@ -2,12 +2,14 @@
 # ./3rd_party/3rd_party.cmake
 # =================================================================
 
-set(BOOST_VERSION       "1.87.0")
-set(CARES_VERSION       "1.24.0")  # not valid!
+set(BOOST_VERSION       "1.90.0") # from 2025-12-10
 # 25.12.23 
-set(CARES_VERSION       "1.17.1")  # old version necessary...
+# set(CARES_VERSION       "1.17.1")  # old version necessary...
+# set(CARES_VERSION       "1.24.0")  # XCSoar version () # not valid?
+set(CARES_VERSION       "1.34.6")  # newest version (2025-12-08)
 set(CURL_VERSION        "8.5.0")
-set(PNG_VERSION         "1.6.40")
+#  set(PNG_VERSION         "1.6.40") 
+set(PNG_VERSION         "1.6.43") # XCSoar version
 set(SODIUM_VERSION      "1.0.20") # 2024-05-25 (XCSoar since ...)
 set(LUA_VERSION         "5.4.4")  # "5.4.6") 08.11.2024: sollte gehen...
 set(FMT_VERSION         "10.2.1")
@@ -16,7 +18,8 @@ set(FMT_VERSION         "11.1.4") # github latest
 if (1) # SkySight
   set(TIFF_VERSION        "4.6.0")
   set(GEOTIFF_VERSION     "1.7.1")  # oder 1.7.3 ??
-  set(PROJ_VERSION        "9.3.1")  # 9.3.1 ->  9.4.1
+  # set(PROJ_VERSION        "9.3.1")  # 9.3.1 ->  9.4.1
+  set(PROJ_VERSION        "9.7.1")  # 9.3.1 ->  9.4.1
   set(NETCDF_C_VERSION    "4.6.2")  # 4.6.2 -> 4.9.2 ??
   # set(NETCDF_CXX_VERSION  "4.2.1")  #is without cmake (starts with 4..3.1)
   set(NETCDF_CXX_VERSION  "4.3.1")  # 4.2.1 -> 4.3.1 ??

@@ -1,5 +1,5 @@
 if (NOT TOOLCHAIN)
-  set(TOOLCHAIN "msvc2022" ) 
+  set(TOOLCHAIN "msvc2026" ) 
 endif (NOT TOOLCHAIN)
 message(STATUS "+++ System = WIN32 / MSVC (${TOOLCHAIN})!")
 
@@ -18,6 +18,8 @@ add_compile_definitions(TWO_LOGO_APP)
 
 # SkySight support feature:
 set (HAVE_SKYSIGHT ON)
+set (HAVE_SKYSIGHT OFF)
+###  see CMakeLists.txt, line 216: add_compile_definitions(HAVE_SKYSIGHT) 
 
 if (HAVE_SKYSIGHT)
   set (SKYSIGHT_FORECAST ON)
@@ -28,7 +30,6 @@ if (HAVE_SKYSIGHT)
   set (SKYSIGHT_HTTP_LOG OFF)
 endif (HAVE_SKYSIGHT)
 
-###  see CMakeLists.txt, line 216: add_compile_definitions(HAVE_SKYSIGHT) 
 #-------------------------------
 add_compile_definitions(__MSVC__)
 #********************************************************************************
@@ -42,33 +43,24 @@ endif()
 
 add_compile_definitions(NO_ERROR_CHECK)  # EnumBitSet funktioniert m.E. noch nicht korrekt!!!!
 add_compile_definitions(WIN32_LEAN_AND_MEAN)
- # warning C4996: 'xxx': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _wcsdup. See online help for details.
- # xxx: wcscpy, wcsdup, strtok, strcpy, strdup, ....
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 add_compile_definitions(_SCL_SECURE_NO_WARNINGS)
-# add_compile_definitions(/std:c++20)
-# add_definitions(/std:c++20)
 add_compile_options(/std:c++20)
 add_compile_options(/Zc:__cplusplus)
 add_compile_options(/utf-8)
-#add_compile_definitions(/Zc:__cplusplus)
-#add_compile_definitions(/utf-8)
 # add_definitions(/Zc:wchar_t)
 
 # Disabling Warnings:
 add_compile_options(/wd5030)
 add_compile_options(/wd4455)  # "suffix warning?"
 add_compile_options(/wd4805)  #  "|": unsichere Kombination von Typ "bool" mit Typ "int" in einer Operation
-
-
-add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
-add_compile_definitions(BOOST_JSON_HEADER_ONLY)
-add_compile_definitions(BOOST_JSON_STANDALONE)
-add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON) 
+ # warning C4996: 'xxx': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _wcsdup. See online help for details.
+ # xxx: wcscpy, wcsdup, strtok, strcpy, strdup, ....
 
 if (ON OR WIN64)  # momentan kein Flag für 64bit verfügbar!
     add_compile_definitions(WIN64)
     add_compile_definitions(_AMD64_)
+    add_compile_definitions(__x86_64__)
 else()
     message(FATAL_ERROR "Error: WIN32 not implemented?")
 endif()
@@ -88,9 +80,7 @@ set(BASIC_LINK_LIBRARIES
 list(APPEND BASIC_LINK_LIBRARIES
         shlwapi.lib # needed from hdf5
 )
-### list(APPEND BASIC_LINK_LIBRARIES
-### 
-### )
+
 set(SSL_LIBS )  # no ssl lib on windows for curl necessary!
 set(CRYPTO_LIBS Crypt32.lib BCrypt.lib)
 

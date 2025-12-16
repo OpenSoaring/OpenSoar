@@ -35,38 +35,27 @@ endif (NOT LINK_LIBS)
 
   include(3rd_party.cmake)
   
-  # set(EP_BASE "${THIRD_PARTY}/external")  # later remove 'External!' # not used up to now!
-  set(EP_CMAKE "${THIRD_PARTY}")   ##/cmake")  # later remove 'cmake!'
-  # set(EP_BINARIES "${BINARY_DIR}/3rd_party")  # Binaries dahin verlagern?
+##   if (${EP_CMAKE} MATCHES "")
+  if (NOT THIRD_PARTY)
+     message(FATAL_ERROR "THIRD_PARTY is empty!")
+     set(EP_CMAKE D:/Libs)   ## shorter and better? (August2111, 2025-12-15)
+  endif()
+  set(THIRD_PARTY D:/Libs)   ## shorter and better? (August2111, 2025-12-15)
+  set(EP_CMAKE "${THIRD_PARTY}") # ??
   option(USE_SYSTEM_${TARGET_CNAME} "Should we use the system ${TARGET_NAME}?" OFF)
   option(EP_BUILD_ALWAYS "Build 3rd party packages always?" OFF)
   option(EP_BUILD_IN_SOURCE "Build 3rd party in sources (Recommended: OFF)?" OFF)
-
-
-# file(GLOB_RECURSE SCRIPT_FILES *.txt *.cmake *.in)
-# file(GLOB_RECURSE SCRIPT_FILES *.txt *.in)
 
 include(CMakeSource.cmake)
 
 set(EXTRA_BUILD 1)
 
-### macro(install_step arg1)
-###    message(STATUS "========================== ${arg1} ===================================")
-###    if(0)
-###      set (_install_cmd  INSTALL_COMMAND  cmake --build . --target install --config Debug)
-###    else()
-###      set (_install_cmd  "INSTALL_COMMAND \"\"")
-###    endif(1)
-### 
-### endmacro()
 
-#macro(prepare_3rdparty target_name) #  lib_name)
 macro(prepare_3rdparty target_name)
     set(params ${ARGN}) # ARGN isn't like a list
     list (GET params 0 lib_name)
     list (LENGTH params _LENGTH)
 
-    ## if ("${debug_lib}" STREQUAL "NOTFOUND")
     if (_LENGTH LESS 2)
      #  message(FATAL_ERROR "Empty String (${_LENGTH}) !!!!!!!!!!!!!!!!!!!!!!!!!")
       set(debug_lib ${lib_name})
@@ -74,12 +63,7 @@ macro(prepare_3rdparty target_name)
       list (GET params 1 debug_lib)
          # message(FATAL_ERROR "String debug_lib = ${debug_lib} / ${_LENGTH} !!!!!!!!!!!!!!!!!!!!!!!!!")
     endif()
-if (${target_name} MATCHES "hdf5")
-## message(STATUS "target_name (${target_name}) !!!!!!!!!!!!!!!!!!!!!!!!!")
-## message(STATUS "lib_name    (${lib_name}) !!!!!!!!!!!!!!!!!!!!!!!!!")
-## message(STATUS "debug_lib   (${debug_lib}) !!!!!!!!!!!!!!!!!!!!!!!!!")
-# message(FATAL_ERROR "Stop !!!!!!!!!!!!!!!!!!!!!!!!!") 
-endif()
+
     string(TOUPPER ${target_name} TARGET_CNAME)
 
     string(LENGTH ${TARGET_CNAME} _LENGTH)
@@ -118,10 +102,6 @@ endif()
     endif()
     set(${TARGET_CNAME}_INCLUDE_DIR "${_INSTALL_DIR}/${_INSTALL_INC_DIR}")
 
-    # set(_INSTALL_DIR "${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}")
-    # set(INSTALL_BIN "${_INSTALL_DIR}/bin/${TOOLCHAIN}")
-    # set(INSTALL_LIB "${_INSTALL_DIR}/lib/${TOOLCHAIN}")
-
     if(${EXTRA_BUILD})
        set(_BUILD_TARGET ${LIB_TARGET_NAME}_build)
     else()
@@ -141,7 +121,9 @@ endif()
     string(REPLACE "\\" "/" _PREFIX_DIR  ${${TARGET_CNAME}_PREFIX})
 
     set(${TARGET_CNAME}_LIBS  ${_TARGET_LIBS})  ## for internal use
-if(${lib_name} MATCHES "hdf5")
+if(${lib_name} MATCHES "boost")
+
+elseif(${lib_name} MATCHES "hdf5")
     if (MSVC)
       list(APPEND _TARGET_LIBS        
         ## optimized ${_TARGET_LIB_RELEASE} 
@@ -170,11 +152,11 @@ else()
 #  message(FATAL_ERROR "_INSTALL_DIR = ${_INSTALL_DIR}")
 endif()
 
-## message (FATAL_ERROR "Config = '$<CONFIG:Debug>', '$<CONFIG>', '$<CONFIGURATION>', '${CMAKE_BUILD_TYPE}' ")
+# message (FATAL_ERROR "Config = '$<CONFIG:Debug>', '$<CONFIG>', '$<CONFIGURATION>', '${CMAKE_BUILD_TYPE}' ")
 ## if($<CONFIG:Debug>) 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
-    set(CMAKE_BUILD_TYPE Debug)
+    # set(CMAKE_BUILD_TYPE Debug)
     # message(FATAL_ERROR "+++++ CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE} ++++++")
     if(VERBOSE_LEVEL GREATER 99)
       message(STATUS "+++++ CMAKE_BUILD_TYPE (1) = ${CMAKE_BUILD_TYPE} ++++++")
@@ -213,13 +195,28 @@ if(VERBOSE_LEVEL GREATER 99)
 endif(VERBOSE_LEVEL GREATER 99)
 
 # -------------------------------------------------
-if(EXISTS ${_TARGET_LIBRARY}) 
+if(${lib_name} MATCHES "boost")
+##  file(GLOB SCRIPT_FILES ${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}\LINK_LIBS*.lib)
+  set(_GLOB_DIR ${_INSTALL_DIR}/lib/${TOOLCHAIN})
+  message(STATUS "### boost: _INSTALL_DIR = ${_GLOB_DIR} ")
+  file(GLOB BOOST_LIB_FILES ${_GLOB_DIR}/libboost_*.lib)
+  list(LENGTH BOOST_LIB_FILES BOOST_LIB_COUNT)
+  if (BOOST_LIB_COUNT  GREATER 1)
+    set(_COMPLETE_INSTALL OFF)
+    message(STATUS "### boost: BOOST_LIB_FILES = ${BOOST_LIB_FILES} -> ${BOOST_LIB_COUNT} ")
+  else()
+    set(_COMPLETE_INSTALL ON)
+    message(FATAL_ERROR "### boost: BOOST_LIB_FILES = ${BOOST_LIB_FILES} -> ${BOOST_LIB_COUNT} ")
+  endif()
+
+elseif(EXISTS ${_TARGET_LIBRARY}) 
     set(_COMPLETE_INSTALL OFF)
 else()
     set(_COMPLETE_INSTALL ON)
     ##   message(FATAL_ERROR "### PNG: _TARGET_LIBRARY = ${_TARGET_LIBRARY} ")
 endif()
-#### set(_COMPLETE_INSTALL ON) ## test only (03.11.2024)!!!!!!!!
+### Only test w/ complete build of 3rd party libs:
+### set(_COMPLETE_INSTALL ON) ## test only (15.12.2025)!!!!!!!!
 # -------------------------------------------------
 
 get_filename_component(${TARGET_CNAME}_LIB_DIR  ${${TARGET_CNAME}_LIBRARY} PATH)
@@ -257,6 +254,7 @@ endif()
 ### -> Public: ... PARENT_SCOPE
   set(${TARGET_CNAME}_TARGET_LIBS  ${_TARGET_LIBS} PARENT_SCOPE)
   set(${TARGET_CNAME}_INCLUDE_DIR  ${${TARGET_CNAME}_INCLUDE_DIR} PARENT_SCOPE)
+  set(${TARGET_CNAME}_ROOT  ${_INSTALL_DIR} PARENT_SCOPE)
 endmacro()
 
   if(${lib_name} MATCHES "sqlite")

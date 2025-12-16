@@ -36,7 +36,7 @@ if (HAVE_SKYSIGHT)    # SkySight!
     list(APPEND CMAKE_FILES hdf5.cmake)
   endif (HAVE_HDF5)
   if (SKYSIGHT_LIBS)
-     list(APPEND CMAKE_FILES sqlite.cmake)
+# MSVC2026     list(APPEND CMAKE_FILES sqlite.cmake)
      list(APPEND CMAKE_FILES proj.cmake)
      # list(APPEND CMAKE_FILES sqlite3.cmake)
      list(APPEND CMAKE_FILES geotiff.cmake)

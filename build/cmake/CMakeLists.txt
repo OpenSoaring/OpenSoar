@@ -48,7 +48,7 @@ foreach(file ${SCRIPT_FILES} ${MAKE_FILES})
     
 endforeach()
 
-add_library(${TARGET_NAME}
+add_custom_target(${TARGET_NAME}
    EXCLUDE_FROM_ALL
     ../../src/Version.cpp 
     ${SCRIPT_FILES}
@@ -78,18 +78,12 @@ foreach(file ${SCRIPT_FILES} ${ANDROID_FILES})
     source_group("${src_path}" FILES  ${file})
 endforeach()
 
-if(0)
+# add_library(${TARGET_NAME}J
 add_custom_target(${TARGET_NAME}J
-   EXCLUDE_FROM_ALL
-    ${ANDROID_FILES}
-)
-else()
-add_library(${TARGET_NAME}J
    EXCLUDE_FROM_ALL
     ../../src/Version.cpp 
     ${ANDROID_FILES}
 )
-endif()
 # ================ Android-End =========================
 
 include(xcsoar.cmake)

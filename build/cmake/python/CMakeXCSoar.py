@@ -78,12 +78,15 @@ generator = {
            'msvc2017' : 'Visual Studio 15',
            'msvc2019' : 'Visual Studio 16',
            'msvc2022' : 'Visual Studio 17',
+           'msvc2026' : 'Visual Studio 18',
 }
 
 def visual_studio(toolchain, env):
   global prev_batch, cmake_generator
   #prev_batch = 'C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/VC/Auxiliary/Build/vcvars64.bat'
   if toolchain == 'msvc2022':
+    prev_batch = program_dir + '/Microsoft Visual Studio/2022/Preview/VC/Auxiliary/Build/vcvars64.bat'
+  elif toolchain == 'msvc2026':
     prev_batch = program_dir + '/Microsoft Visual Studio/2022/Preview/VC/Auxiliary/Build/vcvars64.bat'
   else:
     print('wrong toolchain: ', toolchain, '!')
@@ -113,6 +116,7 @@ compiler_setup = {
            'msvc2017' : visual_studio,
            'msvc2019' : visual_studio,
            'msvc2022' : visual_studio,
+           'msvc2026' : visual_studio,
 }
 
 def create_xcsoar(args):

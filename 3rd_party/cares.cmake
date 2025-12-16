@@ -18,12 +18,16 @@ if (_COMPLETE_INSTALL)
         "-DCARES_STATIC_PIC=ON"
         "-DCARES_BUILD_TESTS=OFF" )
 
-    string(REPLACE "." "_" GIT_TAG cares-${${TARGET_CNAME}_VERSION})  # after 1.17.1 only 'cares', before c-ares!
-
+    # GIT_TAG before 1.30.0 (f.e. "cares-1_29_0")
+    # string(REPLACE "." "_" GIT_TAG cares-${${TARGET_CNAME}_VERSION})  # after 1.17.1 only 'cares', before c-ares!
+    # GIT_TAG after 1.30.0 (f.e. "v1.30.0")
+    set(GIT_TAG v${${TARGET_CNAME}_VERSION})  # after 1.17.1 only 'cares', before c-ares!
+    
     ExternalProject_Add(
           ${_BUILD_TARGET}
        GIT_REPOSITORY "https://github.com/c-ares/c-ares.git"
        GIT_TAG  ${GIT_TAG}  # cares-1_1_17 -> for this use string(REPLACE...)
+       # GIT_TAG  ${GIT_TAG}  # cares-1_1_17 -> for this use string(REPLACE...)
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"  # ${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}"

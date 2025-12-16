@@ -37,6 +37,7 @@ if (NOT CMAKE_BUILD_TYPE) # variable is only set AFTER the project cmd!!!
   if (WIN32 AND MSVC)
     # with MultiConfig at MSVC and empty CMAKE_BUILD_TYPE create the Debug case
     set(CMAKE_BUILD_TYPE Debug)
+    set(CMAKE_BUILD_TYPE Release)
   else()
     if (MSVC)
         message(FATAL_ERROR "${WIN32} AND '${CMAKE_CXX_COMPILER_ID}', '${MSVC}', '${CMAKE_BUILD_TYPE}'  ")
@@ -335,7 +336,6 @@ if(ENABLE_OPENGL)
       #  this is a hard coded path!
       ## include_directories(D:/Programs/Android/android-ndk-r25b/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include)
     endif()
-    include_directories(${Boost_INCLUDE_DIR}/boost/compute/interop)
 
     include_directories($ENV{OCL_ROOT}/include)
     include_directories(D:/Programs/OCL_SDK_Light/include) # alternative???
@@ -348,18 +348,37 @@ else()
       add_compile_definitions(USE_WIN32_RESOURCES USE_WINUSER)
 endif()
 #####################################################################################
-#####################################################################################
+##################################################################################### 
 
-link_directories(${BOOST_ROOT}/lib/${TOOLCHAIN}) # this line in boost.cmake is not affected to the main project!
+### Boost Section =============================
+
+set(Boost_INCLUDE_DIR ${BOOST_INCLUDE_DIR})
+set(Boost_ROOT ${BOOST_ROOT})
+# link_directories isn't necessary because header only...
+# link_directories(${BOOST_ROOT}/lib/${TOOLCHAIN}) # this line in boost.cmake is not affected to the main project!
+
+# message(FATAL_ERROR "${BOOST_ROOT} /// ${BOOST_INCLUDE_DIR} /// ${BOOST_TARGET_LIBS}" )
+
+find_package(Boost REQUIRED)
+# add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
+# add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON) 
+
+# following libs need this settings: Dialog, libOpenSoar, json, WeGlide, Weather, net, Repository, Task,  ...
+add_compile_definitions(BOOST_JSON_NO_LIB)
+add_compile_definitions(BOOST_CONTAINER_NO_LIB)
+#  ??
+# add_compile_definitions(BOOST_JSON_HEADER_ONLY)
+# add_compile_definitions(BOOST_JSON_STAND_ALONE)
+
+# include_directories(${Boost_INCLUDE_DIR}/boost/compute/interop)
+#End of Boost Section =============================
+
 
 get_filename_component(TEMP_INCLUDES ${PROJECTGROUP_BINARY_DIR}/../include ABSOLUTE)
 include_directories(
     ${PROJECTGROUP_SOURCE_DIR}/src
     ${PROJECTGROUP_SOURCE_DIR}/src/Engine
     ${TEMP_INCLUDES}
-
-    # better with find_package
-    ${Boost_INCLUDE_DIR}/boost/predef/other
 
     ${THIRD_PARTY}/glfw/glfw-3.3.2.bin.WIN64/include
     ${LINK_LIBS}/glm/glm-0.9.9/include
@@ -509,7 +528,7 @@ if(NOT MSVC)  ### better _LIB as _TARGET...
     ${CARES_LIBS}  # new at 03/2021
     ${TIFF_LIBS}  # new at 06/2024
  
-    ${Boost_LIBRARIES}
+    # ${Boost_LIBRARIES}
   )
   else (LIBS_OR_LIBRARY)
   list(APPEND XCSOAR_LINK_LIBRARIES
@@ -526,7 +545,7 @@ if(NOT MSVC)  ### better _LIB as _TARGET...
     ${CARES_LIBRARY}  # new at 03/2021
     ${TIFF_LIBRARY}  # new at 06/2024
  
-    ${Boost_LIBRARIES}
+    # ${Boost_LIBRARIES}
   )
   endif (LIBS_OR_LIBRARY)
   if (HAVE_SKYSIGHT)
@@ -571,7 +590,7 @@ else(NOT MSVC)    ## -----------------------------------------
     
     ${TIFF_TARGET}  # new at 06/2024
 
-    ${Boost_LIBRARIES}
+    # ${Boost_LIBRARIES}
   )
   if (HAVE_SKYSIGHT)
     list(APPEND XCSOAR_LINK_LIBRARIES
@@ -611,16 +630,6 @@ list(APPEND SCRIPT_FILES
     NEWS.txt
 )
 
-#### if (MINGW)
-#### ## set (NETCDF_C_LIB D:/Projects/link_libs/netcdf_c/netcdf_c-4.6.2/lib/${TOOLCHAIN})
-#### message(STATUS "NETCDF_C_LIB_DIR = ${NETCDF_C_LIB_DIR}!")
-#### # message(FATAL_ERROR "Stop!")
-#### link_directories(
-####   ${NETCDF_C_LIB_DIR}
-####   ${NETCDF_C_LIB_DIR}
-#### )
-#### endif (MINGW)
-
 if (ANDROID)  # library!
    add_library(${TARGET_NAME} STATIC ${SOURCE_FILES})
 elseif(MINGW)
@@ -632,6 +641,7 @@ else()        # executable!
 endif()
 
 list(APPEND XCSOAR_LINK_LIBRARIES ) # sequence is very important, I don't no, why'!!!!
+target_include_directories(${TARGET_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
 
 if (VERBOSE_LEVEL)
     message(STATUS "----- XCSOAR_LINK_LIBRARIES = ${XCSOAR_LINK_LIBRARIES}")
@@ -657,7 +667,7 @@ endif (MINGW)
 # target_link_libraries(${TARGET_NAME} PUBLIC ${HDF5_HL_LIBRARY})
 endif(HAVE_SKYSIGHT)
 
-# target_link_libraries(${TARGET_NAME} PUBLIC ${XCSOAR_LINK_LIBRARIES})
+# message(FATAL_ERROR "XCSOAR_LINK_LIBRARIES = ${XCSOAR_LINK_LIBRARIES}")
 target_link_libraries(${TARGET_NAME} PRIVATE ${XCSOAR_LINK_LIBRARIES})
 
 if(MSVC)

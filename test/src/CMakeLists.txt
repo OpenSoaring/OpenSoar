@@ -20,11 +20,12 @@ foreach(source_file ${TEST_LIST})
     list(APPEND source_file ${PROJECTGROUP_SOURCE_DIR}/src/Operation/ConsoleOperationEnvironment.cpp)
     add_executable(${test}  ${source_file} 
       ${test_path}/tap.c 
+      # ${test_path}/test_debug.cpp  needs getopt
       ${test_path}/FakeLogFile.cpp 
       ${SCRIPT_FILES}
     )
     set_target_properties(${test} PROPERTIES 
-                FOLDER _ConsoleTest
+                FOLDER _Test/Console
                 EXCLUDE_FROM_ALL TRUE
     )
     target_link_libraries(${test} PUBLIC ${XCSOAR_LINK_LIBRARIES})
@@ -53,7 +54,7 @@ foreach(source_file ${GUI_TEST_LIST})
       ${SCRIPT_FILES}
     )
     set_target_properties(${test} PROPERTIES 
-                FOLDER _GuiTest
+                FOLDER _Test/Gui
                 EXCLUDE_FROM_ALL TRUE
     )
     if(MSVC)
