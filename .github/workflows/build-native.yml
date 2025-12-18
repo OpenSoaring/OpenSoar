@@ -35,7 +35,7 @@ on:
       # - dev-branch
 
 env:
-  DEBUG: y
+  DEBUG: n
   BOOST: boost_1_87_0
   BUILD_TARGETS: UNIX,WIN64,PC
   TEST_TARGETS: UNIX,KOBO
@@ -420,14 +420,14 @@ jobs:
           fi
           
           if [ ${{ startsWith(github.ref, 'refs/tags/v') }} = true ]; then
-            echo "DEBUG=y" >> $GITHUB_ENV
+            echo "DEBUG=n" >> $GITHUB_ENV
             if [ ${{ matrix.target_final }} = "OpenSoar" ]; then
               echo "TARGET_FINAL=${{ matrix.target_final }}" >> $GITHUB_ENV
             fi
           elif [ ${{ matrix.target }} = 'WIN64' ]; then
             # August2111: with WIN64 don't use the Debug option
             echo "no DEBUG flag"
-            echo "DEBUG=y" >> $GITHUB_ENV
+            echo "DEBUG=n" >> $GITHUB_ENV
           fi
 
       - name: Checkout code
@@ -554,7 +554,7 @@ jobs:
         if: ${{ matrix.sanitizer }}  # !!!!August2111:
         run: |
           echo "Unix - Sanitizer Check"
-          ${{ env.BUILDER }} -j${{ env.PHYS_KERNELS }} TARGET=${{ matrix.target }} DEBUG=${{ env.DEBUG }} USE_CCACHE=y V=${{ env.VERBOSE }} everything VFB=y SANITIZE=y DEBUG_GLIBCXX=y
+          ${{ env.BUILDER }} -j${{ env.PHYS_KERNELS }} TARGET=${{ matrix.target }} DEBUG=y USE_CCACHE=y V=${{ env.VERBOSE }} everything VFB=y SANITIZE=y DEBUG_GLIBCXX=y
   
       - name: Compile OpenSoar - Release
         if: ${{ startsWith(github.ref, 'refs/tags/v') && !matrix.no_build && !matrix.sanitizer }}
