@@ -48,17 +48,19 @@ foreach(file ${SCRIPT_FILES} ${MAKE_FILES})
     
 endforeach()
 
-add_custom_target(${TARGET_NAME}
+# add_custom_target(${TARGET_NAME}
+add_library(${TARGET_NAME} 
    EXCLUDE_FROM_ALL
     ../../src/Version.cpp 
     ${SCRIPT_FILES}
     ${MAKE_FILES}
 )
-add_custom_target(${TARGET_NAME}X
-   EXCLUDE_FROM_ALL
-    ${SCRIPT_FILES}
-    ${MAKE_FILES}
-)
+### # add_custom_target(${TARGET_NAME}X
+### add_library(${TARGET_NAME}X
+###    EXCLUDE_FROM_ALL
+###     ${SCRIPT_FILES}
+###     ${MAKE_FILES}
+### )
 
 
 # ================ Android =============================
@@ -78,8 +80,8 @@ foreach(file ${SCRIPT_FILES} ${ANDROID_FILES})
     source_group("${src_path}" FILES  ${file})
 endforeach()
 
-# add_library(${TARGET_NAME}J
-add_custom_target(${TARGET_NAME}J
+# add_custom_target(${TARGET_NAME}Android
+add_library(${TARGET_NAME}Android
    EXCLUDE_FROM_ALL
     ../../src/Version.cpp 
     ${ANDROID_FILES}
@@ -88,6 +90,6 @@ add_custom_target(${TARGET_NAME}J
 
 include(xcsoar.cmake)
 
-set_target_properties(${TARGET_NAME}  PROPERTIES FOLDER _Scripts)
-set_target_properties(${TARGET_NAME}X PROPERTIES FOLDER _Scripts)
-set_target_properties(${TARGET_NAME}J PROPERTIES FOLDER _Scripts)
+set_target_properties(${TARGET_NAME}        PROPERTIES FOLDER _Scripts)
+# set_target_properties(${TARGET_NAME}X PROPERTIES FOLDER _Scripts)
+set_target_properties(${TARGET_NAME}Android PROPERTIES FOLDER _Scripts)
