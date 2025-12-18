@@ -21,8 +21,6 @@
 
 #include <boost/container/static_vector.hpp>
 
-#include <stdio.h>
-
 class QuickMenuButtonRenderer final : public ButtonRenderer {
   const DialogLook &look;
 
