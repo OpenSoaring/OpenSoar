@@ -18,7 +18,6 @@
 #include "Repository/Glue.hpp"
 #include "Repository/FileRepository.hpp"
 #include "Repository/Parser.hpp"
-#include "net/http/Features.hpp"
 #include "net/http/DownloadManager.hpp"
 #include "ui/event/Notify.hpp"
 #include "ui/event/PeriodicTimer.hpp"
