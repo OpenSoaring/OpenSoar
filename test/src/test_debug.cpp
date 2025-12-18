@@ -9,7 +9,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <getopt.h>
+#ifndef __MSVC__
+# include <getopt.h>
+#endif
 
 int n_samples = 0;
 int interactive = 0;
