@@ -397,7 +397,7 @@ jobs:
                 RELEASE=no
             fi
             
-            echo "RELEASE=${{ RELEASE == "yes" }} " >> $GITHUB_ENV
+            echo "RELEASE=${{ RELEASE }} " >> $GITHUB_ENV
             echo "DEBUG=${{ DEBUG }} " >> $GITHUB_ENV
 
             case ${{ matrix.target }} in
