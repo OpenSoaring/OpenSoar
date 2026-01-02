@@ -1,0 +1,16 @@
+ libdispatch/dutil.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libdispatch/dutil.c b/libdispatch/dutil.c
+index 05a644d82..c87bd172c 100644
+--- a/libdispatch/dutil.c
++++ b/libdispatch/dutil.c
+@@ -202,7 +202,7 @@ NC_mktmp(const char* base)
+ 	_mktemp_s(tmp,sizeof(tmp)-1);
+ #else /*!_MSC_VER*/
+         mktemp(tmp);
+-	tmo[sizeof[tmp]-1] = '\0';
++	tmp[sizeof(tmp)-1] = '\0';
+ #endif
+ #else /* !HAVE_MKTEMP */
+ 	/* Need to simulate by using some kind of pseudo-random number */
