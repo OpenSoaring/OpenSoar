@@ -35,7 +35,6 @@ on:
       # - dev-branch
 
 env:
-  DEBUG: n
   BOOST: boost_1_87_0
   BUILD_TARGETS: UNIX,WIN64,PC
   TEST_TARGETS: UNIX,KOBO
@@ -390,7 +389,17 @@ jobs:
                   ;;
             esac
             
-            echo "DEBUG=${{ env.DEBUG }}"
+            if [ ${{ startsWith(github.ref, 'refs/tags/v') }} ]; then
+                DEBUG=${{ vars.DEBUG_RELEASE }}
+                RELEASE=yes
+            else
+                DEBUG=${{ vars.DEBUG_RELEASE }}
+                RELEASE=no
+            fi
+            
+            echo "RELEASE=${{ RELEASE == "yes" }} " >> $GITHUB_ENV
+            echo "DEBUG=${{ DEBUG }} " >> $GITHUB_ENV
+
             case ${{ matrix.target }} in
                 OSX64 | IOS64 | MACOS)
                   PHYS_KERNELS=$(sysctl -n hw.physicalcpu)
