@@ -397,8 +397,8 @@ jobs:
                 RELEASE=no
             fi
             
-            echo "RELEASE=${{ RELEASE }} " >> $GITHUB_ENV
-            echo "DEBUG=${{ DEBUG }} " >> $GITHUB_ENV
+            echo "RELEASE=$RELEASE " >> $GITHUB_ENV
+            echo "DEBUG=$DEBUG " >> $GITHUB_ENV
 
             case ${{ matrix.target }} in
                 OSX64 | IOS64 | MACOS)
