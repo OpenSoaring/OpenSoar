@@ -28,10 +28,10 @@ set(LIB_SUFFIX ".a")
 set(LIB_PREFIX "")
 set(LIB_SUFFIX ".lib")
 # add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
-add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
-add_compile_definitions(BOOST_JSON_HEADER_ONLY)
-add_compile_definitions(BOOST_JSON_STANDALONE)
-add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON) 
+### add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
+### add_compile_definitions(BOOST_JSON_HEADER_ONLY)
+### add_compile_definitions(BOOST_JSON_STANDALONE)
+### add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON) 
 
 add_compile_definitions(__CLANG__)
 add_compile_definitions(_WIN32) # this should be by default?
@@ -64,12 +64,6 @@ list(APPEND XCSOAR_LINK_LIBRARIES
     crypt32
 #    winpthread
 )
-if (0)
-list(APPEND XCSOAR_LINK_LIBRARIES
-    /usr/lib/link_libs/boost/boost-1.81.0/lib/clang15/libboost_container-clang15-mt-d-x64-1_81.lib
-    /usr/lib/link_libs/boost/boost-1.81.0/lib/clang15/libboost_json-clang15-mt-d-x64-1_81.lib
-)
-endif()
 
 add_compile_definitions(__CLANG__)
 

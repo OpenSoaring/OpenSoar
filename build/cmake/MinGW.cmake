@@ -19,12 +19,12 @@ endif()
 add_compile_definitions(__AUGUST__=1)
 add_compile_definitions(__AUG_MGW__=1)
 
-add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
-add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON)
+## add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
+## add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON)
 
 # Bei Windows brauche ich das nicht, aber hilft das eventuell beim Cross-Compile unter Linux?
-add_compile_definitions(BOOST_JSON_HEADER_ONLY)
-add_compile_definitions(BOOST_JSON_STANDALONE)
+## add_compile_definitions(BOOST_JSON_HEADER_ONLY)
+## add_compile_definitions(BOOST_JSON_STANDALONE)
 
         # add_compile_definitions(HAVE_MSVCRT)
 # add_compile_definitions(UNICODE)  # ???
@@ -33,6 +33,8 @@ add_compile_definitions(BOOST_JSON_STANDALONE)
 # add_compile_definitions(HAVE_SKYSIGHT)
 set (HAVE_SKYSIGHT ON)
 set (SKYSIGHT_FORECAST ON)
+# set (HAVE_SKYSIGHT OFF)  ## TODO(August211)!!!
+# set (SKYSIGHT_FORECAST OFF) ## TODO(August211)!!!
 add_compile_definitions(STRICT)
 add_compile_definitions(_USE_MATH_DEFINES)   # necessary under C++17!
 add_compile_definitions(ZZIP_1_H)   # definition of uint32_t and Co.!
@@ -72,6 +74,15 @@ if (1)
   string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=cast-align")
   string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=redundant-decls")
   string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=undef")
+  
+  # new(August2111): 2025-12-19:
+  string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=deprecated-declarations")
+  string(APPEND CMAKE_C_FLAGS   " -Wno-error=deprecated-declarations")
+  string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=stringop-truncation")
+  string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=maybe-uninitialized")
+  string(APPEND CMAKE_CXX_FLAGS   " -Wno-odr")
+  string(APPEND CMAKE_CXX_FLAGS   " -Wno-ignored-optimization-argument")
+
 
   string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=unused-parameter") # OpenSoaring\OpenSoar\src\OpenVario
   string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=sign-compare") # OpenSoaring\OpenSoar\src\OpenVario
@@ -136,15 +147,15 @@ endif()
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL Windows)
     include_directories("${COMPILER_PATH}/include")
     #  later: include_directories("${PROJECTGROUP_SOURCE_DIR}/output/include")
-    include_directories(${LINK_LIBS}/boost/boost-1.85.0/include/boost-1_85)
+    include_directories(${LINK_LIBS}/boost/boost-1.90.0/include/boost-1_90)
 else()
     include_directories(
        /usr/include
        /usr/include/x86_64-linux-gnu
        /usr/lib/gcc/x86_64-w64-mingw32/10-win32/include
-       #  later: include_directories("${PROJECTGROUP_SOURCE_DIR}/output/include")
-       include_directories("${PROJECTGROUP_SOURCE_DIR}/output/src/boost_1_85_0")
     )
+    #  later: include_directories("${PROJECTGROUP_SOURCE_DIR}/output/include")
+    include_directories("${PROJECTGROUP_SOURCE_DIR}/output/src/boost_1_90_0")
 endif()
 #######################################################################
       # list(APPEND XCSOAR_LINK_LIBRARIES
@@ -186,6 +197,7 @@ string (APPEND CMAKE_EXE_LINKER_FLAGS       " -v")
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL Windows)
     set(SSL_LIBS)
     set(CRYPTO_LIBS Crypt32.lib BCrypt.lib) # no (OpenSSL-)crypto lib on windows!
+    set(CARES_ADD_LIBS Iphlpapi.lib) 
 endif()
 
 set(PERCENT_CHAR \%)

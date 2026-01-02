@@ -53,7 +53,7 @@ add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
     ${SCRIPT_FILES}
 )
 
-target_link_libraries(${TARGET_NAME} PUBLIC Job NMEA)
+target_link_libraries(${TARGET_NAME} PUBLIC Job NMEA FLARM)
 
 # message(FATAL_ERROR "Stop!")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)

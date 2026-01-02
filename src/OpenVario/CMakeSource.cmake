@@ -66,6 +66,7 @@ set(OPENVARIOBASEMENU_LIBS
    ${SODIUM_TARGET}  # new at 06/2020
    ${SSL_LIBS}  # new at 03/2021
    ${CRYPTO_LIBS}  # new at 03/2021
+   ${CARES_ADD_LIBS}  # new at 12/2025
 )
 
 # Win32!

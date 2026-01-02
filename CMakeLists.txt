@@ -489,129 +489,79 @@ if(1)
   message(STATUS "Boost:        BOOST_LIBS       =  ${Boost_LIBRARIES} ")  # BOOST_LIB ???
   message(STATUS "C-Ares:       CARES_LIBS       =  ${CARES_LIBS}     / ${CARES_TARGET} ")
   message(STATUS "Curl:         CURL_LIBS        =  ${CURL_LIBS}      / ${CURL_TARGET} ")
+if (JASPER_OUTSIDE)
   message(STATUS "Jasper:       JASPER_LIBS      =  ${JASPER_LIBS}    / ${JASPER_TARGET} ")
-  ## message(STATUS "LibPng:       LIBPNG_LIBS      =  ${LIBPNG_LIBS} ")
+endif()
   message(STATUS "Png:          PNG_LIBS         =  ${PNG_LIBS}       / ${PNG_TARGET} ")
   message(STATUS "Sodium:       SODIUM_LIBS      =  ${SODIUM_LIBS}    / ${SODIUM_TARGET} ")
-  # message(STATUS "LibSodium:    LIBSODIUM_LIBS   =  ${LIBSODIUM_LIBS} ")
   message(STATUS "Lua:          LUA_LIBS         =  ${LUA_LIBS}       / ${LUA_TARGET} ")
-  # message(STATUS "Lua_3rd:      LUA_LIBS_3RD     =  ${LUA_LIBS_3RD} ")
   message(STATUS "ZLib:         ZLIB_LIBS        =  ${ZLIB_LIBS}      / ${ZLIB_TARGET} ")
+if (ZZIP_OUTSIDE)
   message(STATUS "ZZip:         ZZIP_LIBS        =  ${ZZIP_LIBS}      / ${ZZIP_TARGET} ")
+endif()
   message(STATUS "Fmt:          FMT_LIBS         =  ${FMT_LIBS}       / ${FMT_TARGET} ")
-
   message(STATUS "tiff:         TIFF_LIBS        =  ${TIFF_LIBS}      / ${TIFF_TARGET} ")
   message(STATUS "geotiff:      GEOTIFF_LIBS     =  ${GEOTIFF_LIBS}   / ${GEOTIFF_TARGET} ")
-  message(STATUS "sqlite:       SQLITE_LIBS      =  ${SQLITE_LIBS}    / ${SQLITE_TARGET} ")
-  message(STATUS "szip:         SZIP_LIBS        =  ${SZIP_LIBS}      / ${SZIP_TARGET} ")
+  message(STATUS "sqlite3:      SQLITE3_LIBS     =  ${SQLITE3_LIBS}   / ${SQLITE3_TARGET} ")
+  ### message(STATUS "szip:         SZIP_LIBS        =  ${SZIP_LIBS}      / ${SZIP_TARGET} ")
   message(STATUS "proj:         PROJ_LIBS        =  ${PROJ_LIBS}      / ${PROJ_TARGET} ")
   message(STATUS "netcdf-c:     NETCDF_C_LIBS    =  ${NETCDF_C_LIBS}  / ${NETCDF_C_TARGET} ")
   message(STATUS "netcdf-cxx:   NETCDF_CXX_LIBS  =  ${NETCDF_CXX_LIBS} / ${NETCDF_CXX_TARGET} ")
-  message(STATUS "hdf5:         HDF5_LIBS        =  ${HDF5_LIBS}      / ${HDF5_TARGET} ")
+  ### message(STATUS "hdf5:         HDF5_LIBS        =  ${HDF5_LIBS}      / ${HDF5_TARGET} ")
 # message(FATAL_ERROR "Stop: XCSOAR_LINK_LIBRARIES")
 endif()
 
 set(LIBS_OR_LIBRARY ON)
-if(NOT MSVC)  ### better _LIB as _TARGET...
-  if (LIBS_OR_LIBRARY)
-  list(APPEND XCSOAR_LINK_LIBRARIES
-    ${LUA_LIBS}
-    ${CURL_LIBS}
-    ${FMT_LIBS}
-    # ${MAPSERVER_LIBS} 
-    ${LIBPNG_LIBS}
-    ${ZLIB_LIBS}
-    ${ZZIP_LIBS}    # internal or external...
-    ${SODIUM_LIBS}  # new at 06/2020
-    ${SSL_LIBS}  # new at 03/2021
-    ${CRYPTO_LIBS}  # new at 03/2021
-    ${CARES_LIBS}  # new at 03/2021
-    ${TIFF_LIBS}  # new at 06/2024
- 
-    # ${Boost_LIBRARIES}
-  )
-  else (LIBS_OR_LIBRARY)
-  list(APPEND XCSOAR_LINK_LIBRARIES
-    ${LUA_LIBRARY}
-    ${CURL_LIBRARY}
-    ${FMT_LIBRARY}
-    # ${MAPSERVER_LIBRARY}
-    ${LIBPNG_LIBRARY}
-    ${ZLIB_LIBRARY}
-    ${ZZIP_LIBRARY}    # internal or external...
-    ${SODIUM_LIBRARY}  # new at 06/2020
-    ${SSL_LIBS}  # new at 03/2021
-    ${CRYPTO_LIBS}  # new at 03/2021
-    ${CARES_LIBRARY}  # new at 03/2021
-    ${TIFF_LIBRARY}  # new at 06/2024
- 
-    # ${Boost_LIBRARIES}
-  )
-  endif (LIBS_OR_LIBRARY)
-  if (HAVE_SKYSIGHT)
-  if (LIBS_OR_LIBRARY)
-    list(APPEND XCSOAR_LINK_LIBRARIES
-      ${GEOTIFF_LIBS}  # new at 06/2024
-      ${SZIP_LIBS}  # new at 12/2024
-      ${SQLITE_LIBS}  # new at 11/2024
-      ${PROJ_LIBS}  # new at 06/2024
-      ${NETCDF_C_LIBS}  # new at 06/2024
-      ${NETCDF_CXX_LIBS}  # new at 06/2024
-      ${HDF5_LIBS}  # new at 06/2024
-    )
-  else(LIBS_OR_LIBRARY)
-    list(APPEND XCSOAR_LINK_LIBRARIES
-      ${GEOTIFF_LIBRARY}  # new at 06/2024
-      ${SZIP_LIBRARY}  # new at 12/2024
-      ${SQLITE_LIBRARY}  # new at 11/2024
-      ${PROJ_LIBRARY}  # new at 06/2024
-      ${NETCDF_C_LIBRARY}  # new at 06/2024
-      ${NETCDF_CXX_LIBRARY}  # new at 06/2024
-      ${HDF5_LIBRARY}  # new at 06/2024
-      ${HDF5_HL_LIBRARY}  # new at 06/2024
-    )
-    # windows shlwapi!
-    endif(LIBS_OR_LIBRARY)
-  endif()
-else(NOT MSVC)    ## -----------------------------------------
-  list(APPEND XCSOAR_LINK_LIBRARIES
+  ## message(FATAL_ERROR "Stop: Test Library 5")
+  ## list(APPEND XCSOAR_LINK_LIBRARIES
+  list(APPEND 3RDPARTY_LINK_LIBRARIES
     ${LUA_TARGET}
     ${CURL_TARGET}
     ${FMT_TARGET}
- #   ${FMT_LIB}
- #   ${MAPSERVER_TARGET}
+    #   ${MAPSERVER_TARGET}
     ${LIBPNG_TARGET}
     ${ZLIB_TARGET}
     ${ZZIP_TARGET}    # internal or external...
     ${SODIUM_TARGET}  # new at 06/2020
-    ${SSL_LIBS}  # new at 03/2021
-    ${CRYPTO_LIBS}  # new at 03/2021
+    # SYSTEMLIBS: ${SSL_LIBS}  # new at 03/2021
+    # SYSTEMLIBS: ${CRYPTO_LIBS}  # new at 03/2021
     ${CARES_TARGET}  # new at 03/2021
+    # SYSTEMLIBS: ${CARES_ADD_LIBS}  # new at 12/2025
     
     ${TIFF_TARGET}  # new at 06/2024
 
     # ${Boost_LIBRARIES}
   )
   if (HAVE_SKYSIGHT)
-    list(APPEND XCSOAR_LINK_LIBRARIES
+    ## message(FATAL_ERROR "Stop: Test Library 6")
+    ## list(APPEND XCSOAR_LINK_LIBRARIES
+    list(APPEND SKYSIGHT_LINK_LIBRARIES
       # ${SZIP_TARGET}  # new at 06/2024
-      ${SZIP_LIBS}  # new at 06/2024
+      ## 2026-01-02 removed: ${SZIP_LIBS}  # new at 06/2024
       ${GEOTIFF_TARGET}  # new at 06/2024
-      ## ${SQLITE_TARGET}  # new at 11/2024
-      ${SQLITE_LIBRARY}  # new at 11/2024
-      ${HDF5_TARGET}  # new at 06/2024
-      ${HDF5_HL_LIBRARY} 
+      ${SQLITE3_TARGET}  # new at 11/2024
+      # ${SQLITE3_LIBRARY}  # new at 11/2024
+      ## 2026-01-02 removed: ${HDF5_TARGET}  # new at 06/2024
+      ## 2026-01-02 removed:  ${HDF5_HL_LIBRARY} 
       ${PROJ_TARGET}  # new at 06/2024
       ${NETCDF_C_TARGET}  # new at 06/2024
       ${NETCDF_CXX_TARGET}  # new at 06/2024
     )
-    list(APPEND XCSOAR_LINK_LIBRARIES
-      shlwapi
-
-      ws2_32
-      mswsock
+##     ## list(APPEND XCSOAR_LINK_LIBRARIES
+    list(APPEND SYSTEM_LINK_TARGETS
+      ${SSL_LIBS}  # new at 03/2021
+      ${CRYPTO_LIBS}  # new at 03/2021
+      ${CARES_ADD_LIBS}  # new at 12/2025
+##       shlwapi
+##       ws2_32
+##       mswsock
     )
-  endif(HAVE_SKYSIGHT)
+  message(STATUS "+++: Test Library - XCSOAR_LINK_LIBRARIES:   ${XCSOAR_LINK_LIBRARIES} ")
+  message(STATUS "+++: Test Library - 3RDPARTY_LINK_LIBRARIES: ${3RDPARTY_LINK_LIBRARIES} ")
+  message(STATUS "+++: Test Library - SKYSIGHT_LINK_LIBRARIES: ${SKYSIGHT_LINK_LIBRARIES} ")
+  message(STATUS "+++: Test Library - SYSTEM_LINK_TARGETS:     ${SYSTEM_LINK_TARGETS} ")
+  ## message(FATAL_ERROR "Stop: Test Library 5")
+  list(APPEND XCSOAR_LINK_LIBRARIES ${3RDPARTY_LINK_LIBRARIES} ${SKYSIGHT_LINK_LIBRARIES} ${SYSTEM_LINK_TARGETS})
 endif(NOT MSVC)
 
 if (WIN32)  # Windows only:
@@ -655,14 +605,14 @@ endif()
 
 # target_link_libraries(${TARGET_NAME} PUBLIC ${XCSOAR_LINK_LIBRARIES})
 if (HAVE_SKYSIGHT)
-#   target_link_libraries(${TARGET_NAME} PUBLIC ${SQLITE_LIBRARY})
+#   target_link_libraries(${TARGET_NAME} PUBLIC ${SQLITE3_LIBRARY})
 if (MINGW)
 # August2111: geht bei MSVC nicht... ;-(
-target_link_libraries(${PROJ_TARGET} INTERFACE ${SQLITE_LIBRARY})
+target_link_libraries(${PROJ_TARGET} INTERFACE ${SQLITE3_LIBRARY})
 target_link_libraries(${NETCDF_C_TARGET} INTERFACE ${HDF5_LIBRARY} ${HDF5_HL_LIBRARY})
 target_link_libraries(${NETCDF_CXX_TARGET} INTERFACE ${NETCDF_C_LIBRARY})
 endif (MINGW)
-#  target_link_libraries(${PROJ_LIBRARY} PRIVATE ${SQLITE_LIBRARY})
+#  target_link_libraries(${PROJ_LIBRARY} PRIVATE ${SQLITE3_LIBRARY})
 # target_link_libraries(${TARGET_NAME} PUBLIC ${HDF5_LIBRARY})
 # target_link_libraries(${TARGET_NAME} PUBLIC ${HDF5_HL_LIBRARY})
 endif(HAVE_SKYSIGHT)
@@ -700,12 +650,14 @@ add_dependencies(${TARGET_NAME} util libOpenSoar)
 add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${directory} ${CMAKE_CURRENT_BINARY_DIR}/po
 )
-add_custom_command(OUTPUT  ${RES_TEST} "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc"
-        COMMENT Create Resource!
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc" "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc" 
-        DEPENDS "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc"
-        WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
-)
+if (1)
+   add_custom_command(OUTPUT  ${RES_TEST} "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc"
+           COMMENT Create Resource!
+           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc" "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc" 
+           DEPENDS "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc"
+           WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+   )
+endif()
 
 list(APPEND SOURCE_FILES ${RES_TEST})  ## "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
 # list(APPEND SOURCE_FILES ${RESOURCE_FILES})

@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.15)
 
-set (TARGET_NAME         sqlite)
+set (TARGET_NAME         sqlite3)
 project(${TARGET_NAME})
 
 get_filename_component(_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} ABSOLUTE)
+# get_filename_component(_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src ABSOLUTE)
 
         ### no cache? set(CMAKE_BUILD_TYPE Release CACHE STRING
         ### no cache?               "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or "
@@ -58,8 +59,8 @@ set_target_properties(${TARGET_NAME}  PROPERTIES
 set_target_properties(${TARGET_NAME}_EXE  PROPERTIES
   LINKER_LANGUAGE CXX
   # DEBUG_OUTPUT_NAME ${TARGET_NAME}d
-  # RELEASE_OUTPUT_NAME ${TARGET_NAME}3
-  OUTPUT_NAME ${TARGET_NAME}3
+  # RELEASE_OUTPUT_NAME ${TARGET_NAME}
+  OUTPUT_NAME ${TARGET_NAME}
 )
 
 set (INSTALL_SQLITE ON)

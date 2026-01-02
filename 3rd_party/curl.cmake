@@ -35,7 +35,7 @@ if (_COMPLETE_INSTALL)
             "-DCURL_DISABLE_COOKIES=ON"
             "-DCURL_DISABLE_CRYPTO_AUTH=ON"
             "-DCURL_DISABLE_IMAP=ON"
-            "-DCMAKE_USE_LIBSSH2=OFF"
+            "-DCMAKE_USE_LIBSSH2:BOOL=OFF"
             "-DBUILD_TESTING=OFF"
             "-DPERL_EXECUTABLE=${PERL_APP}"     #### "D:/Programs/Perl64/bin/perl.exe"  # Windows only!!
 
@@ -50,7 +50,21 @@ if (_COMPLETE_INSTALL)
 
             "-DHAVE_IOCTLSOCKET_FIONBIO=1"
         
-            "-DLIBCURL_OUTPUT_NAME=${LIB_PREFIX}curl"
+# 2025.12-31:             "-DLIBCURL_OUTPUT_NAME=${LIB_PREFIX}curl"
+            "-DLIBCURL_OUTPUT_NAME=${LIB_PREFIX}curl-static"
+
+            "-DBUILD_STATIC_CURL=ON"
+            "-DBUILD_STATIC_LIBS=ON"
+            # Curl 8.12...
+            "-DUSE_LIBIDN2:BOOL=OFF"
+            "-DUSE_NGHTTP2:BOOL=OFF"
+            "-DCURL_USE_LIBPSL:BOOL=OFF"
+            "-DCURL_USE_LIBSSH2:BOOL=OFF"
+
+            "-DCURL_BROTLI=OFF"
+            "-DCURL_ZSTD=OFF"
+
+
        )
 
        if(WIN32)

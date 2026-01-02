@@ -2,10 +2,10 @@
 
 import os, sys, subprocess
 
-# Configuration = 'Release'
-# Configuration = 'Debug'
 # 
-Configuration = 'Multi'
+Configuration = 'Release'
+# Configuration = 'Debug'
+# Configuration = 'Multi'
 
 
 # if len(sys.argv) > 1:
@@ -92,6 +92,8 @@ generator = {
            'clang15' : 'Clang',
            'clang16' : 'Clang',
            'clang17' : 'Clang',
+           'clang19' : 'Clang',
+           'clang21' : 'Clang',
            'msvc2015' : 'Visual Studio 14',
            'msvc2017' : 'Visual Studio 15',
            'msvc2019' : 'Visual Studio 16',
@@ -132,6 +134,8 @@ compiler_setup = {
            'clang15' : clang,
            'clang16' : clang,
            'clang17' : clang,
+           'clang19' : clang,
+           'clang21' : clang,
            'msvc2015' : visual_studio,
            'msvc2017' : visual_studio,
            'msvc2019' : visual_studio,
@@ -262,7 +266,7 @@ def create_opensoar(args):
   if prev_batch:
     print(prev_batch)
     
-  if build_dir.endswith('msvc2022') or build_dir.endswith('msvc2026') or false:
+  if build_dir.endswith('msvc2022') or build_dir.endswith('msvc2026') or False:
     if Configuration == 'Release':
       build_dir = build_dir + 'release'
     elif Configuration == 'Debug':
@@ -351,22 +355,22 @@ def create_opensoar(args):
     arguments.append(cmake_exe)  # 'cmake')
     arguments.append('--build')
     arguments.append(build_dir)
-    # if toolchain.startswith('msvc') or toolchain.startswith('mgw'):
-    arguments.append('--config')
-    if Configuration == 'Release' or Configuration == 'Debug':
-      arguments.append(Configuration) 
-    elif toolchain.startswith('msvc'): # Visual Studio -> Debug
-        arguments.append('Debug') 
-    else : # in other Multi-Configuration make 'Release'
-        arguments.append('Release') 
+    if toolchain.startswith('msvc') or toolchain.startswith('mgw'):
+      arguments.append('--config')
+      if Configuration == 'Release' or Configuration == 'Debug':
+        arguments.append(Configuration) 
+      elif toolchain.startswith('msvc'): # Visual Studio -> Debug
+          arguments.append('Debug') 
+      else : # in other Multi-Configuration make 'Release'
+          arguments.append('Release') 
 
     # if False:  # toolchain MinGW/GCC...
     if not toolchain.startswith('msvc'):
     #if not (toolchain.startswith('msvc') or toolchain.startswith('clang')):
         arguments.append('--')  # nachfolgende Befehle werden zum Build tool durchgereicht
         arguments.append('-j')
-        # arguments.append('1')  # jobs...
-        arguments.append('8')  # jobs...
+        arguments.append('1')  # jobs...
+        # arguments.append('8')  # jobs...
     myprocess = subprocess.Popen(arguments, env = my_env, shell = False)
     myprocess.wait()
     if myprocess.returncode != 0:

@@ -1,4 +1,4 @@
-set(TARGET_NAME "XCSoarAug-Linux")  # hardcoded yet
+# set(TARGET_NAME "XCSoarAug-Linux")  # hardcoded yet
 
 message(STATUS "+++ System = Linux / GCC (${TOOLCHAIN})  on ${CMAKE_HOST_SYSTEM_NAME} !")
 

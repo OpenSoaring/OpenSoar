@@ -12,6 +12,8 @@ endif()
 prepare_3rdparty(netcdf_cxx ${_LIB_NAME})
 string(APPEND NETCDF_CXX_CMAKE_DIR  /netCDFCxx)
 
+set(HAVE_HDF5 OFF)
+
 if (_COMPLETE_INSTALL)
     set(CMAKE_ARGS
         "-DCMAKE_INSTALL_PREFIX:PATH=${NETCDF_CXX_DIR}"
@@ -59,7 +61,8 @@ if (_COMPLETE_INSTALL)
         ${_BUILD_TARGET}
         GIT_REPOSITORY "https://github.com/Unidata/netcdf-cxx4.git"
         # git tag by libnetcdf_cxx, f.e. TAG='v4.3.1'!
-        GIT_TAG "v${${TARGET_CNAME}_VERSION}"
+        # GIT_TAG "v${${TARGET_CNAME}_VERSION}"
+        GIT_TAG "main"
   
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
         ${_BINARY_STEP}

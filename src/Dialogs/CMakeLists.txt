@@ -60,7 +60,7 @@ add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
 target_link_libraries(${TARGET_NAME} PUBLIC 
     util Airspace event Form InfoBoxes Widget 
     Screen ui Device Weather Repository Gauge 
-    Formatter Task Data Polar Profile
+    Formatter Task Data Polar Profile Tracking
 )
 # message(FATAL_ERROR "Stop!")
 

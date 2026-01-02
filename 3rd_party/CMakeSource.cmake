@@ -28,7 +28,7 @@ if (WITH_TIFF)
 endif (WITH_TIFF)
 
 if (HAVE_SKYSIGHT)    # SkySight!
-  set (HAVE_HDF5 ON)
+  set (HAVE_HDF5 OFF)
   set (SKYSIGHT_LIBS ON)
   # --------------------
   if (HAVE_HDF5)
@@ -37,8 +37,9 @@ if (HAVE_SKYSIGHT)    # SkySight!
   endif (HAVE_HDF5)
   if (SKYSIGHT_LIBS)
 # MSVC2026     list(APPEND CMAKE_FILES sqlite.cmake)
+     # list(APPEND CMAKE_FILES sqlite.cmake)
+     list(APPEND CMAKE_FILES sqlite3.cmake)
      list(APPEND CMAKE_FILES proj.cmake)
-     # list(APPEND CMAKE_FILES sqlite3.cmake)
      list(APPEND CMAKE_FILES geotiff.cmake)
      list(APPEND CMAKE_FILES netcdf-c.cmake)
      list(APPEND CMAKE_FILES netcdf-cxx.cmake)

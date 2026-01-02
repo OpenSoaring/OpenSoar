@@ -56,6 +56,8 @@ macro(prepare_3rdparty target_name)
     list (GET params 0 lib_name)
     list (LENGTH params _LENGTH)
 
+    set(_PATCH_DIR ${PROJECTGROUP_SOURCE_DIR}/lib/${lib_name})
+
     if (_LENGTH LESS 2)
      #  message(FATAL_ERROR "Empty String (${_LENGTH}) !!!!!!!!!!!!!!!!!!!!!!!!!")
       set(debug_lib ${lib_name})
@@ -202,15 +204,31 @@ if(${lib_name} MATCHES "boost")
   file(GLOB BOOST_LIB_FILES ${_GLOB_DIR}/libboost_*.lib)
   list(LENGTH BOOST_LIB_FILES BOOST_LIB_COUNT)
   if (BOOST_LIB_COUNT  GREATER 1)
-    set(_COMPLETE_INSTALL OFF)
+##    set(_COMPLETE_INSTALL OFF)
     message(STATUS "### boost: BOOST_LIB_FILES = ${BOOST_LIB_FILES} -> ${BOOST_LIB_COUNT} ")
   else()
-    set(_COMPLETE_INSTALL ON)
-    message(FATAL_ERROR "### boost: BOOST_LIB_FILES = ${BOOST_LIB_FILES} -> ${BOOST_LIB_COUNT} ")
+##    set(_COMPLETE_INSTALL ON)
+    # message(FATAL_ERROR "### boost: BOOST_LIB_FILES = ${BOOST_LIB_FILES} -> ${BOOST_LIB_COUNT} ")
   endif()
 
 elseif(EXISTS ${_TARGET_LIBRARY}) 
-    set(_COMPLETE_INSTALL OFF)
+   set(_COMPLETE_INSTALL OFF)
+   set(_TEST_COMPLETE ON) #!!!!
+   
+   if (_TEST_COMPLETE)
+     # only a check if some libaries of compilable
+     if(
+        # ${lib_name} STREQUAL "curl" OR 
+        # ${lib_name} STREQUAL "sqlite3"  OR 
+        # ${lib_name} STREQUAL "proj" OR 
+        # ${lib_name} STREQUAL "geotiff" OR 
+        ${lib_name} STREQUAL "netcdf" OR
+        # ${lib_name} STREQUAL "netcdf-cxx4" OR
+        OFF
+     )
+       set(_COMPLETE_INSTALL ON)
+     endif()
+   endif()
 else()
     set(_COMPLETE_INSTALL ON)
     ##   message(FATAL_ERROR "### PNG: _TARGET_LIBRARY = ${_TARGET_LIBRARY} ")
@@ -242,6 +260,11 @@ macro(post_3rdparty)
         set_target_properties(${${TARGET_CNAME}_TARGET} PROPERTIES FOLDER 3rdParty)
         # set_target_properties(${_BUILD_TARGET} PROPERTIES FOLDER 3rdParty)
         add_dependencies(${${TARGET_CNAME}_TARGET}  ${_BUILD_TARGET})
+
+  if(${lib_name} MATCHES "sqlite")
+    message(STATUS "!!!!! sqlite3 = ${TARGET_CNAME}_TARGET ||| ${${TARGET_CNAME}_TARGET}")
+    # message(FATAL_ERROR "!!!!! Stop !!!!")
+  endif()
     endif()
 
 if (_COMPLETE_INSTALL)
@@ -292,15 +315,13 @@ set_target_properties(ThirdParty PROPERTIES FOLDER 3rdParty)
 
 
 if(VERBOSE_LEVEL GREATER 80)
-message(STATUS      "!!!! HDF5_LIB_DIR: ${HDF5_LIB_DIR}")
+# message(STATUS      "!!!! HDF5_LIB_DIR: ${HDF5_LIB_DIR}")
 message(STATUS      "!!!! CURL_LIB_DIR: ${CURL_LIB_DIR}")
 message(STATUS      "!!!! ------------------------------------------  !!")
-message(STATUS      "!!!! HDF5_DIR:     ${HDF5_DIR}")
+# message(STATUS      "!!!! HDF5_DIR:     ${HDF5_DIR}")
 message(STATUS      "!!!! CURL_DIR:     ${CURL_DIR}")
 message(STATUS      "!!!! ZLIB_DIR:     ${ZLIB_DIR}")
 message(STATUS      "!!!! ------------------------------------------  !!")
-message(STATUS      "!!!! HDF5F_CXX_CMAKE_DIR: ${HDF5_CMAKE_DIR}")
+# message(STATUS      "!!!! HDF5F_CXX_CMAKE_DIR: ${HDF5_CMAKE_DIR}")
 message(STATUS      "!!!! NETCDF_CXX_CMAKE_DIR: ${NETCDF_CXX_CMAKE_DIR}")
 endif(VERBOSE_LEVEL GREATER 80)
-# message(FATAL_ERROR "!!!! HDF5_DIR: ${LINK_LIBS}/hdf5/hdf5-${HDF5_VERSION}")
-

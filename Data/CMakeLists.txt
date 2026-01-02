@@ -310,26 +310,18 @@ endif()
 
 
 if(MSVC)
-  set(RESOURCE_FILES
-    ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
-  )
+  set(RESOURCE_FILES  ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc )
 elseif(MINGW)
-  set(RESOURCE_FILES
-     D:/Projects/Binaries/OpenSoar/dev-branch/mgw122/OpenSoar.rc
-  )
-#  message(FATAL_ERROR "MINGW!")
+  # set(RESOURCE_FILES  D:/Projects/Binaries/OpenSoar/dev-branch/${TOOLCHAIN}/OpenSoar.rc
+  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc)
+  #  message(FATAL_ERROR "MINGW!")
 elseif(CLANG)
-  set(RESOURCE_FILES
-     # ${OUTPUT}/${PROGRAM_NAME}.rc
-     # ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
-  # Clang:?    ${CMAKE_CURRENT_SOURCE_DIR}/OpenSoar.rc
-)
+  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc)
+  # set(RESOURCE_FILES D:/Projects/Binaries/OpenSoar/dev-branch/clang15/OpenSoar.rc)
+  # set(RESOURCE_FILES ${OUTPUT}/${PROGRAM_NAME}.rc)
 else()
-    # ${_DATA_OUTPUT}/OpenSoar.rc
-    # ${PROGRAM_NAME}.rc
-#  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
-  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc
-)
+  #  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc)
+  #  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc)
 endif()
 
 set(RESOURCE_FILES ${RESOURCE_FILES} PARENT_SCOPE)

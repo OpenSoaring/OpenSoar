@@ -8,19 +8,7 @@ set(_LIB_NAME netcdf)
 prepare_3rdparty(netcdf_c ${_LIB_NAME})
 string(APPEND NETCDF_C_CMAKE_DIR  /netCDF)
 
-# 2024.11.26:   # set(HDF5_CMAKE_DIR  ${HDF5_DIR}/${HDF5_CMAKE_DIR}) # WRONG!!! ??????
-# 2024.11.26:   # set(HDF5_CMAKE_DIR  ${HDF5_LIB_DIR}/cmake) # WRONG!!! ??????
-# 2024.11.26:   #  set(HDF5_CMAKE_DIR  lib/${TOOLCHAIN}d/cmake)
-# 2024.11.26:   message (STATUS "xxxx Test: ${HDF5_CMAKE_DIR}")
-# 2024.11.26:   # string(REPLACE "${HDF5_DIR}//" "./" HDF5_CMAKE_DIR ${HDF5_CMAKE_DIR} )
-# 2024.11.26:   message (STATUS "xxxx Test: ${HDF5_DIR}")
-# 2024.11.26:   message (STATUS "xxxx Test: ${HDF5_CMAKE_DIR}")
-# 2024.11.26:   message (STATUS "xxxx Test: ${HDF5_LIB_DIR}")
-# 2024.11.26:   message (STATUS "xxxx Test: ${HDF5_INCLUDE_DIR}")
-# 2024.11.26:   ## message (FATAL_ERROR "xxxx STOP!!!") 
-
 if (_COMPLETE_INSTALL)
-
     set(CMAKE_ARGS
         "-DCMAKE_INSTALL_PREFIX=${NETCDF_C_DIR}"
         "-DCMAKE_INSTALL_LIBDIR=${NETCDF_C_LIB_DIR}"
@@ -66,7 +54,7 @@ if (_COMPLETE_INSTALL)
         "-DHAVE_MKSTEMP:BOOL=OFF"
     )
 
-    if(HAVE_HDF5)
+    if(HAVE_HDF5)  # defined in 3rd_party/CMakeSource.cmake
       list(APPEND CMAKE_ARGS
 
         "-DUSE_HDF5:BOOL=ON"
@@ -75,7 +63,8 @@ if (_COMPLETE_INSTALL)
 #### w/o or with NETCDF4:
         "-DSZIP:FILEPATH=${SZIP_LIBRARY}"
         # "-DHDF5_DIR=${HDF5_DIR}"
-        "-DHAVE_HDF5_H:PATH=${HDF5_INCLUDE_DIR}"
+   # 22.12.2025     "-DHAVE_HDF5_H:PATH=${HDF5_INCLUDE_DIR}"
+        "-DUSE_HDF5:BOOL=ON"
         # "-DHDF5_DIR:PATH=${HDF5_DIR}"
         # "-DHDF5_CMAKE_DIR:PATH=${HDF5_CMAKE_DIR}"
         "-DHDF5_DIR:PATH=${HDF5_CMAKE_DIR}"
@@ -110,7 +99,36 @@ if (_COMPLETE_INSTALL)
         "-DUSE_HDF5:BOOL=OFF" # see libs.py
         "-DENABLE_NETCDF_4:BOOL=OFF" # see libs.py
       )
+
     endif (HAVE_HDF5)
+    list(APPEND CMAKE_ARGS
+        "-DnetCDF_DIR:PATH=${NETCDF_CMAKE_DIR}"
+    )
+
+    #wrong patch path name:
+    # set(_PATCH_DIR ${PROJECTGROUP_SOURCE_DIR}/lib/netcdf/patches)
+    set(_PATCH_DIR ${PROJECTGROUP_SOURCE_DIR}/lib/netcdf)
+    # set(_PATCH_COMMAND "${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/LIBNETCDF_C/CMakeLists.txt.in <SOURCE_DIR>/CMakeLists.txt")
+    if (${${TARGET_CNAME}_VERSION} VERSION_EQUAL "4.7.4")
+      set(_PATCH_COMMAND "${PYTHON_APP} ${_PATCH_DIR}/patch.py")  ## fix_dutil_4_7_4.patch")
+      string(REPLACE "/" "\\" _PATCH_COMMAND "${_PATCH_COMMAND}")
+      string(APPEND _PATCH_COMMAND " ${${TARGET_CNAME}_PREFIX}/src/netcdf_c_build ${_PATCH_DIR}/patches/fix_dutil_4_7_4.patch")  ## fix_dutil_4_7_4.patch")
+      
+      # string(REPLACE "\"" "" _PATCH_COMMAND "${_PATCH_COMMAND}")
+      set(_PATCH_TEST ${_PATCH_COMMAND}) # TEST!!!!
+      set(_PATCH_COMMAND echo Patch: '${_PATCH_TEST}') # TEST!!!!
+      string(APPEND _PATCH_COMMAND " && ${_PATCH_TEST}")  ## fix_dutil_4_7_4.patch")
+      
+      # set(_PATCH_COMMAND "${PYTHON_APP} ${_PATCH_DIR}/patch.py D:/Libs/netcdf_c/netcdf_c-4.7.4/src/netcdf_c_build ${_PATCH_DIR}/patches/fix_dutil_4_7_4.patch")  ## fix_dutil_4_7_4.patch")
+      # set(_PATCH_COMMAND "git apply ${_PATCH_DIR}/fix_dutil_4_7_4.patch")
+      message(STATUS "### netcdf-Patch:  '${_PATCH_COMMAND}' ")
+      message(STATUS "### netcdf-Source:  '${${TARGET_CNAME}_PREFIX}/src/netcdf_c_build' ")
+
+      # message(FATAL_ERROR "Stop! ++++++++++++++++++++++++++")
+    else()
+       set(_PATCH_COMMAND )
+       message(FATAL_ERROR "### netcdf: No_PATCH!!!: ${${TARGET_CNAME}_VERSION} ")
+    endif()
 
     ExternalProject_Add(
         ${_BUILD_TARGET}
@@ -121,14 +139,14 @@ if (_COMPLETE_INSTALL)
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"
   
-        # PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/LIBNETCDF_C/CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
+        PATCH_COMMAND ${_PATCH_COMMAND}
         CMAKE_ARGS ${CMAKE_ARGS}
         # INSTALL_COMMAND   cmake --build . --target install --config Release
         ${_INSTALL_COMMAND}
   
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
-        DEPENDS ${ZLIB_TARGET} ${CURL_TARGET} ${PROJ_TARGET} ${HDF5_TARGET} 
+        DEPENDS ${ZLIB_TARGET} ${CURL_TARGET} ${PROJ_TARGET} # ${HDF5_TARGET} 
 
         BUILD_BYPRODUCTS  ${_TARGET_LIBS} # ${${TARGET_CNAME}_LIB}
     )

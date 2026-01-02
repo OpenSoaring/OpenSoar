@@ -1,7 +1,7 @@
 s
 
 
-set(TARGET_NAME "XCSoarAug-Clang")  # hardcoded
+# set(TARGET_NAME "XCSoarAug-Clang")  # hardcoded
 
 message(STATUS "+++ System = WIN32 / Clang!")
 

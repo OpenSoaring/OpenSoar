@@ -13,8 +13,8 @@ if (TARGET_IS_OPENVARIO)
   add_compile_definitions(IS_OPENVARIO) 
 endif()
 
-add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
-add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON)
+### add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
+### add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON)
 
 add_compile_definitions(STRICT)
 add_compile_definitions(_USE_MATH_DEFINES)   # necessary under C++17!
@@ -119,18 +119,17 @@ if(VERBOSE_CXX)
 endif()
 
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL Windows)
-    include_directories("D:/Programs/MinGW/${TOOLCHAIN}/include")
-    #  later: include_directories("${PROJECTGROUP_SOURCE_DIR}/output/include")
-    include_directories(${LINK_LIBS}/boost/boost-1.85.0/include/boost-1_85)
+    ### include_directories("D:/Programs/MinGW/${TOOLCHAIN}/include")
+    ### #  later: include_directories("${PROJECTGROUP_SOURCE_DIR}/output/include")
+    ### include_directories(${LINK_LIBS}/boost/boost-1.85.0/include/boost-1_85)
 else()
-include_directories(
-       /usr/include
-       /usr/include/x86_64-linux-gnu
-       /usr/lib/gcc/x86_64-w64-mingw32/10-win32/include
-       #  later: include_directories("${PROJECTGROUP_SOURCE_DIR}/output/include")
-       include_directories("${PROJECTGROUP_SOURCE_DIR}/output/src/boost_1_85_0")
-)
-
+    include_directories(
+           /usr/include
+           /usr/include/x86_64-linux-gnu
+           /usr/lib/gcc/x86_64-w64-mingw32/10-win32/include
+           #  later: include_directories("${PROJECTGROUP_SOURCE_DIR}/output/include")
+           include_directories("${PROJECTGROUP_SOURCE_DIR}/output/src/boost_1_85_0")
+    )
 endif()
 #######################################################################
       # list(APPEND XCSOAR_LINK_LIBRARIES
@@ -169,6 +168,7 @@ string (APPEND CMAKE_EXE_LINKER_FLAGS       " -static -static-libstdc++ -Wl,-Bst
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL Windows)
     set(SSL_LIBS)
     set(CRYPTO_LIBS Crypt32.lib BCrypt.lib) # no (OpenSSL-)crypto lib on windows!
+    set(CARES_ADD_LIBS Iphlpapi.lib)
 endif()
 
 set(PERCENT_CHAR \%)
