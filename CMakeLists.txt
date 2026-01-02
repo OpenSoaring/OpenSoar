@@ -551,7 +551,7 @@ set(LIBS_OR_LIBRARY ON)
     list(APPEND SYSTEM_LINK_TARGETS
       ${SSL_LIBS}  # new at 03/2021
       ${CRYPTO_LIBS}  # new at 03/2021
-      ${CARES_ADD_LIBS}  # new at 12/2025
+      ${CARES_ADD_LIBS}  # new at 12/2025  (MinGW only?)
 ##       shlwapi
 ##       ws2_32
 ##       mswsock

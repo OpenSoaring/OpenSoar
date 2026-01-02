@@ -73,36 +73,6 @@ endif()
   set(NETCDF_CXX_VERSION  "4.3.1")  # functional with OpenSoar(2025-12-23)
   set(NETCDF_CXX_VERSION  "main")  # check 2025-12-28
 
-  # set(HDF5_VERSION        "1.14.4.3")  # ??
-if (0)
-# # #  set(HDF5_VERSION        "1.14.5")  # ?? 
-# # #  set(SZIP_VERSION        "2.1")    # New 02.12.2024??? Not used up to now...
-set(INKSCAPE_VERSION    "1.2.1")
-set(FREEGLUT_VERSION    "3.2.2")
-set(SDL_VERSION         "2.28.5")  # for OpenGL...
-set(GLM_VERSION         "0.9.9.8")  # GL Mathematics for OpenGL...
-# set(RSVG_VERSION        "2.55.1")
-if (NO_MSVC)
-    set(XLST_VERSION        "1.1.37")
-    set(XML2_VERSION        "2.10.2")
-    set(ICONV_VERSION       "1.17")
-endif()
-
-set(XMLPARSER_VERSION "1.08")
-endif()
-
-### 2025-12-31 remove???  if (NO_MSVC)
-### 2025-12-31 remove??? ##    set(TIFF_VERSION        "4.5.1")
-### 2025-12-31 remove???     set(JPEG_VERSION        "3.0.0")
-### 2025-12-31 remove???     # set(PROJ_VERSION        "9.3.1") 
-### 2025-12-31 remove???     # set(PROJ_VERSION        "9.7.1")
-### 2025-12-31 remove???     set(FREETYPE_VERSION    "2.13.1")
-### 2025-12-31 remove???     set(OPENSSL_VERSION     "3.1.2")
-### 2025-12-31 remove???     set(UPSTREAM_VERSION    "8.0.1")
-### 2025-12-31 remove???     set(GCC_VERSION         "13.2.0")
-### 2025-12-31 remove???     set(BINUTILS_VERSION    "2.41")
-### 2025-12-31 remove??? endif()
-
 # 3rd-party! 
 if(JASPER_OUTSIDE)
     set(JASPER_VERSION      "2.0.33")  #"25")
@@ -136,4 +106,31 @@ else()
     message(FATAL_ERROR "+++ 3rd party System: Unknown!!!")
 endif()
 #=========================
-
+if (0)
+            # set(HDF5_VERSION        "1.14.4.3")  # ??
+            # # #  set(HDF5_VERSION        "1.14.5")  # ?? 
+            # # #  set(SZIP_VERSION        "2.1")    # New 02.12.2024??? Not used up to now...
+            set(INKSCAPE_VERSION    "1.2.1")
+            set(FREEGLUT_VERSION    "3.2.2")
+            set(SDL_VERSION         "2.28.5")  # for OpenGL...
+            set(GLM_VERSION         "0.9.9.8")  # GL Mathematics for OpenGL...
+            # set(RSVG_VERSION        "2.55.1")
+            if (NO_MSVC)
+                set(XLST_VERSION        "1.1.37")
+                set(XML2_VERSION        "2.10.2")
+                set(ICONV_VERSION       "1.17")
+            endif()
+            
+            set(XMLPARSER_VERSION "1.08")
+            ### 2025-12-31 remove???  if (NO_MSVC)
+            ### 2025-12-31 remove??? ##    set(TIFF_VERSION        "4.5.1")
+            ### 2025-12-31 remove???     set(JPEG_VERSION        "3.0.0")
+            ### 2025-12-31 remove???     # set(PROJ_VERSION        "9.3.1") 
+            ### 2025-12-31 remove???     # set(PROJ_VERSION        "9.7.1")
+            ### 2025-12-31 remove???     set(FREETYPE_VERSION    "2.13.1")
+            ### 2025-12-31 remove???     set(OPENSSL_VERSION     "3.1.2")
+            ### 2025-12-31 remove???     set(UPSTREAM_VERSION    "8.0.1")
+            ### 2025-12-31 remove???     set(GCC_VERSION         "13.2.0")
+            ### 2025-12-31 remove???     set(BINUTILS_VERSION    "2.41")
+            ### 2025-12-31 remove??? endif()
+endif()
