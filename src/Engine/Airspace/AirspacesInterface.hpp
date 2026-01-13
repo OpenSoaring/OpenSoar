@@ -6,7 +6,14 @@
 #include "Airspace.hpp"
 #include "Geo/Flat/BoostFlatBoundingBox.hpp"
 
-#include <boost/geometry/index/rtree.hpp>
+#ifdef __MSVC__
+# include <boost/geometry/index/rtree.hpp>
+#else  // MSVC
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wcast-qual"
+# include <boost/geometry/index/rtree.hpp>
+# pragma GCC diagnostic pop
+#endif
 #include <boost/range/iterator_range_core.hpp>
 
 /**
