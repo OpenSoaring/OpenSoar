@@ -155,6 +155,12 @@ Finishing(int ret) {
 #ifndef _WIN32
 int main(int argc, char **argv)
 #else
+# ifdef __CLANG__
+  int main(int argc, char **argv) {
+    HINSTANCE hInstance;
+    return WinMain(nullptr, nullptr, nullptr, 0);
+  }
+# endif
 int WINAPI
 WinMain(HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance,
   [[maybe_unused]] LPSTR lpCmdLine2,
