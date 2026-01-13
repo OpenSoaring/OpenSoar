@@ -17,8 +17,9 @@
 
 #define DT_UNDERLINE 0  // gibt es in WinUser.h nicht!
 
-#define __attribute__(x)
-// #define __attribute__(x) __declspec(x)
+#ifndef __clang__
+# define __attribute__(x)
+#endif
 
 #define gcc_const
 // not used: #define gcc_deprecated
