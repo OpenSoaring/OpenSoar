@@ -291,7 +291,8 @@ TabMenuDisplay::OnMouseUp(PixelPoint Pos) noexcept
         cursor = main_menu_buttons[di.main_index].first_page_index;
         Invalidate();
       } else {
-        InvalidateButton(down_index);
+        if (!down_index.IsNone())
+           InvalidateButton(down_index);
       }
     }
 
