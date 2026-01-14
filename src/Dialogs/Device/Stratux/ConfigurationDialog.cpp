@@ -20,8 +20,8 @@ class StratuxConfigurationWidget final
     VRANGE,
   };
 
-  WidgetDialog &dialog [[maybe_unused]];
-  StratuxDevice &device [[maybe_unused]];
+  WidgetDialog &dialog;
+  StratuxDevice &device;
   StratuxDevice::StratuxSettings settings;
 
 public:
