@@ -1,8 +1,8 @@
-Index: libgeotiff-1.7.1/CMakeLists.txt
+Index: libgeotiff-1.7.4/CMakeLists.txt
 ===================================================================
---- libgeotiff-1.7.1.orig/CMakeLists.txt
-+++ libgeotiff-1.7.1/CMakeLists.txt
-@@ -158,10 +158,11 @@ IF(WITH_JPEG)
+--- libgeotiff-1.7.4.orig/CMakeLists.txt
++++ libgeotiff-1.7.4/CMakeLists.txt
+@@ -234,10 +234,11 @@ IF(WITH_JPEG)
  ENDIF()
  
 +if(WIN32)
