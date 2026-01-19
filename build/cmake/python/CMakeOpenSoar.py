@@ -23,6 +23,7 @@ program_dir = None
 is_windows = False
 build_system = 'unknown'
 toolchain_file = None
+num_proc=8
 
 def gcc(toolchain, env):
   global cmake_generator
@@ -379,8 +380,8 @@ def create_opensoar(args):
     #if not (toolchain.startswith('msvc') or toolchain.startswith('clang')):
         arguments.append('--')  # nachfolgende Befehle werden zum Build tool durchgereicht
         arguments.append('-j')
-        arguments.append('1')  # jobs...
-        # arguments.append('8')  # jobs...
+        # arguments.append('1')  # jobs...
+        arguments.append('8')  # jobs...
         # arguments.append('-v')  # verbose output?
     print("Arguments: ", arguments)
     myprocess = subprocess.Popen(arguments, env = my_env, shell = False)

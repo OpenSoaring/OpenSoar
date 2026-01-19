@@ -53,7 +53,9 @@ if (_COMPLETE_INSTALL)
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"   # ${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}"
 
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_SOURCE_DIR}/3rd_party/sodium_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
+        # PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_SOURCE_DIR}/3rd_party/sodium_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py ${SODIUM_VERSION}
+
         CMAKE_ARGS ${CMAKE_ARGS}
 
         INSTALL_COMMAND ${_INSTALL_COMMAND}

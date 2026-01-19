@@ -27,7 +27,7 @@ endif (HAVE_SKYSIGHT)
 
 #-------------------------------
 
-# set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release)
 
 include_directories(D:/Programs/LLVM/${TOOLCHAIN}/include)
 

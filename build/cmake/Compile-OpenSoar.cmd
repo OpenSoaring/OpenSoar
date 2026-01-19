@@ -22,7 +22,7 @@ PATH=%CD%;%CD%\build\cmake\python;%PATH%
 REM pause
 
 set CMD=python build/cmake/python/Start-CMake-OpenSoar.py  opensoar %OPENSOAR_TOOLCHAIN% %COMPILE_PARTS%
-echo "Command: %cmd%"
+echo Command: %cmd%
 echo .
 timeout /t 10
 %cmd%

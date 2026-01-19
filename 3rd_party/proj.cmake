@@ -54,12 +54,14 @@ if (_COMPLETE_INSTALL)  #  || 1)
 ####        # "-DTIFF_LIBRARY_RELEASE:FILEPATH=${LINK_LIBS}/tiff/tiff-4.6.0/lib/msvc2022/tiff.lib"
 ####        "-DTIFF_LIBRARY:FILEPATH=${TIFF_LIBRARY}"
 ####
-        "-DEXE_SQLITE3=${LINK_LIBS}/sqlite/sqlite-${SQLITE3_VERSION}/bin/${TOOLCHAIN}/sqlite3.exe"
+##        "-DEXE_SQLITE3=${LINK_LIBS}/sqlite/sqlite-${SQLITE3_VERSION}/bin/${TOOLCHAIN}/sqlite3.exe"
 
         "-DENABLE_CURL=OFF"
         # "-DCURL_DIR:PATH=${CURL_CMAKE_DIR}"
-        "-DZLIB_LIBRARY:PATH=${ZLIB_LIBRARY}"
+   ##     "-DZLIB_LIBRARY:PATH=${ZLIB_LIBRARY}"
         "-DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
+
+        "-DEMBED_RESOURCE_FILES:BOOL=OFF" # start with 4.6.0
 
         # Manually-specified variables were not used by the project: "-DINSTALL_GTEST=OFF"
         # Manually-specified variables were not used by the project: "-Dgtest_force_shared_crt=OFF"
@@ -73,7 +75,7 @@ if (_COMPLETE_INSTALL)  #  || 1)
     if (PROJ_VERSION VERSION_GREATER 9.4)
       list(APPEND CMAKE_ARGS
         # "-DSQLite3_LIBRARY:FILEPATH=${SQLITE3_LIBRARY}"
-        "-DSQLite3_DIR:PATH=${${SQLITE3_CMAKE_DIR}}"
+ ##       "-DSQLite3_DIR:PATH=${${SQLITE3_CMAKE_DIR}}"
         "-DSQLite3_LIBRARY:FILEPATH=${SQLITE3_LIBRARY}/lib/${TOOLCHAIN}/"
         "-DSQLite3_INCLUDE_DIR:PATH=${SQLITE3_INCLUDE_DIR}"
       )
@@ -90,24 +92,6 @@ message (FATAL_ERROR "xxxx STOP << 9.4 !!!")
       )
     endif()
     set(BUILD_SOURCE ${THIRD_PARTY}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}/src/${_BUILD_TARGET})
-    ####  not possible? set(_PATCH_COMMAND )
-    ####  not possible? if(EXISTS ${BUILD_SOURCE}/CMakeLists.txt)
-    ####  not possible?   string(APPEND _PATCH_COMMAND "echo No Patch in '_PATCH_COMMAND' ") # TEST!!!!
-    ####  not possible?   # string(APPEND _PATCH_COMMAND "PATCH_COMMAND git apply ${_PATCH_DIR}/patches/disable_db.patch")
-    ####  not possible?   # string(APPEND _PATCH_COMMAND " dir && git apply ${_PATCH_DIR}/patches/disable_db.patch")
-    ####  not possible?   # string(APPEND _PATCH_COMMAND echo Test)
-    ####  not possible? 
-    ####  not possible?   # message (FATAL_ERROR "xxxx STOP No Patch !!! -  ${BUILD_SOURCE}/CMakeLists.txt") 
-    ####  not possible?   set(PATCH_ENABLED OFF)
-    ####  not possible? else()
-    ####  not possible?   string(APPEND _PATCH_COMMAND "git apply ${_PATCH_DIR}/patches/disable_db.patch")
-    ####  not possible?   # string(APPEND _PATCH_COMMAND ${CMAKE_COMMAND} -E echo 'patch irgendwas')
-    ####  not possible?   message (STATUS "_PATCH_COMMAND: ${_PATCH_COMMAND}")
-    ####  not possible?   # message (FATAL_ERROR "xxxx STOP withPatch !!! -  ${BUILD_SOURCE}/CMakeLists.txt") 
-    ####  not possible? endif()
-    
-     # message(FATAL_ERROR  "!!! _BINARY_STEP = '${_BINARY_STEP}'")
-
     set(_BINARY_DIR ${THIRD_PARTY}/proj/proj-${PROJ_VERSION}/build/${TOOLCHAIN})
     
     ExternalProject_Add(
@@ -116,19 +100,15 @@ message (FATAL_ERROR "xxxx STOP << 9.4 !!!")
         GIT_TAG "${${TARGET_CNAME}_VERSION}"           # git tag by libproj!
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
 
+        # CONFIGURE_COMMAND echo 'CONFIGURE_COMMAND'
+        
         # PREFIX  "${${TARGET_CNAME}_PREFIX}"
         # ${_BINARY_STEP}
         # BINARY_DIR D:/Libs/proj/proj-9.4.1/build/msvc2026
         BINARY_DIR ${_BINARY_DIR}
         INSTALL_DIR "${_INSTALL_DIR}"
 
-        # PATCH_COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/lib/proj/cmake_patch.py 
-        # PATCH_COMMAND ${PYTHON_APP} D:/Projects/OpenSoaring/OpenSoar/lib/proj/cmake_patch.py 
-        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py
-        # PATCH_COMMAND git apply ${_PATCH_DIR}/patches/disable_db.patch  || exit 0  # ${_PATCH_COMMAND}
-        # PATCH_COMMAND git apply ${_PATCH_DIR}/patches/disable_db.patch  || exit 0  # ${_PATCH_COMMAND}
-        
-        # PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py ${PROJ_VERSION}
 
         CMAKE_ARGS ${CMAKE_ARGS}
         
@@ -143,14 +123,4 @@ message (FATAL_ERROR "xxxx STOP << 9.4 !!!")
     )
 endif()
 
-
 post_3rdparty()
-
-# if (_COMPLETE_INSTALL)
-#  add_dependencies(${_BUILD_TARGET}  ${SQLITE3_LIBRARY}) # ${SQLITE3_LIB_DIR})
-#  target_link_libraries(${_BUILD_TARGET} PUBLIC ${SQLITE3_LIBRARY})
-
-# endif()
-
-# add_dependencies(${_BUILD_TARGET}  ${SQLITE3_TARGET} ${SQLITE3_LIB_DIR})
-

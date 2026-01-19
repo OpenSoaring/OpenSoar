@@ -45,6 +45,7 @@ if(AUGUST_SPECIAL)
     add_compile_definitions(_AUG_MSC)
 endif()
 #********************************************************************************
+set(CMAKE_BUILD_TYPE Debug)
 
 add_compile_definitions(NO_ERROR_CHECK)  # EnumBitSet funktioniert m.E. noch nicht korrekt!!!!
 add_compile_definitions(WIN32_LEAN_AND_MEAN)

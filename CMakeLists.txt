@@ -36,13 +36,13 @@ string(TOLOWER  ${PROGRAM_NAME} PROGRAM_NAME_LC) # lowercase
 if (NOT CMAKE_BUILD_TYPE) # variable is only set AFTER the project cmd!!!
   if (WIN32 AND MSVC)
     # with MultiConfig at MSVC and empty CMAKE_BUILD_TYPE create the Debug case
-    set(CMAKE_BUILD_TYPE Debug)
+    # set(CMAKE_BUILD_TYPE Debug)
     # set(CMAKE_BUILD_TYPE Release)
   else()
     if (MSVC)
         message(FATAL_ERROR "${WIN32} AND '${CMAKE_CXX_COMPILER_ID}', '${MSVC}', '${CMAKE_BUILD_TYPE}'  ")
     endif(MSVC)
-    set(CMAKE_BUILD_TYPE Release)
+    # set(CMAKE_BUILD_TYPE Release)
   endif()
 endif()
 

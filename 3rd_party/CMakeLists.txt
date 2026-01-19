@@ -79,7 +79,7 @@ macro(prepare_3rdparty target_name)
     string(REGEX REPLACE "/3rd_party" "" _SOURCE_BASE  ${_SOURCE_BASE})
 
     set(_PATCH_BASE ${_SOURCE_BASE}/lib)
-    set(_PATCH_DIR ${_PATCH_BASE}/${lib_name})
+    set(_PATCH_DIR ${_PATCH_BASE}/${target_name})
 
     # message(FATAL_ERROR "Pathes = ${_SOURCE_BASE} / ${_PATCH_DIR} !!!!!!!!!!!!!!!!!!!!!!!!!")
 
@@ -182,18 +182,8 @@ else()
 endif()
 
 if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-  # set(CMAKE_BUILD_TYPE Debug)
-    # message(FATAL_ERROR "+++++ CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE} ++++++")
-    if(VERBOSE_LEVEL GREATER 99)
-      message(STATUS "+++++ CMAKE_BUILD_TYPE (1) = ${CMAKE_BUILD_TYPE} ++++++")
-    endif(VERBOSE_LEVEL GREATER 99)
-else()
-    if(VERBOSE_LEVEL GREATER 99)
-      message(STATUS "!!!!!! CMAKE_BUILD_TYPE (2) = ${CMAKE_BUILD_TYPE} !!!!!!")
-    endif(VERBOSE_LEVEL GREATER 99)
+    message(FATAL_ERROR "+++++ CMAKE_BUILD_TYPE = empty ++++++")
 endif()
-# message(FATAL_ERROR "Stop !!!!!!!!!!!!!!!!!!!!!!!!!")
 
 set(_INSTALL_COMMAND cmake --build . --target install)
 set(_INSTALL_BIN_DIR "bin/${TOOLCHAIN}")
@@ -235,14 +225,14 @@ if(${lib_name} MATCHES "boost")
   endif()
 
 elseif(EXISTS ${_TARGET_LIBRARY}) 
-   set(_COMPLETE_INSTALL OFF)
+   set(_COMPLETE_INSTALL ON)
    if (ON) #  ON means do enable compiling some projects !!!!
      # only a check if some libraries have to be compiled
      if(
-        ${lib_name} STREQUAL "sodium" OR 
+        # ${lib_name} STREQUAL "sodium" OR 
         # ${lib_name} STREQUAL "curl" OR 
         # ${lib_name} STREQUAL "sqlite3"  OR 
-        # ${lib_name} STREQUAL "proj" OR 
+        ${lib_name} STREQUAL "proj" OR 
         # ${lib_name} STREQUAL "geotiff" OR 
         # ${lib_name} STREQUAL "netcdf" OR
         # ${lib_name} STREQUAL "netcdf-cxx4" OR
