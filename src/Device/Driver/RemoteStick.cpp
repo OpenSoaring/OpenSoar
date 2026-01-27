@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
+#ifdef HAVE_REMOTE_STICK
+
 #include "Device/Driver/RemoteStick.hpp"
 #include "Device/Driver.hpp"
 #include "Device/Config.hpp"
@@ -119,3 +121,4 @@ const struct DeviceRegister remote_stick_driver = {
   RemoteStickCreateOnPort,
 };
 
+#endif  // HAVE_REMOTE_STICK

@@ -44,10 +44,14 @@
 #include "Device/Driver/XCTracer.hpp"
 #include "Device/Driver/KRT2.hpp"
 #include "Device/Driver/AR62xx.hpp"
-#include "Device/Driver/RemoteStick.hpp"
 #include "Device/Driver/Stratux.hpp"
 #include "util/Macros.hpp"
 #include "util/StringAPI.hxx"
+
+#ifdef HAVE_REMOTE_STICK
+# include "Device/Driver/RemoteStick.hpp"
+#endif
+
 
 #include <cassert>
 
@@ -97,7 +101,9 @@ static const struct DeviceRegister *const driver_list[] = {
   &condor3_driver,
   &lx_eos_driver,
   &stratux_driver,
+#ifdef HAVE_REMOTE_STICK
   &remote_stick_driver,
+#endif
   nullptr
 };
 

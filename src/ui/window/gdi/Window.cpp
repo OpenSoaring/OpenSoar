@@ -9,6 +9,7 @@
 #include "Asset.hpp"
 #include "LogFile.hpp"
 
+#ifdef HAVE_REMOTE_STICK
 // new with usb detection:
 #include "Components.hpp"
 #include "BackendComponents.hpp"
@@ -18,6 +19,7 @@
 // #include <usbiodef.h>
 #include <Dbt.h>
 // #include "ProcessTimer.hpp"  
+#endif  //  HAVE_REMOTE_STICK
 
 #include <cassert>
 #include <windowsx.h>
@@ -279,6 +281,7 @@ Window::OnMessage([[maybe_unused]] HWND _hWnd, UINT message,
       if (OnKeyCheck(wParam))
         return DLGC_WANTMESSAGE;
       break;
+#ifdef HAVE_REMOTE_STICK
     case WM_DEVICECHANGE:
     {
       // PDEV_BROADCAST_HDR lpdb = (PDEV_BROADCAST_HDR)lParam;
@@ -320,7 +323,8 @@ Window::OnMessage([[maybe_unused]] HWND _hWnd, UINT message,
           LogFmt("WM_DEVICECHANGE: wParam={}, lParam={}", wParam, lParam);
           break;
         }
-    }
+      }
+#endif   // HAVE_REMOTE_STICK
   }
 
   if (message >= WM_USER && message <= 0x7FFF && OnUser(message - WM_USER))

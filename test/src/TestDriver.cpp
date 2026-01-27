@@ -37,7 +37,9 @@
 #include "Device/Driver/XCTracer.hpp"
 #include "Device/Driver/XCVario.hpp"
 #include "Device/Driver/Zander.hpp"
-#include "Device/Driver/RemoteStick.hpp"
+#ifdef HAVE_REMOTE_STICK
+# include "Device/Driver/RemoteStick.hpp"
+#endif
 #include "Device/Driver.hpp"
 #include "Device/RecordedFlight.hpp"
 #include "Device/Parser.hpp"
@@ -1771,6 +1773,18 @@ TestACD()
   delete device;
 }
 
+#ifdef HAVE_REMOTE_STICK
+static void
+TestRemoteStick()
+{
+  NullPort null;
+  Device *device = remote_stick_driver.CreateOnPort(dummy_config, null);
+  ok1(device != NULL);
+
+  delete device;
+}
+#endif
+
 static void
 TestDeclare(const struct DeviceRegister &driver)
 {
@@ -1859,8 +1873,12 @@ TestFlightList(const struct DeviceRegister &driver)
 
 int main()
 {
+#ifdef HAVE_REMOTE_STICK
+  plan_tests(1007);
+#else
   plan_tests(1006);
-  // August2111: after merge XCSoar: could be more...
+#endif
+
   TestGeneric();
   TestTasman();
   TestFLARM();
@@ -1890,6 +1908,9 @@ int main()
   TestXCTracer();
   TestACD();
   TestXCVario();
+#ifdef HAVE_REMOTE_STICK
+  TestRemoteStick();
+#endif
 
   /* XXX the Triadis drivers have too many dependencies, not enabling
      for now */
@@ -1902,7 +1923,6 @@ int main()
   TestDeclare(lx_eos_driver);
   TestDeclare(imi_driver);
   TestDeclare(flarm_driver);
-  TestDeclare(remote_stick_driver);
   //TestDeclare(vega_driver);
 
   /* XXX Volkslogger doesn't do well with this test case */
