@@ -15,4 +15,6 @@ ifeq ($(CLANG),y)
   JSON_CPPFLAGS += -Wno-\#warnings
 endif
 
+JSON_DEPENDS = FMT
+
 $(eval $(call link-library,json,JSON))
