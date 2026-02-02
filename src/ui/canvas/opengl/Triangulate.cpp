@@ -420,10 +420,11 @@ TriangleToStrip(GLushort *triangles, unsigned index_count,
   // copy strip over triangles
   std::copy(triangle_strip, strip, triangles);
 
+  auto ret_value = strip - triangle_strip;  // before deleting triangle_strip
   delete[] triangle_strip;
   delete[] vcount;
 
-  return strip - triangle_strip;
+  return ret_value;
 }
 
 /**
