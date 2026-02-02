@@ -8,9 +8,7 @@
 #include "Units/Unit.hpp"
 #include "time/FloatDuration.hxx"
 
-#if FMT_VERSION < 90000
 #include <fmt/format.h> // for the fmt::buffer::flush() implementation
-#endif
 
 #include <chrono>
 #include <cstdint>
@@ -92,13 +90,8 @@ struct InfoBoxData {
 
   template<typename S, typename... Args>
   void FmtTitle(const S &format_str, Args&&... args) noexcept {
-#if FMT_VERSION >= 90000
     return VFmtTitle(format_str,
                      fmt::make_format_args<fmt::format_context>(args...));
-#else
-    return VFmtTitle(fmt::to_string_view(format_str),
-                     fmt::make_args_checked<Args...>(format_str, args...));
-#endif
   }
 
   /**
@@ -116,13 +109,8 @@ struct InfoBoxData {
 
   template<typename S, typename... Args>
   void FmtValue(const S &format_str, Args&&... args) noexcept {
-#if FMT_VERSION >= 90000
     return VFmtValue(format_str,
                      fmt::make_format_args<fmt::format_context>(args...));
-#else
-    return VFmtValue(fmt::to_string_view(format_str),
-                     fmt::make_args_checked<Args...>(format_str, args...));
-#endif
   }
 
   /**
@@ -187,13 +175,8 @@ struct InfoBoxData {
 
   template<typename S, typename... Args>
   void FmtComment(const S &format_str, Args&&... args) noexcept {
-#if FMT_VERSION >= 90000
     return VFmtComment(format_str,
                        fmt::make_format_args<fmt::format_context>(args...));
-#else
-    return VFmtComment(fmt::to_string_view(format_str),
-                       fmt::make_args_checked<Args...>(format_str, args...));
-#endif
   }
 
   /**

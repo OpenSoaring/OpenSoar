@@ -3,18 +3,12 @@
 
 #pragma once
 
-#ifdef __MSVC__
-// with fmt version 11.1.4 there is an runtime error ;-(
-// # define USE_STD_FORMAT  // only with fmt version: 10.2.1
-#endif
-
 # ifdef USE_STD_FORMAT
 #   include <format>
     using std::string_view_literals::operator""sv;
 # else
 #   include <iomanip>  // put_time
 #   include <sstream>  // stringstream
-// #   include <fmt/format.h>
 # endif
 
 #include <ctime>
