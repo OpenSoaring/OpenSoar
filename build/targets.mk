@@ -378,15 +378,15 @@ ifeq ($(TARGET),ANDROID)
     ANDROID_NDK ?= $(HOME)/opt/android-ndk-r29
   endif
 
-  ANDROID_SDK_PLATFORM = android-33
-  ANDROID_NDK_API = 21
+  ANDROID_SDK_PLATFORM = android-36
+  ANDROID_NDK_API = 29
 
   # The naming of CPU ABIs, architectures, and various NDK directory names is an unholy mess.
   # Therefore a number of variables exist for each supported ABI.
   # Here is a brief outline where you can look up the names in the NDK in case that a new
   # architecture appears in the NDK, or names chane in new NDK versions:
   # LLVM_TARGET: Open the appropriate compiler script in $ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin,
-  #   e.g. aarch64-linux-android21-clang++ for AARCH64, NDK level 21, 
+  #   e.g. aarch64-linux-android21-clang++ for AARCH64, NDK level 29, 
   #   and transcribe the value of the option "--target". 
   # ANDROID_APK_LIB_ABI: See https://developer.android.com/ndk/guides/abis#sa for valid names.
 

@@ -163,7 +163,7 @@ Compiling for Android
 
 For Android, you need:
 
-- `Android SDK level 33 <http://developer.android.com/sdk/>`__
+- `Android SDK level 36 <http://developer.android.com/sdk/>`__
 
 - `Android NDK r29 <http://developer.android.com/sdk/ndk/>`__
 
@@ -180,9 +180,9 @@ On Debian::
 
 The required Android SDK components are:
 
-- Android SDK Build-Tools 33.0.2
+- Android SDK Build-Tools 36.0.0
 
-- SDK Platform 33
+- SDK Platform 36
 
 These can be installed from the Android Studio SDK Manager, or using the
 SDK command line tools:
