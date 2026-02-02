@@ -11,6 +11,10 @@ from build.linux import SabotageLinuxHeadersProject
 from build.lua import LuaProject
 from build.musl import MuslProject
 
+fmt_version = "11.1.4"
+netcdf_version = "4.6.2"
+
+
 binutils = BinutilsProject(
     (
         "https://ftpmirror.gnu.org/binutils/binutils-2.42.tar.xz",
@@ -139,7 +143,6 @@ openssh = AutotoolsProject(
     use_destdir=True,
 )
 
-fmt_version = "11.1.4"
 libfmt = CmakeProject(
     (
       "https://github.com/fmtlib/fmt/archive/" + fmt_version + ".tar.gz",
@@ -490,7 +493,7 @@ libsalsa = AutotoolsProject(
 
 netcdf = AutotoolsProject(
     (
-       'https://storage.googleapis.com/lazyrasp.com/xcsoar/netcdf-c-4.6.2.tar.gz',
+       'https://storage.googleapis.com/lazyrasp.com/xcsoar/netcdf-c-' + netcdf_version + '.tar.gz',
       # invalide - new 4.9.3: 'https://fossies.org/linux/misc/netcdf-c-4.9.3.tar.gz',
     ),
     'eda1be377fce86e5d91b30a00b15bb7ea9c97f5c5ef007901145549786781710',
@@ -515,9 +518,14 @@ netcdf = AutotoolsProject(
 netcdfcxx = AutotoolsProject(
     (
       'https://storage.googleapis.com/lazyrasp.com/xcsoar/netcdf-cxx-4.2.tar.gz',
+      # 'ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.2-rc2.tar.gz',
+      ## 'https://downloads.unidata.ucar.edu/netcdf-cxx/4.3.1/netcdf-cxx4-4.3.1.tar.gz',
+      ## 'https://github.com/Unidata/netcdf-cxx4/archive/refs/tags/v4.3.1.tar.gz',
       # invalide - new 4.3.1: 'https://fossies.org/linux/misc/netcdf-cxx4-4.3.1.tar.gz',
     ),
+    # 4.2: 
     '95ed6ab49a0ee001255eac4e44aacb5ca4ea96ba850c08337a3e4c9a0872ccd1',
+    # '6a1189a181eed043b5859e15d5c080c30d0e107406fbb212c8fb9814e90f3445',
     'lib/libnetcdf_c++.a',
     [
         '--disable-shared', '--enable-static',
@@ -526,5 +534,5 @@ netcdfcxx = AutotoolsProject(
         '--disable-valgrind-tests'
     ],
     autogen=True,
-    add_include=[ '../src/netcdf-c-4.6.2/include']
+    add_include=[ '../src/netcdf-c-' + netcdf_version + '/include']
 )
