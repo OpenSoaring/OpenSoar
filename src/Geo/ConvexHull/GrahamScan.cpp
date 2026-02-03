@@ -69,6 +69,8 @@ struct GrahamPartitions {
   std::vector<SearchPoint> upper;
   std::vector<SearchPoint> lower;
   bool pruned = false;
+
+  virtual ~GrahamPartitions() = default;
 };
 
 [[gnu::pure]]
@@ -202,6 +204,8 @@ struct GrahamHull {
   std::vector<SearchPoint> lower;
   std::vector<SearchPoint> upper;
   bool pruned;
+
+  virtual ~GrahamHull() = default;
 };
 
 [[gnu::pure]]
