@@ -45,7 +45,7 @@ ANDROID_BIN = $(TARGET_BIN_DIR)
 
 ### Outputs
 
-ANDROID_LIB_NAMES = $(PROGRAM_NAME_LC)
+ANDROID_LIB_NAMES = $(PROGRAM_NAME)
 JAVA_PACKAGE = de.$(PROGRAM_NAME_LC)
 
 
@@ -280,7 +280,7 @@ $(GEN_DIR)/de/$(PROGRAM_NAME_LC)/R.java: $(PROTOBUF_OUT_DIR)/dirstamp
 $(NO_ARCH_OUTPUT_DIR)/classes.zip: $(JAVA_SOURCES) $(GEN_DIR)/de/$(PROGRAM_NAME_LC)/R.java | $(JAVA_CLASSFILES_DIR)/dirstamp
 	@$(NQ)echo "  JAVAC   $(JAVA_CLASSFILES_DIR)"
 	$(Q)$(JAVAC) \
-		-source 1.7 -target 1.7 \
+		-source 1.8 -target 1.8 \
 		-Xlint:all \
 		-Xlint:-deprecation \
 		-Xlint:-options \
@@ -326,7 +326,7 @@ ANDROID_THIRDPARTY_STAMPS += $$(TARGET_OUTPUT_DIR)/$(2)/thirdparty.stamp
 $$(TARGET_OUTPUT_DIR)/$(2)/thirdparty.stamp: FORCE
 	$$(Q)$$(MAKE) TARGET_OUTPUT_DIR=$$(TARGET_OUTPUT_DIR) TARGET=$(3) DEBUG=$$(DEBUG) USE_CCACHE=$$(USE_CCACHE) libs
 
-# build libopensoar.so
+# build libOpenSoar.so
 $$(TARGET_OUTPUT_DIR)/$(2)/$$(XCSOAR_ABI)/bin/lib$(1).so: $(NATIVE_HEADERS) generate boost FORCE
 	$$(Q)$$(MAKE) TARGET_OUTPUT_DIR=$$(TARGET_OUTPUT_DIR) TARGET=$(3) DEBUG=$$(DEBUG) USE_CCACHE=$$(USE_CCACHE) $$@
 
