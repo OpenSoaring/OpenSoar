@@ -24,12 +24,12 @@ OSX_LOGO = $(DATA)/graphics/logo_1024.icns
 OSX_APP_BUNDLE_INENTIFIER = $(PROGRAM_NAME).app
 endif
 
-$(TARGET_OUTPUT_DIR)/$(DMG_NAME): $(TARGET_BIN_DIR)/$(PROGRAM_NAME_LC) Data/OSX/Info.plist.in.xml $(OSX_LOGO)
+$(TARGET_OUTPUT_DIR)/$(DMG_NAME): $(TARGET_BIN_DIR)/$(PROGRAM_NAME) Data/OSX/Info.plist.in.xml $(OSX_LOGO)
 	@$(NQ)echo "  DMG     $@"
 	$(Q)rm -rf $(DMG_TMPDIR)
 	$(Q)$(MKDIR) -p $(DMG_TMPDIR)/$(OSX_APP_BUNDLE_INENTIFIER)/Contents/MacOS
 	$(Q)sed -e "s,VERSION_PLACEHOLDER,$(FULL_VERSION)," -e 's/OSX_APP_LABEL_PLACEHOLDER/$(OSX_APP_LABEL)/g' < Data/OSX/Info.plist.in.xml > $(DMG_TMPDIR)/$(OSX_APP_BUNDLE_INENTIFIER)/Contents/Info.plist
-	$(Q)cp $(TARGET_BIN_DIR)/$(PROGRAM_NAME_LC) $(DMG_TMPDIR)/$(OSX_APP_BUNDLE_INENTIFIER)/Contents/MacOS/
+	$(Q)cp $(TARGET_BIN_DIR)/$(PROGRAM_NAME) $(DMG_TMPDIR)/$(OSX_APP_BUNDLE_INENTIFIER)/Contents/MacOS/
 	$(Q)$(MKDIR) -p $(DMG_TMPDIR)/$(OSX_APP_BUNDLE_INENTIFIER)/Contents/Resources
 	$(Q)cp $(OSX_LOGO) $(DMG_TMPDIR)/$(OSX_APP_BUNDLE_INENTIFIER)/Contents/Resources/logo_1024.icns
 	$(Q)rm -f $@
