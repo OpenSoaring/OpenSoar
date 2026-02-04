@@ -13,10 +13,10 @@ on:
     branches:
       - cmake-master
       - dev-branch-cmake
-
+      - dev-branch
 env:
   DEBUG: y
-  BOOST: boost_1_85_0
+  BOOST: boost_1_90_0
 
 jobs:
   release:
