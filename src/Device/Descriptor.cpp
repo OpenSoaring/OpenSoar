@@ -394,7 +394,7 @@ try {
     LogError(e, name);
 
     const auto what = GetFullMessage(e);
-    if (what.c_str() != nullptr) {
+    if (!what.empty()) {
       StaticString<256> msg;
       LockSetErrorMessage(what.c_str());
       msg.Format("%s: %s (%s)", _("Unable to open port"), name, what.c_str());
