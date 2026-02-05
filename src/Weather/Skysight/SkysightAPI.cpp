@@ -158,7 +158,8 @@ SkysightAPI::GetUrl(SkysightCallType type, const std::string_view layer_id,
         url.append(".png");
       else {
         auto last_time = (from / TEN_MINUTES) * TEN_MINUTES;
-        url.AppendFormat("/%s", DateTime::time_str(last_time, "%Y/%m/%d/%H%M").c_str());
+        url.AppendFormat("/%s", DateTime::time_str(last_time, "%Y/%m/%d/%H%M")
+                        .c_str());
       }
 #else
     // caller should already have an URL
@@ -193,7 +194,8 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
     std::string_view servername;
     bool is_osm = layer_id.starts_with("osm");
     servername = is_osm ? OSM_BASE_URL : SKYSIGHTAPI_BASE_URL;
-    auto path = GetUrl(type, layer_id, fctime, tile).substr(servername.length() + 1);
+    auto path = GetUrl(type, layer_id, fctime, tile)
+                      .substr(servername.length() + 1);
     // substitute '/' with '-':
     for (auto &ch : path)
       if (ch == '/') ch = '-';
@@ -206,9 +208,11 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
     break;
   case SkysightCallType::Image:
     if (GetLayer(layer_id)->tile_layer)
-      return GetPath(SkysightCallType::Tile, layer_id, fctime).WithSuffix(".jpg");
+      return GetPath(SkysightCallType::Tile, layer_id, fctime)
+                    .WithSuffix(".jpg");
     else 
-      return GetPath(SkysightCallType::Data, layer_id, fctime).WithSuffix(".zip");
+      return GetPath(SkysightCallType::Data, layer_id, fctime)
+                     .WithSuffix(".tiff");   // and not ".zip"!
   default:
     break;
   }
