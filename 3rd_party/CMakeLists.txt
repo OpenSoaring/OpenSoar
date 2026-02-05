@@ -225,8 +225,8 @@ if(${lib_name} MATCHES "boost")
   endif()
 
 elseif(EXISTS ${_TARGET_LIBRARY}) 
-   set(_COMPLETE_INSTALL ON)
-   if (ON) #  ON means do enable compiling some projects !!!!
+   set(_COMPLETE_INSTALL OFF)
+   if (OFF) #  ON means do enable compiling some projects !!!!
      # only a check if some libraries have to be compiled
      if(
         # ${lib_name} STREQUAL "sodium" OR 
