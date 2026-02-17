@@ -210,9 +210,9 @@ freetype = MesonProject(
 
 cares = CmakeProject(
     (
-	  "https://github.com/c-ares/c-ares/releases/download/cares-1_24_0/c-ares-1.24.0.tar.gz",
+      "https://github.com/c-ares/c-ares/releases/download/cares-1_24_0/c-ares-1.24.0.tar.gz",
     ),
-	"c517de6d5ac9cd55a9b72c1541c3e25b84588421817b5f092850ac09a8df5103",
+    "c517de6d5ac9cd55a9b72c1541c3e25b84588421817b5f092850ac09a8df5103",
     "lib/libcares.a",
     [
         "-DCARES_STATIC=ON",
@@ -472,7 +472,6 @@ sdl2 = CmakeProject(
 lua = LuaProject(
     (
         "http://www.lua.org/ftp/lua-5.4.6.tar.gz",
-        # invalid : new - 5.4.7: "https://fossies.org/linux/misc/lua-5.4.7.tar.gz",
         "https://github.com/mesonbuild/wrapdb/releases/download/lua_5.4.6-4/lua-5.4.6.tar.gz",
     ),
     "7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88",
