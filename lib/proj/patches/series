@@ -3,4 +3,3 @@ no_data
 no_cxx_libs
 no_dl
 use_cstdint
-include_mutex

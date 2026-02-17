@@ -8,7 +8,7 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 3fa3ec6..fd9147c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -197,11 +197,6 @@ message(STATUS "nlohmann/json: ${NLOHMANN_JSON}")
+@@ -216,11 +216,6 @@ message(STATUS "nlohmann/json: ${NLOHMANN_JSON}")
  # Check for sqlite3
  ################################################################################
  
@@ -20,8 +20,8 @@ index 3fa3ec6..fd9147c 100644
  # Deprecated variables since PROJ 9.4.0
  if(DEFINED SQLITE3_INCLUDE_DIR)
    message(DEPRECATION "Use SQLite3_INCLUDE_DIR instead of SQLITE3_INCLUDE_DIR")
-@@ -350,7 +345,6 @@ endif()
- ################################################################################
+@@ -423,7 +417,6 @@ endif()
+ 
  include_directories(${PROJ_SOURCE_DIR}/src)
  
 -add_subdirectory(data)

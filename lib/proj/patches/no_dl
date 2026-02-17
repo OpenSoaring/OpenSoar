@@ -2,7 +2,7 @@ Index: proj-9.2.1/src/lib_proj.cmake
 ===================================================================
 --- proj-9.2.1.orig/src/lib_proj.cmake
 +++ proj-9.2.1/src/lib_proj.cmake
-@@ -453,10 +453,6 @@ if(UNIX)
+@@ -580,10 +580,6 @@ if(UNIX)
    if(M_LIB)
      target_link_libraries(proj PRIVATE -lm)
    endif()

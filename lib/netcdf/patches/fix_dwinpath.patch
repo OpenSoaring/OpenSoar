@@ -1,7 +1,7 @@
 diff --git a/libdispatch/dwinpath.c b/libdispatch/dwinpath.c
 --- a/libdispatch/dwinpath.c
 +++ b/libdispatch/dwinpath.c
-@@ -155,8 +155,8 @@      static char*
+@@ -154,8 +154,8 @@      static char*
  makeabsolute(const char* relpath)
  {
      char* path = NULL;
@@ -10,8 +10,8 @@ diff --git a/libdispatch/dwinpath.c b/libdispatch/dwinpath.c
      path = _fullpath(NULL,relpath,8192);
  #else
      path = realpath(relpath, NULL);
- #endif
-@@ -223,6 +223,10 @@      free(cvtname);    
+ 
+@@ -222,7 +222,11 @@      free(cvtname);    
      return status;
  }
  
@@ -22,3 +22,4 @@ diff --git a/libdispatch/dwinpath.c b/libdispatch/dwinpath.c
  EXTERNL
  int
  NCremove(const char* path)
+ 

@@ -14,7 +14,7 @@ diff --git a/cmake/ProjUtilities.cmake b/cmake/ProjUtilities.cmake
 index 2103d3d3..ea4da2a5 100644
 --- a/cmake/ProjUtilities.cmake
 +++ b/cmake/ProjUtilities.cmake
-@@ -103,12 +103,6 @@ function(configure_proj_pc)
+@@ -75,12 +75,6 @@ function(configure_proj_pc)
    endif()
    if(WIN32 AND NOT MINGW)
      list(APPEND EXTRA_LIBS -lole32 -lshell32)

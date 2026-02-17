@@ -1,7 +1,7 @@
 diff --git a/libsrc/memio.c b/libsrc/memio.c
 --- a/libsrc/memio.c
 +++ b/libsrc/memio.c
-@@ -18,8 +18,9 @@ #ifdef HAVE_FCNTL_H
+@@ -17,8 +17,9 @@ #ifdef HAVE_FCNTL_H
  #include <fcntl.h>
  #endif
 -#ifdef _MSC_VER /* Microsoft Compilers */
