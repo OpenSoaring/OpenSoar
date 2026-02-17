@@ -22,9 +22,8 @@ if (_COMPLETE_INSTALL)
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"
 
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_SOURCE_DIR}/3rd_party/${LIB_TARGET_NAME}_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_BASE}/cmake_patch.py lua
         CMAKE_ARGS ${CMAKE_ARGS}
-        # INSTALL_COMMAND   cmake --build . --target install --config Release
         INSTALL_COMMAND ${_INSTALL_COMMAND}
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}

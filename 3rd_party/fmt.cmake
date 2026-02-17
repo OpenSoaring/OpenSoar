@@ -45,7 +45,7 @@ if (_COMPLETE_INSTALL)
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"   # ${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}"
-        # PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_SOURCE_DIR}/3rd_party/fmt_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_BASE}/cmake_patch.py fmt
         CMAKE_ARGS ${CMAKE_ARGS}
         # INSTALL_COMMAND   cmake --build . --target install --config Release
         INSTALL_COMMAND ${_INSTALL_COMMAND}

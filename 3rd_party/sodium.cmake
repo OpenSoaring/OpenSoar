@@ -32,6 +32,8 @@ if (_COMPLETE_INSTALL)
         # "-DCMAKE_INSTALL_COMPONENT=bin/${TOOLCHAIN}"
         "-DCMAKE_INSTALL_INCLUDEDIR=include"
         "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+
+        "-DSODIUM_STATIC:BOOL=ON"
     )
     #2024-12-14 -> w/ Clang only??? !!!!
     ## list (APPEND CMAKE_ARGS
@@ -53,8 +55,7 @@ if (_COMPLETE_INSTALL)
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"   # ${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}"
 
-        # PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_SOURCE_DIR}/3rd_party/sodium_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
-        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py ${SODIUM_VERSION}
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_BASE}/cmake_patch.py sodium
 
         CMAKE_ARGS ${CMAKE_ARGS}
 

@@ -91,7 +91,8 @@ if (_COMPLETE_INSTALL)
          # BINARY_DIR    "${${TARGET_CNAME}_PREFIX}/build/${TOOLCHAIN}"
         INSTALL_DIR "${_INSTALL_DIR}"  # ${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}"
         CMAKE_ARGS ${CMAKE_ARGS}
-         # PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/CURL_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_BASE}/cmake_patch.py curl
+# PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/CURL_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
         # INSTALL_COMMAND   cmake --build . --target install --config Release
         INSTALL_COMMAND ${_INSTALL_COMMAND}
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}

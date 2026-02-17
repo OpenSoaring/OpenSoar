@@ -18,22 +18,24 @@ if (_COMPLETE_INSTALL)
         "-DCARES_BUILD_TOOLS=OFF"   # OFF"
     )
 
-    # GIT_TAG before 1.30.0 (f.e. "cares-1_29_0")
-    # string(REPLACE "." "_" GIT_TAG cares-${${TARGET_CNAME}_VERSION})  # after 1.17.1 only 'cares', before c-ares!
-    # GIT_TAG after 1.30.0 (f.e. "v1.30.0")
-    set(GIT_TAG v${${TARGET_CNAME}_VERSION})  # after 1.17.1 only 'cares', before c-ares!
+    if(${TARGET_CNAME}_VERSION VERSION_LESS 1.30.0)
+       # GIT_TAG before 1.30.0 (f.e. "cares-1_29_0")
+       # after 1.17.1 only 'cares', before c-ares!
+       string(REPLACE "." "_" GIT_TAG cares-${${TARGET_CNAME}_VERSION})
+    else()
+       # GIT_TAG after 1.30.0 (f.e. "v1.30.0"):
+       set(GIT_TAG v${${TARGET_CNAME}_VERSION})
+    endif()
     
     ExternalProject_Add(
           ${_BUILD_TARGET}
        GIT_REPOSITORY "https://github.com/c-ares/c-ares.git"
-       GIT_TAG  ${GIT_TAG}  # cares-1_1_17 -> for this use string(REPLACE...)
-       # GIT_TAG  ${GIT_TAG}  # cares-1_1_17 -> for this use string(REPLACE...)
+       GIT_TAG  ${GIT_TAG}
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
         ${_BINARY_STEP}
-        INSTALL_DIR "${_INSTALL_DIR}"  # ${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}"
-        # PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/CURL_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
+        INSTALL_DIR "${_INSTALL_DIR}" 
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_BASE}/cmake_patch.py cares
         CMAKE_ARGS ${CMAKE_ARGS}
-        # INSTALL_COMMAND   cmake --build . --target install --config Release
         INSTALL_COMMAND ${_INSTALL_COMMAND}
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}

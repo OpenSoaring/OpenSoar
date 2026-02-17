@@ -68,7 +68,7 @@ if (_COMPLETE_INSTALL)
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"
   
-        # PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/LIBPNG/CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_BASE}/cmake_patch.py libtiff
         CMAKE_ARGS ${CMAKE_ARGS}
         # INSTALL_COMMAND   cmake --build . --target install --config Release
         INSTALL_COMMAND ${_INSTALL_COMMAND}

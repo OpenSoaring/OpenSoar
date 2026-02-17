@@ -48,7 +48,7 @@ endif()
 
 ### add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
 ### add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON) 
-### # following libs need this settings: Dialog, libOpenSoar, json, WeGlide, Weather, net, Repository, Task,  ...
+### # following libs need this settings: Dialog, lib${APP_NAME}, json, WeGlide, Weather, net, Repository, Task,  ...
 ### add_compile_definitions(BOOST_JSON_NO_LIB)
 ### add_compile_definitions(BOOST_CONTAINER_NO_LIB)
 ### #  ??

@@ -38,7 +38,7 @@ if (NOT LINK_LIBS)
     set (LINK_LIBS /usr/lib/link_libs)  # Linux,...
     message(STATUS "+++ LINK_LIBS not Windows (${LINK_LIBS})!!!")
   endif()
-endif ()
+endif()
 
   include(3rd_party.cmake)
   
@@ -51,7 +51,7 @@ endif ()
   endif()
   if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" AND NOT THIRD_PARTY STREQUAL "D:/Libs")
      message(STATUS "THIRD_PARTY = ${THIRD_PARTY}!")
-     message(FATAL_ERROR "THIRD_PARTY!")
+     # message(FATAL_ERROR "THIRD_PARTY = ${}!")
      set(THIRD_PARTY D:/Libs)   ## 
   endif()
 
@@ -217,10 +217,8 @@ if(${lib_name} MATCHES "boost")
   file(GLOB BOOST_LIB_FILES ${_GLOB_DIR}/libboost_*.lib)
   list(LENGTH BOOST_LIB_FILES BOOST_LIB_COUNT)
   if (BOOST_LIB_COUNT  GREATER 1)
-##    set(_COMPLETE_INSTALL OFF)
     message(STATUS "### boost: BOOST_LIB_FILES = ${BOOST_LIB_FILES} -> ${BOOST_LIB_COUNT} ")
   else()
-##    set(_COMPLETE_INSTALL ON)
     # message(FATAL_ERROR "### boost: BOOST_LIB_FILES = ${BOOST_LIB_FILES} -> ${BOOST_LIB_COUNT} ")
   endif()
 
