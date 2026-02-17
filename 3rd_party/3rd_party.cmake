@@ -4,11 +4,13 @@
 
  ### BOOST:
 set(BOOST_VERSION       "1.87.0") # 
+#----------------------------------------------------
 set(BOOST_VERSION       "1.90.0") # 2025-12-10
 
  ### ZLIB:
 set(ZLIB_VERSION        "1.2.11")
 set(ZLIB_VERSION        "1.3")
+set(ZLIB_VERSION        "1.3.1")
 #----------------------------------------------------
 
  ### CARES:
@@ -37,12 +39,8 @@ set(SODIUM_VERSION      "1.0.18") #
 # if (NOT ${TOOLCHAIN} MATCHES "mgw112")
 if (NOT ${TOOLCHAIN} MATCHES "mgw*")
   set(SODIUM_VERSION      "1.0.20") # 2024-05-25 (XCSoar since ...)
-  if (NOT ${TOOLCHAIN} MATCHES "mgw*")
-    set(SODIUM_VERSION      "1.0.21") # 2026-01-06
-  endif()
-endif()
-if (${TOOLCHAIN} MATCHES "clang15")
-  ## set(SODIUM_VERSION      "1.0.18") # 2025-12-22: 1.0.20 klappt mit clang15 nicht
+#----------------------------------------------------
+  # set(SODIUM_VERSION      "1.0.21") # 2026-01-06
 endif()
 
 ### LUA:
