@@ -9,7 +9,6 @@
 #include <windef.h>
 #endif
 
-
 class ResourceId;
 
 namespace ResourceLoader {

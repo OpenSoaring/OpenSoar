@@ -19,7 +19,8 @@ ResourceLoader::Initialized()
   return ResourceLoaderInstance != nullptr;
 }
 
-void ResourceLoader::Init(HINSTANCE hInstance)
+void
+ResourceLoader::Init(HINSTANCE hInstance)
 {
   assert(ResourceLoaderInstance == nullptr);
 
