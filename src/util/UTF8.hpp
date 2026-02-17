@@ -146,14 +146,3 @@ CopyTruncateStringUTF8(std::span<char> dest,
 [[gnu::pure]] [[gnu::nonnull]]
 std::pair<unsigned, const char *>
 NextUTF8(const char *p) noexcept;
-
-#ifdef _WIN32
-// #include <codecvt>
-#include <locale>
-#include <string>
-
-std::wstring UTF8ToWide(const std::string_view s);
-std::string WideToUTF8(const std::wstring_view wstr);
-
-
-#endif

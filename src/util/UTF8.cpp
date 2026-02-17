@@ -657,26 +657,3 @@ NextUTF8(const char *p) noexcept
     gcc_unreachable();
   }
 }
-
-#ifdef _WIN32
-#include <stringapiset.h>
-
-std::wstring 
-UTF8ToWide(const std::string_view s)
-{
-  int length = MultiByteToWideChar(CP_UTF8, 0, s.data(), s.size() + 1, nullptr, 0);
-  std::wstring w(length + 1, L'\0');
-  MultiByteToWideChar(CP_UTF8, 0, s.data(), s.size() + 1, w.data(), length);
-  return w;
-}
-
-std::string 
-WideToUTF8(const std::wstring_view wstr)
-{
-  int length = WideCharToMultiByte(CP_UTF8, 0, wstr.data(), -1, nullptr, 0, nullptr, nullptr);
-  std::string str(length + 1, '\0');
-  WideCharToMultiByte(CP_UTF8, 0, wstr.data(), -1, str.data(), length, nullptr, nullptr);
-  return str;
-}
-
-#endif
