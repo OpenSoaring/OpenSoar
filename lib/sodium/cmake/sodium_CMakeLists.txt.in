@@ -5,45 +5,10 @@ set (TARGET_NAME      sodium)
 project(${TARGET_NAME})
 
 
-if (0)
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium)
-#For version.h.in to version.h
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/src/libsodium/include/sodium)
-
-file(GLOB_RECURSE libsodium_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.h)
-
-file(GLOB_RECURSE libsodium_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.c)
-
-#----------------------------------------------------------
-######################### LIBRARY #########################
-#----------------------------------------------------------
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build")
-
-
-IF(ENABLE_BLOCKING_RANDOM)
-    ADD_DEFINITIONS("-DUSE_BLOCKING_RANDOM")
-ENDIF(ENABLE_BLOCKING_RANDOM)
-
-IF(LIBSODIUM_BUILD_SHARED_LIBRARIES)
-    ADD_LIBRARY(libsodium SHARED ${libsodium_HEADERS} ${libsodium_SOURCE})
-ELSE(LIBSODIUM_BUILD_SHARED_LIBRARIES)
+if(SODIUM_STATIC)
     add_compile_definitions(SODIUM_STATIC)
-    # add_compile_definitions(SODIUM_EXPORT=)
-    # ADD_DEFINITIONS("-DSODIUM_STATIC")
-    ADD_LIBRARY(libsodium STATIC ${libsodium_HEADERS} ${libsodium_SOURCE})
-ENDIF(LIBSODIUM_BUILD_SHARED_LIBRARIES)
+endif()
 
-SET_TARGET_PROPERTIES(libsodium PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
-    PROJECT_LABEL "libsodium"
-)
-else ()
 set(_INCLUDE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include)
 file(GLOB_RECURSE ${TARGET_NAME}_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.c")
 file(GLOB_RECURSE HEADER_FILES "${_INCLUDE_DIR}/*.h")
@@ -53,9 +18,6 @@ foreach(SRC ${${TARGET_NAME}_SOURCES})
      set(${TARGET_NAME}_LIBRARY ${${TARGET_NAME}_LIBRARY} ${SRC})
      message(STATUS -- Sodium:  ${SRC})
 endforeach()
-
-### geht nicht: # Clang only...:
-### geht nicht: set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mssse3")
 
 add_compile_definitions(__AVX512F__)  # ???
 
@@ -72,15 +34,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/test/quirks  # test only 
 )
 
-set(EXAMPLE "This is an example")
-set(VERSION "1.0")
-set(NUMBER 3)
-
-set(VERSION "1.0.18")
-
-set(SODIUM_LIBRARY_VERSION_MAJOR 10)
-set(SODIUM_LIBRARY_VERSION_MINOR 3)
-set(SODIUM_LIBRARY_MINIMAL_DEF )
+set(VERSION "1.0.20")
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium/version.h.in 
@@ -89,7 +43,7 @@ configure_file(
 
 if(MINGW)
   #MinGW 14.3:
-  # string(APPEND CMAKE_C_FLAGS     " -Wno-implicit-function-declaration")
+  # string(APPEND CMAKE_C_FLAGS  " -Wno-implicit-function-declaration")
   string(APPEND CMAKE_C_FLAGS   " -Wno-error=implicit-function-declaration")
 endif(MINGW)
 
@@ -114,6 +68,3 @@ foreach(header ${HEADER_FILES})
 endforeach()
 
 ## message(FATAL_ERROR +++ Sodium: Stop!)
-
-
-endif()  # : 1 or 0
