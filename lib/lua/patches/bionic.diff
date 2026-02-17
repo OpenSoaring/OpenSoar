@@ -1,7 +1,10 @@
-Index: lua-5.4.4/src/lmathlib.c
+Index: lua-5.4.6/lmathlib.c
 ===================================================================
---- lua-5.4.4.orig/src/lmathlib.c
-+++ lua-5.4.4/src/lmathlib.c
+Unfortunately the layout after checkout git and unpack the zip file
+witch sources are different!
+
+--- lua-5.4.6.orig/src/lmathlib.c
++++ lua-5.4.6/src/lmathlib.c
 @@ -173,7 +173,7 @@ static int math_log (lua_State *L) {
      res = l_mathop(log)(x);
    else {
