@@ -239,7 +239,7 @@ try {
     InitialiseDataPath();
     AtScopeExit() { DeinitialiseDataPath(); };
 
-    LogFormat("Starting %s", OpenSoar_ProductToken);
+    LogFormat("Starting %s", App_ProductToken);
 
     TextUtil::Initialise(env);
     AtScopeExit(env) { TextUtil::Deinitialise(env); };

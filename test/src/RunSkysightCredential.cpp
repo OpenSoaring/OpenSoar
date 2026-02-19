@@ -50,13 +50,13 @@ Run(CurlGlobal &curl, const std::string_view url, const std::string_view usernam
 {
   std::array<std::byte, 32> hash;
 
-  const char OpenSoar_ProductToken[] = "OpenSoar v7.43.23"
+  const char App_ProductToken[] = "OpenSoar v7.43.23"
     " TARGET git=12345678";
   Net::CurlData *data = new Net::CurlData;
   
   CurlSlist cred_slist;
   cred_slist.AppendFormat("%s: %s", "X-API-Key", "OpenSoar");
-  cred_slist.AppendFormat("%s: %s", "User-Agent", OpenSoar_ProductToken);
+  cred_slist.AppendFormat("%s: %s", "User-Agent", App_ProductToken);
   cred_slist.AppendFormat("%s: %s", "Content-Type", "application/json");
   data->curl_list = &cred_slist;
   

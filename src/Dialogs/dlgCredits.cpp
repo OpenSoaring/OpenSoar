@@ -83,23 +83,23 @@ LogoPageWindow::OnPaint(Canvas &canvas) noexcept
   x = middle;
   const char *version = "Version: ";
   PixelSize ts = canvas.CalcTextSize(version);
-  PixelSize ts2 = canvas.CalcTextSize(OpenSoar_VersionString);
+  PixelSize ts2 = canvas.CalcTextSize(App_VersionString);
   x = middle - ((ts.width + ts2.width) / 2);
   canvas.DrawText({ x, y }, version);
   x += ts.width;
-  canvas.DrawText({ x, y }, OpenSoar_VersionString);
+  canvas.DrawText({ x, y }, App_VersionString);
 
 
-  if (std::strlen(OpenSoar_GitCommit)) {
+  if (std::strlen(App_GitCommit)) {
     y += ts.height + Layout::FastScale(2);
     x = middle;
     const char *git = "git: ";
     ts = canvas.CalcTextSize(git);
-    ts2 = canvas.CalcTextSize(OpenSoar_GitCommit);
+    ts2 = canvas.CalcTextSize(App_GitCommit);
     x = middle - ((ts.width + ts2.width) / 2);
     canvas.DrawText({ x, y }, git);
     x += ts.width;
-    canvas.DrawText({ x, y }, OpenSoar_GitCommit);
+    canvas.DrawText({ x, y }, App_GitCommit);
     y += ts.height + Layout::FastScale(2);
   }
 

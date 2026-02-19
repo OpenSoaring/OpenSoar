@@ -69,7 +69,7 @@ Client::StartTracking(SessionID session, const char *username,
   CurlEasy easy;
 
   {
-    const char *version = OpenSoar_VersionLong;
+    const char *version = App_VersionLong;
     StaticString<2048> url;
     url.Format("http://%s/track.php?leolive=2&sid=%u&pid=%u&"
                "client=%s&v=%s&user=%s&pass=%s&vtype=%u&vname=%s",

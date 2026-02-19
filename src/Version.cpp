@@ -37,14 +37,16 @@
 
 #ifdef GIT_COMMIT
 # define GIT_SUFFIX " git: " GIT_COMMIT
-  const char OpenSoar_GitCommit[] = GIT_COMMIT;
+  const char App_GitCommit[] = GIT_COMMIT;
 #else
 # define GIT_SUFFIX
-  const char OpenSoar_GitCommit[] = "";
+  const char App_GitCommit[] = "";
 #endif
 
-const char OpenSoar_Version[] = VERSION;
-const char OpenSoar_VersionLong[] = VERSION VERSION_SUFFIX;
-const char OpenSoar_VersionString[] = VERSION VERSION_SUFFIX "-" TARGET;
-const char OpenSoar_VersionStringOld[] = TARGET " " VERSION VERSION_SUFFIX;
-const char OpenSoar_ProductToken[] = "OpenSoar v" VERSION VERSION_SUFFIX "-" TARGET GIT_SUFFIX;
+const char App_Name[] = PROGRAM_NAME;
+const char App_Version[] = VERSION;
+const char App_VersionLong[] = VERSION VERSION_SUFFIX;
+const char App_VersionString[] = VERSION VERSION_SUFFIX "-" TARGET;
+const char App_VersionStringOld[] = TARGET " " VERSION VERSION_SUFFIX;
+const char App_ProductToken[] = PROGRAM_NAME " v" VERSION VERSION_SUFFIX
+                                                   "-" TARGET GIT_SUFFIX;

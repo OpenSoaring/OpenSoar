@@ -43,7 +43,7 @@ Lua::NewBasicState()
   lua_newtable(L);
 
   SetField(L, RelativeStackIndex{-1},
-           "VERSION", OpenSoar_Version);
+           "VERSION", App_Version);
 
 //  lua_setglobal(L, "xcsoar");
   lua_setglobal(L, PROGRAM_NAME_LC);

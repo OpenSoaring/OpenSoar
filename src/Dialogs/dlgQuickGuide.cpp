@@ -71,7 +71,7 @@ GetWelcomeText(bool dark_mode)
     "- [%s](https://github.com/XCSoar/XCSoar)\n"
     "- [%s](https://github.com/XCSoar/XCSoar/discussions)",
     dark_mode ? "IDB_TITLE_HD_WHITE" : "IDB_TITLE_HD",
-    XCSoar_VersionString,
+    App_VersionString,
     _("To get the most out of XCSoar and to learn about its many "
       "functions in detail, it is highly recommended to read the "
       "Quick Guide or the complete documentation."),
@@ -268,7 +268,7 @@ IsWarrantyAcknowledged() noexcept
   const char *acknowledged =
     Profile::Get(ProfileKeys::DisclaimerAcknowledgedVersion);
   return acknowledged != nullptr &&
-         StringIsEqual(acknowledged, XCSoar_Version);
+         StringIsEqual(acknowledged, App_Version);
 }
 
 /**
@@ -280,7 +280,7 @@ IsNewsSeen() noexcept
   const char *last_seen =
     Profile::Get(ProfileKeys::LastSeenNewsVersion);
   return last_seen != nullptr &&
-         StringIsEqual(last_seen, XCSoar_Version);
+         StringIsEqual(last_seen, App_Version);
 }
 
 /**
@@ -725,7 +725,7 @@ dlgQuickGuideShowModal(bool force_info)
   // Save warranty acknowledgment
   if (warranty_needed && state.warranty_accepted) {
     Profile::Set(ProfileKeys::DisclaimerAcknowledgedVersion,
-                 XCSoar_Version);
+                 App_Version);
     Profile::Save();
   }
 
@@ -736,7 +736,7 @@ dlgQuickGuideShowModal(bool force_info)
     auto *news_page =
       dynamic_cast<QuickGuidePageWidget *>(&news_widget);
     if (news_page != nullptr && news_page->GetCheckboxState()) {
-      Profile::Set(ProfileKeys::LastSeenNewsVersion, XCSoar_Version);
+      Profile::Set(ProfileKeys::LastSeenNewsVersion, App_Version);
       Profile::Save();
     }
   }

@@ -243,7 +243,7 @@ try {
   if (request_headers) {
     request_headers->Clear();
     request_headers->AppendFormat("%s: %s", "X-API-Key", "OpenSoar");
-    request_headers->AppendFormat("%s: %s", "User-Agent", OpenSoar_ProductToken);
+    request_headers->AppendFormat("%s: %s", "User-Agent", App_ProductToken);
     request_headers->AppendFormat("%s: %s", "Content-Type", "application/json");
     data->curl_list = request_headers;
   }

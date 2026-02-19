@@ -50,7 +50,7 @@ Setup(CurlEasy &easy)
 {
 	char user_agent[32];
 	snprintf(user_agent, 32, "XCSoar/%s",  // "OpenSoar/%s" ??
-		 OpenSoar_Version);
+		 App_Version);
 	easy.SetUserAgent(user_agent);
 
 #if !defined(ANDROID) && !defined(_WIN32)

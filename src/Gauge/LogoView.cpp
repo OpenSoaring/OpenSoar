@@ -232,7 +232,7 @@ LogoView::draw(Canvas &canvas, const PixelRect &rc,
 
   canvas.SetTextColor(dark_mode ? COLOR_WHITE : COLOR_BLACK);
   canvas.SetBackgroundTransparent();
-  canvas.DrawText({2, 2}, OpenSoar_ProductToken);
+  canvas.DrawText({2, 2}, App_ProductToken);
 
 #ifndef NDEBUG
   /* Draw debug build warning banner below logo (like "Remove before flight") */
