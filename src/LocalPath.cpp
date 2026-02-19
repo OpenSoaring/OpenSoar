@@ -2,12 +2,18 @@
 // Copyright The XCSoar Project
 
 #include "LocalPath.hpp"
+#include "ProductName.hpp"
 #include "system/Path.hpp"
 #include "Compatibility/path.h"
 #include "util/StringCompare.hxx"
 #include "util/StringFormat.hpp"
 #include "util/StringAPI.hxx"
 #include "Asset.hpp"
+#include "LogFile.hpp"
+
+#ifdef __APPLE__
+#include "Apple/PathProvider.hpp"
+#endif
 
 #include "system/FileUtil.hpp"
 
@@ -18,9 +24,12 @@
 #endif
 
 #ifdef _WIN32
-#include "util/UTF8.hpp"
 #include "system/PathName.hpp"
 #endif
+
+#include <algorithm>
+#include <list>
+#include <string>
 
 #include <cassert>
 #include <stdlib.h>
@@ -35,17 +44,9 @@
 #include <unistd.h>
 #endif
 
-#include <string>
-#include <algorithm>
-#include <list>
-
 #ifdef __APPLE__
 #import <Foundation/Foundation.h>
 #endif
-
-#include "LogFile.hpp"
-
-#define OPENSOAR_DATADIR "OpenSoarData"
 
 /**
  * This is the partition that the Kobo software mounts on PCs
@@ -53,7 +54,7 @@
 #define KOBO_USER_DATA "/mnt/onboard"
 
 /**
- * A list of OpenSoarData directories.  The first one is the primary
+ * A list of product data directories.  The first one is the primary
  * one, where "%LOCAL_PATH%\\" refers to.
  */
 static std::list<AllocatedPath> data_paths;
@@ -173,7 +174,7 @@ ContractLocalPath(Path src) noexcept
 #ifdef _WIN32
 
 /**
- * Find a OpenSoarData folder in the same location as the executable.
+ * Find a product data folder in the same location as the executable.
  */
 [[gnu::pure]]
 static AllocatedPath
@@ -183,7 +184,7 @@ FindDataPathAtModule(HMODULE hModule) noexcept
   if (GetModuleFileName(hModule, buffer, MAX_PATH) <= 0)
     return nullptr;
 
-  ReplaceBaseName(buffer, OPENSOAR_DATADIR);
+  ReplaceBaseName(buffer, PRODUCT_DATA_DIR);
   return Directory::Exists(Path(buffer))
     ? AllocatedPath(buffer)
     : nullptr;
@@ -196,9 +197,9 @@ FindDataPaths() noexcept
 {
   std::list<AllocatedPath> result;
 
-  /* Kobo: hard-coded OpenSoarData path */
+  /* Kobo: hard-coded product data path */
   if constexpr (IsKobo()) {
-    result.emplace_back(KOBO_USER_DATA DIR_SEPARATOR_S OPENSOAR_DATADIR);
+    result.emplace_back(KOBO_USER_DATA DIR_SEPARATOR_S PRODUCT_DATA_DIR);
     return result;
   }
 
@@ -208,7 +209,6 @@ FindDataPaths() noexcept
     const auto env = Java::GetEnv();
 
     bool external_files_dirs_path_added = false;
-	// August2111: XCSoar back to 'GetExternalFilesDirs(env)'??
     for (auto &path : context->GetExternalMediaDirs(env)) {
       __android_log_print(ANDROID_LOG_DEBUG, "OpenSoar",
                           "Context.getExternalMediaDirs()='%s'",
@@ -240,7 +240,7 @@ FindDataPaths() noexcept
     }
 
     if (auto path = Environment::GetExternalStoragePublicDirectory(env,
-                                                                   "OpenSoarData");
+                                                                   PRODUCT_DATA_DIR);
         path != nullptr) {
       const bool writable = access(path.c_str(), W_OK) == 0;
 
@@ -262,12 +262,12 @@ FindDataPaths() noexcept
   }
 
 #ifdef _WIN32
-  /* look for a OpenSoarData directory in the same directory as
-     OpenSoar.exe */
+  /* look for a product data directory in the same directory as
+     the executable */
   if (auto path = FindDataPathAtModule(nullptr); path != nullptr)
     result.emplace_back(std::move(path));
 
-  /* Windows: use "My Documents\OpenSoarData" */
+  /* Windows: use "My Documents\<ProductDataDir>" */
   {
     char buffer[MAX_PATH];
     if (SHGetSpecialFolderPath(nullptr, buffer, CSIDL_PERSONAL,
@@ -275,13 +275,13 @@ FindDataPaths() noexcept
     {
       std::string text = buffer;
       std::replace(text.begin(), text.end(), '\\', '/'); 
-      result.emplace_back(AllocatedPath::Build(text.data(), OPENSOAR_DATADIR));
+      result.emplace_back(AllocatedPath::Build(text.data(), PRODUCT_DATA_DIR));
     }
   }
 #endif // _WIN32
 
 #ifdef HAVE_POSIX
-  /* on Unix, use ~/OpenSoarData too */
+  /* on Unix, use ~/.<product_name> */
   if (const char *home = getenv("HOME"); home != nullptr) {
     home_path = AllocatedPath(home);
 #ifdef __APPLE__
@@ -291,32 +291,23 @@ FindDataPaths() noexcept
        "Documents" folder inside the application's sandbox.  This
        folder can also be accessed via iTunes, if
        UIFileSharingEnabled is set to YES in Info.plist */
-#if (TARGET_OS_IPHONE)
-    constexpr const char *in_home = "Documents/" OPENSOAR_DATADIR;
-#else
-    constexpr const char *in_home = OPENSOAR_DATADIR;
-#endif
+    const Path in_home = Apple::GetDataPathInHome();
 #else // !APPLE
 # ifdef IS_OPENVARIO
     /* OpenVario has a 3rd partition on sdcard, mounted as 'data' */
-    constexpr const char *in_home = "data/" OPENSOAR_DATADIR;
-# else
-    constexpr const char *in_home = OPENSOAR_DATADIR;
-# endif
+    constexpr const char *in_home = "data/" PRODUCT_DATA_DIR;
+#else
+    constexpr const char *in_home = PRODUCT_DATA_DIR;
+#endif
 #endif
 
     result.emplace_back(AllocatedPath::Build(Path(home), in_home));
   }
 
 #ifndef __APPLE__
-  /* Linux (and others): allow global configuration in /etc/opensoar */
-  if (Directory::Exists(Path{"/etc/opensoar"}))
-    result.emplace_back(Path{"/etc/opensoar"});
-#else
-  if (!Directory::Exists(Path{result.back()})) {
-    id fileManager = [NSFileManager defaultManager];
-      [fileManager createDirectoryAtPath:[NSString stringWithCString:result.back().c_str()] withIntermediateDirectories:YES attributes:nil error:nil];
-  }
+  /* Linux (and others): allow global configuration in /etc/<product_name> */
+  if (Directory::Exists(Path{PRODUCT_UNIX_SYSCONF_DIR}))
+    result.emplace_back(Path{PRODUCT_UNIX_SYSCONF_DIR});
 #endif // !APPLE
 #endif // HAVE_POSIX
 
@@ -324,10 +315,10 @@ FindDataPaths() noexcept
 }
 
 void
-VisitDataFiles(const char* filter, File::Visitor &visitor, bool recursive)
+VisitDataFiles(const char* filter, File::Visitor &visitor) // , bool recursive)
 {
   for (const auto &i : data_paths)
-    Directory::VisitSpecificFiles(i, filter, visitor, recursive);
+    Directory::VisitSpecificFiles(i, filter, visitor, true); // recursive);
 }
 
 Path
