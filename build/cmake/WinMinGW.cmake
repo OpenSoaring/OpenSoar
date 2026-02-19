@@ -21,6 +21,7 @@ add_compile_definitions(_USE_MATH_DEFINES)   # necessary under C++17!
 add_compile_definitions(ZZIP_1_H)   # definition of uint32_t and Co.!
 add_compile_definitions(_WIN32_WINNT_WIN10=0x0A00)
 add_compile_definitions(_WIN32_WINDOWS=_WIN32_WINNT_WIN10)
+add_compile_definitions(HAVE_HTTP) # TODO(aug): later only if really needed!
 
 string(APPEND CMAKE_CXX_FLAGS   " -Og -funit-at-a-time -ffast-math -g")
 if (1)

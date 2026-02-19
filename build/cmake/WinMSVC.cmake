@@ -54,7 +54,7 @@ add_compile_definitions(_SCL_SECURE_NO_WARNINGS)
 add_compile_options(/std:c++20)
 add_compile_options(/Zc:__cplusplus)
 add_compile_options(/utf-8)
-# add_definitions(/Zc:wchar_t)
+add_compile_definitions(HAVE_HTTP) # TODO(aug): later only if really needed!
 
 # Disabling Warnings:
 add_compile_options(/wd5030)

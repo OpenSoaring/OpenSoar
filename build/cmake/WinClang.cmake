@@ -92,6 +92,7 @@ if(AUGUST_SPECIAL)
 endif()
 
 add_compile_definitions(SODIUM_STATIC=1)  # Clng too...
+add_compile_definitions(HAVE_HTTP) # TODO(aug): later only if really needed!
 
 #********************************************************************************
 set(CMAKE_C_FLAGS    "${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
