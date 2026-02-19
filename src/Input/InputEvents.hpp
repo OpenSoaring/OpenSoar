@@ -5,7 +5,6 @@
 
 #include "util/Compiler.h"
 
-
 struct InputConfig;
 class Menu;
 
@@ -132,6 +131,7 @@ void eventCalculator(const char *misc);
 void eventChecklist(const char *misc);
 void eventFrequencyCard(const char *misc);
 void eventClearAirspaceWarnings(const char *misc);
+void eventAirspaceWarnings(const char *misc);
 void eventClearStatusMessages(const char *misc);
 void eventLogger(const char *misc);
 void eventMacCready(const char *misc);
@@ -150,6 +150,8 @@ void eventProfileLoad(const char *misc);
 void eventProfileSave(const char *misc);
 void eventRepeatStatusMessage(const char *misc);
 void eventRun(const char *misc);
+void eventQuickGuide(const char *misc);
+void eventGestureHelp(const char *misc);
 void eventScreenModes(const char *misc);
 void eventDevice(const char *misc);
 void eventSendNMEA(const char *misc);
