@@ -47,7 +47,7 @@ bool OpenLink(const char *url) noexcept {
   // Windows - use ShellExecute to open URL in default browser
   // ShellExecuteA returns > 32 on success
   return reinterpret_cast<INT_PTR>(
-    ShellExecuteA(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL)) > 32;
+    ShellExecute(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL)) > 32;
 #elif defined(HAVE_RUN_FILE)
   // Linux/UNIX - use xdg-open via RunFile
   return RunFile(url);
