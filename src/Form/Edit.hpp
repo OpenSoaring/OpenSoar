@@ -5,6 +5,7 @@
 
 #include "Form/Control.hpp"
 #include "ui/dim/Rect.hpp"
+
 #include <string>
 
 struct DialogLook;
@@ -88,6 +89,12 @@ public:
    * @return true if the value has been modified
    */
   bool BeginEditing() noexcept;
+
+private:
+  /**
+   * Show full content in a dialog (for readonly fields with truncated content).
+   */
+  void ShowFullContent() noexcept;
 
 protected:
   void OnResize(PixelSize new_size) noexcept override;
