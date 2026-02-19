@@ -9,8 +9,6 @@
 #include "io/LineReader.hpp"
 #include "io/FileLineReader.hpp"
 
-#include "util/UTF8.hpp"
-#include <stdio.h>
 #include <stdlib.h>
 
 /**
@@ -38,7 +36,8 @@ LoadString(const char *bytes, size_t length, char *res, [[maybe_unused]] size_t 
     /* FLARMNet files are ISO-Latin-1, which is kind of short-sighted */
 
     const unsigned char ch = (unsigned char)strtoul(tmp, NULL, 16);
-    /* convert to UTF-8 on all other platforms */
+
+    /* convert to UTF-8 */
 
     if (p >= limit)
       break;
@@ -73,13 +72,18 @@ LoadRecord(FlarmNetRecord &record, const char *line)
   if (strlen(line) < 172)
     return false;
 
-  LoadString(line, 6, record.id);
+  char buffer[16];
+  LoadString(line, 6, buffer, sizeof(buffer));
+  record.id = FlarmId::Parse(buffer, nullptr);
+
   LoadString(line + 12, 21, record.pilot);
   LoadString(line + 54, 21, record.airfield);
   LoadString(line + 96, 21, record.plane_type);
   LoadString(line + 138, 7, record.registration);
   LoadString(line + 152, 3, record.callsign);
-  LoadString(line + 158, 7, record.frequency);
+
+  LoadString(line + 158, 7, buffer, sizeof(buffer));
+  record.frequency = RadioFrequency::Parse(std::string_view(buffer));
 
   // Terminate callsign string on first whitespace
   for (char *i = record.callsign.buffer(); *i != '\0'; ++i)
