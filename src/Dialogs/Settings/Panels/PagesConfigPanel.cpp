@@ -19,6 +19,11 @@
 #include "Widget/ButtonPanelWidget.hpp"
 #include "UIGlobals.hpp"
 
+#ifdef HAVE_SKYSIGHT
+#include "DataGlobals.hpp"
+#include "Weather/Skysight/Skysight.hpp"
+#endif
+
 /* this macro exists in the WIN32 API */
 #ifdef DELETE
 #undef DELETE
@@ -35,6 +40,7 @@ public:
 private:
   enum Controls {
     MAIN,
+    OVERLAY,
     INFO_BOX_PANEL,
     BOTTOM,
   };
@@ -183,19 +189,23 @@ PageLayoutEditWidget::Prepare([[maybe_unused]] ContainerWindow &parent, [[maybe_
           main_list,
           (unsigned)PageLayout::Main::MAP, this);
 
-/*-----------------------------------------------------*/
-  static constexpr StaticEnumChoice overlay_list[] = {
-    { 0, N_("SkySight-Satellite") },
-    { 1, N_("SkySight-Rain") },
-    { 2, N_("SkySight-PFD") },
-    { 3, N_("SkySight-XCSpeed") },
-    nullptr
-  };
-  AddEnum(_("Map Overlay"),
-          _("Specifies the (weather) overlay in the map."),
-          overlay_list,
-          2, this);
-  /*-----------------------------------------------------*/
+  {
+    WndProperty *wp = AddEnum(_("Map Overlay"),
+                              _("Specifies the (weather) overlay in the map."),
+                              this);
+    DataFieldEnum &overlay_df = *(DataFieldEnum *)wp->GetDataField();
+    overlay_df.AddChoice(0, _("None"));
+#ifdef HAVE_SKYSIGHT
+    auto skysight = DataGlobals::GetSkysight();
+    if (skysight) {
+      for (size_t i = 0; i < skysight->NumSelectedLayers(); ++i) {
+        auto *layer = skysight->GetSelectedLayer(i);
+        if (layer)
+          overlay_df.AddChoice(i + 1, layer->name.c_str());
+      }
+    }
+#endif
+  }
 
   static constexpr StaticEnumChoice ib_list[] = {
     { IBP_AUTO, N_("Auto"), N_("Displays either the Circling, Cruise, or Final glide InfoBoxes.") },
@@ -246,7 +256,26 @@ PageLayoutEditWidget::SetValue(const PageLayout &_value)
   value = _value;
 
   LoadValueEnum(MAIN, value.main);
-  LoadValueEnum(BOTTOM, value.bottom);
+
+  /* find which overlay dropdown index matches value.overlay */
+  {
+    unsigned overlay_idx = 0;
+#ifdef HAVE_SKYSIGHT
+    if (value.overlay[0] != '\0') {
+      auto skysight = DataGlobals::GetSkysight();
+      if (skysight) {
+        for (size_t i = 0; i < skysight->NumSelectedLayers(); ++i) {
+          auto *layer = skysight->GetSelectedLayer(i);
+          if (layer && layer->id == value.overlay) {
+            overlay_idx = i + 1;
+            break;
+          }
+        }
+      }
+    }
+#endif
+    LoadValueEnum(OVERLAY, overlay_idx);
+  }
 
   unsigned ib = IBP_NONE;
   if (value.infobox_config.enabled) {
@@ -260,6 +289,7 @@ PageLayoutEditWidget::SetValue(const PageLayout &_value)
   }
 
   LoadValueEnum(INFO_BOX_PANEL, ib);
+  LoadValueEnum(BOTTOM, value.bottom);
 }
 
 void
@@ -268,6 +298,28 @@ PageLayoutEditWidget::OnModified(DataField &df) noexcept
   if (&df == &GetDataField(MAIN)) {
     const DataFieldEnum &dfe = (const DataFieldEnum &)df;
     value.main = (PageLayout::Main)dfe.GetValue();
+  } else if (&df == &GetDataField(OVERLAY)) {
+    const DataFieldEnum &dfe = (const DataFieldEnum &)df;
+    const unsigned idx = dfe.GetValue();
+    if (idx == 0) {
+      value.overlay[0] = '\0';
+    } else {
+#ifdef HAVE_SKYSIGHT
+      auto skysight = DataGlobals::GetSkysight();
+      if (skysight) {
+        auto *layer = skysight->GetSelectedLayer(idx - 1);
+        if (layer) {
+          strncpy(value.overlay, layer->id.c_str(), sizeof(value.overlay) - 1);
+          value.overlay[sizeof(value.overlay) - 1] = '\0';
+        } else {
+          value.overlay[0] = '\0';
+        }
+      } else
+#endif
+      {
+        value.overlay[0] = '\0';
+      }
+    }
   } else if (&df == &GetDataField(INFO_BOX_PANEL)) {
     const DataFieldEnum &dfe = (const DataFieldEnum &)df;
     const unsigned ibp = dfe.GetValue();
@@ -355,7 +407,7 @@ PageListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
   assert(idx < PageSettings::MAX_PAGES);
   const auto &value = settings.pages[idx];
 
-  StaticString<64> buffer;
+  StaticString<128> buffer;
 
   switch (value.main) {
   case PageLayout::Main::MAP:
@@ -392,6 +444,9 @@ PageListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
     else
       buffer.AppendFormat(" (%s)", _("Auto"));
   }
+
+  if (value.overlay[0] != '\0')
+    buffer.AppendFormat(", %s", value.overlay);
 
   switch (value.bottom) {
   case PageLayout::Bottom::NOTHING:

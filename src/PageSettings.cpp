@@ -62,6 +62,11 @@ PageLayout::MakeTitle(const InfoBoxSettings &info_box_settings,
         builder.Append(_("Map (Full screen)"));
     }
 
+    if (overlay[0] != '\0') {
+      builder.Append(", ");
+      builder.Append(overlay);
+    }
+
     switch (bottom) {
     case Bottom::NOTHING:
     case Bottom::CUSTOM:

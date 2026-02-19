@@ -23,21 +23,11 @@ struct PageLayout
 
     bool auto_switch;
     unsigned panel;
-#if 0
-    // std::string overlay;
-    //StaticString[64] overlay;
-    char overlay[64];
-#endif
+
     constexpr InfoBoxConfig() noexcept = default;
 
-#if 0
-    /*constexpr*/ InfoBoxConfig(bool _auto_switch, unsigned _panel) noexcept
-      :enabled(true), auto_switch(_auto_switch), panel(_panel)
-      { CopyString(overlay, sizeof(overlay), "SkySight-Rain"); }
-#else
     constexpr InfoBoxConfig(bool _auto_switch, unsigned _panel) noexcept
       :enabled(true), auto_switch(_auto_switch), panel(_panel) {}
-#endif
     constexpr void SetDefaults() noexcept {
       auto_switch = true;
       panel = 0;
@@ -71,6 +61,12 @@ struct PageLayout
   InfoBoxConfig infobox_config;
 
   /**
+   * Skysight layer ID string for the weather overlay on this page.
+   * Empty string means no overlay.
+   */
+  char overlay[64];
+
+  /**
    * What to show below the main area (i.e. map)?
    */
   enum class Bottom : uint8_t {
@@ -98,12 +94,12 @@ struct PageLayout
   constexpr PageLayout(bool _valid, InfoBoxConfig _infobox_config)
     :valid(_valid), main(Main::MAP),
      infobox_config(_infobox_config),
-     bottom(Bottom::NOTHING) {}
+     overlay{}, bottom(Bottom::NOTHING) {}
 
   constexpr PageLayout(InfoBoxConfig _infobox_config)
     :valid(true), main(Main::MAP),
      infobox_config(_infobox_config),
-     bottom(Bottom::NOTHING) {}
+     overlay{}, bottom(Bottom::NOTHING) {}
 
   /**
    * Return an "undefined" page.  Its IsDefined() method will return
@@ -149,7 +145,14 @@ struct PageLayout
                          std::span<char> buffer,
                          const bool concise=false) const noexcept;
 
-  constexpr bool operator==(const PageLayout &other) const noexcept = default;
+  constexpr bool operator==(const PageLayout &other) const noexcept {
+    if (valid != other.valid || main != other.main ||
+        infobox_config != other.infobox_config || bottom != other.bottom)
+      return false;
+    for (unsigned i = 0; i < sizeof(overlay); ++i)
+      if (overlay[i] != other.overlay[i]) return false;
+    return true;
+  }
 };
 
 struct PageSettings {

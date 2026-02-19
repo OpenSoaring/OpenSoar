@@ -225,11 +225,10 @@ PagerWidget::Prepare(ContainerWindow &_parent, const PixelRect &rc) noexcept
   parent = &_parent;
   position = rc;
 
-  for (auto &i : children) {
-    assert(!i.prepared);
-    i.prepared = true;
-    i.widget->Prepare(*parent, position);
-  }
+  /* Don't eagerly prepare all children here.  Preparing all panels
+     synchronously can block the UI (file I/O, network, etc.) and
+     cause the dialog to hang on open.  Children will be prepared
+     lazily when first shown via SetCurrent() or Show(). */
 }
 
 void

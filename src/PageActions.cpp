@@ -228,6 +228,33 @@ LoadBottom(PageLayout::Bottom bottom)
   }
 }
 
+#ifdef HAVE_SKYSIGHT
+static void
+LoadOverlay(const char *overlay)
+{
+  auto skysight = DataGlobals::GetSkysight();
+  if (!skysight)
+    return;
+
+  /* Check if the requested layer is already active - skip if so
+     to avoid flicker from clearing and reloading the same overlay. */
+  auto *current = Skysight::GetActiveLayer();
+  if (overlay[0] == '\0') {
+    if (current != nullptr)
+      skysight->DeactivateLayer();
+  } else {
+    if (current && current->id == overlay)
+      return; /* same layer already displayed, nothing to do */
+
+    skysight->SetLayerActive(overlay);
+    skysight->DisplayActiveLayer();
+
+    GlueMapWindow *map = UIGlobals::GetMapIfActive();
+    if (map)
+      map->DeferRedraw();
+  }
+}
+#endif
 
 static void
 LoadInfoBoxes(const PageLayout::InfoBoxConfig &config)
@@ -259,6 +286,9 @@ PageActions::LoadLayout(const PageLayout &layout)
   DisablePan();
 
   LoadInfoBoxes(layout.infobox_config);
+#ifdef HAVE_SKYSIGHT
+  LoadOverlay(layout.overlay);
+#endif
   LoadBottom(layout.bottom);
   LoadMain(layout.main);
 

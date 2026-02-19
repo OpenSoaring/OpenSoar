@@ -60,6 +60,15 @@ Load(const ProfileMap &map, PageLayout &_pl, const unsigned page)
       unsigned(pl.main) >= unsigned(PageLayout::Main::MAX))
     pl.main = PageLayout::Main::MAP;
 
+  strcpy(profileKey + prefixLen, "Overlay");
+  const char *overlay_val = map.Get(profileKey);
+  if (overlay_val) {
+    strncpy(pl.overlay, overlay_val, sizeof(pl.overlay) - 1);
+    pl.overlay[sizeof(pl.overlay) - 1] = '\0';
+  } else {
+    pl.overlay[0] = '\0';
+  }
+
   _pl = pl;
 }
 
@@ -99,6 +108,9 @@ Profile::Save(ProfileMap &map, const PageLayout &page, const unsigned i)
 
   strcpy(profileKey + prefixLen, "Main");
   map.Set(profileKey, (unsigned)page.main);
+
+  strcpy(profileKey + prefixLen, "Overlay");
+  map.Set(profileKey, page.overlay);
 }
 
 
