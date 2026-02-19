@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "Weather/Features.hpp"
 #include <cstdint>
 
 enum class FileType : uint8_t {
@@ -14,12 +13,11 @@ enum class FileType : uint8_t {
   MAP,
   FLARMNET,
   IGC,
-#ifdef HAVE_RASP
   RASP,
-#endif
   XCI,
   TASK,
   IMAGE,
   FREQUENCIES,
   PROFILE,
+  CHECKLIST,
 };
