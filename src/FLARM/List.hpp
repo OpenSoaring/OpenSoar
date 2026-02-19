@@ -93,7 +93,8 @@ struct TrafficList {
    * @param id FLARM id
    * @return the FLARM_TRAFFIC pointer, NULL if not found
    */
-  constexpr FlarmTraffic *FindTraffic(FlarmId id) noexcept {
+  constexpr FlarmTraffic *
+  FindTraffic(FlarmId id) noexcept {
     for (auto &traffic : list)
       if (traffic.id == id)
         return &traffic;
@@ -107,7 +108,8 @@ struct TrafficList {
    * @param id FLARM id
    * @return the FLARM_TRAFFIC pointer, NULL if not found
    */
-  constexpr const FlarmTraffic *FindTraffic(FlarmId id) const noexcept {
+  constexpr const FlarmTraffic *
+  FindTraffic(FlarmId id) const noexcept {
     for (const auto &traffic : list)
       if (traffic.id == id)
         return &traffic;
@@ -121,7 +123,8 @@ struct TrafficList {
    * @param name the name or call sign
    * @return the FLARM_TRAFFIC pointer, NULL if not found
    */
-  constexpr FlarmTraffic *FindTraffic(const char *name) noexcept {
+  constexpr FlarmTraffic *
+  FindTraffic(const char *name) noexcept {
     for (auto &traffic : list)
       if (traffic.name.equals(name))
         return &traffic;
@@ -135,7 +138,8 @@ struct TrafficList {
    * @param name the name or call sign
    * @return the FLARM_TRAFFIC pointer, NULL if not found
    */
-  constexpr const FlarmTraffic *FindTraffic(const char *name) const noexcept {
+  constexpr const FlarmTraffic *
+  FindTraffic(const char *name) const noexcept {
     for (const auto &traffic : list)
       if (traffic.name.equals(name))
         return &traffic;
@@ -148,7 +152,8 @@ struct TrafficList {
    *
    * @return the FLARM_TRAFFIC pointer, NULL if the array is full
    */
-  constexpr FlarmTraffic *AllocateTraffic() noexcept {
+  constexpr FlarmTraffic *
+  AllocateTraffic() noexcept {
     return list.full()
       ? NULL
       : &list.append();
@@ -187,14 +192,16 @@ struct TrafficList {
   /**
    * Search for the first traffic in the ordered list.
    */
-  constexpr const FlarmTraffic *FirstTraffic() const noexcept {
+  constexpr const FlarmTraffic *
+  FirstTraffic() const noexcept {
     return list.empty() ? nullptr : &list.front();
   }
 
   /**
    * Search for the last traffic in the ordered list.
    */
-  constexpr const FlarmTraffic *LastTraffic() const noexcept {
+  constexpr const FlarmTraffic *
+  LastTraffic() const noexcept {
     return list.empty() ? nullptr : &list.back();
   }
 
@@ -203,9 +210,11 @@ struct TrafficList {
    * alert.
    */
   [[gnu::pure]]
-  const FlarmTraffic *FindMaximumAlert() const noexcept;
+  const FlarmTraffic *
+  FindMaximumAlert() const noexcept;
 
-  constexpr unsigned TrafficIndex(const FlarmTraffic *t) const noexcept {
+  constexpr size_t
+  TrafficIndex(const FlarmTraffic *t) const noexcept {   
 #if USE_LIST_ITERATOR  // TODO(August2111): make it ok
   #ifdef __clang__
     unsigned int i = 0;

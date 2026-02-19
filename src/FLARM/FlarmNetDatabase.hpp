@@ -7,7 +7,6 @@
 #include "FlarmNetRecord.hpp"
 
 #include <map>
-
 /**
  * An in-memory representation of the FlarmNet.org database.
  */

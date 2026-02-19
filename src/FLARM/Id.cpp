@@ -19,4 +19,3 @@ FlarmId::Format(char *buffer) const noexcept
   *fmt::format_to(buffer, "{:X}", value) = 0;
   return buffer;
 }
-

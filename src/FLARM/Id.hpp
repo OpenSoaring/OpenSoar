@@ -36,6 +36,5 @@ public:
                                     const FlarmId &) noexcept = default;
 
   static FlarmId Parse(const char *input, char **endptr_r) noexcept;
-
   const char *Format(char *buffer) const noexcept;
 };

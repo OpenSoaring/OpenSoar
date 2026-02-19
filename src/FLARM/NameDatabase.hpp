@@ -8,7 +8,6 @@
 #include "util/StaticArray.hxx"
 
 #include <cassert>
-
 class FlarmNameDatabase {
 public:
   struct Record {

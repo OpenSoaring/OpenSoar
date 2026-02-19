@@ -7,6 +7,8 @@
 #include "Geo/GeoVector.hpp"
 #include "time/Cast.hxx"
 
+#include <string_view>
+
 void
 FlarmComputer::Process(FlarmData &flarm, const FlarmData &last_flarm,
                        const NMEAInfo &basic) noexcept
@@ -44,13 +46,11 @@ FlarmComputer::Process(FlarmData &flarm, const FlarmData &last_flarm,
 
   // for each item in traffic
   for (auto &traffic : flarm.traffic.list) {
-    // if we don't know the target's name yet
-    if (!traffic.HasName()) {
-      // lookup the name of this target's id
-      const char *fname = FlarmDetails::LookupCallsign(traffic.id);
-      if (fname != NULL)
-        traffic.name = fname;
-    }
+    // Keep the cached display name (callsign) in sync with current sources
+    const std::string_view fname = FlarmDetails::LookupCallsign(traffic.id);
+    if (!fname.empty() && 
+         (!traffic.HasName() || traffic.name.c_str() != fname))
+      traffic.name = fname;
 
     // Calculate distance
     traffic.distance = hypot(traffic.relative_north, traffic.relative_east);

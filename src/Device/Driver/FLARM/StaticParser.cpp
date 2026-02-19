@@ -6,19 +6,19 @@
 #include "FLARM/List.hpp"
 #include "FLARM/Status.hpp"
 #include "FLARM/Version.hpp"
-#include "Language/Language.hpp"
+// #include "Language/Language.hpp"
 #include "Message.hpp"
 #include "NMEA/InputLine.hpp"
-#include "util/Macros.hpp"
-#include "util/StringAPI.hxx"
+// #include "util/Macros.hpp"
+// #include "util/StringAPI.hxx"
 
-using std::string_view_literals::operator""sv;
+#include <string_view>
 
 void
 ParsePFLAE(NMEAInputLine &line, FlarmError &error, TimeStamp clock) noexcept
 {
   const auto type = line.ReadView();
-  if (type != "A"sv)
+  if (type != "A")
     return;
 
   error.severity = (FlarmError::Severity)
@@ -39,7 +39,7 @@ ParsePFLAV(NMEAInputLine &line, FlarmVersion &version,
            TimeStamp clock) noexcept
 {
   const auto type = line.ReadView();
-  if (type != "A"sv)
+  if (type != "A")
     return;
 
   version.hardware_version = line.ReadView();
