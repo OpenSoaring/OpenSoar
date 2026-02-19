@@ -6,6 +6,7 @@ set(_SOURCES
         system/Process.cpp
         system/RunFile.cpp
         system/SystemLoad.cpp
+        system/OpenLink.cpp
 )
 if(UNIX)
   list(APPEND _SOURCES

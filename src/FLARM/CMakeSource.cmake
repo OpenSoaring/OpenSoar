@@ -15,6 +15,10 @@ set(_SOURCES
         FLARM/NameFile.cpp
         FLARM/Traffic.cpp
         FLARM/TrafficDatabases.cpp
+
+        FLARM/MessagingDatabase.cpp
+        FLARM/MessagingFile.cpp
+        FLARM/MessagingRecord.cpp
 )
 
 set(SCRIPT_FILES

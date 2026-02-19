@@ -40,6 +40,7 @@ set(_SOURCES
         Dialogs/dlgQuickMenu.cpp
         Dialogs/dlgSimulatorPrompt.cpp
         Dialogs/dlgStatus.cpp
+        Dialogs/dlgQuickGuide.cpp
         Dialogs/DownloadFilePicker.cpp
         Dialogs/Error.cpp
         Dialogs/FileManager.cpp
@@ -101,7 +102,7 @@ set(_SOURCES
         Dialogs/Settings/WindSettingsDialog.cpp
         Dialogs/Settings/WindSettingsPanel.cpp
 
-       Dialogs/SimulatorPromptWindow.cpp
+        Dialogs/SimulatorPromptWindow.cpp
         Dialogs/StartupDialog.cpp
 
         Dialogs/StatusPanels/FlightStatusPanel.cpp

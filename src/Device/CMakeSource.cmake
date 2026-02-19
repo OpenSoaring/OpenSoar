@@ -9,7 +9,6 @@ set(_SOURCES
         Device/Driver.cpp
         Device/Driver/AirControlDisplay.cpp
         Device/Driver/AltairPro.cpp
-        Device/Driver/Anemoi.cpp
         Device/Driver/ATR833/Register.cpp
         Device/Driver/ATR833/Device.cpp
         Device/Driver/BlueFly/Misc.cpp
@@ -49,7 +48,6 @@ set(_SOURCES
         Device/Driver/Flytec/Logger.cpp
         Device/Driver/Flytec/Parser.cpp
         Device/Driver/Flytec/Register.cpp
-        Device/Driver/FreeVario.cpp
         Device/Driver/Generic.cpp
         Device/Driver/ILEC.cpp
         Device/Driver/IMI/Declare.cpp
@@ -63,7 +61,6 @@ set(_SOURCES
         Device/Driver/IMI/Protocol/Protocol.cpp
         Device/Driver/IMI/RegisterIMI.cpp
         Device/Driver/KRT2.cpp
-        Device/Driver/AR62xx.cpp
         Device/Driver/Larus.cpp
         Device/Driver/Leonardo.cpp
         Device/Driver/LevilAHRS_G.cpp
@@ -111,9 +108,6 @@ set(_SOURCES
         Device/Driver/LX_EOS/LXEosDownload.cpp
         Device/Driver/LX_EOS/LXEosParser.cpp
         Device/Driver/LX_EOS/LXEosRegister.cpp
-        
-        Device/Driver/RemoteStick.cpp
-
         Device/MultipleDevices.cpp
         Device/Parser.cpp
         Device/Port/BufferedPort.cpp
@@ -133,7 +127,14 @@ set(_SOURCES
         Device/Util/NMEAWriter.cpp
 
         Device/Driver/Stratux/Driver.cpp
+        Device/Driver/LoEFGREN.cpp
         # Android or Apple only: Device/SmartDeviceSensors.cpp
+
+        # additional OpenSoar device driver
+	Device/Driver/Anemoi.cpp
+        Device/Driver/FreeVario.cpp
+        Device/Driver/AR62xx.cpp
+        Device/Driver/RemoteStick.cpp
 )
 if(UNIX)
   list(APPEND _SOURCES

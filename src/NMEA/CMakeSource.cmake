@@ -16,6 +16,7 @@ set(_SOURCES
         NMEA/SwitchState.cpp
         NMEA/ThermalLocator.cpp
         NMEA/VarioInfo.cpp
+        NMEA/Gyroscope.cpp
 )
 
 set(SCRIPT_FILES
