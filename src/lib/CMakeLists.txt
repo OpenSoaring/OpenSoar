@@ -45,16 +45,6 @@ add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
 )
 # message(FATAL_ERROR "Stop!")
 
-### target_link_libraries(${TARGET_NAME} PUBLIC
-###   Form
-###   libOpenSoar
-###   Blackboard
-###   UIUtil
-###   Dialogs
-### #  ${LIBPNG_LIB}
-###   ${ZZIP_LIB}  # internal or external...
-### )
-
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)
 
 # add_dependencies(${TARGET_NAME} util)

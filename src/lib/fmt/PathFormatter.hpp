@@ -11,8 +11,7 @@ template<>
 struct fmt::formatter<Path> : formatter<string_view>
 {
   template <typename FormatContext>
-  // auto format(Path path, FormatContext &ctx) const
-  auto format(const Path path, FormatContext &ctx) const
+  auto format(Path path, FormatContext &ctx) const
   {
     return formatter<string_view>::format(path.ToUTF8(), ctx);
   }
