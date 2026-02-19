@@ -104,7 +104,7 @@ WaypointFilter::Matches(const Waypoint &waypoint, GeoPoint location,
   // Check file_num filter for FILE type
   if (type_index == TypeFilter::FILE && file_num >= 0) {
     if (waypoint.origin != WaypointOrigin::PRIMARY ||
-        waypoint.file_num != static_cast<uint8_t>(file_num))
+        waypoint.file_num != file_num)
       return false;
   }
 

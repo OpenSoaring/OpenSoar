@@ -142,12 +142,12 @@ ParseAltitude(std::string_view src, double &dest)
   src.remove_suffix(1);
 
   // Parse string
-  const auto int_value = ParseInteger<int>(src);
-  if (!int_value)
+  const auto value = ParseInteger<int>(src);
+  if (!value)
     return false;
 
   // Convert to system unit if necessary
-  dest = Units::ToSysUnit(*int_value, unit);
+  dest = Units::ToSysUnit(*value, unit);
   return true;
 }
 

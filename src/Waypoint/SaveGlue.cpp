@@ -4,6 +4,7 @@
 #include "WaypointGlue.hpp"
 #include "CupWriter.hpp"
 #include "LogFile.hpp"
+#include "lib/fmt/PathFormatter.hpp"
 #include "system/Path.hpp"
 #include "io/FileOutputStream.hxx"
 #include "io/BufferedOutputStream.hxx"
@@ -22,7 +23,7 @@ WaypointGlue::SaveWaypoints(const Waypoints &way_points)
   writer.Flush();
   file.Commit();
 
-  LogFormat("Waypoint file '%s' saved", path.c_str());
+  LogFmt("Waypoint file '{}' saved", path);
 }
 
 void
@@ -32,6 +33,10 @@ WaypointGlue::SaveWaypoint(const Waypoint &wp)
 
   FileOutputStream file(path, FileOutputStream::Mode::APPEND_OR_CREATE);
   BufferedOutputStream writer(file);
+
+  /* write header when creating a new file */
+  if (file.Tell() == 0)
+    WriteCupHeader(writer);
 
   WriteCup(writer, wp);
 
