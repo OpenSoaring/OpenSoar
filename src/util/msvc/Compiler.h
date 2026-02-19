@@ -15,8 +15,6 @@
 // #define GCC_OLDER_THAN(x, y)        1  // This isn't a (new!) GCC
 #define CLANG_CHECK_VERSION(x, y)   0
 
-#define DT_UNDERLINE 0  // gibt es in WinUser.h nicht!
-
 #ifndef __clang__
 # define __attribute__(x)
 #endif

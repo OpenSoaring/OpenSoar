@@ -225,7 +225,7 @@ elseif (WIN32)
         ${WINDOW_SRC_DIR}/gdi/Window.cpp
         ${WINDOW_SRC_DIR}/gdi/PaintWindow.cpp
         ${WINDOW_SRC_DIR}/gdi/ContainerWindow.cpp
-        ${CONTROL_SRC_DIR}/gdi/LargeTextWindow.cpp
+      #  ${CONTROL_SRC_DIR}/gdi/LargeTextWindow.cpp
         ${WINDOW_SRC_DIR}/gdi/SingleWindow.cpp
         ${WINDOW_SRC_DIR}/gdi/TopWindow.cpp
         ${CANVAS_SRC_DIR}/gdi/Pen.cpp

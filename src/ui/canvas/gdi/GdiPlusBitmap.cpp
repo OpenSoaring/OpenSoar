@@ -11,6 +11,8 @@ using std::min;  // to avoid the missing 'min' in the gdiplush headers
 using std::max;  // to avoid the missing 'max' in the gdiplush headers
 #endif           // _MSC_VER
 
+#include "UTF8Win.hpp"
+
 #ifdef GDI_WITH_TESTSAVE
 #include "system/Path.hpp"
 #include "LocalPath.hpp"

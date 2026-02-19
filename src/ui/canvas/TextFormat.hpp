@@ -3,6 +3,10 @@
 
 #pragma once
 
+#ifdef _WIN32
+# include <windows.h>
+#endif
+
 #ifndef DT_LEFT
 #define DT_LEFT 0x2
 #endif
