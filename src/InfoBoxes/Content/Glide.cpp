@@ -6,7 +6,6 @@
 #include "InfoBoxes/Data.hpp"
 #include "Interface.hpp"
 
-
 void
 UpdateInfoBoxGRInstant(InfoBoxData &data) noexcept
 {

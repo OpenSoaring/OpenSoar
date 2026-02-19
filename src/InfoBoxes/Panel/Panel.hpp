@@ -4,7 +4,6 @@
 #pragma once
 
 #include <memory>
-
 class Widget;
 
 struct InfoBoxPanel {

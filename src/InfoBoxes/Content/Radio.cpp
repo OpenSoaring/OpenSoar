@@ -10,7 +10,6 @@
 #include "Formatter/UserUnits.hpp"
 #include "Language/Language.hpp"
 
-
 static void
 UpdateInfoBoxFrequency(InfoBoxData &data, const RadioFrequency freq,
                        const char *freq_name) noexcept
@@ -75,10 +74,6 @@ static constexpr InfoBoxPanel standby_frequency_panels[] = {
   { nullptr, nullptr }
 };
 
-static constexpr InfoBoxPanel transponder_code_panels[] = {
-  { nullptr, nullptr }
-};
-
 const InfoBoxPanel *
 InfoBoxContentActiveRadioFrequency::GetDialogContent() noexcept
 {
@@ -117,10 +112,4 @@ InfoBoxContentTransponderCode::Update(InfoBoxData &data) noexcept
   UpdateInfoBoxTransponderCode(data, 
                                settings_transponder.transponder_code,
                                settings_transponder.transponder_mode);
-}
-
-const InfoBoxPanel *
-InfoBoxContentTransponderCode::GetDialogContent() noexcept
-{
-  return transponder_code_panels;
 }

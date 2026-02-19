@@ -20,6 +20,7 @@ set(_SOURCES
         InfoBoxes/Content/Time.cpp
         InfoBoxes/Content/Trace.cpp
         InfoBoxes/Content/Weather.cpp
+        InfoBoxes/Content/ShowAnalysis.cpp
         InfoBoxes/Data.cpp
         InfoBoxes/Format.cpp
         InfoBoxes/InfoBoxLayout.cpp
@@ -34,7 +35,7 @@ set(_SOURCES
         InfoBoxes/Panel/MacCreadyEdit.cpp
         InfoBoxes/Panel/MacCreadySetup.cpp
         InfoBoxes/Panel/RadioEdit.cpp
-        InfoBoxes/Panel/WindEdit.cpp
+        # InfoBoxes/Panel/WindEdit.cpp
         InfoBoxes/Units.cpp
 )
 

@@ -6,7 +6,6 @@
 #include "Type.hpp"
 
 #include <memory>
-
 class InfoBoxContent;
 
 namespace InfoBoxFactory

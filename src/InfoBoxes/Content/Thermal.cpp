@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "InfoBoxes/Content/Thermal.hpp"
+#include "InfoBoxes/Content/ShowAnalysis.hpp"
 #include "InfoBoxes/Data.hpp"
 #include "Units/Units.hpp"
 #include "Formatter/UserUnits.hpp"
@@ -13,7 +14,6 @@
 #include "Input/InputEvents.hpp"
 #include "PageActions.hpp"
 #include "UIState.hpp"
-
 
 static void
 SetVSpeed(InfoBoxData &data, double value) noexcept
@@ -189,23 +189,6 @@ UpdateInfoBoxNextLegEqThermal(InfoBoxData &data) noexcept
 }
 
 void
-UpdateInfoBoxSTFSwitch(InfoBoxData &data) noexcept {
-  if (!CommonInterface::GetComputerSettings().stf_switch.IsValid()) {
-    data.SetInvalid();
-    data.SetValue("Unknown");
-    return;
-  }
-
-  switch (CommonInterface::GetComputerSettings().stf_switch.stf_mode)
-  {
-    case TriState::FALSE: data.SetValue("Vario"); break;
-    case TriState::TRUE: data.SetValue("STF"); break;
-    default:
-    case TriState::UNKNOWN: data.SetValue("Unknown"); break;
-  }
-}
-
-void
 UpdateInfoBoxCircleDiameter(InfoBoxData &data) noexcept
 {
   if (!CommonInterface::Basic().airspeed_available.IsValid()) {
@@ -241,8 +224,7 @@ UpdateInfoBoxCircleDiameter(InfoBoxData &data) noexcept
 
   StaticString<16> duration_buffer;
   duration_buffer.Format("%u s", int(circle_duration));
-  strcpy (buffer, duration_buffer);
-  data.SetComment (buffer);
+  data.SetComment(duration_buffer);
 }
 
 InfoBoxContentThermalAssistant::InfoBoxContentThermalAssistant() noexcept
@@ -303,4 +285,10 @@ InfoBoxContentClimbPercent::Update(InfoBoxData &data) noexcept
 
   // TODO: use an appropriate digest
   data.SetCustom(basic.location_available.ToInteger());
+}
+
+bool
+InfoBoxContentClimbPercent::HandleClick() noexcept
+{
+  return ShowAnalysis(AnalysisPage::CLIMB);
 }

@@ -3,7 +3,6 @@
 
 #include "InfoBoxes/Content/Weather.hpp"
 #include "InfoBoxes/Panel/Panel.hpp"
-#include "InfoBoxes/Panel/WindEdit.hpp"
 #include "InfoBoxes/Data.hpp"
 #include "Interface.hpp"
 #include "Units/Units.hpp"
@@ -16,7 +15,7 @@
 #include "Renderer/WindArrowRenderer.hpp"
 #include "UIGlobals.hpp"
 #include "Look/Look.hpp"
-
+#include "Dialogs/Dialogs.h"
 
 void
 UpdateInfoBoxHumidity(InfoBoxData &data) noexcept
@@ -28,7 +27,7 @@ UpdateInfoBoxHumidity(InfoBoxData &data) noexcept
   }
 
   // Set Value
-  data.FmtValue( "{}", (int)basic.humidity);
+  data.FmtValue("{}", (int)basic.humidity);
 }
 
 void
@@ -74,27 +73,15 @@ InfoBoxContentTemperatureForecast::HandleKey(const InfoBoxKeyCodes keycode) noex
   return false;
 }
 
-/*
- * Subpart callback function pointers
- */
-
-#ifdef __clang__
-/* gcc gives "redeclaration differs in 'constexpr'" */
-constexpr
-#endif
-const InfoBoxPanel wind_infobox_panels[] = {
-  { N_("Edit"), LoadWindEditPanel },
-  { nullptr, nullptr }
-};
-
-const InfoBoxPanel *
-InfoBoxContentWindArrow::GetDialogContent() noexcept
+bool
+InfoBoxContentWind::HandleClick() noexcept
 {
-  return wind_infobox_panels;
+  ShowWindSettingsDialog();
+  return true;
 }
 
 void
-UpdateInfoBoxWindSpeed(InfoBoxData &data) noexcept
+InfoBoxContentWindSpeed::Update(InfoBoxData &data) noexcept
 {
   const DerivedInfo &info = CommonInterface::Calculated();
   if (!info.wind_available) {
@@ -113,7 +100,7 @@ UpdateInfoBoxWindSpeed(InfoBoxData &data) noexcept
 }
 
 void
-UpdateInfoBoxWindBearing(InfoBoxData &data) noexcept
+InfoBoxContentWindBearing::Update(InfoBoxData &data) noexcept
 {
   const DerivedInfo &info = CommonInterface::Calculated();
   if (!info.wind_available) {
@@ -128,42 +115,8 @@ UpdateInfoBoxWindBearing(InfoBoxData &data) noexcept
   data.SetComment(buffer);
 }
 
-void UpdateInfoBoxInstWindSpeed(InfoBoxData &data) noexcept {
-  const auto &info = CommonInterface::Basic();
-  if (!info.external_instantaneous_wind_available) {
-    data.SetInvalid();
-    return;
-  }
-
-  // Set Value
-  data.FmtValue("{:2.0f}",
-                Units::ToUserWindSpeed(info.external_instantaneous_wind.norm));
-
-  // Set Unit
-  data.SetValueUnit(Units::current.wind_speed_unit);
-
-  // Set Comment
-  data.SetComment(info.external_instantaneous_wind.bearing);
-}
-
-void UpdateInfoBoxInstWindBearing(InfoBoxData &data) noexcept
-{
-  const auto &info = CommonInterface::Basic();
-  if (!info.external_instantaneous_wind_available) {
-    data.SetInvalid();
-    return;
-  }
-
-  data.SetValue(info.external_instantaneous_wind.bearing);
-
-  char buffer[16];
-  FormatUserWindSpeed(info.external_instantaneous_wind.norm,
-                      buffer, true, false);
-  data.SetComment(buffer);
-}
-
 void
-UpdateInfoBoxHeadWind(InfoBoxData &data) noexcept
+InfoBoxContentHeadWind::Update(InfoBoxData &data) noexcept
 {
   const DerivedInfo &info = CommonInterface::Calculated();
   if (!info.head_wind_available) {
@@ -179,7 +132,7 @@ UpdateInfoBoxHeadWind(InfoBoxData &data) noexcept
 }
 
 void
-UpdateInfoBoxHeadWindSimplified(InfoBoxData &data) noexcept
+InfoBoxContentHeadWindSimplified::Update(InfoBoxData &data) noexcept
 {
   const NMEAInfo &basic = CommonInterface::Basic();
   if (!basic.ground_speed_available || !basic.airspeed_available) {
@@ -220,11 +173,13 @@ InfoBoxContentWindArrow::Update(InfoBoxData &data) noexcept
 }
 
 void
-PaintWindArrow(Canvas &canvas, const PixelRect &rc,
-               const SpeedVector &wind, const Brush &brush) noexcept
+InfoBoxContentWindArrow::OnCustomPaint(Canvas &canvas,
+                                       const PixelRect &rc) noexcept
 {
   constexpr unsigned arrow_width = 6;
   constexpr unsigned arrow_tail_length = 3;
+
+  const auto &info = CommonInterface::Calculated();
 
   const unsigned scale = Layout::Scale(100U);
 
@@ -235,39 +190,17 @@ PaintWindArrow(Canvas &canvas, const PixelRect &rc,
   // by the DrawArrow() function again
   const unsigned size = radar_renderer.GetRadius() * 100 / scale;
 
-  auto angle = wind.bearing - CommonInterface::Basic().attitude.heading;
+  auto angle = info.wind.bearing - CommonInterface::Basic().attitude.heading;
 
   const int length =
-    std::min(size, std::max(10u, uround(4 * wind.norm)));
+    std::min(size, std::max(10u, uround(4 * info.wind.norm)));
 
   const int offset = -length / 2;
 
-  const auto style = CommonInterface::GetMapSettings().wind_arrow_style;
+  auto style = CommonInterface::GetMapSettings().wind_arrow_style;
 
   WindArrowRenderer renderer(UIGlobals::GetLook().wind_arrow_info_box);
   renderer.DrawArrow(canvas, radar_renderer.GetCenter(), angle,
                      arrow_width, length, arrow_tail_length,
-                     style, offset, scale, brush);
-}
-
-void
-InfoBoxContentWindArrow::OnCustomPaint(Canvas &canvas,
-                                       const PixelRect &rc) noexcept
-{
- 
-  const auto &info = CommonInterface::Calculated();
-  const auto &basic = CommonInterface::Basic();
-  auto rel_wind = info.wind;
-  const auto &look = UIGlobals::GetLook().wind_arrow_info_box;
-  rel_wind.bearing -= basic.attitude.heading;
-
-  PaintWindArrow(canvas, rc, rel_wind,
-                 info.wind_source == DerivedInfo::WindSource::EXTERNAL ?
-                 look.arrow_brush_extern : look.arrow_brush);
-  if (basic.external_instantaneous_wind_available) {
-    rel_wind = basic.external_instantaneous_wind;
-    rel_wind.bearing -= basic.attitude.heading;
-    PaintWindArrow(canvas, rc, rel_wind,
-                   look.arrow_brush_instantaneous);
-  }
+                     style, offset, scale);
 }

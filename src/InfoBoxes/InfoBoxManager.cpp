@@ -81,8 +81,8 @@ InfoBoxManager::DisplayInfoBox() noexcept
     // Do not put calculations here!
 
     InfoBoxFactory::Type DisplayType = settings.contents[i];
-    if (!TypeIsValid(DisplayType))
-      DisplayType = InfoBoxFactory::e_NavAltitude;
+    if ((unsigned)DisplayType > (unsigned)InfoBoxFactory::MAX_TYPE_VAL)
+      DisplayType = InfoBoxFactory::NavAltitude;
 
     bool needupdate = ((DisplayType != DisplayTypeLast[i]) || first);
 
@@ -189,14 +189,6 @@ InfoBoxManager::ShowInfoBoxPicker(const int i) noexcept
     const char *desc = InfoBoxFactory::GetDescription((InfoBoxFactory::Type)j);
     list.Append(j, gettext(InfoBoxFactory::GetName((InfoBoxFactory::Type)j)),
                 gettext(InfoBoxFactory::GetName((InfoBoxFactory::Type)j)),
-                desc != NULL ? gettext(desc) : NULL);
-  }
-  for (unsigned j = InfoBoxFactory::e_NUM_AREA_2nd;
-       j < InfoBoxFactory::NUM_TYPES_2nd; j++) {
-    const InfoBoxFactory::Type type = (InfoBoxFactory::Type)(j);
-    const char *desc = InfoBoxFactory::GetDescription(type);
-    list.Append(j, gettext(InfoBoxFactory::GetName(type)),
-                gettext(InfoBoxFactory::GetName(type)),
                 desc != NULL ? gettext(desc) : NULL);
   }
 

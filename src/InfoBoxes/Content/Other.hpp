@@ -4,9 +4,6 @@
 #pragma once
 
 #include "InfoBoxes/Content/Base.hpp"
-#include "InfoBoxes/Content/Type.hpp"
-
-extern const InfoBoxPanel infobox_panel[];
 
 void
 UpdateInfoBoxHeartRate(InfoBoxData &data) noexcept;
@@ -31,9 +28,6 @@ UpdateInfoBoxFreeRAM(InfoBoxData &data) noexcept;
 
 void
 UpdateInfoBoxNbrSat(InfoBoxData &data) noexcept;
-
-void
-UpdateInfoBoxPageIndex(InfoBoxData &data) noexcept;
 
 class InfoBoxContentHorizon : public InfoBoxContent
 {

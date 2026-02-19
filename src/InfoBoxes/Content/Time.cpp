@@ -7,7 +7,6 @@
 #include "Formatter/TimeFormatter.hpp"
 #include "Formatter/LocalTimeFormatter.hpp"
 
-
 void
 UpdateInfoBoxTimeLocal(InfoBoxData &data) noexcept
 {

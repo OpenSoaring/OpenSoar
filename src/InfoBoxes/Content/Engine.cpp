@@ -9,7 +9,6 @@
 #include "Formatter/LocalTimeFormatter.hpp"
 #include "Language/Language.hpp"
 
-
 void
 UpdateInfoBoxContentCHT(InfoBoxData &data) noexcept
 {

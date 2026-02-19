@@ -3,7 +3,6 @@
 
 #include "InfoBoxes/Content/Other.hpp"
 #include "InfoBoxes/Data.hpp"
-#include "InfoBoxes/Panel/Panel.hpp"
 #include "Interface.hpp"
 #include "Renderer/HorizonRenderer.hpp"
 #include "Hardware/PowerGlobal.hpp"
@@ -11,16 +10,10 @@
 #include "Language/Language.hpp"
 #include "UIGlobals.hpp"
 #include "Look/Look.hpp"
-#include "Interface.hpp"
-#include "UIState.hpp"
 
 #ifdef HAVE_BATTERY
 #include "Hardware/PowerInfo.hpp"
 #endif
-
-const InfoBoxPanel infobox_panel[] = {
-   { nullptr, nullptr }
-};
 
 void
 UpdateInfoBoxHeartRate(InfoBoxData &data) noexcept
@@ -197,39 +190,4 @@ UpdateInfoBoxNbrSat(InfoBoxData &data) noexcept
         // valid but unknown number of sats
         data.SetValueInvalid();
     }
-}
-
-void
-UpdateInfoBoxPageIndex(InfoBoxData &data) noexcept
-{
-  const PageSettings &settings = CommonInterface::GetUISettings().pages;
-  const PagesState &state = CommonInterface::GetUIState().pages;
-
-  //  data.SetComment(gettext("Page No"));
-
-  switch (settings.pages[state.current_index].main) {
-    case PageLayout::Main::MAP:
-      data.SetComment(_("Map"));
-      break;
-
-    case PageLayout::Main::FLARM_RADAR:
-      data.SetComment(_("FLARM radar"));
-      break;
-
-    case PageLayout::Main::THERMAL_ASSISTANT:
-      data.SetComment(_("Thermal assistant"));
-      break;
-
-    case PageLayout::Main::HORIZON:
-      data.SetComment(_("Horizon"));
-      break;
-
-    default:
-      data.SetComment(_("unknown"));
-      break;
-
-  }
-
-  data.FmtValue("{} / {}", state.current_index + 1, settings.n_pages);
-
 }

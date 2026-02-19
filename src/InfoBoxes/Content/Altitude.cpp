@@ -12,7 +12,6 @@
 #include "Interface.hpp"
 #include "Language/Language.hpp"
 
-
 /*
  * Subpart callback function pointers
  */
