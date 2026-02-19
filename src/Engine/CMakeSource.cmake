@@ -41,6 +41,9 @@ set(_SOURCES
         Engine/Contest/Solvers/TraceManager.cpp
         Engine/Contest/Solvers/XContestFree.cpp
         Engine/Contest/Solvers/XContestTriangle.cpp
+        Engine/Contest/Solvers/DMStFree.cpp
+        Engine/Contest/Solvers/DMStOR.cpp
+        Engine/Contest/Solvers/DMStTriangle.cpp
         Engine/GlideSolvers/GlidePolar.cpp
         Engine/GlideSolvers/GlideResult.cpp
         Engine/GlideSolvers/GlideSettings.cpp

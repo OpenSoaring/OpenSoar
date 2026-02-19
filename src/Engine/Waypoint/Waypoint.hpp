@@ -4,13 +4,13 @@
 #pragma once
 
 #include "Origin.hpp"
-#include <string>
 #include "Geo/GeoPoint.hpp"
 #include "Geo/Flat/FlatGeoPoint.hpp"
 #include "RadioFrequency.hpp"
 #include "Runway.hpp"
 #include "system/RunFile.hpp"
 
+#include <string>
 #include <forward_list>
 
 class FlatProjection;
@@ -116,6 +116,12 @@ struct Waypoint {
 
   /** File number to store waypoint in */
   WaypointOrigin origin = WaypointOrigin::NONE;
+
+  /**
+   * Index of the file in the list (for origins that support multiple files).
+   * 0 = first file, 1 = second file, etc.
+   */
+  uint8_t file_num = 0;
 
   /**
    * Does the #elevation field contain a value?

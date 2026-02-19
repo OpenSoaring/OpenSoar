@@ -4,7 +4,6 @@
 #pragma once
 
 #include <cstdint>
-
 enum class Contest : uint8_t;
 
 [[gnu::const]]
