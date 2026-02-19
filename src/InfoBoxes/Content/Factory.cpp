@@ -1178,7 +1178,7 @@ InfoBoxFactory::GetCaption(Type type) noexcept
 const char *
 InfoBoxFactory::GetDescription(Type type) noexcept
 {
-  assert(type < NUM_TYPES);
+  assert(TypeIsValid(type));
 
   return meta_data[type].description;
 }
@@ -1186,7 +1186,7 @@ InfoBoxFactory::GetDescription(Type type) noexcept
 std::unique_ptr<InfoBoxContent>
 InfoBoxFactory::Create(Type type) noexcept
 {
-  assert(type < NUM_TYPES);
+  assert(TypeIsValid(type));
   const auto &m = meta_data[type];
 
   assert(m.create != nullptr ||
@@ -1196,4 +1196,11 @@ InfoBoxFactory::Create(Type type) noexcept
     return std::unique_ptr<InfoBoxContent>(m.create());
   else
     return std::make_unique<InfoBoxContentCallback>(m.update, m.panels);
+}
+
+bool 
+InfoBoxFactory::TypeIsValid(Type t)
+{
+  return t < e_NUM_TYPES;
+  // return (t < e_NUM_TYPES) || ((t >= e_NUM_AREA_2nd) && (t < e_NUM_TYPES_2nd));
 }

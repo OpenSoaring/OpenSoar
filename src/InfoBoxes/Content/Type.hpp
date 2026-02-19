@@ -150,10 +150,28 @@ namespace InfoBoxFactory
     e_Alternate_1_AltDiff, /* Arrival altitude at the best alternate landing location relative to the safety arrival height */
     e_Alternate_2_AltDiff, /* Arrival altitude at the second-best alternate landing location relative to the safety arrival height */
     /* 130 */
-    e_NUM_TYPES /* Last item */
+	// ===============================================================
+    e_NUM_TYPES, //  Last item
+    
+    e_NUM_AREA_2nd = 500,
+    e_DriftAngle = e_NUM_AREA_2nd,
+    e_InstantaneousWindSpeed,
+    e_InstantaneousWindBearing,
+    e_InternalWind,
+    e_InternalZigZagWind,
+    e_PageNo,
+    e_STFSwitch,
+    e_BugsSetting,
+    e_TrueHeading,
+    e_WaterBallast,
+
+    e_NUM_TYPES_2nd  // Last item 2nd area
   };
 
   static constexpr Type NUM_TYPES = e_NUM_TYPES;
+  static constexpr Type NUM_TYPES_2nd = e_NUM_TYPES_2nd;
   static constexpr Type MIN_TYPE_VAL = (Type)0;
   static constexpr Type MAX_TYPE_VAL = (Type)(e_NUM_TYPES - 1);
+
+  bool TypeIsValid(Type t);
 }

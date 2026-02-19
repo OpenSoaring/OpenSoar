@@ -199,8 +199,10 @@ InfoBoxContentWindArrow::OnCustomPaint(Canvas &canvas,
 
   auto style = CommonInterface::GetMapSettings().wind_arrow_style;
 
+  const Brush brush;  /* for compatibility with old styles only, which use the
+  brush for colored arrows TODO(aug): previous OpenSoar 7.43.xx*/
   WindArrowRenderer renderer(UIGlobals::GetLook().wind_arrow_info_box);
   renderer.DrawArrow(canvas, radar_renderer.GetCenter(), angle,
                      arrow_width, length, arrow_tail_length,
-                     style, offset, scale);
+                     style, offset, scale, brush);
 }
