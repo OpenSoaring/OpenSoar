@@ -29,9 +29,16 @@ UpdateInfoBoxFreeRAM(InfoBoxData &data) noexcept;
 void
 UpdateInfoBoxNbrSat(InfoBoxData &data) noexcept;
 
+void
+UpdateInfoBoxPageIndex(InfoBoxData &data) noexcept;
+
 class InfoBoxContentHorizon : public InfoBoxContent
 {
 public:
   void Update(InfoBoxData &data) noexcept override;
   void OnCustomPaint(Canvas &canvas, const PixelRect &rc) noexcept override;
 };
+
+void UpdateInfoBoxMousePositionXY(InfoBoxData &data) noexcept;
+void UpdateInfoBoxMousePositionCoord(InfoBoxData &data) noexcept;
+void UpdateInfoBoxMouseDistance(InfoBoxData &data) noexcept;

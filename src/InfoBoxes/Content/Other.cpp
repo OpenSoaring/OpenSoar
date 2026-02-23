@@ -9,7 +9,10 @@
 #include "system/SystemLoad.hpp"
 #include "Language/Language.hpp"
 #include "UIGlobals.hpp"
+#include "UIState.hpp"
 #include "Look/Look.hpp"
+#include "Interface.hpp"
+#include "Formatter/GeoPointFormatter.hpp"
 
 #ifdef HAVE_BATTERY
 #include "Hardware/PowerInfo.hpp"
@@ -190,4 +193,76 @@ UpdateInfoBoxNbrSat(InfoBoxData &data) noexcept
         // valid but unknown number of sats
         data.SetValueInvalid();
     }
+}
+
+void
+UpdateInfoBoxPageIndex(InfoBoxData &data) noexcept
+{
+  const PageSettings &settings = CommonInterface::GetUISettings().pages;
+  const PagesState &state = CommonInterface::GetUIState().pages;
+
+  //  data.SetComment(gettext("Page No"));
+
+  switch (settings.pages[state.current_index].main) {
+    case PageLayout::Main::MAP:
+      data.SetComment(_("Map"));
+      break;
+
+    case PageLayout::Main::FLARM_RADAR:
+      data.SetComment(_("FLARM radar"));
+      break;
+
+    case PageLayout::Main::THERMAL_ASSISTANT:
+      data.SetComment(_("Thermal assistant"));
+      break;
+
+    case PageLayout::Main::HORIZON:
+      data.SetComment(_("Horizon"));
+      break;
+
+    default:
+      data.SetComment(_("unknown"));
+      break;
+
+  }
+
+  data.FmtValue("{} / {}", state.current_index + 1, settings.n_pages);
+
+}
+
+void
+UpdateInfoBoxMousePositionXY(InfoBoxData &data) noexcept
+{
+  data.FmtValue("x: {} ", UIGlobals::pixel_point.x);
+  data.FmtComment("y: {}", UIGlobals::pixel_point.y);
+}
+void
+UpdateInfoBoxMousePositionCoord(InfoBoxData &data) noexcept
+{
+  char buffer[0x100];
+  FormatLongitude(UIGlobals::location.longitude, buffer, sizeof(buffer),
+    CoordinateFormat::DDMMSS);
+  strncat(buffer, " - ", 5);
+  // snprintf(buffer, sizeof(buffer), "%s")
+  auto x = strlen(buffer);
+  FormatLatitude(UIGlobals::location.latitude, buffer + x,
+    sizeof(buffer) - x - 1,
+    CoordinateFormat::DDMMSS);
+  data.SetComment(buffer);
+}
+void
+UpdateInfoBoxMouseDistance(InfoBoxData &data) noexcept
+{
+  // data.FmtValue("{}km / {}°", 5, 6);
+  //data.SetCustom("50°00'00\"\n/ 014°00'00\"");
+  char buffer[0x100];
+  FormatLongitude(UIGlobals::location.longitude, buffer, sizeof(buffer),
+    CoordinateFormat::DDMMSS);
+  strncat(buffer, " - ", 5);
+  // snprintf(buffer, sizeof(buffer), "%s")
+  auto x = strlen(buffer);
+  FormatLatitude(UIGlobals::location.latitude, buffer + x,
+      sizeof(buffer) - x -1,
+      CoordinateFormat::DDMMSS);
+  data.SetComment(buffer);
 }

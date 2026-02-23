@@ -4,13 +4,24 @@
 #pragma once
 
 #include "ui/window/PaintWindow.hpp"
-#include <string>
 
+#include <string>
 #include <cassert>
 #include <functional>
 
 struct DialogLook;
 class ContainerWindow;
+class Canvas;
+struct PixelRect;
+
+/**
+ * Draw the checkbox box and optional check mark into the given rectangle.
+ * Reusable helper used by `CheckBoxControl::OnPaint` and list renderers.
+ */
+void DrawCheckBox(Canvas &canvas, const DialogLook &look,
+                  const PixelRect &box_rc,
+                  bool checked, bool focused, bool pressed,
+                  bool enabled) noexcept;
 
 /**
  * This class is used for creating buttons.
