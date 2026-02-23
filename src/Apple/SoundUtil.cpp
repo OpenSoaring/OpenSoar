@@ -18,7 +18,7 @@
 static AVAudioPlayer *player = nil;
 #endif
 
-#include <string>
+#include <string_view>
 
 bool
 SoundUtil::Play([[maybe_unused]]const std::string_view resource_name)
