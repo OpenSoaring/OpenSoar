@@ -25,12 +25,16 @@ get_filename_component(PROJECTGROUP_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} ABSOL
 message(STATUS "*** PROJECTGROUP_SOURCE_DIR = '${PROJECTGROUP_SOURCE_DIR}'")
 message(STATUS "*** PROJECTGROUP_BINARY_DIR = '${PROJECTGROUP_BINARY_DIR}'")
 
-get_filename_component(PROJECT_NAME ${CMAKE_CURRENT_BINARY_DIR} NAME)
-set (PROJECT_NAME "OpenSoar-${PROJECT_NAME}")
-project(${PROJECT_NAME})
+# get_filename_component(PROJECT_NAME ${CMAKE_CURRENT_BINARY_DIR} NAME)
 set(TARGET_NAME OpenSoar)
-set(PROGRAM_NAME ${TARGET_NAME})
-set(PROGRAM_NAME_CC ${TARGET_NAME})              # CamelCase
+set(APP_NAME ${TARGET_NAME})
+# add_compile_definitions(XCSOAR_VERSION="7.44") # workaround for setting the version...
+set(IS_OPENSOAR ON)  
+set (PROJECT_NAME "${APP_NAME}-${TOOLCHAIN}")
+project(${PROJECT_NAME})
+set(PROGRAM_NAME ${APP_NAME})
+# in test programs PROGRAM_NAME and APP_NAME different:
+set(PROGRAM_NAME_CC ${APP_NAME})              # CamelCase
 string(TOLOWER  ${PROGRAM_NAME} PROGRAM_NAME_LC) # lowercase
 #==========================================
 if (NOT CMAKE_BUILD_TYPE) # variable is only set AFTER the project cmd!!!
@@ -72,8 +76,8 @@ endif() # : 1 or 0
 
 
 ### file(READ "VERSION.txt" PROGRAM_VERSION)
-# add version string to OpenSoar:
-file(READ OpenSoar.config _config_file)
+# add version string to ${APP_NAME}Soar:
+file(READ ${APP_NAME}.config _config_file)
 # put the complete string in a list of lines
 string(REPLACE "\n" ";" _config_file ${_config_file})
 foreach(_line ${_config_file})
@@ -183,6 +187,8 @@ else()
       add_compile_definitions(USE_GDI)
       add_compile_definitions(USE_WINUSER)
 endif()
+# WorkAround to enable Internet every time
+# moved in WinXXX.cmake: add_compile_definitions(HAVE_HTTP)
 #---------------------------------------------------------
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)  # important for folder structure f.e. in Visual Studio
@@ -201,7 +207,7 @@ if(ANDROID OR KOBO OR SDL)
     add_compile_definitions(HAVE_BATTERY)
 endif()
 
-get_filename_component(TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
+get_filename_component(APP_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME_WE)
   
 message(STATUS "CMAKE_HOST_SYSTEM_NAME = ${CMAKE_HOST_SYSTEM_NAME} vs. CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME} ")
 
@@ -364,7 +370,7 @@ set(Boost_INCLUDE_DIR ${BOOST_INCLUDE_DIR})
 # add_compile_definitions(BOOST_ASIO_SEPARATE_COMPILATION)
 # add_compile_definitions(BOOST_MATH_DISABLE_DEPRECATED_03_WARNING=ON) 
 
-# following libs need this settings: Dialog, libOpenSoar, json, WeGlide, Weather, net, Repository, Task,  ...
+# following libs need this settings: Dialog, lib${APP_NAME}, json, WeGlide, Weather, net, Repository, Task,  ...
 add_compile_definitions(BOOST_JSON_NO_LIB)
 add_compile_definitions(BOOST_CONTAINER_NO_LIB)
 #  ??
@@ -462,13 +468,13 @@ if(NOT ZZIP_OUTSIDE)
     add_subdirectory(src/zzip)   # aug: new!!
 endif()
 add_subdirectory(src/lib)
-add_subdirectory(src)   # libOpenSoar!
+add_subdirectory(src)   # lib${APP_NAME}!
 
 add_subdirectory(src/OpenVario)
 
 add_subdirectory(src/Android)  # Android  -> EXCLUDE_FROM_ALL TRUE
 
-list(APPEND SOURCE_FILES "src/OpenSoar.cpp")
+list(APPEND SOURCE_FILES "src/${APP_NAME}.cpp")
 list(APPEND SOURCE_FILES  ${RESOURCE_FILES})
 
 list(APPEND SCRIPT_FILES "CMakeSource.cmake")
@@ -483,7 +489,7 @@ endif()
 #==========================================================
 
 # preparing target_link_libraries!
-list(APPEND XCSOAR_LINK_LIBRARIES  libOpenSoar ${XCSOAR_SOURCE_LISTS})
+list(APPEND XCSOAR_LINK_LIBRARIES  lib${APP_NAME} ${XCSOAR_SOURCE_LISTS})
 
 # TODO(aug): Cleaning up this code!!!!  
 if(1)
@@ -576,24 +582,24 @@ endif()
 list(APPEND SCRIPT_FILES
     CMakeSource.cmake
     ${PROJECTGROUP_BINARY_DIR}/VERSION.txt
-    OpenSoar.config
+    ${APP_NAME}.config
     OpenSoar-News.md
     OpenSoar-AddOn.md
     NEWS.txt
 )
 
 if (ANDROID)  # library!
-   add_library(${TARGET_NAME} STATIC ${SOURCE_FILES})
+   add_library(${APP_NAME} STATIC ${SOURCE_FILES})
 elseif(MINGW)
-   add_executable(${TARGET_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${EXT_PROJ})
- # add_executable(${TARGET_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${XCSOAR_LINK_LIBRARIES} ${EXT_PROJ})
+   add_executable(${APP_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${EXT_PROJ})
+ # add_executable(${APP_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${XCSOAR_LINK_LIBRARIES} ${EXT_PROJ})
 else()        # executable!
-   message(STATUS  "### add_executable(${TARGET_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${EXT_PROJ}")
-   add_executable(${TARGET_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${EXT_PROJ})
+   message(STATUS  "### add_executable(${APP_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${EXT_PROJ}")
+   add_executable(${APP_NAME}     ${SOURCE_FILES} ${SCRIPT_FILES} ${EXT_PROJ})
 endif()
 
 list(APPEND XCSOAR_LINK_LIBRARIES ) # sequence is very important, I don't no, why'!!!!
-target_include_directories(${TARGET_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories(${APP_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
 
 if (VERBOSE_LEVEL)
     message(STATUS "----- XCSOAR_LINK_LIBRARIES = ${XCSOAR_LINK_LIBRARIES}")
@@ -605,9 +611,9 @@ if (VERBOSE_LEVEL)
     endif()
 endif()
 
-# target_link_libraries(${TARGET_NAME} PUBLIC ${XCSOAR_LINK_LIBRARIES})
+# target_link_libraries(${APP_NAME} PUBLIC ${XCSOAR_LINK_LIBRARIES})
 if (HAVE_SKYSIGHT)
-#   target_link_libraries(${TARGET_NAME} PUBLIC ${SQLITE3_LIBRARY})
+#   target_link_libraries(${APP_NAME} PUBLIC ${SQLITE3_LIBRARY})
 #  target_link_libraries(${PROJ_TARGET} INTERFACE ${SQLITE3_LIBRARY} ${CURL_LIBRARY})
 if (MINGW)
 # August2111: geht bei MSVC nicht... ;-(
@@ -620,101 +626,74 @@ if (CLANG)
   # target_link_libraries(${GEOTIFF_TARGET} ) ## 2026/01/06
 endif(CLANG)
 #  target_link_libraries(${PROJ_LIBRARY} PRIVATE ${SQLITE3_LIBRARY})
-# target_link_libraries(${TARGET_NAME} PUBLIC ${HDF5_LIBRARY})
-# target_link_libraries(${TARGET_NAME} PUBLIC ${HDF5_HL_LIBRARY})
+# target_link_libraries(${APP_NAME} PUBLIC ${HDF5_LIBRARY})
+# target_link_libraries(${APP_NAME} PUBLIC ${HDF5_HL_LIBRARY})
 endif(HAVE_SKYSIGHT)
 
 # message(FATAL_ERROR "XCSOAR_LINK_LIBRARIES = ${XCSOAR_LINK_LIBRARIES}")
-target_link_libraries(${TARGET_NAME} PRIVATE ${XCSOAR_LINK_LIBRARIES})
+target_link_libraries(${APP_NAME} PRIVATE ${XCSOAR_LINK_LIBRARIES})
 
 if(MSVC)
 ## if(WIN32)
-   target_link_options(${TARGET_NAME} PUBLIC "/SUBSYSTEM:WINDOWS")
+   target_link_options(${APP_NAME} PUBLIC "/SUBSYSTEM:WINDOWS")
 elseif(CLANG)
-  # target_link_options(${TARGET_NAME} PUBLIC "/subsystem:windows")
-  # target_link_options(${TARGET_NAME} PUBLIC "-mwindows")
+  # target_link_options(${APP_NAME} PUBLIC "/subsystem:windows")
+  # target_link_options(${APP_NAME} PUBLIC "-mwindows")
 endif()
 
 if(OPENGL_DEFINED)
-    target_link_libraries(${TARGET_NAME}
+    target_link_libraries(${APP_NAME}
         PRIVATE   # PUBLIC
         OpenGL::GL
         OpenGL::GLU # single colon - was previous!
     )
 endif()
 
-add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+add_custom_command(TARGET ${APP_NAME} PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${directory} ${CMAKE_CURRENT_BINARY_DIR}/po
 )
 
 foreach(translation ${TRANSLATIONS})
-        add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+        add_custom_command(TARGET ${APP_NAME} PRE_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECTGROUP_SOURCE_DIR}/src/_Deprecated/${translation}.mo ${CMAKE_CURRENT_BINARY_DIR}/po/${translation}.mo
             # TODO(aug): later do the creation here...
             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECTGROUP_SOURCE_DIR}/src/_Deprecated/${translation}.mo.c ${CMAKE_CURRENT_BINARY_DIR}/po/${translation}.mo.c
         )
 endforeach()
 
-add_dependencies(${TARGET_NAME} util libOpenSoar)
+add_dependencies(${APP_NAME} util lib${APP_NAME})
 
-add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+add_custom_command(TARGET ${APP_NAME} PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${directory} ${CMAKE_CURRENT_BINARY_DIR}/po
 )
 if (1)
-   add_custom_command(OUTPUT  ${RES_TEST} "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc"
+   add_custom_command(OUTPUT  ${RES_TEST} "${PROJECTGROUP_BINARY_DIR}/${APP_NAME}.rc"
            COMMENT "Create Resource!"
-           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc" "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc" 
-           DEPENDS "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc"
+           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_BINARY_DIR}/${APP_NAME}.rc" "${PROJECTGROUP_BINARY_DIR}/${APP_NAME}.rc" 
+           DEPENDS "${PROJECTGROUP_BINARY_DIR}/${APP_NAME}.rc"
            WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
    )
 endif()
 
-list(APPEND SOURCE_FILES ${RES_TEST})  ## "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
-# list(APPEND SOURCE_FILES ${RESOURCE_FILES})
-# target_sources(${TARGET_NAME} PRIVATE "${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc")
+list(APPEND SOURCE_FILES ${RES_TEST})  ## "${PROJECTGROUP_BINARY_DIR}/${APP_NAME}.rc")
 
-# Test-Folder !!!!
 #=============================
+    # Test-Folder !!!!
     add_subdirectory(test/src)
+    # Tools-Folder !!!!
     add_subdirectory(tools)
-    message(STATUS "### Test  =====================")
 
 # isn't possible: set_target_properties(ALL_BUILD PROPERTIES FOLDER _CMake)
 # isn't possible: set_target_properties(ZERO_CHECK PROPERTIES FOLDER _CMake)
 if (MSVC)
-    if (EXISTS D:/Data/OpenSoarData/August.prf)
-      set(OPENSOARDATA D:/Data/OpenSoarData)  # this is only valid for August/Flaps6!
+    if (EXISTS /Data/${APP_NAME}Data/August.prf)
+      set(APP_DATA /Data/${APP_NAME}Data)  # this is only valid for August/Flaps6!
     else ()
-      set(OPENSOARDATA C:/OpenSoarData)
+      set(APP_DATA /${APP_NAME}Data)
     endif ()
-    message(STATUS "Configure:     ${PROJECTGROUP_BINARY_DIR}/${TARGET_NAME}.vcxproj.user")
+    message(STATUS "Configure:     ${PROJECTGROUP_BINARY_DIR}/${APP_NAME}.vcxproj.user")
     configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/ide/msvc/OpenSoar.vcxproj.user.in"
-        "${PROJECTGROUP_BINARY_DIR}/${TARGET_NAME}.vcxproj.user"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ide/msvc/${APP_NAME}.vcxproj.user.in"
+        "${PROJECTGROUP_BINARY_DIR}/${APP_NAME}.vcxproj.user"
     )
-endif()
-
-
-if (VERBOSE_LEVEL GREATER 100)
-    set(HDF5_DIR /usr/lib/link_libs/hdf5/hdf5-1.14.5)
-    set(HDF5_LIBRARIES ${HDF5_LIB_DIR})
-    set(HDF5_HL_LIBRARIES ${HDF5_LIB_DIR})
-    set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIR})
-    message (STATUS "xxxx Test: ${HDF5_DIR}")
-    message (STATUS "xxxx Test: ${HDF5_CMAKE_DIR}")
-    message (STATUS "xxxx Test: ${HDF5_LIB_DIR}d")
-    message (STATUS "xxxx Test: ${HDF5_INCLUDE_DIR}")
-    message (STATUS "xxxx Test: ${C}")
-    message (STATUS "xxxx Test: ${HL}")
-    
-    message(STATUS "0 ----------------------------------")
-    FIND_PACKAGE(hdf5 COMPONENTS C HL) #  REQUIRED)
-    message(STATUS "1 ----------------------------------")
-    FIND_PACKAGE(HDF5 COMPONENTS C HL)
-    message(STATUS "2 ----------------------------------")
-    FIND_PACKAGE(HDF5)
-    message(STATUS "3 ----------------------------------")
-    FIND_PACKAGE(hdf5)
-    message(STATUS "3 ----------------------------------")
-    message(FATAL_ERROR "xxxxx Stop !!")
 endif()
