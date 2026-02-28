@@ -7,7 +7,9 @@
 #include "Terrain/RasterTerrain.hpp"
 #include "Waypoint/WaypointGlue.hpp"
 #include "Waypoint/Waypoints.hpp"
-#include "Weather/Rasp/RaspStore.hpp"
+#ifdef HAVE_RASP
+# include "Weather/Rasp/RaspStore.hpp"
+#endif
 #ifdef HAVE_SKYSIGHT
 # include "Weather/Skysight/Skysight.hpp"
 #endif

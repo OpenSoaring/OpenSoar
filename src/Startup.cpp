@@ -19,8 +19,12 @@
 #include "Terrain/AsyncLoader.hpp"
 #include "io/ZipArchive.hpp"
 #include "Message.hpp"
-#include "Weather/Rasp/RaspStore.hpp"
-#include "Weather/Rasp/Configured.hpp"
+
+#include "Weather/Features.hpp"
+#ifdef HAVE_RASP
+# include "Weather/Rasp/RaspStore.hpp"
+# include "Weather/Rasp/Configured.hpp"
+#endif  // HAVE_RASP
 #ifdef HAVE_SKYSIGHT
 # include "Weather/Skysight/Skysight.hpp"
 #endif
@@ -540,8 +544,10 @@ Startup(UI::Display &display)
   CommonInterface::ReadBlackboardBasic(backend_components->device_blackboard->Basic());
 
   // Scan for weather forecast
+#ifdef HAVE_RASP
   LogString("RASP load");
   auto rasp = LoadConfiguredRasp();
+#endif  // HAVE_RASP
 
 #ifdef HAVE_SKYSIGHT
   // Initialise Skysight weather forecast
