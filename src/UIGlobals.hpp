@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "ui/dim/Point.hpp"
+#include "Geo/GeoPoint.hpp"
 
 namespace UI { class SingleWindow; }
 class GlueMapWindow;
@@ -53,5 +55,7 @@ namespace UIGlobals {
   const MapLook &GetMapLook();
 
   extern const char *CommandLine;
+  extern GeoPoint location;
+  extern PixelPoint pixel_point;
   
   };

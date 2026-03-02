@@ -78,3 +78,6 @@ UIGlobals::GetMapLook()
 
 
 const char *UIGlobals::CommandLine = nullptr;
+GeoPoint UIGlobals::location;
+PixelPoint UIGlobals::pixel_point;
+
