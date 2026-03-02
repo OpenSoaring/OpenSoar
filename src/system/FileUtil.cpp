@@ -25,7 +25,9 @@
 # include <fnmatch.h>
 # include <utime.h>
 # include <time.h>
-#elif defined( _MSC_VER)
+#elif defined( __MSVC__)
+# include <regex>
+# include <string>
 # include <corecrt_io.h>
 # include <BaseTsd.h>
   typedef SSIZE_T ssize_t;
@@ -75,6 +77,25 @@ IsDots(const char *str) noexcept
 
 [[gnu::pure]]
 static bool
+wildcard_match(const std::string text, const std::string_view pattern) {
+  // Escapen von Regex-Sonderzeichen im Pattern, die keine Platzhalter sind
+  // Hier vereinfacht: * und ? werden zu .* und .
+  std::string regexPattern = "^";
+  for (char c : pattern) {
+    if (c == '*') regexPattern += ".*";
+    else if (c == '?') regexPattern += ".";
+    else if (std::string(".+^$|()[]{}|").find(c) != std::string::npos)
+      regexPattern += "\\" + std::string(1, c); // Escape Sonderzeichen
+    else regexPattern += c;
+  }
+  regexPattern += "$";
+
+  std::regex re(regexPattern);
+  return std::regex_match(text, re);
+}
+
+[[gnu::pure]]
+static bool
 checkFilter(const char *filename, const char *filter) noexcept
 {
   // filter = e.g. "*.igc" or "config/*.prf"
@@ -85,7 +106,7 @@ checkFilter(const char *filename, const char *filter) noexcept
   if (!filter || StringIsEmpty(filter + 1))
     return true;
 
-  return StringEndsWithIgnoreCase(filename, filter + 1);
+  return wildcard_match(filename, filter);
 }
 
 static bool
@@ -213,6 +234,8 @@ ScanDirectories(File::Visitor &visitor, bool recursive,
   strcat(DirPath, DIR_SEPARATOR_S);
   // "test/data/something/*"
   strcat(FileName, DIR_SEPARATOR_S "*");
+  // strcat(FileName, DIR_SEPARATOR_S);
+  // strcat(FileName, filter);
 
   // Find the first file
   WIN32_FIND_DATA FindFileData;
