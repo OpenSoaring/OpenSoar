@@ -13,7 +13,12 @@
 #include "Dialogs/Message.hpp"
 #include "Language/Language.hpp"
 #include "Weather/Features.hpp"
-#include "Weather/Rasp/RaspRenderer.hpp"
+#ifdef HAVE_RASP
+# include "Weather/Rasp/RaspRenderer.hpp"
+#endif
+#ifdef HAVE_SKYSIGHT
+# include "Weather/Skysight/Skysight.hpp"
+#endif
 #ifdef HAVE_HTTP
 #include "net/client/tim/Glue.hpp"
 #include "net/client/tim/Thermal.hpp"
@@ -28,6 +33,7 @@ GlueMapWindow::ShowMapItems(const GeoPoint &location,
 {
   /* not using MapWindowBlackboard here because this method is called
      by the main thread */
+  UIGlobals::location = location;
   const ComputerSettings &computer_settings =
     CommonInterface::GetComputerSettings();
   const MapSettings &settings = CommonInterface::GetMapSettings();
@@ -91,9 +97,11 @@ GlueMapWindow::ShowMapItems(const GeoPoint &location,
 #endif
 
 #ifdef HAVE_SKYSIGHT
-  for (uint16_t i = 0; i < 9; i++)
-  if (!list.full() && overlay[i] && overlay[i]->IsInside(location))
-    list.push_back(new OverlayMapItem(*overlay[i]));
+  if (skysight != nullptr && skysight->IsActive()) {
+    for (uint16_t i = 0; i < 9; i++)
+      if (!list.full() && overlay[i] && overlay[i]->IsInside(location))
+        list.push_back(new OverlayMapItem(*overlay[i]));
+  }
 #endif
 
   if (!list.full()) {
@@ -102,8 +110,22 @@ GlueMapWindow::ShowMapItems(const GeoPoint &location,
 #endif
 
 #ifdef HAVE_RASP
-    if (rasp_renderer && rasp_renderer->IsInside(location))
-      list.push_back(new RaspMapItem(rasp_renderer->GetLabel()));
+#ifdef HAVE_SKYSIGHT
+    if (skysight == nullptr || !skysight->IsActive())
+#endif
+      if (rasp_renderer && rasp_renderer->IsInside(location)) {
+        std::string weather_label = "RASP: ";
+        weather_label += gettext(rasp_renderer->GetLabel());
+        auto t = rasp_renderer->GetTime();
+        if (t.IsPlausible()) {
+          char buffer[32];
+          snprintf(buffer, sizeof(buffer), "%02u:%02u", t.hour, t.minute);
+          weather_label += " (";
+          weather_label += buffer;
+          weather_label += ")";
+        }
+        list.push_back(new RaspMapItem(weather_label.c_str()));
+      }
 #endif
   }
 

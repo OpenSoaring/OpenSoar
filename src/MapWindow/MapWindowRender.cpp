@@ -212,15 +212,19 @@ MapWindow::Render(Canvas &canvas, const PixelRect &rc) noexcept
   draw_sw.Mark("RenderTerrain");
   RenderTerrain(canvas);
 
-  draw_sw.Mark("RenderRasp");
-  RenderRasp(canvas);
-
 #ifdef HAVE_SKYSIGHT
-  draw_sw.Mark("RenderSkysight");
-  RenderSkysight(canvas); 
+  if (skysight != nullptr && skysight->GetActiveLayer() != nullptr) {
+    draw_sw.Mark("RenderSkysight");
+    RenderSkysight(canvas);
+  } else
 #else
   LogFmt("HAVE_SKYSIGHT: NOT defined!");
 #endif
+//  if (rasp_renderer) 
+  {
+    draw_sw.Mark("RenderRasp");
+    RenderRasp(canvas);
+  }
 
   draw_sw.Mark("RenderTopography");
   RenderTopography(canvas);

@@ -14,6 +14,7 @@
 #include "Asset.hpp"
 #include "Components.hpp"
 #include "BackendComponents.hpp"
+#include "UIGlobals.hpp"
 
 #ifdef USE_X11
 #include "ui/event/Globals.hpp"
@@ -65,6 +66,7 @@ GlueMapWindow::OnMouseDouble([[maybe_unused]] PixelPoint p) noexcept
 bool
 GlueMapWindow::OnMouseMove(PixelPoint p, unsigned keys) noexcept
 {
+  UIGlobals::pixel_point = p;
   /* allow a bigger threshold on touch screens */
   const unsigned threshold = Layout::Scale(HasTouchScreen() ? 50 : 10);
   if (drag_mode != DRAG_NONE && arm_mapitem_list &&

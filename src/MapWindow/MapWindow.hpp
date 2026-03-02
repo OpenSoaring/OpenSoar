@@ -276,6 +276,9 @@ public:
   const MapWindowProjection &VisibleProjection() const noexcept {
     return visible_projection;
   }
+  const MapWindowProjection &RenderProjection() const noexcept {
+    return render_projection;
+  }
 
   [[gnu::pure]]
   GeoPoint GetLocation() const noexcept {

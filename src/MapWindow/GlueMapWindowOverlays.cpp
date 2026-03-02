@@ -10,7 +10,9 @@
 #include "Engine/Task/TaskManager.hpp"
 #include "Engine/Task/Ordered/OrderedTask.hpp"
 #include "Renderer/TextInBox.hpp"
-#include "Weather/Rasp/RaspRenderer.hpp"
+#ifdef HAVE_RASP
+# include "Weather/Rasp/RaspRenderer.hpp"
+#endif
 #ifdef HAVE_SKYSIGHT
 # include "Weather/Skysight/Skysight.hpp"
 #endif
@@ -26,6 +28,7 @@
 #include "Renderer/MapScaleRenderer.hpp"
 
 #include <algorithm> // for std::clamp()
+#include <string> 
 
 void
 GlueMapWindow::DrawGesture(Canvas &canvas) const noexcept
@@ -342,19 +345,23 @@ GlueMapWindow::DrawMapScale(Canvas &canvas, const PixelRect &rc,
         "BALLAST %d LITERS ",
         (int)GetComputerSettings().polar.glide_polar_task.GetBallastLitres());
 
-  if (rasp_renderer != nullptr) {
-    const char *label = rasp_renderer->GetLabel();
-    if (label != nullptr) {
-      buffer += "RASP: ";
-      buffer += gettext(label);
-    }
+  std::string weather_label;
 #ifdef HAVE_SKYSIGHT
-  } else if (skysight) {
+  if (skysight) {
     if (skysight->Enabled()) {
-      buffer += "SkySight: ";
-      buffer += skysight->GetActiveLayerString();
+      weather_label = "SkySight: ";
+      weather_label += skysight->GetActiveLayerString();
     }
+  }
 #endif
+#ifdef HAVE_RASP
+  if (rasp_renderer != nullptr && weather_label.empty()) {
+      weather_label = "RASP: ";
+      weather_label += gettext(rasp_renderer->GetLabel());
+  }
+#endif
+  if (!weather_label.empty()) {
+    buffer += weather_label.c_str();
   }
 
   if (!buffer.empty()) {
