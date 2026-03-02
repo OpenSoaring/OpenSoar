@@ -129,13 +129,17 @@ set(_SOURCES
         Device/Driver/Stratux/Driver.cpp
         Device/Driver/LoEFGREN.cpp
         # Android or Apple only: Device/SmartDeviceSensors.cpp
-
-        # additional OpenSoar device driver
-	Device/Driver/Anemoi.cpp
-        Device/Driver/FreeVario.cpp
+)
+if(IS_OPENSOAR)
+  # additional OpenSoar device driver
+  list(APPEND _SOURCES
+        Device/Driver/Anemoi.cpp
         Device/Driver/AR62xx.cpp
         Device/Driver/RemoteStick.cpp
-)
+        Device/Driver/FreeVario.cpp
+  )
+endif()
+
 if(UNIX)
   list(APPEND _SOURCES
         Device/Port/TTYEnumerator.cpp

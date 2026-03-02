@@ -13,6 +13,7 @@ set(_SOURCES
         util/UTF8.cpp
         util/MD5.cpp  # new with 6.8.14
         util/DecimalParser.cxx  # new with 7.40
+        util/MarkdownParser.cpp  # new with 7.44
 )
 
 set(SCRIPT_FILES

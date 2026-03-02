@@ -32,6 +32,9 @@ set(_SOURCES
         Widget/ProgressWidget.cpp
         Widget/LargeTextWidget.cpp
         Widget/VScrollWidget.cpp
+        Widget/FileMultiSelectWidget.cpp
+        Widget/QuickGuidePageWidget.cpp   # new with 7.44
+        Widget/RichTextWidget.cpp   # new with 7.44
 )
 
 set(SCRIPT_FILES

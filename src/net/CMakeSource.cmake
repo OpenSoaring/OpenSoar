@@ -19,7 +19,6 @@ list(APPEND _SOURCES
 list(APPEND _SOURCES
         http/DownloadManager.cpp
         http/Progress.cpp
-        http/CoDownload.cpp
         http/Init.cpp
 
         # lib_curl:
@@ -31,6 +30,16 @@ list(APPEND _SOURCES
         ${SRC}/lib/curl/CoStreamRequest.cxx
         ${SRC}/lib/curl/Global.cxx
 )
+
+if(IS_OPENSOAR)
+  list(APPEND _SOURCES
+        http/CoDownload.cpp
+  )
+else()
+  list(APPEND _SOURCES
+        http/CoDownloadToFile.cpp
+  )
+endif()
 
 set (SCRIPT_FILES
     CMakeSource.cmake

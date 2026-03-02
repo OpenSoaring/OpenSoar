@@ -40,7 +40,10 @@ set(_SOURCES
         Dialogs/dlgQuickMenu.cpp
         Dialogs/dlgSimulatorPrompt.cpp
         Dialogs/dlgStatus.cpp
+
+        Dialogs/dlgGestureHelp.cpp
         Dialogs/dlgQuickGuide.cpp
+
         Dialogs/DownloadFilePicker.cpp
         Dialogs/Error.cpp
         Dialogs/FileManager.cpp
@@ -57,6 +60,7 @@ set(_SOURCES
         Dialogs/MapItemListSettingsPanel.cpp
         Dialogs/Message.cpp
         Dialogs/NumberEntry.cpp
+        Dialogs/InternalLink.cpp
 
         Dialogs/Plane/PlaneDetailsDialog.cpp
         Dialogs/Plane/PlaneListDialog.cpp
@@ -98,7 +102,6 @@ set(_SOURCES
         Dialogs/Settings/Panels/WaypointDisplayConfigPanel.cpp
         Dialogs/Settings/Panels/WeatherConfigPanel.cpp
         Dialogs/Settings/Panels/WindConfigPanel.cpp
-        Dialogs/Settings/Panels/ConfigurationConfigPanel.cpp
         Dialogs/Settings/WindSettingsDialog.cpp
         Dialogs/Settings/WindSettingsPanel.cpp
 
@@ -138,7 +141,6 @@ set(_SOURCES
         Dialogs/DateEntry.cpp
         Dialogs/TouchTextEntry.cpp
 
-        Dialogs/Tracking/CloudEnableDialog.cpp
         Dialogs/Traffic/FlarmTrafficDetails.cpp
         Dialogs/Traffic/TeamCodeDialog.cpp
         Dialogs/Traffic/TrafficList.cpp
@@ -159,7 +161,6 @@ set(_SOURCES
         Dialogs/WidgetDialog.cpp
 
         Dialogs/CoDialog.cpp
-        Dialogs/FrequencyDialog.cpp
 )
 
 if(HAVE_SKYSIGHT)
@@ -167,6 +168,13 @@ if(HAVE_SKYSIGHT)
         Dialogs/Weather/SkysightDialog.cpp
   )
 endif(HAVE_SKYSIGHT)
+
+if(IS_OPENSOAR)
+  list(APPEND _SOURCES
+        Dialogs/Settings/Panels/ConfigurationConfigPanel.cpp
+        Dialogs/FrequencyDialog.cpp
+  )
+endif()
 
 if(IS_OPENVARIO)
   list(APPEND _SOURCES

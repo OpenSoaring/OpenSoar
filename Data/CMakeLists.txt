@@ -35,6 +35,64 @@ set(GRAPHIC_FILES
     # ${_DATA_INPUT}/graphics/launcher.svg
 )
 
+#${_DATA_INPUT}/location_pin.svg
+set(GRAPHIC_ICONS
+    graphics/location_pin
+    graphics/notification_bell
+    graphics/bluetooth
+    graphics/warning_triangle
+    graphics/rotate
+    ## gestures/gesture_down
+    ## gestures/gesture_dl
+    ## gestures/gesture_dr
+    ## gestures/gesture_du
+    ## gestures/gesture_left
+    ## gestures/gesture_ldr
+    ## gestures/gesture_ldrdl
+    ## gestures/gesture_right
+    ## gestures/gesture_rd
+    ## gestures/gesture_rl
+    ## gestures/gesture_up
+    ## gestures/gesture_ud
+    ## gestures/gesture_uldr
+    ## gestures/gesture_urd
+    ## gestures/gesture_urdl
+)
+
+set(GESTURE_ICONS
+    down
+    dl
+    dr
+    du
+    left
+    ldr
+    ldrdl
+    right
+    rd
+    rl
+    up
+    ud
+    uldr
+    urd
+    urdl
+
+##    D
+##    DL
+##    DR
+##    DU
+##    L
+##    LD
+##    LR
+##    LU
+##    R
+##    RD
+##    RL
+##    RU
+##    U
+##    UD
+##    UL
+##    UR
+)
 
 if("${PERCENT_CHAR}" STREQUAL "")
     message(FATAL_ERROR PERCENT_CHAR not used: Stop!)
@@ -98,11 +156,11 @@ add_custom_command(OUTPUT ${_TEMP_OUTPUT}/title.svg
   COMMENT "Replace Strings!"
   COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}
   COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
-          ${PROJECTGROUP_SOURCE_DIR}/OpenSoar.config
+          ${PROJECTGROUP_SOURCE_DIR}/${APP_NAME}.config
           ${_DATA_INPUT}/graphics/title.svg
           ${_TEMP_OUTPUT}/title.svg
   DEPENDS ${_DATA_INPUT}/graphics/title.svg
-          ${PROJECTGROUP_SOURCE_DIR}/OpenSoar.config
+          ${PROJECTGROUP_SOURCE_DIR}/${APP_NAME}.config
           ${PROJECTGROUP_BINARY_DIR}/VERSION.txt
           ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
   WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
@@ -111,11 +169,11 @@ add_custom_command(OUTPUT ${_TEMP_OUTPUT}/title_red.svg
   COMMENT "Replace Strings!"
   COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}
   COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
-          ${PROJECTGROUP_SOURCE_DIR}/OpenSoar.config
+          ${PROJECTGROUP_SOURCE_DIR}/${APP_NAME}.config
           ${_DATA_INPUT}/graphics/title_red.svg
           ${_TEMP_OUTPUT}/title_red.svg
-  DEPENDS ${_DATA_INPUT}/graphics/title.svg
-          ${PROJECTGROUP_SOURCE_DIR}/OpenSoar.config
+  DEPENDS ${_DATA_INPUT}/graphics/title_red.svg
+          ${PROJECTGROUP_SOURCE_DIR}/${APP_NAME}.config
           ${PROJECTGROUP_BINARY_DIR}/VERSION.txt
           ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
   WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
@@ -124,10 +182,10 @@ add_custom_command(OUTPUT ${_INCLUDE_OUTPUT}/ProgramVersion.h
   COMMENT "Make Config file!"
   COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}
   COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_config.py 
-          ${PROJECTGROUP_SOURCE_DIR}/OpenSoar.config
+          ${PROJECTGROUP_SOURCE_DIR}/${APP_NAME}.config
           ${_INCLUDE_OUTPUT}/ProgramVersion.h
           ${GIT_COMMIT_ID}
-  DEPENDS ${PROJECTGROUP_SOURCE_DIR}/OpenSoar.config
+  DEPENDS ${PROJECTGROUP_SOURCE_DIR}/${APP_NAME}.config
           ${PROJECTGROUP_BINARY_DIR}/VERSION.txt
           ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_config.py 
   WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
@@ -144,13 +202,21 @@ add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc ${_INCLU
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt
           ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_resource.py
 )
+
+add_custom_command(OUTPUT ${_INCLUDE_OUTPUT}/ResourceLookup_entries.hpp
+  COMMENT "Create Resource File! from ${PROJECTGROUP_SOURCE_DIR}/tmp/resources.txt"
+  COMMAND perl ${PROJECTGROUP_SOURCE_DIR}/tools/GenerateResourceLookup.pl 
+          ## ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt 
+          ${PROJECTGROUP_SOURCE_DIR}/tmp/resources.txt   # das ist falsch!
+          > ${_INCLUDE_OUTPUT}/ResourceLookup_entries.hpp
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt
+          ${PROJECTGROUP_SOURCE_DIR}/tools/GenerateResourceLookup.pl
+)
 # message(FATAL_ERROR "!!!!!! ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc")
 # if (_COMPLETE_INSTALL)
 set(GRAPHIC_BITMAPS
    ${_GRAPHICS_OUTPUT}/logo_160.bmp
    ${_GRAPHICS_OUTPUT}/logo_80.bmp
-   ${_GRAPHICS_OUTPUT}/logo_stefly_160.bmp
-   ${_GRAPHICS_OUTPUT}/logo_stefly_80.bmp
    ${_GRAPHICS_OUTPUT}/launcher_640.bmp
    ${_GRAPHICS_OUTPUT}/launcher_640_1.bmp
    ${_GRAPHICS_OUTPUT}/launcher_640_2.bmp
@@ -159,8 +225,6 @@ set(GRAPHIC_BITMAPS
 
    ${_GRAPHICS_OUTPUT}/logo_red_160.bmp
    ${_GRAPHICS_OUTPUT}/logo_red_80.bmp
-   ${_GRAPHICS_OUTPUT}/logo_stefly_160.bmp
-   ${_GRAPHICS_OUTPUT}/logo_stefly_80.bmp
    ${_GRAPHICS_OUTPUT}/launcher_red_640.bmp
    ${_GRAPHICS_OUTPUT}/launcher_red_640_1.bmp
    ${_GRAPHICS_OUTPUT}/launcher_red_640_2.bmp
@@ -168,15 +232,28 @@ set(GRAPHIC_BITMAPS
    ${_GRAPHICS_OUTPUT}/title_red_110.bmp
 ) # set
 
+if(IS_OPENSOAR)
+  set(STEFLY_BITMAPS
+   ${_GRAPHICS_OUTPUT}/logo_stefly_160.bmp
+   ${_GRAPHICS_OUTPUT}/logo_stefly_80.bmp 
+  )
+  add_custom_command(OUTPUT ${STEFLY_BITMAPS}
+    COMMENT "Convert graphics!"
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${_GRAPHICS_OUTPUT}
+    COMMAND ${BMP_CONVERT_APP} -size 160 Data/graphics/logo_stefly.svg bmp3:${_GRAPHICS_OUTPUT}/logo_stefly_160.bmp
+    COMMAND ${BMP_CONVERT_APP} -size 80 Data/graphics/logo_stefly.svg bmp3:${_GRAPHICS_OUTPUT}/logo_stefly_80.bmp
+    DEPENDS ${_DATA_INPUT}/graphics/logo_stefly.svg
+    WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+  )
+endif()
 # ============================================================================   
 add_custom_command(OUTPUT ${GRAPHIC_BITMAPS}
   COMMENT "Convert graphics!"
   COMMAND ${CMAKE_COMMAND} -E make_directory ${_GRAPHICS_OUTPUT}
-  COMMAND ${BMP_CONVERT_APP} -size 160 Data/graphics/logo_stefly.svg bmp3:${_GRAPHICS_OUTPUT}/logo_stefly_160.bmp
-  COMMAND ${BMP_CONVERT_APP} -size 80 Data/graphics/logo_stefly.svg bmp3:${_GRAPHICS_OUTPUT}/logo_stefly_80.bmp
-
+  COMMAND ${BMP_CONVERT_APP} -size 320 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_320.bmp
   COMMAND ${BMP_CONVERT_APP} -size 160 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_160.bmp
   COMMAND ${BMP_CONVERT_APP} -size 80 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_80.bmp
+  COMMAND ${BMP_CONVERT_APP} -size 320 Data/graphics/logo_red.svg bmp3:${_GRAPHICS_OUTPUT}/logo_red_320.bmp
   COMMAND ${BMP_CONVERT_APP} -size 160 Data/graphics/logo_red.svg bmp3:${_GRAPHICS_OUTPUT}/logo_red_160.bmp
   COMMAND ${BMP_CONVERT_APP} -size 80 Data/graphics/logo_red.svg bmp3:${_GRAPHICS_OUTPUT}/logo_red_80.bmp
 
@@ -190,8 +267,10 @@ add_custom_command(OUTPUT ${GRAPHIC_BITMAPS}
   
   COMMAND ${BMP_CONVERT_APP}  -size 110x110 ${_TEMP_OUTPUT}/title.svg bmp3:${_GRAPHICS_OUTPUT}/title_110.bmp 
   COMMAND ${BMP_CONVERT_APP}  -size 320x320 ${_TEMP_OUTPUT}/title.svg bmp3:${_GRAPHICS_OUTPUT}/title_320.bmp
+  COMMAND ${BMP_CONVERT_APP}  -size 640x640 ${_TEMP_OUTPUT}/title.svg bmp3:${_GRAPHICS_OUTPUT}/title_640.bmp
   COMMAND ${BMP_CONVERT_APP}  -size 110x110 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_110.bmp 
   COMMAND ${BMP_CONVERT_APP}  -size 320x320 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_320.bmp
+  COMMAND ${BMP_CONVERT_APP}  -size 640x640 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_640.bmp
   
   DEPENDS ${_DATA_INPUT}/graphics/logo.svg
           ${_DATA_INPUT}/graphics/logo_xcs.svg
@@ -201,6 +280,41 @@ add_custom_command(OUTPUT ${GRAPHIC_BITMAPS}
           ${_TEMP_OUTPUT}/title_red.svg
   WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
 ) 
+
+### foreach(file ${GRAPHIC_ICONS})
+###     set(icon_file ${_DATA_INPUT}/graphics/${file}.svg)
+###     list(APPEND GRAPHIC_ICON_SVG ${icon_file}))
+###     set(bmp_file ${_GRAPHICS_OUTPUT}/${file}.bmp)
+###     list(APPEND GRAPHIC_BMP_FILES ${bmp_file}))
+### endforeach()
+#${_DATA_INPUT}/location_pin.svg
+foreach(file ${GRAPHIC_ICONS})
+    set(svg_file ${_DATA_INPUT}/${file}.svg)
+    set(bmp_file ${_GRAPHICS_OUTPUT}/${file}.bmp)
+    list(APPEND GRAPHIC_BMP_FILES ${bmp_file})
+    add_custom_command(OUTPUT ${bmp_file}
+      COMMENT "Convert single graphic-icons (${file})!"
+      COMMAND ${BMP_CONVERT_APP} -size 80 ${svg_file} bmp3:${bmp_file}
+      
+      DEPENDS ${svg_file}
+      WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+    ) 
+endforeach()
+
+foreach(file ${GESTURE_ICONS})
+    # is this a good location?
+    set(svg_file ${PROJECTGROUP_SOURCE_DIR}/doc/manual/figures/gesture_${file}.svg)
+    set(bmp_file ${_GRAPHICS_OUTPUT}/gesture_${file}.bmp)
+    list(APPEND GRAPHIC_BMP_FILES ${bmp_file})
+    add_custom_command(OUTPUT ${bmp_file}
+      COMMENT "Convert single gesture-icons (${file})!"
+      COMMAND ${BMP_CONVERT_APP} -size 82 ${svg_file} bmp3:${bmp_file}
+      
+      DEPENDS ${svg_file}
+      WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+    ) 
+endforeach()
+
 
 set(ICON_BITMAPS ) # set to empty
 if(ON) # ==>  for test it only with few icons!
@@ -275,23 +389,28 @@ if("${DOLLAR_CHAR}" STREQUAL "")
     message(FATAL_ERROR DOLLAR_CHAR not used: Stop!)
 endif() 
 
-   
-    if (ON) # MSVC) # in other targets not possible to add this files to the project???
-       source_group("Bitmaps" FILES  ${ICON_BITMAPS}  ${GRAPHIC_BITMAPS})
-    endif()
-    source_group("Icons" FILES  ${ICON_FILES})
-    source_group("Graphics" FILES  ${GRAPHIC_FILES})
-    
-    ## add_custom_command(TARGET ${TARGET_NAME} PRE_LINK
+       ## add_custom_command(TARGET ${TARGET_NAME} PRE_LINK
     set(INPUTEVENTS_CPP
         ${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.hpp
-        # ${_INCLUDE_OUTPUT}/InputEvents_Char2GCE.cpp
         ${_INCLUDE_OUTPUT}/InputEvents_Char2NE.hpp
         ${_INCLUDE_OUTPUT}/InputEvents_Text2Event.hpp
         ${_INCLUDE_OUTPUT}/InputEvents_Text2GCE.hpp
         ${_INCLUDE_OUTPUT}/InputEvents_Text2NE.hpp
         ${_INCLUDE_OUTPUT}/InputEvents_default.hpp
     )
+
+  set(TOOLS
+    ${PROJECTGROUP_SOURCE_DIR}/tools/Char2GCE.pl
+    ${PROJECTGROUP_SOURCE_DIR}/tools/Char2NE.pl
+    ${PROJECTGROUP_SOURCE_DIR}/tools/Text2Event.pl
+    ${PROJECTGROUP_SOURCE_DIR}/tools/Text2GCE.pl
+    ${PROJECTGROUP_SOURCE_DIR}/tools/Text2NE.pl
+    ${PROJECTGROUP_SOURCE_DIR}/tools/xci2cpp.pl
+    ${PROJECTGROUP_SOURCE_DIR}/tools/python/bin2c.py
+    ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py
+    ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_config.py
+    ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_resource.py
+  )
 
     set(DEFAULT_XCI   ${_DATA_INPUT}/Input/${DEFAULT_XCI_FILE})
     message(STATUS "### DEFAULT_XCI = ${DEFAULT_XCI}")
@@ -345,19 +464,34 @@ endif()
 if(MSVC)
   set(RESOURCE_FILES  ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc )
 elseif(MINGW)
-  # set(RESOURCE_FILES  D:/Projects/Binaries/OpenSoar/dev-branch/${TOOLCHAIN}/OpenSoar.rc
+  # set(RESOURCE_FILES  D:/Projects/Binaries/${APP_NAME}/dev-branch/${TOOLCHAIN}/${APP_NAME}.rc
   set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc)
   #  message(FATAL_ERROR "MINGW!")
 elseif(CLANG)
   set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc)
-  # set(RESOURCE_FILES D:/Projects/Binaries/OpenSoar/dev-branch/clang15/OpenSoar.rc)
+  # set(RESOURCE_FILES D:/Projects/Binaries/${APP_NAME}/dev-branch/clang15/${APP_NAME}.rc)
   # set(RESOURCE_FILES ${OUTPUT}/${PROGRAM_NAME}.rc)
 else()
   #  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc)
-  #  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/OpenSoar.rc)
+  #  set(RESOURCE_FILES ${PROJECTGROUP_BINARY_DIR}/${APP_NAME}.rc)
 endif()
 
 set(RESOURCE_FILES ${RESOURCE_FILES} PARENT_SCOPE)
+set(TEXT_FILES 
+          ${_INCLUDE_OUTPUT}/InputCppFiles.txt
+          ${PROJECTGROUP_BINARY_DIR}/VERSION.txt
+          ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt 
+)
+
+# IDE folder 
+if (ON) # MSVC) # in other targets not possible to add this files to the project???
+   source_group("Bitmaps" FILES  ${ICON_BITMAPS}  ${GRAPHIC_BITMAPS})
+endif()
+source_group("Icons" FILES  ${ICON_FILES})
+source_group("Graphics" FILES  ${GRAPHIC_FILES})
+source_group("GraphicBitmaps" FILES  ${STEFLY_BITMAPS} ${GRAPHIC_BMP_FILES})
+source_group("TextFiles" FILES  ${TEXT_FILES}) 
+source_group("Tools" FILES  ${TOOLS})
 
 add_library(${TARGET_NAME}  ${XCSOAR_LIB_TYPE}
 #   ${RESOURCE_FILES}  # depends on system?
@@ -367,14 +501,17 @@ add_library(${TARGET_NAME}  ${XCSOAR_LIB_TYPE}
    ${RESOURCE_OUT}
    # GraphicBitmaps  # the role...
    ${GRAPHIC_BITMAPS}
+   ${STEFLY_BITMAPS}
    ${GRAPHIC_FILES}
+   ${GRAPHIC_BMP_FILES}
    ${ICON_BITMAPS}
    ${ICON_FILES}
-   ${PROJECTGROUP_SOURCE_DIR}/tools/Char2GCE.pl
+   ${TOOLS}
    ${INPUTEVENTS_CPP}
-   ${_INCLUDE_OUTPUT}/InputCppFiles.txt
+   ${TEXT_FILES}
    ${_INCLUDE_OUTPUT}/ProgramVersion.h
    ${_INCLUDE_OUTPUT}/MakeResource.hpp
+   ${_INCLUDE_OUTPUT}/ResourceLookup_entries.hpp
 # InputCppFiles    # role for input files
    # DefaultStatus # role for status defaults
    # EXCLUDE_FROM_ALL

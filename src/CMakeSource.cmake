@@ -64,6 +64,7 @@ set(BASIC_SOURCES
 
     ${SRC}/Version.cpp
     ${SRC}/TransponderMode.cpp
+    ${SRC}/ResourceLookup.cpp
 )
 if (NOT TEST_APPLICATION)
     list(APPEND BASIC_SOURCES
@@ -73,7 +74,7 @@ endif(NOT TEST_APPLICATION)
 
 set(SOURCE_FILES ${BASIC_SOURCES} )
 set(SCRIPT_FILES CMakeSource.cmake
-  ../ide/xcsoar.natvis
+  ../ide/msvc/xcsoar.natvis
 )
 
 file(GLOB ICON_FILES  ${PROJECTGROUP_SOURCE_DIR}/Data/icons/*.svg)

@@ -69,8 +69,13 @@ set(_SOURCES
 
         Renderer/ProgressBarRenderer.cpp
         Renderer/RadarRenderer.cpp
-        Renderer/FrequencyListRenderer.cpp
 )
+
+if(IS_OPENSOAR)
+  list(APPEND _SOURCES
+        Renderer/FrequencyListRenderer.cpp
+  )
+endif()
 
 set(SCRIPT_FILES
     CMakeSource.cmake
