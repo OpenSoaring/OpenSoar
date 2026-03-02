@@ -11,9 +11,15 @@ from build.linux import SabotageLinuxHeadersProject
 from build.lua import LuaProject
 from build.musl import MuslProject
 
-fmt_version = "11.1.4"
-netcdf_version = "4.6.2"
+fmt_version = ["11.1.4", "ac366b7b4c2e9f0dde63a59b3feb5ee59b67974b14ee5dc9ea8ad78aa2c1ee1e"] 
 
+# netcdf_version   =  [ "4.6.2", "eda1be377fce86e5d91b30a00b15bb7ea9c97f5c5ef007901145549786781710"]
+# netcdf_version   =  [ "4.9.3", "990F46D49525D6AB5DC4249F8684C6DEEAF54DE6FEC63A187E9FB382CC0FFDFF"]
+# netcdf_version   =  [ "4.10.0","CE160F9C1483B32D1BA8B7633D7984510259E4E439C48A218B95A023DC02FD4C"]
+# netcdfcxx_version = [ "4.2",   "95ed6ab49a0ee001255eac4e44aacb5ca4ea96ba850c08337a3e4c9a0872ccd1" ]
+
+netcdf_version   =  [ "4.10.0","CE160F9C1483B32D1BA8B7633D7984510259E4E439C48A218B95A023DC02FD4C"]
+netcdfcxx_version = [ "4.3.1", "6A1189A181EED043B5859E15D5C080C30D0E107406FBB212C8FB9814E90F3445" ]
 
 binutils = BinutilsProject(
     (
@@ -145,10 +151,10 @@ openssh = AutotoolsProject(
 
 libfmt = CmakeProject(
     (
-      "https://github.com/fmtlib/fmt/archive/" + fmt_version + ".tar.gz",
-      "https://fossies.org/linux/misc/fmt-" + fmt_version + ".tar.gz"
+      "https://github.com/fmtlib/fmt/archive/" + fmt_version[0] + ".tar.gz",
+      "https://fossies.org/linux/misc/fmt-" + fmt_version[0] + ".tar.gz"
     ),
-    "ac366b7b4c2e9f0dde63a59b3feb5ee59b67974b14ee5dc9ea8ad78aa2c1ee1e",
+    fmt_version[1],    
     "lib/libfmt.a",
     [
         "-DBUILD_SHARED_LIBS=OFF",
@@ -157,8 +163,8 @@ libfmt = CmakeProject(
     ],
     # for KOBO:
     name="fmt",
-    version=fmt_version,
-    base="fmt-" + fmt_version,
+    version=fmt_version[0],
+    base="fmt-" + fmt_version[0],
 )
 
 libsodium = AutotoolsProject(
@@ -484,7 +490,7 @@ lua = LuaProject(
     ),
     "7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88",
     "lib/liblua.a",
-    patches=abspath("lib/lua/patches"),
+    # patches=abspath("lib/lua/patches"),
 )
 
 libsalsa = AutotoolsProject(
@@ -498,48 +504,46 @@ libsalsa = AutotoolsProject(
     patches=abspath("lib/salsa-lib/patches"),
 )
 
-netcdf = AutotoolsProject(
-    (
-       'https://storage.googleapis.com/lazyrasp.com/xcsoar/netcdf-c-' + netcdf_version + '.tar.gz',
-      # invalide - new 4.9.3: 'https://fossies.org/linux/misc/netcdf-c-4.9.3.tar.gz',
-    ),
-    'eda1be377fce86e5d91b30a00b15bb7ea9c97f5c5ef007901145549786781710',
-    'lib/libnetcdf.a',
+netcdf = CmakeProject(
+    'https://github.com/Unidata/netcdf-c/archive/refs/tags/v' + netcdf_version[0] + '.tar.gz',
+    netcdf_version[1],
+    'lib/libnetcdf.a',  # "lib/pkgconfig/netcdf.pc",
     [
-        '--disable-netcdf-4',
-        '--disable-dap',
-        '--disable-largefile',
-        '--disable-testsets',
-        '--disable-utilities',
-        '--disable-examples',
-        '--disable-doxygen',
-        '--disable-maintainer-mode',
-        '--disable-examples',
-        '--disable-shared', '--enable-static'
+        "-DBUILD_SHARED_LIBS=OFF",
+        "-DNETCDF_ENABLE_HDF5=OFF",
+        "-DNETCDF_ENABLE_DAP=OFF",
+        "-DNETCDF_ENABLE_NCZARR=OFF",
+        "-DNETCDF_ENABLE_REMOTE_FUNCTIONALITY=OFF",
+        "-DNETCDF_ENABLE_BYTERANGE=OFF",
+        "-DNETCDF_BUILD_UTILITIES=OFF",
+        "-DNETCDF_ENABLE_TESTS=OFF",
+        "-DNETCDF_ENABLE_EXAMPLES=OFF",
+        "-DNETCDF_ENABLE_LIBXML2=OFF",
+        "-DNETCDF_ENABLE_PLUGINS=OFF",
     ],
-    patches=abspath('lib/netcdf/patches'),
-    cppflags='-DHAVE_STRLCAT',
-    ldflags='-Wl,--gc-sections'
+    android_configure_args=[
+        "-DHAVE_LIBM=m",
+        "-DZLIB_LIBRARY=z",
+        "-DNETCDF_ENABLE_MMAP=OFF",
+    ],
+    base="netcdf-c-" + netcdf_version[0],
 )
 
-netcdfcxx = AutotoolsProject(
+netcdfcxx = CmakeProject(
     (
-      'https://storage.googleapis.com/lazyrasp.com/xcsoar/netcdf-cxx-4.2.tar.gz',
-      # 'ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.2-rc2.tar.gz',
-      ## 'https://downloads.unidata.ucar.edu/netcdf-cxx/4.3.1/netcdf-cxx4-4.3.1.tar.gz',
-      ## 'https://github.com/Unidata/netcdf-cxx4/archive/refs/tags/v4.3.1.tar.gz',
-      # invalide - new 4.3.1: 'https://fossies.org/linux/misc/netcdf-cxx4-4.3.1.tar.gz',
+     "https://github.com/Unidata/netcdf-cxx4/archive/refs/tags/v" + netcdfcxx_version[0] + ".tar.gz", 
+     'https://fossies.org/linux/misc/netcdf-cxx4-' + netcdfcxx_version[0] + '.tar.gz',
     ),
-    # 4.2: 
-    '95ed6ab49a0ee001255eac4e44aacb5ca4ea96ba850c08337a3e4c9a0872ccd1',
-    # '6a1189a181eed043b5859e15d5c080c30d0e107406fbb212c8fb9814e90f3445',
-    'lib/libnetcdf_c++.a',
+    netcdfcxx_version[1],
+    'lib/libnetcdf_c++4.a',
     [
-        '--disable-shared', '--enable-static',
-        '--disable-large-file-tests',
-        '--disable-extra-tests',
-        '--disable-valgrind-tests'
+        "-DBUILD_TESTING:BOOL=OFF",
+        "-DNCXX_ENABLE_TESTS:BOOL=OFF",
+        "-DBUILD_SHARED_LIBS:BOOL=OFF",
+        "-DNETCDF_C_LIBRARY:FILEPATH=libnetcdf.a",
+        "-DnetCDF_DIR=./",
+        "-DUSE_HDF5:BOOL=OFF",  # August2111: special flag because wrong usage of HDF5
     ],
-    autogen=True,
-    add_include=[ '../src/netcdf-c-' + netcdf_version + '/include']
+    base="netcdf-cxx4-" + netcdfcxx_version[0],
+    patches=abspath("lib/netcdf_cxx/patches"),
 )
