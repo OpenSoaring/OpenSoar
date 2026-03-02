@@ -12,9 +12,10 @@
 #include "Waypoint/Patterns.hpp"
 #include "Widget/RowFormWidget.hpp"
 #include "system/Path.hpp"
+#include "Weather/Features.hpp"
 
 #ifdef HAVE_RASP
-# define RASP_FILE_SETTING 0
+# define RASP_FILE_SETTING 1
 #endif
 
 enum ControlIndex {
@@ -28,7 +29,8 @@ enum ControlIndex {
 #ifdef RASP_FILE_SETTING
   RaspFile,
 #endif
-  FrequenciesFile
+  FrequenciesFile,
+  ChecklistFile,
 };
 
 class SiteConfigPanel final : public RowFormWidget {
@@ -97,17 +99,27 @@ SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent,
           ProfileKeys::FlarmFile, "*.fln\0",
           FileType::FLARMNET);
 
-#ifdef HAVE_RASP
+#ifdef RASP_FILE_SETTING
   /* TODO(August2111) : remove RASP setting - personally I cannot see any input
    * on weather page */
-  AddFile("RASP", nullptr,
-          ProfileKeys::RaspFile, "*-rasp*.dat\0",
+  AddFile("RASP",
+          _("Regional Atmospheric Soaring Prediction file providing "
+            "weather forecasts for soaring. Displays color-coded map "
+            "overlays for thermal strength, boundary layer winds, "
+            "cloud cover, and other soaring-relevant parameters at "
+            "various forecast times throughout the day."),
+          ProfileKeys::RaspFile, "*-RASP*.dat\0",
           FileType::RASP);
 #endif
   AddFile(_("Radio Frequency Database"),
           _("Radio frequencies file."),
           ProfileKeys::FrequenciesFile, "*.xcf\0",
           FileType::FREQUENCIES);
+  AddFile(_("Checklist"),
+          _("The checklist file containing pre-flight and other checklists."),
+          ProfileKeys::ChecklistFile, "*.xcc\0xcsoar-checklist.txt\0",
+          FileType::CHECKLIST);
+
 }
 
 bool
@@ -123,19 +135,21 @@ SiteConfigPanel::Save(bool &_changed) noexcept
   WaypointFileChanged |= SaveValueMultiFileReader(
       WatchedWaypointFileList, ProfileKeys::WatchedWaypointFileList);
 
-  AirfieldFileChanged = SaveValueMultiFileReader(
-    AirfieldFileList, ProfileKeys::AirfieldFileList);
-
   AirspaceFileChanged |= SaveValueMultiFileReader(
       AirspaceFileList, ProfileKeys::AirspaceFileList);
 
   FlarmFileChanged = SaveValueFileReader(FlarmFile, ProfileKeys::FlarmFile);
 
+  AirfieldFileChanged = SaveValueMultiFileReader(
+      AirfieldFileList, ProfileKeys::AirfieldFileList);
+	  
+  bool ChecklistFileChanged = SaveValueFileReader(ChecklistFile, ProfileKeys::ChecklistFile);
+
   FrequenciesFileChanged = SaveValueFileReader(FrequenciesFile, ProfileKeys::FrequenciesFile);
 
   changed = WaypointFileChanged || AirfieldFileChanged ||
             AirspaceFileChanged || MapFileChanged || FlarmFileChanged || 
-            FrequenciesFileChanged;
+            ChecklistFileChanged || FrequenciesFileChanged;
 #ifdef  RASP_FILE_SETTING
   RaspFileChanged = SaveValueFileReader(RaspFile, ProfileKeys::RaspFile);
   changed |= RaspFileChanged;
