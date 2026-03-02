@@ -19,6 +19,9 @@
 #include "Widget/ButtonPanelWidget.hpp"
 #include "UIGlobals.hpp"
 
+#ifdef HAVE_RASP
+# include "Weather/Rasp/RaspStore.hpp"
+#endif
 #ifdef HAVE_SKYSIGHT
 #include "DataGlobals.hpp"
 #include "Weather/Skysight/Skysight.hpp"
@@ -200,8 +203,26 @@ PageLayoutEditWidget::Prepare([[maybe_unused]] ContainerWindow &parent, [[maybe_
     if (skysight) {
       for (size_t i = 0; i < skysight->NumSelectedLayers(); ++i) {
         auto *layer = skysight->GetSelectedLayer(i);
-        if (layer)
-          overlay_df.AddChoice(i + 1, layer->name.c_str());
+        if (layer) {
+          char buffer[64] = "SkySight:";
+          strncpy(buffer  + strlen(buffer), layer->name.c_str(),  // layer->id.c_str(),
+                  sizeof(buffer) - strlen(buffer));
+          overlay_df.AddChoice(i + 1, buffer);  // layer->name.c_str());
+        }
+      }
+    }
+#endif
+#ifdef HAVE_RASP
+    auto rasp = DataGlobals::GetRasp();
+    if (rasp) {
+      auto count = overlay_df.Count();
+      for (size_t i = 0; i < rasp->GetItemCount(); ++i) {
+        auto layer = rasp->GetItemInfo(i);
+        // if (layer) {
+           char buffer[64];
+           snprintf(buffer, sizeof(buffer), "Rasp:%s", layer.name.c_str());
+           overlay_df.AddChoice(count + i, buffer);
+        // }
       }
     }
 #endif
@@ -260,18 +281,40 @@ PageLayoutEditWidget::SetValue(const PageLayout &_value)
   /* find which overlay dropdown index matches value.overlay */
   {
     unsigned overlay_idx = 0;
+    auto count = 1;
 #ifdef HAVE_SKYSIGHT
     if (value.overlay[0] != '\0') {
       auto skysight = DataGlobals::GetSkysight();
-      if (skysight) {
+      if (skysight && value.overlay) {
+        const char *overlay_id = value.overlay+strlen("skysight:");
         for (size_t i = 0; i < skysight->NumSelectedLayers(); ++i) {
           auto *layer = skysight->GetSelectedLayer(i);
-          if (layer && layer->id == value.overlay) {
-            overlay_idx = i + 1;
+          if (layer && layer->id == overlay_id) {  //value.overlay) {
+            overlay_idx = i + count;
             break;
           }
         }
-      }
+        count += skysight->NumSelectedLayers();
+
+      } 
+    }
+#endif
+#ifdef HAVE_RASP
+    if (value.overlay[0] != '\0') {
+      auto rasp = DataGlobals::GetRasp();
+//      count = 5;
+
+      if (rasp) {
+        const char *overlay_id = value.overlay+strlen("rasp:");
+        for (size_t i = 0; i < rasp->GetItemCount(); ++i) {
+          auto layer = rasp->GetItemInfo(i);
+          // if (layer) {
+          if (!layer.name.empty() && layer.name.equals(overlay_id)) {  //value.overlay) {
+            overlay_idx = count + i;
+            break;
+          }
+        }
+      } else {}
     }
 #endif
     LoadValueEnum(OVERLAY, overlay_idx);
@@ -301,25 +344,30 @@ PageLayoutEditWidget::OnModified(DataField &df) noexcept
   } else if (&df == &GetDataField(OVERLAY)) {
     const DataFieldEnum &dfe = (const DataFieldEnum &)df;
     const unsigned idx = dfe.GetValue();
-    if (idx == 0) {
-      value.overlay[0] = '\0';
-    } else {
+    const std::string_view text = dfe.GetAsString();
+    value.overlay[0] = '\0';
+    auto skysight = DataGlobals::GetSkysight();
+    auto rasp = DataGlobals::GetRasp();
 #ifdef HAVE_SKYSIGHT
-      auto skysight = DataGlobals::GetSkysight();
-      if (skysight) {
+    if (skysight && text.starts_with("SkySight:")) {
+        /* 1st 'layer is 'None'*/
         auto *layer = skysight->GetSelectedLayer(idx - 1);
         if (layer) {
-          strncpy(value.overlay, layer->id.c_str(), sizeof(value.overlay) - 1);
+          strncpy(value.overlay, "skysight:", sizeof(value.overlay) - 1);
+          strncat(value.overlay, layer->id.c_str(),
+                  sizeof(value.overlay) - 1 - strlen(value.overlay));
           value.overlay[sizeof(value.overlay) - 1] = '\0';
-        } else {
-          value.overlay[0] = '\0';
         }
       } else
 #endif
-      {
-        value.overlay[0] = '\0';
-      }
-    }
+#ifdef HAVE_RASP
+      if (rasp && text.starts_with("Rasp:")) {
+          snprintf(value.overlay, sizeof(value.overlay) - 1 , "rasp:%s",
+            text.substr(5).data());
+        }
+      // } // else
+#endif
+    // }
   } else if (&df == &GetDataField(INFO_BOX_PANEL)) {
     const DataFieldEnum &dfe = (const DataFieldEnum &)df;
     const unsigned ibp = dfe.GetValue();

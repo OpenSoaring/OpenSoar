@@ -230,24 +230,43 @@ LoadBottom(PageLayout::Bottom bottom)
 
 #ifdef HAVE_SKYSIGHT
 static void
-LoadOverlay(const char *overlay)
+LoadOverlay(const char *_overlay)
 {
+  std::string_view overlay(_overlay);
+  WeatherUIState &state = CommonInterface::SetUIState().weather;
   auto skysight = DataGlobals::GetSkysight();
-  if (!skysight)
-    return;
+//  if (!skysight)
+//    return;
 
   /* Check if the requested layer is already active - skip if so
      to avoid flicker from clearing and reloading the same overlay. */
+  if (state.map >= 0)
+    state.map = -1;
   auto *current = Skysight::GetActiveLayer();
-  if (overlay[0] == '\0') {
+  { //  if (overlay.empty()) {
     if (current != nullptr)
       skysight->DeactivateLayer();
-  } else {
-    if (current && current->id == overlay)
-      return; /* same layer already displayed, nothing to do */
+  } /* else */ {
+    // if (current && current->id == overlay)
+    //   ; // return; /* same layer already displayed, nothing to do */
+    if (overlay.starts_with("skysight:")) {
+      overlay.remove_prefix(strlen("skysight:"));
+      skysight->SetLayerActive(overlay);
+    } else {
+      auto rasp = DataGlobals::GetRasp();
+      if (overlay.starts_with("rasp:")) {
+        overlay.remove_prefix(strlen("rasp:"));
+        rasp = LoadConfiguredRasp();
+        DataGlobals::SetRasp(rasp);
 
-    skysight->SetLayerActive(overlay);
-    skysight->DisplayActiveLayer();
+        for (unsigned i = 0; i < rasp->GetItemCount(); ++i)
+          if (overlay == rasp->GetItemInfo(i).name) {
+            state.map = i;
+            state.time = BrokenTime(11, 0);
+            break;
+          }
+      }
+    }
 
     GlueMapWindow *map = UIGlobals::GetMapIfActive();
     if (map)
