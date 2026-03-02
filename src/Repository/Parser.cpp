@@ -6,6 +6,7 @@
 #include "io/LineReader.hpp"
 #include "util/StringStrip.hxx"
 #include "util/HexString.hpp"
+#include "Weather/Features.hpp"
 
 /**
  * Parses a line of the repository file.
