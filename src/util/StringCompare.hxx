@@ -14,8 +14,6 @@ StringIsEmpty(const char *string) noexcept
 	return *string == 0;
 }
 
-#if 0  // ambiguous with StringAPI.hpp->StringIsEqual(const char *a, const char *b)
-// TODO(August2111) - at the end this should be the used function
 [[gnu::pure]]
 static inline bool
 StringIsEqual(std::string_view a, std::string_view b) noexcept
@@ -23,7 +21,6 @@ StringIsEqual(std::string_view a, std::string_view b) noexcept
 	return a.size() == b.size() &&
 		StringIsEqual(a.data(), b.data(), b.size());
 }
-#endif 
 
 [[gnu::pure]]
 static inline bool
