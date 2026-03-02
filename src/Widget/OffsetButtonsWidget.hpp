@@ -11,7 +11,6 @@
 
 #include <array>
 
-
 struct ButtonLook;
 class Button;
 

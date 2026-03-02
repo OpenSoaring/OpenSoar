@@ -5,7 +5,6 @@
 
 #include "WindowWidget.hpp"
 
-
 struct DialogLook;
 
 /**
@@ -21,6 +20,7 @@ public:
     :look(_look), text(_text) {}
 
   void SetText(const char *text) noexcept;
+
   /* virtual methods from class Widget */
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool SetFocus() noexcept override;

@@ -5,7 +5,6 @@
 
 #include "WindowWidget.hpp"
 
-
 class Color;
 
 /**

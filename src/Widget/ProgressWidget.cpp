@@ -8,8 +8,9 @@
 #include "Renderer/ProgressBarRenderer.hpp"
 #include "Screen/Layout.hpp"
 #include "Look/DialogLook.hpp"
-#include <string>
 #include "UIGlobals.hpp"
+
+#include <string_view>
 
 class ProgressWidget::ProgressBar final : public PaintWindow {
   unsigned range = 0, position = 0;
@@ -39,17 +40,18 @@ public:
 
 protected:
   void OnPaint(Canvas &canvas) noexcept override {
-    DrawSimpleProgressBar(canvas, canvas.GetRect(), position, 0, range);
+    auto &look = UIGlobals::GetDialogLook();
+    DrawSimpleProgressBar(canvas, canvas.GetRect(), position, 0, range,
+                          look.dark_mode ? &look.background_color : nullptr);
 
     if (!text.empty()) {
-      auto &look = UIGlobals::GetDialogLook();
       auto &font = look.text_font;
       canvas.Select(font);
 
       const int text_height = font.GetHeight();
       const int padding = ((int)canvas.GetHeight() - text_height) / 2;
 
-      canvas.SetTextColor(COLOR_BLACK);
+      canvas.SetTextColor(look.text_color);
       canvas.SetBackgroundTransparent();
 
       const std::string_view _text{text};

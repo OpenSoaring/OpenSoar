@@ -5,6 +5,7 @@
 
 #include "WindowWidget.hpp"
 #include "Operation/MessageOperationEnvironment.hpp"
+
 #include <string>
 
 class PluggableOperationEnvironment;

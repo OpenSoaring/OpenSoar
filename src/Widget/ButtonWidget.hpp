@@ -8,7 +8,6 @@
 #include <functional>
 #include <memory>
 
-
 struct ButtonLook;
 class Button;
 class ButtonRenderer;
