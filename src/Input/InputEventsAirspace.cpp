@@ -34,12 +34,18 @@ InputEvents::eventAirSpace(const char *misc)
   AirspaceRendererSettings &settings =
     CommonInterface::SetMapSettings().airspace;
 
-  if (StringIsEqual(misc, "toggle"))
+  if (StringIsEqual(misc, "toggle")) {
     settings.enable = !settings.enable;
-  else if (StringIsEqual(misc, "off"))
+    Message::AddMessage(settings.enable
+                        ? _("Airspace shown")
+                        : _("Airspace hidden"));
+  } else if (StringIsEqual(misc, "off")) {
     settings.enable = false;
-  else if (StringIsEqual(misc, "on"))
+    Message::AddMessage(_("Airspace hidden"));
+  } else if (StringIsEqual(misc, "on")) {
     settings.enable = true;
+    Message::AddMessage(_("Airspace shown"));
+  }
   else if (StringIsEqual(misc, "show")) {
     if (!settings.enable)
       Message::AddMessage(_("Show airspace off"));
@@ -62,6 +68,16 @@ InputEvents::eventClearAirspaceWarnings([[maybe_unused]] const char *misc)
 {
   if (auto *airspace_warnings = backend_components->GetAirspaceWarnings())
     airspace_warnings->AcknowledgeAll();
+}
+
+// AirspaceWarnings
+// Shows the airspace warnings dialog
+void
+InputEvents::eventAirspaceWarnings([[maybe_unused]] const char *misc)
+{
+  auto *airspace_warnings = backend_components->GetAirspaceWarnings();
+  if (airspace_warnings != nullptr)
+    dlgAirspaceWarningsShowModal(*airspace_warnings);
 }
 
 // NearestAirspaceDetails
