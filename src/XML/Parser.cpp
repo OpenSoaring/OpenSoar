@@ -185,7 +185,6 @@ FromXMLString(std::string_view src) noexcept
           return nullptr;
         }
 
-        // XXX convert to UTF-8 if !UNI-CODE
         char ch = (char)i;
         if (ch == 0)
           ch = ' ';
