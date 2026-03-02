@@ -2,10 +2,9 @@
 // Copyright The XCSoar Project
 
 #pragma once
-#ifdef _MSC_VER
+#ifdef __MSVC__
 # include "msvc/Compiler.h"
-// sollte nie erreicht werden!!!!
-#else  // _MSC_VER
+#else  // __MSVC__
 
 #define GCC_MAKE_VERSION(major, minor, patchlevel) ((major) * 10000 + (minor) * 100 + patchlevel)
 
@@ -120,4 +119,4 @@
 #else
 #define gcc_unreachable()
 #endif
-#endif // _MSC_VER
+#endif // __MSVC__
