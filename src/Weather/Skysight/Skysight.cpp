@@ -122,6 +122,7 @@ Skysight::AddSelectedLayer(const std::string_view id)
   assert(api);
 
   if (!api->LayerExists(id))
+    // api->AddSelectedLayer(id);
     return -3;  // layer don't exists
 
   if (api->IsSelectedLayer(id))
@@ -301,7 +302,27 @@ Skysight::Init()
   password = settings.password.c_str();
 
   api = new SkysightAPI(GetLocalPath());
+
+  bool success = false;
+  auto path = api->GetPath(SkysightCallType::Regions);
+  if (File::Exists(path)) {
+    char file_buffer[32 * 0x400];
+    File::ReadString(path, file_buffer, sizeof(file_buffer));
+    // boost::json::value _json = boost::json::parse(file_buffer);
+    success = api->UpdateRegions(boost::json::parse(file_buffer));
+  }
+  path = api->GetPath(SkysightCallType::Layers);
+  if (File::Exists(path)) {
+    char file_buffer[32 * 0x400];
+    File::ReadString(path, file_buffer, sizeof(file_buffer));
+    // boost::json::value _json = boost::json::parse(file_buffer);
+    success &= api->UpdateLayers(boost::json::parse(file_buffer));
+  }
+  LoadSelectedLayers();
+
   api->InitAPI(email, password, region, APIInited);
+
+//  APIInited("",false,"",0);
   CleanupFiles();
 }
 
@@ -315,7 +336,7 @@ Skysight::APIInited([[maybe_unused]] const std::string details,
     return;
 
   if (self->api) {
-    self->LoadSelectedLayers();
+//    self->LoadSelectedLayers();
     self->Render(true);
   }
 }
@@ -531,7 +552,9 @@ void
 Skysight::DeactivateLayer()
 {
   active_layer = nullptr;
+  display_layer = nullptr;
   MapOverlayReset();
+  //tile_filenames[tile_no]
   skysight_overlays = 1;
   Profile::Set(ProfileKeys::WeatherLayerDisplayed, "");
 }
@@ -541,11 +564,16 @@ Skysight::SetLayerActive(const std::string_view id)
 {
   update_flag = false;
 
+  for (auto &filename : tile_filenames)
+    filename.clear();
+
   if (id.empty()) {
     DeactivateLayer();
     return false;
   }
 
+//  if (id.starts_with("skysight:"))
+//    id = id.substr(strlen("skysight:"));
   if (!api->IsSelectedLayer(id))
     return false;
 
@@ -554,6 +582,7 @@ Skysight::SetLayerActive(const std::string_view id)
   if (!SetActiveLayer(id))
     return false;
 
+  update_flag = true;  // ... and now do updating the map
   return true;
 }
 
@@ -689,11 +718,13 @@ Skysight::DisplayTileLayer()
   time_t refresh_time = (DateTime::now() / TEN_MINUTES) * TEN_MINUTES;
 
   auto map_bounds = map_window->VisibleProjection().GetScreenBounds();
+  auto map_bounds2 = map_window->RenderProjection().GetScreenBounds();
   if (!map_bounds.Check() || !map_bounds.IsValid())
     return false;
 
   auto tile = base_tile;
   size_t tile_no = 0;
+  bool timer_start = false;
   for (tile.x = base_tile.x - 1; tile.x <= base_tile.x + 1; tile.x++)
     for (tile.y = base_tile.y - 1; tile.y <= base_tile.y + 1; tile.y++,
       tile_no++) {
@@ -731,11 +762,16 @@ Skysight::DisplayTileLayer()
             }
             break;
           } else {
+            timer_start = true;
             test_time -= TEN_MINUTES;  // previous live picture
           }
         }
       }
     }
+  if (timer_start) {  // at least one file is missing
+    if (api)
+      api->TimerInvoke();
+  }
   return true;
 }
 
@@ -766,7 +802,7 @@ Skysight::DisplayActiveLayer()
       active_layer->time_name += DateTime::time_str(
         active_layer->forecast_time, "%H:%M");
     } else {
-      active_layer->time_name.clear();
+//      active_layer->time_name.clear();
     }
   }
   return found;

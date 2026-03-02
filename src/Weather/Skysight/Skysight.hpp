@@ -78,7 +78,7 @@ public:
     return api->LayerExists(id);
   }
 
-  int NumLayers() {
+  size_t NumLayers() {
     return api->NumLayers();
   }
 
@@ -117,6 +117,9 @@ public:
   void DeactivateLayer();
   void MapOverlayReset();
   bool SetLayerActive(const std::string_view id);
+  bool IsActive() {
+    return active_layer != nullptr;
+  }
 
   static inline 
   AllocatedPath GetLocalPath() {

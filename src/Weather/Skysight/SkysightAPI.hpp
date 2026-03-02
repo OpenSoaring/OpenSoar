@@ -73,7 +73,8 @@ public:
   SkySight::Layer *GetLayer(size_t index);
   SkySight::Layer *GetLayer(const std::string_view id);
   bool LayerExists(const std::string_view id);
-  int NumLayers();
+  size_t AddSelectedLayer(const std::string_view id);
+  size_t NumLayers();
   bool SelectedLayersFull();
   bool IsSelectedLayer(const std::string_view id);
 

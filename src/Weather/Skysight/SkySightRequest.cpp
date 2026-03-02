@@ -96,22 +96,41 @@ private:
 
   void OnDownloadComplete(const std::string_view name) noexcept override {
     boost::json::value _json = json_null;
+    bool save_json = false;
+    auto api = owner->GetAPI();
+    AllocatedPath save_path;
+
     if (json_values.contains(name)) {
       _json = json_values[name];
       if (!_json.is_null()) {
         if (name == "authent") {
           success = owner->SetCredentialKey(_json);
-        } else if (name == "regions") {
-          success = owner->GetAPI()->UpdateRegions(_json);
-        } else if (name.starts_with("layers")) {
-          success = owner->GetAPI()->UpdateLayers(_json);
-        } else if (name.starts_with("last_updated")) {
-          success = owner->GetAPI()->UpdateLastUpdates(_json);
-        } else if (name.starts_with("datafiles")) {
-          success = owner->GetAPI()->UpdateDatafiles(_json);
-        } else {
+        }
+        else if (name == "regions") {
+          success = api->UpdateRegions(_json);
+          save_path = api->GetPath(SkysightCallType::Regions);
+        }
+        else if (name.starts_with("layers")) {
+          success = api->UpdateLayers(_json);
+          save_path = api->GetPath(SkysightCallType::Layers);
+        }
+        else if (name.starts_with("last_updated")) {
+          success = api->UpdateLastUpdates(_json);
+        }
+        else if (name.starts_with("datafiles")) {
+          success = api->UpdateDatafiles(_json);
+        }
+        else {
           Skysight::GetSkysight()->SetUpdateFlag();
           success = true;
+        }
+        if (!save_path.empty()) {
+          auto file = File::CreateExclusive(save_path);
+          if (file) {
+            auto json_text = boost::json::serialize(_json);
+            if (!File::WriteExisting(save_path, json_text.c_str()))
+              LogFmt("File write not successfully!");
+          }
         }
 #if defined(SKYSIGHT_FILE_DEBUG)
         std::string now_str = DateTime::str_now();

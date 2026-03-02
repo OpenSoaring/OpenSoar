@@ -122,6 +122,13 @@ SkysightAPI::GetLayer(const std::string_view id)
   return (layer != layers_vector.end()) ? &(*layer) :nullptr;
 }
 
+size_t
+SkysightAPI::AddSelectedLayer(const std::string_view id)
+{
+  layers_vector.push_back(id);
+  return layers_vector.size() - 1;
+}
+
 bool
 SkysightAPI::LayerExists(const std::string_view id)
 {
@@ -129,10 +136,10 @@ SkysightAPI::LayerExists(const std::string_view id)
           != layers_vector.end());
 }
 
-int
+size_t
 SkysightAPI::NumLayers()
 {
-  return (int)layers_vector.size();
+  return layers_vector.size();
 }
 
 const std::string
@@ -178,6 +185,12 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
 {
   StaticString<256> filename;
   switch (type) {
+  case SkysightCallType::Regions:
+    filename.Format("regions.json");
+    break;
+  case SkysightCallType::Layers:
+    filename.Format("layers.json");
+    break;
   case SkysightCallType::DataDetails:
     filename.Format("datafiles-%s-%s-%s.json", region.c_str(), layer_id.data(),
        DateTime::time_str(fctime, "%d-%H%M").c_str());
@@ -758,10 +771,12 @@ SkysightAPI::OnTimer()
   if (!co_request)
     return;  // do nothing
 
+#if 1
+
   if (!IsLoggedIn()) {
     last_request = now;
     co_request->RequestCredentialKey();
-    return;
+    // return;
   }
 
   if (!inited_regions) {
@@ -788,10 +803,12 @@ SkysightAPI::OnTimer()
     last_request = now;
   }
 
+#endif
+
   auto active_layer = Skysight::GetActiveLayer();
   if (active_layer) {
     if (active_layer->tile_layer) {
-      if (IsLoggedIn()) {
+      if (!active_layer->live_layer || IsLoggedIn()) {
         GetTileData(active_layer->id.c_str(), now, now,
           Skysight::DownloadComplete);
       }
