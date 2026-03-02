@@ -55,16 +55,8 @@ TerminalWindow::Scroll()
 void
 TerminalWindow::NewLine()
 {
-#if 0  // def _DEBUG
-  auto text = data.GetPointerAt(0, cursor_y);
-  if (!std::strncmp(text, "$PLARS,", 6))
-    ++cursor_y;
-  else for (unsigned int i=0; i <= cursor_x; i++)
-    data.Get(i, cursor_y) = ' ';
-#else
-  ++cursor_y;
-#endif
   cursor_x = 0;
+  ++cursor_y;
 
   if (cursor_y >= data.GetHeight()) {
     cursor_y = data.GetHeight() - 1;

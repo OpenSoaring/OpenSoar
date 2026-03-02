@@ -137,6 +137,10 @@ Window::SetEnabled(bool enabled) noexcept
          thing */
       root->SetFocus();
   }
+
+  /* Force redraw to update visual appearance - ::EnableWindow() may
+     not trigger a visual update in all cases */
+  ::InvalidateRect(hWnd, nullptr, false);
 }
 
 void
@@ -168,6 +172,12 @@ bool
 Window::OnUser([[maybe_unused]] unsigned id) noexcept
 {
   return false;
+}
+
+LRESULT
+Window::OnChildColor([[maybe_unused]] HDC hdc) noexcept
+{
+  return 0;
 }
 
 LRESULT
@@ -229,21 +239,31 @@ Window::OnMessage([[maybe_unused]] HWND _hWnd, UINT message,
       break;
 #endif
 
-    case WM_KEYDOWN:
-      if (OnKeyDown(wParam)) {
-        /* true returned: message was handled */
-        ResetUserIdle();
-        return 0;
-      }
-      break;
+  case WM_KEYDOWN:
+    if (OnKeyDown(wParam)) {
+      /* true returned: message was handled */
+      ResetUserIdle();
+      return 0;
+    }
+    break;
 
-    case WM_KEYUP:
-      if (OnKeyUp(wParam)) {
-        /* true returned: message was handled */
-        ResetUserIdle();
-        return 0;
-      }
-      break;
+  case WM_INJECT_KEYPRESS:
+    /* private message from InjectKeyPress(): return 1 if handled,
+       0 if not, so the caller can distinguish from the ambiguous
+       DefWindowProc(WM_KEYDOWN) return value */
+    if (OnKeyDown(wParam)) {
+      ResetUserIdle();
+      return 1;
+    }
+    return 0;
+
+  case WM_KEYUP:
+    if (OnKeyUp(wParam)) {
+      /* true returned: message was handled */
+      ResetUserIdle();
+      return 0;
+    }
+    break;
 
     case WM_CHAR:
       if (OnCharacter((char)wParam))
@@ -277,10 +297,22 @@ Window::OnMessage([[maybe_unused]] HWND _hWnd, UINT message,
          it's not focused anymore */
       break;
 
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLOREDIT: {
+      Window *child = GetUnchecked((HWND)lParam);
+      if (child != nullptr) {
+        LRESULT result = child->OnChildColor((HDC)wParam);
+        if (result != 0)
+          return result;
+      }
+      break;
+    }
+
     case WM_GETDLGCODE:
       if (OnKeyCheck(wParam))
         return DLGC_WANTMESSAGE;
       break;
+
 #ifdef HAVE_REMOTE_STICK
     case WM_DEVICECHANGE:
     {
@@ -301,6 +333,7 @@ Window::OnMessage([[maybe_unused]] HWND _hWnd, UINT message,
           }
           break;
         }
+		
         case DBT_DEVTYP_PORT: // serial or parallel (usb) port
         {
           PDEV_BROADCAST_PORT pDevPort = (PDEV_BROADCAST_PORT)lParam;

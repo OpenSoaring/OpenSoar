@@ -4,7 +4,6 @@
 #pragma once
 
 #include "ui/dim/Size.hpp"
-#include <string>
 
 #if defined(USE_APPKIT) || defined(USE_UIKIT)
 #import <Foundation/Foundation.h>
@@ -16,11 +15,11 @@ class GLTexture;
 #endif
 
 #include <cstddef>
+#include <string_view>
 
 #ifdef _WIN32
 #include <windef.h>
 #endif
-
 
 #ifdef USE_FREETYPE
 typedef struct FT_FaceRec_ *FT_Face;

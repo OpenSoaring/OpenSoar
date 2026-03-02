@@ -4,12 +4,12 @@
 #pragma once
 
 #include "ui/window/NativeWindow.hpp"
+#include "ui/canvas/Color.hpp"
 
 #ifndef USE_WINUSER
 #include "Renderer/TextRenderer.hpp"
-#include <string>
 #endif
-
+#include <string>
 
 class LargeTextWindowStyle : public WindowStyle {
 public:
@@ -45,7 +45,23 @@ class LargeTextWindow : public NativeWindow {
   TextRenderer renderer;
 #endif
 
+  Color background_color = COLOR_WHITE;
+  Color text_color = COLOR_BLACK;
+  Color border_color = COLOR_BLACK;
+
+#ifdef USE_WINUSER
+  /**
+   * Background brush for WM_CTLCOLORSTATIC; lazily created by
+   * SetColors().
+   */
+  HBRUSH background_brush = nullptr;
+#endif
+
 public:
+#ifdef USE_WINUSER
+  ~LargeTextWindow() noexcept;
+#endif
+
   void Create(ContainerWindow &parent, PixelRect rc,
               const LargeTextWindowStyle style=LargeTextWindowStyle());
 
@@ -76,6 +92,8 @@ public:
   }
 #endif
 
+  void SetColors(Color _background, Color _text, Color _border) noexcept;
+
   void SetText(const char *text);
 
   /**
@@ -95,5 +113,8 @@ protected:
   bool OnKeyCheck(unsigned key_code) const noexcept override;
   bool OnKeyDown(unsigned key_code) noexcept override;
   bool OnMouseDown(PixelPoint p) noexcept override;
+#else
+protected:
+  LRESULT OnChildColor(HDC hdc) noexcept override;
 #endif /* !USE_WINUSER */
 };

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "ui/window/Features.hpp"
+#include "MinimumSize.hpp"
 #include "ui/dim/Rect.hpp"
 #include "ui/dim/Point.hpp"
 #include "ui/dim/Size.hpp"
@@ -360,11 +361,19 @@ public:
     if (_size == size)
       return;
 
+    // Enforce minimum size only for top-level windows (issue #2110)
+    if (parent == nullptr)
+      _size = UI::ClampToMinimumSize(_size);
+
     size = _size;
 
     Invalidate();
     OnResize(size);
 #else /* USE_WINUSER */
+    // Enforce minimum size only for top-level windows (issue #2110)
+    if (GetParent() == nullptr)
+      _size = UI::ClampToMinimumSize(_size);
+
     ::SetWindowPos(hWnd, nullptr, 0, 0, _size.width, _size.height,
                    SWP_NOMOVE | SWP_NOZORDER |
                    SWP_NOACTIVATE | SWP_NOOWNERZORDER);
@@ -819,6 +828,32 @@ public:
   }
 #endif
 
+#ifdef USE_WINUSER
+  /**
+   * Private message used by InjectKeyPress() on GDI so the handler
+   * can return an unambiguous result (1 = handled, 0 = not handled).
+   * DefWindowProc(WM_KEYDOWN) always returns 0, making it impossible
+   * to tell whether the key was actually consumed.
+   */
+  static constexpr UINT WM_INJECT_KEYPRESS = WM_APP + 1;
+#endif
+
+  /**
+   * Inject a key-press event from outside the message loop.
+   *
+   * On GDI (USE_WINUSER) the virtual OnKeyDown() is protected because
+   * it is called by the WndProc; this public wrapper allows other code
+   * (e.g. Widget::KeyPress()) to forward key events portably.
+   */
+  bool InjectKeyPress(unsigned key_code) noexcept {
+#ifdef USE_WINUSER
+    return ::SendMessage(hWnd, WM_INJECT_KEYPRESS,
+                         (WPARAM)key_code, 0) != 0;
+#else
+    return OnKeyDown(key_code);
+#endif
+  }
+
 protected:
 #ifndef USE_WINUSER
 public:
@@ -880,6 +915,15 @@ public:
 
 #ifdef USE_WINUSER
   virtual bool OnUser(unsigned id) noexcept;
+
+  /**
+   * Called when the parent receives WM_CTLCOLORSTATIC or
+   * WM_CTLCOLOREDIT for this child control.  Override to set
+   * text/background colors on the HDC and return a background brush.
+   *
+   * @return a HBRUSH cast to LRESULT, or 0 to use defaults
+   */
+  virtual LRESULT OnChildColor(HDC hdc) noexcept;
 
   virtual LRESULT OnMessage(HWND hWnd, UINT message,
                             WPARAM wParam, LPARAM lParam) noexcept;
