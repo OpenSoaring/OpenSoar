@@ -61,6 +61,10 @@ public:
     cache.SetTime(t);
   }
 
+  BrokenTime GetTime() {
+    return cache.GetTime();
+  }
+
   void Update(BrokenTime time_local, OperationEnvironment &operation) {
     cache.Reload(time_local, operation);
   }
