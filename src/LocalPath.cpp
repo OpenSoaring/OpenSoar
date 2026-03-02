@@ -315,10 +315,10 @@ FindDataPaths() noexcept
 }
 
 void
-VisitDataFiles(const char* filter, File::Visitor &visitor) // , bool recursive)
+VisitDataFiles(const char* filter, File::Visitor &visitor, bool recursive)
 {
   for (const auto &i : data_paths)
-    Directory::VisitSpecificFiles(i, filter, visitor, true); // recursive);
+    Directory::VisitSpecificFiles(i, filter, visitor, recursive);
 }
 
 Path
