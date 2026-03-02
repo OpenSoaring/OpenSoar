@@ -113,7 +113,9 @@ TerrainLoader::ParseBounds(const char *data)
   /* this code is obsolete, since new map files include a "world
      file", but we keep it for compatibility */
 
-  data = strstr(data, "OpenSoar");
+  /* the Rasp file is a special create for XCSoar - and so the string "XCsoar"
+     is to find. (not "OpenSoar") */
+  data = strstr(data, "XCSoar");  // 'OpenSoar' is false
   if (data == nullptr)
     return;
 
