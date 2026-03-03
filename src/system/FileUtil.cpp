@@ -26,12 +26,12 @@
 # include <utime.h>
 # include <time.h>
 #elif defined( __MSVC__)
-# include <regex>
 # include <string>
 # include <corecrt_io.h>
 # include <BaseTsd.h>
   typedef SSIZE_T ssize_t;
 #endif
+#include <regex>
 #include <filesystem>
 
 void
@@ -75,6 +75,7 @@ IsDots(const char *str) noexcept
 
 #ifndef HAVE_POSIX /* we use fnmatch() on POSIX */
 
+#if  1 //def __MSVC__
 [[gnu::pure]]
 static bool
 wildcard_match(const std::string text, const std::string_view pattern) {
@@ -93,6 +94,7 @@ wildcard_match(const std::string text, const std::string_view pattern) {
   std::regex re(regexPattern);
   return std::regex_match(text, re);
 }
+#endif  // __MSVC__
 
 [[gnu::pure]]
 static bool
@@ -106,7 +108,12 @@ checkFilter(const char *filename, const char *filter) noexcept
   if (!filter || StringIsEmpty(filter + 1))
     return true;
 
+#if 1  // def __MSVC__
   return wildcard_match(filename, filter);
+#else  // __MSVC__
+  return StringEndsWithIgnoreCase(filename, filter + 1);
+#endif  // __MSVC__
+
 }
 
 static bool
