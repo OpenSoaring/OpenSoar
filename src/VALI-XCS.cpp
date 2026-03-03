@@ -6,15 +6,14 @@
  * to validate the GRecord of an XCSoar-generated IGC file
  */
 
-#include "system/Path.hpp"
 #include "Logger/GRecord.hpp"
 #include "Version.hpp"
 #include "util/PrintException.hxx"
+#include "system/Path.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 enum STATUS_t {
   eValidationPassed,
   eValidationFileNotFound,
@@ -65,7 +64,7 @@ RunValidate(Path path)
 int main(int argc, char* argv[])
 try {
   printf("Vali XCS for the XCSoar Flight Computer Version %s\n",
-         OpenSoar_Version);
+         App_Version);
 
   if (argc > 1 && strcmp(argv[1], "-?") != 0) {
     return RunValidate(Path(argv[1]));

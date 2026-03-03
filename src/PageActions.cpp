@@ -14,6 +14,17 @@
 #include "MapWindow/GlueMapWindow.hpp"
 #include "Components.hpp"
 
+#include "DataGlobals.hpp"
+#include "Weather/Features.hpp"
+#ifdef HAVE_SKYSIGHT
+# include "Weather/Skysight/Skysight.hpp"
+#endif
+
+#ifdef HAVE_RASP
+# include "Weather/Rasp/Configured.hpp"
+# include "Weather/Rasp/RaspStore.hpp"
+#endif
+
 #if defined(ENABLE_SDL) && defined(main)
 /* on some platforms, SDL wraps the main() function and clutters our
    namespace with a macro called "main" */
@@ -216,6 +227,7 @@ LoadBottom(PageLayout::Bottom bottom)
     gcc_unreachable();
   }
 }
+
 
 static void
 LoadInfoBoxes(const PageLayout::InfoBoxConfig &config)
