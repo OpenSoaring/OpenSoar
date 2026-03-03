@@ -114,7 +114,6 @@ DRIVER_SOURCES = \
 	$(THERMALEXPRESS_SOURCES) \
 	$(STRATUX_SOURCES) \
 	$(DRIVER_SRC_DIR)/AltairPro.cpp \
-	$(DRIVER_SRC_DIR)/Anemoi.cpp \
 	$(DRIVER_SRC_DIR)/BorgeltB50.cpp \
 	$(DRIVER_SRC_DIR)/XCVario.cpp \
 	$(DRIVER_SRC_DIR)/CaiGpsNav.cpp \
@@ -126,7 +125,6 @@ DRIVER_SOURCES = \
 	$(DRIVER_SRC_DIR)/Eye.cpp \
 	$(DRIVER_SRC_DIR)/FlymasterF1.cpp \
 	$(DRIVER_SRC_DIR)/FlyNet.cpp \
-	$(DRIVER_SRC_DIR)/FreeVario.cpp \
 	$(DRIVER_SRC_DIR)/Generic.cpp \
 	$(DRIVER_SRC_DIR)/LevilAHRS_G.cpp \
 	$(DRIVER_SRC_DIR)/Leonardo.cpp \
@@ -141,9 +139,13 @@ DRIVER_SOURCES = \
 	$(DRIVER_SRC_DIR)/KRT2.cpp \
 	$(DRIVER_SRC_DIR)/AirControlDisplay.cpp \
 	$(DRIVER_SRC_DIR)/Larus.cpp \
-	$(DRIVER_SRC_DIR)/AR62xx.cpp \
+	$(DRIVER_SRC_DIR)/LoEFGREN.cpp \
 	$(DRIVER_SRC_DIR)/ATR833/Device.cpp \
 	$(DRIVER_SRC_DIR)/ATR833/Register.cpp
+	\
+	$(DRIVER_SRC_DIR)/Anemoi.cpp \
+	$(DRIVER_SRC_DIR)/AR62xx.cpp \
+	$(DRIVER_SRC_DIR)/FreeVario.cpp \
 
   ifeq ($(HAVE_REMOTESTICK),y)
     DRIVER_SOURCES += \

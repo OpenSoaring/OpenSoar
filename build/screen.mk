@@ -6,6 +6,13 @@ SCREEN_SRC_DIR = $(SRC)/Screen
 CANVAS_SRC_DIR = $(SRC)/ui/canvas
 CONTROL_SRC_DIR = $(SRC)/ui/control
 WINDOW_SRC_DIR = $(SRC)/ui/window
+CANVAS_FILES_CPP = $(CANVAS_SRC_DIR)/custom/Files.cpp
+ifeq ($(TARGET_IS_DARWIN),y)
+CANVAS_FILES_CPP = $(CANVAS_SRC_DIR)/apple/Files.cpp
+endif
+ifeq ($(TARGET_IS_KOBO),y)
+CANVAS_FILES_CPP = $(CANVAS_SRC_DIR)/kobo/Files.cpp
+endif
 
 SCREEN_SOURCES = \
 	$(SCREEN_SRC_DIR)/Debug.cpp \
@@ -26,9 +33,13 @@ SCREEN_SOURCES = \
 
 SCREEN_CUSTOM_SOURCES = \
 	$(WINDOW_SRC_DIR)/custom/DoubleClick.cpp \
+	$(CANVAS_SRC_DIR)/FontSearch.cpp \
 	$(CANVAS_SRC_DIR)/custom/GeoBitmap.cpp \
 	$(CANVAS_SRC_DIR)/custom/Pen.cpp \
 	$(CONTROL_SRC_DIR)/custom/LargeTextWindow.cpp \
+	$(CONTROL_SRC_DIR)/RichTextWindow.cpp \
+	$(CONTROL_SRC_DIR)/LinkableWindow.cpp \
+	$(CANVAS_SRC_DIR)/TextWrapper.cpp \
 	$(WINDOW_SRC_DIR)/custom/Window.cpp \
 	$(WINDOW_SRC_DIR)/custom/WList.cpp \
 	$(WINDOW_SRC_DIR)/custom/ContainerWindow.cpp \
@@ -101,11 +112,12 @@ endif
 ifeq ($(USE_WAYLAND),y)
 SCREEN_SOURCES += \
 	$(WAYLAND_GENERATED)/xdg-shell-public.c \
+	$(WAYLAND_GENERATED)/xdg-decoration-unstable-v1-public.c \
 	$(SRC)/ui/display/wayland/Display.cpp \
 	$(WINDOW_SRC_DIR)/wayland/TopWindow.cpp
 
-$(call SRC_TO_OBJ,$(SRC)/ui/window/wayland/TopWindow.cpp): $(WAYLAND_GENERATED)/xdg-shell-client-protocol.h
-$(call SRC_TO_OBJ,$(SRC)/ui/event/poll/WaylandQueue.cpp): $(WAYLAND_GENERATED)/xdg-shell-client-protocol.h
+$(call SRC_TO_OBJ,$(SRC)/ui/window/wayland/TopWindow.cpp): $(WAYLAND_GENERATED)/xdg-shell-client-protocol.h $(WAYLAND_GENERATED)/xdg-decoration-unstable-v1-client-protocol.h
+$(call SRC_TO_OBJ,$(SRC)/ui/event/poll/WaylandQueue.cpp): $(WAYLAND_GENERATED)/xdg-shell-client-protocol.h $(WAYLAND_GENERATED)/xdg-decoration-unstable-v1-client-protocol.h
 endif
 
 ifeq ($(OPENGL),y)
@@ -120,6 +132,7 @@ SCREEN_SOURCES += \
 	$(CANVAS_SRC_DIR)/opengl/VertexArray.cpp \
 	$(CANVAS_SRC_DIR)/opengl/ConstantAlpha.cpp \
 	$(CANVAS_SRC_DIR)/opengl/Bitmap.cpp \
+	$(CANVAS_SRC_DIR)/custom/UncompressedImage.cpp \
 	$(CANVAS_SRC_DIR)/opengl/RawBitmap.cpp \
 	$(CANVAS_SRC_DIR)/opengl/Canvas.cpp \
 	$(CANVAS_SRC_DIR)/opengl/BufferCanvas.cpp \
@@ -138,9 +151,10 @@ SCREEN_SOURCES += $(SCREEN_CUSTOM_SOURCES)
 SCREEN_SOURCES += $(SCREEN_CUSTOM_SOURCES_IMG)
 SCREEN_SOURCES += \
 	$(SRC)/ui/display/sdl/Display.cpp \
-	$(CANVAS_SRC_DIR)/custom/Files.cpp \
+	$(CANVAS_FILES_CPP) \
 	$(CANVAS_SRC_DIR)/custom/Bitmap.cpp \
 	$(CANVAS_SRC_DIR)/custom/ResourceBitmap.cpp \
+	$(CANVAS_SRC_DIR)/custom/UncompressedImage.cpp \
 	$(CANVAS_SRC_DIR)/sdl/TopCanvas.cpp \
 	$(WINDOW_SRC_DIR)/sdl/Window.cpp \
 	$(WINDOW_SRC_DIR)/sdl/TopWindow.cpp \
@@ -152,9 +166,10 @@ else ifeq ($(EGL)$(TARGET_IS_ANDROID),yn)
 SCREEN_SOURCES += $(SCREEN_CUSTOM_SOURCES_IMG)
 SCREEN_SOURCES += \
 	$(SCREEN_CUSTOM_SOURCES) \
-	$(CANVAS_SRC_DIR)/custom/Files.cpp \
+	$(CANVAS_FILES_CPP) \
 	$(CANVAS_SRC_DIR)/custom/Bitmap.cpp \
 	$(CANVAS_SRC_DIR)/custom/ResourceBitmap.cpp \
+	$(CANVAS_SRC_DIR)/custom/UncompressedImage.cpp \
 	$(CANVAS_SRC_DIR)/egl/TopCanvas.cpp \
 	$(SRC)/ui/display/egl/ConfigChooser.cpp \
 	$(SRC)/ui/display/egl/Display.cpp \
@@ -165,9 +180,10 @@ else ifeq ($(GLX),y)
 SCREEN_SOURCES += $(SCREEN_CUSTOM_SOURCES_IMG)
 SCREEN_SOURCES += \
 	$(SCREEN_CUSTOM_SOURCES) \
-	$(CANVAS_SRC_DIR)/custom/Files.cpp \
+	$(CANVAS_FILES_CPP) \
 	$(CANVAS_SRC_DIR)/custom/Bitmap.cpp \
 	$(CANVAS_SRC_DIR)/custom/ResourceBitmap.cpp \
+	$(CANVAS_SRC_DIR)/custom/UncompressedImage.cpp \
 	$(CANVAS_SRC_DIR)/glx/TopCanvas.cpp \
 	$(WINDOW_SRC_DIR)/poll/TopWindow.cpp \
 	$(WINDOW_SRC_DIR)/fb/Window.cpp \
@@ -176,9 +192,10 @@ else ifeq ($(VFB),y)
 SCREEN_SOURCES += $(SCREEN_CUSTOM_SOURCES_IMG)
 SCREEN_SOURCES += \
 	$(SCREEN_CUSTOM_SOURCES) \
-	$(CANVAS_SRC_DIR)/custom/Files.cpp \
+	$(CANVAS_FILES_CPP) \
 	$(CANVAS_SRC_DIR)/custom/Bitmap.cpp \
 	$(CANVAS_SRC_DIR)/custom/ResourceBitmap.cpp \
+	$(CANVAS_SRC_DIR)/custom/UncompressedImage.cpp \
 	$(CANVAS_SRC_DIR)/fb/TopCanvas.cpp \
 	$(WINDOW_SRC_DIR)/poll/TopWindow.cpp \
 	$(WINDOW_SRC_DIR)/fb/Window.cpp \
@@ -188,9 +205,10 @@ else ifeq ($(USE_FB),y)
 SCREEN_SOURCES += $(SCREEN_CUSTOM_SOURCES_IMG)
 SCREEN_SOURCES += \
 	$(SCREEN_CUSTOM_SOURCES) \
-	$(CANVAS_SRC_DIR)/custom/Files.cpp \
+	$(CANVAS_FILES_CPP) \
 	$(CANVAS_SRC_DIR)/custom/Bitmap.cpp \
 	$(CANVAS_SRC_DIR)/custom/ResourceBitmap.cpp \
+	$(CANVAS_SRC_DIR)/custom/UncompressedImage.cpp \
 	$(CANVAS_SRC_DIR)/memory/Export.cpp \
 	$(WINDOW_SRC_DIR)/poll/TopWindow.cpp \
 	$(WINDOW_SRC_DIR)/fb/TopWindow.cpp \
@@ -208,6 +226,9 @@ SCREEN_SOURCES += \
 	$(WINDOW_SRC_DIR)/gdi/PaintWindow.cpp \
 	$(WINDOW_SRC_DIR)/gdi/ContainerWindow.cpp \
 	$(CONTROL_SRC_DIR)/gdi/LargeTextWindow.cpp \
+	$(CONTROL_SRC_DIR)/RichTextWindow.cpp \
+	$(CONTROL_SRC_DIR)/LinkableWindow.cpp \
+	$(CANVAS_SRC_DIR)/TextWrapper.cpp \
 	$(WINDOW_SRC_DIR)/gdi/SingleWindow.cpp \
 	$(WINDOW_SRC_DIR)/gdi/TopWindow.cpp \
 	$(CANVAS_SRC_DIR)/gdi/Pen.cpp \
@@ -217,8 +238,11 @@ SCREEN_SOURCES += \
 	$(CANVAS_SRC_DIR)/gdi/ResourceBitmap.cpp \
 	$(CANVAS_SRC_DIR)/gdi/RawBitmap.cpp \
 	$(CANVAS_SRC_DIR)/gdi/Canvas.cpp \
+	$(CANVAS_SRC_DIR)/gdi/SubCanvas.cpp \
 	$(CANVAS_SRC_DIR)/gdi/BufferCanvas.cpp \
-	$(CANVAS_SRC_DIR)/gdi/PaintCanvas.cpp
+	$(CANVAS_SRC_DIR)/gdi/PaintCanvas.cpp \
+	$(CANVAS_SRC_DIR)/gdi/UTF8Win.cpp \
+	
 SCREEN_SOURCES += \
 	$(CANVAS_SRC_DIR)/gdi/UTF8Win.cpp \
 	$(CANVAS_SRC_DIR)/custom/GeoBitmap.cpp \
@@ -265,7 +289,11 @@ SCREEN_CPPFLAGS = \
 	$(POLL_EVENT_CPPFLAGS) \
 	$(CONSOLE_CPPFLAGS) $(FB_CPPFLAGS) $(VFB_CPPFLAGS)
 
-SCREEN_DEPENDS = SDL FB FREETYPE LIBPNG LIBJPEG LIBTIFF COREGRAPHICS GDI OPENGL WAYLAND EGL GLX APPKIT UIKIT
+SCREEN_DEPENDS = SDL FB FREETYPE LIBPNG LIBJPEG COREGRAPHICS GDI OPENGL WAYLAND EGL GLX APPKIT UIKIT
+
+ifeq ($(TIFF),y)
+SCREEN_DEPENDS += LIBTIFF
+endif
 
 ifeq ($(LIBPNG),y)
 # LibPNG.cpp uses class FileMapping
