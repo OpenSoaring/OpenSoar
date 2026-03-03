@@ -29,6 +29,8 @@
 
 #include <fmt/format.h>
 
+#include <fmt/format.h>
+
 using std::string_view_literals::operator""sv;
 
 static unsigned
@@ -169,7 +171,7 @@ ParseLogbookContent(const char *_line, RecordedFlightInfo &info)
 
   unsigned n;
   return line.ReadChecked(n) &&
-    ReadFilename(line, info) &&
+    ReadFilename(line, info) > 0 &&
     ReadDate(line, info.date) &&
     ReadTime(line, info.start_time) &&
     ReadTime(line, info.end_time);

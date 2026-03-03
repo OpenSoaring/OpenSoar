@@ -206,7 +206,7 @@ LXEosDevice::HasReliableAltOffset(DeviceInfo device)
 }
 
 void
-LXEosDevice::CalculateDevicePolarReferenceMass(LXVarioSettings& settings)
+LXEosDevice::CalculateDevicePolarReferenceMass(VarioSettings& settings)
 {
   if (!settings.device_polar.IsValid() || !settings.xcsoar_polar.IsValid()) {
     // One or both polars are unknown, cannot get reference mass
