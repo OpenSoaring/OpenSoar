@@ -23,6 +23,7 @@
 #include "TransponderMode.hpp"
 #include "net/client/WeGlide/Settings.hpp"
 #include "system/Path.hpp"
+#include "util/TriState.hpp"
 
 #include <cstdint>
 #include <type_traits>
