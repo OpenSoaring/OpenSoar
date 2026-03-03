@@ -10,7 +10,7 @@
 
 int main()
 {
-  plan_tests(15);
+  plan_tests(16);
 
   FlarmNetDatabase db;
   int count = FlarmNetReader::LoadFile(Path("test/data/flarmnet/data.fln"),
@@ -22,13 +22,14 @@ int main()
   const FlarmNetRecord *record = db.FindRecordById(id);
   ok1(record != NULL);
 
-  ok1(StringIsEqual(record->id, "DDA85C"));
+  ok1(record->id == id);
   ok1(StringIsEqual(record->pilot, "Tobias Bieniek"));
   ok1(StringIsEqual(record->airfield, "AACHEN"));
   ok1(StringIsEqual(record->plane_type, "Hornet"));
   ok1(StringIsEqual(record->registration, "D-4449"));
   ok1(StringIsEqual(record->callsign, "TH"));
-  ok1(StringIsEqual(record->frequency, "130.625"));
+  ok1(record->frequency.IsDefined());
+  ok1(record->frequency.GetKiloHertz() == 130625);
 
   const FlarmNetRecord *array[3];
   ok1(db.FindRecordsByCallSign("TH", array, 3) == 2);
