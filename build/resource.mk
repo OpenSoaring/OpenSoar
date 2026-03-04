@@ -9,29 +9,29 @@ endif
 
 ####### market icons
 
-SVG_MARKET_ICONS = Data/graphics/logo.svg Data/graphics/logo_red.svg Data/graphics/logo_stefly.svg
-PNG_MARKET_ICONS = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_market.png,$(SVG_MARKET_ICONS))
+SVG_MARKET_ICONS = $(SRC_DATA)/graphics/logo.svg $(SRC_DATA)/graphics/logo_red.svg $(SRC_DATA)/graphics/logo_stefly.svg
+PNG_MARKET_ICONS = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics/%_market.png,$(SVG_MARKET_ICONS))
 
 market-icons: $(PNG_MARKET_ICONS)
-$(eval $(call rsvg-convert,$(PNG_MARKET_ICONS),$(DATA)/graphics/%_market.png,Data/graphics/%.svg,--width=512))
+$(eval $(call rsvg-convert,$(PNG_MARKET_ICONS),$(DATA)/graphics/%_market.png,$(SRC_DATA)/graphics/%.svg,--width=512))
 
 ####### bitmaps
 
-BMP_BITMAPS = $(wildcard Data/bitmaps/*.bmp)
-PNG_BITMAPS = $(patsubst Data/bitmaps/%.bmp,$(DATA)/bitmaps/%.png,$(BMP_BITMAPS))
+BMP_BITMAPS = $(wildcard $(SRC_DATA)/bitmaps/*.bmp)
+PNG_BITMAPS = $(patsubst $(SRC_DATA)/bitmaps/%.bmp,$(DATA)/bitmaps/%.png,$(BMP_BITMAPS))
 
-$(PNG_BITMAPS): $(DATA)/bitmaps/%.png: Data/bitmaps/%.bmp | $(DATA)/bitmaps/dirstamp
+$(PNG_BITMAPS): $(DATA)/bitmaps/%.png: $(SRC_DATA)/bitmaps/%.bmp | $(DATA)/bitmaps/dirstamp
 	$(Q)$(IM_CONVERT) +dither -type GrayScale -define png:color-type=0 $< $@
 
 ####### icons
 
-SVG_ICONS = $(wildcard Data/icons/*.svg)
-SVG_NOALIAS_ICONS = $(patsubst Data/icons/%.svg,$(DATA)/icons/%.svg,$(SVG_ICONS))
+SVG_ICONS = $(wildcard $(SRC_DATA)/icons/*.svg)
+SVG_NOALIAS_ICONS = $(patsubst $(SRC_DATA)/icons/%.svg,$(DATA)/icons/%.svg,$(SVG_ICONS))
 
 BMP_ICONS_ALL =
 
 define generate-icon-scale
-PNG_ICONS_$(1) = $$(patsubst Data/icons/%.svg,$$(DATA)/icons/%_$(1).png,$$(SVG_ICONS))
+PNG_ICONS_$(1) = $$(patsubst $(SRC_DATA)/icons/%.svg,$$(DATA)/icons/%_$(1).png,$$(SVG_ICONS))
 BMP_ICONS_$(1) = $$(PNG_ICONS_$(1):.png=.bmp)
 BMP_ICONS_ALL += $$(BMP_ICONS_$(1))
 $$(eval $$(call rsvg-convert,$$(PNG_ICONS_$(1)),$$(DATA)/icons/%_$(1).png,$$(DATA)/icons/%.svg,--x-zoom=$2 --y-zoom=$2))
@@ -47,7 +47,7 @@ $(eval $(call generate-icon-scale,160,1.6316))
 $(eval $(call generate-icon-scale,300,3.0))
 
 # modify working copy of SVG to improve rendering
-$(SVG_NOALIAS_ICONS): $(DATA)/icons/%.svg: build/svg_preprocess.xsl Data/icons/%.svg | $(DATA)/icons/dirstamp
+$(SVG_NOALIAS_ICONS): $(DATA)/icons/%.svg: build/svg_preprocess.xsl $(SRC_DATA)/icons/%.svg | $(DATA)/icons/dirstamp
 	@$(NQ)echo "  XSLT    $@"
 	$(Q)xsltproc --nonet --stringparam DisableAA_Select "MASK_NOAA_" --output $@ $^
 
@@ -56,26 +56,40 @@ $(eval $(call convert-to-bmp,$(BMP_ICONS_ALL),%.bmp,%_tile.png))
 
 ####### splash logo
 
-SVG_SPLASH = Data/graphics/logo.svg Data/graphics/logo_red.svg Data/graphics/logo_stefly.svg
-PNG_SPLASH_320 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_320.png,$(SVG_SPLASH))
+SVG_SPLASH = $(SRC_DATA)/graphics/logo.svg $(SRC_DATA)/graphics/logo_red.svg $(SRC_DATA)/graphics/logo_stefly.svg
+PNG_SPLASH_320 = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics/%_320.png,$(SVG_SPLASH))
 BMP_SPLASH_320 = $(PNG_SPLASH_320:.png=.bmp)
-PNG_SPLASH_160 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_160.png,$(SVG_SPLASH))
+PNG_SPLASH_160 = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics/%_160.png,$(SVG_SPLASH))
 BMP_SPLASH_160 = $(PNG_SPLASH_160:.png=.bmp)
-PNG_SPLASH_80 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_80.png,$(SVG_SPLASH))
+PNG_SPLASH_80 = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics/%_80.png,$(SVG_SPLASH))
 BMP_SPLASH_80 = $(PNG_SPLASH_80:.png=.bmp)
-PNG_SPLASH_1024 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_1024.png,$(SVG_SPLASH))
+PNG_SPLASH_320_RGBA = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics2/%_320_rgba.png,$(SVG_SPLASH))
+PNG_SPLASH_160_RGBA = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics2/%_160_rgba.png,$(SVG_SPLASH))
+PNG_SPLASH_80_RGBA = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics2/%_80_rgba.png,$(SVG_SPLASH))
+PNG_SPLASH_1024 = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics2/%_1024.png,$(SVG_SPLASH))
 ICNS_SPLASH_1024 = $(PNG_SPLASH_1024:.png=.icns)
 
 # render from SVG to PNG
-$(eval $(call rsvg-convert,$(PNG_SPLASH_320),$(DATA)/graphics/%_320.png,Data/graphics/%.svg,--width=320))
-$(eval $(call rsvg-convert,$(PNG_SPLASH_160),$(DATA)/graphics/%_160.png,Data/graphics/%.svg,--width=160))
-$(eval $(call rsvg-convert,$(PNG_SPLASH_80),$(DATA)/graphics/%_80.png,Data/graphics/%.svg,--width=80))
-$(eval $(call rsvg-convert,$(PNG_SPLASH_1024),$(DATA)/graphics/%_1024.png,Data/graphics/%.svg,--width=1024))
+$(eval $(call rsvg-convert,$(PNG_SPLASH_320),$(DATA)/graphics/%_320.png,$(SRC_DATA)/graphics/%.svg,--width=320))
+$(eval $(call rsvg-convert,$(PNG_SPLASH_160),$(DATA)/graphics/%_160.png,$(SRC_DATA)/graphics/%.svg,--width=160))
+$(eval $(call rsvg-convert,$(PNG_SPLASH_80),$(DATA)/graphics/%_80.png,$(SRC_DATA)/graphics/%.svg,--width=80))
+$(eval $(call rsvg-convert,$(PNG_SPLASH_320_RGBA),$(DATA)/graphics2/%_320_rgba.png,$(SRC_DATA)/graphics/%.svg,--width=320))
+$(eval $(call rsvg-convert,$(PNG_SPLASH_160_RGBA),$(DATA)/graphics2/%_160_rgba.png,$(SRC_DATA)/graphics/%.svg,--width=160))
+$(eval $(call rsvg-convert,$(PNG_SPLASH_80_RGBA),$(DATA)/graphics2/%_80_rgba.png,$(SRC_DATA)/graphics/%.svg,--width=80))
+$(eval $(call rsvg-convert,$(PNG_SPLASH_1024),$(DATA)/graphics2/%_1024.png,$(SRC_DATA)/graphics/%.svg,--width=1024))
 
 # convert to uncompressed 8-bit BMP
-$(eval $(call convert-to-bmp-white,$(BMP_SPLASH_160) $(BMP_SPLASH_80),%.bmp,%.png))
+$(eval $(call convert-to-bmp-white,$(BMP_SPLASH_320) $(BMP_SPLASH_160) $(BMP_SPLASH_80),%.bmp,%.png))
 
-# convert to icns (macOS icon)
+# macOS-specific: generate 1024px PNG and convert to .icns (macOS icon format)
+ifeq ($(TARGET_IS_OSX),y)
+PNG_SPLASH_1024 = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics/%_1024.png,$(SVG_SPLASH))
+ICNS_SPLASH_1024 = $(PNG_SPLASH_1024:.png=.icns)
+
+# render 1024px PNG from SVG (needed for macOS icon)
+$(eval $(call rsvg-convert,$(PNG_SPLASH_1024),$(DATA)/graphics/%_1024.png,$(SRC_DATA)/graphics/%.svg,--width=1024))
+
+# convert to icns (macOS icon) using macOS-specific tools
 $(ICNS_SPLASH_1024): %.icns: %.png
 	@$(NQ)echo "  ICNS    $@"
 	$(Q)mkdir -p $@.iconset && \
@@ -91,58 +105,70 @@ $(ICNS_SPLASH_1024): %.icns: %.png
 		sips -z 16 16 $< --out $@.iconset/icon_16x16.png >/dev/null && \
 		iconutil -c icns $@.iconset -o $@ && \
 		rm -rf $@.iconset
+endif
 
 ####### version
 
-SVG_TITLE = Data/graphics/title.svg 
-# Data/graphics/title_red.svg
+SVG_TITLE = $(SRC_DATA)/graphics/title.svg 
+# $(DATA)/graphics/title_red.svg
 SVG_TMP_TITLE = $(DATA)/temp/graphics/title.svg $(DATA)/temp/graphics/title_red.svg
 # convert to title
-$(DATA)/temp/graphics/%.svg: $(SVG_TITLE) $(topdir)/OpenSoar.config $(OUT)/include/ProgramVersion.h
+$(DATA)/temp/graphics/%.svg: $(SVG_TITLE) $(topdir)/$(PROGRAM_NAME).config $(OUT)/include/ProgramVersion.h
 	@echo  "  TMP_SVG:   $< == $@"
 	$(Q)$(MKDIR) -p $(DATA)/temp/graphics
-	$(Q)python3 $(topdir)/tools/python/replace.py  $(topdir)/OpenSoar.config $< $@
+	$(Q)python3 $(topdir)/tools/python/replace.py  $(topdir)/$(PROGRAM_NAME).config $< $@
 
 PNG_TITLE_110 = $(patsubst $(DATA)/temp/graphics/%.svg,$(DATA)/graphics/%_110.png,$(SVG_TMP_TITLE))
 BMP_TITLE_110 = $(PNG_TITLE_110:.png=.bmp)
 PNG_TITLE_320 = $(patsubst $(DATA)/temp/graphics/%.svg,$(DATA)/graphics/%_320.png,$(SVG_TMP_TITLE))
 BMP_TITLE_320 = $(PNG_TITLE_320:.png=.bmp)
+PNG_TITLE_640 = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics/%_640.png,$(SVG_TITLE))
+BMP_TITLE_640 = $(PNG_TITLE_640:.png=.bmp)
+PNG_TITLE_320_RGBA = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics2/%_320_rgba.png,$(SVG_TITLE))
+
+SVG_TITLE_WHITE = $(SRC_DATA)/graphics/title_white.svg $(SRC_DATA)/graphics/title_red_white.svg
+PNG_TITLE_WHITE_320_RGBA = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics2/%_320_rgba.png,$(SVG_TITLE_WHITE))
+PNG_TITLE_WHITE_640_RGBA = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics2/%_640_rgba.png,$(SVG_TITLE_WHITE))
 
 # render from SVG to PNG
 $(eval $(call rsvg-convert,$(PNG_TITLE_110),$(DATA)/graphics/%_110.png,$(DATA)/temp/graphics/%.svg,--width=110))
 $(eval $(call rsvg-convert,$(PNG_TITLE_320),$(DATA)/graphics/%_320.png,$(DATA)/temp/graphics/%.svg,--width=320))
+$(eval $(call rsvg-convert,$(PNG_TITLE_640),$(DATA)/graphics/%_640.png,$(DATA)/temp/graphics/%.svg,--width=640))
+$(eval $(call rsvg-convert,$(PNG_TITLE_320_RGBA),$(DATA)/graphics2/%_320_rgba.png,$(DATA)/temp/graphics/%.svg,--width=320))
+$(eval $(call rsvg-convert,$(PNG_TITLE_WHITE_320_RGBA),$(DATA)/graphics2/%_320_rgba.png,$(DATA)/temp/graphics/%.svg,--width=320))
+$(eval $(call rsvg-convert,$(PNG_TITLE_WHITE_640_RGBA),$(DATA)/graphics2/%_640_rgba.png,$(DATA)/temp/graphics/%.svg,--width=640))
 
 # convert to uncompressed 8-bit BMP
-$(eval $(call convert-to-bmp-white,$(BMP_TITLE_110) $(BMP_TITLE_320),%.bmp,%.png))
+$(eval $(call convert-to-bmp-white,$(BMP_TITLE_110) $(BMP_TITLE_320) $(BMP_TITLE_640),%.bmp,%.png))
 
 ####### dialog title
 
-SVG_DIALOG_TITLE = Data/graphics/dialog_title.svg Data/graphics/dialog_title_red.svg
-PNG_DIALOG_TITLE = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%.png,$(SVG_DIALOG_TITLE))
+SVG_DIALOG_TITLE = $(SRC_DATA)/graphics/dialog_title.svg $(SRC_DATA)/graphics/dialog_title_red.svg
+PNG_DIALOG_TITLE = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics/%.png,$(SVG_DIALOG_TITLE))
 BMP_DIALOG_TITLE = $(PNG_DIALOG_TITLE:.png=.bmp)
 
 # render from SVG to PNG
-$(eval $(call rsvg-convert,$(PNG_DIALOG_TITLE),$(DATA)/graphics/%.png,Data/graphics/%.svg,))
+$(eval $(call rsvg-convert,$(PNG_DIALOG_TITLE),$(DATA)/graphics/%.png,$(SRC_DATA)/graphics/%.svg,))
 
 # convert to uncompressed 8-bit BMP
 $(eval $(call convert-to-bmp-white,$(BMP_DIALOG_TITLE),%.bmp,%.png))
 
 ####### progress bar border
 
-SVG_PROGRESS_BORDER = Data/graphics/progress_border.svg Data/graphics/progress_border_red.svg
-PNG_PROGRESS_BORDER = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%.png,$(SVG_PROGRESS_BORDER))
+SVG_PROGRESS_BORDER = $(SRC_DATA)/graphics/progress_border.svg $(SRC_DATA)/graphics/progress_border_red.svg
+PNG_PROGRESS_BORDER = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics/%.png,$(SVG_PROGRESS_BORDER))
 BMP_PROGRESS_BORDER = $(PNG_PROGRESS_BORDER:.png=.bmp)
 
 # render from SVG to PNG
-$(eval $(call rsvg-convert,$(PNG_PROGRESS_BORDER),$(DATA)/graphics/%.png,Data/graphics/%.svg,))
+$(eval $(call rsvg-convert,$(PNG_PROGRESS_BORDER),$(DATA)/graphics/%.png,$(SRC_DATA)/graphics/%.svg,))
 
 # convert to uncompressed 8-bit BMP
 $(eval $(call convert-to-bmp-white,$(BMP_PROGRESS_BORDER),%.bmp,%.png))
 
 ####### launcher graphics
 
-SVG_LAUNCH = Data/graphics/launcher.svg Data/graphics/launcher_red.svg
-PNG_LAUNCH_640 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_640.png,$(SVG_LAUNCH))
+SVG_LAUNCH = $(SRC_DATA)/graphics/launcher.svg $(SRC_DATA)/graphics/launcher_red.svg
+PNG_LAUNCH_640 = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics/%_640.png,$(SVG_LAUNCH))
 BMP_LAUNCH_FLY_640 = $(PNG_LAUNCH_640:.png=_1.bmp)
 BMP_LAUNCH_SIM_640 = $(PNG_LAUNCH_640:.png=_2.bmp)
 BMP_LAUNCH_DLL_FLY_640 = $(PNG_LAUNCH_640:.png=_dll_1.bmp)
@@ -154,7 +180,7 @@ BMP_LAUNCH_ALL += $(BMP_LAUNCH_DLL_FLY_640) $(BMP_LAUNCH_DLL_SIM_640)
 endif
 
 # render from SVG to PNG
-$(eval $(call rsvg-convert,$(PNG_LAUNCH_640),$(DATA)/graphics/%_640.png,Data/graphics/%.svg,--width=640))
+$(eval $(call rsvg-convert,$(PNG_LAUNCH_640),$(DATA)/graphics/%_640.png,$(SRC_DATA)/graphics/%.svg,--width=640))
 
 # split into two uncompressed 8-bit BMPs (single 'convert' operation)
 $(eval $(call convert-to-bmp-half,$(BMP_LAUNCH_FLY_640),%_1.bmp,%.png,-background white))
@@ -170,16 +196,27 @@ PNG_LAUNCH_ALL = $(patsubst %.bmp,%.png,$(BMP_LAUNCH_ALL))
 $(PNG_LAUNCH_ALL): %.png: %.bmp
 	$(Q)$(IM_CONVERT) $< $@
 
+# RGBA PNG halves (preserving alpha for non-Win32 builds)
+# These go into graphics2/ because LinkResources.pl loads bitmap_graphic from there
+PNG_LAUNCH_FLY_640_RGBA = $(patsubst $(DATA)/graphics/%.png,$(DATA)/graphics2/%_rgba_1.png,$(PNG_LAUNCH_640))
+PNG_LAUNCH_SIM_640_RGBA = $(patsubst $(DATA)/graphics/%.png,$(DATA)/graphics2/%_rgba_2.png,$(PNG_LAUNCH_640))
+
+$(PNG_LAUNCH_FLY_640_RGBA): $(DATA)/graphics2/%_rgba_1.png: $(DATA)/graphics/%.png | $(DATA)/graphics2/dirstamp
+	@$(NQ)echo "  CROP    $@"
+	@$(NQ)echo "  CROP    $(@:_rgba_1.png=_rgba_2.png)"
+	$(Q)$(IM_CONVERT) $< -crop '50%x100%' +repage -scene 1 $(@:_rgba_1.png=_rgba_%d.png)
+$(PNG_LAUNCH_SIM_640_RGBA): $(PNG_LAUNCH_FLY_640_RGBA)
+
 ####### sounds
 
 ifneq ($(TARGET),ANDROID)
 ifneq ($(TARGET),IOS)
 ifneq ($(HAVE_WIN32),y)
 
-WAV_SOUNDS = $(wildcard Data/sound/*.wav)
-RAW_SOUNDS = $(patsubst Data/sound/%.wav,$(DATA)/sound/%.raw,$(WAV_SOUNDS))
+WAV_SOUNDS = $(wildcard $(SRC_DATA)/sound/*.wav)
+RAW_SOUNDS = $(patsubst $(SRC_DATA)/sound/%.wav,$(DATA)/sound/%.raw,$(WAV_SOUNDS))
 
-$(RAW_SOUNDS): $(DATA)/sound/%.raw: Data/sound/%.wav | $(DATA)/sound/dirstamp
+$(RAW_SOUNDS): $(DATA)/sound/%.raw: $(SRC_DATA)/sound/%.wav | $(DATA)/sound/dirstamp
 	@$(NQ)echo "  SOX     $@"
 	$(Q)sox -V1 $< --bits 16 --rate 44100 --channels 1 $@
 
@@ -189,28 +226,44 @@ endif
 
 #######
 
-TEXT_FILES = AUTHORS COPYING OpenSoar-News.md
+TEXT_FILES = AUTHORS COPYING  NEWS.txt $(PROGRAM_NAME)-News.md
 
 TEXT_COMPRESSED = $(patsubst %,$(DATA)/%.gz,$(TEXT_FILES))
 $(TEXT_COMPRESSED): $(DATA)/%.gz: % | $(DATA)/dirstamp
 	@$(NQ)echo "  GZIP    $@"
-	$(Q)gzip --best <$< >$@.tmp
-	$(Q)mv $@.tmp $@
+	$(Q)gzip --best <$< >$@.$(RANDOM_NUMBER).tmp
+	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
 
 RESOURCE_FILES =
 
-$(TARGET_OUTPUT_DIR)/resources.txt: Data/resources.txt | $(TARGET_OUTPUT_DIR)/dirstamp $(BUILD_TOOLCHAIN_TARGET)
+# Stamp file to track XCSOAR_TESTING state (what actually affects resources.txt)
+# For Android: based on package name (org.xcsoar.testing)
+# For non-Android: based on TESTING flag
+RESOURCE_FLAGS_STAMP = $(TARGET_OUTPUT_DIR)/.resource_flags.stamp
+$(RESOURCE_FLAGS_STAMP): FORCE | $(TARGET_OUTPUT_DIR)/dirstamp
+	@if [ "$(TARGET_IS_ANDROID)" = "y" ]; then \
+		if [ "$(FOSS)" = "y" ]; then pkg=org.xcsoar.foss; \
+		elif [ "$(PLAY)" = "y" ]; then pkg=org.xcsoar.play; \
+		elif [ "$(TESTING)" = "y" ]; then pkg=org.xcsoar.testing; \
+		else pkg=org.xcsoar; fi; \
+		if [ "$$pkg" = "org.xcsoar.testing" ]; then \
+			value=y; \
+		else \
+			value=n; \
+		fi; \
+	else \
+		value=$(TESTING); \
+	fi; \
+	if [ ! -f $@ ] || [ "$$(cat $@ 2>/dev/null)" != "XCSOAR_TESTING=$$value" ]; then \
+		echo "XCSOAR_TESTING=$$value" > $@.$(RANDOM_NUMBER).tmp && \
+			mv $@.$(RANDOM_NUMBER).tmp $@; \
+	fi
+
+$(TARGET_OUTPUT_DIR)/resources.txt: $(SRC_DATA)/resources.txt $(RESOURCE_FLAGS_STAMP) | $(TARGET_OUTPUT_DIR)/dirstamp $(BUILD_TOOLCHAIN_TARGET)
 	@$(NQ)echo "  CPP     $@"
-	$(Q)cat $< |$(CC) -E -o $@ -I$(OUT)/include $(TARGET_CPPFLAGS) $(OPENGL_CPPFLAGS) $(GDI_CPPFLAGS) -
+	$(Q)cat $< |$(CC) -E -o $@.$(RANDOM_NUMBER).tmp -I$(OUT)/include $(TARGET_CPPFLAGS) $(OPENGL_CPPFLAGS) $(GDI_CPPFLAGS) -
+	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
 
-ifeq ($(TARGET_IS_ANDROID),y)
-
-$(TARGET_OUTPUT_DIR)/include/MakeResource.hpp: $(TARGET_OUTPUT_DIR)/resources.txt tools/GenerateMakeResource.pl | $(TARGET_OUTPUT_DIR)/include/dirstamp
-	@$(NQ)echo "  GEN     $@"
-	$(Q)$(PERL) tools/GenerateMakeResource.pl <$< >$(TARGET_OUTPUT_DIR)/$(ANDROID_APK_LIB_ABI)/MakeResource.hpp.tmp
-	$(Q)mv -u $(TARGET_OUTPUT_DIR)/$(ANDROID_APK_LIB_ABI)/MakeResource.hpp.tmp $@
-
-else 
 RANDOM_NUMBER := $(shell od -vAn -N4 -tu4 < /dev/urandom| tr -d ' ')
 
 $(TARGET_OUTPUT_DIR)/include/MakeResource.hpp: $(TARGET_OUTPUT_DIR)/resources.txt tools/GenerateMakeResource.pl | $(TARGET_OUTPUT_DIR)/include/dirstamp
@@ -218,16 +271,13 @@ $(TARGET_OUTPUT_DIR)/include/MakeResource.hpp: $(TARGET_OUTPUT_DIR)/resources.tx
 	$(Q)$(PERL) tools/GenerateMakeResource.pl <$< >$@.$(RANDOM_NUMBER).tmp
 	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
 
-<<<<<<< HEAD
-=======
 $(TARGET_OUTPUT_DIR)/include/ResourceLookup_entries.hpp: $(TARGET_OUTPUT_DIR)/resources.txt tools/GenerateResourceLookup.pl | $(TARGET_OUTPUT_DIR)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
-	$(Q)$(PERL) tools/GenerateResourceLookup.pl <$< >$@.tmp
-	$(Q)mv $@.tmp $@
+	$(Q)$(PERL) tools/GenerateResourceLookup.pl <$< >$@.$(RANDOM_NUMBER).tmp
+	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
 
 $(call SRC_TO_OBJ,$(SRC)/ResourceLookup.cpp): $(TARGET_OUTPUT_DIR)/include/ResourceLookup_entries.hpp $(TARGET_OUTPUT_DIR)/include/MakeResource.hpp
 
->>>>>>> 73e526124a (build/resource.mk: change ext include file ResourceLookup_entries to hpp)
 ifeq ($(TARGET_IS_ANDROID),n)
 ifneq ($(TARGET),IOS)
 
@@ -237,11 +287,63 @@ else
 RESOURCE_FILES += $(PNG_BITMAPS)
 endif
 
+####### permission disclosure graphics
+
+SVG_DISCLOSURE = $(SRC_DATA)/graphics/location_pin.svg $(SRC_DATA)/graphics/notification_bell.svg $(SRC_DATA)/graphics/bluetooth.svg $(SRC_DATA)/graphics/warning_triangle.svg $(SRC_DATA)/graphics/rotate.svg
+PNG_DISCLOSURE_DST = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics2/%.png,$(SVG_DISCLOSURE))
+PNG_DISCLOSURE_WIN = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics/%.png,$(SVG_DISCLOSURE))
+BMP_DISCLOSURE_WIN = $(PNG_DISCLOSURE_WIN:.png=.bmp)
+
+$(eval $(call rsvg-convert,$(PNG_DISCLOSURE_DST), \
+	$(DATA)/graphics2/%.png, \
+	$(SRC_DATA)/graphics/%.svg, \
+	--width=80 --height=80))
+$(eval $(call rsvg-convert,$(PNG_DISCLOSURE_WIN), \
+	$(DATA)/graphics/%.png, \
+	$(SRC_DATA)/graphics/%.svg, \
+	--width=80 --height=80))
+$(eval $(call convert-to-bmp-white,$(BMP_DISCLOSURE_WIN),%.bmp,%.png))
+
+####### add gesture icons from docs
+
+GESTURES = down dl dr du left ldr ldrdl right rd rl up ud uldr urd urdl
+GESTURES_DST = $(addprefix $(DATA)/graphics2/gesture_, \
+	$(addsuffix .png,$(GESTURES)))
+GESTURES_PNG_WIN = $(addprefix $(DATA)/graphics/gesture_, \
+	$(addsuffix .png,$(GESTURES)))
+GESTURES_BMP_WIN = $(GESTURES_PNG_WIN:.png=.bmp)
+
+$(DATA)/graphics2/dirstamp:
+	@$(NQ)echo "  MKDIR   $(DATA)/graphics2/"
+	$(Q)mkdir -p $(DATA)/graphics2
+	@touch $@
+
+$(eval $(call rsvg-convert,$(GESTURES_DST), \
+	$(DATA)/graphics2/gesture_%.png, \
+	doc/manual/figures/gesture_%.svg, \
+	--width=82 --height=82))
+$(eval $(call rsvg-convert,$(GESTURES_PNG_WIN), \
+	$(DATA)/graphics/gesture_%.png, \
+	doc/manual/figures/gesture_%.svg, \
+	--width=82 --height=82))
+$(eval $(call convert-to-bmp-white,$(GESTURES_BMP_WIN),%.bmp,%.png))
+
+RESOURCE_FILES += $(GESTURES_DST)
+RESOURCE_FILES += $(PNG_DISCLOSURE_DST)
 RESOURCE_FILES += $(BMP_ICONS_ALL)
-RESOURCE_FILES += $(BMP_SPLASH_160) $(BMP_SPLASH_80)
+RESOURCE_FILES += $(BMP_SPLASH_320) $(BMP_SPLASH_160) $(BMP_SPLASH_80)
 RESOURCE_FILES += $(BMP_DIALOG_TITLE) $(BMP_PROGRESS_BORDER)
-RESOURCE_FILES += $(BMP_TITLE_320) $(BMP_TITLE_110)
+RESOURCE_FILES += $(BMP_TITLE_640) $(BMP_TITLE_320) $(BMP_TITLE_110)
+ifneq ($(USE_WIN32_RESOURCES),y)
+RESOURCE_FILES += $(PNG_SPLASH_320_RGBA) $(PNG_SPLASH_160_RGBA) $(PNG_SPLASH_80_RGBA)
+RESOURCE_FILES += $(PNG_TITLE_320_RGBA)
+RESOURCE_FILES += $(PNG_TITLE_WHITE_320_RGBA)
+RESOURCE_FILES += $(PNG_TITLE_WHITE_640_RGBA)
+endif
 RESOURCE_FILES += $(BMP_LAUNCH_ALL)
+ifneq ($(USE_WIN32_RESOURCES),y)
+RESOURCE_FILES += $(PNG_LAUNCH_FLY_640_RGBA) $(PNG_LAUNCH_SIM_640_RGBA)
+endif
 
 RESOURCE_FILES += $(RAW_SOUNDS)
 
@@ -258,6 +360,11 @@ RESOURCE_FILES := $(patsubst $(DATA)/icons/%.bmp,$(DATA)/icons2/%.png,$(RESOURCE
 RESOURCE_FILES := $(patsubst %.bmp,%.png,$(RESOURCE_FILES))
 endif #!USE_WIN32_RESOURCES
 
+ifeq ($(USE_WIN32_RESOURCES),y)
+RESOURCE_FILES += $(GESTURES_BMP_WIN)
+RESOURCE_FILES += $(BMP_DISCLOSURE_WIN)
+endif #USE_WIN32_RESOURCES
+
 endif #TARGET!=IOS
 endif #!TARGET_IS_ANDROID
 
@@ -265,22 +372,22 @@ ifeq ($(TARGET_IS_ANDROID),n)
 
 ifeq ($(USE_WIN32_RESOURCES),y)
 
-$(TARGET_OUTPUT_DIR)/OpenSoar.rc: $(TARGET_OUTPUT_DIR)/resources.txt Data/OpenSoar.rc tools/GenerateWindowsResources.pl
+$(TARGET_OUTPUT_DIR)/$(PROGRAM_NAME).rc: $(TARGET_OUTPUT_DIR)/resources.txt $(SRC_DATA)/$(PROGRAM_NAME).rc tools/GenerateWindowsResources.pl
 	@$(NQ)echo "  GEN     $@"
-	$(Q)cp Data/OpenSoar.rc $@.tmp
-	$(Q)$(PERL) tools/GenerateWindowsResources.pl $< >>$@.tmp
-	$(Q)mv $@.tmp $@
+	$(Q)cp $(SRC_DATA)/$(PROGRAM_NAME).rc $@.$(RANDOM_NUMBER).tmp
+	$(Q)$(PERL) tools/GenerateWindowsResources.pl $< >>$@.$(RANDOM_NUMBER).tmp
+	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
 
 $(TARGET_OUTPUT_DIR)/include/resource.h: $(TARGET_OUTPUT_DIR)/include/MakeResource.hpp | $(OUT)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
-	$(Q)$(PERL) -ne 'print "#define $$1 $$2\n" if /^MAKE_RESOURCE\((\w+), \S+, (\d+)\);/;' $< >$@.tmp
-	$(Q)mv $@.tmp $@
+	$(Q)$(PERL) -ne 'print "#define $$1 $$2\n" if /^MAKE_RESOURCE\((\w+), \S+, (\d+)\);/;' $< >$@.$(RANDOM_NUMBER).tmp
+	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
 
-RESOURCE_BINARY = $(TARGET_OUTPUT_DIR)/OpenSoar.rsc
+RESOURCE_BINARY = $(TARGET_OUTPUT_DIR)/$(PROGRAM_NAME).rsc
 
-$(TARGET_OUTPUT_DIR)/OpenSoar.rsc: %.rsc: %.rc $(TARGET_OUTPUT_DIR)/include/resource.h $(RESOURCE_FILES) | $(TARGET_OUTPUT_DIR)/%/../dirstamp $(BUILD_TOOLCHAIN_TARGET)
+$(TARGET_OUTPUT_DIR)/$(PROGRAM_NAME).rsc: %.rsc: %.rc $(TARGET_OUTPUT_DIR)/include/resource.h $(RESOURCE_FILES) | $(TARGET_OUTPUT_DIR)/%/../dirstamp $(BUILD_TOOLCHAIN_TARGET)
 	@$(NQ)echo "  WINDRES $@"
-	$(Q)$(WINDRES) $(WINDRESFLAGS) --include-dir output/data --include-dir Data -o $@ $<
+	$(Q)$(WINDRES) $(WINDRESFLAGS) --include-dir output/data --include-dir $(SRC_DATA) -o $@ $<
 
 else # USE_WIN32_RESOURCES
 
@@ -288,14 +395,13 @@ $(TARGET_OUTPUT_DIR)/resources.c: export TARGET_IS_ANDROID:=$(TARGET_IS_ANDROID)
 $(TARGET_OUTPUT_DIR)/resources.c: export ENABLE_OPENGL:=$(OPENGL)
 $(TARGET_OUTPUT_DIR)/resources.c: $(TARGET_OUTPUT_DIR)/resources.txt $(RESOURCE_FILES) tools/LinkResources.pl tools/BinToC.pm | $(TARGET_OUTPUT_DIR)/resources/dirstamp
 	@$(NQ)echo "  GEN     $@"
-	$(Q)$(PERL) tools/LinkResources.pl <$< >$@.tmp
-	$(Q)mv $@.tmp $@
+	$(Q)$(PERL) tools/LinkResources.pl <$< >$@.$(RANDOM_NUMBER).tmp
+	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
 
 RESOURCES_SOURCES = $(TARGET_OUTPUT_DIR)/resources.c
 $(eval $(call link-library,resources,RESOURCES))
 RESOURCE_BINARY = $(RESOURCES_BIN)
 
-endif
 endif
 
 endif # !TARGET_IS_ANDROID

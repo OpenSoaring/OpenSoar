@@ -3,6 +3,7 @@ ENGINE_SRC_DIR = $(SRC)/Engine
 DOC = $(topdir)/doc
 OUT = $(topdir)/output
 DATA = $(OUT)/data
+SRC_DATA = Data
 TEST_SRC_DIR = $(topdir)/test/src
 PYTHON_SRC = $(topdir)/python/src
 HOST_OUTPUT_DIR = $(OUT)/host
