@@ -4,15 +4,20 @@
 #include "StaticParser.hpp"
 #include "FLARM/Error.hpp"
 #include "FLARM/List.hpp"
+#include "FLARM/Progress.hpp"
+#include "FLARM/State.hpp"
 #include "FLARM/Status.hpp"
 #include "FLARM/Version.hpp"
 #include "FLARM/Details.hpp"
 #include "FLARM/MessagingRecord.hpp"
 #include "Message.hpp"
 #include "NMEA/InputLine.hpp"
+#include "util/NumberParser.hxx"
 #include "util/HexString.hpp"
 
+#include <fmt/format.h>
 #include <string_view>
+#include <algorithm>
 
 void
 ParsePFLAE(NMEAInputLine &line, FlarmError &error, TimeStamp clock) noexcept
@@ -24,12 +29,22 @@ ParsePFLAE(NMEAInputLine &line, FlarmError &error, TimeStamp clock) noexcept
   error.severity = (FlarmError::Severity)
     line.Read((int)FlarmError::Severity::NO_ERROR);
   error.code = (FlarmError::Code)line.ReadHex(0);
-  char buffer[100];
-  snprintf(buffer, sizeof(buffer), "%s - %s",
-                     FlarmError::ToString(error.severity),
-                     FlarmError::ToString(error.code));
-  if (error.severity != FlarmError::Severity::NO_ERROR)
-    Message::AddMessage("FLARM: ", buffer);
+
+  const auto device_msg = line.ReadView();
+  if (!device_msg.empty())
+    error.message = device_msg;
+  else
+    error.message.clear();
+
+  if (error.severity != FlarmError::Severity::NO_ERROR) {
+    const auto code_desc = error.message.empty()
+      ? FlarmError::ToString(error.code)
+      : error.message.c_str();
+    const auto msg = fmt::format("{} - {}",
+                                 FlarmError::ToString(error.severity),
+                                 code_desc);
+    Message::AddMessage("FLARM: ", msg.c_str());
+  }
 
   error.available.Update(clock);
 }
@@ -66,9 +81,43 @@ ParsePFLAU(NMEAInputLine &line, FlarmStatus &flarm, TimeStamp clock) noexcept
   flarm.gps = (FlarmStatus::GPSStatus)
     line.Read((int)FlarmStatus::GPSStatus::NONE);
 
-  line.Skip();
+  line.Skip(); /* Power */
   flarm.alarm_level = (FlarmTraffic::AlarmType)
     line.Read((int)FlarmTraffic::AlarmType::NONE);
+
+  // Extended fields (6-10): parse if bearing field is present (field 6).
+  // Per FTD-012 ICD these are only emitted when alarm_level > 0, but we
+  // check field presence to be robust against empty fields either way.
+  int bearing;
+  if (line.ReadChecked(bearing)) {
+    flarm.relative_bearing = (int16_t)bearing;
+    flarm.alarm_type = (uint8_t)line.ReadHex(0);
+
+    int vert;
+    if (line.ReadChecked(vert))
+      flarm.relative_vertical = vert;
+    else
+      flarm.relative_vertical = 0;
+
+    int dist;
+    if (line.ReadChecked(dist) && dist >= 0)
+      flarm.relative_distance = (uint32_t)dist;
+    else
+      flarm.relative_distance = 0;
+
+    char id_string[16];
+    line.Read(id_string, 16);
+    flarm.target_id = FlarmId::Parse(id_string, nullptr);
+
+    flarm.has_extended = true;
+  } else {
+    flarm.has_extended = false;
+    flarm.relative_bearing = 0;
+    flarm.alarm_type = 0;
+    flarm.relative_vertical = 0;
+    flarm.relative_distance = 0;
+    flarm.target_id.Clear();
+  }
 }
 
 void
@@ -109,9 +158,14 @@ ParsePFLAA(NMEAInputLine &line, TrafficList &flarm, TimeStamp clock, RangeFilter
       return;
   }
 
-  line.Skip(); /* id type */
+  int id_type_val;
+  if (line.ReadChecked(id_type_val) &&
+      id_type_val >= 0 && id_type_val <= 2)
+    traffic.id_type =
+      static_cast<FlarmTraffic::IdType>(id_type_val + 1);
+  else
+    traffic.id_type = FlarmTraffic::IdType::UNKNOWN;
 
-  // 5 id, 6 digit hex
   char id_string[16];
   line.Read(id_string, 16);
   traffic.id = FlarmId::Parse(id_string, nullptr);
@@ -156,6 +210,42 @@ ParsePFLAA(NMEAInputLine &line, TrafficList &flarm, TimeStamp clock, RangeFilter
   else
     traffic.type = (FlarmTraffic::AircraftType)type;
 
+  // PFLAA optional fields per FTD-012: NoTrack (v8+), Source (v9+), RSSI (v9+)
+  int no_track_val;
+  if (line.ReadChecked(no_track_val)) {
+    traffic.no_track = no_track_val != 0;
+
+    int source_val;
+    if (line.ReadChecked(source_val)) {
+      switch (source_val) {
+      case 0: case 1: case 3: case 4: case 6:
+        traffic.source = (FlarmTraffic::SourceType)source_val;
+        break;
+      default:
+        traffic.source = FlarmTraffic::SourceType::FLARM;
+        break;
+      }
+
+      double rssi_val;
+      if (line.ReadChecked(rssi_val)) {
+        traffic.rssi = (int8_t)rssi_val;
+        traffic.rssi_available = true;
+      } else {
+        traffic.rssi = 0;
+        traffic.rssi_available = false;
+      }
+    } else {
+      traffic.source = FlarmTraffic::SourceType::FLARM;
+      traffic.rssi = 0;
+      traffic.rssi_available = false;
+    }
+  } else {
+    traffic.no_track = false;
+    traffic.source = FlarmTraffic::SourceType::FLARM;
+    traffic.rssi = 0;
+    traffic.rssi_available = false;
+  }
+
   FlarmTraffic *flarm_slot = flarm.FindTraffic(traffic.id);
   if (flarm_slot == nullptr) {
     flarm_slot = flarm.AllocateTraffic();
@@ -173,6 +263,62 @@ ParsePFLAA(NMEAInputLine &line, TrafficList &flarm, TimeStamp clock, RangeFilter
   flarm_slot->valid.Update(clock);
 
   flarm_slot->Update(traffic);
+}
+
+void
+ParsePFLAJ(NMEAInputLine &line, FlarmState &state,
+           TimeStamp clock) noexcept
+{
+  const auto type = line.ReadView();
+  if (type != "A")
+    return;
+
+  int flight_val;
+  if (!line.ReadChecked(flight_val) || flight_val < 0 || flight_val > 1)
+    return;
+
+  int recorder_val;
+  if (!line.ReadChecked(recorder_val) || recorder_val < 0 || recorder_val > 2)
+    return;
+
+  state.flight = static_cast<FlarmState::Flight>(flight_val);
+  state.recorder = static_cast<FlarmState::Recorder>(recorder_val);
+  state.available.Update(clock);
+}
+
+void
+ParsePFLAQ(NMEAInputLine &line, FlarmProgress &progress,
+           TimeStamp clock) noexcept
+{
+  // PFLAQ,<Operation>,<Info>,<Progress> (PowerFLARM)
+  // PFLAQ,<Operation>,<Progress>        (Classic FLARM, no Info field)
+
+  const auto operation = line.ReadView();
+  if (operation.empty())
+    return;
+
+  const auto field2 = line.ReadView();
+
+  int progress_val;
+  if (line.ReadChecked(progress_val)) {
+    // PowerFLARM: field2 is Info, progress_val is Progress
+    if (progress_val < 0 || progress_val > 100)
+      return;
+
+    progress.info = field2;
+  } else {
+    // Classic FLARM: field2 is Progress (no Info field)
+    const auto parsed = ParseInteger<int>(field2);
+    if (!parsed || *parsed < 0 || *parsed > 100)
+      return;
+
+    progress_val = *parsed;
+    progress.info.clear();
+  }
+
+  progress.operation = operation;
+  progress.progress = (unsigned)progress_val;
+  progress.available.Update(clock);
 }
 
 void

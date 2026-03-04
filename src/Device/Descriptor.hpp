@@ -19,22 +19,18 @@
 #include "thread/Mutex.hxx"
 #include "thread/Debug.hpp"
 #include "time/FloatDuration.hxx"
-#include <string>
 #include "util/StaticFifoBuffer.hxx"
+
+#include <optional>
 
 #ifdef HAVE_INTERNAL_GPS
 #include "SensorListener.hpp"
 #endif
 
-#ifdef __APPLE__
-#include <TargetConditionals.h>
-#endif
-
-#if defined(ANDROID) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
 #include "Math/SelfTimingKalmanFilter1d.hpp"
 #include "Math/WindowFilter.hpp"
-#endif
 
+#include <string>
 #include <array>
 #include <atomic>
 #include <chrono>
@@ -46,6 +42,8 @@
 namespace Java { class GlobalCloseable; }
 class DeviceBlackboard;
 class NMEALogger;
+class GlidePolar;
+struct GeoPoint;
 struct NMEAInfo;
 struct MoreData;
 struct DerivedInfo;
@@ -163,8 +161,8 @@ class DeviceDescriptor final
   InternalSensors *internal_sensors = nullptr;
 #endif
       
-#if defined(ANDROID) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
-  /* We use a Kalman filter to smooth (Android/iPhone) device pressure sensor
+#ifdef HAVE_INTERNAL_GPS
+  /* We use a Kalman filter to smooth device pressure sensor
      noise.  The filter requires two parameters: the first is the
      variance of the distribution of second derivatives of pressure
      values that we expect to see in flight, and the second is the
@@ -539,6 +537,12 @@ public:
   bool PutBugs(double bugs, OperationEnvironment &env) noexcept;
   bool PutBallast(double fraction, double overload,
                   OperationEnvironment &env) noexcept;
+  bool PutCrewMass(double crew_mass, OperationEnvironment &env) noexcept;
+  bool PutEmptyMass(double empty_mass, OperationEnvironment &env) noexcept;
+  bool PutPolar(const GlidePolar &polar, OperationEnvironment &env) noexcept;
+  bool PutTarget(const GeoPoint &location, const char *name,
+                 std::optional<double> elevation,
+                 OperationEnvironment &env) noexcept;
   bool PutVolume(unsigned volume, OperationEnvironment &env) noexcept;
   bool PutPilotEvent(OperationEnvironment &env) noexcept;
   bool PutActiveFrequency(RadioFrequency frequency,
@@ -552,6 +556,8 @@ public:
   bool PutTransponderCode(TransponderCode code, OperationEnvironment &env) noexcept;
   bool PutQNH(AtmosphericPressure pres,
               OperationEnvironment &env) noexcept;
+  bool PutElevation(int elevation, OperationEnvironment &env) noexcept;
+  bool RequestElevation(OperationEnvironment &env) noexcept;
 
   /**
    * Caller is responsible for calling Borrow() and Return().
@@ -642,12 +648,10 @@ private:
   void OnSensorStateChanged() noexcept override;
   void OnSensorError(const char *msg) noexcept override;
 #endif // ANDROID
-#endif // HAVE_INTERNAL_GPS
-        
-#if defined(ANDROID) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+
   void OnBarometricPressureSensor(float pressure,
                                   float sensor_noise_variance) noexcept override;
-#endif
+#endif // HAVE_INTERNAL_GPS
 };
 
 /**

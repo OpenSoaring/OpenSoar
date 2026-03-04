@@ -162,9 +162,12 @@ public:
   bool PutStandbyFrequency(RadioFrequency frequency,
                            const char *name,
                            OperationEnvironment &env) override;
-  bool PutTransponderCode(TransponderCode code, OperationEnvironment &env) override;
-  void OnSensorUpdate(const MoreData &basic) override;
-  void OnCalculatedUpdate(const MoreData &basic, const DerivedInfo &calculated) override;
+  bool ExchangeRadioFrequencies(OperationEnvironment &env,
+                                NMEAInfo &info) override;
+  bool PutTransponderCode(TransponderCode code,
+                          OperationEnvironment &env) override;
+  void OnCalculatedUpdate(const MoreData &basic, [[maybe_unused]]
+                          const DerivedInfo &calculated) override;
 };
 
 bool
@@ -208,6 +211,15 @@ ACDDevice::PutTransponderCode(TransponderCode code, OperationEnvironment &env)
 }
 
 bool
+ACDDevice::ExchangeRadioFrequencies(OperationEnvironment &env,
+                                    [[maybe_unused]] NMEAInfo &info)
+{
+  const char *sentence = "PAAVX,COM,XCHN";
+  PortWriteNMEA(port, sentence, env);
+  return true;
+}
+
+bool
 ACDDevice::ParseNMEA(const char *_line, NMEAInfo &info)
 {
   if (!VerifyNMEAChecksum(_line))
@@ -222,7 +234,8 @@ ACDDevice::ParseNMEA(const char *_line, NMEAInfo &info)
 }
 
 void
-ACDDevice::OnSensorUpdate(const MoreData &basic)
+ACDDevice::OnCalculatedUpdate(const MoreData &basic, 
+                              [[maybe_unused]] const DerivedInfo &calculated)
 {
   NullOperationEnvironment env;
 
@@ -240,19 +253,6 @@ ACDDevice::OnSensorUpdate(const MoreData &basic)
     FormatGPGGA(buffer, sizeof(buffer), basic);
     PortWriteNMEA(port, buffer, env);
   }
-}
-
-void
-ACDDevice::OnCalculatedUpdate(const MoreData &basic,[[maybe_unused]] const DerivedInfo &calculated)
-{
-   NullOperationEnvironment env;
-
-   if (basic.settings.qnh_available.IsValid()){
-	 char buffer[100];
-     unsigned qnh = basic.settings.qnh.GetPascal();
-     sprintf(buffer,"PAAVC,S,ALT,QNH,%u",qnh);
-     PortWriteNMEA(port, buffer, env);
-   }
 }
 
 static Device *

@@ -472,7 +472,7 @@ DeviceDescriptor::Open(OperationEnvironment &env)
   assert(open_job == nullptr);
 
   char buffer[64];
-  LogFormat("Opening device %s", config.GetPortName(buffer, 64));
+  LogFormat("Opening device: %s", config.GetPortName(buffer, 64));
 
 #ifdef ANDROID
   /* reset the Kalman filter */
@@ -563,7 +563,7 @@ DeviceDescriptor::AutoReopen(OperationEnvironment &env)
     return;
 
   char buffer[64];
-  LogFormat("Reconnecting to device %s", config.GetPortName(buffer, 64));
+  LogFormat("Reconnecting to device: %s", config.GetPortName(buffer, 64));
 
   InputEvents::processGlideComputer(GCE_COMMPORT_RESTART);
   Reopen(env);
@@ -882,6 +882,120 @@ DeviceDescriptor::PutBallast(double fraction, double overload,
 }
 
 bool
+DeviceDescriptor::PutCrewMass(double crew_mass, OperationEnvironment &env) noexcept
+{
+  assert(InMainThread());
+
+  if (device == nullptr || !config.sync_to_device ||
+      settings_sent.ComparePolarPilotWeight(crew_mass))
+    return true;
+
+  if (!Borrow())
+    /* TODO: postpone until the borrowed device has been returned */
+    return false;
+
+  try {
+    const ScopeReturnDevice restore(*this, env);
+    if (!device->PutCrewMass(crew_mass, env))
+      return false;
+  } catch (OperationCancelled) {
+    return false;
+  } catch (...) {
+    LogError(std::current_exception(), "PutCrewMass() failed");
+    return false;
+  }
+
+  settings_sent.polar_pilot_weight = crew_mass;
+  settings_sent.polar_pilot_weight_available.Update(GetClock());
+
+  return true;
+}
+
+bool
+DeviceDescriptor::PutEmptyMass(double empty_mass, OperationEnvironment &env) noexcept
+{
+  assert(InMainThread());
+
+  if (device == nullptr || !config.sync_to_device ||
+      settings_sent.ComparePolarEmptyWeight(empty_mass))
+    return true;
+
+  if (!Borrow())
+    /* TODO: postpone until the borrowed device has been returned */
+    return false;
+
+  try {
+    const ScopeReturnDevice restore(*this, env);
+    if (!device->PutEmptyMass(empty_mass, env))
+      return false;
+  } catch (OperationCancelled) {
+    return false;
+  } catch (...) {
+    LogError(std::current_exception(), "PutEmptyMass() failed");
+    return false;
+  }
+
+  settings_sent.polar_empty_weight = empty_mass;
+  settings_sent.polar_empty_weight_available.Update(GetClock());
+
+  return true;
+}
+
+bool
+DeviceDescriptor::PutPolar(const GlidePolar &polar,
+                           OperationEnvironment &env) noexcept
+{
+  assert(InMainThread());
+
+  if (device == nullptr || !config.sync_to_device ||
+      config.polar_sync != DeviceConfig::PolarSync::SEND)
+    return true;
+
+  if (!Borrow())
+    return false;
+
+  try {
+    const ScopeReturnDevice restore(*this, env);
+    if (!device->PutPolar(polar, env))
+      return false;
+  } catch (OperationCancelled) {
+    return false;
+  } catch (...) {
+    LogError(std::current_exception(), "PutPolar() failed");
+    return false;
+  }
+
+  return true;
+}
+
+bool
+DeviceDescriptor::PutTarget(const GeoPoint &location, const char *name,
+                            std::optional<double> elevation,
+                            OperationEnvironment &env) noexcept
+{
+  assert(InMainThread());
+
+  if (device == nullptr || !config.sync_to_device)
+    return true;
+
+  if (!Borrow())
+    return false;
+
+  try {
+    const ScopeReturnDevice restore(*this, env);
+    if (!device->PutTarget(location, name, elevation, env))
+      return false;
+  } catch (OperationCancelled) {
+    return false;
+  } catch (...) {
+    LogError(std::current_exception(), "PutTarget() failed");
+    return false;
+  }
+
+  return true;
+}
+
+bool
 DeviceDescriptor::PutVolume(unsigned volume,
                             OperationEnvironment &env) noexcept
 {
@@ -1060,6 +1174,62 @@ DeviceDescriptor::PutQNH(const AtmosphericPressure value,
   return true;
 }
 
+bool
+DeviceDescriptor::PutElevation(int elevation, OperationEnvironment &env) noexcept
+{
+  assert(InMainThread());
+
+  if (device == nullptr || !config.sync_to_device ||
+      settings_sent.CompareElevation(elevation))
+    return true;
+
+  if (!Borrow())
+    /* TODO: postpone until the borrowed device has been returned */
+    return false;
+
+  try {
+    ScopeReturnDevice restore(*this, env);
+    if (!device->PutElevation(elevation, env))
+      return false;
+  } catch (OperationCancelled) {
+    return false;
+  } catch (...) {
+    LogError(std::current_exception(), "PutElevation() failed");
+    return false;
+  }
+
+  settings_sent.elevation = elevation;
+  settings_sent.elevation_available.Update(GetClock());
+
+  return true;
+}
+
+bool
+DeviceDescriptor::RequestElevation(OperationEnvironment &env) noexcept
+{
+  assert(InMainThread());
+
+  if (device == nullptr)
+    return true;
+
+  if (!Borrow())
+    /* TODO: postpone until the borrowed device has been returned */
+    return false;
+
+  try {
+    ScopeReturnDevice restore(*this, env);
+    if (!device->RequestElevation(env))
+      return false;
+  } catch (OperationCancelled) {
+    return false;
+  } catch (...) {
+    LogError(std::current_exception(), "RequestElevation() failed");
+    return false;
+  }
+
+  return true;
+}
+
 static bool
 DeclareToFLARM(const struct Declaration &declaration, Port &port,
                const Waypoint *home, OperationEnvironment &env)
@@ -1113,20 +1283,65 @@ DeviceDescriptor::Declare(const struct Declaration &declaration,
   assert(driver != nullptr);
   assert(device != nullptr);
 
-  // explicitly set passthrough device? Use it...
+  /* always declare to the primary device first */
+  StaticString<60> text;
+  text.Format("%s: %s.", _("Sending declaration"), driver->display_name);
+  env.SetText(text);
+
+  bool result = device->Declare(declaration, home, env);
+
   if (driver->HasPassThrough() && second_device != nullptr) {
-    // set the primary device to passthrough
+    /* explicitly configured passthrough device (e.g. FLARM behind
+       LXNAV vario): enable passthrough and declare to it */
+    text.Format("%s: %s.", _("Sending declaration"),
+                second_driver->display_name);
+    env.SetText(text);
+
+    /* The primary declaration (above) may have stopped the Rx
+       thread.  Restart it so EnablePassThrough() operates with the
+       Rx thread consuming data — this is required for the vario to
+       properly transition to DIRECT mode and for the serial buffers
+       to be drained while the mode switch settles. */
+    port->StartRxThread();
+
     device->EnablePassThrough(env);
-    return second_device != nullptr &&
-      second_device->Declare(declaration, home, env);
+
+    /* Stop the Rx thread and flush all stale data from the serial
+       buffers.  Then send a FLARM version request as a "ping" to
+       verify the passthrough is working bidirectionally before
+       attempting the actual declaration.  This also gives the vario
+       firmware additional time to complete the DIRECT mode
+       transition. */
+    port->StopRxThread();
+    port->FullFlush(env, std::chrono::milliseconds(50),
+                    std::chrono::milliseconds(500));
+    PortWriteNMEA(*port, "PFLAV,R", env);
+    try {
+      port->ExpectString("PFLAV,A",  env, std::chrono::seconds(2));
+    } catch (...) {
+      /* FLARM did not respond to the ping — passthrough may not be
+         working; continue anyway and let the declaration fail
+         gracefully */
+    }
+    port->StartRxThread();
+
+    result |= second_device->Declare(declaration, home, env);
   } else {
-    /* enable the "muxed FLARM" hack? */
+    /* no explicit passthrough device; try the "muxed FLARM" hack
+       if FLARM sentences were detected in the NMEA stream */
     const bool flarm = blackboard.IsFLARM(index) &&
       !IsDriver("FLARM");
 
-    return DoDeclare(declaration, *port, *driver, device, flarm,
-                     home, env);
+    if (flarm) {
+      text.Format("%s: FLARM.", _("Sending declaration"));
+      env.SetText(text);
+
+      result |= DeclareToFLARM(declaration, *port, *driver, device,
+                                home, env);
+    }
   }
+
+  return result;
 }
 
 bool
@@ -1304,7 +1519,7 @@ DeviceDescriptor::PortError(const char *msg) noexcept
 {
   {
     char buffer[64];
-    LogFormat("Error on device %s: %s",
+    LogFormat("Device error on %s: %s",
               config.GetPortName(buffer, 64), msg);
   }
 
@@ -1350,13 +1565,17 @@ bool
 DeviceDescriptor::LineReceived(const char *line) noexcept
 {
   if (nmea_logger != nullptr) {
-    std::string log_line = DateTime::ms_time_str(
-      std::chrono::system_clock::now(), "%H%M%S");
-    log_line += " - ";
-    log_line += config.driver_name.c_str();
-    log_line += ": ";
-    log_line += line;
-    nmea_logger->Log(log_line.c_str());
+    /* Skip logging high-frequency LXWP2 sentences */
+    if (!StringStartsWith(line, "$LXWP2,")) {
+
+      std::string log_line = DateTime::ms_time_str(
+        std::chrono::system_clock::now(), "%H%M%S");
+      log_line += " - ";
+      log_line += config.driver_name.c_str();
+      log_line += ": ";
+      log_line += line;
+      nmea_logger->Log(log_line.c_str());
+    }
   }
 
   if (dispatcher != nullptr)

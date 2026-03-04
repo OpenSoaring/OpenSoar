@@ -23,9 +23,33 @@ struct FlarmTraffic {
   };
 
   /**
+   * Traffic source type (PFLAA field 12, protocol v7+).
+   * @see FTD-012 Data Port ICD, PFLAA sentence
+   */
+  enum class SourceType: uint8_t {
+    FLARM = 0,
+    ADSB = 1,
+    ADSR = 3,
+    TISB = 4,
+    MODES = 6,
+  };
+
+  /**
+   * PFLAA ID type: interpretation of the <ID> field.
+   * Wire values are 0/1/2 with empty meaning unknown;
+   * offset by 1 so UNKNOWN maps to 0.
+   * @see FTD-012 Data Port ICD, PFLAA <IDType>
+   */
+  enum class IdType : uint8_t {
+    UNKNOWN = 0,
+    RANDOM = 1,
+    ICAO = 2,
+    FLARM = 3,
+  };
+
+  /**
    * FLARM aircraft types
-   * @see http://www.flarm.com/support/manual/FLARM_DataportManual_v4.06E.pdf
-   * Page 8
+   * @see FTD-012 Data Port ICD
    */
   enum class AircraftType: uint8_t {
     UNKNOWN = 0,          //!< unknown
@@ -92,8 +116,23 @@ struct FlarmTraffic {
   /** Type of the aircraft */
   AircraftType type;
 
+  /** Traffic source (PFLAA v9+) */
+  SourceType source;
+
+  /** ID type: how to interpret the FLARM id (PFLAA <IDType>) */
+  IdType id_type;
+
+  /**
+   * Signal strength in dBm (PFLAA field 13, v9+).
+   * Only valid when #rssi_available is true.
+   */
+  int8_t rssi;
+
   /** Is the target in stealth mode */
   bool stealth;
+
+  /** Does the target have no-tracking enabled (PFLAA field 14, v8+) */
+  bool no_track;
 
   /** Has the geographical location been calculated yet? */
   bool location_available;
@@ -116,6 +155,9 @@ struct FlarmTraffic {
   /** Has the averaged climb rate of the target been calculated yet? */
   bool climb_rate_avg30s_available;
 
+  /** Was the RSSI value received from the device? */
+  bool rssi_available;
+
   bool IsDefined() const noexcept {
     return valid;
   }
@@ -135,6 +177,11 @@ struct FlarmTraffic {
   void Clear() noexcept {
     valid.Clear();
     name.clear();
+    source = SourceType::FLARM;
+    id_type = IdType::UNKNOWN;
+    rssi = 0;
+    rssi_available = false;
+    no_track = false;
   }
 
   Angle Bearing() const noexcept {
@@ -163,6 +210,9 @@ struct FlarmTraffic {
 
   [[gnu::const]]
   static const char *GetTypeString(AircraftType type) noexcept;
+
+  [[gnu::const]]
+  static const char *GetSourceString(SourceType source) noexcept;
 
   void Update(const FlarmTraffic &other) noexcept;
 };

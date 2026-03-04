@@ -187,12 +187,11 @@ EWDevice::AddWaypoint(const Waypoint &way_point, OperationEnvironment &env)
   if (ewDecelTpIndex > 6)
     return false;
 
-  // copy at most 6 chars
   if (way_point.name.empty())
     return false;
 
   char IDString[12];
-  char *end = CopyTruncateString(IDString, 7, way_point.name.c_str());
+  char *end = CopyTruncateString(IDString, 7, way_point.name.data());
 
   // fill up with spaces
   std::fill(end, IDString + 6, ' ');

@@ -401,8 +401,8 @@ AnemoiDevice::ParseData(const std::byte *data, struct NMEAInfo & info)
   // Temperature (°C):
   value = ReadByte(&data);
   if (value >= -50 && value <= +100) {
-    info.temperature.FromCelsius(value);
-    info.temperature_available = true;
+    info.temperature = Temperature::FromCelsius(value);
+    info.temperature_available.Update(info.clock);
   }
 
   // Pitot calibration (%):

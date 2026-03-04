@@ -9,6 +9,7 @@
 #include "io/LineReader.hpp"
 #include "io/FileLineReader.hpp"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 /**
@@ -72,9 +73,9 @@ LoadRecord(FlarmNetRecord &record, const char *line)
   if (strlen(line) < 172)
     return false;
 
-  char buffer[16];
-  LoadString(line, 6, buffer, sizeof(buffer));
-  record.id = FlarmId::Parse(buffer, nullptr);
+  char id_buf[16];
+  LoadString(line, 6, id_buf, sizeof(id_buf));
+  record.id = FlarmId::Parse(id_buf, nullptr);
 
   LoadString(line + 12, 21, record.pilot);
   LoadString(line + 54, 21, record.airfield);
@@ -82,8 +83,12 @@ LoadRecord(FlarmNetRecord &record, const char *line)
   LoadString(line + 138, 7, record.registration);
   LoadString(line + 152, 3, record.callsign);
 
-  LoadString(line + 158, 7, buffer, sizeof(buffer));
-  record.frequency = RadioFrequency::Parse(std::string_view(buffer));
+  StaticString<LatinBufferSize(8)> freq_text;
+  LoadString(line + 158, 7, freq_text);
+  char freq_ascii[16];
+  char *freq_end = CopyASCII(freq_ascii, sizeof(freq_ascii) - 1, freq_text);
+  *freq_end = '\0';
+  record.frequency = RadioFrequency::Parse(std::string_view(freq_ascii));
 
   // Terminate callsign string on first whitespace
   for (char *i = record.callsign.buffer(); *i != '\0'; ++i)

@@ -7,8 +7,6 @@
 #include "Geo/GeoVector.hpp"
 #include "time/Cast.hxx"
 
-#include <string_view>
-
 void
 FlarmComputer::Process(FlarmData &flarm, const FlarmData &last_flarm,
                        const NMEAInfo &basic) noexcept
@@ -46,11 +44,16 @@ FlarmComputer::Process(FlarmData &flarm, const FlarmData &last_flarm,
 
   // for each item in traffic
   for (auto &traffic : flarm.traffic.list) {
-    // Keep the cached display name (callsign) in sync with current sources
-    const std::string_view fname = FlarmDetails::LookupCallsign(traffic.id);
-    if (!fname.empty() && 
-         (!traffic.HasName() || traffic.name.c_str() != fname))
-      traffic.name = fname;
+    // Keep the cached display name (callsign) in sync with current sources.
+    // Skip for no_track targets and random IDs: they must not be resolved
+    // against databases (FTD-012 NoTrack / random ID semantics).
+    if (!traffic.no_track &&
+        traffic.id_type != FlarmTraffic::IdType::RANDOM) {
+      const char *fname = FlarmDetails::LookupCallsign(traffic.id);
+      if (fname != nullptr &&
+          (!traffic.HasName() || !traffic.name.equals(fname)))
+        traffic.name = fname;
+    }
 
     // Calculate distance
     traffic.distance = hypot(traffic.relative_north, traffic.relative_east);
@@ -87,7 +90,7 @@ FlarmComputer::Process(FlarmData &flarm, const FlarmData &last_flarm,
     // Check if the target has been seen before in the last seconds
     const FlarmTraffic *last_traffic =
       last_flarm.traffic.FindTraffic(traffic.id);
-    if (last_traffic == NULL || !last_traffic->valid)
+    if (last_traffic == nullptr || !last_traffic->valid)
       continue;
 
     // Calculate the time difference between now and the last contact

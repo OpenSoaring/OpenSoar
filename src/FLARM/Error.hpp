@@ -4,10 +4,10 @@
 #pragma once
 
 #include "NMEA/Validity.hpp"
+#include "util/StaticString.hxx"
 
 #include <type_traits>
 #include <cstdint>
-
 #ifdef _WIN32
 #undef NO_ERROR
 #endif
@@ -36,6 +36,7 @@ struct FlarmError {
     EEPROM = 0x28,
     GENERAL = 0x29,
     TRANSPONDER_ADSB = 0x2a,
+    EEPROM2 = 0x2b,
     GPIO = 0x2c,
     GPS_COMMUNICATION = 0x31,
     GPS_CONFIGURATION = 0x32,
@@ -70,6 +71,9 @@ struct FlarmError {
   Severity severity;
   Code code;
 
+  /** Device-provided error description (PFLAE v7+, max 40 chars) */
+  StaticString<41> message;
+
   constexpr bool IsWarning() const noexcept {
     return severity >= REDUCED_FUNCTIONALITY;
   }
@@ -80,12 +84,14 @@ struct FlarmError {
 
   constexpr void Clear() noexcept {
     available.Clear();
+    message.clear();
   }
 
   constexpr void Complement(const FlarmError &add) noexcept {
     if (available.Complement(add.available)) {
       severity = add.severity;
       code = add.code;
+      message = add.message;
     }
   }
 
