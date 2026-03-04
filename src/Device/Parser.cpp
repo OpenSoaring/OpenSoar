@@ -98,17 +98,17 @@ NMEAParser::ParseLine(const char *string, NMEAInfo &info)
       return true;
     }
 
-    if (type2 == "PFLAJ"sv) {
+    if (type2 == "PFLAJ") {
       ParsePFLAJ(line, info.flarm.state, info.clock);
       return true;
     }
 
-    if (type2 == "PFLAQ"sv) {
+    if (type2 == "PFLAQ") {
       ParsePFLAQ(line, info.flarm.progress, info.clock);
       return true;
     }
 
-    if (type2 == "PFLAM"sv) {
+    if (type2 == "PFLAM") {
       ParsePFLAM(line);
       return true;
     }

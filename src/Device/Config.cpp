@@ -185,11 +185,11 @@ DeviceConfig::Clear() noexcept
   sync_from_device = true;
   sync_to_device = true;
   k6bt = false;
+  polar_sync = PolarSync::OFF;
   engine_type = EngineType::NONE;
 #ifndef NDEBUG
   dump_port = false;
 #endif
-//  dump_port = true;
 }
 
 const char *
@@ -302,7 +302,7 @@ DeviceConfig::GetPortName(char *buffer, size_t max_size) const noexcept
 
   case PortType::USB_SERIAL:
     StringFormat(buffer, max_size, "%s: %s",
-                 _("USB serial"), port_name.c_str());
+                 _("USB serial"), path.c_str());
     return buffer;
   }
 
