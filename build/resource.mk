@@ -218,6 +218,16 @@ $(TARGET_OUTPUT_DIR)/include/MakeResource.hpp: $(TARGET_OUTPUT_DIR)/resources.tx
 	$(Q)$(PERL) tools/GenerateMakeResource.pl <$< >$@.$(RANDOM_NUMBER).tmp
 	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
 
+<<<<<<< HEAD
+=======
+$(TARGET_OUTPUT_DIR)/include/ResourceLookup_entries.hpp: $(TARGET_OUTPUT_DIR)/resources.txt tools/GenerateResourceLookup.pl | $(TARGET_OUTPUT_DIR)/include/dirstamp
+	@$(NQ)echo "  GEN     $@"
+	$(Q)$(PERL) tools/GenerateResourceLookup.pl <$< >$@.tmp
+	$(Q)mv $@.tmp $@
+
+$(call SRC_TO_OBJ,$(SRC)/ResourceLookup.cpp): $(TARGET_OUTPUT_DIR)/include/ResourceLookup_entries.hpp $(TARGET_OUTPUT_DIR)/include/MakeResource.hpp
+
+>>>>>>> 73e526124a (build/resource.mk: change ext include file ResourceLookup_entries to hpp)
 ifeq ($(TARGET_IS_ANDROID),n)
 ifneq ($(TARGET),IOS)
 
