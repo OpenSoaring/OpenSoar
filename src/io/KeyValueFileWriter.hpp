@@ -12,5 +12,4 @@ public:
   explicit KeyValueFileWriter(BufferedOutputStream &_os):os(_os) {}
 
   void Write(const char *key, const char *value);
-
 };

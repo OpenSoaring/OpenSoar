@@ -5,7 +5,6 @@
 
 #include <memory>
 
-
 class Reader;
 
 /**

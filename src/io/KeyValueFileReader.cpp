@@ -40,20 +40,6 @@ KeyValueFileReader::Read(KeyValuePair &pair, char split_character)
 
       *p = '\0';
     }
-/*
-    while (*line == ' ')
-      line++;
-    p = line + strlen(line) - 1;
-    while (*p == ' ' && p > line)
-      p--;
-    *(p + 1) = '\0';
-    while (*value == ' ')
-      value++;
-    p = value + strlen(value) - 1;
-    while (*p == ' ' && p > value)
-      p--;
-    *(p+1) = '\0';
-*/
     pair.key = trim(line);
     pair.value = trim(value);
     return true;

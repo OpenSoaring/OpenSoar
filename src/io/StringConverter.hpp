@@ -5,8 +5,8 @@
 
 #include "Charset.hpp"
 #include "util/ReusableArray.hpp"
-#include <string>
 
+#include <string_view>
 
 /**
  * Helper which imports strings from a file to `char*`.

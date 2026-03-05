@@ -95,7 +95,6 @@ public:
 
 private:
 	bool AppendToBuffer(std::span<const std::byte> src) noexcept;
-
 };
 
 /**

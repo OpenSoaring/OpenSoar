@@ -22,4 +22,3 @@ KeyValueFileWriter::Write(const char *key, const char *value)
   // write the value to the output file
   os.Fmt("{}=\"{}\"\n", key, value);
 }
-
