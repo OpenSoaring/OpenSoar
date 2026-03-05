@@ -50,7 +50,7 @@ struct WaypointFilter
    * When type_index is FILE, this specifies which file to filter by.
    * -1 = all PRIMARY files, 0+ = specific file index
    */
-  uint8_t file_num = -1;
+  int file_num = -1;
 
   void Clear() {
     name.clear();
