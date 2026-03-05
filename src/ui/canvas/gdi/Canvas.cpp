@@ -7,29 +7,15 @@
 #include "Asset.hpp" /* for needclipping */
 #include "AlphaBlend.hpp"
 #include "Math/Angle.hpp"
-#include "util/UTF8.hpp"
 
 #include <algorithm>
+
+#include "UTF8Win.hpp"
 
 static bool UTF8TextOut(HDC hdc, const PixelPoint &p, unsigned options, const RECT *r,
             std::string_view _text, const int *lpDx) {
   auto text = UTF8ToWide(_text);
-#if 1
-  return ::ExtTextOutW(hdc, p.x, p.y, options, r, text.c_str(), text.size(),
-  lpDx);
-#else
-  unsigned format = DT_NOPREFIX | DT_WORDBREAK | DT_LEFT;
-  RECT rx = {p.x, p.y, 0, 0}; 
-  int h = 0;
-  if (r)
-    rx = {r->left + p.x, r->top + p.y, r->right - r->left, r->bottom - r->top}; 
-
-  // calculate the rectangle...
-  h = ::DrawTextW(hdc, text.c_str(), text.size(), &rx, DT_CALCRECT); 
-  // and paint...
-  h = ::DrawTextW(hdc, text.c_str(), text.size(), &rx, format);
-  return true;
-#endif
+  return ::ExtTextOutW(hdc, p.x, p.y, options, r, text.c_str(), text.size(), lpDx);
 }
 
 void
@@ -113,10 +99,7 @@ Canvas::CalcTextSize(std::string_view _text) const noexcept
 {
   assert(IsDefined());
 
-  // std::string_view text = UTF8ToWide(_text.data());
   auto text = UTF8ToWide(_text);
-  // std::wstring text = UTF8ToWide(_text.data());
-
   SIZE size;
   ::GetTextExtentPointW(dc, text.c_str(), text.size(), &size);
   return PixelSize(size.cx, size.cy);
@@ -147,7 +130,7 @@ Canvas::DrawOpaqueText(PixelPoint p, const PixelRect &_rc,
   assert(IsDefined());
 
   RECT rc = _rc;
-  UTF8TextOut(dc, p, ETO_OPAQUE, &rc, text,nullptr);
+  UTF8TextOut(dc, p, ETO_OPAQUE, &rc, text, nullptr);
 }
 
 void
@@ -169,7 +152,7 @@ Canvas::DrawClippedText(PixelPoint p, unsigned width,
   RECT rc;
   ::SetRect(&rc, p.x, p.y,
             p.x + std::min(width, size.width), p.y + size.height);
-  UTF8TextOut(dc, p, ETO_CLIPPED, &rc, text,nullptr);
+  UTF8TextOut(dc, p, ETO_CLIPPED, &rc, text, nullptr);
 }
 
 void
@@ -282,10 +265,6 @@ void
 Canvas::Stretch(PixelPoint dest_position, PixelSize dest_size,
                 const Bitmap &src)
 {
-#if defined(_DEBUG)
-  if (!src.IsDefined())
-    return;
-#endif
   assert(src.IsDefined());
 
   Stretch(dest_position, dest_size,
@@ -356,7 +335,8 @@ unsigned
 Canvas::DrawFormattedText(RECT rc, std::string_view _text, unsigned format) {
   format |= DT_NOPREFIX | DT_WORDBREAK;
   auto text = UTF8ToWide(_text);
-
-  ::DrawTextW(dc, text.data(), text.size(), &rc, format);
-  return rc.bottom - rc.top;
+  const int height = ::DrawTextW(dc, text.data(),
+                                 static_cast<int>(text.size()),
+                                 &rc, format);
+  return height > 0 ? static_cast<unsigned>(height) : 0;
 }

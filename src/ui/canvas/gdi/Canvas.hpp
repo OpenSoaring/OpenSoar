@@ -9,8 +9,7 @@
 #include "ui/canvas/Pen.hpp"
 #include "ui/dim/Rect.hpp"
 #include "ui/dim/BulkPoint.hpp"
-#include <string>
-
+#include <string_view>
 #include <cassert>
 
 #include <handleapi.h> // for INVALID_HANDLE_VALUE
@@ -384,7 +383,7 @@ public:
     DrawText(p, text);
   }
 
-  unsigned DrawFormattedText(RECT rc, std::string_view _text, unsigned format);
+  unsigned DrawFormattedText(RECT rc, std::string_view text, unsigned format);
 
   void Copy(PixelPoint dest_position, PixelSize dest_size,
             HDC src, PixelPoint src_position,

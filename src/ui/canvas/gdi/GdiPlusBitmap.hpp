@@ -7,8 +7,9 @@
 
 #include "ui/canvas/custom/UncompressedImage.hpp"
 #include <windef.h>
+#include <string_view>
 
-HBITMAP GdiLoadImage(const char* filename);
+HBITMAP GdiLoadImage(std::string_view filename);
 HBITMAP GdiLoadImage(UncompressedImage &&uncompressed); 
 void GdiStartup();
 void GdiShutdown();
