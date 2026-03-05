@@ -27,9 +27,6 @@ add_compile_definitions(BOOST_JSON_HEADER_ONLY)
 add_compile_definitions(BOOST_JSON_STANDALONE)
 
         # add_compile_definitions(HAVE_MSVCRT)
-# add_compile_definitions(UNICODE)  # ???
-# add_compile_definitions(_UNICODE)
-
 # add_compile_definitions(HAVE_SKYSIGHT)
 set (HAVE_SKYSIGHT ON)
 set (SKYSIGHT_FORECAST ON)
