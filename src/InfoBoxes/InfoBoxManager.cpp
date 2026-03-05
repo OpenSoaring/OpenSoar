@@ -194,7 +194,7 @@ InfoBoxManager::ShowInfoBoxPicker(const int i) noexcept
   for (unsigned j = InfoBoxFactory::e_NUM_AREA_2nd;
        j < InfoBoxFactory::NUM_TYPES_2nd; j++) {
     const InfoBoxFactory::Type type = (InfoBoxFactory::Type)(j);
-    const TCHAR *desc = InfoBoxFactory::GetDescription(type);
+    const char *desc = InfoBoxFactory::GetDescription(type);
     list.Append(j, gettext(InfoBoxFactory::GetName(type)),
                 gettext(InfoBoxFactory::GetName(type)),
                 desc != NULL ? gettext(desc) : NULL);
