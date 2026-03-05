@@ -13,6 +13,8 @@
 #include "io/UniqueFileDescriptor.hxx"
 #include "util/Exception.hxx"
 
+#include <fmt/format.h>
+#include <cwchar>
 #include <filesystem>
 
 #include <stdio.h>
