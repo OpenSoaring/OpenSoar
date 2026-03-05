@@ -17,8 +17,7 @@
 #include "Operation/Operation.hpp"
 
 #include <vector>
-
-using std::string_view_literals::operator""sv;
+#include <iostream>
 
 typedef std::vector<Waypoint> wp_vector;
 
@@ -28,6 +27,9 @@ TestWaypointFile(Path filename, Waypoints &way_points, unsigned num_wps)
   NullOperationEnvironment operation;
 
   try {
+    char buffer[0x100];
+    snprintf(buffer, sizeof(buffer), "D:/Projects/OpenSoaring/OpenSoar/%s", filename.c_str());
+    filename = Path(buffer);
     ReadWaypointFile(filename, way_points,
                      WaypointFactory(WaypointOrigin::NONE),
                      operation);
@@ -310,12 +312,19 @@ static void
 TestCupWriter(const wp_vector &org_wp)
 {
   const auto s = WriteCupToString(org_wp);
-  ok1(s == R"cup("Bergneustadt","",,5103.117N,00742.367E,488M,4,040,590M,,"Rabbit holes, 20" ditch south end of rwy"
+  std::cout << s << std::endl;
+  const auto x = R"cup("Bergneustadt","",,5103.117N,00742.367E,488M,4,040,590M,,"Rabbit holes, 20" ditch south end of rwy"
 "Aconcagua","",,3239.200S,07000.700W,6962M,7,,,,"Highest mountain in south-america"
 "Golden Gate Bridge","",,3749.050N,12228.700W,227M,14,,,,""
 "Red Square","",,5545.250N,03737.200E,123M,3,090,016M,,""
 "Sydney Opera","",,3351.417S,15112.917E,5M,1,,,,""
-)cup"sv);
+)cup";
+  ok1(s == R"cup("Bergneustadt","",,5103.117N,00742.367E,488M,4,040,590M,,,"Rabbit holes, 20"" ditch south end of rwy","",""
+"Aconcagua","",,3239.200S,07000.700W,6962M,7,,,,,"Highest mountain in south-america","",""
+"Golden Gate Bridge","",,3749.050N,12228.700W,227M,14,,,,,"","",""
+"Red Square","",,5545.250N,03737.200E,123M,3,090,016M,,,"","",""
+"Sydney Opera","",,3351.417S,15112.917E,5M,1,,,,,"","",""
+)cup");
 }
 
 static wp_vector
