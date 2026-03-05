@@ -356,6 +356,8 @@ MakeCacheDirectory(const char *name) noexcept
 void
 InitialiseDataPath()
 {
+  // If data_paths is already set (e.g., by -datapath= command line option),
+  // don't overwrite it with default paths
   if (data_paths.empty()) {
     data_paths = FindDataPaths();
     if (data_paths.empty())
@@ -367,15 +369,15 @@ InitialiseDataPath()
     cache_path = context->GetExternalCacheDir(Java::GetEnv());
 
 #elif defined( _WIN32)  // Windows: Win32, Win64
-    PWSTR path = nullptr;
-    HRESULT hres = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path);
-    if (SUCCEEDED(hres)) {
+    char buffer[MAX_PATH];
+    if (SHGetSpecialFolderPath(nullptr, buffer, CSIDL_LOCAL_APPDATA,
+      true))  //result.empty()))
+    {
       /* cache path inside LocalAppData(e.g.
        * 'C:/Users/${USER}/AppData/Local/OpenSoar/.cache' ) */
-      std::string str = WideToUTF8(path);
-      CoTaskMemFree(path);
+      std::string str = buffer;
       std::replace(str.begin(), str.end(), '\\', '/');
-      cache_path = AllocatedPath::Build(str.c_str(), "OpenSoar/.cache");
+      cache_path = AllocatedPath::Build(str, "OpenSoar/.cache");
     } else {
       // cache path inside the data path
       cache_path = LocalPath(".cache");
