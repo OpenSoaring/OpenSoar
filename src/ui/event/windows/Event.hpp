@@ -31,7 +31,7 @@ struct Event {
     return msg.message == WM_CHAR ? 1 : 0;
   }
 
-  unsigned GetCharacter(size_t characterIdx) const {
+  unsigned GetCharacter([[maybe_unused]] size_t characterIdx) const {
     assert(GetCharacterCount() == 1);
     assert(characterIdx == 0);
 
