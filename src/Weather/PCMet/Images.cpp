@@ -116,8 +116,9 @@ PCMet::DownloadLatestImage(const char *type, const char *area,
            type, area);
 
   // download the HTML page
-  const auto response = co_await CoGet(curl, url, settings.www_credentials.username,
-                     settings.www_credentials.password, progress);
+  const auto response =
+    co_await CoGet(curl, url, settings.www_credentials.username,
+                   settings.www_credentials.password, progress);
 
   static constexpr char img_needle[] = "<img name=\"bild\" src=\"/";
   const char *img = strstr(response.body.c_str(), img_needle);
