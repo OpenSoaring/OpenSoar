@@ -313,16 +313,15 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
         if (packet.task->usage[i]) {
           int latitude = (int32_t)FromBE32(packet.task->latitude[i]);
           int longitude = (int32_t)FromBE32(packet.task->longitude[i]);
-
-          if (!ValidString(packet.task->name[i]))
+          std::string_view name{packet.task->name[i]};
+          if (!name.empty() && !ValidString(name))
             return false;
 
           os.Fmt("C{:02}{:05}{}{:03}{:05}{}{}\r\n",
                  abs(latitude) / 60000, abs(latitude) % 60000,
                  latitude >= 0 ?  'N' : 'S',
                  abs(longitude) / 60000, abs(longitude) % 60000,
-                 longitude >= 0 ? 'E' : 'W',
-                 packet.task->name[i]);
+                 longitude >= 0 ? 'E' : 'W', name);
         }
       }
       break;
