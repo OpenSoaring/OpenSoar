@@ -22,6 +22,7 @@ foreach(source_file ${TEST_LIST})
       ${test_path}/tap.c 
       # ${test_path}/test_debug.cpp  needs getopt
       ${test_path}/FakeLogFile.cpp 
+      ${test_path}/FakeSystem.cpp 
       ${SCRIPT_FILES}
     )
     set_target_properties(${test} PROPERTIES 
