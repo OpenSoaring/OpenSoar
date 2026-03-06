@@ -13,8 +13,6 @@
 
 #include <stdlib.h>
 
-using std::string_view_literals::operator""sv;
-
 struct Context {
   uint8_t flight_no = 0;
   char date[7]{};
@@ -24,7 +22,7 @@ struct Context {
   bool is_event = false;
   LXN::Event event;
   char fix_stat;
-  char vendor[3]{};
+  std::string_view vendor;
   LXN::ExtensionConfig k_ext, b_ext;
 
   constexpr Context() noexcept {
@@ -42,6 +40,33 @@ ValidString(std::span<const char> s) noexcept
 }
 
 static void
+OutTime(BufferedOutputStream &os, const unsigned time)
+{
+  os.Fmt("{:02}{:02}{:02}",
+    (unsigned) (time / 3600),
+    (unsigned) (time % 3600 / 60),
+    (unsigned) (time % 60));
+}
+
+static void
+OutLatitude(BufferedOutputStream &os, const int32_t latitude)
+{
+  os.Fmt("{:02}{:05}{}",
+    labs(latitude) / 60000,
+    labs(latitude) % 60000,
+    (char)(latitude >= 0 ? 'N' : 'S'));
+}
+
+static void
+OutLongitude(BufferedOutputStream &os, const int32_t longitude)
+{
+  os.Fmt("{:03}{:05}{}",
+    labs(longitude) / 60000,
+    labs(longitude) % 60000,
+    (char)(longitude >= 0 ? 'E' : 'W'));
+}
+
+static void
 HandlePosition(BufferedOutputStream &os, Context &context,
                const struct LXN::Position &position)
 {
@@ -53,20 +78,18 @@ HandlePosition(BufferedOutputStream &os, Context &context,
     longitude = context.origin_longitude + (int16_t)FromBE16(position.longitude);
 
     if (context.is_event) {
-        os.Fmt("E{:02}{:02}{:02}{}\r\n",
-               context.time / 3600, context.time % 3600 / 60,
-               context.time % 60, context.event.foo);
-        context.is_event = 0;
+      os.Write("E");
+      OutTime(os, context.time);
+      os.Write(context.event.foo);
+      os.NewLine(true);
+      context.is_event = 0;
     }
 
-    os.Fmt("B{:02}{:02}{:02}",
-           context.time / 3600, context.time % 3600 / 60, context.time % 60);
-    os.Fmt("{:02}{:05}{}" "{:03}{:05}{}",
-           abs(latitude) / 60000, abs(latitude) % 60000,
-           latitude >= 0 ? 'N' : 'S',
-           abs(longitude) / 60000, abs(longitude) % 60000,
-           longitude >= 0 ? 'E' : 'W');
-    os.Fmt("{}", context.fix_stat);
+    os.Write("B");
+    OutTime(os, context.time);
+    OutLatitude(os, latitude);
+    OutLongitude(os, longitude);
+    os.Write(context.fix_stat);
     os.Fmt("{:05}{:05}",
            /* altitudes can be negative, so cast the uint16_t to
               int16_t to interpret the most significant bit as sign
@@ -75,7 +98,7 @@ HandlePosition(BufferedOutputStream &os, Context &context,
            FromBE16(position.galt));
 
     if (context.b_ext.num == 0)
-        os.Write("\r\n");
+        os.NewLine(true);
 }
 
 static void
@@ -151,7 +174,7 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
     case LXN::START:
       data += sizeof(*packet.start);
       if (data > end ||
-          !StringStartsWith(packet.start->streraz, "STReRAZ"sv))
+          !StringStartsWith(packet.start->streraz, "STReRAZ"))
         return false;
 
       context.flight_no = packet.start->flight_no;
@@ -159,23 +182,18 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
 
     case LXN::ORIGIN:
       data += sizeof(*packet.origin);
+      //  commit text: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
       if (data > end)
         return false;
-
       context.origin_time = FromBE32(packet.origin->time);
       context.origin_latitude = (int32_t)FromBE32(packet.origin->latitude);
       context.origin_longitude = (int32_t)FromBE32(packet.origin->longitude);
 
-      os.Fmt("L{}ORIGIN{:02}{:02}{:02}" "{:02}{:05}{}" "{:03}{:05}{}\r\n",
-             std::string_view{context.vendor, sizeof(context.vendor)},
-             context.origin_time / 3600, context.origin_time % 3600 / 60,
-             context.origin_time % 60,
-             abs(context.origin_latitude) / 60000,
-             abs(context.origin_latitude) % 60000,
-             context.origin_latitude >= 0 ? 'N' : 'S',
-             abs(context.origin_longitude) / 60000,
-             abs(context.origin_longitude) % 60000,
-             context.origin_longitude >= 0 ? 'E' : 'W');
+      os.Fmt("L{}ORIGIN", context.vendor);
+      OutTime(os, context.origin_time);
+      OutLatitude(os, context.origin_latitude);
+      OutLongitude(os, context.origin_longitude);
+        os.NewLine(true);
       break;
 
     case LXN::SECURITY_OLD:
@@ -203,7 +221,7 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
       data += sizeof(*packet.position);
       if (data > end)
         return false;
-
+      
       HandlePosition(os, context, *packet.position);
       break;
 
@@ -301,13 +319,16 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
 
       // from a valid IGC file read with LXe:
       // C 11 08 11 14 11 18 11 08 11 0001 -2
-
-      os.Fmt("C{:02}{:02}{:02}{:02}{:02}{:02}"
-             "{:02}{:02}{:02}{:04}{:02}\r\n",
-             packet.task->day, packet.task->month, packet.task->year,
-             context.time / 3600, context.time % 3600 / 60, context.time % 60,
-             packet.task->day2, packet.task->month2, packet.task->year2,
-             FromBE16(packet.task->task_id), packet.task->num_tps);
+      
+      os.Write("C");
+      os.Fmt("{:02}{:02}{:02}",
+          packet.task->day, packet.task->month, packet.task->year);
+      OutTime(os, context.time);
+      os.Fmt("{:02}{:02}{:02}",
+          packet.task->day2, packet.task->month2, packet.task->year2);
+      os.Fmt("{:04}{:02}",
+          FromBE16(packet.task->task_id), packet.task->num_tps);
+      os.NewLine(true);
 
       for (unsigned i = 0; i < sizeof(packet.task->usage); ++i) {
         if (packet.task->usage[i]) {
@@ -317,11 +338,11 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
           if (!name.empty() && !ValidString(name))
             return false;
 
-          os.Fmt("C{:02}{:05}{}{:03}{:05}{}{}\r\n",
-                 abs(latitude) / 60000, abs(latitude) % 60000,
-                 latitude >= 0 ?  'N' : 'S',
-                 abs(longitude) / 60000, abs(longitude) % 60000,
-                 longitude >= 0 ? 'E' : 'W', name);
+          os.Write("C");
+          OutLatitude(os, latitude);
+          OutLongitude(os, longitude);  
+          os.Write(name);
+          os.NewLine(true);
         }
       }
       break;
@@ -445,12 +466,12 @@ LX::ConvertLXNToIGC(const void *_data, size_t _length,
         if (data > end)
           return false;
 
-        os.Fmt("{}\r\n",
-               std::string_view{packet.string->value, packet.string->length});
+        std::string_view line{packet.string->value, packet.string->length};
+        os.Write(line);
+		os.NewLine(true);
 
-        if (packet.string->length >= 12 + sizeof(context.vendor) &&
-            memcmp(packet.string->value, "HFFTYFRTYPE:", 12) == 0)
-          memcpy(context.vendor, packet.string->value + 12, sizeof(context.vendor));
+        if (line.length() >= (12 + 3) && line.starts_with("HFFTYFRTYPE:"))
+          context.vendor =  std::string_view{ packet.string->value + 12, 3 };
       } else
         return false;
     }
