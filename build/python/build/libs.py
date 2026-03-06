@@ -221,7 +221,7 @@ cares = CmakeProject(
         "-DCARES_BUILD_TOOLS=OFF",
         "-DCARES_THREADS=OFF",
     ],
-    patches=abspath("lib/c-ares/patches"),
+    patches=abspath("lib/cares/patches"),
 )
 
 curl = CmakeProject(
@@ -273,7 +273,7 @@ sqlite3 = AutotoolsProject(
         "--enable-static",
         "--disable-fts5",
     ],
-    patches=abspath("lib/sqlite/patches"),
+    patches=abspath("lib/sqlite3/patches"),
     autogen=True,
 )
 
