@@ -219,6 +219,7 @@ DownloadTask(CurlGlobal &curl,
       break;
 
   }
+  delete item;
 }
 
 void
