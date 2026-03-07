@@ -72,11 +72,13 @@ public:
 	/**
 	 * Finish the current line.
 	 */
-	void NewLine() {
+	void NewLine(bool win_style = false) {
 #ifdef _WIN32
-		Write('\r');
+    win_style = true;
 #endif
-		Write('\n');
+    if (win_style)
+      Write('\r');
+    Write('\n');
 	}
 
 	/**
