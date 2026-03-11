@@ -24,7 +24,7 @@ set(_SOURCES
         Device/Driver/CAI302/Parser.cpp
         Device/Driver/CAI302/PocketNav.cpp
         Device/Driver/CAI302/Protocol.cpp
-        Device/Driver/CAI302/Register.cpp
+        Device/Driver/CAI302/RegisterCAI302.cpp
         Device/Driver/CAI302/Settings.cpp
         Device/Driver/CaiGpsNav.cpp
         Device/Driver/CaiLNav.cpp
@@ -40,7 +40,7 @@ set(_SOURCES
         Device/Driver/FLARM/Logger.cpp
         Device/Driver/FLARM/Mode.cpp
         Device/Driver/FLARM/Parser.cpp
-        Device/Driver/FLARM/Register.cpp
+        Device/Driver/FLARM/RegisterFLARM.cpp
         Device/Driver/FLARM/Settings.cpp
         Device/Driver/FLARM/StaticParser.cpp
         Device/Driver/FLARM/TextProtocol.cpp
@@ -61,7 +61,7 @@ set(_SOURCES
         Device/Driver/IMI/Protocol/IGC.cpp
         Device/Driver/IMI/Protocol/MessageParser.cpp
         Device/Driver/IMI/Protocol/Protocol.cpp
-        Device/Driver/IMI/Register.cpp
+        Device/Driver/IMI/RegisterIMI.cpp
         Device/Driver/KRT2.cpp
         Device/Driver/AR62xx.cpp
         Device/Driver/Larus.cpp

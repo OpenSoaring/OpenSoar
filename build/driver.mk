@@ -23,7 +23,7 @@ CAI302_SOURCES = \
 	$(DRIVER_SRC_DIR)/CAI302/Declare.cpp \
 	$(DRIVER_SRC_DIR)/CAI302/Logger.cpp \
 	$(DRIVER_SRC_DIR)/CAI302/Manage.cpp \
-	$(DRIVER_SRC_DIR)/CAI302/Register.cpp
+	$(DRIVER_SRC_DIR)/CAI302/RegisterCAI302.cpp
 
 IMI_SOURCES = \
 	$(DRIVER_SRC_DIR)/IMI/Protocol/MessageParser.cpp \
@@ -35,7 +35,7 @@ IMI_SOURCES = \
 	$(DRIVER_SRC_DIR)/IMI/Declare.cpp \
 	$(DRIVER_SRC_DIR)/IMI/Internal.cpp \
 	$(DRIVER_SRC_DIR)/IMI/Logger.cpp \
-	$(DRIVER_SRC_DIR)/IMI/Register.cpp
+	$(DRIVER_SRC_DIR)/IMI/RegisterIMI.cpp
 
 LX_SOURCES = \
 	$(DRIVER_SRC_DIR)/LX/NanoLogger.cpp \
@@ -59,7 +59,7 @@ LX_EOS_SOURCES = \
 
 FLARM_SOURCES = \
 	$(DRIVER_SRC_DIR)/FLARM/Device.cpp \
-	$(DRIVER_SRC_DIR)/FLARM/Register.cpp \
+	$(DRIVER_SRC_DIR)/FLARM/RegisterFLARM.cpp \
 	$(DRIVER_SRC_DIR)/FLARM/Mode.cpp \
 	$(DRIVER_SRC_DIR)/FLARM/Parser.cpp \
 	$(DRIVER_SRC_DIR)/FLARM/StaticParser.cpp \
