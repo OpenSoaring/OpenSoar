@@ -45,6 +45,7 @@ set(_SOURCES
 	TextEntryDialog.cpp
 	FileProvider.cpp
 	Main.cpp
+	CertificateUtil.cpp
 )
 
 set(SCRIPT_FILES
