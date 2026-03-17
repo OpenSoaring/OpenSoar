@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- OpenSoar main theme -->
+    <style name="OpenSoarTheme" parent="android:Theme.NoTitleBar.Fullscreen">
+    </style>
+</resources>
+

@@ -14,6 +14,7 @@ public:
   static void Initialise(JNIEnv *env);
   static void Deinitialise([[maybe_unused]] JNIEnv *env) {}
 
+  [[gnu::pure]]
   static void Recycle(JNIEnv *env, jobject bitmap) {
     assert(env != nullptr);
     assert(bitmap != nullptr);
