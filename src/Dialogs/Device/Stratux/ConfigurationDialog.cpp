@@ -20,6 +20,7 @@ class StratuxConfigurationWidget final
     VRANGE,
   };
 
+#ifdef STRATUX_COMPLETE
   WidgetDialog &dialog;
   StratuxDevice &device;
   StratuxDevice::StratuxSettings settings;
@@ -28,7 +29,15 @@ public:
   StratuxConfigurationWidget(const DialogLook &look, WidgetDialog &_dialog,
                              StratuxDevice &_device)
     :RowFormWidget(look), dialog(_dialog), device(_device) {}
+#else  // STRATUX_COMPLETE
+  StratuxDevice::StratuxSettings settings;
 
+public:
+  StratuxConfigurationWidget(const DialogLook &look,
+                             [[maybe_unused]] WidgetDialog &_dialog,
+                             [[maybe_unused]] StratuxDevice &_device)
+    :RowFormWidget(look) {}
+#endif
   /* virtual methods from Widget */
   void Prepare([[maybe_unused]] ContainerWindow &parent, [[maybe_unused]] const PixelRect &rc) noexcept override {
 
