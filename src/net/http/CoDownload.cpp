@@ -76,7 +76,7 @@ CoDownloadToJson(CurlGlobal &curl, const std::string_view url,
       throw FmtRuntimeError("CoDownloadToJson {} status {}", url, response.status);
       break;
   }
-
+  //  sanitizer...delete data;
   co_return parser.Finish();
 }
 
@@ -124,46 +124,46 @@ CoDownloadToFile(CurlGlobal &curl, const std::string_view url,
       easy.SetRequestHeaders(data->curl_list->Get());
     }
   }
- 
+
   easy.SetFailOnError(false);
   easy.SetVerifyPeer(false);
   auto  response =
-      co_await Curl::CoStreamRequest(curl, std::move(easy), *os);
+    co_await Curl::CoStreamRequest(curl, std::move(easy), *os);
 
   switch (response.status) {
-
-      case 200:
-      case 201: {
-        [[maybe_unused]] auto file_size = file.Tell();
-          file.Commit();
-          if (data && data->hash)
-            digest->Final(std::span{ *data->hash });
-        }
-        break;
-      case 401: {  // 'Unauthorized'
-        auto file_size = file.Tell();
-        if (file_size > 0) {
-          file.Commit();  // mostly this is a json file with error description
-          File::Rename(file.GetPath(), file.GetPath().WithSuffix(".json"));
-        }
-        throw FmtRuntimeError("CoDownloadToFile {} status {}", url,
-          response.status);
-      }
-      case 429: {  // 'Too Many Requests', often at SkySight server
-        auto file_size = file.Tell();
-        if (file_size > 0) {
-          file.Commit();  // mostly this is a json file with error description
-          File::Rename(file.GetPath(), file.GetPath().WithSuffix(".json"));
-        }
-        throw FmtRuntimeError("CoDownloadToFile {} status {}", url,
-          response.status);
-      }
-      break;
-      default: // other error
-        throw FmtRuntimeError("CoDownloadToFile {} status {}", url,
-          response.status);
+    case 200:
+    case 201: {
+      [[maybe_unused]] auto file_size = file.Tell();
+      file.Commit();
+      if (data && data->hash)
+        digest->Final(std::span{ *data->hash });
     }
-    co_return response;
+            break;
+    case 401: {  // 'Unauthorized'
+      auto file_size = file.Tell();
+      if (file_size > 0) {
+        file.Commit();  // mostly this is a json file with error description
+        File::Rename(file.GetPath(), file.GetPath().WithSuffix(".json"));
+      }
+      throw FmtRuntimeError("CoDownloadToFile {} status {}", url,
+        response.status);
+    }
+    case 429: {  // 'Too Many Requests', often at SkySight server
+      auto file_size = file.Tell();
+      if (file_size > 0) {
+        file.Commit();  // mostly this is a json file with error description
+        File::Rename(file.GetPath(), file.GetPath().WithSuffix(".json"));
+      }
+      throw FmtRuntimeError("CoDownloadToFile {} status {}", url,
+        response.status);
+    }
+            break;
+    default: // other error
+      throw FmtRuntimeError("CoDownloadToFile {} status {}", url,
+        response.status);
+  }
+  //// sanitizer delete data;
+  co_return response;
 }
 
 } // namespace Net
