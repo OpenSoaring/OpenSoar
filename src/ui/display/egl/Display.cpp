@@ -58,9 +58,9 @@ Display::InitDisplay(EGLNativeDisplayType native_display)
 
   if (const char *s = eglQueryString(display, EGL_EXTENSIONS))
 #ifdef _DEBUG
-    LogFormat("EGL extensions: %s", s);
+    LogFmt("EGL extensions: {}", s);
 #else
-    LogString("EGL extensions: ...");
+    LogFmt("EGL extensions: {:.{}}", 80, s);
 #endif
 
   if (!eglBindAPI(EGL_OPENGL_ES_API))
