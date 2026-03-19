@@ -29,7 +29,7 @@ class FlatProjection;
  */
 class Airspace final : public FlatBoundingBox
 {
-  AirspacePtr airspace;
+  AirspacePtr airspace = nullptr;
 
 public:
 
