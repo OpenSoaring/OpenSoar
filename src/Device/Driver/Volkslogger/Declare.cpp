@@ -12,16 +12,9 @@
 #include <algorithm>
 
 static void
-CopyToNarrowBuffer(char *dest, size_t max_size, const char *src)
-{
-  strncpy(dest, src, max_size - 1);
-  dest[max_size - 1] = 0;
-}
-
-static void
 CopyWaypoint(VLAPI_DATA::WPT &dest, const Waypoint &src)
 {
-  CopyToNarrowBuffer(dest.name, sizeof(dest.name), src.name.c_str());
+  CopyString(dest.name, sizeof(dest.name), src.name.c_str());
   dest.location = src.location;
 }
 
@@ -72,15 +65,15 @@ DeclareInner(Port &port, const unsigned bulkrate,
   //Clear DECLARATION struct and populate with xcs declaration
   VLAPI_DATA::DECLARATION vl_declaration;
   memset(&vl_declaration, 0, sizeof(vl_declaration));
-  CopyToNarrowBuffer(vl_declaration.flightinfo.pilot,
+  CopyString(vl_declaration.flightinfo.pilot,
 		     sizeof(vl_declaration.flightinfo.pilot),
                      declaration.pilot_name);
 
-  CopyToNarrowBuffer(vl_declaration.flightinfo.gliderid,
+  CopyString(vl_declaration.flightinfo.gliderid,
                      sizeof(vl_declaration.flightinfo.gliderid),
                      declaration.aircraft_registration);
 
-  CopyToNarrowBuffer(vl_declaration.flightinfo.glidertype,
+  CopyString(vl_declaration.flightinfo.glidertype,
                      sizeof(vl_declaration.flightinfo.glidertype),
                      declaration.aircraft_type);
 

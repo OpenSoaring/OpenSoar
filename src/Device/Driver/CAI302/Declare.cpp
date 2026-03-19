@@ -9,18 +9,11 @@
 #include <stdio.h>
 
 static void
-convert_string(char *dest, size_t size, const char *src)
-{
-  strncpy(dest, src, size - 1);
-  dest[size - 1] = '\0';
-}
-
-static void
 cai302DeclAddWaypoint(Port &port, int DeclIndex, const Waypoint &way_point,
                       OperationEnvironment &env)
 {
   char Name[13];
-  convert_string(Name, sizeof(Name), way_point.name.c_str());
+  CopyString(Name, sizeof(Name), way_point.name.c_str());
 
   CAI302::DeclareTP(port, DeclIndex, way_point.location,
                     (int)way_point.GetElevationOrZero(),
@@ -63,14 +56,14 @@ DeclareInner(Port &port, const Declaration &declaration,
 
   CAI302::DownloadMode(port, env);
 
-  convert_string(pilot.name, sizeof(pilot.name), declaration.pilot_name);
+  CopyString(pilot.name, sizeof(pilot.name), declaration.pilot_name);
   CAI302::DownloadPilot(port, pilot, 0, env);
 
   env.SetProgressPosition(5);
 
-  convert_string(polar.glider_type, sizeof(polar.glider_type),
+  CopyString(polar.glider_type, sizeof(polar.glider_type),
                  declaration.aircraft_type);
-  convert_string(polar.glider_id, sizeof(polar.glider_id),
+  CopyString(polar.glider_id, sizeof(polar.glider_id),
                  declaration.aircraft_registration);
   CAI302::DownloadPolar(port, polar, env);
 

@@ -11,14 +11,6 @@ static constexpr unsigned IMI_SECONDS_IN_MINUTE = 60;
 static constexpr unsigned IMI_SECONDS_IN_HOUR = 60*60;
 static constexpr unsigned IMI_SECONDS_IN_DAY = 24*60*60;
 
-void
-IMI::ConvertToChar(const char* dest, char* ascii, int outSize)
-{
-  // this is only a copy (n) function)
-  strncpy(ascii, dest, outSize - 1);
-  ascii[outSize - 1] = 0;
-}
-
 IMI::AngleConverter::AngleConverter(Angle angle)
 {
   sign = angle.IsNegative();
@@ -71,8 +63,8 @@ void
 IMI::ConvertWaypoint(const Waypoint &wp, TWaypoint &imiWp)
 {
   // set name
-  ConvertToChar(wp.name.c_str(), imiWp.name, sizeof(imiWp.name));
-
+  CopyString(imiWp.name, sizeof(imiWp.name), wp.name);
+  
   // set latitude
   imiWp.lat = AngleConverter(wp.location.latitude).value;
 

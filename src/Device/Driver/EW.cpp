@@ -79,13 +79,6 @@ EWDevice::TryConnect(OperationEnvironment &env)
   return false;
 }
 
-static void
-convert_string(char *dest, size_t size, const char *src)
-{
-  strncpy(dest, src, size - 1);
-  dest[size - 1] = '\0';
-}
-
 bool
 EWDevice::DeclareInner(const struct Declaration &declaration,
                        OperationEnvironment &env)
@@ -102,9 +95,9 @@ EWDevice::DeclareInner(const struct Declaration &declaration,
   env.Sleep(std::chrono::milliseconds(50));
 
   char sPilot[13], sGliderType[9], sGliderID[9];
-  convert_string(sPilot, sizeof(sPilot), declaration.pilot_name);
-  convert_string(sGliderType, sizeof(sGliderType), declaration.aircraft_type);
-  convert_string(sGliderID, sizeof(sGliderID), declaration.aircraft_registration);
+  CopyString(sPilot, sizeof(sPilot), declaration.pilot_name);
+  CopyString(sGliderType, sizeof(sGliderType), declaration.aircraft_type);
+  CopyString(sGliderID, sizeof(sGliderID), declaration.aircraft_registration);
 
   // build string (field 4-5 are GPS info, no idea what to write)
   sprintf(sTmp, "%-12s%-8s%-8s%-12s%-12s%-6s\r", sPilot, sGliderType, sGliderID,

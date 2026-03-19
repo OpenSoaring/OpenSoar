@@ -25,8 +25,7 @@ NOAAStore::AddStation(const char *code)
   Item item;
 
   // Copy station code
-  strncpy(item.code, code, 4);
-  item.code[4] = 0;
+  CopyString(item.code, 4, code);
 
   // Reset available flags
   item.metar_available = false;

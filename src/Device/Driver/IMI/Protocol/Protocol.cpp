@@ -16,6 +16,7 @@
 #include "io/FileOutputStream.hxx"
 #include "time/BrokenDateTime.hpp"
 #include "util/SpanCast.hxx"
+#include "util/StringUtil.hpp"
 
 #include <memory>
 #include <stdexcept>
@@ -122,16 +123,16 @@ IMI::DeclarationWrite(Port &port, const Declaration &decl,
   memset(&imiDecl, 0, sizeof(imiDecl));
 
   // idecl.date ignored - will be set by FR
-  ConvertToChar(decl.pilot_name, imiDecl.header.plt,
-                  sizeof(imiDecl.header.plt));
-  ConvertToChar(decl.aircraft_type, imiDecl.header.gty,
-                  sizeof(imiDecl.header.gty));
-  ConvertToChar(decl.aircraft_registration, imiDecl.header.gid,
-                  sizeof(imiDecl.header.gid));
-  ConvertToChar(decl.competition_id, imiDecl.header.cid,
-                  sizeof(imiDecl.header.cid));
-  ConvertToChar("XCSOARTASK", imiDecl.header.tskName,
-                  sizeof(imiDecl.header.tskName));
+  CopyString(imiDecl.header.plt, sizeof(imiDecl.header.plt), 
+             decl.pilot_name);
+  CopyString(imiDecl.header.gty, sizeof(imiDecl.header.gty),
+             decl.aircraft_type);
+  CopyString(imiDecl.header.gid, sizeof(imiDecl.header.gid),
+             decl.aircraft_registration);
+  CopyString(imiDecl.header.cid, sizeof(imiDecl.header.cid),
+             decl.competition_id);
+  CopyString(imiDecl.header.tskName, sizeof(imiDecl.header.tskName),
+             "XCSOARTASK");
 
   ConvertWaypoint(decl.turnpoints[0].waypoint, imiDecl.wp[0]);
 

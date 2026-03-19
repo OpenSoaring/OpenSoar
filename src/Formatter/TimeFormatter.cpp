@@ -29,7 +29,9 @@ FormatISO8601(char *buffer, const BrokenDateTime &stamp) noexcept
 void
 FormatISO8601(char *buffer, const time_t &stamp) noexcept
 {
-  strncpy(buffer, DateTime::time_str(stamp, "%Y-%m-%dT%H:%M:%SZ").c_str(), 21);
+  // ATTENTION: buffer has to be a size of at least 21 bytes to hold the result
+  // of this function
+  CopyString(buffer, 21, DateTime::time_str(stamp, "%Y-%m-%dT%H:%M:%SZ").c_str());
 }
 
 void

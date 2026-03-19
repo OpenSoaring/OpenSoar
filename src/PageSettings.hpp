@@ -33,7 +33,7 @@ struct PageLayout
 #if 0
     /*constexpr*/ InfoBoxConfig(bool _auto_switch, unsigned _panel) noexcept
       :enabled(true), auto_switch(_auto_switch), panel(_panel)
-      { std::strncpy(overlay, "SkySight-Rain", sizeof(overlay)); }
+      { CopyString(overlay, sizeof(overlay), "SkySight-Rain"); }
 #else
     constexpr InfoBoxConfig(bool _auto_switch, unsigned _panel) noexcept
       :enabled(true), auto_switch(_auto_switch), panel(_panel) {}
