@@ -255,6 +255,8 @@ GetUIState() noexcept
   return CommonInterface::GetUIState();
 }
 
+static StaticString<10> s_intern;
+
 static const char *
 LookupMacro(std::string_view name, bool &invalid) noexcept
 {
@@ -309,17 +311,23 @@ LookupMacro(std::string_view name, bool &invalid) noexcept
     auto stf_switch = const_cast<STFSettings *>(&CommonInterface::GetComputerSettings().stf_switch);
     return (stf_switch->stf_mode == TriState::TRUE) ? "-> Vario" : "-> STF";
   } else if (name == "AudioVolume") {
-    StaticString<10> s; 
-    s.Format("%u / 7",
-             vario_sound.volume > 0 ? 1 + (unsigned)log2(vario_sound.volume) : 0);
-    return vario_sound.enabled ? s.c_str() : "-";
+    if (vario_sound.enabled) {
+      s_intern.Format("%u / 7",
+        vario_sound.volume > 0 ? 1 + (unsigned)log2(vario_sound.volume) : 0);
+      return s_intern.c_str();
+    } else { 
+      return "-"; 
+    }
   } else if (name == "AudioOnOff") {
-//    StaticString<10> s; 
-//    s.Format("%u / 7",
-//             vario_sound.volume > 0 ? 1 + (unsigned)log2(vario_sound.volume) : 0);
-//    return vario_sound.enabled ? s.c_str() : "-";
     invalid |= !vario_sound.enabled || vario_sound.volume < 1;
-    return nullptr;
+    if (!invalid) {
+      s_intern.Format("%u / 7",
+        vario_sound.volume > 0 ? 1 + (unsigned)log2(vario_sound.volume) : 0);
+      return s_intern.c_str();
+    } else {
+      return "-";
+    }
+    // return nullptr;
   } else if (name == "CheckAudioQuiet") {
     invalid |= !vario_sound.enabled || vario_sound.volume <= 1;
     return nullptr;
