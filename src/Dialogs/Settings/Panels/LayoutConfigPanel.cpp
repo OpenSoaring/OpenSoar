@@ -39,6 +39,7 @@ enum ControlIndex {
   TabDialogStyle,
   AppStatusMessageAlignment,
   AppInfoBoxColors,
+  AppInfoBoxTheme,
   AppInfoBoxBorder,
   ShowMenuButton,
   ShowZoomButton,
@@ -154,6 +155,16 @@ static constexpr StaticEnumChoice dark_mode_list[] = {
   nullptr
 };
 
+static constexpr StaticEnumChoice infobox_theme_list[] = {
+  { InfoBoxSettings::Theme::FOLLOW_GLOBAL, N_("Follow global"),
+    N_("Use the same light/dark mode as the overall UI.") },
+  { InfoBoxSettings::Theme::LIGHT, N_("Light"),
+    N_("Always use dark text on a light InfoBox background.") },
+  { InfoBoxSettings::Theme::DARK, N_("Dark"),
+    N_("Always use light text on a dark InfoBox background.") },
+  nullptr
+};
+
 class LayoutConfigPanel final : public RowFormWidget {
 public:
   LayoutConfigPanel()
@@ -221,6 +232,10 @@ LayoutConfigPanel::Prepare(ContainerWindow &parent,
   } else
     AddDummy();
 
+  AddEnum(_("InfoBox theme"), nullptr, infobox_theme_list,
+          (unsigned)ui_settings.info_boxes.theme);
+  SetExpertRow(AppInfoBoxTheme);
+
   AddEnum(_("InfoBox border"), nullptr, infobox_border_list,
           unsigned(ui_settings.info_boxes.border_style));
   SetExpertRow(AppInfoBoxBorder);
@@ -281,12 +296,15 @@ LayoutConfigPanel::Save(bool &_changed) noexcept
   changed |= SaveValueEnum(AppStatusMessageAlignment, ProfileKeys::AppStatusMessageAlignment,
                            ui_settings.popup_message_position);
 
-  changed |= SaveValueEnum(AppInfoBoxBorder, ProfileKeys::AppInfoBoxBorder,
-                           ui_settings.info_boxes.border_style);
-
   if (HasColors())
     changed |= SaveValue(AppInfoBoxColors, ProfileKeys::AppInfoBoxColors,
                          ui_settings.info_boxes.use_colors);
+
+  changed |= SaveValueEnum(AppInfoBoxTheme, ProfileKeys::AppInfoBoxTheme,
+                           ui_settings.info_boxes.theme);
+
+  changed |= SaveValueEnum(AppInfoBoxBorder, ProfileKeys::AppInfoBoxBorder,
+                           ui_settings.info_boxes.border_style);
 
   if (SaveValue(ShowMenuButton, ProfileKeys::ShowMenuButton,ui_settings.show_menu_button))
     require_restart = changed = true;
@@ -309,12 +327,8 @@ LayoutConfigPanel::Save(bool &_changed) noexcept
   if (orientation_changed) {
     assert(Display::RotateSupported());
 
-    if (ui_settings.display.orientation == DisplayOrientation::DEFAULT)
-      Display::RotateRestore();
-    else {
-      if (!Display::Rotate(ui_settings.display.orientation))
-        LogString("Display rotation failed");
-    }
+    if (!Display::Rotate(ui_settings.display.orientation))
+      LogString("Display rotation failed");
 
 #ifdef USE_POLL_EVENT
     UI::event_queue->SetDisplayOrientation(ui_settings.display.orientation);

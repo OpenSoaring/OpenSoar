@@ -68,6 +68,15 @@ TopWindow::ResumeSurface() noexcept
 
   assert(screen->IsReady());
 
+  {
+    /* mark that we now have a native surface; this is also done in
+       OnSurface() for the event-queue path, but ResumeSurface() can
+       be called directly (e.g. from OnResize during initial startup)
+       where OnSurface() is never reached */
+    const std::lock_guard lock{paused_mutex};
+    have_native_surface = true;
+  }
+
   RefreshSize();
 
   /* schedule a redraw */
@@ -230,6 +239,10 @@ TopWindow::OnEvent(const Event &event)
 
     return OnMouseUp(event.point);
 
+  case Event::MOUSE_CANCEL:
+    OnCancelMode();
+    return true;
+
   case Event::MOUSE_WHEEL:
     return OnMouseWheel(event.point, (int)event.param);
 
@@ -239,22 +252,29 @@ TopWindow::OnEvent(const Event &event)
   case Event::POINTER_UP:
     return OnMultiTouchUp();
 
-  case Event::RESIZE:
+  case Event::RESIZE: {
     if (!screen->IsReady())
       /* postpone the resize if we're paused; the real resize will be
          handled by TopWindow::refresh() as soon as XCSoar is
          resumed */
       return true;
 
-    if (screen->CheckResize(PixelSize(event.point.x, event.point.y)))
-      Resize(screen->GetSize());
+    PixelSize event_size(event.point.x, event.point.y);
+    screen->CheckResize(event_size);
+    PixelSize screen_size = screen->GetSize();
+    Resize(screen_size);
 
     /* it seems the first page flip after a display orientation change
        is ignored on Android (tested on a Dell Streak / Android
        2.2.2); let's do one dummy call before we really draw
        something */
     screen->Flip();
+
+    /* after a surface recreation (e.g. orientation change), the
+       buffer is empty; schedule a full redraw */
+    Invalidate();
     return true;
+  }
 
   case Event::LOOK:
     OnLook();

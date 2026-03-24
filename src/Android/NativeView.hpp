@@ -33,8 +33,12 @@ class NativeView {
   static jmethodID loadFileBitmap_method;
   static jmethodID bitmapToTexture_method;
   static jmethodID shareText_method;
+  static jmethodID openURL_method;
   static jmethodID openWaypointFile_method;
   static jmethodID getNetState_method;
+  static jmethodID isAutoRotateEnabled_method;
+  static jmethodID getPhysicalOrientation_method;
+  static jmethodID startMyService_method;
 
   static Java::TrivialClass clsBitmap;
   static jmethodID createBitmap_method;
@@ -58,6 +62,8 @@ public:
     // see http://developer.android.com/reference/android/content/pm/ActivityInfo.html#SCREEN_ORIENTATION_REVERSE_LANDSCAPE
     REVERSE_LANDSCAPE = 8,
     REVERSE_PORTRAIT = 9,
+    // API level 18
+    LOCKED = 14,
   };
 
   static void Initialise(JNIEnv *env);
@@ -107,6 +113,25 @@ public:
     return env->CallBooleanMethod(obj, setRequestedOrientationID, (jint)so);
   }
 
+  /**
+   * Check if the system auto-rotate setting is enabled.
+   */
+  [[gnu::pure]]
+  bool IsAutoRotateEnabled(JNIEnv *env) const noexcept {
+    return env->CallBooleanMethod(obj, isAutoRotateEnabled_method);
+  }
+
+  /**
+   * Return the DisplayOrientation enum value matching the device's
+   * current physical orientation (from the latest sensor reading).
+   * 0=DEFAULT (unknown), 1=PORTRAIT, 2=LANDSCAPE,
+   * 3=REVERSE_PORTRAIT, 4=REVERSE_LANDSCAPE.
+   */
+  [[gnu::pure]]
+  int GetPhysicalOrientation(JNIEnv *env) const noexcept {
+    return env->CallIntMethod(obj, getPhysicalOrientation_method);
+  }
+
   Java::LocalObject LoadResourceBitmap(JNIEnv *env, const char *name) {
     Java::String name2(env, name);
     return {env,
@@ -138,6 +163,11 @@ public:
    */
   void ShareText(JNIEnv *env, const char *text) noexcept;
 
+  /**
+   * Open a URL in the default browser.
+   */
+  bool OpenURL(JNIEnv *env, const char *url) noexcept;
+
   void OpenWaypointFile(JNIEnv *env, unsigned id, const char *filename) {
     env->CallVoidMethod(obj, openWaypointFile_method, id,
                         Java::String(env, filename).Get());
@@ -146,5 +176,12 @@ public:
   [[gnu::pure]]
   int GetNetState(JNIEnv *env) const noexcept {
     return env->CallIntMethod(obj, getNetState_method);
+  }
+
+  /**
+   * Start the foreground service (only in fly mode).
+   */
+  void StartMyService(JNIEnv *env) const noexcept {
+    env->CallVoidMethod(obj, startMyService_method);
   }
 };

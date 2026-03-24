@@ -46,16 +46,22 @@ ManageLXNAVVarioWidget::Prepare([[maybe_unused]] ContainerWindow &parent, [[mayb
     AddReadOnly(_("Serial"), NULL, buffer.c_str());
   }
 
-  if (!info.hardware_version.empty()) {
-    buffer.clear();
+  buffer.clear();
+  if (!info.hardware_version.empty())
     buffer.UnsafeAppendASCII(info.hardware_version.c_str());
-    AddReadOnly(_("Hardware version"), NULL, buffer.c_str());
-  }
+  else
+    buffer.SetASCII(_("unknown"));
+  AddReadOnly(_("Hardware version"), NULL, buffer.c_str());
 
   if (!info.software_version.empty()) {
     buffer.clear();
     buffer.UnsafeAppendASCII(info.software_version.c_str());
     AddReadOnly(_("Firmware version"), NULL, buffer.c_str());
+  }
+
+  if (!info.license.empty()) {
+    buffer.SetASCII(info.license.c_str());
+    AddReadOnly(_("License"), NULL, buffer.c_str());
   }
 
   AddButton(_("Setup"), [this](){

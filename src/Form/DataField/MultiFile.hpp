@@ -9,6 +9,7 @@
 #include "Repository/FileType.hpp"
 #include "system/Path.hpp"
 
+#include <string>
 #include <vector>
 #include <string>
 

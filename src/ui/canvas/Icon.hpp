@@ -22,6 +22,13 @@ protected:
 
   PixelPoint origin;
 
+  /**
+   * True if the icon contains meaningful colours (e.g. green/red
+   * landable icons).  Dark-mode inversion is skipped for such icons
+   * because inverting the colour channels would produce wrong colours.
+   */
+  bool has_colors = false;
+
 public:
   const PixelSize &GetSize() const noexcept {
     return size;
@@ -40,6 +47,17 @@ public:
   }
 
   void Draw(Canvas &canvas, PixelPoint p) const noexcept;
+
+  /**
+   * Draw the icon centred on @p p, uniformly scaled so its height
+   * matches @p target_height.  If target_height is 0 the icon is
+   * drawn at native size.
+   *
+   * On memory-canvas targets (Kobo) this falls back to the unscaled
+   * Draw() because no stretch+blend primitives exist.
+   */
+  void Draw(Canvas &canvas, PixelPoint p,
+            unsigned target_height) const noexcept;
 
   void Draw(Canvas &canvas, const PixelRect &rc, bool inverse) const noexcept;
 };

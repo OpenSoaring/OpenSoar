@@ -17,6 +17,8 @@
 #include "InfoBoxes/InfoBoxManager.hpp"
 #include "Terrain/RasterTerrain.hpp"
 #include "Terrain/AsyncLoader.hpp"
+#include "io/ZipArchive.hpp"
+#include "Message.hpp"
 #include "Weather/Rasp/RaspStore.hpp"
 #include "Weather/Rasp/Configured.hpp"
 #ifdef HAVE_SKYSIGHT
@@ -26,6 +28,7 @@
 #include "Input/InputQueue.hpp"
 #include "Dialogs/StartupDialog.hpp"
 #include "Dialogs/dlgSimulatorPrompt.hpp"
+#include "Dialogs/dlgQuickGuide.hpp"
 #include "Language/LanguageGlue.hpp"
 #include "Language/Language.hpp"
 #include "Protection.hpp"
@@ -180,7 +183,10 @@ AfterStartup()
     backend_components->protected_task_manager->TaskCommit(*defaultTask);
   }
 
-  task_manager->Resume();
+  const bool resumed = task_manager->Resume();
+  // Return value intentionally unused; task will resume if available.
+  (void)resumed;
+
 
   InfoBoxManager::SetDirty();
 
@@ -197,7 +203,19 @@ MainWindow::LoadTerrain() noexcept
 
   if (const auto path = Profile::GetPath(ProfileKeys::MapFile);
       path != nullptr) {
-    LogString("LoadTerrain");
+    LogFormat("Loading terrain: %s", path.c_str());
+
+    /* Quick synchronous validation: try opening the ZIP archive
+       before launching the async loader to fail fast on missing or
+       unreadable files. */
+    try {
+      ZipArchive test_archive{path};
+    } catch (...) {
+      LogFormat("Failed to open map file: %s", path.c_str());
+      Message::AddMessage(_("Failed to open configured map file"));
+      return;
+    }
+
     terrain_loader = new AsyncTerrainOverviewLoader();
 
     terrain_loader_env = std::make_unique<PluggableOperationEnvironment>();
@@ -242,6 +260,8 @@ try {
   SetAirspaceGroundLevels(*data_components->airspaces,
                           *data_components->terrain);
 } catch (...) {
+  SetTopWidget(nullptr);
+  terrain_loader_env.reset();
   LogError(std::current_exception(), "LoadTerrain failed");
 }
 
@@ -333,6 +353,16 @@ Startup(UI::Display &display)
       global_simulator_flag = true;
       break;
     }
+  }
+#endif
+
+#ifdef ANDROID
+  /* Start the foreground service only in fly mode; the service keeps
+     XCSoar alive for IGC logging and safety warnings, neither of
+     which applies in simulator mode. */
+  if (!is_simulator()) {
+    const auto env = Java::GetEnv();
+    native_view->StartMyService(env);
   }
 #endif
 
@@ -454,6 +484,9 @@ Startup(UI::Display &display)
   }
 #endif
 
+  // Show unified Quick Guide dialog (warranty + guide pages)
+  if (!dlgQuickGuideShowModal())
+    return false;
 
   GlidePolar &gp = CommonInterface::SetComputerSettings().polar.glide_polar_task;
   gp = GlidePolar(0);
@@ -469,14 +502,14 @@ Startup(UI::Display &display)
   // Read the topography file(s)
   data_components->topography = std::make_unique<TopographyStore>();
   {
-    LogString("Loading Topography File...");
+    LogFormat("Loading topography");
     operation.SetText(_("Loading Topography File..."));
     LoadConfiguredTopography(*data_components->topography);
     operation.SetProgressPosition(256);
   }
 
   // Read the waypoint files
-  LogString("ReadWaypoints");
+  LogFormat("Loading waypoints");
   {
     SubOperationEnvironment sub_env(operation, 256, 512);
     sub_env.SetText(_("Loading Waypoints..."));
@@ -629,11 +662,15 @@ Startup(UI::Display &display)
 
   PageActions::Update();
 
+#ifdef HAVE_HTTP
   net_components = new NetComponents(*asio_thread, *Net::curl,
                                      computer_settings.tracking);
+#endif
+#ifdef HAVE_HTTP
 #ifdef HAVE_SKYLINES_TRACKING
   if (map_window != nullptr)
     map_window->SetSkyLinesData(&net_components->tracking->GetSkyLinesData());
+#endif
 #endif
 
 #ifdef HAVE_HTTP
@@ -661,6 +698,9 @@ Shutdown()
   MainWindow *const main_window = CommonInterface::main_window;
   auto &live_blackboard = CommonInterface::GetLiveBlackboard();
 
+  // Turn off all displays first to prevent UI operations from blocking
+  global_running = false;
+
   // Show progress dialog
   operation.SetText(_("Shutdown, please wait..."));
 
@@ -670,9 +710,6 @@ Shutdown()
   main_window->BeginShutdown();
 
   Lua::StopAllBackground();
-
-  // Turn off all displays
-  global_running = false;
 
   // Stop logger and save igc file
   if (backend_components != nullptr && backend_components->igc_logger != nullptr) {
@@ -695,6 +732,7 @@ Shutdown()
   }
 
   SaveFlarmColors();
+  SaveFlarmMessaging();
 
   // Save settings to profile
   operation.SetText(_("Shutdown, saving profile..."));
@@ -728,12 +766,12 @@ Shutdown()
     // Wait for the calculations thread to finish
     LogString("Waiting for calculation thread");
 
-    if (backend_components->merge_thread) {
+    if (backend_components->merge_thread && backend_components->merge_thread->IsDefined()) {
       backend_components->merge_thread->Join();
       backend_components->merge_thread.reset();
     }
 
-    if (backend_components->calculation_thread) {
+    if (backend_components->calculation_thread && backend_components->calculation_thread->IsDefined()) {
       backend_components->calculation_thread->Join();
       backend_components->calculation_thread.reset();
     }
@@ -743,7 +781,7 @@ Shutdown()
 #ifndef ENABLE_OPENGL
   LogString("Waiting for draw thread");
 
-  if (draw_thread != nullptr) {
+  if (draw_thread != nullptr && draw_thread->IsDefined()) {
     draw_thread->Join();
     delete draw_thread;
     draw_thread = nullptr;
@@ -798,8 +836,10 @@ Shutdown()
   noaa_store = nullptr;
 #endif
 
+#ifdef HAVE_HTTP
   delete net_components;
   net_components = nullptr;
+#endif
 
 #ifdef HAVE_DOWNLOAD_MANAGER
   Net::DownloadManager::Deinitialise();

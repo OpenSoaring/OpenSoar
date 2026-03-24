@@ -20,7 +20,7 @@ class WindowProjection:
   bool screen_size_initialised = false;
 #endif
 
-  PixelSize screen_size;
+  PixelRect screen_rect;
 
   /**
    * Geographical representation of the screen boundaries.
@@ -67,7 +67,7 @@ public:
     assert(new_size.width > 0);
     assert(new_size.height > 0);
 
-    screen_size = new_size;
+    screen_rect = PixelRect{new_size};
 
 #ifndef NDEBUG
     screen_size_initialised = true;
@@ -75,7 +75,14 @@ public:
   }
 
   void SetMapRect(const PixelRect &rc) noexcept {
-    SetScreenSize(rc.GetSize());
+    assert(rc.GetWidth() > 0);
+    assert(rc.GetHeight() > 0);
+
+    screen_rect = rc;
+
+#ifndef NDEBUG
+    screen_size_initialised = true;
+#endif
   }
 
   [[gnu::pure]]
@@ -94,12 +101,14 @@ public:
   PixelSize GetScreenSize() const noexcept {
     assert(screen_size_initialised);
 
-    return screen_size;
+    return screen_rect.GetSize();
   }
 
   [[gnu::pure]]
   PixelRect GetScreenRect() const noexcept {
-    return PixelRect{GetScreenSize()};
+    assert(screen_size_initialised);
+
+    return screen_rect;
   }
 
   /**

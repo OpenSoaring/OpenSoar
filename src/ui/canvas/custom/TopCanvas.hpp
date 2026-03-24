@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <atomic>
+
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #endif
@@ -72,6 +74,9 @@ class TopCanvas
   drmEventContext evctx;
 
   struct gbm_bo *current_bo = nullptr;
+  struct gbm_bo *next_bo = nullptr;
+  bool page_flip_pending = false;
+  bool page_flip_finished = false;
 
   drmModeCrtc *saved_crtc = nullptr;
 #endif // MESA_KMS
@@ -219,6 +224,27 @@ public:
 
 #if defined(ENABLE_SDL) && defined(USE_MEMORY_CANVAS)
   void OnResize(PixelSize new_size) noexcept;
+
+  /**
+   * Request a resize operation, called from event thread.
+   * This does not immediately reallocate
+   * the buffer, but flags it for processing in the draw thread.
+   */
+  void RequestResize(PixelSize new_size) noexcept;
+
+  /**
+   * Process any pending resize request. Should be called from the
+   * draw thread before locking the canvas.
+   * @return true if a resize was processed
+   */
+  bool ProcessPendingResize() noexcept;
+
+private:
+  std::atomic<bool> resize_pending{false};
+  std::atomic<unsigned> pending_width{0};
+  std::atomic<unsigned> pending_height{0};
+
+public:
 #endif
 
 #if defined(USE_MEMORY_CANVAS) && (defined(GREYSCALE) || !defined(ENABLE_SDL))

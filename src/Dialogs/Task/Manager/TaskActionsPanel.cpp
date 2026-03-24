@@ -19,8 +19,13 @@
 #include "Engine/Task/Factory/AbstractTaskFactory.hpp"
 #include "Engine/Waypoint/Waypoints.hpp"
 #include "Operation/PluggableOperationEnvironment.hpp"
+#ifdef HAVE_HTTP
 #include "net/http/Init.hpp"
 #include "net/client/WeGlide/DownloadTask.hpp"
+#include "Dialogs/InternalLink.hpp"
+#include "Dialogs/Settings/Panels/WeGlideConfigPanel.hpp"
+#include "util/StaticString.hxx"
+#endif
 #include "Components.hpp"
 #include "DataComponents.hpp"
 
@@ -88,6 +93,7 @@ TaskActionsPanel::OnDeclareClicked()
   ExternalLogger::Declare(decl, data_components->waypoints->GetHome().get());
 }
 
+#ifdef HAVE_HTTP
 inline void
 TaskActionsPanel::OnDownloadClicked() noexcept
 try {
@@ -119,6 +125,12 @@ try {
 } catch (const std::runtime_error &e) {
   ShowError(std::current_exception(), _("Download"));
 }
+#else
+inline void
+TaskActionsPanel::OnDownloadClicked() noexcept
+{
+}
+#endif
 
 void
 TaskActionsPanel::ReClick() noexcept
@@ -130,24 +142,51 @@ void
 TaskActionsPanel::Prepare([[maybe_unused]] ContainerWindow &_parent,
                           [[maybe_unused]] const PixelRect &rc) noexcept
 {
+#ifdef HAVE_HTTP
   const auto &settings = CommonInterface::GetComputerSettings();
+#endif
 
   AddButton(_("New Task"), [this](){ OnNewTaskClicked(); });
   AddButton(_("Declare"), [this](){ OnDeclareClicked(); });
   AddButton(_("Browse"), [this](){ OnBrowseClicked(); });
   AddButton(_("Save"), [this](){ SaveTask(); });
 
-  if (settings.weglide.pilot_id != 0)
-    AddButton(_("Download WeGlide task"),
-              [this](){ OnDownloadClicked(); });
+#ifdef HAVE_HTTP
+  AddSpacer();
 
-  AddButton(_("My WeGlide tasks"), [this](){
+  AddReadOnly(_("WeGlide"),
+              nullptr,
+              settings.weglide.enabled
+              ? _("On") : _("Off"));
+
+  const bool weglide_enabled = settings.weglide.enabled;
+  const bool pilot_configured = weglide_enabled &&
+    settings.weglide.pilot_id != 0;
+
+  AddButton(_("Download Declaration"),
+            [this](){ OnDownloadClicked(); });
+  SetRowEnabled(DOWNLOAD_DECLARATION, pilot_configured);
+
+  AddButton(_("My Tasks"), [this](){
     parent.SetCurrent(parent.PAGE_WEGLIDE_USER);
   });
+  SetRowEnabled(MY_TASKS, pilot_configured);
 
-  AddButton(_("Public WeGlide tasks"), [this](){
+  AddButton(_("Declared Tasks"), [this](){
     parent.SetCurrent(parent.PAGE_WEGLIDE_PUBLIC_DECLARED);
   });
+  SetRowEnabled(DECLARED_TASKS, weglide_enabled);
+
+  AddButton(_("Competitions Today"), [this](){
+    parent.SetCurrent(parent.PAGE_WEGLIDE_DAILY_COMPETITIONS);
+  });
+  SetRowEnabled(COMPETITIONS_TODAY, weglide_enabled);
+
+  AddButton(_("Recent Scores"), [this](){
+    parent.SetCurrent(parent.PAGE_WEGLIDE_RECENT_SCORES);
+  });
+  SetRowEnabled(RECENT_SCORES, weglide_enabled);
+#endif
 
   if (is_simulator())
     /* cannot communicate with real devices in simulator mode */

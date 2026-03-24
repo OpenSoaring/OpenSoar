@@ -4,9 +4,11 @@
 #include "TabMenuDisplay.hpp"
 #include "TabMenuData.hpp"
 #include "Widget/PagerWidget.hpp"
+#include "Widget/VScrollWidget.hpp"
 #include "Screen/Layout.hpp"
 #include "ui/event/KeyCode.hpp"
 #include "ui/canvas/Canvas.hpp"
+#include "ui/canvas/Features.hpp"
 #include "Look/DialogLook.hpp"
 #include "Language/Language.hpp"
 #include "util/StringFormat.hpp"
@@ -40,7 +42,10 @@ TabMenuDisplay::InitMenu(const TabMenuGroup groups[],
       page_button.main_menu_index = i;
       page_button.caption = gettext(p->menu_caption);
 
-      pager.Add(p->Load());
+      /* Wrap panel in VScrollWidget for automatic scrolling when needed */
+      auto panel = p->Load();
+      auto scroll_panel = std::make_unique<VScrollWidget>(std::move(panel), look);
+      pager.Add(std::move(scroll_panel));
     }
 
     mb.last_page_index = buttons.size() - 1;
@@ -327,7 +332,9 @@ TabMenuDisplay::PaintMainMenuBorder(Canvas &canvas) const noexcept
   rc.bottom = GetMainMenuButtonSize(GetNumMainMenuItems() - 1).bottom;
   rc.Grow(GetTabLineHeight());
 
-  canvas.DrawFilledRectangle(rc, COLOR_BLACK);
+  canvas.DrawFilledRectangle(rc, look.dark_mode
+                             ? DarkColor(look.background_color)
+                             : COLOR_BLACK);
 }
 
 inline void
@@ -360,7 +367,9 @@ TabMenuDisplay::PaintSubMenuBorder(Canvas &canvas,
   rc.bottom = GetSubMenuButtonSize(main_button.last_page_index).bottom;
   rc.Grow(GetTabLineHeight());
 
-  canvas.DrawFilledRectangle(rc, COLOR_BLACK);
+  canvas.DrawFilledRectangle(rc, look.dark_mode
+                             ? DarkColor(look.background_color)
+                             : COLOR_BLACK);
 }
 
 inline void
@@ -396,7 +405,8 @@ TabMenuDisplay::PaintSubMenuItems(Canvas &canvas) const noexcept
 void
 TabMenuDisplay::OnPaint(Canvas &canvas) noexcept
 {
-  canvas.Clear(look.background_color);
+  if (HaveClipping())
+    canvas.Clear(look.background_color);
 
   PaintMainMenuItems(canvas);
   PaintSubMenuItems(canvas);

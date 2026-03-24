@@ -73,7 +73,7 @@ ReadAirspace(Airspaces &airspaces,
              AtmosphericPressure press,
              OperationEnvironment &operation)
 {
-  LogString("ReadAirspace");
+  LogFormat("Loading airspaces");
   operation.SetText(_("Loading Airspace File..."));
 
   bool airspace_ok = false;

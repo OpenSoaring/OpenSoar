@@ -3,6 +3,7 @@
 
 #include "../LargeTextWindow.hpp"
 #include "ui/canvas/Canvas.hpp"
+#include "ui/canvas/Features.hpp"
 #include "Screen/Layout.hpp"
 #include "ui/event/KeyCode.hpp"
 #include "util/StringAPI.hxx"
@@ -14,6 +15,16 @@ LargeTextWindow::Create(ContainerWindow &parent, PixelRect rc,
   origin = 0;
 
   NativeWindow::Create(&parent, rc, style);
+}
+
+void
+LargeTextWindow::SetColors(Color _background, Color _text,
+                            Color _border) noexcept
+{
+  background_color = _background;
+  text_color = _text;
+  border_color = _border;
+  Invalidate();
 }
 
 unsigned
@@ -97,10 +108,12 @@ LargeTextWindow::OnKillFocus() noexcept
 void
 LargeTextWindow::OnPaint(Canvas &canvas) noexcept
 {
-  canvas.ClearWhite();
+  /* Always paint our own background to avoid transparent-looking text
+     panes in container layouts without clipping. */
+  canvas.Clear(background_color);
 
   auto rc = canvas.GetRect();
-  canvas.DrawOutlineRectangle(rc, COLOR_BLACK);
+  canvas.DrawOutlineRectangle(rc, border_color);
 
   if (HasFocus())
     canvas.DrawFocusRectangle(rc.WithPadding(1));
@@ -112,7 +125,7 @@ LargeTextWindow::OnPaint(Canvas &canvas) noexcept
   rc.Grow(-padding);
 
   canvas.SetBackgroundTransparent();
-  canvas.SetTextColor(COLOR_BLACK);
+  canvas.SetTextColor(text_color);
 
   rc.top -= origin * GetFont().GetHeight();
 

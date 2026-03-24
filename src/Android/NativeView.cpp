@@ -19,8 +19,12 @@ jmethodID NativeView::loadResourceBitmap_method;
 jmethodID NativeView::loadFileBitmap_method;
 jmethodID NativeView::bitmapToTexture_method;
 jmethodID NativeView::shareText_method;
+jmethodID NativeView::openURL_method;
 jmethodID NativeView::openWaypointFile_method;
 jmethodID NativeView::getNetState_method;
+jmethodID NativeView::isAutoRotateEnabled_method;
+jmethodID NativeView::getPhysicalOrientation_method;
+jmethodID NativeView::startMyService_method;
 
 Java::TrivialClass NativeView::clsBitmap;
 jmethodID NativeView::createBitmap_method;
@@ -56,11 +60,23 @@ NativeView::Initialise(JNIEnv *env)
   shareText_method = env->GetMethodID(cls, "shareText",
                                           "(Ljava/lang/String;)V");
 
+  openURL_method = env->GetMethodID(cls, "openURL",
+                                    "(Ljava/lang/String;)Z");
+
   openWaypointFile_method =
     env->GetMethodID(cls, "openWaypointFile",
                      "(ILjava/lang/String;)V");
 
   getNetState_method = env->GetMethodID(cls, "getNetState", "()I");
+
+  isAutoRotateEnabled_method =
+    env->GetMethodID(cls, "isAutoRotateEnabled", "()Z");
+
+  getPhysicalOrientation_method =
+    env->GetMethodID(cls, "getPhysicalOrientation", "()I");
+
+  startMyService_method =
+    env->GetMethodID(cls, "startMyService", "()V");
 
   clsBitmap.Find(env, "android/graphics/Bitmap");
   createBitmap_method = env->GetStaticMethodID(
@@ -144,4 +160,11 @@ NativeView::ShareText(JNIEnv *env, const char *text) noexcept
 {
   env->CallVoidMethod(obj, shareText_method,
                       Java::String{env, text}.Get());
+}
+
+bool
+NativeView::OpenURL(JNIEnv *env, const char *url) noexcept
+{
+  return env->CallBooleanMethod(obj, openURL_method,
+                                Java::String{env, url}.Get());
 }

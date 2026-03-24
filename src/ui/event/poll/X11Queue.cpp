@@ -1,10 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
+#ifdef ENABLE_OPENGL
+#include "ui/opengl/Features.hpp"
+#endif
 #include "X11Queue.hpp"
 #include "Queue.hpp"
 #include "../shared/Event.hpp"
 #include "ui/display/Display.hpp"
+#include "ui/dim/Size.hpp"
+
+#if defined(ENABLE_OPENGL) && defined(SOFTWARE_ROTATE_DISPLAY)
+#include "../shared/TransformCoordinates.hpp"
+#endif
 
 /* kludges to work around namespace collisions with X11 headers */
 
@@ -32,6 +40,16 @@ X11EventQueue::X11EventQueue(Display &_display, EventQueue &_queue)
 
   socket_event.Open(SocketDescriptor(ConnectionNumber(display)));
   socket_event.ScheduleRead();
+}
+
+PixelPoint
+X11EventQueue::MaybeTransformPoint(PixelPoint p) const noexcept
+{
+#if defined(ENABLE_OPENGL) && defined(SOFTWARE_ROTATE_DISPLAY)
+  return TransformCoordinates(p, physical_screen_size);
+#else
+  return p;
+#endif
 }
 
 inline void
@@ -75,17 +93,21 @@ X11EventQueue::HandleEvent(_XEvent &event)
     case Button1:
     case Button2:
     case Button3:
+      pointer_position = MaybeTransformPoint(
+        PixelPoint(event.xbutton.x, event.xbutton.y));
       ctrl_click = event.xbutton.state & ControlMask;
       queue.Push(Event(Event::MOUSE_DOWN,
-                       PixelPoint(event.xbutton.x, event.xbutton.y)));
+                       pointer_position));
       break;
 
     case Button4:
     case Button5:
       /* mouse wheel */
       {
+        pointer_position = MaybeTransformPoint(
+          PixelPoint(event.xbutton.x, event.xbutton.y));
         Event e(Event::MOUSE_WHEEL,
-                PixelPoint(event.xbutton.x, event.xbutton.y));
+                pointer_position);
         e.param = event.xbutton.button == Button4 ? 1u : unsigned(-1);
         queue.Push(e);
       }
@@ -98,14 +120,18 @@ X11EventQueue::HandleEvent(_XEvent &event)
     case Button1:
     case Button2:
     case Button3:
+      pointer_position = MaybeTransformPoint(
+        PixelPoint(event.xbutton.x, event.xbutton.y));
       queue.Push(Event(Event::MOUSE_UP,
-                       PixelPoint(event.xbutton.x, event.xbutton.y)));
+                       pointer_position));
     }
     break;
 
   case MotionNotify:
+    pointer_position = MaybeTransformPoint(
+      PixelPoint(event.xmotion.x, event.xmotion.y));
     queue.Push(Event(Event::MOUSE_MOTION,
-                     PixelPoint(event.xmotion.x, event.xmotion.y)));
+                     pointer_position));
     break;
 
   case ClientMessage:
@@ -118,9 +144,17 @@ X11EventQueue::HandleEvent(_XEvent &event)
       break;
 
   case ConfigureNotify:
-    queue.Push(Event(Event::RESIZE,
-                     PixelPoint(event.xconfigure.width,
-                                event.xconfigure.height)));
+    {
+      if (event.xconfigure.width <= 0 || event.xconfigure.height <= 0)
+        break;
+
+      PixelSize physical_size(event.xconfigure.width,
+                              event.xconfigure.height);
+      physical_screen_size = physical_size;
+      queue.Push(Event(Event::RESIZE,
+                       PixelPoint(physical_size.width,
+                                  physical_size.height)));
+    }
     break;
 
   case VisibilityNotify:
@@ -140,7 +174,7 @@ X11EventQueue::HandleEvent(_XEvent &event)
 void
 X11EventQueue::OnSocketReady(unsigned) noexcept
 {
-  while(XPending(display)) {
+  while (XPending(display)) {
     XEvent event;
     XNextEvent(display, &event);
     HandleEvent(event);

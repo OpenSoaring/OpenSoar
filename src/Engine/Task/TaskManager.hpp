@@ -129,10 +129,11 @@ public:
   /**
    * Sets active task to ordered task (or goto if none exists) after
    * goto or aborting.
+   * 
+   * @return True if the active mode was changed successfully
    */
-  void Resume() noexcept {
-    SetMode(TaskType::ORDERED);
-  }
+  [[nodiscard]]
+  bool Resume() noexcept;
 
   /**
    * Sets active task to go to mode, to specified waypoint
@@ -409,14 +410,27 @@ public:
   /**
    * When called on takeoff, will create a goto task to the nearest waypoint if
    * no other task is active.
-   * Caller is responsible for ensuring the waypoint database already has an
-   * appropriate waypoint within 1000m of the takeoff location.
+   * Adds a temporary takeoff waypoint to the waypoints database if no landable
+   * waypoint is found within 5000m.
    */
-  void TakeoffAutotask(const GeoPoint &ref, double terrain_alt) noexcept;
+  void TakeoffAutotask(const GeoPoint &ref, double terrain_alt,
+                       Waypoints &waypoints) noexcept;
 
   void UpdateCommonStatsTask() noexcept;
 
   void ResetTask() noexcept;
+
+  /**
+   * Sets the PEV start time span.
+   * To be called when PEV has been pressed.
+   */
+  void SetPevStartTimeSpan(const TimeSpan &open_time_span) noexcept;
+
+  /**
+   * Update speed-to-fly and risk MC from the current polar.
+   * Safe to call without a valid location (e.g. before GPS fix).
+   */
+  void UpdateCommonStatsPolar(const AircraftState &state) noexcept;
 
 private:
   TaskType SetMode(const TaskType mode) noexcept;
@@ -424,5 +438,4 @@ private:
   void UpdateCommonStats(const AircraftState &state) noexcept;
   void UpdateCommonStatsTimes(const AircraftState &state) noexcept;
   void UpdateCommonStatsWaypoints(const AircraftState &state) noexcept;
-  void UpdateCommonStatsPolar(const AircraftState &state) noexcept;
 };

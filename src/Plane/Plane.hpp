@@ -6,6 +6,10 @@
 #include "util/StaticString.hxx"
 #include "Polar/Shape.hpp"
 
+/** Default maximum speed (m/s, ≈270 km/h) for device-provided polars
+    when no plane-specific value is known */
+static constexpr double DEFAULT_MAX_SPEED = 75.0;
+
 struct Plane
 {
   StaticString<32> registration;
@@ -35,4 +39,10 @@ struct Plane
    * https://api.weglide.org/v1/aircraft/$(ID)
    */
   unsigned weglide_glider_type;
+
+  /**
+   * Is a plane profile file active (not the default plane)?
+   * This is set when a plane profile file is loaded from Profile::GetPath("PlanePath").
+   */
+  bool plane_profile_active;
 };

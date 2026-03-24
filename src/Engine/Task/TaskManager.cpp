@@ -7,6 +7,7 @@
 #include "Ordered/Points/AATPoint.hpp"
 #include "Unordered/GotoTask.hpp"
 #include "Unordered/AlternateTask.hpp"
+#include "Waypoint/Waypoints.hpp"
 
 TaskManager::TaskManager(const TaskBehaviour &_task_behaviour,
                          const Waypoints &wps) noexcept
@@ -19,6 +20,20 @@ TaskManager::TaskManager(const TaskBehaviour &_task_behaviour,
 }
 
 TaskManager::~TaskManager() noexcept = default;
+
+bool
+TaskManager::Resume() noexcept
+{
+  if (ordered_task->TaskSize() > 0 &&
+      SetMode(TaskType::ORDERED) == TaskType::ORDERED)
+    return true;
+
+  if (goto_task->GetActiveTaskPoint() != nullptr &&
+      SetMode(TaskType::GOTO) == TaskType::GOTO)
+    return true;
+
+  return false;
+}
 
 void
 TaskManager::SetTaskEvents(TaskEvents &_task_events) noexcept
@@ -200,7 +215,7 @@ TaskManager::UpdateCommonStatsTask() noexcept
 void
 TaskManager::UpdateCommonStatsPolar(const AircraftState &state) noexcept
 {
-  if (!state.location.IsValid() || !glide_polar.IsValid())
+  if (!glide_polar.IsValid())
     return;
 
   common_stats.current_risk_mc =
@@ -516,8 +531,12 @@ TaskManager::SetIntersectionTest(AbortIntersectionTest *test) noexcept
 }
 
 void
-TaskManager::TakeoffAutotask(const GeoPoint &loc, const double terrain_alt) noexcept
+TaskManager::TakeoffAutotask(const GeoPoint &loc, const double terrain_alt,
+                             Waypoints &waypoints) noexcept
 {
+  // Add takeoff waypoint to database so it appears in waypoint list dialog
+  waypoints.AddTempPoint(loc, terrain_alt, "(takeoff)");
+
   // create a goto task on takeoff
   if (!active_task && goto_task->TakeoffAutotask(loc, terrain_alt))
     SetMode(TaskType::GOTO);
@@ -530,4 +549,10 @@ TaskManager::ResetTask() noexcept
     active_task->Reset();
     UpdateCommonStatsTask();
   }
+}
+
+void
+TaskManager::SetPevStartTimeSpan(const TimeSpan &open_time_span) noexcept
+{
+  common_stats.pev_start_time_span = open_time_span;
 }

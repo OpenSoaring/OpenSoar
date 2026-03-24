@@ -4,7 +4,10 @@
 #pragma once
 
 #include "event/PipeEvent.hxx"
+#include "InputTransform.hpp"
 #include "ui/dim/Size.hpp"
+#include "ui/dim/Point.hpp"
+#include "DisplayOrientation.hpp"
 
 #include <cassert>
 
@@ -34,6 +37,8 @@ class LibInputHandler final {
   double x = -1.0, y = -1.0;
 
   PixelSize screen_size{0, 0};
+  DisplayOrientation display_orientation = DisplayOrientation::DEFAULT;
+  InputTransformMode input_transform_mode = InputTransformMode::XCSOAR_ROTATED;
 
   /**
    * The number of pointer input devices, touch screens ans keyboards.
@@ -54,24 +59,31 @@ public:
   void Resume() noexcept;
 
   void SetScreenSize(PixelSize _screen_size) noexcept {
+    const PixelSize old_size = screen_size;
     screen_size = _screen_size;
 
     assert(screen_size.width > 0);
     assert(screen_size.height > 0);
 
-    if (-1.0 == x)
+    if (-1.0 == x) {
       x = screen_size.width / 2;
+    } else if (old_size.width > 0 && old_size.width != screen_size.width) {
+      x = x * screen_size.width / old_size.width;
+    }
 
-    if (-1.0 == y)
+    if (-1.0 == y) {
       y = screen_size.height / 2;
+    } else if (old_size.height > 0 && old_size.height != screen_size.height) {
+      y = y * screen_size.height / old_size.height;
+    }
   }
 
   unsigned GetX() const noexcept {
-    return (unsigned) x;
+    return GetPosition().x;
   }
 
   unsigned GetY() const noexcept {
-    return (unsigned) y;
+    return GetPosition().y;
   }
 
   bool HasPointer() const noexcept {
@@ -90,7 +102,19 @@ public:
     return n_keyboards > 0;
   }
 
+  void SetDisplayOrientation(DisplayOrientation orientation) noexcept;
+
+  bool UsesSystemRotatedInput() const noexcept {
+    return input_transform_mode == InputTransformMode::SYSTEM_ROTATED;
+  }
+
 private:
+  [[gnu::pure]]
+  PixelPoint GetPosition() const noexcept;
+
+  [[gnu::pure]]
+  PixelPoint MaybeTransformPoint(PixelPoint p) const noexcept;
+
   int OpenDevice(const char *path, int flags) noexcept;
   void CloseDevice(int fd) noexcept;
 

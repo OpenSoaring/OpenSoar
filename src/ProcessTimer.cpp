@@ -20,10 +20,13 @@
 #include "Tracking/TrackingGlue.hpp"
 #include "net/client/tim/Glue.hpp"
 #include "ui/event/Idle.hpp"
-#include "Dialogs/Tracking/CloudEnableDialog.hpp"
 #include "Components.hpp"
 #include "NetComponents.hpp"
 #include "BackendComponents.hpp"
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 static void
 MessageProcessTimer() noexcept
@@ -159,7 +162,6 @@ ProcessAutoBugs() noexcept
 static void
 SettingsProcessTimer() noexcept
 {
-  CloudEnableDialog();
   BallastDumpProcessTimer();
   ProcessAutoBugs();
 }

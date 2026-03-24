@@ -77,7 +77,7 @@ ChartRenderer::Begin() noexcept
   }
 
   if (!x_label.empty() || !y_label.empty())
-    canvas.DrawFilledRectangle(rc_chart, COLOR_WHITE);
+    canvas.DrawFilledRectangle(rc_chart, look.background_color);
 }
 
 void
@@ -88,6 +88,7 @@ ChartRenderer::Finish() noexcept
 
     canvas.Select(look.axis_label_font);
     canvas.SetBackgroundTransparent();
+    canvas.SetTextColor(look.text_color);
 
     PixelSize tsize = canvas.CalcTextSize(x_label.c_str());
     int x = rc.right - tsize.width - Layout::GetTextPadding();
@@ -101,6 +102,7 @@ ChartRenderer::Finish() noexcept
 
     canvas.Select(look.axis_label_font);
     canvas.SetBackgroundTransparent();
+    canvas.SetTextColor(look.text_color);
 
     canvas.DrawText(rc.WithPadding(Layout::GetTextPadding()).GetTopLeft(),
                     y_label.c_str());
@@ -197,6 +199,7 @@ ChartRenderer::DrawLabel(DoublePoint2D v, const char *text) noexcept
 {
   canvas.Select(look.label_font);
   canvas.SetBackgroundTransparent();
+  canvas.SetTextColor(look.text_color);
 
   auto tsize = canvas.CalcTextSize(text);
   auto pt = ToScreen(v);
@@ -218,6 +221,7 @@ ChartRenderer::DrawNoData(const char *text) noexcept
 {
   canvas.Select(look.label_font);
   canvas.SetBackgroundTransparent();
+  canvas.SetTextColor(look.text_color);
 
   canvas.DrawText(rc.CenteredTopLeft(canvas.CalcTextSize(text)), text);
 }
@@ -466,6 +470,7 @@ ChartRenderer::DrawXGrid(double tic_step, double unit_step,
 
   canvas.Select(look.axis_value_font);
   canvas.SetBackgroundTransparent();
+  canvas.SetTextColor(look.text_color);
 
   PixelPoint line[4];
 
@@ -537,6 +542,7 @@ ChartRenderer::DrawYGrid(double tic_step, double unit_step,
 
   canvas.Select(look.axis_value_font);
   canvas.SetBackgroundTransparent();
+  canvas.SetTextColor(look.text_color);
 
   PixelPoint line[4];
 

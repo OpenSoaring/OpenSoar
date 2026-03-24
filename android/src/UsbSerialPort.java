@@ -25,7 +25,7 @@ public final class UsbSerialPort
   private PortListener portListener;
   private InputListener inputListener;
   private int baudRate;
-  private int state = STATE_LIMBO;
+  private volatile int state = STATE_LIMBO;
   private final SafeDestruct safeDestruct = new SafeDestruct();
 
   public UsbSerialPort(UsbSerialHelper.UsbDeviceInterface parent, int baud) {
@@ -46,12 +46,16 @@ public final class UsbSerialPort
 
     serialDevice = UsbSerialDevice.createUsbSerialDevice(device, connection, iface);
     if (serialDevice == null) {
+      connection.close();
+      connection = null;
       setState(STATE_FAILED);
       return;
     }
 
     if (!serialDevice.open()) {
       serialDevice = null;
+      connection.close();
+      connection = null;
       setState(STATE_FAILED);
       return;
     }
@@ -69,6 +73,7 @@ public final class UsbSerialPort
   public synchronized void close() {
     parent.portClosed(this);
 
+    setState(STATE_FAILED);
     safeDestruct.beginShutdown();
 
     if( serialDevice != null) {
@@ -117,22 +122,32 @@ public final class UsbSerialPort
   }
 
   @Override
-  public boolean setBaudRate(int baud) {
-    serialDevice.setBaudRate(baud);
+  public synchronized boolean setBaudRate(int baud) {
+    // Keep this value even while disconnected; open() applies it later.
     baudRate = baud;
+    UsbSerialDevice serialDevice = this.serialDevice;
+    if (serialDevice == null)
+      return true;
+
+    serialDevice.setBaudRate(baud);
     return true;
   }
 
   @Override
   public synchronized int write(byte[] data, int length) {
+    UsbSerialDevice serialDevice = this.serialDevice;
+    if (serialDevice == null)
+      return -1;
+
     serialDevice.write(Arrays.copyOf(data, length));
     return length;
   }
 
   @Override
   public void onReceivedData(byte[] arg0) {
-    if (arg0.length == 0) {
-      error("Disconnected");
+    if (arg0 == null || arg0.length == 0) {
+      // Some chipsets can trigger empty read callbacks; this is not
+      // a disconnect and should not force the port into FAILED state.
       return;
     }
 

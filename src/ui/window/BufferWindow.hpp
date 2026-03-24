@@ -6,6 +6,14 @@
 #include "PaintWindow.hpp"
 #include "ui/canvas/BufferCanvas.hpp"
 
+#ifdef ENABLE_OPENGL
+#include <cstdint>
+#endif
+
+#ifdef USE_MEMORY_CANVAS
+#include <atomic>
+#endif
+
 /**
  * A #PaintWindow with buffered painting, to avoid flickering.
  */
@@ -17,6 +25,23 @@ class BufferWindow : public PaintWindow {
    * OnPaintBuffer()?
    */
   bool dirty;
+
+#ifdef ENABLE_OPENGL
+  uint32_t last_render_state_token = 0;
+  bool render_state_token_known = false;
+#endif
+
+#ifdef USE_MEMORY_CANVAS
+  /**
+   * Is there a pending resize request?
+   * If true, the buffer will be resized during the next OnPaint() call.
+   * Thread-safe atomic flag.
+   */
+  std::atomic<bool> resize_pending{false};
+  
+  std::atomic<unsigned> pending_width{0};
+  std::atomic<unsigned> pending_height{0};
+#endif
 
 public:
   void Invalidate() noexcept

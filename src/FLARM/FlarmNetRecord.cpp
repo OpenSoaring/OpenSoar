@@ -2,10 +2,9 @@
 // Copyright The XCSoar Project
 
 #include "FlarmNetRecord.hpp"
-#include "Id.hpp"
-
-FlarmId
-FlarmNetRecord::GetId() const noexcept
+const char *
+FlarmNetRecord::Format([[maybe_unused]] StaticString<256> &buffer, 
+                        const char *value) const noexcept
 {
-  return FlarmId::Parse(this->id, NULL);
-};
+  return (value != nullptr && !*value) ? nullptr : value;
+}

@@ -50,4 +50,5 @@ NOAAStore::SaveToProfile()
   *p = '\0';
 
   Profile::Set(ProfileKeys::WeatherStations, buffer);
+  Profile::Save();
 }

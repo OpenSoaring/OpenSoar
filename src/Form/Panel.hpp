@@ -18,10 +18,13 @@ struct DialogLook;
  */
 class PanelControl :
 #ifdef HAVE_CLIPPING
+  /* need explicit background erasing with clipping because the
+     parent's background does not extend into child windows */
   public SolidContainerWindow
 #else
   /* don't need to erase the background when it has been done by the
-     parent window already */
+     parent window already; staying transparent lets the parent's
+     gradient flow through uninterrupted */
   public ContainerWindow
 #endif
 {

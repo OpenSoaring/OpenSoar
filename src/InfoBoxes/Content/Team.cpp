@@ -2,38 +2,42 @@
 // Copyright The XCSoar Project
 
 #include "InfoBoxes/Content/Team.hpp"
-#include "InfoBoxes/Panel/Panel.hpp"
 #include "InfoBoxes/Data.hpp"
 #include "Interface.hpp"
 #include "TeamActions.hpp"
 #include "Dialogs/Traffic/TrafficDialogs.hpp"
-#include "Widget/CallbackWidget.hpp"
 #include "Language/Language.hpp"
 #include "util/StringCompare.hxx"
 
 #include <stdio.h>
 
-static void
-ShowTeamCodeDialog() noexcept
+
+bool
+InfoBoxContentTeamCode::HandleClick() noexcept
 {
   dlgTeamCodeShowModal();
+  return true;
 }
 
-static std::unique_ptr<Widget>
-LoadTeamCodeDialog([[maybe_unused]] unsigned id) noexcept
+bool
+InfoBoxContentTeamBearing::HandleClick() noexcept
 {
-  return std::make_unique<CallbackWidget>(ShowTeamCodeDialog);
+  dlgTeamCodeShowModal();
+  return true;
 }
 
-static constexpr InfoBoxPanel team_code_infobox_panels[] = {
-  { N_("Team Code"), LoadTeamCodeDialog },
-  { nullptr, nullptr }
-};
-
-const InfoBoxPanel *
-InfoBoxContentTeamCode::GetDialogContent() noexcept
+bool
+InfoBoxContentTeamBearingDiff::HandleClick() noexcept
 {
-  return team_code_infobox_panels;
+  dlgTeamCodeShowModal();
+  return true;
+}
+
+bool
+InfoBoxContentTeamDistance::HandleClick() noexcept
+{
+  dlgTeamCodeShowModal();
+  return true;
 }
 
 void
@@ -123,6 +127,12 @@ UpdateInfoBoxTeamBearing(InfoBoxData &data) noexcept
 }
 
 void
+InfoBoxContentTeamBearing::Update(InfoBoxData &data) noexcept
+{
+  UpdateInfoBoxTeamBearing(data);
+}
+
+void
 UpdateInfoBoxTeamBearingDiff(InfoBoxData &data) noexcept
 {
   const TeamCodeSettings &settings =
@@ -153,6 +163,12 @@ UpdateInfoBoxTeamBearingDiff(InfoBoxData &data) noexcept
 }
 
 void
+InfoBoxContentTeamBearingDiff::Update(InfoBoxData &data) noexcept
+{
+  UpdateInfoBoxTeamBearingDiff(data);
+}
+
+void
 UpdateInfoBoxTeamDistance(InfoBoxData &data) noexcept
 {
   const TeamCodeSettings &settings =
@@ -174,4 +190,10 @@ UpdateInfoBoxTeamDistance(InfoBoxData &data) noexcept
     data.SetComment("???");
 
   data.SetCommentColor(teamcode_info.flarm_teammate_code_current ? 2 : 1);
+}
+
+void
+InfoBoxContentTeamDistance::Update(InfoBoxData &data) noexcept
+{
+  UpdateInfoBoxTeamDistance(data);
 }

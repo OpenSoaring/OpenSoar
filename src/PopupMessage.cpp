@@ -105,11 +105,12 @@ PopupMessage::OnMouseDown([[maybe_unused]] PixelPoint p) noexcept
 void
 PopupMessage::OnPaint(Canvas &canvas) noexcept
 {
-  canvas.ClearWhite();
+  canvas.Clear(look.dark_mode ? look.background_color : COLOR_WHITE);
 
   auto rc = GetClientRect();
 #ifndef USE_WINUSER
-  canvas.DrawOutlineRectangle(rc, COLOR_BLACK);
+  canvas.DrawOutlineRectangle(rc,
+                              look.dark_mode ? COLOR_GRAY : COLOR_BLACK);
 #endif
 
   const int padding = Layout::GetTextPadding();
@@ -126,7 +127,6 @@ inline unsigned
 PopupMessage::CalculateWidth() const noexcept
 {
   if (settings.popup_message_position == UISettings::PopupMessagePosition::TOP_LEFT)
-    // TODO code: this shouldn't be hard-coded
     return rc.GetWidth();
   else
     return unsigned(rc.GetWidth() * 0.9);

@@ -4,6 +4,8 @@
 #pragma once
 
 #include "event/SocketEvent.hxx"
+#include "ui/dim/Point.hpp"
+#include "ui/dim/Size.hpp"
 
 /* kludges to work around namespace collisions with X11 headers */
 
@@ -42,6 +44,14 @@ class X11EventQueue {
   bool mapped = true, visible = true;
 
   bool ctrl_click;
+  PixelPoint pointer_position{0, 0};
+
+#if defined(ENABLE_OPENGL) && defined(SOFTWARE_ROTATE_DISPLAY)
+  PixelSize physical_screen_size{0, 0};
+#endif
+
+  [[gnu::pure]]
+  PixelPoint MaybeTransformPoint(PixelPoint p) const noexcept;
 
 public:
   /**
@@ -49,7 +59,7 @@ public:
    */
   X11EventQueue(Display &display, EventQueue &queue);
 
-  bool IsVisible() const {
+  bool IsVisible() const noexcept {
     return mapped && visible;
   }
 
@@ -57,10 +67,14 @@ public:
    * Was the Ctrl key down during the last MOUSE_DOWN event?
    *
    * TODO: this is a kludge, and we should move this flag into an
-   * event struct passed to Window::OnMouseDown().q
+   * event struct passed to Window::OnMouseDown().
    */
-  bool WasCtrlClick() const {
+  bool WasCtrlClick() const noexcept {
     return ctrl_click;
+  }
+
+  PixelPoint GetMousePosition() const noexcept {
+    return pointer_position;
   }
 
   bool Generate([[maybe_unused]] Event &event) {

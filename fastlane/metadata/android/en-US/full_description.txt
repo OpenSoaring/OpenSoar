@@ -1,0 +1,28 @@
+XCSoar is a powerful tactical glide computer for glider and paraglider pilots.
+Free and open-source, with no ads and no tracking.
+Runs on Android, iOS, Linux, macOS, and Windows.
+Built by an active open-source community.
+
+FEATURES
+
+- Moving map with terrain, airspace, airports, and task navigation
+- Built-in audio vario for acoustic climb/sink feedback
+- Context-sensitive InfoBoxes with altitude, navigation, glide
+  calculations, wind, weather, and task data
+- Traffic display and advanced glide computer calculations
+- Task planning/declaration with support for many vario and logger devices
+- Flight analysis tools such as barograph, polar view, and OLC optimization
+- Thermal centering assistance and support for online thermal sources
+- Import support for common waypoint, airspace, and map formats
+  (including CUP, CUPX, OpenAir, and XCM)
+
+WHY XCSOAR
+
+- No ads, no tracking, no data collection, and no account required
+- Works offline; your flight data stays on your device
+- Multi-platform: phone, tablet, PC, Kobo, and embedded computers
+- Open-source alternative to commercial glide computers
+- Supports a wide range of hardware
+
+Documentation:
+- User manual: https://xcsoar.org/discover/manual.html

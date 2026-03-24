@@ -12,10 +12,6 @@
 #include "Look/DialogLook.hpp"
 #include "ui/event/Globals.hpp"
 
-#ifdef __APPLE__
-#include <TargetConditionals.h>
-#endif
-
 #ifndef USE_WINUSER
 #include "ui/window/custom/Reference.hpp"
 #endif
@@ -128,6 +124,7 @@ WndForm::OnCreate()
   WindowStyle client_style;
   client_style.ControlParent();
   client_area.Create(*this, client_rect, look.background_color, client_style);
+  client_area.SetGradientTopColor(look.background_gradient_top_color);
 }
 
 void
@@ -202,8 +199,7 @@ WndForm::OnMouseDown(PixelPoint p) noexcept
   if (ContainerWindow::OnMouseDown(p))
     return true;
 
-#if !(defined(__APPLE__) && TARGET_OS_IPHONE)
-  if (!dragging && !IsMaximised()) {
+  if (!IsIOS() && !dragging && !IsMaximised()) {
     dragging = true;
     Invalidate();
 
@@ -213,7 +209,6 @@ WndForm::OnMouseDown(PixelPoint p) noexcept
     SetCapture();
     return true;
   }
-#endif
 
   return false;
 }

@@ -5,10 +5,25 @@
 
 #include "Panel.hpp"
 #include "ui/control/ScrollBar.hpp"
+#include "ui/event/PeriodicTimer.hpp"
+#include "UIUtil/KineticManager.hpp"
+#include "UIUtil/GestureManager.hpp"
 
 class VScrollPanelListener {
 public:
   virtual void OnVScrollPanelChange() noexcept = 0;
+
+  /**
+   * Called when a touch gesture (e.g. swipe) is detected on the
+   * scroll panel.  The gesture string uses the same format as
+   * #GestureManager (e.g. "L", "R", "U", "D").
+   *
+   * @return true if the gesture was handled
+   */
+  virtual bool OnVScrollPanelGesture(const char *gesture) noexcept {
+    (void)gesture;
+    return false;
+  }
 };
 
 /**
@@ -38,10 +53,53 @@ class VScrollPanel final : public PanelControl {
    */
   unsigned origin = 0;
 
+  /**
+   * Tracks active drag gesture and optional kinetic scrolling.
+   */
+  bool dragging = false;
+
+  /**
+   * Tracks if we're waiting to determine if this is a tap or drag.
+   */
+  bool potential_tap = false;
+  PixelPoint drag_start = {0, 0};
+
+  /**
+   * The vertical distance from the start of the drag relative to the
+   * top of the list (not the top of the screen)
+   */
+  int drag_y = 0;
+
+  KineticManager kinetic;
+  UI::PeriodicTimer kinetic_timer{[this]{ OnKineticTimer(); }};
+
+  /**
+   * Detects swipe gestures (L/R/U/D) from mouse/touch movement.
+   * Only active when #gesture_tracking is true.
+   */
+  GestureManager gestures;
+
+  /**
+   * True when gesture tracking has been started (i.e. the mouse-down
+   * was in the content area, not on the scrollbar).
+   */
+  bool gesture_tracking = false;
+
+  /**
+   * Target position for smooth keyboard scrolling (-1 = no animation).
+   */
+  int smooth_scroll_target = -1;
+
+  /**
+   * Timer for smooth scroll animation (~60fps).
+   */
+  UI::PeriodicTimer smooth_scroll_timer{[this]{ OnSmoothScrollTimer(); }};
+
 public:
   VScrollPanel(ContainerWindow &parent, const DialogLook &look,
                const PixelRect &rc, const WindowStyle style,
                VScrollPanelListener &_listener) noexcept;
+  ~VScrollPanel() noexcept override;
 
   /**
    * Sets the virtual height and initialises the scroll bar.  This
@@ -78,11 +136,55 @@ public:
 
 private:
   void SetupScrollBar() noexcept;
+  void SetOriginClamped(int new_origin) noexcept;
+  void OnKineticTimer() noexcept;
+  void OnSmoothScrollTimer() noexcept;
+
+  /**
+   * Start smooth scrolling to a target position with easing.
+   */
+  void SmoothScrollTo(int target) noexcept;
+
+public:
+  /**
+   * Can the panel scroll further down?
+   */
+  [[gnu::pure]]
+  bool CanScrollDown() const noexcept {
+    const unsigned physical_height = GetSize().height;
+    return virtual_height > physical_height &&
+           origin + physical_height < virtual_height;
+  }
+
+  /**
+   * Can the panel scroll further up?
+   */
+  [[gnu::pure]]
+  bool CanScrollUp() const noexcept {
+    return origin > 0;
+  }
+
+  /**
+   * Scroll the panel by the specified delta.
+   *
+   * @param delta The scroll amount (positive = down, negative = up).
+   */
+  void ScrollBy(int delta) noexcept;
+
+  /**
+   * Get the scroll step size based on scroll bar width.
+   *
+   * @return The scroll step size, minimum 1.
+   */
+  [[gnu::pure]]
+  int GetScrollStep() const noexcept;
 
 protected:
   /* virtual methods from class Window */
   void OnResize(PixelSize new_size) noexcept override;
+  void OnDestroy() noexcept override;
 
+  bool OnKeyCheck(unsigned key_code) const noexcept override;
   bool OnKeyDown(unsigned key_code) noexcept override;
 
   bool OnMouseDown(PixelPoint p) noexcept override;

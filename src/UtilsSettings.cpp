@@ -11,6 +11,9 @@
 #include "Topography/TopographyStore.hpp"
 #include "Topography/TopographyGlue.hpp"
 #include "Dialogs/Dialogs.h"
+#include "Profile/Keys.hpp"
+#include "Profile/Profile.hpp"
+#include "system/FileUtil.hpp"
 #include "Device/device.hpp"
 #include "Interface.hpp"
 #include "ActionInterface.hpp"
@@ -106,6 +109,16 @@ SettingsLeave(const UISettings &old_ui_settings)
   if (TerrainFileChanged)
     main_window.LoadTerrain();
 
+  /* If the terrain wasn't changed via the settings UI but no terrain is
+     currently loaded (e.g. a previous automated load failed), attempt
+     to load the configured map file when it now exists. */
+  if (!TerrainFileChanged && data_components->terrain == nullptr) {
+    if (const auto path = Profile::GetPath(ProfileKeys::MapFile); path != nullptr) {
+      if (File::Exists(path))
+        main_window.LoadTerrain();
+    }
+  }
+
   auto &way_points = *data_components->waypoints;
 
   if (WaypointFileChanged || AirfieldFileChanged) {
@@ -174,7 +187,7 @@ SettingsLeave(const UISettings &old_ui_settings)
   }
 
   if (RaspFileChanged)
-    DataGlobals::SetRasp(LoadConfiguredRasp());
+    DataGlobals::SetRasp(LoadConfiguredRasp(false));
 
   const UISettings &ui_settings = CommonInterface::GetUISettings();
 
@@ -186,6 +199,7 @@ SettingsLeave(const UISettings &old_ui_settings)
 
   if (ui_settings.dark_mode != old_ui_settings.dark_mode ||
       ui_settings.info_boxes.use_colors != old_ui_settings.info_boxes.use_colors ||
+      ui_settings.info_boxes.theme != old_ui_settings.info_boxes.theme ||
       settings_map.trail.type != old_settings_map.trail.type ||
       settings_map.trail.scaling_enabled != old_settings_map.trail.scaling_enabled ||
       settings_map.waypoint.landable_style != old_settings_map.waypoint.landable_style)

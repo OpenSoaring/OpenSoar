@@ -4,9 +4,13 @@
 #include "TaskMapButtonRenderer.hpp"
 #include "Gauge/TaskView.hpp"
 #include "Look/MapLook.hpp"
+#include "Look/DialogLook.hpp"
 #include "Interface.hpp"
+#include "UIGlobals.hpp"
 #include "Components.hpp"
 #include "DataComponents.hpp"
+
+#include <algorithm>
 
 #ifdef ENABLE_OPENGL
 #include "ui/canvas/opengl/Scope.hpp"
@@ -26,12 +30,22 @@ DrawTask(Canvas &canvas, const PixelRect rc,
             true);
 }
 
+[[gnu::pure]]
+static PixelRect
+CenteredSquare(PixelRect rc) noexcept
+{
+  const unsigned side = std::min(rc.GetWidth(), rc.GetHeight());
+  const int left = rc.left + ((int)rc.GetWidth() - (int)side) / 2;
+  const int top = rc.top + ((int)rc.GetHeight() - (int)side) / 2;
+  return {left, top, left + (int)side, top + (int)side};
+}
+
 void
 TaskMapButtonRenderer::DrawButton(Canvas &canvas, const PixelRect &rc,
                                   ButtonState state) const noexcept
 {
   if (task == nullptr) {
-    canvas.ClearWhite();
+    canvas.Clear(UIGlobals::GetDialogLook().background_color);
     return;
   }
 
@@ -52,7 +66,10 @@ TaskMapButtonRenderer::DrawButton(Canvas &canvas, const PixelRect &rc,
     buffer.Begin(canvas);
 #endif
 
-    DrawTask(buffer, PixelRect{new_size}, look, *task);
+    buffer.Clear(UIGlobals::GetDialogLook().background_color);
+
+    const PixelRect map_rc = CenteredSquare(PixelRect{new_size});
+    DrawTask(buffer, map_rc, look, *task);
 
 #ifdef ENABLE_OPENGL
     buffer.Commit(canvas);

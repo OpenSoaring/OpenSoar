@@ -5,6 +5,7 @@
 #include "Task/ProtectedTaskManager.hpp"
 #include "Engine/Task/TaskManager.hpp"
 #include "Engine/Task/Ordered/OrderedTask.hpp"
+#include "Engine/Waypoint/Waypoints.hpp"
 #include "NMEA/Aircraft.hpp"
 #include "NMEA/MoreData.hpp"
 #include "NMEA/Derived.hpp"
@@ -54,9 +55,10 @@ TaskComputer::ProcessBasicTask(const MoreData &basic,
 
   _task->SetTaskBehaviour(settings_computer.task);
 
+  const AircraftState current_as = ToAircraftState(basic, calculated);
+
   if (force || (last_location_available &&
                 basic.location_available.Modified(last_location_available))) {
-    const AircraftState current_as = ToAircraftState(basic, calculated);
     const AircraftState &last_as = valid_last_state ? last_state : current_as;
 
     _task->Update(current_as, last_as);
@@ -71,6 +73,8 @@ TaskComputer::ProcessBasicTask(const MoreData &basic,
     if (_task->UpdateAutoMC(current_as, fallback_mc))
       calculated.ProvideAutoMacCready(basic.clock,
                                       _task->GetGlidePolar().GetMC());
+  } else {
+    _task->UpdateCommonStatsPolar(current_as);
   }
 
   last_location_available = basic.location_available;
@@ -147,7 +151,8 @@ TaskComputer::ProcessIdle(const MoreData &basic, DerivedInfo &calculated,
 
 void 
 TaskComputer::ProcessAutoTask([[maybe_unused]] const NMEAInfo &basic,
-                              const DerivedInfo &calculated)
+                              const DerivedInfo &calculated,
+                              Waypoints &waypoints)
 {
   if (!calculated.flight.flying) {
     /* not flying (yet) */
@@ -164,9 +169,15 @@ TaskComputer::ProcessAutoTask([[maybe_unused]] const NMEAInfo &basic,
   if (calculated.altitude_agl_valid && calculated.altitude_agl > 500)
     return;
 
+  // Use terrain altitude if available, otherwise fall back to GPS/baro altitude
+  // from takeoff detection (better than 0 when terrain data is unavailable)
+  const double elevation = calculated.terrain_valid
+    ? calculated.terrain_altitude
+    : calculated.flight.takeoff_altitude;
+
   ProtectedTaskManager::ExclusiveLease _task(task);
-  _task->TakeoffAutotask(calculated.flight.takeoff_location,
-                         calculated.terrain_altitude);
+  _task->TakeoffAutotask(calculated.flight.takeoff_location, elevation,
+                         waypoints);
 }
 
 void 

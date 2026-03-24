@@ -74,6 +74,13 @@ protected:
 #endif
   GeoQuadrilateral SetTileKoordinates(std::string_view tile_string);
 
+  /**
+   * True if the decoded image contained non-grayscale pixels.
+   * Set during Load() on platforms that go through UncompressedImage.
+   * Always false on GDI (icons are monochrome there).
+   */
+  bool has_colors = false;
+
 public:
   Bitmap() = default;
   explicit Bitmap(ResourceId id);
@@ -98,6 +105,13 @@ public:
 #else
     return bitmap != nullptr;
 #endif
+  }
+
+  /**
+   * Did the decoded image contain non-grayscale (coloured) pixels?
+   */
+  bool HasColors() const noexcept {
+    return has_colors;
   }
 
 #ifdef USE_MEMORY_CANVAS

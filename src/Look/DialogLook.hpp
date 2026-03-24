@@ -15,6 +15,8 @@
 #endif
 
 struct DialogLook {
+  bool dark_mode = false;
+
   struct {
     Color text_color;
 
@@ -28,11 +30,17 @@ struct DialogLook {
     Color inactive_background_color;
   } caption;
 
-  Color background_color, text_color;
+  Color background_color, background_gradient_top_color, text_color;
 
   Brush background_brush;
 
   Font text_font, bold_font, small_font;
+
+  /** Bold font scaled up for H1 headings in rich text */
+  Font heading1_font;
+
+  /** Bold font scaled up for H2 headings in rich text */
+  Font heading2_font;
 
   struct {
     Color background_color, text_color;
@@ -94,7 +102,7 @@ struct DialogLook {
 
   void LoadFonts();
 
-  void Initialise();
+  void Initialise(bool dark_mode = false);
 
   void SetBackgroundColor(Color color);
 };

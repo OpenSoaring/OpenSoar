@@ -12,6 +12,7 @@ LIBINFOBOX_SOURCES = \
 	$(SRC)/InfoBoxes/Content/Task.cpp \
 	$(SRC)/InfoBoxes/Content/Places.cpp \
 	$(SRC)/InfoBoxes/Content/Contest.cpp \
+	$(SRC)/InfoBoxes/Content/ShowAnalysis.cpp \
 	$(SRC)/InfoBoxes/Content/Team.cpp \
 	$(SRC)/InfoBoxes/Content/Terrain.cpp \
 	$(SRC)/InfoBoxes/Content/Thermal.cpp \
@@ -32,7 +33,6 @@ LIBINFOBOX_SOURCES = \
 	$(SRC)/InfoBoxes/Panel/AltitudeSetup.cpp \
 	$(SRC)/InfoBoxes/Panel/MacCreadyEdit.cpp \
 	$(SRC)/InfoBoxes/Panel/MacCreadySetup.cpp \
-	$(SRC)/InfoBoxes/Panel/WindEdit.cpp \
 	$(SRC)/InfoBoxes/Panel/ATCReference.cpp \
 	$(SRC)/InfoBoxes/Panel/ATCSetup.cpp \
 	$(SRC)/InfoBoxes/Panel/RadioEdit.cpp

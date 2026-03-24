@@ -4,8 +4,10 @@
 #pragma once
 
 #include "Engine/Waypoint/Waypoint.hpp"
+#include "Math/Angle.hpp"
 #include "util/StaticString.hxx"
 
+#include <chrono>
 #include <vector>
 
 struct LoggerSettings;
@@ -26,6 +28,24 @@ struct Declaration {
     Shape shape;
     unsigned radius;
 
+    /**
+     * Half-angle of the observation zone sector.
+     * 180 degrees for a cylinder (full circle),
+     * 90 degrees for a FAI quarter-circle sector, etc.
+     */
+    Angle sector_angle = Angle::HalfCircle();
+
+    /**
+     * Inner radius for keyhole-type observation zones (meters).
+     * Zero if not applicable.
+     */
+    unsigned inner_radius = 0;
+
+    /**
+     * Is this an AAT (Assigned Area Task) point?
+     */
+    bool is_aat = false;
+
     TurnPoint(const Waypoint &_waypoint)
       :waypoint(_waypoint), shape(CYLINDER), radius(1500) {}
     TurnPoint(const OrderedTaskPoint &tp);
@@ -37,6 +57,16 @@ struct Declaration {
   StaticString<32> aircraft_registration;
   StaticString<8> competition_id;
   std::vector<TurnPoint> turnpoints;
+
+  /**
+   * Is the overall task an AAT or MAT type?
+   */
+  bool is_aat_task = false;
+
+  /**
+   * Minimum task time for AAT/MAT tasks.
+   */
+  std::chrono::duration<unsigned> aat_min_time{};
 
   Declaration(const LoggerSettings &logger_settings, const Plane &plane,
               const OrderedTask* task);

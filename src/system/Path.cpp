@@ -8,7 +8,6 @@
 #include "util/CharUtil.hxx"
 
 #include <algorithm>
-
 #include <cassert>
 
 std::string

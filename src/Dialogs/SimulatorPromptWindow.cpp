@@ -6,11 +6,13 @@
 #ifdef SIMULATOR_AVAILABLE
 
 #include "Look/DialogLook.hpp"
+#include "Look/Colors.hpp"
 #include "Language/Language.hpp"
 #include "ui/canvas/Canvas.hpp"
 #include "Gauge/LogoView.hpp"
 #include "Screen/Layout.hpp"
 #include "Renderer/BitmapButtonRenderer.hpp"
+#include "Renderer/GradientRenderer.hpp"
 #include "Simulator.hpp"
 #include "Resources.hpp"
 
@@ -24,14 +26,22 @@ SimulatorPromptWindow::OnCreate()
   WindowStyle style;
   style.TabStop();
 
+#ifndef USE_WIN32_RESOURCES
+  fly_bitmap.Load(IDB_LAUNCHER1_RGBA);
+#else
   fly_bitmap.Load(IDB_LAUNCHER1);
+#endif
   fly_button.Create(*this, rc, style,
-                    std::make_unique<BitmapButtonRenderer>(fly_bitmap),
+                    std::make_unique<BitmapButtonRenderer>(fly_bitmap, true),
                     [this](){ callback(Result::FLY); });
 
+#ifndef USE_WIN32_RESOURCES
+  sim_bitmap.Load(IDB_LAUNCHER2_RGBA);
+#else
   sim_bitmap.Load(IDB_LAUNCHER2);
+#endif
   sim_button.Create(*this, rc, style,
-                    std::make_unique<BitmapButtonRenderer>(sim_bitmap),
+                    std::make_unique<BitmapButtonRenderer>(sim_bitmap, true),
                     [this](){ callback(Result::SIMULATOR); });
 
   if (have_quit_button)
@@ -68,7 +78,14 @@ SimulatorPromptWindow::OnResize(PixelSize new_size) noexcept
   sim_button.Move(button_rc);
 
   logo_rect = rc;
+#ifndef NDEBUG
+  /* Reserve extra space for debug warning banner */
+  const int banner_extra_space = Layout::Scale(30);
+  logo_rect.bottom = button_rc.top - label_height - Layout::Scale(5) -
+    banner_extra_space;
+#else
   logo_rect.bottom = button_rc.top - label_height - Layout::Scale(5);
+#endif
 
   if (have_quit_button) {
     button_rc = rc;
@@ -81,11 +98,26 @@ SimulatorPromptWindow::OnResize(PixelSize new_size) noexcept
 void
 SimulatorPromptWindow::OnPaint(Canvas &canvas) noexcept
 {
+#ifdef ENABLE_OPENGL
+  DrawVerticalGradient(canvas, GetClientRect(),
+                       COLOR_XCSOAR, COLOR_XCSOAR_DARK,
+                       COLOR_XCSOAR_DARK);
+  logo_view.draw(canvas, logo_rect, true);
+
+  canvas.Select(look.text_font);
+  canvas.SetTextColor(COLOR_WHITE);
+#else
+  /* Without OpenGL there is no alpha blending — GDI uses BMP
+     resources and the software renderer uses pre-composited PNGs,
+     both with opaque white backgrounds.  A dark/gradient background
+     would show visible white rectangles around every bitmap.
+     Use a plain white background instead. */
   canvas.ClearWhite();
   logo_view.draw(canvas, logo_rect);
 
   canvas.Select(look.text_font);
   canvas.SetTextColor(COLOR_BLACK);
+#endif
   canvas.SetBackgroundTransparent();
   canvas.DrawText(label_position, _("What do you want to do?"));
 

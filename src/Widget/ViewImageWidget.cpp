@@ -4,7 +4,10 @@
 #include "ViewImageWidget.hpp"
 #include "ui/canvas/Canvas.hpp"
 #include "ui/canvas/Bitmap.hpp"
+#include "ui/canvas/Features.hpp"
 #include "ui/window/PaintWindow.hpp"
+#include "Look/DialogLook.hpp"
+#include "UIGlobals.hpp"
 
 class ViewImageWindow final : public PaintWindow {
   const Bitmap *bitmap;
@@ -44,7 +47,9 @@ ViewImageWidget::Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept
 void
 ViewImageWindow::OnPaint(Canvas &canvas) noexcept
 {
-  canvas.ClearWhite();
+  const auto &look = UIGlobals::GetDialogLook();
+  if (HaveClipping())
+    canvas.Clear(look.background_color);
 
   if (bitmap == nullptr)
     return;

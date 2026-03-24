@@ -17,6 +17,17 @@
 #include <cstdint>
 
 /**
+ * Constants for terrain rendering thresholds and quantisation limits.
+ * These values were introduced in commit df6c73466b to replace magic numbers.
+ */
+static constexpr double PIXEL_SIZE_NORMAL_THRESHOLD = 3000.0;
+static constexpr double PIXEL_SIZE_LOW_ZOOM_THRESHOLD = 20000.0;
+static constexpr double ZOOM_FACTOR_DIVISOR = 4250.0;
+static constexpr unsigned MAX_QUANTISATION_NEAR = 25;
+static constexpr unsigned MAX_QUANTISATION_LOW_ZOOM = 40;
+static constexpr double BOUNDS_SCALE_FACTOR = 1.5;
+
+/**
  * Interpolate between x and y with i/128, i.e. i/(1 << 7).
  *
  * i must be below or equal to 128.
@@ -93,10 +104,10 @@ RasterRenderer::~RasterRenderer() noexcept
 static unsigned
 GetQuantisation() noexcept
 {
-  if (IsUserIdle(2000))
-    /* full terrain resolution when the user is idle */
+  if (IsUserIdle(1500))
+    /* full terrain resolution when the user stops interacting */
     return 1;
-  else if (IsUserIdle(1000))
+  else if (IsUserIdle(750))
     /* reduced terrain resolution when the user has interacted with
        XCSoar recently */
     return 2;
@@ -108,6 +119,11 @@ GetQuantisation() noexcept
 bool
 RasterRenderer::UpdateQuantisation() noexcept
 {
+  if (fixed_quantisation)
+    /* value was set explicitly via SetQuantisationPixels();
+       don't let the idle-based heuristic overwrite it */
+    return quantisation_pixels < last_quantisation_pixels;
+
   quantisation_pixels = GetQuantisation();
   return quantisation_pixels < last_quantisation_pixels;
 }
@@ -136,7 +152,7 @@ RasterRenderer::ScanMap(const RasterMap &map,
 
   // set resolution
 
-  if (pixel_size < 3000) {
+  if (pixel_size < PIXEL_SIZE_NORMAL_THRESHOLD) {
     // Data point size of the (terrain) map in meters multiplied by 256
     auto map_pixel_size = map.PixelDistance(center, 1);
 
@@ -147,17 +163,39 @@ RasterRenderer::ScanMap(const RasterMap &map,
        RasterBuffer interpolation) */
     quantisation_effective = std::max(1, (int)q);
 
-    /* disable slope shading when zoomed in very near (not enough
-       terrain resolution to make a useful slope calculation) */
-    if (quantisation_effective > 25)
-      quantisation_effective = 0;
+    /* when zoomed in very near, use a large fixed area for slope
+       calculation to ensure terrain shading still works */
+    const unsigned max_quantisation_near = Layout::FastScale(MAX_QUANTISATION_NEAR);
+    if (quantisation_effective > max_quantisation_near)
+      quantisation_effective = max_quantisation_near;
 
-  } else
-    /* disable slope shading when zoomed out very far (too tiny) */
+  } else if (pixel_size < PIXEL_SIZE_LOW_ZOOM_THRESHOLD) {
+    auto map_pixel_size = map.PixelDistance(center, 1);
+    auto q = map_pixel_size / pixel_size;
+
+    /* At low zoom levels (3000-20000m pixel size), use adaptive coarse
+       quantisation instead of completely disabling shading. Scale
+       quantisation based on pixel_size: at 3000m use calculated q
+       (transition from normal mode), at 20000m use ~4x coarser
+       quantisation for better performance */
+    const double zoom_factor = 1.0 + (pixel_size - PIXEL_SIZE_NORMAL_THRESHOLD) / ZOOM_FACTOR_DIVISOR;
+    quantisation_effective = std::max(1, (int)(q * zoom_factor));
+
+    /* Cap at reasonable maximum to avoid artifacts and maintain
+       performance. Higher cap than normal mode since we're at low zoom */
+    const unsigned max_quantisation_low_zoom = Layout::FastScale(MAX_QUANTISATION_LOW_ZOOM);
+    if (quantisation_effective > max_quantisation_low_zoom)
+      quantisation_effective = max_quantisation_low_zoom;
+
+  } else {
+    /* disable slope shading when zoomed out extremely far (pixel_size >= 20000m)
+       as terrain features become too small to be meaningful and performance
+       would suffer with reasonable quantisation */
     quantisation_effective = 0;
+  }
 
 #ifdef ENABLE_OPENGL
-  bounds = projection.GetScreenBounds().Scale(1.5);
+  bounds = projection.GetScreenBounds().Scale(BOUNDS_SCALE_FACTOR);
   bounds.IntersectWith(map.GetBounds());
 
   height_matrix.Fill(map, bounds,
@@ -373,16 +411,22 @@ RasterRenderer::GenerateSlopeImage(unsigned height_scale,
 
         const int dd0 = p22 * int(p31);
         const int dd1 = int(p20) * p32;
-        const unsigned dd2 = p20 * p31 * height_slope_factor;
-        const int num = (int(dd2) * sz + dd0 * sx + dd1 * sy);
-        const unsigned square_mag = dd0 * dd0 + dd1 * dd1 + dd2 * dd2;
-        const unsigned mag = (unsigned)sqrt(square_mag);
+        const double dd2 = double(p20) * double(p31) *
+          double(height_slope_factor);
+        const double num =
+          dd2 * double(sz) + double(dd0) * double(sx) +
+          double(dd1) * double(sy);
+        const double square_mag =
+          double(dd0) * double(dd0) +
+          double(dd1) * double(dd1) +
+          dd2 * dd2;
+        const double mag = sqrt(square_mag);
         /* this is a workaround for a SIGFPE (division by zero)
            observed by our users on some Android devices (e.g. Nexus
            7), even though we did our best to make sure that the
            integer arithmetics above can't overflow */
         /* TODO: debug this problem and replace this workaround */
-        const int sval = num / int(mag|1);
+        const int sval = int(num / std::max(mag, 1.0));
         const int sindex = (sval - sz) * contrast / 128;
         *p++ = oColorBuf[int(h) + 256 * std::clamp(sindex, -63, 63)];
       } else if (e.IsWater()) {
