@@ -42,6 +42,8 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "Dialogs/dlgAnalysis.hpp"
 #include "Dialogs/FileManager.hpp"
 #include "Dialogs/ReplayDialog.hpp"
+#include "Dialogs/dlgQuickGuide.hpp"
+#include "Dialogs/dlgGestureHelp.hpp"
 #include "Message.hpp"
 #include "Markers/Markers.hpp"
 #include "MainWindow.hpp"
@@ -77,11 +79,11 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 
 #include "Interface.hpp"
 #include "InfoBoxes/Content/Thermal.hpp"
-
-#include "time/DateTime.hpp"
+#include "Terrain/RasterTerrain.hpp"
 
 #include <cassert>
 #include <algorithm>
+#include <limits>
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
@@ -91,8 +93,6 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include <processthreadsapi.h> // for CreateProcess()
 #include <winbase.h> // for INFINITE
 #endif
-
-using std::string_view_literals::operator""sv;
 
 /**
  * Determine the reference location of the current map display.
@@ -172,7 +172,7 @@ InputEvents::eventMarkLocation(const char *misc)
 
     MarkLocation(location, basic.date_time_utc);
 
-    const WaypointFactory factory(WaypointOrigin::USER,
+    const WaypointFactory factory(WaypointOrigin::USER, 0,
                                   data_components->terrain.get());
     Waypoint wp = factory.Create(location);
     factory.FallbackElevation(wp);
@@ -198,36 +198,25 @@ InputEvents::eventMarkLocation(const char *misc)
 
 void
 InputEvents::eventPilotEvent([[maybe_unused]] const char *misc)
-try {  // Configure PEV start window
+try {
+  // Configure start window
   const OrderedTaskSettings &ots =
     backend_components->protected_task_manager->GetOrderedTaskSettings();
-  const StartConstraints &start = ots.start_constraints;
+  const StartConstraints &constraints = ots.start_constraints;
 
-  time_t pev_time = DateTime::now();
-  time_t new_start = pev_time;
-  time_t new_end = -1;
+  const auto now = CommonInterface::Basic().time;
 
-  if (start.pev_start_wait_time.count() > 0) {
-    new_start = pev_time + start.pev_start_wait_time.count();
-  }
+  // Note: pev_start_wait_time == 0 means window starts right away
+  TimeStamp new_start_ts( now.ToDuration() + constraints.pev_start_wait_time );
+  FineTime new_start(new_start_ts);
 
-  // check the start open gate w/ disabling if PEV outside
-  const TimeStamp time_s = CommonInterface::Basic().time + start.pev_start_wait_time;
-  const RoughTime time_r{ time_s };
-  const RoughTimeSpan &open = CommonInterface::Calculated().common_stats.
-    start_open_time_span;
+  FineTime new_end = (constraints.pev_start_window.count() > 0) ?
+                     FineTime(new_start_ts + constraints.pev_start_window) :
+                     FineTime::Invalid();
 
-  if (open.HasEnded(time_r) || !open.HasBegun(time_r)) {
-    Message::AddMessage(_("PEV started on wrong time!"));
-    return;
-  }
+  const TimeSpan ts = TimeSpan(new_start, new_end);
 
-
-  if (start.pev_start_window.count() > 0) {
-    new_end = new_start + start.pev_start_window.count();
-  }
-  backend_components->protected_task_manager->SetPevStartTimes(
-    pev_time, new_start, new_end);
+  backend_components->protected_task_manager->SetPevStartTimeSpan(ts);
 
   // Log pilot event
   if (backend_components->igc_logger)
@@ -527,6 +516,22 @@ InputEvents::eventRepeatStatusMessage([[maybe_unused]] const char *misc)
     CommonInterface::main_window->popup->Repeat();
 }
 
+// QuickGuide
+// Open the Quick Guide dialog
+void
+InputEvents::eventQuickGuide([[maybe_unused]] const char *misc)
+{
+  dlgQuickGuideShowModal(true);
+}
+
+// GestureHelp
+// Open the standalone gesture help dialog
+void
+InputEvents::eventGestureHelp([[maybe_unused]] const char *misc)
+{
+  dlgGestureHelpShowModal();
+}
+
 // NearestWaypointDetails
 // Displays the waypoint details dialog
 void
@@ -756,12 +761,21 @@ InputEvents::eventAddWaypoint(const char *misc)
   const DerivedInfo &calculated = CommonInterface::Calculated();
   auto &way_points = *data_components->waypoints;
 
-  if (StringIsEqual(misc, "takeoff")) {
-    if (basic.location_available && calculated.terrain_valid) {
-      ScopeSuspendAllThreads suspend;
-      way_points.AddTakeoffPoint(basic.location, calculated.terrain_altitude);
-      way_points.Optimise();
+  if (StringIsEqual(misc, "goto")) {
+    const auto location = GetVisibleLocation();
+    if (!location.IsValid())
+      return;
+
+    double elevation = std::numeric_limits<double>::quiet_NaN();
+    if (data_components->terrain != nullptr) {
+      const auto h = data_components->terrain->GetTerrainHeight(location);
+      if (!h.IsSpecial()) {
+        elevation = h.GetValue();
+      }
     }
+
+    ScopeSuspendAllThreads suspend;
+    way_points.AddTempPoint(location, elevation, "(goto)");
   } else {
     Waypoint edit_waypoint = way_points.Create(basic.location);
     edit_waypoint.elevation = calculated.terrain_altitude;
@@ -825,7 +839,7 @@ InputEvents::eventWeather(const char *misc)
 }
 
 void
-InputEvents::eventQuickMenu(const char *misc)
+InputEvents::eventQuickMenu([[maybe_unused]] const char *misc)
 {
  dlgQuickMenuShowModal(*CommonInterface::main_window, misc);
 }
