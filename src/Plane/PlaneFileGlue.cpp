@@ -226,7 +226,7 @@ PlaneGlue::FindByRegistration(const char *registration)
     }
   } visitor{match};
 
-  VisitDataFiles("*.xcp", visitor);
+  VisitDataFiles("*.xcp", visitor, false);
   return std::move(match.found_path);
 }
 
