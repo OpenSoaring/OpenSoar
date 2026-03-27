@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "lib/fmt/tchar.hxx"
 #include "util/StaticString.hxx"
 #include "Units/Unit.hpp"
 #include "time/FloatDuration.hxx"
@@ -79,7 +78,7 @@ struct InfoBoxData {
     return title;
   };
 
-  void VFmtTitle(fmt_tstring_view format_str, fmt_tformat_args args) noexcept {
+  void VFmtTitle(fmt::string_view format_str, fmt::format_args args) noexcept {
     auto [p, _] = fmt::vformat_to_n(title.begin(), title.capacity() - 1,
                                     format_str, args);
     *p = 0;
@@ -98,7 +97,7 @@ struct InfoBoxData {
    */
   void SetValue(const char *value) noexcept;
 
-  void VFmtValue(fmt_tstring_view format_str, fmt_tformat_args args) noexcept {
+  void VFmtValue(fmt::string_view format_str, fmt::format_args args) noexcept {
     auto [p, _] = fmt::vformat_to_n(value.begin(), value.capacity() - 1,
                                     format_str, args);
     *p = 0;
@@ -164,7 +163,7 @@ struct InfoBoxData {
    */
   void SetComment(const char *comment) noexcept;
 
-  void VFmtComment(fmt_tstring_view format_str, fmt_tformat_args args) noexcept {
+  void VFmtComment(fmt::string_view format_str, fmt::format_args args) noexcept {
     auto [p, _] = fmt::vformat_to_n(comment.begin(), comment.capacity() - 1,
                                     format_str, args);
     *p = 0;
