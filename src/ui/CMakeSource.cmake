@@ -248,7 +248,9 @@ elseif (WIN32)
 
         ${CANVAS_SRC_DIR}/custom/GeoBitmap.cpp
         ${CANVAS_SRC_DIR}/custom/LibTiff.cpp
-    )
+
+        ${CANVAS_SRC_DIR}/Icon.cpp
+ )
     set(GDI_CPPFLAGS -DUSE_GDI)
     set(WINUSER_CPPFLAGS -DUSE_WINUSER)
     set(GDI_LDLIBS -luser32 -lgdi32 -lmsimg32 -lgdiplus)
