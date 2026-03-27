@@ -67,6 +67,8 @@
 # Make Caller Info:
 RUN_ARGS := $(wordlist 1,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 
+IS_OPENSOAR = y
+
 ## TESTING := y
 
 ifneq ($(TARGET),)

@@ -141,11 +141,15 @@ DRIVER_SOURCES = \
 	$(DRIVER_SRC_DIR)/Larus.cpp \
 	$(DRIVER_SRC_DIR)/LoEFGREN.cpp \
 	$(DRIVER_SRC_DIR)/ATR833/Device.cpp \
-	$(DRIVER_SRC_DIR)/ATR833/Register.cpp
-	\
+	$(DRIVER_SRC_DIR)/ATR833/Register.cpp 
+
+
+  ifeq ($(IS_OPENSOAR),y)
+    DRIVER_SOURCES += \
 	$(DRIVER_SRC_DIR)/Anemoi.cpp \
 	$(DRIVER_SRC_DIR)/AR62xx.cpp \
-	$(DRIVER_SRC_DIR)/FreeVario.cpp \
+	$(DRIVER_SRC_DIR)/FreeVario.cpp
+  endif
 
   ifeq ($(HAVE_REMOTESTICK),y)
     DRIVER_SOURCES += \
