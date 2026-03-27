@@ -15,6 +15,7 @@
 #include "Engine/Task/TaskType.hpp"
 #include "time/PeriodClock.hpp"
 
+#include <array>
 #include <atomic>
 #include <cstdint>
 #include <optional>
@@ -90,6 +91,13 @@ class LXDevice: public AbstractDevice
    * Was a vario with a Nano on the GPS port detected?
    */
   bool is_forwarded_nano = false;
+
+  /**
+   * Model-specific passthrough behavior:
+   * true  -> host baud shall be switched to BRGPS in DIRECT mode
+   * false -> keep host baud unchanged in DIRECT mode
+   */
+  bool switch_host_baud_for_direct = true;
 
   /**
    * Has the firmware version been logged?
@@ -300,8 +308,13 @@ public:
     return use_pass_through;
   }
 
+  bool ShouldSwitchHostBaudForPassThrough() const noexcept {
+    return switch_host_baud_for_direct;
+  }
+
   void ResetDeviceDetection() noexcept {
     is_v7 = is_sVario = is_nano = is_lx16xx = is_forwarded_nano = false;
+    switch_host_baud_for_direct = true;
     polar_sync_notified = false;
     device_polar.valid = false;
     last_sent_target_name.clear();
@@ -413,6 +426,32 @@ protected:
   bool EnableCommandMode(OperationEnvironment &env);
 
 public:
+  struct LXNAVBaudRateEntry {
+    unsigned index;
+    unsigned baud_rate;
+    const char *display_label;
+  };
+
+  static constexpr std::array<LXNAVBaudRateEntry, 11> lxnav_baud_rates{{
+    {0, 4800, "4800"},
+    {1, 9600, "9600"},
+    {2, 19200, "19200"},
+    {3, 38400, "38400"},
+    {4, 57600, "57600"},
+    {5, 115200, "115200"},
+    {6, 230400, "230400"},
+    {7, 256000, "256000"},
+    {8, 460800, "460800"},
+    {9, 500000, "500k"},
+    {10, 1000000, "1M"},
+  }};
+
+  [[gnu::const]]
+  static std::optional<unsigned>
+  GetLXNAVBaudrateByIndex(unsigned index) noexcept;
+
+  bool ReadLXGPSBaudrate(unsigned &baudrate, OperationEnvironment &env);
+
   // These methods are reused by the LX Eos driver
   static void LXWP1(NMEAInputLine &line, DeviceInfo &device);
 

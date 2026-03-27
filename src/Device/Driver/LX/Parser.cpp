@@ -423,124 +423,6 @@ ParseDeclHRecord(const std::string_view content,
 }
 
 /**
- * Parse a PLXVC,RADIO,A response.
- *
- * $PLXVC,RADIO,A,<command>,<value>[,<name>]
- *
- * command: COMM (active), SBY (standby), VOL, SQUELCH, VOX
- * value: frequency in kHz (e.g. 128800) or volume percentage
- */
-static void
-ParseRadio(NMEAInputLine &line, NMEAInfo &info)
-{
-  const auto command = line.ReadView();
-  unsigned value;
-  if (!line.ReadChecked(value))
-    return;
-
-  if (command == "COMM"sv || command == "SBY"sv) {
-    auto freq = RadioFrequency::FromKiloHertz(value);
-    if (!freq.IsDefined())
-      return;
-
-    if (command == "COMM"sv) {
-      info.settings.has_active_frequency.Update(info.clock);
-      info.settings.active_frequency = freq;
-
-      /* Optional station name */
-      const auto name = line.ReadView();
-      if (!name.empty())
-        info.settings.active_freq_name.SetASCII(name);
-    } else {
-      info.settings.has_standby_frequency.Update(info.clock);
-      info.settings.standby_frequency = freq;
-
-      const auto name = line.ReadView();
-      if (!name.empty())
-        info.settings.standby_freq_name.SetASCII(name);
-    }
-  }
-}
-
-/**
- * Map an LXNAV transponder mode string to a TransponderMode.
- */
-[[gnu::pure]]
-static TransponderMode
-ParseTransponderMode(std::string_view mode_str) noexcept
-{
-  static constexpr struct {
-    std::string_view name;
-    TransponderMode::Mode value;
-  } table[] = {
-    {"OFF"sv,   TransponderMode::OFF},
-    {"SBY"sv,   TransponderMode::SBY},
-    {"GND"sv,   TransponderMode::GND},
-    {"ON"sv,    TransponderMode::ON},
-    {"ALT"sv,   TransponderMode::ALT},
-    {"IDENT"sv, TransponderMode::IDENT},
-  };
-
-  for (const auto &[name, value] : table)
-    if (mode_str == name)
-      return TransponderMode{value};
-
-  return TransponderMode::Null();
-}
-
-/**
- * Parse a PLXVC,XPDR,A response.
- *
- * $PLXVC,XPDR,A,<command>,<value>
- *
- * command: SQUAWK, MODE, ALT, STATUS
- */
-static void
-ParseTransponder(NMEAInputLine &line, NMEAInfo &info)
-{
-  const auto command = line.ReadView();
-
-  if (command == "SQUAWK"sv) {
-    /* The protocol sends squawk as a display string (e.g. "7700").
-       TransponderCode stores values in octal, so parse base 8. */
-    char buf[8];
-    line.Read(buf, sizeof(buf));
-    auto code = TransponderCode::Parse(buf);
-    if (code.IsDefined()) {
-      info.settings.has_transponder_code.Update(info.clock);
-      info.settings.transponder_code = code;
-    }
-  } else if (command == "MODE"sv) {
-    const auto mode_str = line.ReadView();
-    auto mode = ParseTransponderMode(mode_str);
-    if (mode.IsDefined()) {
-      info.settings.has_transponder_mode.Update(info.clock);
-      info.settings.transponder_mode = mode;
-    }
-  }
-}
-
-/**
- * Parse H-record content from a declaration line.
- * Matches HFPLTPILOT:, HFGTYGLIDERTYPE:, HFGIDGLIDERID:,
- * HFCIDCOMPETITIONID: prefixes.
- */
-static void
-ParseDeclHRecord(const std::string_view content,
-                 LXDevice::DeviceDeclaration &decl) noexcept
-{
-  using namespace std::string_view_literals;
-  if (content.starts_with("HFPLTPILOT:"sv))
-    decl.pilot_name = content.substr(11);
-  else if (content.starts_with("HFGTYGLIDERTYPE:"sv))
-    decl.glider_type = content.substr(16);
-  else if (content.starts_with("HFGIDGLIDERID:"sv))
-    decl.registration = content.substr(14);
-  else if (content.starts_with("HFCIDCOMPETITIONID:"sv))
-    decl.competition_id = content.substr(19);
-}
-
-/**
  * Parse the $PLXVC sentence (LXNAV Nano and sVarios).
  *
  * $PLXVC,<key>,<type>,<values>*<checksum><cr><lf>
@@ -590,11 +472,7 @@ PLXVC(NMEAInputLine &line, NMEAInfo &info,
           device_declaration.glider_type.c_str(), info.clock);
     }
   } else if (key == "INFO"sv && type.starts_with('A')) {
-<<<<<<< HEAD
     ParsePLXVCInfo(line, info.device);
-=======
-    ParseNanoVarioInfo(line, info.device);
->>>>>>> 5b2958a6e2 (merge Device/Driver/LX: use XCSoar)
   } else if (key == "GPSINFO"sv && type.starts_with('A')) {
     /* the LXNAV V7 (firmware >= 2.01) forwards the Nano's INFO
        sentence with the "GPS" prefix */
@@ -605,11 +483,7 @@ PLXVC(NMEAInputLine &line, NMEAInfo &info,
     } else if (name == "INFO"sv) {
       const auto type2 = line.ReadView();
       if (type2.starts_with('A'))
-<<<<<<< HEAD
         ParsePLXVCInfo(line, info.secondary_device);
-=======
-        ParseNanoVarioInfo(line, info.secondary_device);
->>>>>>> 5b2958a6e2 (merge Device/Driver/LX: use XCSoar)
     }
   } else if (key == "RADIO"sv && type.starts_with('A')) {
     ParseRadio(line, info);
@@ -721,17 +595,11 @@ LXDevice::IdDeviceByNameLocked(const StaticString<16> &product_name,
                                const DeviceInfo &device_info) noexcept
 {
   const bool new_v7 = product_name.equals("V7");
-<<<<<<< HEAD
   const bool new_sVario = IsSSeriesVarioProduct(product_name);
-=======
-  const bool new_sVario = product_name.equals("NINC") ||
-                           product_name.equals("S8x");
->>>>>>> 5b2958a6e2 (merge Device/Driver/LX: use XCSoar)
   const bool new_nano = IsNanoProduct(product_name);
   const bool new_lx16xx = product_name.equals("1606") ||
                            product_name.equals("1600");
 
-<<<<<<< HEAD
   if (product_name.equals("NINC"))
     switch_host_baud_for_direct = ShouldSwitchHostBaudForNinc(device_info);
   else if (new_v7)
@@ -754,16 +622,6 @@ LXDevice::IdDeviceByNameLocked(const StaticString<16> &product_name,
            switch_host_baud_for_direct);
     if (!device_info.software_version.empty() ||
         !device_info.hardware_version.empty())
-=======
-  if ((new_v7 && !is_v7) || (new_sVario && !is_sVario)) {
-    const char *device_type = new_v7 ? "V7" : "S series vario";
-    LogFmt("LXNAV: {} detected via PLXVC (product: {}, firmware: {})",
-           device_type, product_name.c_str(),
-           device_info.software_version.empty()
-             ? "unknown"
-             : device_info.software_version.c_str());
-    if (!device_info.software_version.empty())
->>>>>>> 5b2958a6e2 (merge Device/Driver/LX: use XCSoar)
       firmware_version_logged = true;
   }
 
@@ -786,12 +644,7 @@ LXDevice::UpdateDeviceFlags(const DeviceInfo &device_info,
                             bool pass_through) noexcept
 {
   const bool saw_v7 = device_info.product.equals("V7");
-<<<<<<< HEAD
   const bool saw_sVario = IsSSeriesVarioProduct(device_info.product);
-=======
-  const bool saw_sVario = device_info.product.equals("NINC") ||
-                           device_info.product.equals("S8x");
->>>>>>> 5b2958a6e2 (merge Device/Driver/LX: use XCSoar)
   const bool saw_nano = IsNanoProduct(device_info.product);
   const bool saw_lx16xx = device_info.product.equals("1606") ||
                            device_info.product.equals("1600");
