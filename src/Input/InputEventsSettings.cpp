@@ -173,7 +173,7 @@ InputEvents::eventAudioDeadband(const char *misc)
 void
 InputEvents::eventBugs(const char *misc)
 {
-  if (!backend_components->protected_task_manager)
+  if (!backend_components || !backend_components->protected_task_manager)
     return;
 
   PolarSettings &settings = CommonInterface::SetComputerSettings().polar;
@@ -200,7 +200,8 @@ InputEvents::eventBugs(const char *misc)
 
   if (BUGS != oldBugs) {
     settings.SetBugs(BUGS);
-    backend_components->SetTaskPolar(settings);
+    if (backend_components)
+      backend_components->SetTaskPolar(settings);
   }
 }
 
@@ -210,40 +211,64 @@ InputEvents::eventBugs(const char *misc)
 // down: decreases ballast by 10%
 // max: selects 100% ballast
 // min: selects 0% ballast
+// toggle: starts/stops ballast dump timer
 // show: displays a status message indicating the ballast percentage
 void
 InputEvents::eventBallast(const char *misc)
 {
-  if (!backend_components->protected_task_manager)
+  if (!backend_components || !backend_components->protected_task_manager)
     return;
 
-  auto &settings = CommonInterface::SetComputerSettings().polar;
+  auto &computer_settings = CommonInterface::SetComputerSettings();
+  auto &settings = computer_settings.polar;
   GlidePolar &polar = settings.glide_polar_task;
-  auto BALLAST = polar.GetBallast();
-  auto oldBallast = BALLAST;
+
+  if (StringIsEqual(misc, "toggle")) {
+    if (settings.ballast_timer_active) {
+      settings.ballast_timer_active = false;
+      Message::AddMessage(_("Ballast dump stopped"));
+      return;
+    }
+
+    if (!polar.HasBallast())
+      return;
+
+    if (computer_settings.plane.dump_time == 0) {
+      Message::AddMessage(_("Ballast dump time is 0 in plane profile"));
+      return;
+    }
+
+    settings.ballast_timer_active = true;
+    Message::AddMessage(_("Ballast dump started"));
+    return;
+  }
+  
+  double ballast_fraction = polar.GetBallastFraction();
+  const auto old_ballast_fraction = ballast_fraction;
 
   if (StringIsEqual(misc, "up")) {
-    BALLAST += 1 / 10.;
-    if (BALLAST >= 1)
-      BALLAST = 1;
+    ballast_fraction += 1 / 10.;
+    if (ballast_fraction >= 1)
+      ballast_fraction = 1;
   } else if (StringIsEqual(misc, "down")) {
-    BALLAST -= 1 / 10.;
-    if (BALLAST < 0)
-      BALLAST = 0;
+    ballast_fraction -= 1 / 10.;
+    if (ballast_fraction < 0)
+      ballast_fraction = 0;
   } else if (StringIsEqual(misc, "max"))
-    BALLAST = 1;
+    ballast_fraction = 1;
   else if (StringIsEqual(misc, "min"))
-    BALLAST = 0;
+    ballast_fraction = 0;
   else if (StringIsEqual(misc, "show")) {
     char Temp[100];
-    snprintf(Temp, sizeof(Temp), "%d", (int)(BALLAST * 100));
+    StringFormatUnsafe(Temp, "%d", (int)(ballast_fraction * 100));
     /* xgettext:no-c-format */
     Message::AddMessage(_("Ballast %"), Temp);
   }
 
-  if (BALLAST != oldBallast) {
-    polar.SetBallast(BALLAST);
-    backend_components->SetTaskPolar(settings);
+  if (ballast_fraction != old_ballast_fraction) {
+    polar.SetBallastFraction(ballast_fraction);
+    if (backend_components)
+      backend_components->SetTaskPolar(settings);
   }
 }
 
