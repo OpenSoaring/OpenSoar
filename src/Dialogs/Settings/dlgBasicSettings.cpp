@@ -137,7 +137,7 @@ FlightSetupPanel::SetBallast()
     const Plane &plane = CommonInterface::GetComputerSettings().plane;
     if (plane.empty_mass > 0) {
       auto dry_mass = polar_settings.glide_polar_task.GetDryMass();
-      auto fraction = polar_settings.glide_polar_task.GetBallast();
+      auto fraction = polar_settings.glide_polar_task.GetBallastLitres();
       auto overload = (dry_mass + fraction * plane.max_ballast) /
                       plane.polar_shape.reference_mass;
 
