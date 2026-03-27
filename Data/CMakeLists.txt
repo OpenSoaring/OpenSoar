@@ -281,16 +281,10 @@ add_custom_command(OUTPUT ${GRAPHIC_BITMAPS}
   WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
 ) 
 
-### foreach(file ${GRAPHIC_ICONS})
-###     set(icon_file ${_DATA_INPUT}/graphics/${file}.svg)
-###     list(APPEND GRAPHIC_ICON_SVG ${icon_file}))
-###     set(bmp_file ${_GRAPHICS_OUTPUT}/${file}.bmp)
-###     list(APPEND GRAPHIC_BMP_FILES ${bmp_file}))
-### endforeach()
-#${_DATA_INPUT}/location_pin.svg
 foreach(file ${GRAPHIC_ICONS})
     set(svg_file ${_DATA_INPUT}/${file}.svg)
-    set(bmp_file ${_GRAPHICS_OUTPUT}/${file}.bmp)
+    # set(bmp_file ${_GRAPHICS_OUTPUT}/${file}.bmp)
+    set(bmp_file ${_DATA_OUTPUT}/${file}.bmp)
     list(APPEND GRAPHIC_BMP_FILES ${bmp_file})
     add_custom_command(OUTPUT ${bmp_file}
       COMMENT "Convert single graphic-icons (${file})!"
