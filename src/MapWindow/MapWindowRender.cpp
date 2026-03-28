@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
+
+#ifdef RUN_MAP_WINDOW
+// Workaround August2111
+# undef HAVE_SKYSIGHT
+#endif
 #include "MapWindow.hpp"
 #include "Overlay.hpp"
 #include "Look/MapLook.hpp"
@@ -82,7 +87,9 @@ MapWindow::RenderSkysight([[maybe_unused]] Canvas &canvas) noexcept
     return;
   /* TODO(August2111) in Test 'RunMapWindow' this call is not allowed in the
    * moment */
+#ifndef RUN_MAP_WINDOW
   skysight->Render();
+#endif
 }
 #endif
 
