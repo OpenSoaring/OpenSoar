@@ -1,4 +1,4 @@
-OpenSoar Version 7.43-3.24.1 - not released yet
+OpenSoar Version 7.44.24 - not released yet
 
 OpenSoar Version 7.43-3.24 - released 2025/11/20
   v7.43-3.23.8 as release version
