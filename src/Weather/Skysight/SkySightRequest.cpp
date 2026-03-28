@@ -20,6 +20,8 @@
 #include "LocalPath.hpp"
 #include "Version.hpp"
 
+#include "json/Serialize.hxx"
+#include "io/FileOutputStream.hxx"
 #include "LogFile.hpp"
 
 #include "thread/SafeList.hxx"
@@ -96,7 +98,6 @@ private:
 
   void OnDownloadComplete(const std::string_view name) noexcept override {
     boost::json::value _json = json_null;
-    bool save_json = false;
     auto api = owner->GetAPI();
     AllocatedPath save_path;
 
@@ -127,9 +128,8 @@ private:
         if (!save_path.empty()) {
           auto file = File::CreateExclusive(save_path);
           if (file) {
-            auto json_text = boost::json::serialize(_json);
-            if (!File::WriteExisting(save_path, json_text.c_str()))
-              LogFmt("File write not successfully!");
+            FileOutputStream fos(save_path);
+            Json::Serialize(fos, _json);
           }
         }
 #if defined(SKYSIGHT_FILE_DEBUG)
