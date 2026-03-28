@@ -35,8 +35,8 @@
 
 extern "C"
 {
-  extern const uint8_t NEWS_txt_gz[];
-  extern const size_t NEWS_txt_gz_size;
+  extern const uint8_t OpenSoar_News_md_gz[];
+  extern const size_t OpenSoar_News_md_gz_size;
 }
 
 // Page indices for the can-advance guard
@@ -519,7 +519,8 @@ dlgQuickGuideShowModal(bool force_info)
      until after ShowModal() returns. */
   AllocatedString news_inflated;
   if (news_needed) {
-    news_inflated = InflateToString(NEWS_txt_gz, NEWS_txt_gz_size);
+    news_inflated = InflateToString(OpenSoar_News_md_gz, 
+                                    OpenSoar_News_md_gz_size);
     TruncateToCurrentVersion(news_inflated.data());
     if (!news_inflated.empty()) {
       state.news_page_index = pager->GetSize();
