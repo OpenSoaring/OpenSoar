@@ -9,6 +9,7 @@
 void
 Message::AddMessage(const char *text, const char *data) noexcept
 {
-  if (CommonInterface::main_window->popup != nullptr)
+  if (CommonInterface::main_window != nullptr && 
+      CommonInterface::main_window->popup != nullptr)
     CommonInterface::main_window->popup->AddMessage(text, data);
 }
