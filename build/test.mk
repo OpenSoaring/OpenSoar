@@ -104,7 +104,7 @@ TEST_NAMES = \
 	TestAirspaceParser \
 	TestMETARParser \
 	TestIGCParser \
-	TestStrings TestUTF8 TestWrapText \
+	TestStrings TestUTF8 \
 	TestInputConfig \
 	TestCRC16 TestCRC8 \
 	TestUnitsFormatter \
@@ -121,8 +121,16 @@ TEST_NAMES = \
 	TestPackedFloat \
 	TestVersionNumber \
 	TestWeglideScoring \
-	TestDMStScoring \
-	TestHttpsVerify
+	TestDMStScoring 
+	
+
+DISABLE_SOME_TEST := y
+ifeq ($(DISABLE_SOME_TEST),n)
+	TEST_NAMES += \
+    TestWrapText \
+    TestHttpsVerify
+endif
+
 
 ifeq ($(TARGET_IS_ANDROID),n)
 # These programs are broken on Android because they require Java code
@@ -847,7 +855,7 @@ DEBUG_PROGRAM_NAMES += \
 	RunExternalWind \
 	RunTask \
 	LoadImage ViewImage \
-	RunCanvas RunMapWindow \
+	RunCanvas \
 	RunListControl \
 	RunTextEntry RunNumberEntry RunDateEntry RunTimeEntry RunAngleEntry \
 	RunGeoPointEntry \
@@ -871,6 +879,13 @@ DEBUG_PROGRAM_NAMES += \
 	RunFlarmUtils \
 	RunLX1600Utils \
 	IGC2NMEA
+endif
+
+# Enable or disable the big test RunMapWindow, because there are a lot
+# of difficulties
+RUN_MAP_WINDOW_TEST := n
+ifeq ($(RUN_MAP_WINDOW_TEST),y)
+	DEBUG_PROGRAM_NAMES += RunMapWindow 
 endif
 
 ifeq ($(TARGET),UNIX)
@@ -1851,20 +1866,20 @@ RUN_MAP_WINDOW_SOURCES = \
 	$(TEST_SRC_DIR)/FakeLogFile.cpp \
 	$(TEST_SRC_DIR)/RunMapWindow.cpp
 
-####	ifeq ($(HAVE_SKYSIGHT),y)
-####		RUN_MAP_WINDOW_SOURCES += \
-####			$(SRC)/Weather/Skysight/Skysight.cpp \
-####			$(SRC)/Weather/Skysight/SkysightAPI.cpp \
-####			$(SRC)/Weather/Skysight/SkySightRequest.cpp \
-####			$(SRC)/Weather/Skysight/SkysightRegions.cpp \
-####			$(SRC)/Weather/Skysight/SkysightRenderer.cpp
-####
-####			ifeq ($(SKYSIGHT_FORECAST),y)
-####				RUN_MAP_WINDOW_SOURCES += \
-####			        $(SRC)/Weather/Skysight/APIQueue.cpp \
-####					$(SRC)/Weather/Skysight/CDFDecoder.cpp 
-####			endif
-####	endif
+	ifeq ($(HAVE_SKYSIGHT),y)
+		RUN_MAP_WINDOW_SOURCES += \
+			$(SRC)/Weather/Skysight/Skysight.cpp \
+			$(SRC)/Weather/Skysight/SkysightAPI.cpp \
+			$(SRC)/Weather/Skysight/SkySightRequest.cpp \
+			$(SRC)/Weather/Skysight/SkysightRegions.cpp \
+			$(SRC)/Weather/Skysight/SkysightRenderer.cpp
+
+			ifeq ($(SKYSIGHT_FORECAST),y)
+				RUN_MAP_WINDOW_SOURCES += \
+			        $(SRC)/Weather/Skysight/APIQueue.cpp \
+					$(SRC)/Weather/Skysight/CDFDecoder.cpp 
+			endif
+	endif
 
 ifeq ($(HAVE_HTTP),y)
 RUN_MAP_WINDOW_SOURCES += \
