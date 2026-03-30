@@ -107,7 +107,8 @@ static int Main() {
 #endif
 
   // Perform application initialization and run loop
-  int ret = EXIT_FAILURE;
+  // w/ Quit or ESC this is a normal successfull shutdown...
+  int ret = EXIT_SUCCESS;
   if (Startup(screen_init.GetDisplay()))
     ret = CommonInterface::main_window->RunEventLoop();
 
@@ -217,12 +218,12 @@ try {
     exit(ret);
 #endif
 
-    if (ret == 0)
+    if (ret == EXIT_SUCCESS)
       ret = UI::TopWindow::GetExitValue();
 
     rerun = (ret == EXIT_RESTART);
     if (rerun)
-      UI::TopWindow::SetExitValue(0);
+      UI::TopWindow::SetExitValue(EXIT_SUCCESS);
   } while (rerun);
   return Finishing(ret);
 } catch (...) {
