@@ -718,7 +718,11 @@ Skysight::DisplayTileLayer()
   time_t refresh_time = (DateTime::now() / TEN_MINUTES) * TEN_MINUTES;
 
   auto map_bounds = map_window->VisibleProjection().GetScreenBounds();
+#ifdef _DEBUG
   auto map_bounds2 = map_window->RenderProjection().GetScreenBounds();
+  if (!map_bounds2.Check() || !map_bounds2.IsValid())
+    return false;
+#endif
   if (!map_bounds.Check() || !map_bounds.IsValid())
     return false;
 
