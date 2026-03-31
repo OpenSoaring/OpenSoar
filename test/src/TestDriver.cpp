@@ -28,8 +28,8 @@
 #include "Device/Driver/Larus.hpp"
 #include "Device/Driver/Leonardo.hpp"
 #include "Device/Driver/LevilAHRS_G.hpp"
+#include "Device/Driver/LoEFGREN.hpp"
 #include "Device/Driver/OpenVario.hpp"
-#include "Device/Driver/Larus.hpp"
 #include "Device/Driver/PosiGraph.hpp"
 #include "Device/Driver/Vaulter.hpp"
 #include "Device/Driver/Vega.hpp"
@@ -38,13 +38,15 @@
 #include "Device/Driver/XCTracer.hpp"
 #include "Device/Driver/XCVario.hpp"
 #include "Device/Driver/Zander.hpp"
-#ifdef HAVE_REMOTE_STICK
-# include "Device/Driver/RemoteStick.hpp"
-#endif
-#include "Device/Driver.hpp"
-#include "Device/RecordedFlight.hpp"
 #include "Device/Parser.hpp"
 #include "Device/Port/NullPort.hpp"
+#include "FLARM/Error.hpp"
+#include "FLARM/Progress.hpp"
+#include "FLARM/State.hpp"
+#include "FLARM/Global.hpp"
+#include "FLARM/TrafficDatabases.hpp"
+#include "FLARM/MessagingRecord.hpp"
+// #include "FLARM/List.hpp"
 #include "Device/RecordedFlight.hpp"
 #include "Device/device.hpp"
 #include "Engine/Waypoint/Waypoint.hpp"
@@ -62,12 +64,15 @@
 #include "util/ByteOrder.hxx"
 #include "util/PackedFloat.hxx"
 
-#include "FLARM/List.hpp"
+#ifdef HAVE_REMOTE_STICK
+# include "Device/Driver/RemoteStick.hpp"
+#endif
 
 #include <memory>
 #ifdef _DEBUG
 # include <iostream>
 #endif
+
 static const DeviceConfig dummy_config = DeviceConfig();
 
 /*
@@ -175,6 +180,50 @@ TestFLARM()
   ok1(nmea_info.flarm.status.alarm_level == FlarmTraffic::AlarmType::NONE);
   ok1(nmea_info.flarm.traffic.GetActiveTrafficCount() == 0);
   ok1(!nmea_info.flarm.traffic.new_traffic);
+  ok1(!nmea_info.flarm.status.has_extended);
+
+  // PFLAU with all 10 fields: alarm=2, bearing=45, type=3, vert=-200,
+  // dist=1500, ID=DDA85C
+  ok1(parser.ParseLine("$PFLAU,5,1,2,1,2,45,3,-200,1500,DDA85C*5D",
+                       nmea_info));
+  ok1(nmea_info.flarm.status.rx == 5);
+  ok1(nmea_info.flarm.status.alarm_level == FlarmTraffic::AlarmType::IMPORTANT);
+  ok1(nmea_info.flarm.status.has_extended);
+  ok1(nmea_info.flarm.status.relative_bearing == 45);
+  ok1(nmea_info.flarm.status.alarm_type == 3);
+  ok1(nmea_info.flarm.status.relative_vertical == -200);
+  ok1(nmea_info.flarm.status.relative_distance == 1500);
+  ok1(nmea_info.flarm.status.target_id == FlarmId::Parse("DDA85C", NULL));
+
+  // PFLAU alarm=3 with negative bearing
+  ok1(parser.ParseLine("$PFLAU,8,1,2,1,3,-30,2,150,800,DEADFF*63",
+                       nmea_info));
+  ok1(nmea_info.flarm.status.alarm_level == FlarmTraffic::AlarmType::URGENT);
+  ok1(nmea_info.flarm.status.has_extended);
+  ok1(nmea_info.flarm.status.relative_bearing == -30);
+  ok1(nmea_info.flarm.status.alarm_type == 2);
+  ok1(nmea_info.flarm.status.relative_vertical == 150);
+  ok1(nmea_info.flarm.status.relative_distance == 800);
+  ok1(nmea_info.flarm.status.target_id == FlarmId::Parse("DEADFF", NULL));
+
+  // PFLAU Alert Zone alarm (FTD-012 spec example): AlarmType=0x41
+  // (skydiver drop zone), hex-encoded per spec
+  ok1(parser.ParseLine("$PFLAU,2,1,2,1,1,0,41,0,0,A25703*38",
+                       nmea_info));
+  ok1(nmea_info.flarm.status.alarm_level ==
+      FlarmTraffic::AlarmType::LOW);
+  ok1(nmea_info.flarm.status.has_extended);
+  ok1(nmea_info.flarm.status.relative_bearing == 0);
+  ok1(nmea_info.flarm.status.alarm_type == 0x41);
+  ok1(nmea_info.flarm.status.relative_vertical == 0);
+  ok1(nmea_info.flarm.status.relative_distance == 0);
+  ok1(nmea_info.flarm.status.target_id == FlarmId::Parse("A25703", NULL));
+
+  // PFLAU with empty bearing fields (no alarm target)
+  ok1(parser.ParseLine("$PFLAU,3,1,2,1,0,,0,,*63",
+                       nmea_info));
+  ok1(nmea_info.flarm.status.alarm_level == FlarmTraffic::AlarmType::NONE);
+  ok1(!nmea_info.flarm.status.has_extended);
 
   ok1(parser.ParseLine("$PFLAA,0,100,-150,10,2,DDA85C,123,13,24,1.4,2*7f",
                                       nmea_info));
@@ -200,8 +249,12 @@ TestFLARM()
     ok1(traffic1->climb_rate_received);
     ok1(traffic1->type == FlarmTraffic::AircraftType::TOW_PLANE);
     ok1(!traffic1->stealth);
+    ok1(traffic1->id_type == FlarmTraffic::IdType::FLARM);
+    ok1(traffic1->source == FlarmTraffic::SourceType::FLARM);
+    ok1(!traffic1->rssi_available);
+    ok1(!traffic1->no_track);
   } else {
-    skip(16, 0, "traffic1 == NULL");
+    skip(19, 0, "traffic1 == NULL");
   }
 
   ok1(parser.ParseLine("$PFLAA,2,20,10,24,2,DEADFF,,,,,1*46",
@@ -247,24 +300,210 @@ TestFLARM()
     ok1(traffic3->climb_rate_received);
     ok1(traffic3->type == FlarmTraffic::AircraftType::AIRSHIP);
     ok1(!traffic3->stealth);
-
-#ifdef _DEBUG
-    std::cout << nmea_info.flarm.traffic.TrafficIndex(traffic1) << std::endl;
-    std::cout << nmea_info.flarm.traffic.TrafficIndex(traffic2) << std::endl;
-    std::cout << nmea_info.flarm.traffic.TrafficIndex(traffic3) << std::endl;
-
-    std::cout << traffic1->distance << std::endl;
-    std::cout << nmea_info.flarm.traffic.NextTraffic(traffic1)->distance << std::endl;
-    std::cout << nmea_info.flarm.traffic.NextTraffic(traffic2)->distance << std::endl;
-    std::cout << nmea_info.flarm.traffic.NextTraffic(traffic3) << std::endl;
-#endif
-
-    ok1(equals(nmea_info.flarm.traffic.TrafficIndex(traffic1), 0));
-    ok1(equals(nmea_info.flarm.traffic.TrafficIndex(traffic2), 1));
-    ok1(equals(nmea_info.flarm.traffic.TrafficIndex(traffic3), 2));
   } else {
     skip(15, 0, "traffic3 == NULL");
   }
+
+  // PFLAA with IDType=0 (random ID)
+  ok1(parser.ParseLine("$PFLAA,0,300,400,20,0,ABC123,90,,20,,8*30",
+                       nmea_info));
+
+  id = FlarmId::Parse("ABC123", NULL);
+  FlarmTraffic *traffic = nmea_info.flarm.traffic.FindTraffic(id);
+  if (ok1(traffic != NULL)) {
+    ok1(traffic->id_type == FlarmTraffic::IdType::RANDOM);
+  } else {
+    skip(1, 0, "traffic == NULL");
+  }
+
+  // PFLAA with IDType=1 (ICAO address)
+  ok1(parser.ParseLine("$PFLAA,0,300,400,20,1,4CA123,90,,20,,8*47",
+                       nmea_info));
+
+  id = FlarmId::Parse("4CA123", NULL);
+  traffic = nmea_info.flarm.traffic.FindTraffic(id);
+  if (ok1(traffic != NULL)) {
+    ok1(traffic->id_type == FlarmTraffic::IdType::ICAO);
+  } else {
+    skip(1, 0, "traffic == NULL");
+  }
+
+  // PFLAA with empty IDType (Mode-C, unknown)
+  ok1(parser.ParseLine("$PFLAA,0,300,400,20,,MODEC1,90,,20,,8*01",
+                       nmea_info));
+
+  id = FlarmId::Parse("MODEC1", NULL);
+  traffic = nmea_info.flarm.traffic.FindTraffic(id);
+  if (ok1(traffic != NULL)) {
+    ok1(traffic->id_type == FlarmTraffic::IdType::UNKNOWN);
+  } else {
+    skip(1, 0, "traffic == NULL");
+  }
+
+  // PFLAA v8+ with NoTrack=0, Source=ADS-B (1), RSSI=-85
+  ok1(parser.ParseLine("$PFLAA,0,200,-300,15,2,AABB01,180,5,30,0.8,1,0,1,-85*48",
+                       nmea_info));
+
+  id = FlarmId::Parse("AABB01", NULL);
+  traffic = nmea_info.flarm.traffic.FindTraffic(id);
+  if (ok1(traffic != NULL)) {
+    ok1(traffic->id_type == FlarmTraffic::IdType::FLARM);
+    ok1(traffic->source == FlarmTraffic::SourceType::ADSB);
+    ok1(traffic->rssi_available);
+    ok1(traffic->rssi == -85);
+    ok1(!traffic->no_track);
+    ok1(traffic->type == FlarmTraffic::AircraftType::GLIDER);
+    ok1(equals(traffic->track, 180));
+  } else {
+    skip(7, 0, "traffic == NULL");
+  }
+
+  // PFLAA v9+ with Source=Mode-S (6), NoTrack=0, no RSSI
+  ok1(parser.ParseLine("$PFLAA,0,50,80,5,2,AABB02,90,,20,,8,0,6*7B",
+                       nmea_info));
+
+  id = FlarmId::Parse("AABB02", NULL);
+  traffic = nmea_info.flarm.traffic.FindTraffic(id);
+  if (ok1(traffic != NULL)) {
+    ok1(traffic->source == FlarmTraffic::SourceType::MODES);
+    ok1(!traffic->rssi_available);
+    ok1(!traffic->no_track);
+    ok1(traffic->type == FlarmTraffic::AircraftType::POWERED_AIRCRAFT);
+  } else {
+    skip(4, 0, "traffic == NULL");
+  }
+
+  // PFLAA stealth with NoTrack=1 (no Source/RSSI)
+  ok1(parser.ParseLine("$PFLAA,0,50,80,5,2,AABB03,,,,,1,1*63",
+                       nmea_info));
+
+  id = FlarmId::Parse("AABB03", NULL);
+  traffic = nmea_info.flarm.traffic.FindTraffic(id);
+  if (ok1(traffic != NULL)) {
+    ok1(traffic->source == FlarmTraffic::SourceType::FLARM);
+    ok1(traffic->stealth);
+    ok1(traffic->no_track);
+    ok1(!traffic->rssi_available);
+  } else {
+    skip(4, 0, "traffic == NULL");
+  }
+
+  // PFLAA v8+ with NoTrack=0, out-of-range source (9 -> defaults to FLARM)
+  ok1(parser.ParseLine("$PFLAA,0,50,80,5,2,AABB04,90,,20,,8,0,9*72",
+                       nmea_info));
+
+  id = FlarmId::Parse("AABB04", NULL);
+  traffic = nmea_info.flarm.traffic.FindTraffic(id);
+  if (ok1(traffic != NULL)) {
+    ok1(traffic->source == FlarmTraffic::SourceType::FLARM);
+  } else {
+    skip(1, 0, "traffic == NULL");
+  }
+
+  // PFLAE without message (pre-v7 style)
+  ok1(parser.ParseLine("$PFLAE,A,0,0*33", nmea_info));
+  ok1(nmea_info.flarm.error.severity == FlarmError::NO_ERROR);
+  ok1(nmea_info.flarm.error.code == (FlarmError::Code)0);
+  ok1(nmea_info.flarm.error.message.empty());
+
+  // PFLAE without message, severity > 0
+  ok1(parser.ParseLine("$PFLAE,A,2,81*08", nmea_info));
+  ok1(nmea_info.flarm.error.severity == FlarmError::REDUCED_FUNCTIONALITY);
+  ok1(nmea_info.flarm.error.code == FlarmError::OBSTACLE_DATABASE);
+  ok1(nmea_info.flarm.error.message.empty());
+
+  // PFLAE with device message (v7+)
+  ok1(parser.ParseLine("$PFLAE,A,3,11,Software expiry*2C", nmea_info));
+  ok1(nmea_info.flarm.error.severity == FlarmError::FATAL_PROBLEM);
+  ok1(nmea_info.flarm.error.code == FlarmError::FIRMWARE_TIMEOUT);
+  ok1(nmea_info.flarm.error.message.equals("Software expiry"));
+
+  // PFLAJ: in flight, recording, TIS-B unavailable
+  ok1(parser.ParseLine("$PFLAJ,A,1,1,0*20", nmea_info));
+  ok1(nmea_info.flarm.state.available);
+  ok1(nmea_info.flarm.state.flight == FlarmState::Flight::IN_FLIGHT);
+  ok1(nmea_info.flarm.state.recorder == FlarmState::Recorder::RECORDING);
+
+  // PFLAJ: on ground, recorder off (no TIS-B field)
+  ok1(parser.ParseLine("$PFLAJ,A,0,0*3C", nmea_info));
+  ok1(nmea_info.flarm.state.flight == FlarmState::Flight::ON_GROUND);
+  ok1(nmea_info.flarm.state.recorder == FlarmState::Recorder::OFF);
+
+  // PFLAJ: in flight, baro-only recording
+  ok1(parser.ParseLine("$PFLAJ,A,1,2*3F", nmea_info));
+  ok1(nmea_info.flarm.state.flight == FlarmState::Flight::IN_FLIGHT);
+  ok1(nmea_info.flarm.state.recorder == FlarmState::Recorder::BARO_ONLY);
+
+  // PFLAQ: PowerFLARM with Info field
+  ok1(parser.ParseLine("$PFLAQ,IGC,2A8GJ7K1.IGC,55*43", nmea_info));
+  ok1(nmea_info.flarm.progress.available);
+  ok1(nmea_info.flarm.progress.operation.equals("IGC"));
+  ok1(nmea_info.flarm.progress.info.equals("2A8GJ7K1.IGC"));
+  ok1(nmea_info.flarm.progress.progress == 55);
+
+  // PFLAQ: PowerFLARM with empty Info field
+  ok1(parser.ParseLine("$PFLAQ,OBST,,10*6D", nmea_info));
+  ok1(nmea_info.flarm.progress.operation.equals("OBST"));
+  ok1(nmea_info.flarm.progress.info.empty());
+  ok1(nmea_info.flarm.progress.progress == 10);
+
+  // PFLAQ: Classic FLARM (no Info field at all)
+  ok1(parser.ParseLine("$PFLAQ,IGC,25*00", nmea_info));
+  ok1(nmea_info.flarm.progress.operation.equals("IGC"));
+  ok1(nmea_info.flarm.progress.info.empty());
+  ok1(nmea_info.flarm.progress.progress == 25);
+
+  // PFLAQ: firmware update complete
+  ok1(parser.ParseLine("$PFLAQ,FW,,100*46", nmea_info));
+  ok1(nmea_info.flarm.progress.operation.equals("FW"));
+  ok1(nmea_info.flarm.progress.progress == 100);
+
+  // Ensure a database instance exists before PFLAM messages are parsed
+  if (traffic_databases == nullptr)
+    traffic_databases = new TrafficDatabases();
+
+  ok1(parser.ParseLine("$PFLAM,U,2,DDAED5,AREG,48422D534941*0B", 
+                        nmea_info));
+  ok1(parser.ParseLine("$PFLAM,U,2,DDAED5,ACALL,5A4D*2F", 
+                        nmea_info));
+  ok1(parser.ParseLine("$PFLAM,U,2,DDAED5,PNAME,4F7276696C6C6520577269676874*43", 
+                        nmea_info));
+  ok1(parser.ParseLine("$PFLAM,U,2,DDAED5,ATYPE,436573736E6120313732*44", 
+                        nmea_info));
+  ok1(parser.ParseLine("$PFLAM,U,2,DDAED5,VHF,118.455,121.500,,*17",
+                        nmea_info));
+
+  id = FlarmId::Parse("DDAED5", NULL);
+  auto mr = traffic_databases->flarm_messages.FindRecordById(id);
+  if (ok1(mr.has_value())) {
+    ok1(StringIsEqual(mr->registration.c_str(), "HB-SIA"));
+    ok1(StringIsEqual(mr->callsign.c_str(), "ZM"));
+    ok1(StringIsEqual(mr->pilot.c_str(), "Orville Wright"));
+    ok1(StringIsEqual(mr->plane_type.c_str(), "Cessna 172"));
+    ok1(mr->frequency.IsDefined());
+    ok1(mr->frequency.GetKiloHertz() == 118455);
+  } else {
+    skip(6, 0, "messaging record missing");
+  }
+
+#ifdef _DEBUG
+  std::cout << nmea_info.flarm.traffic.TrafficIndex(traffic1) << std::endl;
+  std::cout << nmea_info.flarm.traffic.TrafficIndex(traffic2) << std::endl;
+  std::cout << nmea_info.flarm.traffic.TrafficIndex(traffic3) << std::endl;
+
+  std::cout << traffic1->distance << std::endl;
+  std::cout << nmea_info.flarm.traffic.NextTraffic(traffic1)->distance << std::endl;
+  std::cout << nmea_info.flarm.traffic.NextTraffic(traffic2)->distance << std::endl;
+  std::cout << nmea_info.flarm.traffic.NextTraffic(traffic3) << std::endl;
+#endif
+
+  ok1(equals(nmea_info.flarm.traffic.TrafficIndex(traffic1), 0));
+  ok1(equals(nmea_info.flarm.traffic.TrafficIndex(traffic2), 1));
+  ok1(equals(nmea_info.flarm.traffic.TrafficIndex(traffic3), 2));
+
+  // Clean up to avoid side effects across tests
+  delete traffic_databases;
+  traffic_databases = nullptr;
 }
 
 static void
@@ -743,6 +982,46 @@ TestFlytec()
   ok1(nmea_info.temperature_available);
   ok1(equals(nmea_info.temperature.ToKelvin(),
              Temperature::FromCelsius(17).ToKelvin()));
+
+  delete device;
+}
+
+static void
+TestLoEFGREN()
+{
+  NullPort null;
+  Device *device = loe_fgren_driver.CreateOnPort(dummy_config, null);
+  ok1(device != NULL);
+
+  NMEAInfo nmea_info;
+  nmea_info.Reset();
+  nmea_info.clock = TimeStamp{FloatDuration{1}};
+
+  // Test positive vario (climb)
+  ok1(device->ParseNMEA("$PLOF,250,80,150*32", nmea_info));
+  ok1(nmea_info.total_energy_vario_available);
+  ok1(equals(nmea_info.total_energy_vario, 2.5));
+  ok1(nmea_info.airspeed_available);
+  ok1(equals(nmea_info.indicated_airspeed,
+             Units::ToSysUnit(80, Unit::KILOMETER_PER_HOUR)));
+  ok1(nmea_info.temperature_available);
+  ok1(equals(nmea_info.temperature.ToKelvin(),
+             Temperature::FromCelsius(15).ToKelvin()));
+
+  // Test negative vario (sink) and negative temperature
+  nmea_info.Reset();
+  nmea_info.clock = TimeStamp{FloatDuration{2}};
+  ok1(device->ParseNMEA("$PLOF,-150,60,-50*0E", nmea_info));
+  ok1(equals(nmea_info.total_energy_vario, -1.5));
+  ok1(equals(nmea_info.temperature.ToKelvin(),
+             Temperature::FromCelsius(-5).ToKelvin()));
+
+  // Test invalid sentences
+  nmea_info.Reset();
+  nmea_info.clock = TimeStamp{FloatDuration{3}};
+  ok1(!device->ParseNMEA("$VARIO,999.98,-12*66", nmea_info));
+  ok1(!device->ParseNMEA("$PLOF,250,80,150*FF", nmea_info));
+  ok1(!nmea_info.total_energy_vario_available);
 
   delete device;
 }
@@ -1576,7 +1855,8 @@ TestLXNavDeclare()
     const auto oz_line = LXNavDeclare::FormatOZLine(decl_line, 0);
     ok1(oz_line.find("Line=1") != std::string::npos);
     ok1(oz_line.find("R1=3000m") != std::string::npos);
-    ok1(oz_line.find("A1=90.0") != std::string::npos);
+    ok1(oz_line.find("A1=45.0") != std::string::npos);
+    ok1(oz_line.find("A2=0.0") != std::string::npos);
 
     const auto oz_cyl = LXNavDeclare::FormatOZLine(decl_line, 1);
     ok1(oz_cyl.find("Line=1") == std::string::npos);
@@ -1648,7 +1928,7 @@ TestLXNavDeclare()
     ok1(oz_kh.find("R1=10000m") != std::string::npos);
     ok1(oz_kh.find("R2=500m") != std::string::npos);
     ok1(oz_kh.find("A2=180.0") != std::string::npos);
-    ok1(oz_kh.find("A1=90.0") != std::string::npos);
+    ok1(oz_kh.find("A1=45.0") != std::string::npos);
   }
 
   /* Test C-record with elevation */
@@ -2249,18 +2529,394 @@ TestFlightList(const struct DeviceRegister &driver)
   delete device;
 }
 
+/**
+ * Test that NMEAParser::ReadTime() preserves sub-second precision
+ * from the NMEA time field (HHMMSS.SS).
+ *
+ * Before the fix, ReadTime() routed through BrokenTime which only
+ * stores integer seconds, losing the fractional part.
+ * See: https://github.com/XCSoar/XCSoar/issues/2207
+ */
+static void
+TestSubSecondPrecision()
+{
+  NMEAParser parser;
+
+  NMEAInfo nmea_info;
+  nmea_info.Reset();
+  nmea_info.clock = TimeStamp{FloatDuration{1}};
+  nmea_info.alive.Update(nmea_info.clock);
+
+  /* parse a GPRMC sentence with .50 fractional seconds */
+  ok1(parser.ParseLine("$GPRMC,082310.50,A,5103.5403,N,00741.5742,E,055.3,022.4,230610,000.3,W*46",
+                        nmea_info));
+
+  /* the integer part must be correct */
+  ok1(nmea_info.date_time_utc.hour == 8);
+  ok1(nmea_info.date_time_utc.minute == 23);
+  ok1(nmea_info.date_time_utc.second == 10);
+
+  /* the sub-second part must be preserved in info.time */
+  ok1(equals(nmea_info.time, TimeStamp{FloatDuration{8 * 3600 + 23 * 60 + 10.50}}));
+  const auto time_50 = nmea_info.time;
+
+  /* parse a second fix at .00 of the next second */
+  nmea_info.clock = TimeStamp{FloatDuration{2}};
+  ok1(parser.ParseLine("$GPRMC,082311.00,A,5103.5403,N,00741.5742,E,055.3,022.4,230610,000.3,W*42",
+                        nmea_info));
+
+  ok1(equals(nmea_info.time, TimeStamp{FloatDuration{8 * 3600 + 23 * 60 + 11.00}}));
+
+  /* the difference between the two fixes must be exactly 0.50 seconds,
+     not 1.0 seconds (which would indicate truncation to integer seconds) */
+  const double delta = (nmea_info.time - time_50).count();
+  ok1(fabs(delta - 0.50) < 0.01);
+}
+
+/**
+ * Test that the MWV parser checks the status field (field 5).
+ * Status 'V' means data invalid and should be rejected.
+ */
+static void
+TestMWVStatus()
+{
+  NMEAParser parser;
+
+  NMEAInfo nmea_info;
+  nmea_info.Reset();
+  nmea_info.clock = TimeStamp{FloatDuration{1}};
+  nmea_info.alive.Update(nmea_info.clock);
+
+  /* MWV with status A (valid) — must be accepted */
+  ok1(parser.ParseLine("$WIMWV,12.1,T,10.1,M,A*24", nmea_info));
+  ok1(nmea_info.external_wind_available);
+
+  /* clear the wind so we can test the invalid case */
+  nmea_info.external_wind_available.Clear();
+
+  /* MWV with status V (invalid) — must be rejected */
+  ok1(parser.ParseLine("$WIMWV,12.1,T,10.1,M,V*33", nmea_info));
+  ok1(!nmea_info.external_wind_available);
+}
+
+/**
+ * Test that the MWV parser distinguishes between Relative (R) and
+ * True (T) wind reference.  Relative wind (referenced to vessel heading)
+ * should not be stored as true wind bearing.
+ */
+static void
+TestMWVRelativeTrue()
+{
+  NMEAParser parser;
+
+  NMEAInfo nmea_info;
+  nmea_info.Reset();
+  nmea_info.clock = TimeStamp{FloatDuration{1}};
+  nmea_info.alive.Update(nmea_info.clock);
+
+  /* MWV with True reference — must be accepted */
+  ok1(parser.ParseLine("$WIMWV,45.0,T,10.1,M,A*27", nmea_info));
+  ok1(nmea_info.external_wind_available);
+  ok1(equals(nmea_info.external_wind.bearing, 45.0));
+
+  /* clear the wind */
+  nmea_info.external_wind_available.Clear();
+
+  /* MWV with Relative reference — must be rejected (or handled differently)
+     since XCSoar's external_wind expects a true bearing */
+  ok1(parser.ParseLine("$WIMWV,45.0,R,10.1,M,A*21", nmea_info));
+  ok1(!nmea_info.external_wind_available);
+}
+
+/**
+ * Test that NMEAInfo::Complement() correctly copies stall_ratio AND
+ * updates stall_ratio_available.
+ */
+static void
+TestStallRatioComplement()
+{
+  NMEAInfo a, b;
+  a.Reset();
+  b.Reset();
+
+  a.clock = TimeStamp{FloatDuration{1}};
+  b.clock = TimeStamp{FloatDuration{1}};
+
+  /* 'a' has no stall ratio */
+  ok1(!a.stall_ratio_available);
+
+  /* 'b' provides a stall ratio */
+  b.stall_ratio = 0.75;
+  b.stall_ratio_available.Update(b.clock);
+  b.alive.Update(b.clock);
+  ok1(b.stall_ratio_available);
+
+  /* Complement 'a' with 'b' — both value and flag must be copied */
+  a.Complement(b);
+  ok1(a.stall_ratio_available);
+  ok1(equals(a.stall_ratio, 0.75));
+}
+
+/**
+ * Test that temperature_available and humidity_available are now
+ * Validity objects that properly expire.
+ */
+static void
+TestTemperatureHumidityValidity()
+{
+  NMEAInfo info;
+  info.Reset();
+  info.clock = TimeStamp{FloatDuration{1}};
+
+  /* initially not valid */
+  ok1(!info.temperature_available);
+  ok1(!info.humidity_available);
+
+  /* after Update(), they become valid */
+  info.temperature = Temperature::FromCelsius(20);
+  info.temperature_available.Update(info.clock);
+  info.humidity = 50;
+  info.humidity_available.Update(info.clock);
+  ok1(info.temperature_available);
+  ok1(info.humidity_available);
+
+  /* advance clock well past the 30s expiry timeout */
+  info.clock = TimeStamp{FloatDuration{60}};
+  info.Expire();
+  ok1(!info.temperature_available);
+  ok1(!info.humidity_available);
+
+  /* Test Complement: temperature/humidity from second source should be
+     adopted when primary has none */
+  NMEAInfo a, b;
+  a.Reset();
+  b.Reset();
+  a.clock = TimeStamp{FloatDuration{1}};
+  b.clock = TimeStamp{FloatDuration{1}};
+
+  b.alive.Update(b.clock);
+  b.temperature = Temperature::FromCelsius(25);
+  b.temperature_available.Update(b.clock);
+  b.humidity = 65;
+  b.humidity_available.Update(b.clock);
+
+  ok1(!a.temperature_available);
+  ok1(!a.humidity_available);
+  a.Complement(b);
+  ok1(a.temperature_available);
+  ok1(equals(a.temperature.ToCelsius(), 25));
+  ok1(a.humidity_available);
+  ok1(equals(a.humidity, 65));
+}
+
+/**
+ * Test that ReadGeoAngle handles NMEA fields without a decimal point
+ * gracefully (no crash or undefined behavior).
+ */
+static void
+TestReadGeoAngleNoDot()
+{
+  NMEAParser parser;
+  NMEAInfo nmea_info;
+  nmea_info.Reset();
+  nmea_info.clock = TimeStamp{FloatDuration{1}};
+  nmea_info.alive.Update(nmea_info.clock);
+
+  /* A malformed GGA with latitude/longitude missing decimal points
+     should not crash.  GGA does not update location (that's RMC's job),
+     but ReadGeoPoint must handle the missing dots without UB. */
+  ok1(parser.ParseLine("$GPGGA,120000,12345,N,12345,E,1,04,1.0,100.0,M,0.0,M,,*45", nmea_info));
+  ok1(!nmea_info.location_available);
+}
+
+/**
+ * Test the GLL (Geographic Position - Latitude/Longitude) parser.
+ */
+static void
+TestGLL()
+{
+  NMEAParser parser;
+
+  NMEAInfo nmea_info;
+  nmea_info.Reset();
+  nmea_info.clock = TimeStamp{FloatDuration{1}};
+  nmea_info.alive.Update(nmea_info.clock);
+
+  /* first, advance time with an RMC so TimeHasAdvanced works */
+  ok1(parser.ParseLine("$GPRMC,082309.00,A,5103.5403,N,00741.5742,E,055.3,022.4,230610,000.3,W*4B",
+                        nmea_info));
+
+  /* GLL with valid status — should update location */
+  ok1(parser.ParseLine("$GPGLL,5103.5403,N,00741.5742,E,082311.00,A*0E",
+                        nmea_info));
+  ok1(nmea_info.location_available);
+  ok1(equals(nmea_info.location.latitude, 51.059));
+  ok1(equals(nmea_info.location.longitude, 7.693));
+  ok1(nmea_info.date_time_utc.hour == 8);
+  ok1(nmea_info.date_time_utc.minute == 23);
+  ok1(nmea_info.date_time_utc.second == 11);
+  ok1(nmea_info.gps.real);
+
+  /* GLL with invalid status V — should clear location_available */
+  ok1(parser.ParseLine("$GPGLL,5103.5403,N,00741.5742,E,082314.00,V*1C",
+                        nmea_info));
+  ok1(!nmea_info.location_available);
+
+  /* GLL with valid status again — location restored */
+  ok1(parser.ParseLine("$GPGLL,5103.5403,N,00741.5742,E,082317.00,A*08",
+                        nmea_info));
+  ok1(nmea_info.location_available);
+}
+
+/**
+ * Test the GSA (GPS DOP and Active Satellites) parser.
+ */
+static void
+TestGSA()
+{
+  NMEAParser parser;
+
+  NMEAInfo nmea_info;
+  nmea_info.Reset();
+  nmea_info.clock = TimeStamp{FloatDuration{1}};
+  nmea_info.alive.Update(nmea_info.clock);
+
+  /* advance time first */
+  ok1(parser.ParseLine("$GPRMC,082318.00,A,5103.5403,N,00741.5742,E,055.3,022.4,230610,000.3,W*4B",
+                        nmea_info));
+
+  /* GSA with 3D fix, 12 satellites, and DOP values */
+  ok1(parser.ParseLine("$GPGSA,A,3,01,02,03,04,05,06,07,08,09,10,11,12,1.2,0.8,0.9*33",
+                        nmea_info));
+  ok1(nmea_info.gps.satellite_ids_available);
+  ok1(nmea_info.gps.satellite_ids[0] == 1);
+  ok1(nmea_info.gps.satellite_ids[5] == 6);
+  ok1(nmea_info.gps.satellite_ids[11] == 12);
+  ok1(equals(nmea_info.gps.pdop, 1.2));
+  ok1(equals(nmea_info.gps.hdop, 0.8));
+  ok1(equals(nmea_info.gps.vdop, 0.9));
+
+  /* GSA with no fix (mode 1) — should clear location_available */
+  nmea_info.location_available.Update(nmea_info.clock);
+  ok1(nmea_info.location_available);
+  ok1(parser.ParseLine("$GPGSA,A,1,,,,,,,,,,,,99.9,99.9,99.9*25",
+                        nmea_info));
+  ok1(!nmea_info.location_available);
+
+  /* GSA with 2D fix and partial satellites */
+  ok1(parser.ParseLine("$GPGSA,M,2,01,02,03,,,,,,,,,,2.5,1.3,2.1*39",
+                        nmea_info));
+  ok1(nmea_info.gps.satellite_ids[0] == 1);
+  ok1(nmea_info.gps.satellite_ids[1] == 2);
+  ok1(nmea_info.gps.satellite_ids[2] == 3);
+  ok1(nmea_info.gps.satellite_ids[3] == 0);
+  ok1(equals(nmea_info.gps.pdop, 2.5));
+  ok1(equals(nmea_info.gps.hdop, 1.3));
+  ok1(equals(nmea_info.gps.vdop, 2.1));
+}
+
+/**
+ * Test parser robustness with malformed, truncated, and edge-case
+ * NMEA sentences.
+ */
+static void
+TestMalformedInput()
+{
+  NMEAParser parser;
+
+  NMEAInfo nmea_info;
+  nmea_info.Reset();
+  nmea_info.clock = TimeStamp{FloatDuration{1}};
+  nmea_info.alive.Update(nmea_info.clock);
+
+  /* sentences that don't start with $ are rejected */
+  ok1(!parser.ParseLine("GPRMC,082310,A,5103.5403,N,00741.5742,E,055.3,022.4,230610,000.3,W*6C",
+                         nmea_info));
+
+  /* empty string */
+  ok1(!parser.ParseLine("", nmea_info));
+
+  /* just a dollar sign */
+  ok1(!parser.ParseLine("$", nmea_info));
+
+  /* too short sentence type (less than 6 chars) */
+  ok1(!parser.ParseLine("$GP*00", nmea_info));
+
+  /* bad checksum — should be rejected */
+  ok1(!parser.ParseLine("$HCHDM,182.7,M*26", nmea_info));
+
+  /* missing checksum entirely — ParseLine should reject */
+  ok1(!parser.ParseLine("$GPRMC,082321.00,A,5103.5403,N", nmea_info));
+
+  /* RMC with all empty fields (except V status) */
+  ok1(parser.ParseLine("$GPRMC,,V,,,,,,,,,*31", nmea_info));
+  ok1(!nmea_info.location_available);
+
+  /* advance time so subsequent sentences can be parsed */
+  ok1(parser.ParseLine("$GPRMC,082322.00,A,5103.5403,N,00741.5742,E,055.3,022.4,230610,000.3,W*42",
+                        nmea_info));
+  ok1(nmea_info.location_available);
+
+  /* GGA with fix quality 0 (no fix) and empty position */
+  ok1(parser.ParseLine("$GPGGA,082323.00,,,,,0,00,,,M,,M,,*40",
+                        nmea_info));
+
+  /* GGA with extreme altitude — should still parse */
+  ok1(parser.ParseLine("$GPGGA,082324.00,5103.5403,N,00741.5742,E,1,04,1.0,99999.0,M,47.0,M,,*6F",
+                        nmea_info));
+  ok1(nmea_info.gps_altitude_available);
+  ok1(equals(nmea_info.gps_altitude, 99999.0));
+
+  /* RMC with extreme ground speed — should parse without crash */
+  ok1(parser.ParseLine("$GPRMC,082325.00,A,5103.5403,N,00741.5742,E,99999.9,022.4,230610,000.3,W*46",
+                        nmea_info));
+  ok1(nmea_info.ground_speed_available);
+
+  /* RMC with V status — location should be cleared */
+  ok1(parser.ParseLine("$GPRMC,082326.00,V,,,,,,,230610,,*14",
+                        nmea_info));
+  ok1(!nmea_info.location_available);
+
+  /* MWV with missing wind speed — should not crash */
+  ok1(!parser.ParseLine("$WIMWV,12.1,T,,M,A*3A", nmea_info));
+
+  /* MWV with missing bearing — should not crash */
+  ok1(!parser.ParseLine("$WIMWV,,T,10.1,M,A*38", nmea_info));
+
+  /* HDM with empty heading — should not crash, clears heading */
+  ok1(parser.ParseLine("$HCHDM,,M*07", nmea_info));
+  ok1(!nmea_info.attitude.heading_available);
+
+  /* GSA with completely empty fields — should not crash */
+  ok1(parser.ParseLine("$GPGSA,,,,,,,,,,,,,,,,,*6E", nmea_info));
+}
+
 int main()
 {
-  size_t test_count = 1032 /* drivers */ + 26 /* PFLAA v7+ */
-             + 106 /* LXNav protocol 1.05 */
-             + 8 /* SubSecond */ + 4 /* MWVStatus */
-             + 5 /* MWVRelativeTrue */ + 4 /* StallRatio */
-             + 12 /* TempHumidityValidity */ + 2 /* ReadGeoAngleNoDot */
-             + 13 /* GLL */ + 20 /* GSA */ + 23 /* MalformedInput */;
+  plan_tests(1032 /* drivers */
+    + 29 /* PFLAU extended */
+    + 37 /* PFLAA v7+ */
+    + 12    /* PFLAE */
+    + 10    /* PFLAJ */
+    + 16    /* PFLAQ */
+    + 107   /* LXNav protocol 1.05 */
+    + 8     /* SubSecond */
+    + 4     /* MWVStatus */
+    + 5     /* MWVRelativeTrue */
+    + 4     /* StallRatio */
+    + 12    /* TempHumidityValidity */
+    + 2     /* ReadGeoAngleNoDot */
+    + 13    /* GLL */
+    + 20    /* GSA */
+    + 23    /* MalformedInput */
+    + 2     // TestDeclare(altair_pro_driver)
+    + 2     // TestDeclare(vega_driver)
+    + 3     // Flarm!
 #ifdef HAVE_REMOTE_STICK
-  test_count++;
+    + 1
 #endif
-  plan_tests(test_count);
+    );
+
   TestGeneric();
   TestTasman();
   TestFLARM();
@@ -2293,6 +2949,8 @@ int main()
   TestXCTracer();
   TestACD();
   TestXCVario();
+  TestLoEFGREN();
+
 #ifdef HAVE_REMOTE_STICK
   TestRemoteStick();
 #endif
@@ -2316,6 +2974,16 @@ int main()
   TestFlightList(lx_driver);
   TestFlightList(lx_eos_driver);
   TestFlightList(imi_driver);
+
+  TestSubSecondPrecision();
+  TestMWVStatus();
+  TestMWVRelativeTrue();
+  TestStallRatioComplement();
+  TestTemperatureHumidityValidity();
+  TestReadGeoAngleNoDot();
+  TestGLL();
+  TestGSA();
+  TestMalformedInput();
 
   return exit_status();
 }
