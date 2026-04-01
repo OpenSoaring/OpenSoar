@@ -69,7 +69,7 @@ MANIFEST_APP_LABEL = @string/app_name
 endif
 
 # Set XCSOAR_TESTING based on package name (for red resources in testing builds)
-ifeq ($(MANIFEST_PACKAGE),org.xcsoar.testing)
+ifeq ($(MANIFEST_PACKAGE),$(ANDROID_PACKAGE).testing)
   TARGET_CPPFLAGS += -DXCSOAR_TESTING
 endif
 
@@ -91,6 +91,7 @@ $(MANIFEST_PROCESSED): $(MANIFEST_TEMPLATE) $(MANIFEST_PACKAGE_STAMP) | $(ANDROI
 		-e 's|@PROGRAM_NAME@|$(PROGRAM_NAME)|g' \
 		-e 's|@PROGRAM_VERSION@|$(PROGRAM_VERSION)|g' \
 		-e 's|@BASE_PACKAGE@|$(ANDROID_PACKAGE)|g' \
+		-e 's|@MANIFEST_PACKAGE@|$(MANIFEST_PACKAGE)|g' \
 		$< > $@
 
 NATIVE_CLASSES := \
@@ -367,7 +368,6 @@ $(ANDROID_OUTPUT_DIR)/classes.jar: $(JAVA_SOURCES) $(GEN_DIR)/$(PACKAGE_PATH)/R.
 		-Xlint:-options \
 		-Xlint:-serial \
 		-Xlint:-static \
-		-Xlint:-this-escape \
 		-cp $(ANDROID_SDK_PLATFORM_DIR)/android.jar:$(JAVA_CLASSFILES_DIR) \
 		-d $(JAVA_CLASSFILES_DIR) $(GEN_DIR)/$(PACKAGE_PATH)/R.java \
 		-h $(NATIVE_INCLUDE) \
