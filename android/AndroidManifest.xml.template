@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="@PACKAGE_NAME@"
+          package="@PROGRAM_NAME@"
           android:installLocation="auto"
-          android:versionCode="@ANDROID_VERSION@"
+          android:versionCode="@ANDROID_VERSIONCODE@"
           android:versionName="@PROGRAM_VERSION@">
   <!-- requestLegacyExternalStorage: Deprecated but still needed for
        compatibility with /sdcard/@PROGRAME_NAME@Data on Android 10 devices.
@@ -18,8 +18,8 @@
       android:label="@string/app_name"
       android:allowBackup="true"
       android:supportsRtl="true"
-      android:theme="@style/@PROGRAME_NAME@Theme">
-    <activity android:name=".@PROGRAME_NAME@"
+      android:theme="@style/@PROGRAM_NAME@Theme">
+    <activity android:name=".@PROGRAM_NAME@"
               android:showOnLockScreen="true"
               android:showWhenLocked="true"
               android:exported="true"
