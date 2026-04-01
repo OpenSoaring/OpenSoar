@@ -14,12 +14,19 @@ import android.view.WindowInsets;
  * A library of utility functions for class #Window.
  */
 class WindowUtil {
-  static final int FULL_SCREEN_WINDOW_FLAGS =
+  /**
+   * Legacy fullscreen flags for Android 10 and below.
+   *
+   * FLAG_LAYOUT_NO_LIMITS is a KitKat-era workaround that tells the
+   * system the window extends beyond the screen.  On modern Android
+   * this conflicts with setDecorFitsSystemWindows(false) and can
+   * suppress gesture navigation indicators on some OEMs (e.g. Nokia).
+   *
+   * On API 30+ we rely on setDecorFitsSystemWindows(false) +
+   * WindowInsetsController instead and do not set these flags.
+   */
+  static final int LEGACY_FULL_SCREEN_FLAGS =
     WindowManager.LayoutParams.FLAG_FULLSCREEN|
-
-    /* Workaround for layout problems in Android KitKat with immersive full
-       screen mode: Sometimes the content view was not initialized with the
-       correct size, which caused graphics artifacts. */
     WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN|
     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS|
     WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR|
@@ -31,56 +38,100 @@ class WindowUtil {
    */
   static void enableImmersiveMode(Window window) {
     View decorView = window.getDecorView();
-    decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|
-                                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|
-                                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|
-                                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|
-                                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION|
-                                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      /* Android 11+ (API 30+): Use WindowInsetsController */
+      WindowInsetsController controller = decorView.getWindowInsetsController();
+      if (controller != null) {
+        controller.hide(WindowInsets.Type.systemBars());
+        controller.setSystemBarsBehavior(
+          WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+      }
+    } else {
+      /* Android 10 and below: Use deprecated setSystemUiVisibility */
+      decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|
+                                      View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|
+                                      View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|
+                                      View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|
+                                      View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION|
+                                      View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+    }
   }
 
   static void disableImmersiveMode(Window window) {
     View decorView = window.getDecorView();
-    decorView.setSystemUiVisibility(0);
+    
+    /* Check if we're in landscape orientation */
+    android.content.res.Configuration config = decorView.getContext().getResources().getConfiguration();
+    boolean isLandscape = config.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+    
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      /* Android 11+ (API 30+): Use WindowInsetsController */
+      WindowInsetsController controller = decorView.getWindowInsetsController();
+      if (controller != null) {
+        if (isLandscape) {
+          /* Hide status bar in landscape to maximize screen space */
+          controller.hide(WindowInsets.Type.statusBars());
+        } else {
+          /* Show status bar in portrait to display clock and battery */
+          controller.show(WindowInsets.Type.statusBars());
+        }
+        /* Always show navigation bar */
+        controller.show(WindowInsets.Type.navigationBars());
+      }
+    } else {
+      /* Android 10 and below: Use setSystemUiVisibility */
+      if (isLandscape) {
+        /* Hide status bar in landscape */
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+      } else {
+        /* Show status bar in portrait */
+        decorView.setSystemUiVisibility(0);
+      }
+    }
   }
 
   static void enterFullScreenMode(Window window) {
-    window.addFlags(FULL_SCREEN_WINDOW_FLAGS);
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+      /* Pre-Android 11: use legacy flags for edge-to-edge layout */
+      window.addFlags(LEGACY_FULL_SCREEN_FLAGS);
+    }
+
     enableImmersiveMode(window);
 
     /* Enable display cutout mode (notch support) for Android P (API 28) and above.
-       LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES allows content to extend into
-       the cutout area on the short edges of the screen (top/bottom in portrait,
-       left/right in landscape). This gives true edge-to-edge fullscreen. */
+       For SDK 35+, use LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS as the SHORT_EDGES mode
+       is deprecated. For older versions, use SHORT_EDGES which allows content to
+       extend into the cutout area on the short edges of the screen. */
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
       WindowManager.LayoutParams lp = window.getAttributes();
-      lp.layoutInDisplayCutoutMode =
-        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-      window.setAttributes(lp);
-    }
-
-    /* Opt out of Android 15's edge-to-edge enforcement. This tells Android 15
-       that we handle edge-to-edge ourselves, preventing letterboxing in
-       horizontal mode. */
-    if (Build.VERSION.SDK_INT >= 35) {
-      try {
-        java.lang.reflect.Method method = Window.class.getMethod("setOptOutEdgeToEdgeEnforcement", boolean.class);
-        method.invoke(window, true);
-      } catch (Exception e) {
-        /* Method not available or reflection failed - ignore */
+      if (Build.VERSION.SDK_INT >= 35) {
+        lp.layoutInDisplayCutoutMode =
+          WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+      } else {
+        lp.layoutInDisplayCutoutMode =
+          WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
       }
+      window.setAttributes(lp);
     }
   }
 
   static void leaveFullScreenMode(Window window, int preserveFlags) {
     disableImmersiveMode(window);
-    window.clearFlags(FULL_SCREEN_WINDOW_FLAGS & ~preserveFlags);
+    window.clearFlags(LEGACY_FULL_SCREEN_FLAGS & ~preserveFlags);
 
-    /* Reset display cutout mode to default when leaving fullscreen */
+    /* Set display cutout mode in non-fullscreen mode to respect the notch.
+       For SDK 35+, use LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS as the SHORT_EDGES mode
+       is deprecated. This allows content to extend into the cutout area while still
+       accounting for it in safe area calculations. */
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
       WindowManager.LayoutParams lp = window.getAttributes();
-      lp.layoutInDisplayCutoutMode =
-        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+      if (Build.VERSION.SDK_INT >= 35) {
+        lp.layoutInDisplayCutoutMode =
+          WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+      } else {
+        lp.layoutInDisplayCutoutMode =
+          WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+      }
       window.setAttributes(lp);
     }
   }

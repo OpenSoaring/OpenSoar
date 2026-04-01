@@ -16,13 +16,19 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.MotionEvent;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.WindowMetrics;
+import android.graphics.Insets;
+import android.graphics.Rect;
 import android.widget.TextView;
 import android.os.Build;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.IBinder;
 import android.content.Context;
@@ -42,6 +48,7 @@ public class OpenSoar extends Activity implements PermissionManager {
   private static NativeView nativeView;
 
   private Handler mainHandler;
+  private PermissionHelper permissionHelper;
 
   PowerManager.WakeLock wakeLock;
 
@@ -54,6 +61,7 @@ public class OpenSoar extends Activity implements PermissionManager {
   int initialWindowFlags;
 
   boolean fullScreen = false;
+
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -78,7 +86,22 @@ public class OpenSoar extends Activity implements PermissionManager {
       return;
     }
 
-    mainHandler = new Handler(getMainLooper());
+    mainHandler = new Handler(Looper.getMainLooper());
+
+    /* Retry starting the foreground service when location or
+       notification permissions are granted.  The initial
+       startMyService() call in Startup.cpp may fail on Android 14+
+       because ACCESS_FINE_LOCATION is not yet granted when
+       startForeground() is called.  Re-calling startService() after
+       notification permission is granted refreshes the notification
+       so it becomes visible to the user. */
+    final Runnable retryStartService = () -> {
+      if (nativeView != null)
+        nativeView.startMyService();
+    };
+
+    permissionHelper = new PermissionHelper(this, mainHandler,
+      retryStartService, retryStartService);
 
     NativeView.initNative();
 
@@ -89,6 +112,14 @@ public class OpenSoar extends Activity implements PermissionManager {
     final Window window = getWindow();
     window.requestFeature(Window.FEATURE_NO_TITLE);
 
+    /* Enable edge-to-edge display for SDK 30+. This is what EdgeToEdge.enable()
+       does under the hood and is required for proper edge-to-edge support on
+       Android 15+. The existing inset handling in applyFullScreen() handles
+       the layout margins correctly. */
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      window.setDecorFitsSystemWindows(false);
+    }
+
     TextView tv = new TextView(this);
     tv.setText("Loading OpenSoar...");
     setContentView(tv);
@@ -98,17 +129,23 @@ public class OpenSoar extends Activity implements PermissionManager {
        WindowUtil.leaveFullScreenMode() to avoid clearing those */
     initialWindowFlags = window.getAttributes().flags;
 
+    /* Apply fullscreen mode early (with default value = true) to avoid
+       visible layout changes when the native code loads the profile.
+       The default fullscreen setting is true (DisplaySettings::SetDefaults()).
+       If the user has disabled fullscreen in their profile, it will be
+       updated later by native code via setFullScreen(). */
+    fullScreen = true;
+    applyFullScreen();
+
     submitConfiguration(getResources().getConfiguration());
 
     batteryReceiver = new BatteryReceiver();
-    registerReceiver(batteryReceiver,
-                     new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+    BroadcastUtil.registerReceiver(this, batteryReceiver,
+                                   new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 
-    /* WRITE_EXTERNAL_STORAGE has no effect on Build.VERSION_CODES.R
-       (Android 11 or newer); we request it on older versions so users
-       can keep using /sdcard/XCSoarData */
-    if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
-      requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, null);
+    /* POST_NOTIFICATIONS permission will be requested through the consent dialog
+       flow when needed (e.g., when the foreground service needs to start).
+       This ensures the consent rationale is always shown before requesting permission. */
   }
 
   private void quit() {
@@ -119,6 +156,7 @@ public class OpenSoar extends Activity implements PermissionManager {
     setContentView(tv);
 
     finish();
+	
     {
       // This is only possible if Android is rooted!
       Log.d(TAG, "ShutDown/Reboot Android?");
@@ -175,6 +213,9 @@ public class OpenSoar extends Activity implements PermissionManager {
 
   final Handler fullScreenHandler = new Handler() {
       public void handleMessage(Message msg) {
+        /* Called by native code when the fullscreen setting is loaded from
+           the profile. This may override the initial default value that was
+           applied in onCreate(). */
         fullScreen = msg.what != 0;
         applyFullScreen();
       }
@@ -197,13 +238,66 @@ public class OpenSoar extends Activity implements PermissionManager {
       WindowUtil.enterFullScreenMode(window);
     else
       WindowUtil.leaveFullScreenMode(window, initialWindowFlags);
+    
+    if (nativeView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      final View decorView = window.getDecorView();
+      decorView.post(new Runnable() {
+        @Override
+        public void run() {
+          if (nativeView == null)
+            return;
+
+          boolean is_fullscreen = wantFullScreen();
+          android.view.ViewGroup.LayoutParams layoutParams = nativeView.getLayoutParams();
+          
+          if (layoutParams instanceof android.view.ViewGroup.MarginLayoutParams) {
+            android.view.ViewGroup.MarginLayoutParams marginParams =
+              (android.view.ViewGroup.MarginLayoutParams) layoutParams;
+            
+            if (is_fullscreen) {
+              marginParams.setMargins(0, 0, 0, 0);
+            } else {
+              WindowMetrics windowMetrics = getWindowManager().getCurrentWindowMetrics();
+              final WindowInsets windowInsets = windowMetrics.getWindowInsets();
+              Insets insets = windowInsets.getInsets(
+                WindowInsets.Type.statusBars() |
+                WindowInsets.Type.navigationBars() |
+                WindowInsets.Type.displayCutout());
+              marginParams.setMargins(insets.left, insets.top, insets.right, insets.bottom);
+            }
+            nativeView.setLayoutParams(marginParams);
+          }
+        }
+      });
+    }
+    
+    if (nativeView != null && Loader.loaded) {
+      final View decorView = window.getDecorView();
+      decorView.post(new Runnable() {
+        @Override
+        public void run() {
+          decorView.post(new Runnable() {
+            @Override
+            public void run() {
+              int display_width = nativeView.getWidth();
+              int display_height = nativeView.getHeight();
+              int inset_left = 0, inset_top = 0, inset_right = 0, inset_bottom = 0;
+              
+              if (display_width > 0 && display_height > 0) {
+                nativeView.resizedNative(display_width, display_height, inset_left, inset_top, inset_right, inset_bottom);
+              }
+            }
+          });
+        }
+      });
+    }
   }
 
   public void initNative() {
     if (!Loader.loaded)
       return;
 
-    /* check if external storage is available; OpenSoar doesn't work as
+    /* check if external storage is available; XCSoar doesn't work as
        long as external storage is being forwarded to a PC */
     String state = Environment.getExternalStorageState();
     if (!Environment.MEDIA_MOUNTED.equals(state)) {
@@ -256,6 +350,10 @@ public class OpenSoar extends Activity implements PermissionManager {
     else
       initNative();
     getHapticFeedbackSettings();
+
+    /* Resume processing permission queue if there are pending requests */
+    if (permissionHelper != null)
+      permissionHelper.resumePermissionProcessing();
   }
 
   @Override protected void onDestroy()
@@ -263,6 +361,23 @@ public class OpenSoar extends Activity implements PermissionManager {
     if (!Loader.loaded) {
       super.onDestroy();
       return;
+    }
+
+    /* Mark the app as shutting down so that MyService will not restart
+       itself after System.exit() kills the process.  The flag must be
+       written synchronously (commit(), not apply()) because
+       System.exit() follows shortly. */
+    getApplicationContext()
+      .getSharedPreferences("opensoar_service", Context.MODE_PRIVATE)
+      .edit()
+      .putBoolean("app_shutdown", true)
+      .commit();
+
+    try {
+      stopService(new Intent(this, de.opensoar.MyService.class));
+    } catch (Exception e) {
+      /* Ignore exceptions when stopping service during app shutdown.
+         The service will be cleaned up by the system if needed. */
     }
 
     if (batteryReceiver != null) {
@@ -287,28 +402,26 @@ public class OpenSoar extends Activity implements PermissionManager {
   }
 
   @Override public boolean onKeyDown(int keyCode, final KeyEvent event) {
-    // Overrides Back key to use in our app
-    if (nativeView != null) {
-      nativeView.onKeyDown(keyCode, event);
+    if (nativeView != null && nativeView.onKeyDown(keyCode, event))
       return true;
-    } else
-      return super.onKeyDown(keyCode, event);
+
+    return super.onKeyDown(keyCode, event);
   }
 
   @Override public boolean onKeyUp(int keyCode, final KeyEvent event) {
-    if (nativeView != null) {
-      nativeView.onKeyUp(keyCode, event);
+    if (nativeView != null && nativeView.onKeyUp(keyCode, event))
       return true;
-    } else
-      return super.onKeyUp(keyCode, event);
+
+    return super.onKeyUp(keyCode, event);
   }
 
   @Override public void onWindowFocusChanged(boolean hasFocus) {
-    if (hasFocus && wantFullScreen())
-      /* some Android don't restore immersive mode after returning to
-         this app, so unfortunately we need to reapply those settings
-         manually */
-      WindowUtil.enableImmersiveMode(getWindow());
+    if (hasFocus && wantFullScreen()) {
+      /* some Android don't restore fullscreen settings after returning to
+         this app or after orientation changes, so we need to reapply all
+         fullscreen settings (immersive mode + display cutout mode) manually */
+      WindowUtil.enterFullScreenMode(getWindow());
+    }
 
     super.onWindowFocusChanged(hasFocus);
   }
@@ -334,148 +447,75 @@ public class OpenSoar extends Activity implements PermissionManager {
   @Override public void onConfigurationChanged(Configuration newConfig) {
     super.onConfigurationChanged(newConfig);
     submitConfiguration(newConfig);
+
+    /* Reapply fullscreen settings after orientation change.
+       The display cutout mode and window layout parameters can be reset
+       during orientation changes, so we need to reapply them. */
+    applyFullScreen();
+    
+    /* applyFullScreen() will handle updating the native view with the correct size.
+       No need to duplicate the logic here - applyFullScreen() already posts to decorView
+       to ensure layout is complete before getting the SurfaceView size. */
   }
 
   @Override
   public synchronized void onRequestPermissionsResult(int requestCode, String[] permissions,
                                                       int[] grantResults) {
-    PermissionHandler handler = permissionHandlers.remove(requestCode);
-    if (handler != null)
-      // grantResults is empty when user cancels
-      handler.onRequestPermissionsResult(grantResults.length > 0 &&
-                                         grantResults[0] == PackageManager.PERMISSION_GRANTED);
-  }
-
-  private static String getPermissionRationale(String permission) {
-    if (permission == Manifest.permission.ACCESS_FINE_LOCATION)
-      return "OpenSoar needs permission to access your GPS location - obviously, because OpenSoar's purpose is to help you navigate an aircraft.";
-    else if (permission == Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-      return "Several optional features (e.g. flight logging and score calculation) benefit from location access while OpenSoar is in background. " +
-        "If you choose not to allow this, calculation results may be incomplete.";
-    else if (permission == Manifest.permission.BLUETOOTH_CONNECT ||
-             permission == Manifest.permission.BLUETOOTH_SCAN)
-      return "If you want OpenSoar to connect to Bluetooth sensors, it needs your permission.";
-    else
-      return null;
-  }
-
-  private void showRequestPermissionRationale(final String permission,
-                                              final String rationale,
-                                              final PermissionHandler handler) {
-    /* using HTML so the privacy policy link is clickable */
-    final String html = "<p>" +
-      "OpenSoar is free software developed by volunteers just for fun. " +
-      "The project is non-profit - you don't pay for OpenSoar, and we don't sell your data (or anything else). " +
-      "</p>" +
-      "<p><big>" +
-      rationale +
-      "</big></p>" +
-      "<p>" +
-      "All those accesses are only in your own interest; we don't collect your data and we don't track you (unless you explicitly ask OpenSoar to). " +
-      "</p>" +
-      "<p>" +
-      "More details can be found in the <a href=\"https://github.com/XCSoar/XCSoar/blob/master/PRIVACY.md\">Privacy policy</a>. " +
-      "</p>";
-
-    final TextView tv  = new TextView(this);
-    tv.setMovementMethod(LinkMovementMethod.getInstance());
-    tv.setText(Html.fromHtml(html));
-
-    new AlertDialog.Builder(this)
-      .setTitle("Requesting your permission")
-      .setView(tv)
-      .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-            doRequestPermission(permission, handler);
-          }
-        })
-      .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-            if (handler != null)
-              handler.onRequestPermissionsResult(false);
-          }
-        })
-      .setOnCancelListener(new DialogInterface.OnCancelListener() {
-          @Override
-          public void onCancel(DialogInterface dialog) {
-            if (handler != null)
-              handler.onRequestPermissionsResult(false);
-          }
-        })
-      .setOnDismissListener(new DialogInterface.OnDismissListener() {
-          @Override
-          public void onDismiss(DialogInterface dialog) {
-            if (handler != null)
-              handler.onRequestPermissionsResult(false);
-          }
-        })
-      .show();
-  }
-
-  /**
-   * @return true if an alert is being displayed (and an asynchronous
-   * callback will then actually request the permission), false if no
-   * rationale was displayed (and no permission was requested)
-   */
-  private boolean showRequestPermissionRationaleIndirect(final String permission,
-                                                         final PermissionHandler handler) {
-    final String rationale = getPermissionRationale(permission);
-    if (rationale == null)
-      return false;
-
-    mainHandler.post(new Runnable() {
-        @Override public void run() {
-          showRequestPermissionRationale(permission, rationale, handler);
-        }
-      });
-
-    return true;
-  }
-
-  private synchronized int addPermissionHandler(PermissionHandler handler) {
-    final int id = nextPermissionHandlerId++;
-
-    if (handler != null)
-      permissionHandlers.put(id, handler);
-
-    return id;
-  }
-
-  private void doRequestPermission(String permission,
-                                   PermissionHandler handler) {
-    requestPermissions(new String[]{permission},
-                       addPermissionHandler(handler));
+    if (permissionHelper != null) {
+      permissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
   }
 
   /* virtual methods from PermissionManager */
 
-  private final Map<Integer, PermissionHandler> permissionHandlers =
-    new TreeMap<Integer, PermissionHandler>();
-  private int nextPermissionHandlerId = 0;
-
   @Override
   public boolean requestPermission(String permission, PermissionHandler handler) {
-    if (android.os.Build.VERSION.SDK_INT < 23)
-      /* we don't need to request permissions on this old Android
-         version */
-      return true;
-
-    if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
-      /* we already have the permission */
-      return true;
-
-    if (shouldShowRequestPermissionRationale(permission) &&
-        showRequestPermissionRationaleIndirect(permission, handler))
-      return false;
-
-    doRequestPermission(permission, handler);
+    if (permissionHelper != null)
+      return permissionHelper.requestPermission(permission, handler);
     return false;
   }
 
   @Override
   public synchronized void cancelRequestPermission(PermissionHandler handler) {
-    permissionHandlers.values().remove(handler);
+    if (permissionHelper != null)
+      permissionHelper.cancelRequestPermission(handler);
+  }
+
+  @Override
+  public boolean areLocationPermissionsGranted() {
+    if (permissionHelper != null)
+      return permissionHelper.areLocationPermissionsGranted();
+    return false;
+  }
+
+  @Override
+  public boolean isNotificationPermissionGranted() {
+    if (permissionHelper != null)
+      return permissionHelper.isNotificationPermissionGranted();
+    return true;
+  }
+
+  @Override
+  public void requestAllLocationPermissionsDirect() {
+    if (permissionHelper != null)
+      permissionHelper.requestAllLocationPermissionsDirect();
+  }
+
+  @Override
+  public void requestNotificationPermissionDirect() {
+    if (permissionHelper != null)
+      permissionHelper.requestNotificationPermissionDirect();
+  }
+
+  @Override
+  public void suppressPermissionDialogs() {
+    if (permissionHelper != null)
+      permissionHelper.suppressPermissionDialogs();
+  }
+
+  @Override
+  public void onDisclosureResult(boolean accepted) {
+    if (permissionHelper != null)
+      permissionHelper.onDisclosureResult(accepted);
   }
 }

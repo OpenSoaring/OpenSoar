@@ -10,7 +10,7 @@ static inline int
 StringFormat(char *buffer, size_t size, const char *fmt,
 	     Args&&... args) noexcept
 {
-  return snprintf(buffer, size, fmt, args...);
+  return snprintf(buffer, size, "%s", fmt, args...);
 }
 
 #ifndef __MSVC__

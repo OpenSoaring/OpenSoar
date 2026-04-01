@@ -14,6 +14,7 @@ import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewParent;
+import android.view.Window;
 import android.os.Build;
 import android.os.Handler;
 import android.net.Uri;
@@ -41,6 +42,11 @@ class NativeView extends SurfaceView
   private static final String TAG = "OpenSoar";
 
   /**
+   * Filters touch events to reject system edge gestures.
+   */
+  private final EdgeTouchFilter edgeTouchFilter = new EdgeTouchFilter();
+
+  /**
    * A native pointer to a C++ #TopWindow instance.
    */
   private long ptr;
@@ -60,6 +66,57 @@ class NativeView extends SurfaceView
   static boolean textureNonPowerOfTwo;
 
   Thread thread;
+
+  /**
+   * Listens for physical device orientation changes to offer a
+   * rotation suggestion button (like Android's Rotate Suggestions).
+   */
+  private RotationListener rotationListener;
+
+  /*
+   * Check if running in simulator mode (user chose "simulator" on startup)
+   */
+  private static native boolean isSimulatorNative();
+
+  public static boolean isSimulator() {
+    try {
+      return isSimulatorNative();
+    } catch (UnsatisfiedLinkError e) {
+      return false;
+    }
+  }
+
+  /**
+   * Start the foreground service.  Called from native code after the
+   * user chooses Fly mode (not called in Simulator mode because
+   * IGC logging and safety warnings are not needed in simulation).
+   */
+  void startMyService() {
+    final Context context = getContext();
+
+    try {
+      if (Build.VERSION.SDK_INT >= 34) {
+        final String fgsPermission = "android.permission.FOREGROUND_SERVICE_LOCATION";
+        if (context.checkSelfPermission(fgsPermission) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED) {
+          context.startService(new Intent(context, MyService.class));
+        } else {
+          permissionManager.requestPermission(fgsPermission, null);
+          try {
+            context.startService(new Intent(context, MyService.class));
+          } catch (SecurityException e) {
+            /* Expected on Android 14+ without permission */
+          }
+        }
+      } else {
+        context.startService(new Intent(context, MyService.class));
+      }
+    } catch (IllegalStateException e) {
+      /* Android may not allow starting a service in this state */
+    } catch (SecurityException e) {
+      /* Expected on Android 14+ without FOREGROUND_SERVICE_LOCATION */
+    }
+  }
 
   public NativeView(Activity context, Handler _quitHandler,
                     Handler _wakeLockHandler,
@@ -82,6 +139,11 @@ class NativeView extends SurfaceView
     SurfaceHolder holder = getHolder();
     holder.addCallback(this);
     holder.setType(SurfaceHolder.SURFACE_TYPE_GPU);
+
+    setOnApplyWindowInsetsListener(edgeTouchFilter);
+    requestApplyInsets(); // trigger initial inset calculation
+
+    rotationListener = new RotationListener(context);
   }
 
   private void start() {
@@ -110,6 +172,20 @@ class NativeView extends SurfaceView
     fullScreenHandler.sendEmptyMessage(fullScreen ? 1 : 0);
   }
 
+  /**
+   * Check if the system auto-rotate setting is enabled.
+   * Called from native code.
+   */
+  private boolean isAutoRotateEnabled() {
+    try {
+      return android.provider.Settings.System.getInt(
+        getContext().getContentResolver(),
+        android.provider.Settings.System.ACCELEROMETER_ROTATION) == 1;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
   private boolean setRequestedOrientation(int requestedOrientation) {
     try {
       ((Activity)getContext()).setRequestedOrientation(requestedOrientation);
@@ -123,17 +199,50 @@ class NativeView extends SurfaceView
   }
 
   @Override public void surfaceCreated(SurfaceHolder holder) {
+    if (rotationListener != null && rotationListener.canDetectOrientation())
+      rotationListener.enable();
   }
 
   @Override public void surfaceChanged(SurfaceHolder holder, int format,
                                        int width, int height) {
     if (thread == null || !thread.isAlive())
       start();
-    else
-      resizedNative(width, height);
+    else {
+      Context context = getContext();
+      if (!(context instanceof Activity))
+        return;
+      
+      Activity activity = (Activity)context;
+      Window window = activity.getWindow();
+      View decorView = window.getDecorView();
+      
+      boolean is_fullscreen = false;
+      if (activity instanceof de.opensoar.OpenSoar) {
+        is_fullscreen = ((de.opensoar.OpenSoar)activity).wantFullScreen();
+      } else {
+        int systemUiVisibility = decorView.getSystemUiVisibility();
+        is_fullscreen = (systemUiVisibility & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0 ||
+                       (systemUiVisibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0;
+      }
+      
+      if (is_fullscreen) {
+        WindowUtil.enterFullScreenMode(window);
+      } else {
+        WindowUtil.leaveFullScreenMode(window, 0);
+      }
+      
+      int display_width = width;
+      int display_height = height;
+      int inset_left = 0, inset_top = 0, inset_right = 0, inset_bottom = 0;
+      
+      resizedNative(display_width, display_height, inset_left, inset_top, inset_right, inset_bottom);
+    }
   }
 
   @Override public void surfaceDestroyed(SurfaceHolder holder) {
+    if (rotationListener != null)
+      rotationListener.disable();
+
     surfaceDestroyedNative();
   }
 
@@ -141,20 +250,21 @@ class NativeView extends SurfaceView
     final Context context = getContext();
 
     android.graphics.Rect r = getHolder().getSurfaceFrame();
+    android.util.Log.d(TAG, "runNative: getSurfaceFrame() size=" + r.width() + "x" + r.height());
     DisplayMetrics metrics = new DisplayMetrics();
     ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
     try {
-      try {
-        context.startService(new Intent(context, MyService.class));
-      } catch (IllegalStateException e) {
-        /* we get crash reports on this all the time, but I don't
-           know why - Android docs say "the application is in a
-           state where the service can not be started (such as not
-           in the foreground in a state when services are allowed)",
-           but we're about to be resumed, which means we're in
-           foreground... */
-      }
+      /* Clear the shutdown flag from any previous session so the
+         service starts normally */
+      context.getSharedPreferences("opensoar_service", Context.MODE_PRIVATE)
+        .edit()
+        .remove("app_shutdown")
+        .commit();
+
+      /* The foreground service is started from native code via
+         startMyService() after the user chooses Fly mode.  In
+         Simulator mode the service is not needed. */
 
       try {
         runNative(context, permissionManager,
@@ -162,6 +272,12 @@ class NativeView extends SurfaceView
                   (int)metrics.xdpi, (int)metrics.ydpi,
                   Build.PRODUCT);
       } finally {
+        /* Set shutdown flag before stopping service so it does not
+           restart itself after System.exit() kills the process */
+        context.getSharedPreferences("opensoar_service", Context.MODE_PRIVATE)
+          .edit()
+          .putBoolean("app_shutdown", true)
+          .commit();
         context.stopService(new Intent(context, MyService.class));
       }
     } catch (Exception e) {
@@ -176,7 +292,38 @@ class NativeView extends SurfaceView
   static native void initNative();
   static native void deinitNative();
 
+  /**
+   * Show a native permission disclosure dialog on the XCSoar UI
+   * thread.  Called from PermissionHelper instead of showing a Java
+   * AlertDialog.  When the user responds, calls back to
+   * PermissionManager.onDisclosureResult().
+   */
+  static native void showPermissionDisclosure(String permission);
+
+  /**
+   * Notify native code that a permission request completed.
+   * Called from PermissionHelper when a permission chain finishes.
+   *
+   * @param granted true if the permission was granted
+   */
+  static native void onPermissionResult(boolean granted);
+
   static native void onConfigurationChangedNative(boolean nightMode);
+
+  /**
+   * Called when the physical device orientation changes, to show
+   * or refresh the rotate suggestion button.
+   */
+  static native void onRotationSuggestion();
+
+  /**
+   * Delegate to {@link RotationListener#getPhysicalOrientation()}.
+   * Called from native code when the rotate button is pressed.
+   */
+  int getPhysicalOrientation() {
+    return rotationListener != null
+      ? rotationListener.getPhysicalOrientation() : 0;
+  }
 
   static native String onReceiveXCTrackTask(String data);
 
@@ -186,7 +333,7 @@ class NativeView extends SurfaceView
                                   int xdpi, int ydpi,
                                   String product);
 
-  protected native void resizedNative(int width, int height);
+  protected native void resizedNative(int width, int height, int inset_left, int inset_top, int inset_right, int inset_bottom);
 
   protected native void surfaceDestroyedNative();
 
@@ -217,13 +364,12 @@ class NativeView extends SurfaceView
    * Loads the specified bitmap resource.
    */
   private Bitmap loadResourceBitmap(String name) {
-    /* find the resource */
-    int resourceId = resources.getIdentifier(name, "drawable", "de.opensoar");
+    /* find the resource using the actual package name */
+    String packageName = getContext().getPackageName();
+    int resourceId = resources.getIdentifier(name, "drawable", packageName);
     if (resourceId == 0) {
-      resourceId = resources.getIdentifier(name, "drawable",
-                                           "de.opensoar.testing");
-      if (resourceId == 0)
-        return null;
+      Log.e(TAG, "Resource not found: drawable/" + name + " in package " + packageName);
+      return null;
     }
 
     /* load the Bitmap from the resource */
@@ -274,6 +420,21 @@ class NativeView extends SurfaceView
   }
 
   /**
+   * Opens a URL in the default browser.
+   */
+  private boolean openURL(String url) {
+    try {
+      Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+      intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      getContext().startActivity(intent);
+      return true;
+    } catch (Exception e) {
+      Log.e(TAG, "openURL('" + url + "') error", e);
+      return false;
+    }
+  }
+
+  /**
    * Starts a VIEW intent for a given file
    */
   private void openWaypointFile(int id, String filename) {
@@ -289,7 +450,7 @@ class NativeView extends SurfaceView
 
       /* this URI is going to be handled by FileProvider */
       Uri uri = new Uri.Builder().scheme("content")
-        .authority("de.opensoar")
+        .authority(getContext().getPackageName())
         .encodedPath("/waypoints/" + id + "/" + Uri.encode(filename))
         .build();
 
@@ -322,31 +483,10 @@ class NativeView extends SurfaceView
       offsetY += p.getY();
     }
 
-    final int x = (int)(event.getX() - offsetX);
-    final int y = (int)(event.getY() - offsetY);
+    float x = event.getX() - offsetX;
+    float y = event.getY() - offsetY;
 
-    switch (event.getActionMasked()) {
-    case MotionEvent.ACTION_DOWN:
-      EventBridge.onMouseDown(x, y);
-      break;
-
-    case MotionEvent.ACTION_UP:
-      EventBridge.onMouseUp(x, y);
-      break;
-
-    case MotionEvent.ACTION_MOVE:
-      EventBridge.onMouseMove(x, y);
-      break;
-
-    case MotionEvent.ACTION_POINTER_DOWN:
-      EventBridge.onPointerDown();
-      break;
-
-    case MotionEvent.ACTION_POINTER_UP:
-      EventBridge.onPointerUp();
-      break;
-    }
-
+    edgeTouchFilter.onTouchEvent(event, x, y);
     return true;
   }
 
@@ -358,30 +498,25 @@ class NativeView extends SurfaceView
     pauseNative();
   }
 
-  private final int translateKeyCode(int keyCode) {
-    if (!hasKeyboard) {
-      /* map the volume keys to cursor up/down if the device has no
-         hardware keys */
-
-      switch (keyCode) {
-      case KeyEvent.KEYCODE_VOLUME_UP:
-        return KeyEvent.KEYCODE_DPAD_UP;
-
-      case KeyEvent.KEYCODE_VOLUME_DOWN:
-        return KeyEvent.KEYCODE_DPAD_DOWN;
-      }
-    }
-
-    return keyCode;
+  private static boolean isVolumeKey(int keyCode) {
+    return keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+           keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
+           keyCode == KeyEvent.KEYCODE_VOLUME_MUTE;
   }
 
   @Override public boolean onKeyDown(int keyCode, final KeyEvent event) {
-    EventBridge.onKeyDown(translateKeyCode(keyCode));
+    if (isVolumeKey(keyCode))
+      return false;
+
+    EventBridge.onKeyDown(keyCode);
     return true;
   }
 
   @Override public boolean onKeyUp(int keyCode, final KeyEvent event) {
-    EventBridge.onKeyUp(translateKeyCode(keyCode));
+    if (isVolumeKey(keyCode))
+      return false;
+
+    EventBridge.onKeyUp(keyCode);
     return true;
   }
 }

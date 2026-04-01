@@ -2,6 +2,11 @@
 // Copyright The XCSoar Project
 
 #ifdef NO_ANDROID  // aug: new
+/* TODO(August2111): Deutsch-> Remove
+In dieser Datei sind relativ starke Änderungen bezüglich CoDownload-
+XCSoar hat hier auch einiges verändert, da muss ich erst einmal sehen,
+wie es mit meinen Vorhaben zusammenpasst...
+*/
 
 #include "DownloadManager.hpp"
 #include "Main.hpp"

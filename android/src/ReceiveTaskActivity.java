@@ -39,7 +39,7 @@ public class ReceiveTaskActivity extends Activity {
     if (data.startsWith("xctsk:")) {
       final String msg = NativeView.onReceiveXCTrackTask(data.substring(6));
       if (msg == null) {
-        /* the data was handled successfully, and the main "OpenSoar"
+        /* the data was handled successfully, and the main "XCSoar"
            activity shows the details - switch to it */
         Intent myIntent = new Intent(this, OpenSoar.class);
         startActivity(myIntent);
