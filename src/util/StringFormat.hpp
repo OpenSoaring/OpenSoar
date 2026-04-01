@@ -5,18 +5,23 @@
 
 #include <stdio.h>
 
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-security"
+#endif  // defined(__GNUC__)
+
 template<typename... Args>
 static inline int
-StringFormat(char *buffer, size_t size, const char *fmt,
+StringFormat(char *buffer, size_t size, const char *const fmt,
 	     Args&&... args) noexcept
 {
-  return snprintf(buffer, size, "%s", fmt, args...);
+  return snprintf(buffer, size, fmt, args...);
 }
 
-#ifndef __MSVC__
+#if defined(__clang__) || defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif  // !defined(__MSVC__)
+#endif  // defined(__GNUC__)
 
 template<typename... Args>
 static inline int
@@ -25,6 +30,6 @@ StringFormatUnsafe(char *buffer, const char *fmt, Args&&... args) noexcept
   return sprintf(buffer, fmt, args...);
 }
 
-#ifndef __MSVC__
+#if defined(__clang__) || defined(__GNUC__)
 #pragma GCC diagnostic pop
-#endif  // !defined(__MSVC__)
+#endif  // defined(__GNUC__)
