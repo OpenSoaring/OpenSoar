@@ -6,10 +6,13 @@
 #include "Weather/Features.hpp"
 #include <memory>
 
-class RaspStore;
-class RasterTerrain;
+#ifdef HAVE_RASP
+  class RaspStore;
+  class RasterTerrain;
+#endif
+
 #ifdef HAVE_SKYSIGHT
-class Skysight;
+  class Skysight;
 #endif
 
 /**
@@ -37,11 +40,13 @@ UnsetTerrain() noexcept;
 void
 SetTerrain(std::unique_ptr<RasterTerrain> _terrain) noexcept;
 
+#ifdef HAVE_RASP
 std::shared_ptr<RaspStore>
 GetRasp() noexcept;
 
 void
 SetRasp(std::shared_ptr<RaspStore> rasp) noexcept;
+#endif
 
 /**
  * Determine the home waypoint and startup location.  Call this after

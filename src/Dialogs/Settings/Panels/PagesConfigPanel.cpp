@@ -285,7 +285,7 @@ PageLayoutEditWidget::SetValue(const PageLayout &_value)
 #ifdef HAVE_SKYSIGHT
     if (value.overlay[0] != '\0') {
       auto skysight = DataGlobals::GetSkysight();
-      if (skysight && value.overlay) {
+      if (skysight) {
         const char *overlay_id = value.overlay+strlen("skysight:");
         for (size_t i = 0; i < skysight->NumSelectedLayers(); ++i) {
           auto *layer = skysight->GetSelectedLayer(i);
@@ -346,9 +346,8 @@ PageLayoutEditWidget::OnModified(DataField &df) noexcept
     const unsigned idx = dfe.GetValue();
     const std::string_view text = dfe.GetAsString();
     value.overlay[0] = '\0';
-    auto skysight = DataGlobals::GetSkysight();
-    auto rasp = DataGlobals::GetRasp();
 #ifdef HAVE_SKYSIGHT
+    auto skysight = DataGlobals::GetSkysight();
     if (skysight && text.starts_with("SkySight:")) {
         /* 1st 'layer is 'None'*/
         auto *layer = skysight->GetSelectedLayer(idx - 1);
@@ -358,16 +357,17 @@ PageLayoutEditWidget::OnModified(DataField &df) noexcept
                   sizeof(value.overlay) - 1 - strlen(value.overlay));
           value.overlay[sizeof(value.overlay) - 1] = '\0';
         }
-      } else
+      } else {
 #endif
 #ifdef HAVE_RASP
+      auto rasp = DataGlobals::GetRasp();
       if (rasp && text.starts_with("Rasp:")) {
           snprintf(value.overlay, sizeof(value.overlay) - 1 , "rasp:%s",
             text.substr(5).data());
         }
-      // } // else
+      // } else {}
 #endif
-    // }
+    }
   } else if (&df == &GetDataField(INFO_BOX_PANEL)) {
     const DataFieldEnum &dfe = (const DataFieldEnum &)df;
     const unsigned ibp = dfe.GetValue();
