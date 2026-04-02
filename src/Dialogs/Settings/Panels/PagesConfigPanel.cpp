@@ -18,12 +18,12 @@
 #include "Widget/TwoWidgets.hpp"
 #include "Widget/ButtonPanelWidget.hpp"
 #include "UIGlobals.hpp"
+#include "DataGlobals.hpp"
 
 #ifdef HAVE_RASP
 # include "Weather/Rasp/RaspStore.hpp"
 #endif
 #ifdef HAVE_SKYSIGHT
-#include "DataGlobals.hpp"
 #include "Weather/Skysight/Skysight.hpp"
 #endif
 
@@ -349,25 +349,25 @@ PageLayoutEditWidget::OnModified(DataField &df) noexcept
 #ifdef HAVE_SKYSIGHT
     auto skysight = DataGlobals::GetSkysight();
     if (skysight && text.starts_with("SkySight:")) {
-        /* 1st 'layer is 'None'*/
-        auto *layer = skysight->GetSelectedLayer(idx - 1);
-        if (layer) {
-          strncpy(value.overlay, "skysight:", sizeof(value.overlay) - 1);
-          strncat(value.overlay, layer->id.c_str(),
-                  sizeof(value.overlay) - 1 - strlen(value.overlay));
-          value.overlay[sizeof(value.overlay) - 1] = '\0';
-        }
-      } else {
+      // 1st 'layer is 'None'
+      auto *layer = skysight->GetSelectedLayer(idx - 1);
+      if (layer) {
+        strncpy(value.overlay, "skysight:", sizeof(value.overlay) - 1);
+        strncat(value.overlay, layer->id.c_str(),
+          sizeof(value.overlay) - 1 - strlen(value.overlay));
+        value.overlay[sizeof(value.overlay) - 1] = '\0';
+      }
+    }
 #endif
 #ifdef HAVE_RASP
+    if (value.overlay[0] == 0) {  // no SkySight entry
       auto rasp = DataGlobals::GetRasp();
       if (rasp && text.starts_with("Rasp:")) {
-          snprintf(value.overlay, sizeof(value.overlay) - 1 , "rasp:%s",
-            text.substr(5).data());
-        }
-      // } else {}
-#endif
+        snprintf(value.overlay, sizeof(value.overlay) - 1, "rasp:%s",
+          text.substr(5).data());
+      }
     }
+#endif
   } else if (&df == &GetDataField(INFO_BOX_PANEL)) {
     const DataFieldEnum &dfe = (const DataFieldEnum &)df;
     const unsigned ibp = dfe.GetValue();
