@@ -1,5 +1,7 @@
 import sys
 
+#this is a file w/ similar beaviour like cmake configure
+
 debug = False
 
 if debug:
@@ -40,5 +42,5 @@ else:
     infile.close()
     outfile.close()
 
-print('EOF replace.py')
+#no: print('EOF replace.py')
 exit(0)

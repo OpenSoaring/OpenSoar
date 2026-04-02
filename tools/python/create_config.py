@@ -37,5 +37,5 @@ else:
     
     headerfile.close()
 
-print('EOF replace.py')
+# no: print('EOF replace.py')
 exit(0)
