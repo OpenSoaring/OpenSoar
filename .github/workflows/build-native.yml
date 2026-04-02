@@ -262,7 +262,7 @@ jobs:
             target_upload: false
             target_container: debian:bookworm-slim
           
-          - os: macos-13
+          - os: macos-15-intel
             target: OSX64
             target_bin: OpenSoar
             target_final: OpenSoar
@@ -272,7 +272,7 @@ jobs:
             target_upload: false
             # w/o container
 
-          - os: macos-14
+          - os: macos-15
             target: MACOS
             target_bin: OpenSoar
             target_final: OpenSoar
@@ -282,7 +282,7 @@ jobs:
             target_upload: false
             # w/o container
           
-          - os: macos-14
+          - os: macos-15
             target: IOS64
             target_bin: OpenSoar
             target_final: OpenSoar
