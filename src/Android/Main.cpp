@@ -362,13 +362,12 @@ try {
 gcc_visibility_default
 JNIEXPORT void JNICALL
 Java_de_opensoar_NativeView_resizedNative(JNIEnv *env, jobject obj,
-                                         jint width, jint height)
+                                         jint width, jint height,
+                                         [[maybe_unused]] jint inset_left, 
+										 [[maybe_unused]] jint inset_top,
+                                         [[maybe_unused]] jint inset_right,
+										 [[maybe_unused]] jint inset_bottom)
 {
-  (void)inset_left;
-  (void)inset_top;
-  (void)inset_right;
-  (void)inset_bottom;
-
   const std::scoped_lock shutdown_lock{shutdown_mutex};
 
   if (event_queue == nullptr)
