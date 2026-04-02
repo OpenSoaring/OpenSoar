@@ -6,14 +6,14 @@
 #include "Airspace.hpp"
 #include "Geo/Flat/BoostFlatBoundingBox.hpp"
 
-#ifdef __MSVC__
-# include <boost/geometry/index/rtree.hpp>
-#else  // MSVC
+#if defined(__clang__) || defined(__GNUC__)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wcast-qual"
 # include <boost/geometry/index/rtree.hpp>
 # pragma GCC diagnostic pop
-#endif
+#else  // GNUC
+# include <boost/geometry/index/rtree.hpp>
+#endif  // GNUC
 #include <boost/range/iterator_range_core.hpp>
 
 /**
