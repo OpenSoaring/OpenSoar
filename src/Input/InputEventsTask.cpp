@@ -26,6 +26,7 @@
 #include "Components.hpp"
 #include "BackendComponents.hpp"
 #include "DataComponents.hpp"
+#include "LogFile.hpp"
 
 static void
 trigger_redraw()
@@ -202,9 +203,10 @@ InputEvents::eventAbortTask(const char *misc)
 
   if (StringIsEqual(misc, "abort"))
     task_manager->Abort();
-  else if (StringIsEqual(misc, "resume"))
-    task_manager->Resume();
-  else if (StringIsEqual(misc, "show")) {
+  else if (StringIsEqual(misc, "resume")) {
+    if (!task_manager->Resume())
+      LogFmt("{} (line {}):task_manager->Resume() was fail",__func__, __LINE__);
+  } else if (StringIsEqual(misc, "show")) {
     switch (task_manager->GetMode()) {
     case TaskType::ABORT:
       Message::AddMessage(_("Task aborted"));
@@ -227,13 +229,16 @@ InputEvents::eventAbortTask(const char *misc)
       break;
     case TaskType::GOTO:
       if (task_manager->CheckOrderedTask()) {
-        task_manager->Resume();
+        if (!task_manager->Resume())
+          LogFmt("{} (line {}):task_manager->Resume() was fail", __func__, __LINE__);
       } else {
         task_manager->Abort();
       }
       break;
     case TaskType::ABORT:
-      task_manager->Resume();
+      if(!task_manager->Resume())
+        LogFmt("{} (line {}):task_manager->Resume() was fail", __func__, __LINE__);
+
       break;
     }
   }
