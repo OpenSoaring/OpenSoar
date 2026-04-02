@@ -4,18 +4,10 @@ ifeq ($(LUA),y)
 
 ifeq ($(USE_THIRDPARTY_LIBS),y)
 LIBLUA_LDLIBS = -llua
-LIBLUA_CPPFLAGS =
 else
-$(eval $(call pkg-config-library,LIBLUA,lua5.4))
+$(eval $(call pkg-config-library,LIBLUA,lua))
 endif
-
-ifeq ($(USE_XCSOAR_ONLY),y)
-LIBLUA_CPPFLAGS += -DPROGRAM_NAME_LC=\"xcsoar\"
-else
-# August2111: use "xcsoar" instead of "opensoar" to make it aligned...
-LIBLUA_CPPFLAGS += -DPROGRAM_NAME_LC=\"xcsoar\"
-# LIBLUA_CPPFLAGS += -DPROGRAM_NAME_LC=\"opensoar\"
-endif
+LIBLUA_CPPFLAGS += -DPROGRAM_NAME_LC=\"$(PROGRAM_NAME_LC)\"
 
 LUA_SOURCES = \
 	$(SRC)/lua/Ptr.cpp \
