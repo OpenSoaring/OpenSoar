@@ -37,3 +37,5 @@ build/local-config.mk
 .idea
 .ccache
 /VERSION.txt
+.vs/
+out/
