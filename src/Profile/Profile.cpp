@@ -131,7 +131,7 @@ Profile::LoadFile(Path path) noexcept
 void
 Profile::Save(ProfileMap &_map) noexcept
 {
-  if (!map.IsModified())
+  if (!_map.IsModified())
     return;
 
   Path path = (&_map == &device_ports) ? portSettingFile : startProfileFile;
