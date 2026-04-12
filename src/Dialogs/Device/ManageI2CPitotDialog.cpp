@@ -92,7 +92,7 @@ ManageI2CPitotWidget::Calibrate() noexcept
   config.sensor_offset = GetValueFloat(PITOT)
     + device.GetConfig().sensor_offset - GetValueFloat(STATIC);
 
-  Profile::SetDeviceConfig(Profile::map, index, config);
+  Profile::SetDeviceConfig(Profile::device_ports, index, config);
   Profile::Save();
 
   device.SetConfig(config);
