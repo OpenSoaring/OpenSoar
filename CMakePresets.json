@@ -7,14 +7,14 @@
       "binaryDir": "${sourceDir}/build/${presetName}"
     },
     {
-      "name": "debug",
+      "name": "Debug",
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "release",
+      "name": "Release",
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
