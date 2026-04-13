@@ -217,7 +217,10 @@ SerialPort::WaitDataPending(OverlappedEvent &overlapped,
     throw MakeLastError("ClearCommError() failed");
 
   } else if (nbytes == 0) {
+#ifndef _DEBUG
+    // in debug mode this can happen during stop with breakpoints
     throw std::runtime_error{ "No data" };
+#endif
   }
 }
 
