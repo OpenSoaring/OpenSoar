@@ -1,7 +1,6 @@
 # D:\Projects\OpenSoaring\OpenSoar\3rd_party\3rd_party.cmake
 # ./3rd_party/3rd_party.cmake
 # =================================================================
-
  ### BOOST:
 set(BOOST_VERSION       "1.87.0") # 
 #----------------------------------------------------
@@ -70,9 +69,9 @@ if (HAVE_SKYSIGHT)  # SkySight
   set(SQLITE3_VERSION      "3.51.1")
 
   set(PROJ_VERSION        "9.3.1")  # 
-  set(PROJ_VERSION        "9.4.0") # xcsoar: 2025-04-25
+  set(PROJ_VERSION        "9.4.0") # xcsoar: 2025-04-25 (2026-04-10: geht nicht wegen sqlite(3)?
   #----------------------------------------------------
-  # set(PROJ_VERSION        "9.4.1") # functional with OpenSoar(2025-12-23)?
+  set(PROJ_VERSION        "9.4.1") # functional with OpenSoar(2025-12-23)?
   # set(PROJ_VERSION        "9.6.0") #
   # set(PROJ_VERSION        "9.7.1") # 2025-00-00
  
