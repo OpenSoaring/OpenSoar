@@ -168,14 +168,14 @@ message (FATAL_ERROR "xxxx STOP!!!")
 
           CMAKE_ARGS ${CMAKE_ARGS}
           ${_BINARY_STEP}
-          PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_SOURCE_DIR}/3rd_party/${LIB_TARGET_NAME}_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
+          PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py sqlite3
           INSTALL_DIR "${_INSTALL_DIR}"
 
           BUILD_ALWAYS ${EP_BUILD_ALWAYS}
           # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
 
-          # DEPENDS ${ZLIB_TARGET} ${CURL_TARGET}
-
+          DEPENDS ${ZLIB_TARGET} ${CURL_TARGET}
+          
           BUILD_BYPRODUCTS  ${_TARGET_LIBS} # ${${TARGET_CNAME}_LIB}
     )
     ### post_3rdparty()

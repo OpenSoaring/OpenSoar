@@ -109,38 +109,6 @@ if (_COMPLETE_INSTALL)
         "-DHAVE_MMAP:BOOL=OFF"
       )
     endif()
-      #####   "-DNETCDF_ENABLE_HDF5:BOOL=OFF" # see libs.py
-      ## "-DNETCDF_ENABLE_PLUGINS:BOOL=OFF"
-      ## "-DNETCDF_ENABLE_FILTER_TESTING:BOOL=OFF"
-    ## )
-
-    #wrong patch path name: (netcdf instead of netcdf_c)
-    set(_PATCH_DIR ${_PATCH_BASE}/netcdf)
-    # set(_PATCH_DIR D:/Projects/OpenSoaring/OpenSoar/lib/netcdf)
-
-    # set(_PATCH_DIR ${PROJECTGROUP_SOURCE_DIR}/lib/netcdf/patches)
-    #### # set(_PATCH_COMMAND "${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/LIBNETCDF_C/CMakeLists.txt.in <SOURCE_DIR>/CMakeLists.txt")
-    #### if (${${TARGET_CNAME}_VERSION} VERSION_EQUAL "4.7.4")
-    ####   set(_PATCH_COMMAND "${PYTHON_APP} ${_PATCH_DIR}/patch.py")  ## fix_dutil_4_7_4.patch")
-    ####   string(REPLACE "/" "\\" _PATCH_COMMAND "${_PATCH_COMMAND}")
-    ####   string(APPEND _PATCH_COMMAND " ${${TARGET_CNAME}_PREFIX}/src/netcdf_c_build ${_PATCH_DIR}/patches/fix_dutil_4_7_4.patch")  ## fix_dutil_4_7_4.patch")
-    ####   
-    ####   # string(REPLACE "\"" "" _PATCH_COMMAND "${_PATCH_COMMAND}")
-    ####   set(_PATCH_TEST ${_PATCH_COMMAND}) # TEST!!!!
-    ####   set(_PATCH_COMMAND echo Patch: '${_PATCH_TEST}') # TEST!!!!
-    ####   string(APPEND _PATCH_COMMAND " && ${_PATCH_TEST}")  ## fix_dutil_4_7_4.patch")
-    ####   
-    ####   # set(_PATCH_COMMAND "${PYTHON_APP} ${_PATCH_DIR}/patch.py D:/Libs/netcdf_c/netcdf_c-4.7.4/src/netcdf_c_build ${_PATCH_DIR}/patches/fix_dutil_4_7_4.patch")  ## fix_dutil_4_7_4.patch")
-    ####   # set(_PATCH_COMMAND "git apply ${_PATCH_DIR}/fix_dutil_4_7_4.patch")
-    ####   message(STATUS "### netcdf-Patch:  '${_PATCH_COMMAND}' ")
-    ####   message(STATUS "### netcdf-Source:  '${${TARGET_CNAME}_PREFIX}/src/netcdf_c_build' ")
-    #### 
-    ####   # message(FATAL_ERROR "Stop! ++++++++++++++++++++++++++")
-    #### else()
-    ####    # set(_PATCH_COMMAND git apply ${_PATCH_DIR}/patches/disable_db.patch
-    ####    ### message(STATUS "### netcdf: No_PATCH!!!: ${${TARGET_CNAME}_VERSION} ")
-    ####   # message(FATAL_ERROR "Stop! ++++++++++++++++++++++++++")
-    #### endif()
 
     ExternalProject_Add(
         ${_BUILD_TARGET}
@@ -151,10 +119,8 @@ if (_COMPLETE_INSTALL)
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"
   
-        ### PATCH_COMMAND ${PYTHON_APP} D:/Projects/OpenSoaring/OpenSoar/lib/netcdf/patch.py D:/Projects/Binaries/OpenSoar/dev-branch/3rd_Party/netcdf_c/netcdf_c-4.7.4/src/netcdf_c_build D:/Projects/OpenSoaring/OpenSoar/lib/netcdf/patches/fix_dutil_4_7_4.patch
-        # PATCH_COMMAND ${PYTHON_APP} D:/Projects/OpenSoaring/OpenSoar/lib/netcdf/cmake_patch.py 
-        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py
-        # PATCH_COMMAND ${_PATCH_COMMAND}
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py netcdf
+
         CMAKE_ARGS ${CMAKE_ARGS}
 
         INSTALL_COMMAND ${_INSTALL_COMMAND}

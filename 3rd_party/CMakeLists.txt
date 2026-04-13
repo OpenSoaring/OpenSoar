@@ -78,10 +78,7 @@ macro(prepare_3rdparty target_name)
     get_filename_component(_SOURCE_BASE ${CMAKE_CURRENT_SOURCE_DIR} ABSOLUTE)
     string(REGEX REPLACE "/3rd_party" "" _SOURCE_BASE  ${_SOURCE_BASE})
 
-    set(_PATCH_BASE ${_SOURCE_BASE}/lib)
-    set(_PATCH_DIR ${_PATCH_BASE}/${target_name})
-
-    # message(FATAL_ERROR "Pathes = ${_SOURCE_BASE} / ${_PATCH_DIR} !!!!!!!!!!!!!!!!!!!!!!!!!")
+    set(_PATCH_DIR ${_SOURCE_BASE}/lib)
 
     if (_LENGTH LESS 2)
      #  message(FATAL_ERROR "Empty String (${_LENGTH}) !!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -223,7 +220,7 @@ if(${lib_name} MATCHES "boost")
   endif()
 
 elseif(EXISTS ${_TARGET_LIBRARY}) 
-   set(_COMPLETE_INSTALL OFF)
+   set(_COMPLETE_INSTALL ON)
    if (OFF) #  ON means do enable compiling some projects !!!!
      # only a check if some libraries have to be compiled
      if(

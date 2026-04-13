@@ -55,7 +55,7 @@ if (_COMPLETE_INSTALL)
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"   # ${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}"
 
-        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_BASE}/cmake_patch.py sodium
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py sodium
 
         CMAKE_ARGS ${CMAKE_ARGS}
 

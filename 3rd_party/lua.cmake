@@ -22,7 +22,7 @@ if (_COMPLETE_INSTALL)
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"
 
-        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_BASE}/cmake_patch.py lua
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py lua
         CMAKE_ARGS ${CMAKE_ARGS}
         INSTALL_COMMAND ${_INSTALL_COMMAND}
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}

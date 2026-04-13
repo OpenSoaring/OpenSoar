@@ -32,7 +32,7 @@ if (_COMPLETE_INSTALL)
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"
-        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_BASE}/cmake_patch.py zlib
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py zlib
         CMAKE_ARGS ${CMAKE_ARGS}
  
         INSTALL_COMMAND ${_INSTALL_COMMAND}

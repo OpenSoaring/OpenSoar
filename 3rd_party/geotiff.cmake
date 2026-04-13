@@ -11,9 +11,6 @@ endif()
 
 prepare_3rdparty(geotiff ${_LIB_NAME} ${_LIB_NAME}_d)
 
-# wrong patch path name:
-set(_PATCH_DIR ${PATCH_BASE}/libgeotiff)
-
 if (_COMPLETE_INSTALL )
     set(CMAKE_ARGS
              "-DCMAKE_INSTALL_PREFIX:PATH=${GEOTIFF_DIR}"
@@ -47,8 +44,6 @@ if (_COMPLETE_INSTALL )
         list(APPEND CMAKE_ARGS "-DCMAKE_POLICY_VERSION_MINIMUM=3.5")
     endif()
 
-   ### set(_PATCH_DIR ${_PATCH_BASE}/geotiff)
-
     message(STATUS "geotiff: ${_COMPLETE_INSTALL} |||  ${GEOTIFF_DIR} ||| ${CURL_LIBRARY} ||| -> ${_TARGET_LIBS}")
     ExternalProject_Add(
         ${_BUILD_TARGET}
@@ -57,36 +52,22 @@ if (_COMPLETE_INSTALL )
   
         # PREFIX  "${${TARGET_CNAME}_PREFIX}/libgeotiff"
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
-        # SOURCE_DIR ${${TARGET_CNAME}_PREFIX}/src/geotiff_build
         SOURCE_SUBDIR libgeotiff
         ${_BINARY_STEP}
-        # DOWNLOAD_DIR "${GEOTIFF_SOURCE_DIR}"
-        # SOURCE_DIR "${GEOTIFF_SOURCE_DIR}/libgeotiff/libgeotiff"
+
         INSTALL_DIR "${_INSTALL_DIR}"
-        # CONFIGURE_COMMAND "${CMAKE_COMMAND} -H ${GEOTIFF_SOURCE_DIR}/libgeotiff_build/libgeotiff -B ${GEOTIFF_PREFIX}/build"
-        # CONFIGURE_COMMAND "${CMAKE_COMMAND} -G 'Visual Studio 17' ${GEOTIFF_SOURCE_DIR}/libgeotiff_build/libgeotiff"
-        # CONFIGURE_COMMAND "${CMAKE_COMMAND} -G \"Visual Studio 17 2022\" -S ${GEOTIFF_SOURCE_DIR}/libgeotiff_build/libgeotiff -B ../test2"
-        # WORKING_DIRECTORY ${GEOTIFF_SOURCE_DIR}/libgeotiff_build/libgeotiff
 
-        #PATCH_COMMAND ${PYTHON_APP} ${_PATCH_BASE}/cmake_patch.py geotiff  # ${target_name}
-
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py libgeotiff  # ${target_name}
   
-   # PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECTGROUP_SOURCE_DIR}/3rd_party/geotiff_CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
-   # PATCH_COMMAND git apply "${_PATCH_DIR}/patches/cmake-minimum.patch"
-        # PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/LIBPNG/CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
-        ## PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${GEOTIFF_SOURCE_DIR}/geotiff_build/libgeotiff/*" "${GEOTIFF_SOURCE_DIR}/geotiff_build/*"
         CMAKE_ARGS ${CMAKE_ARGS}
-        # BUILD_COMMAND cmake --build -S ${GEOTIFF_SOURCE_DIR}/libgeotiff -B .
-
+   
         INSTALL_COMMAND ${_INSTALL_COMMAND}
   
         BUILD_ALWAYS ${EP_BUILD_ALWAYS}
         # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
         DEPENDS ${ZLIB_TARGET} ${TIFF_TARGET} ${PROJ_TARGET}
      
- # 2024-22-19 ausgeblendet, 2026-01-08 wieder eingeblendet?
         BUILD_BYPRODUCTS  ${_TARGET_LIBS}
     )
-    ## message(FATAL_ERROR "geotiff: ${_COMPLETE_INSTALL} |||  ${GEOTIFF_DIR} ||| ${CURL_LIBRARY} ||| -> ${_TARGET_LIBS}")
 endif()
 post_3rdparty()
