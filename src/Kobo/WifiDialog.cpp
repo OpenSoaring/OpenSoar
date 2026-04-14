@@ -179,7 +179,7 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
   StaticString<40> state_buffer;
 
   /* found the currently connected wifi network? */
-  if (StringIsEqual(info.bssid, status.bssid)) {
+  if (StringIsEqual(info.bssid.c_str(), status.bssid.c_str())) {
     state = _("Connected");
 
     /* look up ip address for wlan0 or eth0 */
