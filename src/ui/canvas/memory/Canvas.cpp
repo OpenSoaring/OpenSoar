@@ -259,6 +259,7 @@ void
 Canvas::DrawText(PixelPoint p, std::string_view text) noexcept
 {
   assert(ValidateUTF8(text));
+
   auto s = RenderText(font, text);
   if (!s)
     return;

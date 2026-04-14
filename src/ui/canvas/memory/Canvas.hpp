@@ -12,8 +12,8 @@
 #include "PixelTraits.hpp"
 #include "Buffer.hpp"
 #include "ActivePixelTraits.hpp"
-#include <string>
 
+#include <string_view>
 
 #ifdef _WIN32
 /* those are WIN32 macros - undefine, or Canvas::background_mode will
@@ -377,6 +377,11 @@ public:
 
   void CopyNotOr(PixelPoint dest_position, PixelSize dest_size,
                  const Bitmap &src, PixelPoint src_position) noexcept;
+
+  void CopyNotOr(PixelPoint dest_position, PixelSize dest_size,
+                 const Canvas &src, PixelPoint src_position) noexcept {
+    CopyNotOr(dest_position, dest_size, src.buffer, src_position);
+  }
 
   void CopyAnd(PixelPoint dest_position, PixelSize dest_size,
                ConstImageBuffer src, PixelPoint src_position) noexcept;
