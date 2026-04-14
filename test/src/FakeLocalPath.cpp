@@ -3,21 +3,49 @@
 
 #include "LocalPath.hpp"
 #include "system/Path.hpp"
+#include "system/FileUtil.hpp"
 
-[[gnu::weak]] AllocatedPath
+#include <string_view>
+
+AllocatedPath
 LocalPath([[maybe_unused]] Path file) noexcept
 {
   return nullptr;
 }
 
-[[gnu::weak]] AllocatedPath
-LocalPath([[maybe_unused]] const char *file) noexcept
+AllocatedPath
+LocalPath([[maybe_unused]] const std::string_view file) noexcept
 {
   return nullptr;
 }
 
-[[gnu::weak]] void
+void
 VisitDataFiles([[maybe_unused]] const char *filter,
-               [[maybe_unused]] File::Visitor &visitor)
+  [[maybe_unused]] File::Visitor &visitor,
+  [[maybe_unused]] bool recursive)
 {
+}
+
+AllocatedPath
+ExpandLocalPath([[maybe_unused]] Path src) noexcept
+{
+  return nullptr;
+}
+
+AllocatedPath
+ContractLocalPath([[maybe_unused]] Path src) noexcept
+{
+  return nullptr;
+}
+
+AllocatedPath
+GetCachePath([[maybe_unused]] std::string_view path_name) noexcept
+{
+  return nullptr;
+}
+
+Path
+GetCachePath() noexcept
+{
+  return nullptr;
 }
