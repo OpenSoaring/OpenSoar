@@ -14,10 +14,10 @@ else ifeq ($(TARGET_IS_IOS),y)
   WRAPPED_CC = ccache clang++
   USE_THIRDPARTY_LIBS = y
 else ifeq ($(TARGET_IS_DARWIN),y)
-  WRAPPED_CC = ccache clang++
+#2026-04-14:   WRAPPED_CC = ccache clang++
   # and not IOS!
   # HOST_TRIPLET = aarch64-apple-darwin (arm) or x86_64-apple-darwin (intel)
-  USE_THIRDPARTY_LIBS = y
+#2026-04-14:  USE_THIRDPARTY_LIBS = y
 else
   # UNIX???
   HOST_TRIPLET = x86_64-linux-gnu
