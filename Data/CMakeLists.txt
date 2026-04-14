@@ -178,6 +178,38 @@ add_custom_command(OUTPUT ${_TEMP_OUTPUT}/title_red.svg
           ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
   WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
 )
+# ============================================================================   
+# ============================================================================   
+# ============================================================================   
+add_custom_command(OUTPUT ${_TEMP_OUTPUT}/dialog_title.svg
+  COMMENT "Replace Strings!"
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}
+  COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
+          ${PROJECTGROUP_SOURCE_DIR}/${APP_NAME}.config
+          ${_DATA_INPUT}/graphics/dialog_title.svg
+          ${_TEMP_OUTPUT}/dialog_title.svg
+  DEPENDS ${_DATA_INPUT}/graphics/dialog_title.svg
+          ${PROJECTGROUP_SOURCE_DIR}/${APP_NAME}.config
+          ${PROJECTGROUP_BINARY_DIR}/VERSION.txt
+          ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
+  WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+)
+add_custom_command(OUTPUT ${_TEMP_OUTPUT}/dialog_title_red.svg
+  COMMENT "Replace Strings!"
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}
+  COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
+          ${PROJECTGROUP_SOURCE_DIR}/${APP_NAME}.config
+          ${_DATA_INPUT}/graphics/dialog_title_red.svg
+          ${_TEMP_OUTPUT}/dialog_title_red.svg
+  DEPENDS ${_DATA_INPUT}/graphics/dialog_title_red.svg
+          ${PROJECTGROUP_SOURCE_DIR}/${APP_NAME}.config
+          ${PROJECTGROUP_BINARY_DIR}/VERSION.txt
+          ${PROJECTGROUP_SOURCE_DIR}/tools/python/replace.py 
+  WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+)
+# ============================================================================   
+# ============================================================================   
+# ============================================================================   
 add_custom_command(OUTPUT ${_INCLUDE_OUTPUT}/ProgramVersion.h
   COMMENT "Make Config file!"
   COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}
@@ -222,6 +254,15 @@ set(GRAPHIC_BITMAPS
    ${_GRAPHICS_OUTPUT}/launcher_640_2.bmp
    ${_GRAPHICS_OUTPUT}/title_320.bmp
    ${_GRAPHICS_OUTPUT}/title_110.bmp
+
+#   ${_GRAPHICS_OUTPUT}/dialog_title.bmp
+#   ${_GRAPHICS_OUTPUT}/dialog_title_red.bmp
+
+   ${_GRAPHICS_OUTPUT}/dialog_title.bmp
+   ${_GRAPHICS_OUTPUT}/dialog_title_red.bmp
+
+   ${_GRAPHICS_OUTPUT}/dialog_title.bmp
+   ${_GRAPHICS_OUTPUT}/dialog_title_red.bmp
 
    ${_GRAPHICS_OUTPUT}/logo_red_160.bmp
    ${_GRAPHICS_OUTPUT}/logo_red_80.bmp
@@ -271,6 +312,15 @@ add_custom_command(OUTPUT ${GRAPHIC_BITMAPS}
   COMMAND ${BMP_CONVERT_APP}  -size 110x110 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_110.bmp 
   COMMAND ${BMP_CONVERT_APP}  -size 320x320 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_320.bmp
   COMMAND ${BMP_CONVERT_APP}  -size 640x640 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_640.bmp
+  
+  COMMAND ${BMP_CONVERT_APP}  -size 110x110 Data/graphics/dialog_title.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_110.bmp 
+  COMMAND ${BMP_CONVERT_APP}  -size 320x320 Data/graphics/dialog_title.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_320.bmp
+  COMMAND ${BMP_CONVERT_APP}  -size 320x320 Data/graphics/dialog_title.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title.bmp
+  COMMAND ${BMP_CONVERT_APP}  -size 640x640 Data/graphics/dialog_title.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_640.bmp
+  COMMAND ${BMP_CONVERT_APP}  -size 110x110 Data/graphics/dialog_title_red.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_red_110.bmp 
+  COMMAND ${BMP_CONVERT_APP}  -size 320x320 Data/graphics/dialog_title_red.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_red_320.bmp
+  COMMAND ${BMP_CONVERT_APP}  -size 320x320 Data/graphics/dialog_title_red.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_red.bmp
+  COMMAND ${BMP_CONVERT_APP}  -size 640x640 Data/graphics/dialog_title_red.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_red_640.bmp
   
   DEPENDS ${_DATA_INPUT}/graphics/logo.svg
           ${_DATA_INPUT}/graphics/logo_xcs.svg
@@ -438,6 +488,8 @@ endif()
     list(APPEND GRAPHIC_FILES   "${_DATA_INPUT}/graphics/logo.svg")
     list(APPEND GRAPHIC_FILES   "${_DATA_INPUT}/graphics/progress_border.svg")
     list(APPEND GRAPHIC_FILES   "${_DATA_INPUT}/graphics/title.svg")
+
+    list(APPEND GRAPHIC_FILES   "${_DATA_INPUT}/graphics/dialog_title.svg")
     
     include_directories(${_DATA_INPUT})
 endif()
