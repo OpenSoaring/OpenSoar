@@ -74,7 +74,6 @@ endif()
 endif() # : 1 or 0
 #=========================
 
-
 ### file(READ "VERSION.txt" PROGRAM_VERSION)
 # add version string to ${APP_NAME}Soar:
 file(READ ${APP_NAME}.config _config_file)
@@ -257,6 +256,25 @@ if (MINGW)
   string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=strict-aliasing")      # remove this with solving!
   string(APPEND CMAKE_CXX_FLAGS   " -Wno-error=return-local-addr")    # remove this with solving!
 endif(MINGW)
+
+### Das ist ziemlich gefährlich, weil der Type CMAKE_BUILD_TYPE nicht immer definiert ist,
+### sondern nur beim generellen Build-Aufruf (über Python)
+### normaler weise schaltet es NICHT um, wenn man den Build-Type oben im Fenster wählt ;-(!
+
+# if (${CMAKE_BUILD_TYPE} MATCHES "")
+if (CMAKE_BUILD_TYPE MATCHES "")
+   # message(FATAL_ERROR " Stop !!!!!!!!!!!!!!!! - '${CMAKE_BUILD_TYPE}'")
+   set(CMAKE_BUILD_TYPE Debug) 
+  # set(CMAKE_BUILD_TYPE Release)
+endif()
+
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+  message(STATUS "+++ Debug build: CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
+  ### message(FATAL_ERROR " Stop !!!!!!!!!!!!!!!! - ${CMAKE_BUILD_TYPE}")
+else()
+  message(STATUS "+++ Release build: CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}") 
+  message(FATAL_ERROR " Stop !!!!!!!!!!!!!!!! - ${CMAKE_BUILD_TYPE}")
+endif()
 
 # git commit hash macro
 execute_process(
