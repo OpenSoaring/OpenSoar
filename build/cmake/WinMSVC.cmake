@@ -46,6 +46,7 @@ if(AUGUST_SPECIAL)
 endif()
 #********************************************************************************
 set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Release)
 
 add_compile_definitions(NO_ERROR_CHECK)  # EnumBitSet funktioniert m.E. noch nicht korrekt!!!!
 add_compile_definitions(WIN32_LEAN_AND_MEAN)
@@ -56,7 +57,7 @@ add_compile_options(/Zc:__cplusplus)
 add_compile_options(/utf-8)
 add_compile_definitions(HAVE_HTTP) # TODO(aug): later only if really needed!
 
-# Disabling Warnings:
+# Disabling Warnings in Visual Studio:
 add_compile_options(/wd5030)
 add_compile_options(/wd4455)  # "suffix warning?"
 add_compile_options(/wd4805)  #  "|": unsichere Kombination von Typ "bool" mit Typ "int" in einer Operation
@@ -101,3 +102,6 @@ if(EXISTS "D:/Programs")  # on Windows only - and at Flaps6 (August2111)
 else()
     list(APPEND CMAKE_PROGRAM_PATH "C:/Program Files")
 endif()
+
+# internal project defines
+add_compile_definitions(EYE_CANDY)
