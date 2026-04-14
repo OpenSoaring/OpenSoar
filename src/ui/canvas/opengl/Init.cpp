@@ -66,8 +66,13 @@ SupportsNonPowerOfTwoTextures() noexcept
 static GLenum
 CheckDepthStencil() noexcept
 {
+#ifdef USE_GLX
+  if (OpenGL::IsExtensionSupported("GL_EXT_packed_depth_stencil"))
+    return GL_DEPTH24_STENCIL8_OES;
+#else
   if (OpenGL::IsExtensionSupported("GL_OES_packed_depth_stencil"))
     return GL_DEPTH24_STENCIL8_OES;
+#endif
 
   /* not supported */
   return GL_NONE;
@@ -81,6 +86,11 @@ CheckDepthStencil() noexcept
 static GLenum
 CheckStencil() noexcept
 {
+#ifdef USE_GLX
+  /* GL_STENCIL_INDEX8 is available on any desktop OpenGL
+     implementation that supports framebuffer objects */
+  return GL_STENCIL_INDEX8;
+#else
 #if !defined(__APPLE__) || !TARGET_OS_IPHONE
   if (OpenGL::IsExtensionSupported("GL_OES_stencil1"))
     return GL_STENCIL_INDEX1_OES;
@@ -95,6 +105,7 @@ CheckStencil() noexcept
 
   /* not supported */
   return GL_NONE;
+#endif
 }
 
 void
@@ -106,20 +117,30 @@ OpenGL::SetupContext()
   if (auto s = (const char *)glGetString(GL_VERSION))
     LogFormat("GL version: %s", s);
 
-  if (auto s = (const char *)glGetString(GL_RENDERER))
+  if (auto s = (const char *)glGetString(GL_RENDERER)) {
     LogFormat("GL renderer: %s", s);
 
-  if ([[maybe_unused]] auto s = (const char *)glGetString(GL_EXTENSIONS))
-#ifdef _DEBUG
+    if (strstr(s, "Mali400") == s) {
+      /* Allwinner A20 SoC has a Mali-400 GPU. Limit the map scale to
+         250 km. */
+      max_map_scale = 251*1000*2;
+    } else if (strstr(s, "PowerVR Rogue GE8300") != nullptr) {
+      /* PowerVR Rogue GE8300 (MediaTek MT8166) crashes in the driver
+         when rendering large topography polygons at extreme zoom-out.
+         Limit the maximum map scale to avoid triggering the bug.
+         See https://github.com/XCSoar/XCSoar/issues/1235 */
+      max_map_scale = 300000;
+    }
+  }
+
+  if (auto s = (const char *)glGetString(GL_EXTENSIONS))
     LogFormat("GL extensions: %s", s);
-#else
-    LogString("GL extensions: ...");
-#endif
 
   texture_non_power_of_two = SupportsNonPowerOfTwoTextures();
 
 #ifdef ANDROID
-  native_view->SetTexturePowerOfTwo(Java::GetEnv(), texture_non_power_of_two);
+  if (native_view != nullptr)
+    native_view->SetTexturePowerOfTwo(Java::GetEnv(), texture_non_power_of_two);
 #endif
 
   mapbuffer = IsExtensionSupported("GL_OES_mapbuffer");
@@ -164,7 +185,7 @@ OpenGL::SetupContext()
     render_buffer_stencil = render_buffer_depth_stencil;
 
   glDisable(GL_DEPTH_TEST);
-  glDisable(GL_DITHER);
+  glEnable(GL_DITHER);
 
   InitShaders();
 }
