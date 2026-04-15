@@ -105,11 +105,8 @@ jobs:
           - os: ubuntu-24.04
             target: UNIX
 
-          - os: macos-13
-            target: OSX64
-
-          - os: macos-14
-            target: OSX64
+          ### No OSX - os: macos-14
+          ### No OSX   target: OSX64
 
           - os: macos-14
             target: MACOS
@@ -262,15 +259,15 @@ jobs:
             target_upload: false
             target_container: debian:bookworm-slim
           
-          - os: macos-15-intel
-            target: OSX64
-            target_bin: OpenSoar
-            target_final: OpenSoar
-            target_ext: ''
-            target_test: true
-            # temporary false: target_upload: true
-            target_upload: false
-            # w/o container
+          ### No OSX - os: macos-15-intel
+          ### No OSX   target: OSX64
+          ### No OSX   target_bin: OpenSoar
+          ### No OSX   target_final: OpenSoar
+          ### No OSX   target_ext: ''
+          ### No OSX   target_test: true
+          ### No OSX   # temporary false: target_upload: true
+          ### No OSX   target_upload: false
+          ### No OSX   # w/o container
 
           - os: macos-15
             target: MACOS
