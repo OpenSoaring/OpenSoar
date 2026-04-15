@@ -14,7 +14,7 @@ on:
     branches:
       - nothing
       # empty possible?
-      - dev-branch
+      # - dev-branch
 
 env:
   DEBUG:           y
@@ -130,10 +130,10 @@ jobs:
             target: MACOS
             # w/o container
             
-          - os: windows-2022
+          - os: windows-latest
             target: WIN64
             # w/o container
-          - os: windows-2019
+          - os: windows-2022
             target: PC
             # w/o container
 

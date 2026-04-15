@@ -12,8 +12,8 @@ on:
       - '.github/workflows/build-unix.yml'
     branches:
       - cmake-master
-      - dev-branch-cmake
-      - dev-branch
+      # - dev-branch-cmake
+      # - dev-branch
 env:
   DEBUG: y
   BOOST: boost_1_90_0

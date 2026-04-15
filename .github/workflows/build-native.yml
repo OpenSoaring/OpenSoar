@@ -114,10 +114,10 @@ jobs:
           - os: macos-15
             target: MACOS
 
-          - os: windows-2022
+          - os: windows-latest
             target: WIN64
 
-          - os: windows-2019
+          - os: windows-2022
             target: PC
 
     container: ${{ matrix.target_container }}
