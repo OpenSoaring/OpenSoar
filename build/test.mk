@@ -1022,7 +1022,7 @@ RUN_DOWNLOAD_TO_FILE_SOURCES = \
 	$(SRC)/Version.cpp \
 	$(SRC)/Operation/ConsoleOperationEnvironment.cpp \
 	$(TEST_SRC_DIR)/RunDownloadToFile.cpp
-RUN_DOWNLOAD_TO_FILE_DEPENDS = LIBHTTP ASYNC LIBNET OPERATION IO OS THREAD UTIL
+RUN_DOWNLOAD_TO_FILE_DEPENDS = LIBHTTP ASYNC LIBNET OPERATION IO OS THREAD UTIL JSON
 $(eval $(call link-program,RunDownloadToFile,RUN_DOWNLOAD_TO_FILE))
 
 UPLOAD_FILE_SOURCES = \
@@ -1122,7 +1122,7 @@ READ_PROFILE_STRING_SOURCES = \
 	$(SRC)/Profile/Profile.cpp \
 	$(TEST_SRC_DIR)/FakeLogFile.cpp \
 	$(TEST_SRC_DIR)/ReadProfileString.cpp
-READ_PROFILE_STRING_DEPENDS = PROFILE IO OS UTIL
+READ_PROFILE_STRING_DEPENDS = PROFILE IO OS UTIL JSON
 $(eval $(call link-program,ReadProfileString,READ_PROFILE_STRING))
 
 READ_PROFILE_INT_SOURCES = \
@@ -1130,7 +1130,7 @@ READ_PROFILE_INT_SOURCES = \
 	$(SRC)/Profile/Profile.cpp \
 	$(TEST_SRC_DIR)/FakeLogFile.cpp \
 	$(TEST_SRC_DIR)/ReadProfileInt.cpp
-READ_PROFILE_INT_DEPENDS = PROFILE IO OS UTIL
+READ_PROFILE_INT_DEPENDS = PROFILE IO OS UTIL JSON
 $(eval $(call link-program,ReadProfileInt,READ_PROFILE_INT))
 
 RUN_MD5_SOURCES = \
@@ -1204,7 +1204,10 @@ $(eval $(call link-program,LoadTopography,LOAD_TOPOGRAPHY))
 
 LOAD_TERRAIN_SOURCES = \
 	$(SRC)/Operation/ConsoleOperationEnvironment.cpp \
-	$(TEST_SRC_DIR)/LoadTerrain.cpp
+	$(TEST_SRC_DIR)/FakeLogFile.cpp \
+	$(TEST_SRC_DIR)/LoadTerrain.cpp \
+	
+$(TEST_SRC_DIR)/FakeLogFile.cpp:  # August2111
 LOAD_TERRAIN_CPPFLAGS = $(SCREEN_CPPFLAGS)
 LOAD_TERRAIN_DEPENDS = TERRAIN OPERATION GEO MATH OS IO ZZIP UTIL
 $(eval $(call link-program,LoadTerrain,LOAD_TERRAIN))
@@ -1212,8 +1215,11 @@ $(eval $(call link-program,LoadTerrain,LOAD_TERRAIN))
 RUN_HEIGHT_MATRIX_SOURCES = \
 	$(SRC)/Projection/Projection.cpp \
 	$(SRC)/Projection/WindowProjection.cpp \
+	$(TEST_SRC_DIR)/FakeLogFile.cpp \
 	$(SRC)/Operation/ConsoleOperationEnvironment.cpp \
-	$(TEST_SRC_DIR)/RunHeightMatrix.cpp
+	$(TEST_SRC_DIR)/RunHeightMatrix.cpp \
+
+$(TEST_SRC_DIR)/FakeLogFile.cpp:  # August2111
 RUN_HEIGHT_MATRIX_CPPFLAGS = $(SCREEN_CPPFLAGS)
 RUN_HEIGHT_MATRIX_DEPENDS = TERRAIN OPERATION GEO MATH IO OS ZZIP UTIL
 $(eval $(call link-program,RunHeightMatrix,RUN_HEIGHT_MATRIX))
@@ -1845,11 +1851,28 @@ RUN_MAP_WINDOW_SOURCES = \
 	$(TEST_SRC_DIR)/FakeLogFile.cpp \
 	$(TEST_SRC_DIR)/RunMapWindow.cpp
 
+####	ifeq ($(HAVE_SKYSIGHT),y)
+####		RUN_MAP_WINDOW_SOURCES += \
+####			$(SRC)/Weather/Skysight/Skysight.cpp \
+####			$(SRC)/Weather/Skysight/SkysightAPI.cpp \
+####			$(SRC)/Weather/Skysight/SkySightRequest.cpp \
+####			$(SRC)/Weather/Skysight/SkysightRegions.cpp \
+####			$(SRC)/Weather/Skysight/SkysightRenderer.cpp
+####
+####			ifeq ($(SKYSIGHT_FORECAST),y)
+####				RUN_MAP_WINDOW_SOURCES += \
+####			        $(SRC)/Weather/Skysight/APIQueue.cpp \
+####					$(SRC)/Weather/Skysight/CDFDecoder.cpp 
+####			endif
+####	endif
+
 ifeq ($(HAVE_HTTP),y)
 RUN_MAP_WINDOW_SOURCES += \
 	$(SRC)/Weather/NOAAGlue.cpp \
 	$(SRC)/Weather/NOAAStore.cpp
 endif
+
+RUN_MAP_WINDOW_CPPFLAGS = -DRUN_MAP_WINDOW
 
 RUN_MAP_WINDOW_DEPENDS = \
 	LIBMAPWINDOW \
@@ -1861,7 +1884,7 @@ RUN_MAP_WINDOW_DEPENDS = \
 	OPERATION \
 	ASYNC OS IO THREAD \
 	TASK ROUTE GLIDE WAYPOINT WAYPOINTFILE AIRSPACE \
-	JASPER ZZIP LIBNMEA GEO MATH TIME UTIL
+	JASPER ZZIP LIBNMEA GEO MATH TIME UTIL JSON
 $(eval $(call link-program,RunMapWindow,RUN_MAP_WINDOW))
 
 RUN_LIST_CONTROL_SOURCES = \
@@ -2317,6 +2340,7 @@ RUN_PROFILE_LIST_DIALOG_SOURCES = \
 	$(SRC)/Renderer/TextRowRenderer.cpp \
 	$(SRC)/Dialogs/ProfileListDialog.cpp \
 	$(SRC)/Dialogs/ProfilePasswordDialog.cpp \
+		$(SRC)/Profile/Profile.cpp \
 	$(SRC)/Dialogs/DialogSettings.cpp \
 	$(SRC)/Dialogs/WidgetDialog.cpp \
 	$(SRC)/Dialogs/TextEntry.cpp \
@@ -2337,7 +2361,7 @@ RUN_PROFILE_LIST_DIALOG_SOURCES = \
 	$(TEST_SRC_DIR)/FakeLogFile.cpp \
 	$(TEST_SRC_DIR)/RunProfileListDialog.cpp
 RUN_PROFILE_LIST_DIALOG_LDADD = $(FAKE_LIBS)
-RUN_PROFILE_LIST_DIALOG_DEPENDS = PROFILE FORM WIDGET DATA_FIELD SCREEN EVENT RESOURCE ASYNC OS IO THREAD MATH UTIL
+RUN_PROFILE_LIST_DIALOG_DEPENDS = PROFILE FORM WIDGET DATA_FIELD SCREEN EVENT RESOURCE ASYNC OS IO THREAD MATH UTIL JSON
 $(eval $(call link-program,RunProfileListDialog,RUN_PROFILE_LIST_DIALOG))
 
 PLAY_TONE_SOURCES = \
