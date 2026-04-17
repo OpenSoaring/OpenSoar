@@ -54,9 +54,4 @@ target_link_libraries(${TARGET_NAME} PUBLIC util)
 
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)
 
-# if(NOT EXISTS "${INSTALL_LIB}")
-if(${WITH_3RD_PARTY})
 add_dependencies(${TARGET_NAME} util Input lua_3rd)
-else()
-add_dependencies(${TARGET_NAME} util Input)
-endif()

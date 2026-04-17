@@ -198,7 +198,7 @@ endif()
     set(${TARGET_CNAME}_LIBRARY  ${_TARGET_LIBRARY})
     set(${TARGET_CNAME}_LIBRARY  ${_TARGET_LIBRARY} PARENT_SCOPE)
 
-# if(${VERBOSE_LEVEL} LESS 100)
+# if(${VERBOSE_LEVEL} LESS 100) 
 if(VERBOSE_LEVEL GREATER 99)
   message(STATUS "++++++ 3rd party  = ${lib_name} =================")
   ## message(STATUS "++++++ _TARGET_LIBS         =  ${_TARGET_LIBS}")
@@ -210,31 +210,34 @@ endif(VERBOSE_LEVEL GREATER 99)
 if(${lib_name} MATCHES "boost")
 ##  file(GLOB SCRIPT_FILES ${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}\LINK_LIBS*.lib)
   set(_GLOB_DIR ${_INSTALL_DIR}/lib/${TOOLCHAIN})
+  if(MSVC AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    set(_GLOB_DIR ${_GLOB_DIR}d)
+  endif()
   message(STATUS "### boost: _INSTALL_DIR = ${_GLOB_DIR} ")
   file(GLOB BOOST_LIB_FILES ${_GLOB_DIR}/libboost_*.lib)
   list(LENGTH BOOST_LIB_FILES BOOST_LIB_COUNT)
   if (BOOST_LIB_COUNT  GREATER 1)
     message(STATUS "### boost: BOOST_LIB_FILES = ${BOOST_LIB_FILES} -> ${BOOST_LIB_COUNT} ")
   else()
-    # message(FATAL_ERROR "### boost: BOOST_LIB_FILES = ${BOOST_LIB_FILES} -> ${BOOST_LIB_COUNT} ")
+    message(STATUS "### boost: _COMPLETE_INSTALL = ON} -> ${BOOST_LIB_COUNT} ")
+    set(_COMPLETE_INSTALL ON)  # No boost library found
   endif()
+  # message(FATAL_ERROR "### boost: BOOST_LIB_FILES = ${BOOST_LIB_FILES} -> ${BOOST_LIB_COUNT} ")
 
 elseif(EXISTS ${_TARGET_LIBRARY}) 
-   set(_COMPLETE_INSTALL ON)
-   if (OFF) #  ON means do enable compiling some projects !!!!
+   set(_COMPLETE_INSTALL OFF)
      # only a check if some libraries have to be compiled
-     if(
+   if(
         # ${lib_name} STREQUAL "sodium" OR 
         # ${lib_name} STREQUAL "curl" OR 
         # ${lib_name} STREQUAL "sqlite3"  OR 
-        ${lib_name} STREQUAL "proj" OR 
+        # ${lib_name} STREQUAL "proj" OR 
         # ${lib_name} STREQUAL "geotiff" OR 
         # ${lib_name} STREQUAL "netcdf" OR
         # ${lib_name} STREQUAL "netcdf-cxx4" OR
-        OFF
+        OFF  # finish entry :)
      )
-       set(_COMPLETE_INSTALL ON)
-     endif()
+     set(_COMPLETE_INSTALL ON)
    endif()
 else()
     set(_COMPLETE_INSTALL ON)

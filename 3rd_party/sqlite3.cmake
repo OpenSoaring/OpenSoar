@@ -14,11 +14,10 @@ set(SQLITE3_EXE        ${SQLITE3_EXE}               PARENT_SCOPE)
   if (${SQLITE3_VERSION} MATCHES "3.42.0")
      set(SQLITE3_YEAR         2023)
      ### # hash from url: "https://www.sqlite.org/2023/sqlite-autoconf-3420000.tar.gz"
-     # set(SQLITE3_HASH         7abcfd161c6e2742ca5c6c0895d1f853c940f203304a0b49da4e1eca5d088ca6)
      set(SQLITE3_HASH         643898e9fcc8f6069bcd47b0e6057221c1ed17bbee57da20d2752c79d91274e8)
   elseif (${SQLITE3_VERSION} MATCHES "3.46.1")
     set(SQLITE3_YEAR         2024)
-    set(SQLITE3_HASH            23075baddabe87d609251bbb66884f218dea9e185dea3178fe20eecc5337a6bb)
+    set(SQLITE3_HASH         23075baddabe87d609251bbb66884f218dea9e185dea3178fe20eecc5337a6bb)
   elseif(${SQLITE3_VERSION} MATCHES "3.47.0")
     set(SQLITE3_YEAR         2024)
     set(SQLITE3_HASH         e35ee48efc24fe58d0e9102034ac0a41e3904641a745e94ab11a841fe9d7355e)
@@ -29,8 +28,11 @@ set(SQLITE3_EXE        ${SQLITE3_EXE}               PARENT_SCOPE)
   elseif (${SQLITE3_VERSION} MATCHES "3.51.1")
      set(SQLITE3_YEAR         2025)
      ### # hash from url: "https://www.sqlite.org/2025/sqlite-amalgamation-3510100.zip"
-     #set(SQLITE3_HASH         856b52ffe7383d779bb86a0ed1ddc19c41b0e5751fa14ce6312f27534e629b64)
      set(SQLITE3_HASH         9b2b1e73f577def1d5b75c5541555a7f42e6e073ad19f7a9118478389c9bbd9b)
+  elseif (${SQLITE3_VERSION} MATCHES "3.53.0")
+     set(SQLITE3_YEAR         2026)
+     ### # hash from url: "https://www.sqlite.org/2025/sqlite-amalgamation-3530000.zip"
+     set(SQLITE3_HASH         c2325c53b3b41761469f91cfb078e96882ac5d85bac10c11b0bd8f253b031e5b)
   endif()
   #  a10d1469493c62c0667c63d889269f802bbb212d695533cd13611a713a9f77a7)
 
@@ -153,7 +155,6 @@ message (FATAL_ERROR "xxxx STOP!!!")
     )
     ExternalProject_Add(
           ${_BUILD_TARGET}
-          # URL "https://www.sqlite.org/2024/sqlite-amalgamation-3470000.zip"
 #          URL "https://www.sqlite.org/${SQLITE3_YEAR}/sqlite-amalgamation-${DOWNLOAD_VERSION}.zip"
           URL "https://www.sqlite.org/${SQLITE3_YEAR}/sqlite-autoconf-${DOWNLOAD_VERSION}.tar.gz"
           URL_HASH SHA3_256=${SQLITE3_HASH}

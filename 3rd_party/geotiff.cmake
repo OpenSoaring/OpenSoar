@@ -14,8 +14,9 @@ prepare_3rdparty(geotiff ${_LIB_NAME} ${_LIB_NAME}_d)
 if (_COMPLETE_INSTALL )
     set(CMAKE_ARGS
              "-DCMAKE_INSTALL_PREFIX:PATH=${GEOTIFF_DIR}"
-        # not used     "-DCMAKE_INSTALL_LIBDIR:PATH=${GEOTIFF_LIB_DIR}"
-        # not used    "-DCMAKE_INSTALL_INCLUDEDIR:PATH=${GEOTIFF_INCLUDE_DIR}"   # "include"
+        # not used
+             "-DCMAKE_INSTALL_LIBDIR:PATH=${GEOTIFF_LIB_DIR}"
+        # not used "-DCMAKE_INSTALL_INCLUDEDIR:PATH=${GEOTIFF_INCLUDE_DIR}"   # "include"
         "-DCMAKE_BUILD_TYPE=Release" # ${CMAKE_BUILD_TYPE}"
 
         # "-DWITH_UTILITIES:BOOL=OFF"
@@ -49,7 +50,7 @@ if (_COMPLETE_INSTALL )
         ${_BUILD_TARGET}
         GIT_REPOSITORY "https://github.com/OSGeo/libgeotiff.git"
         GIT_TAG "${${TARGET_CNAME}_VERSION}"           # git tag by libgeotiff!
-  
+
         # PREFIX  "${${TARGET_CNAME}_PREFIX}/libgeotiff"
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
         SOURCE_SUBDIR libgeotiff
@@ -57,7 +58,7 @@ if (_COMPLETE_INSTALL )
 
         INSTALL_DIR "${_INSTALL_DIR}"
 
-        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py libgeotiff  # ${target_name}
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py geotiff  # ${target_name}
   
         CMAKE_ARGS ${CMAKE_ARGS}
    

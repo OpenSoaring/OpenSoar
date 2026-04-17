@@ -4,6 +4,8 @@ set(INCLUDE_WITH_TOOLCHAIN 0)  # special include path for every toolchain!
 
 prepare_3rdparty(boost boost)
 
+# message(FATAL_ERROR "Boost-Include: ${_INSTALL_INC_DIR}")
+
 if (_COMPLETE_INSTALL)
     set( CMAKE_ARGS
         "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"

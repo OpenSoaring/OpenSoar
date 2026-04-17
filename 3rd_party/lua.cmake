@@ -19,6 +19,8 @@ if (_COMPLETE_INSTALL)
         GIT_TAG  v${LUA_VERSION}
 
         PREFIX  "${${TARGET_CNAME}_PREFIX}"
+        # this folder is similar to the unzipped source folder (see make build)
+        SOURCE_DIR "${${TARGET_CNAME}_PREFIX}/src/lua_build/src" 
         ${_BINARY_STEP}
         INSTALL_DIR "${_INSTALL_DIR}"
 

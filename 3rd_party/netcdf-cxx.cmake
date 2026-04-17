@@ -26,21 +26,15 @@ if (_COMPLETE_INSTALL)
         "-DBUILD_SHARED_LIBS:BOOL=OFF"
         "-DNETCDF_C_LIBRARY:FILEPATH=${NETCDF_C_LIBRARY}"
         "-DnetCDF_DIR=${NETCDF_C_CMAKE_DIR}"
-        ## ??  "-DDLL_NETCDF:BOOL=OFF"
-    )
-    
-    # message(FATAL_ERROR "### NETCDF_C_CMAKE_DIR  = ${NETCDF_C_CMAKE_DIR} ")
-    # set(NETCDF_C_CMAKE_DIR ${LINK_LIBS}/netcdf_c/netcdf_c-4.9.3/lib/msvc2026/cmake/netCDF)
-    
-    list(APPEND CMAKE_ARGS
-        "-DHDF5_DIR:PATH=" 
-        "-DUSE_HDF5:BOOL=OFF"  # August2111: special flag because wrong usage of HDF5
+        # "-DNC_HINCLUDE_DIR=${NETCDF_C_INCLUDE_DIR}"
+         ## ??  "-DDLL_NETCDF:BOOL=OFF"
     )
 
     list(APPEND CMAKE_ARGS
-        "-DHDF5_DIR:PATH=" 
-        "-DUSE_HDF5:BOOL=OFF"
+    # 1 #    "-DHDF5_DIR:PATH=" 
+        "-DUSE_HDF5:BOOL=OFF"  # August2111: special flag because wrong usage of HDF5
     )
+
     if (${${TARGET_CNAME}_VERSION} STREQUAL "main")
       set(_GIT_TAG main)  # is not the version tag
       list(APPEND CMAKE_ARGS
@@ -74,9 +68,10 @@ if (_COMPLETE_INSTALL)
   
         # PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/LIBNETCDF_CXX/CMakeLists.txt.in" <SOURCE_DIR>/CMakeLists.txt
         # PATCH_COMMAND ${CMAKE_COMMAND} -E rm  -f "CMakeCache.txt" && dir
-        PATCH_COMMAND ${CMAKE_COMMAND} -E echo  "Display Path: "  ||| '${${TARGET_CNAME}_BUILD_DIR}' && 
-            ${CMAKE_COMMAND} -E rm  -f "${${TARGET_CNAME}_BUILD_DIR}/CMakeCache.txt" && ${CMAKE_COMMAND} -E echo  XXXXXXX
-        
+        ### PATCH_COMMAND ${CMAKE_COMMAND} -E echo  "Display Path: "  ||| '${${TARGET_CNAME}_BUILD_DIR}' && 
+        ###     ${CMAKE_COMMAND} -E rm  -f "${${TARGET_CNAME}_BUILD_DIR}/CMakeCache.txt" && ${CMAKE_COMMAND} -E echo  XXXXXXX
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py netcdf_cxx
+
         CMAKE_ARGS ${CMAKE_ARGS}
         INSTALL_COMMAND ${_INSTALL_COMMAND}
   

@@ -43,7 +43,11 @@ if (_COMPLETE_INSTALL)  #  || 1)
         "-DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
 
         "-DEMBED_RESOURCE_FILES:BOOL=OFF" # start with 4.6.0
+        # "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} /I\"/Projects/OpenSoaring/OpenSoar/src/ui/event/poll/linux""
+        "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} /I\"/Projects/OpenSoaring/OpenSoar/src/ui/event/poll\""
     )
+
+    # list(APPEND CMAKE_ARGS "-DWIN32_LEAN_AND_MEAN" )
     # message (FATAL_ERROR "xxxx STOP PROJ!!!") 
     if (PROJ_VERSION VERSION_GREATER 9.4)
       list(APPEND CMAKE_ARGS
