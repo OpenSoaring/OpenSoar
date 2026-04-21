@@ -242,7 +242,7 @@ FlarmDevice::WaitForACKOrNACK(uint16_t sequence_number,
       return (FLARM::MessageType)header.type;
   }
 
-  return FLARM::MessageType::ERROR;
+  return FLARM::MessageType::TYPE_ERROR;
 }
 
 FLARM::MessageType

@@ -11,11 +11,6 @@
 #include <span>
 #include <type_traits>
 
-/* damn you, windows.h! */
-#ifdef ERROR
-#undef ERROR
-#endif
-
 class Port;
 struct Declaration;
 class OperationEnvironment;
@@ -30,7 +25,7 @@ static constexpr std::byte ESCAPE_ESCAPE{0x55};
 static constexpr std::byte ESCAPE_START{0x31};
 
 enum class MessageType : uint8_t {
-  ERROR = 0x00,
+  TYPE_ERROR = 0x00,
   ACK = 0xA0,
   NACK = 0xB7,
   PING = 0x01,
@@ -45,7 +40,7 @@ enum class MessageType : uint8_t {
 /**
  * The binary transfer mode works with "frames". Each frame consists of a
  * start byte (0x73), an 8-byte frame header and an optional payload. The
- * length of the payload is transfered inside the frame header.
+ * length of the payload is transferred inside the frame header.
  */
 struct FrameHeader {
   /**
