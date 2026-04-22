@@ -7,10 +7,14 @@
 #include <boost/json/fwd.hpp>
 
 class OutputStream;
+class AllocatedPath;
 
 namespace Json {
 
 void
 Serialize(OutputStream &os, const boost::json::value &v);
+
+void
+Save(const boost::json::value &v, const AllocatedPath &filepath);
 
 } // namespace Json

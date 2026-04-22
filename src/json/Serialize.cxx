@@ -4,7 +4,9 @@
 
 #include "Serialize.hxx"
 #include "io/OutputStream.hxx"
+#include "io/FileOutputStream.hxx"
 #include "util/SpanCast.hxx"
+#include "system/Path.hpp"
 
 #include <boost/json/serializer.hpp>
 
@@ -23,6 +25,14 @@ Serialize(OutputStream &os, const boost::json::value &v)
 		auto r = s.read(buffer);
 		os.Write(AsBytes(r));
 	}
+}
+
+void
+Save(const boost::json::value &v, const AllocatedPath& filepath)
+{
+	FileOutputStream fos(filepath);
+	Serialize(fos, v);
+  fos.Commit();
 }
 
 } // namespace Json
