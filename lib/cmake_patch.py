@@ -50,7 +50,12 @@ try:
    file = open(patch_detect, 'r')
    print('patch is active')
 except IOError:
-   with open(patch_dir +'series') as file:
+   series = patch_dir + 'series-cmake'
+   if not os.path.exists(series):
+        series = patch_dir + 'series'
+   if os.path.exists(series):
+        print('patch with: ', series)
+   with open(series) as file:
     for line in file:
         patch = line.rstrip().split('#')[0]
         if patch and len(patch) > 0:
