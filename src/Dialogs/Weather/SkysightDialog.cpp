@@ -84,11 +84,11 @@ SkysightListItemRenderer::Draw(Canvas &canvas, const PixelRect rc, unsigned inde
   } else if (layer->updating) {
     second_row.Format("%s", _("Updating..."));
   } else {
-    if (!layer->from || !layer->to || !layer->mtime) {
+    if (!layer->from || !layer->to || !layer->update_time) {
       second_row.Format("%s", _("No data. Press \"Update\" to update."));
     } else {
       uint64_t elapsed = std::chrono::system_clock::to_time_t(
-        BrokenDateTime::NowUTC().ToTimePoint()) - layer->mtime;
+        BrokenDateTime::NowUTC().ToTimePoint()) - layer->update_time;
 
       second_row.Format(_("Data from %s to %s. Updated %s ago"), 
         FormatLocalTimeHHMM(
