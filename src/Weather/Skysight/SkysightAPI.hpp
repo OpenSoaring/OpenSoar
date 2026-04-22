@@ -29,6 +29,7 @@ constexpr time_t  HALF_HOUR = (30 * ONE_MINUTE);
 constexpr time_t  ONE_HOUR = (60 * ONE_MINUTE);
 constexpr time_t  TEN_MINUTES = (10 * ONE_MINUTE);
 constexpr time_t  ONE_DAY = (24 * ONE_HOUR);
+constexpr time_t  HALF_DAY = (12 * ONE_HOUR);
 
 // #define SKYSIGHT_DEBUG 1
 
