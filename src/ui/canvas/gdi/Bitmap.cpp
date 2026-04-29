@@ -39,9 +39,7 @@ bool
 Bitmap::Load(UncompressedImage &&uncompressed, [[maybe_unused]] Type type)
 {
   Reset();
-
   bitmap = GdiLoadImage(std::move(uncompressed));
-
   return IsDefined();
 }
 
