@@ -4,12 +4,9 @@
 #include "GdiPlusBitmap.hpp"
 #include "UTF8Win.hpp"
 
-#if defined(_MSC_VER)
-#define GDI_WITH_TESTSAVE
 # include <algorithm>
 using std::min;  // to avoid the missing 'min' in the gdiplush headers
 using std::max;  // to avoid the missing 'max' in the gdiplush headers
-#endif           // _MSC_VER
 
 #include "UTF8Win.hpp"
 
@@ -27,28 +24,6 @@ using std::max;  // to avoid the missing 'max' in the gdiplush headers
 
 static ULONG_PTR gdiplusToken;
 
-#ifdef GDI_WITH_TESTSAVE
-const CLSID bmpEncoder = {0x557cf400,
-                          0x1a04,
-                          0x11d3,
-                          {0x9a, 0x73, 0x00, 0x00, 0xf8, 0x1e, 0xf3, 0x2e}};
-const CLSID jpgEncoder = {0x557cf401,
-                          0x1a04,
-                          0x11d3,
-                          {0x9a, 0x73, 0x00, 0x00, 0xf8, 0x1e, 0xf3, 0x2e}};
-const CLSID gifEncoder = {0x557cf402,
-                          0x1a04,
-                          0x11d3,
-                          {0x9a, 0x73, 0x00, 0x00, 0xf8, 0x1e, 0xf3, 0x2e}};
-const CLSID tifEncoder = {0x557cf405,
-                          0x1a04,
-                          0x11d3,
-                          {0x9a, 0x73, 0x00, 0x00, 0xf8, 0x1e, 0xf3, 0x2e}};
-const CLSID pngEncoder = {0x557cf406,
-                          0x1a04,
-                          0x11d3,
-                          {0x9a, 0x73, 0x00, 0x00, 0xf8, 0x1e, 0xf3, 0x2e}};
-#endif // GDI_WITH_TESTSAVE
 //----------------------------------------------------------------------------
 void
 GdiStartup()
@@ -102,43 +77,11 @@ GdiLoadImage(UncompressedImage &&uncompressed)
   bmfh.bfSize = nBitsOffset + bmi.bmiHeader.biSizeImage;
   bmfh.bfReserved1 = bmfh.bfReserved2 = 0;
 
-#if defined(GDI_WITH_TESTSAVE)
-  auto path = LocalPath("/skysight/bitmapTest");
-#endif
-#if defined(GDI_WITH_TESTSAVE)
-  std::ofstream file(path.WithSuffix("XXL.bmp").c_str(), std::ios_base::binary);
-  if (!file.is_open())
-  {
-    return nullptr;
-  }
-  // Write the bitmap file header
-  file.write((const char *)&bmfh, sizeof(BITMAPFILEHEADER));
-  UINT nWrittenFileHeaderSize = file.tellp();
-
-  // And then the bitmap info header
-  file.write((const char *)&bmi.bmiHeader, sizeof(BITMAPINFOHEADER));
-  UINT nWrittenInfoHeaderSize = file.tellp();
-
-  // Finally, write the image data itself
-  //-- the data represents our drawing
-  file.write((const char *)uncompressed.GetData(), bmi.bmiHeader.biSizeImage);
-  UINT nWrittenDIBDataSize = file.tellp();
-  file.close();
-#endif
-
   Gdiplus::Bitmap bitmap( &bmi, const_cast<void *> (uncompressed.GetData()));
-
-#ifdef GDI_WITH_TESTSAVE
-  bitmap.Save(UTF8ToWide(path.WithSuffix(".png").c_str()).c_str(),
-    &pngEncoder, nullptr);
-  bitmap.Save(UTF8ToWide(path.WithSuffix(".bmp").c_str()).c_str(),
-    &bmpEncoder, nullptr);
-  bitmap.Save(UTF8ToWide(path.WithSuffix(".tif").c_str()).c_str(),
-    &tifEncoder, nullptr);
-#endif // GDI_WITH_TESTSAVE
 
   if (bitmap.GetLastStatus() != Gdiplus::Ok) return nullptr;
   const Gdiplus::Color color = Gdiplus::Color::White;
-  if (bitmap.GetHBITMAP(color, &result) != Gdiplus::Ok) return nullptr;
+  if (bitmap.GetHBITMAP(color, &result)  // Black or White?
+    != Gdiplus::Ok) return nullptr;
   return result;
 }
