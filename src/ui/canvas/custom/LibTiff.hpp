@@ -5,9 +5,10 @@
 
 #include <utility>
 
-class Path;
-class UncompressedImage;
+#include "UncompressedImage.hpp"
+
 struct GeoQuadrilateral;
+class Path;
 
 /**
  * Load a TIFF file.  Throws a std::runtime_error on error.
