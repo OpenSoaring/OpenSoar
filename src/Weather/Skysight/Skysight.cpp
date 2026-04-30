@@ -428,15 +428,16 @@ Skysight::CleanupFiles()
   LogFmt("Time-Compare: {}, {} ({})", buffer, DateTime::str_now(), DateTime::now());
   
   auto now = DateTime::now();
-  SkysightTIFVisitor  visitor_tif(now - 24 * ONE_HOUR);  // 1 day
-  SkysightFileDeleter deleter_jpg(now - 12 * ONE_HOUR);  // 1/2 day
+  SkysightTIFVisitor  visitor_tif(now - ONE_DAY);  // 1 day
+  SkysightFileDeleter deleter_jpg(now - HALF_HOUR);  // 1/2 day
   SkysightFileDeleter deleter_tmp(now -  6 * ONE_HOUR);  // 6 hours
-  SkysightFileDeleter deleter_txt(now -  ONE_HOUR);  // 1 hour
-  SkysightFileDeleter deleter_zip(now - 12 * ONE_HOUR);  // 1/2 day
-  SkysightFileDeleter deleter_nc (now - 12 * ONE_HOUR);  // 1/2 day
+  SkysightFileDeleter deleter_txt(now - ONE_HOUR);  // 1 hour
+  SkysightFileDeleter deleter_zip(now - HALF_HOUR);  // 1/2 day
+  SkysightFileDeleter deleter_nc (now - HALF_HOUR);  // 1/2 day
 
   auto path = GetLocalPath();  // local SkySight (cache) path
-  Directory::VisitSpecificFiles(path, "*.tif",  visitor_tif);
+  Directory::VisitSpecificFiles(path, "*.tif",  visitor_tif);  // never used!
+  Directory::VisitSpecificFiles(path, "*.tiff", visitor_tif);
   Directory::VisitSpecificFiles(path, "*.jpg",  deleter_jpg);
   Directory::VisitSpecificFiles(path, "*.tmp",  deleter_tmp);
   // "*.txt;*.json" is not possible...
