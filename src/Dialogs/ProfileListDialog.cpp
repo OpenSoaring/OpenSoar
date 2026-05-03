@@ -55,6 +55,7 @@ class ProfileListWidget final
   WndForm *form;
   Button *password_button;
   Button *copy_button, *delete_button;
+  Button *rename_button;
 
   std::vector<ListItem> list;
 
@@ -85,6 +86,7 @@ private:
   void PasswordClicked();
   void CopyClicked();
   void DeleteClicked();
+  void RenameClicked();
 
 public:
   /* virtual methods from class Widget */
@@ -155,6 +157,7 @@ ProfileListWidget::UpdateList()
   password_button->SetEnabled(!empty);
   copy_button->SetEnabled(!empty);
   delete_button->SetEnabled(!empty);
+  rename_button->SetEnabled(!empty);
 }
 
 int
@@ -184,6 +187,7 @@ ProfileListWidget::CreateButtons(WidgetDialog &dialog)
   password_button = dialog.AddButton(_("Password"), [this](){ PasswordClicked(); });
   copy_button = dialog.AddButton(_("Copy"), [this](){ CopyClicked(); });
   delete_button = dialog.AddButton(_("Delete"), [this](){ DeleteClicked(); });
+  rename_button = dialog.AddButton(_("Rename"), [this](){ RenameClicked(); });
   dialog.AddButton(_("Cancel"), mrCancel);
 }
 
@@ -243,6 +247,56 @@ ProfileListWidget::PasswordClicked()
     ShowError(std::current_exception(), _("Failed to save file."));
     return;
   }
+}
+
+inline void
+ProfileListWidget::RenameClicked()
+{
+  assert(GetList().GetCursorIndex() < list.size());
+
+  const auto &item = list[GetList().GetCursorIndex()];
+  const Path old_path = item.path;
+
+  ProfileMap data;
+
+  try {
+    Profile::LoadFile(data, old_path);
+  }
+  catch (...) {
+    ShowError(std::current_exception(), _("Failed to load file."));
+    return;
+  }
+
+  if (!CheckProfilePasswordResult(CheckProfilePassword(data)))
+    return;
+
+  StaticString<64> new_name;
+  new_name.clear();
+  if (!TextEntryDialog(new_name, _("Profile name")) || new_name.empty())
+    return;
+
+  StaticString<80> new_filename;
+  new_filename = new_name;
+  new_filename += ".prf";
+
+  const auto new_path = LocalPath(new_filename);
+
+  if (File::ExistsAny(new_path)) {
+    ShowMessageBox(new_name, _("File exists already."),
+      MB_OK | MB_ICONEXCLAMATION);
+    return;
+  }
+
+  try {
+    File::Rename(old_path, new_path);
+  }
+  catch (...) {
+    ShowError(std::current_exception(), _("Failed to rename file."));
+    return;
+  }
+
+  UpdateList();
+  SelectPath(new_path);
 }
 
 inline void
