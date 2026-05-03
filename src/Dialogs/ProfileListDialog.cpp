@@ -283,8 +283,8 @@ ProfileListWidget::CopyClicked()
   }
 
   try {
+    data.SetModified(true);
     Profile::SaveFile(data, new_path);
-    // data.SetModified(false);
   } catch (...) {
     ShowError(std::current_exception(), _("Failed to save file."));
     return;
