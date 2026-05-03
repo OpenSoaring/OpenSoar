@@ -26,5 +26,34 @@
     <Type Name="ScreenGlobalInit">
         <DisplayString>ScreenGlobalInit!</DisplayString>
     </Type>
+
+    <Type Name="GeoPoint">
+        <DisplayString>long={longitude}, lat={latitude}</DisplayString>
+    </Type>
+
+  <Type Name="Angle">
+        <DisplayString>
+          {(value*57.295779513), g}°
+        </DisplayString>
+    <Expand>
+      <Item Name="grd">(int)(value*57.295779513), na</Item>
+      <Item Name="min">(int)((value*57.295779513-(int)(value*57.295779513))*60), na</Item>
+      <Item Name="sec">(int)((value*57.295779513*60.0-(int)(value*57.295779513*60.0))*60), na</Item>
+    </Expand>
+
+  </Type>
+  <Type Name="PixelPoint">
+        <DisplayString>
+          ({x} x {y})
+        </DisplayString>
+
+  </Type>
+  <!--  
+  {value* 57.295779513,g}
+  {((int)value)}° { (int)((value - (int)value) * 60) }' { ((value - (int)value) * 60 - (int)((value - (int)value) * 60)) * 60,g2 }''
+  { (int)(((abs(value)*57.295779513) - (int)(abs(value)*57.295779513)) * 60) }'
+  {((int)value)}° 
+  
+  -->
 </AutoVisualizer>
 
