@@ -131,7 +131,8 @@ MapOverlayBitmap::IsInside(GeoPoint p) const noexcept
 
 void
 MapOverlayBitmap::Draw([[maybe_unused]] Canvas &canvas,
-                       [[maybe_unused]] const WindowProjection &projection) noexcept
+                       [[maybe_unused]] const WindowProjection &projection)
+                        noexcept
 {
   if (!simple_bounds.Overlaps(projection.GetScreenBounds()))
     /* not visible, outside of screen area */
@@ -179,9 +180,8 @@ MapOverlayBitmap::Draw([[maybe_unused]] Canvas &canvas,
       if (counter++ < 3)  LogFmt("Bitmap is {}",
         bitmap.IsFlipped() ? "FLIPPED" : "not flipped!");
 #endif
-#else
-      if (bitmap.IsFlipped())
 #endif
+      if (bitmap.IsFlipped())
         p.y = 1 - p.y;
       coord[i].x = p.x * x_factor;
       coord[i].y = p.y * y_factor;
@@ -218,20 +218,5 @@ MapOverlayBitmap::Draw([[maybe_unused]] Canvas &canvas,
 
   // This is painting with big pixels (and not aligned correctly)
   canvas.Stretch({ 0, 0 }, canvas.GetSize(), bitmap, src_point, xsize);
-
-#if 0  // TestCode (zum Probieren...):
-  // buffer.Copy({ 0,0 }, bitmap.GetSize(), bitmap, { 0,0 });
-//  buffer.Stretch({ 0,0 }, bitmap.GetSize(), bitmap);
-  buffer.Stretch(bitmap, { 0,0 }, bitmap.GetSize());
-
-//  canvas.Copy({0, }, xsize, bitmap, src_point);
-  canvas.CopyAnd({0, 0 }, xsize, bitmap, src_point);
-  canvas.CopyTransparentWhite( {400, 0 }, xsize, buffer, src_point);
-  // canvas.({400, 0}, xsize, bitmap, src_point);
-  canvas.CopyOr({400, 400 }, xsize, bitmap, src_point);
-  canvas.CopyNot({0, 400 }, xsize, bitmap, src_point);
-  // canvas.Stretch(bitmap, {0, 0 }, xsize);
-  canvas.DrawLine({0, 0 }, {200, 200 });
-#endif
 #endif  // ENABLE_OPENGL
 }
