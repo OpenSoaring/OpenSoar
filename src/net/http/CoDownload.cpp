@@ -142,8 +142,8 @@ CoDownloadToFile(CurlGlobal &curl, const std::string_view url,
     case 401: {  // 'Unauthorized'
       auto file_size = file.Tell();
       if (file_size > 0) {
-        file.Commit();  // mostly this is a json file with error description
-        File::Rename(file.GetPath(), file.GetPath().WithSuffix(".json"));
+        file.Commit();  // mostly this is a html file with error description
+        File::Rename(file.GetPath(), file.GetPath().WithSuffix(".html"));
       }
       throw FmtRuntimeError("CoDownloadToFile {} status {}", url,
         response.status);
@@ -151,8 +151,8 @@ CoDownloadToFile(CurlGlobal &curl, const std::string_view url,
     case 429: {  // 'Too Many Requests', often at SkySight server
       auto file_size = file.Tell();
       if (file_size > 0) {
-        file.Commit();  // mostly this is a json file with error description
-        File::Rename(file.GetPath(), file.GetPath().WithSuffix(".json"));
+        file.Commit();  // mostly this is a html file with error description
+        File::Rename(file.GetPath(), file.GetPath().WithSuffix(".html"));
       }
       throw FmtRuntimeError("CoDownloadToFile {} status {}", url,
         response.status);
