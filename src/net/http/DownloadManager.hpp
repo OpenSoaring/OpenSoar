@@ -75,9 +75,9 @@ void RemoveListener(DownloadListener &listener) noexcept;
 void Enumerate(DownloadListener &listener) noexcept;
 
 void Enqueue(const std::string_view uri, const Path path_relative) noexcept;
-// void Enqueue(const std::string_view uri, const std::string_view name) noexcept;
-void Enqueue(const std::string_view uri, const Path path, Net::CurlData *data) noexcept;
-  void Enqueue(const std::string_view uri, const std::string_view name,
+void Enqueue(const std::string_view uri, const Path path,
+  Net::CurlData *data) noexcept;
+void Enqueue(const std::string_view uri, const std::string_view name,
   boost::json::value &json) noexcept;
 
 void Enqueue(const std::string_view uri, const std::string_view name, 
