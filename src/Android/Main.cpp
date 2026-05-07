@@ -71,6 +71,7 @@
 #include <stdlib.h>
 
 using namespace UI;
+#define ANDROID_RERUN 1
 
 Context *context;
 
