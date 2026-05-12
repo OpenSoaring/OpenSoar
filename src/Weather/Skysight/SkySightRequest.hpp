@@ -9,7 +9,11 @@
 #include "event/DeferEvent.hxx"
 #include "util/ReturnValue.hxx"
 #include "lib/curl/Slist.hxx"
+#include "net/http/CoDownload.hpp"
+#include "ui/event/PeriodicTimer.hpp"
 
+#include <list>
+#include <mutex>
 #include <string_view>
 #include <boost/json.hpp>
 
@@ -29,6 +33,12 @@ enum DownloadFileType {
 
 class SkysightListener;
 class SkysightRequest {
+  struct RequestArgs
+  {
+    std::string url;
+    std::string name;
+    Net::CurlData *data;
+  };
 
 private:
   std::string_view key;
@@ -36,6 +46,9 @@ private:
   time_t request_age = 0;
   std::vector<boost::json::string> allowed_regions;
   SkysightListener *skysight_listener = nullptr;
+  UI::PeriodicTimer request_timer{ [this] { OnRequestTimer(); } };
+  std::list<RequestArgs> pending_requests;
+  std::mutex timer_mutex;
 
   SkysightAPI *api;
   const std::string_view username;
@@ -43,6 +56,7 @@ private:
   CurlSlist *request_headers = nullptr;
 
   void OnCompletion(std::exception_ptr error) noexcept;
+  void OnRequestTimer();
 
 public:
   SkysightRequest(SkysightAPI *_api,

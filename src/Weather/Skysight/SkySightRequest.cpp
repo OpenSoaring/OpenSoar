@@ -21,7 +21,7 @@
 #include "Version.hpp"
 
 #include "json/Serialize.hxx"
-#include "io/FileOutputStream.hxx"
+#include "json/File.hpp"
 #include "LogFile.hpp"
 
 #include "thread/SafeList.hxx"
@@ -116,38 +116,36 @@ private:
           save_path = api->GetPath(SkysightCallType::Layers);
         }
         else if (name.starts_with("last_updated")) {
-          success = api->UpdateLastUpdates(_json);
+          if(api->UpdateLastUpdates(_json))
+            save_path = api->GetPath(SkysightCallType::LastUpdates);
+          success = true;
         }
-        else if (name.starts_with("datafiles")) {
+        else if (name.starts_with("datalinks-")) {
           success = api->UpdateDatafiles(_json);
+          save_path = AllocatedPath::Build(api->GetCachePath(),
+            AllocatedPath(name)).WithSuffix(".json");   // api->GetPath(SkysightCallType::DataDetails, layer_id, fctime);
         }
         else {
           Skysight::GetSkysight()->SetUpdateFlag();
           success = true;
         }
         if (!save_path.empty()) {
-          auto file = File::CreateExclusive(save_path);
-          if (file) {
-            FileOutputStream fos(save_path);
-            Json::Serialize(fos, _json);
-          }
+
+            Json::Save(_json, save_path);
         }
 #if defined(SKYSIGHT_FILE_DEBUG)
-        std::string now_str = DateTime::str_now();
-        std::stringstream s;
-        s << Skysight::GetLocalPath().c_str() << '/' << now_str << " " << name << " .json";
-        auto path = AllocatedPath(s.str().c_str());
-        auto file = File::CreateExclusive(path);
-        if (file) {
-          auto json_text = boost::json::serialize(_json);
-          if (!File::WriteExisting(path, json_text.c_str()))
-            LogFmt("File write not successfully!");
-        }
+        std::stringstream filename;
+        filename << Skysight::GetLocalPath().c_str() << '/' << 
+          DateTime::str_now() << " " << name << ".json";
+        Json::Save(_json, AllocatedPath(filename.str()));
 #endif
       }
       json_values[name] = json_null;  // erasing content
     } else {
       // this is a File-Download...
+      AllocatedPath filename(name);
+      AllocatedPath fullpath = AllocatedPath::Build(Skysight::GetLocalPath(), filename);
+      SkysightImageFile img_file(filename, fullpath);
       success = true;
     }
 #ifdef _DEBUG
@@ -177,7 +175,19 @@ private:
     assert(complete);
   }
 };
-/////////////////////////////////////////////////////////////////////////////
+
+void
+SkysightRequest::OnRequestTimer()
+{
+  std::lock_guard lock{ timer_mutex };
+  if (!pending_requests.empty()) {
+    RequestArgs args = pending_requests.front();
+    if (args.data->type == Net::FILE)
+      args.data->name = args.name;
+    Net::DownloadManager::Enqueue(args.url, args.name, std::move(args.data));
+    pending_requests.pop_front();
+  }
+}
 
 bool
 SkysightRequest::SetCredentialKey(const boost::json::value &credentials)
@@ -232,7 +242,7 @@ try {
   url << SKYSIGHTAPI_BASE_URL;
   if (!url_part.empty())
      url << '/' << url_part;
-  Net::DownloadManager::Enqueue(url.str(), name, std::move(data));
+  pending_requests.push_back({url.str(), name.data(), std::move(data)});
   return true;
 }
 catch (...) {
@@ -280,8 +290,9 @@ try {
   data->type = Net::JSON;
 
   request_age = DateTime::now();
-  Net::DownloadManager::Enqueue(
-    "https://skysight.io/api/auth", "authent", std::move(data));
+  pending_requests.push_back(
+    { "https://skysight.io/api/auth", "authent", std::move(data) });
+
   return true;
 }
 catch (...) {
@@ -313,11 +324,7 @@ SkysightRequest::DownloadFile(const std::string_view url,
       break;
   }
 
-  Net::DownloadManager::Enqueue(url, filename, std::move(data));
-
-#ifdef __AUGUST__
-  LogFmt("Request {} -> {} ", url, filename.GetBase().c_str());
-#endif
+  pending_requests.push_back({ url.data(), filename.c_str(), std::move(data)});
 
   return true;
 }
@@ -343,6 +350,7 @@ SkysightRequest::SkysightRequest(SkysightAPI* _api,
   const std::string_view _password) : 
   api(_api), username(_username), password(_password) 
 {
+  request_timer.Schedule(std::chrono::milliseconds(1000));
   skysight_listener = new SkysightListener(this);
   request_headers = new CurlSlist();
   RequestCredentialKey();
