@@ -63,7 +63,7 @@ GeoBitmap::TileData
 GeoBitmap::GetTile(const MapWindowProjection &proj, const uint16_t zoom_min,
   const uint16_t zoom_max)
 {
-  double Earth_circumference = 42e6;  // =~ 42.000 km
+  double Earth_circumference = 40030e3;  // =~ 42.000 km
   double diagonale = proj.GetScreenDistanceMeters();
   double t = Earth_circumference / diagonale;
   double _log = floor(log2(t));
