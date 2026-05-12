@@ -25,6 +25,7 @@
 
 class ProfileListWidget final
   : public TextListWidget {
+  static constexpr char const* extension = ".prf";
 
   struct ListItem {
     StaticString<32> name;
@@ -82,6 +83,7 @@ private:
   [[gnu::pure]]
   int FindPath(Path path) const;
 
+  void SelectClicked();
   void NewClicked();
   void PasswordClicked();
   void CopyClicked();
@@ -182,7 +184,7 @@ void
 ProfileListWidget::CreateButtons(WidgetDialog &dialog)
 {
   form = &dialog;
-  dialog.AddButton(_("Select"), mrOK);
+  dialog.AddButton(_("Select"), [this]() { SelectClicked(); });
   dialog.AddButton(_("New"), [this](){ NewClicked(); });
   password_button = dialog.AddButton(_("Password"), [this](){ PasswordClicked(); });
   copy_button = dialog.AddButton(_("Copy"), [this](){ CopyClicked(); });
@@ -200,6 +202,21 @@ ProfileListWidget::Prepare(ContainerWindow &parent,
 }
 
 inline void
+ProfileListWidget::SelectClicked()
+{
+  assert(GetList().GetCursorIndex() < list.size());
+
+  const auto &item = list[GetList().GetCursorIndex()];
+  std::string new_item = item.name.c_str();
+  new_item = new_item.substr(0, new_item.length() - strlen(extension));
+
+  std::string text = "Restart after Selection with profile: " + new_item;
+  bool result = ShowMessageBox(text.c_str(), _("Select Profile."), MB_YESNO) == IDYES;
+
+  form->SetModalResult(result ? mrOK : 0);
+}
+
+inline void
 ProfileListWidget::NewClicked()
 {
   StaticString<64> name;
@@ -209,7 +226,7 @@ ProfileListWidget::NewClicked()
 
   StaticString<80> filename;
   filename = name;
-  filename += ".prf";
+  filename += extension;
 
   const auto path = LocalPath(filename);
   if (!File::CreateExclusive(path)) {
@@ -249,6 +266,20 @@ ProfileListWidget::PasswordClicked()
   }
 }
 
+static bool
+ConfirmRenameProfile(const char *name, const char *new_name )
+{
+  StaticString<256> tmp;
+  StaticString<256> tmp_name(name);
+  if (tmp_name.length() > 4)
+    tmp_name.Truncate(tmp_name.length() - 4);
+
+  tmp.Format(_("Rename '%s' to '%s'?"),
+    tmp_name.c_str(), new_name);
+  return ShowMessageBox(tmp, _("Rename"), MB_YESNO) == IDYES;
+}
+
+
 inline void
 ProfileListWidget::RenameClicked()
 {
@@ -275,9 +306,13 @@ ProfileListWidget::RenameClicked()
   if (!TextEntryDialog(new_name, _("Profile name")) || new_name.empty())
     return;
 
+  if (!ConfirmRenameProfile(item.name, new_name))
+    return;
+
+
   StaticString<80> new_filename;
   new_filename = new_name;
-  new_filename += ".prf";
+  new_filename += extension;
 
   const auto new_path = LocalPath(new_filename);
 
@@ -326,7 +361,7 @@ ProfileListWidget::CopyClicked()
 
   StaticString<80> new_filename;
   new_filename = new_name;
-  new_filename += ".prf";
+  new_filename += extension;
 
   const auto new_path = LocalPath(new_filename);
 
