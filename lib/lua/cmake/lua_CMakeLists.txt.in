@@ -7,11 +7,11 @@ message(STATUS "Target: ${TARGET_NAME}")
 set(_SOURCES
   lapi.c lcode.c ldebug.c ldo.c ldump.c lfunc.c lgc.c llex.c
   lmem.c lobject.c lopcodes.c lparser.c lstate.c lstring.c
-  ltable.c ltm.c lundump.c lvm.c lzio.c
+  lmathlib.c ltable.c ltm.c lundump.c lvm.c lzio.c
   lauxlib.c lbaselib.c ldblib.c liolib.c loslib.c
   ltablib.c lstrlib.c loadlib.c linit.c
   lctype.c
-) # lmathlib.c 
+)
 
 file(GLOB_RECURSE HEADER_FILES "*.h*")
 message(STATUS "========================================")

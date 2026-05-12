@@ -1,3 +1,5 @@
-fix_linking.patch
-fix_dwinpath.patch
-fix_windows.patch
+## fix_linking.patch
+## fix_dwinpath.patch
+## fix_windows.patch
+## fix_cmake_4_9_3.patch
+## fix_cmake_4_10_0.patch
