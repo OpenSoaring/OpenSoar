@@ -13,6 +13,7 @@
 #include "Weather/Skysight/Layers.hpp"
 #include "Weather/Skysight/SkysightAPI.hpp"
 #include "Blackboard/BlackboardListener.hpp"
+#include "PageState.hpp"
 
 #include <map>
 #include <vector>
@@ -21,7 +22,8 @@
 struct DisplayedLayer;
 class CurlGlobal;
 
-constexpr uint32_t max_skysight_overlays = 9;
+constexpr uint32_t max_skysight_overlays =
+  (2*TILE_RANGE_OFFSET+1)*(2*TILE_RANGE_OFFSET+1);
 
 struct SkysightImageFile {
 public:
@@ -31,8 +33,8 @@ public:
   Path filename;
   std::string layer;
   std::string region;
-  time_t datetime;
-  time_t updatetime;
+  time_t forecast_time;
+  time_t update_time;
   bool is_valid;
   time_t mtime;
 };
@@ -43,16 +45,20 @@ class Skysight final: private NullBlackboardListener {
   uint32_t skysight_overlays = 1;
 
   std::string tile_filenames[max_skysight_overlays];
+
+  const PagesState *page_state;
 public:
   std::string region = "EUROPE";
   CurlGlobal *curl;
 
   static SkySight::Layer *GetActiveLayer() { return self->active_layer; }
-
   Skysight(CurlGlobal &_curl);
 
   static void APIInited(const std::string details, const bool success,
       const std::string layer_id, const time_t time_index);
+  static void RefreshDisplay(const std::string d, const bool s,
+      const std::string l, const time_t t);
+
 #if 1  // used in API (in ParseLastUpdates())   //TODO(aug)
   static void DownloadComplete(const std::string details, const bool success,
       const std::string layer_id, const time_t time_index);
@@ -91,7 +97,7 @@ public:
   void RemoveSelectedLayer(size_t index);
   void RemoveSelectedLayer(const std::string_view id);
   bool SelectedLayersUpdating();
-  bool GetSelectedLayerState(const std::string_view layer_name, SkySight::Layer &m);
+  bool GetSelectedLayerState(const std::string_view layer_name, SkySight::Layer *m);
 #if 1  // used in API (in ParseLastUpdates())  //TODO(aug)
   void SetSelectedLayerUpdateState(const std::string_view id, bool state = false);
 #endif

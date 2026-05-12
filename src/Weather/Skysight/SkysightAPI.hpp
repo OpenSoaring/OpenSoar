@@ -4,7 +4,8 @@
 #pragma once
 
 #include "SkySightRequest.hpp"
-#ifdef SKYSIGHT_FORECAST 
+#ifdef SKYSIGHT_FORECAST
+# define SKYSIGHT_TIME_DELAY 5
 // TODO(August2111) for this there is to be cleanup all SkysightCallback
 # include "APIQueue.hpp"
 #else
@@ -30,6 +31,18 @@ constexpr time_t  ONE_HOUR = (60 * ONE_MINUTE);
 constexpr time_t  TEN_MINUTES = (10 * ONE_MINUTE);
 constexpr time_t  ONE_DAY = (24 * ONE_HOUR);
 constexpr time_t  HALF_DAY = (12 * ONE_HOUR);
+
+constexpr uint16_t  TILE_RANGE_OFFSET = 2;  //  -> 25 tiles!
+
+#ifdef _DEBUG
+constexpr time_t  ONLINE_FORECAST = (ONE_HOUR);
+constexpr time_t  OFFLINE_FORECAST = (6 * ONE_HOUR);
+/* diff time before switching to new forcast*/
+#else
+constexpr time_t  ONLINE_FORECAST = (2 * ONE_HOUR);
+constexpr time_t  OFFLINE_FORECAST = (24 * ONE_HOUR);
+#endif
+constexpr time_t  FORECAST_OFFSET = TEN_MINUTES;
 
 // #define SKYSIGHT_DEBUG 1
 
@@ -57,15 +70,19 @@ class SkysightAPI final {
   friend class CDFDecoder;
   UI::PeriodicTimer timer{ [this] { OnTimer(); } };
   SkysightRequest *co_request = nullptr;
+  // const AllocatedPath &cache_path; // = Skysight::GetSkysight()->GetLocalPath();
+  static AllocatedPath cache_path; // = Skysight::GetSkysight()->GetLocalPath();
 
 public:
   std::string region;
   std::map<std::string, SkySight::Region> regions;
   std::map<std::string, SkySight::Layer *> layers;
   std::vector<SkySight::Layer> layers_vector;
-  std::vector<SkySight::Layer> selected_layers;
+  std::vector<SkySight::Layer *> selected_layers;
 
-  SkysightAPI(Path _path) : cache_path(_path) {}
+  SkysightAPI(Path _path) {
+    cache_path = _path;
+  }
   ~SkysightAPI();
 
   void InitAPI(std::string_view email, std::string_view password,
@@ -78,12 +95,6 @@ public:
   size_t NumLayers();
   bool SelectedLayersFull();
   bool IsSelectedLayer(const std::string_view id);
-
-  bool GetImageAt(const char *const layer, time_t fctime,
-    time_t maxtime, SkysightCallback cb = nullptr);
-  bool GetImageAt(SkySight::Layer &layer, time_t fctime,
-    time_t maxtime, time_t update_time,
-    SkysightCallback cb = nullptr);
 
   static void GenerateLoginRequest();
 
@@ -104,11 +115,9 @@ public:
     return queue.IsLastJob();
   }
 #endif
-  inline void ResetLastUpdate() {
-    inited_lastupdates = false;
-  }
 #ifdef SKYSIGHT_FORECAST 
-  void CallCDFDecoder(const SkySight::Layer *layer, const time_t _time,
+  bool BuildForecastTiff(const Path filename);
+  void CallCDFDecoder(const SkySight::Layer *layer,
     const std::string_view &cdf_file, const std::string_view &output_img,
     const SkysightCallback _callback);
 #endif  // SKYSIGHT_FORECAST 
@@ -123,7 +132,9 @@ protected:
   /// The mutex protects the Timer module.
   Mutex mutex;
 
+#ifdef SKYSIGHT_TIME_DELAY
   time_t last_request = 0;
+#endif
   static SkysightAPI *self;
   bool inited_regions = false;
   bool inited_layers = false;
@@ -132,7 +143,6 @@ protected:
 #ifdef SKYSIGHT_FORECAST 
   SkysightAPIQueue queue;
 #endif  // SKYSIGHT_FORECAST 
-  const AllocatedPath cache_path;
 
   void LoadDefaultRegions(const std::string_view select_region);
 
@@ -146,14 +156,6 @@ protected:
 		 boost::property_tree::ptree &output);
   bool CacheAvailable(Path path, SkysightCallType calltype,
 		      const char *const layer = nullptr);
-
-  static void ParseResponse(const std::string &&result, const bool success,
-			    const SkysightRequestArgs req);
-  bool ParseDataDetails(const SkysightRequestArgs &args,
-    const boost::property_tree::ptree &details);
-
-  bool ParseDataDetails(const SkysightRequestArgs &args,
-			const std::string &result);
 
   inline bool GetData(SkysightCallType t, SkysightCallback cb = nullptr,
 		      bool force_recache = false) {
