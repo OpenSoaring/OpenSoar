@@ -24,7 +24,6 @@ private:
   const std::string path;
   const AllocatedPath output_path;
   const std::string data_varname;
-  const uint64_t time_index;
   const std::map<float, LegendColor> legend;
   SkysightCallback callback;
   Status status;
@@ -33,15 +32,16 @@ private:
   void MakeCallback(bool result);
   bool DecodeError();
   bool DecodeSuccess();
+  time_t filetime;
 
 public:
   enum class Result {Available, Requested, Error};
 
   CDFDecoder(const std::string_view _path, const std::string &&_output, const std::string &&_varname,
-             const uint64_t _time_index, const std::map<float, LegendColor> _legend, SkysightCallback _callback) : 
+             const std::map<float, LegendColor> _legend, SkysightCallback _callback) : 
              StandbyThread("CDFDecoder"), path(_path), output_path(AllocatedPath(_output.c_str())), 
-             data_varname(_varname), time_index(_time_index), legend(_legend), callback(_callback), 
-             status(Status::Idle) {};
+             data_varname(_varname), legend(_legend), callback(_callback), 
+             status(Status::Idle), filetime(0) {};
   ~CDFDecoder() {};
 
   void DecodeAsync();

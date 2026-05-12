@@ -36,6 +36,9 @@ CDFDecoder::DecodeAsync()
 void
 CDFDecoder::Done()
 {
+  auto nc_path = AllocatedPath(path);
+  SkysightImageFile img_file(output_path.GetBase(), output_path);
+  File::Delete(nc_path);  // not needed anymore
   StandbyThread::LockStop();
 }
 
@@ -53,7 +56,7 @@ CDFDecoder::MakeCallback(bool result)
 {
   if (callback) {
     SkysightAPI::MakeCallback(callback, output_path.c_str(), result,
-                              data_varname.c_str(), time_index);
+                              data_varname.c_str(), 0);
   }
 }
 
