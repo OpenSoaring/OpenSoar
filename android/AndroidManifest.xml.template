@@ -4,6 +4,14 @@
           android:installLocation="auto"
           android:versionCode="@ANDROID_VERSIONCODE@"
           android:versionName="@PROGRAM_VERSION@">
+  <!--
+    versionCode / versionName are replaced for CI Android jobs in
+    .github/workflows/build-native.yml (master and release tags only).
+    versionCode = major*10^7 + minor*10^5 + patch*10^4 + build, where
+    build is 0 for a tag build and GITHUB_RUN_NUMBER otherwise.
+    make writes the processed manifest from this template under the build
+    output directory (see build/android.mk).
+  -->
   <!-- requestLegacyExternalStorage: Deprecated but still needed for
        compatibility with /sdcard/@PROGRAME_NAME@Data on Android 10 devices.
        On Android 11+ (API 30+), scoped storage is used regardless.
@@ -19,7 +27,7 @@
       android:allowBackup="true"
       android:supportsRtl="true"
       android:theme="@style/@PROGRAM_NAME@Theme">
-    <activity android:name=".@PROGRAM_NAME@"
+    <activity android:name="@BASE_PACKAGE@.@PROGRAM_NAME@"
               android:showOnLockScreen="true"
               android:showWhenLocked="true"
               android:exported="true"
