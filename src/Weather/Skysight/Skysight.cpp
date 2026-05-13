@@ -334,7 +334,7 @@ Skysight::Init()
   email = settings.email.c_str();
   password = settings.password.c_str();
 
-  api = new SkysightAPI(GetLocalPath());
+  api = new SkysightAPI();
 
   [[maybe_unused]] bool success = false;
   auto path = api->GetPath(SkysightCallType::Regions);

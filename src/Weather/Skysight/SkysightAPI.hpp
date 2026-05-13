@@ -70,9 +70,9 @@ class SkysightAPI final {
   friend class CDFDecoder;
   UI::PeriodicTimer timer{ [this] { OnTimer(); } };
   SkysightRequest *co_request = nullptr;
-  // const AllocatedPath &cache_path; // = Skysight::GetSkysight()->GetLocalPath();
-  static AllocatedPath cache_path; // = Skysight::GetSkysight()->GetLocalPath();
-  /** Cache directory for OSM tiles, created once on construction (= <cache_root>/osm). */
+  /** Cache directory for Skysight forecast data (= <cache_root>/skysight). */
+  static AllocatedPath cache_path;
+  /** Cache directory for OSM tiles (= <cache_root>/osm). */
   static AllocatedPath osm_path;
 
 public:
@@ -82,10 +82,12 @@ public:
   std::vector<SkySight::Layer> layers_vector;
   std::vector<SkySight::Layer *> selected_layers;
 
-  SkysightAPI(Path _path) {
-    cache_path = _path;
-    // Ensure the OSM tile cache directory exists exactly once
-    // (separate from the Skysight forecast cache).
+  SkysightAPI() {
+    // Ensure both cache directories exist exactly once.
+    // cache_path   = <cache_root>/skysight  (Skysight forecast cache)
+    // osm_path     = <cache_root>/osm       (OSM tile cache)
+    if (cache_path == nullptr)
+      cache_path = MakeCacheDirectory("skysight");
     if (osm_path == nullptr)
       osm_path = MakeCacheDirectory("osm");
   }
