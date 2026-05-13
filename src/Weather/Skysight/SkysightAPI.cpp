@@ -101,6 +101,7 @@ void timer_start(std::function<void(void)> func, uint64_t ms)
 #endif  // THREAD_TIMER_START
 
 AllocatedPath SkysightAPI::cache_path = nullptr;
+AllocatedPath SkysightAPI::osm_path = nullptr;
 
 SkysightAPI::~SkysightAPI()
 {
@@ -211,7 +212,6 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
     }
     break;
   case SkysightCallType::Tile: {
-    std::stringstream s;
     std::string_view servername;
     bool is_osm = layer_id.starts_with("osm");
     servername = is_osm ? OSM_BASE_URL : SKYSIGHTAPI_BASE_URL;
@@ -222,12 +222,9 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
       if (ch == '/') ch = '-';
 
     if (is_osm) {
-      auto osm_path = AllocatedPath::Build(::GetCachePath(), "osm");
-      if (!Directory::Exists(osm_path)) {
-        Directory::Create(AllocatedPath::Build(::GetCachePath(), "osm"));
-      }
-      Directory::Create(AllocatedPath::Build(::GetCachePath(), "osmX"));
-      return AllocatedPath::Build(::GetCachePath(), filename);
+      // OSM tiles live in their own cache/osm/ directory
+      // (set up once in the SkysightAPI ctor).
+      return AllocatedPath::Build(osm_path, path.c_str());
     } else {
       filename = path + (GetLayer(layer_id)->live_layer ? ".jpg" : ".nc");
     }
@@ -579,9 +576,10 @@ SkysightAPI::GetTileData(const std::string_view layer_id,
 
   for (tile.x = base_tile.x - o; tile.x <= base_tile.x + o; tile.x++)
     for (tile.y = base_tile.y - o; tile.y <= base_tile.y + o; tile.y++) {
-
+#if 0
       if (!GeoBitmap::GetBounds(tile).Overlaps(map_bounds))
           continue;  // w/o overlapping no Request!
+#endif
       const std::string url = GetUrl(type, layer_id, from, tile);
       const auto path = GetPath(type, layer_id, from, tile);
 

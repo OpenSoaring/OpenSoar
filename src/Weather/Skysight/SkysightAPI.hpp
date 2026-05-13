@@ -72,6 +72,8 @@ class SkysightAPI final {
   SkysightRequest *co_request = nullptr;
   // const AllocatedPath &cache_path; // = Skysight::GetSkysight()->GetLocalPath();
   static AllocatedPath cache_path; // = Skysight::GetSkysight()->GetLocalPath();
+  /** Cache directory for OSM tiles, created once on construction (= <cache_root>/osm). */
+  static AllocatedPath osm_path;
 
 public:
   std::string region;
@@ -82,6 +84,10 @@ public:
 
   SkysightAPI(Path _path) {
     cache_path = _path;
+    // Ensure the OSM tile cache directory exists exactly once
+    // (separate from the Skysight forecast cache).
+    if (osm_path == nullptr)
+      osm_path = MakeCacheDirectory("osm");
   }
   ~SkysightAPI();
 
