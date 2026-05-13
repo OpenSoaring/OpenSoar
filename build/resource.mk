@@ -109,11 +109,13 @@ endif
 
 ####### version
 
-SVG_TITLE = $(SRC_DATA)/graphics/title.svg 
-# $(DATA)/graphics/title_red.svg
-SVG_TMP_TITLE = $(DATA)/temp/graphics/title.svg $(DATA)/temp/graphics/title_red.svg
-# convert to title
-$(DATA)/temp/graphics/%.svg: $(SVG_TITLE) $(topdir)/$(PROGRAM_NAME).config $(OUT)/include/ProgramVersion.h
+SVG_TITLE = $(SRC_DATA)/graphics/title.svg $(SRC_DATA)/graphics/title_red.svg
+SVG_TMP_TITLE = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/temp/graphics/%.svg,$(SVG_TITLE))
+
+# Substitute @PLACEHOLDER@ tokens (e.g. @PROGRAM_VERSION@) in any source SVG
+# and write the result into the temp dir. Generic so it also covers title_red,
+# title_white and title_red_white when those temp SVGs are demanded.
+$(DATA)/temp/graphics/%.svg: $(SRC_DATA)/graphics/%.svg $(topdir)/$(PROGRAM_NAME).config $(OUT)/include/ProgramVersion.h
 	@echo  "  TMP_SVG:   $< == $@"
 	$(Q)$(MKDIR) -p $(DATA)/temp/graphics
 	$(Q)python3 $(topdir)/tools/python/replace.py  $(topdir)/$(PROGRAM_NAME).config $< $@
@@ -122,9 +124,9 @@ PNG_TITLE_110 = $(patsubst $(DATA)/temp/graphics/%.svg,$(DATA)/graphics/%_110.pn
 BMP_TITLE_110 = $(PNG_TITLE_110:.png=.bmp)
 PNG_TITLE_320 = $(patsubst $(DATA)/temp/graphics/%.svg,$(DATA)/graphics/%_320.png,$(SVG_TMP_TITLE))
 BMP_TITLE_320 = $(PNG_TITLE_320:.png=.bmp)
-PNG_TITLE_640 = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics/%_640.png,$(SVG_TITLE))
+PNG_TITLE_640 = $(patsubst $(DATA)/temp/graphics/%.svg,$(DATA)/graphics/%_640.png,$(SVG_TMP_TITLE))
 BMP_TITLE_640 = $(PNG_TITLE_640:.png=.bmp)
-PNG_TITLE_320_RGBA = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics2/%_320_rgba.png,$(SVG_TITLE))
+PNG_TITLE_320_RGBA = $(patsubst $(DATA)/temp/graphics/%.svg,$(DATA)/graphics2/%_320_rgba.png,$(SVG_TMP_TITLE))
 
 SVG_TITLE_WHITE = $(SRC_DATA)/graphics/title_white.svg $(SRC_DATA)/graphics/title_red_white.svg
 PNG_TITLE_WHITE_320_RGBA = $(patsubst $(SRC_DATA)/graphics/%.svg,$(DATA)/graphics2/%_320_rgba.png,$(SVG_TITLE_WHITE))
