@@ -100,6 +100,7 @@ private:
     boost::json::value _json = json_null;
     auto api = owner->GetAPI();
     AllocatedPath save_path;
+    complete = true;
 
     if (json_values.contains(name)) {
       _json = json_values[name];
@@ -149,10 +150,11 @@ private:
       success = true;
     }
 #ifdef _DEBUG
-    LogFmt("OnDownloadComplete {} - {}", complete ? "complete" : "not compl", name);
+    LogFmt("OnDownloadComplete {} - {}", success ? "success" : "not success", name);
+#else  // _DEBUG
+    if (!success)
+      LogFmt("OnDownloadComplete w/o success: {}", name);
 #endif
-    if (!complete)
-      complete = true;
   }
 
   void OnDownloadError(const std::string_view name,
@@ -179,7 +181,7 @@ private:
 void
 SkysightRequest::OnRequestTimer()
 {
-  std::lock_guard lock{ timer_mutex };
+  std::lock_guard<Mutex> lock(request_mutex);
   if (!pending_requests.empty()) {
     RequestArgs args = pending_requests.front();
     if (args.data->type == Net::FILE)
@@ -323,7 +325,15 @@ SkysightRequest::DownloadFile(const std::string_view url,
     default:
       break;
   }
-
+  if (!pending_requests.empty()) {
+    std::lock_guard<Mutex> lock(request_mutex);
+    // Avoid doubled requests...
+    for (const auto &req : pending_requests) {
+      if (req.name == filename.c_str()) {
+        return true;
+      }
+    }
+  }
   pending_requests.push_back({ url.data(), filename.c_str(), std::move(data)});
 
   return true;

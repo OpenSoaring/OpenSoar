@@ -11,9 +11,9 @@
 #include "lib/curl/Slist.hxx"
 #include "net/http/CoDownload.hpp"
 #include "ui/event/PeriodicTimer.hpp"
+#include "thread/Mutex.hxx"
 
 #include <list>
-#include <mutex>
 #include <string_view>
 #include <boost/json.hpp>
 
@@ -48,7 +48,7 @@ private:
   SkysightListener *skysight_listener = nullptr;
   UI::PeriodicTimer request_timer{ [this] { OnRequestTimer(); } };
   std::list<RequestArgs> pending_requests;
-  std::mutex timer_mutex;
+  Mutex request_mutex;
 
   SkysightAPI *api;
   const std::string_view username;
