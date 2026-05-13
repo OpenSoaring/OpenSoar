@@ -492,7 +492,7 @@ Skysight::CleanupFiles()
   SkysightFileDeleter deleter_nc (now - HALF_DAY);  // 1/2 day
   SkysightFileDeleter deleter_now (now);  // all older files
 
-  auto path = GetLocalPath();  // local SkySight (cache) path
+  const auto &path = GetLocalPath();  // local SkySight (cache) path
   Directory::VisitSpecificFiles(path, "*.tif",  visitor_tif);  // never used!
   Directory::VisitSpecificFiles(path, "*.tiff", visitor_tif);
   Directory::VisitSpecificFiles(path, "*.jpg",  deleter_jpg);
@@ -757,9 +757,12 @@ Skysight::DisplayTileLayer()
       tile_no++) {
 
       if (!GeoBitmap::GetBounds(tile).Overlaps(map_bounds)) {
+        LogFmt("No Overlap: {}: {}-{}-{} ", active_layer->id, tile.zoom, tile.x, tile.y);
+#if 1
         map_window->SetOverlay(tile_no, nullptr);
         tile_filenames[tile_no] = "";
         continue;
+#endif
       }
 
       AllocatedPath filename;

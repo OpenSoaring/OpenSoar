@@ -127,14 +127,12 @@ public:
     return active_layer != nullptr;
   }
 
-  static inline 
-  AllocatedPath GetLocalPath() {
-#ifdef ANDROID
-    return MakeCacheDirectory("skysight");
-    // return LocalPath("skysight");
-#else
-    return MakeCacheDirectory("skysight");
-#endif
+  static inline
+  const AllocatedPath &GetLocalPath() {
+    // Single source of truth for the Skysight cache directory.
+    // The directory is created once (lazily) inside SkysightAPI.
+    // Returned by const reference because AllocatedPath is move-only.
+    return SkysightAPI::GetCachePath();
   }
   void Render(bool force_update = false);
 

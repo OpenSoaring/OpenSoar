@@ -111,7 +111,16 @@ public:
     const time_t time_index);
   void TimerInvoke();
 
-  const AllocatedPath  &GetCachePath() { return cache_path; }
+  /**
+   * Returns the Skysight forecast cache directory (= <cache_root>/skysight)
+   * and lazily creates it if it has not been initialised yet.
+   * Single source of truth, used by Skysight::GetLocalPath().
+   */
+  static const AllocatedPath &GetCachePath() {
+    if (cache_path == nullptr)
+      cache_path = MakeCacheDirectory("skysight");
+    return cache_path;
+  }
   AllocatedPath
     GetPath(SkysightCallType type, const std::string_view layer_id = "",
       const time_t fctime = 0, const GeoBitmap::TileData tile = { 0 });
