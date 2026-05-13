@@ -2,9 +2,10 @@
 // Copyright The XCSoar Project
 
 #include "CDFDecoder.hpp"
+#include "Skysight.hpp"
 
 // no forecast for Darwin, Kobo, OpenVario
-#if defined(CMAKE_PROJECT) || !(defined(ANDROID) || defined(_WIN32))
+#if defined(CMAKE_PROJECT) || 1 || !(defined(ANDROID) || defined(_WIN32))
 # include <netcdf>
 #else
 # include <netcdfcpp.h>
