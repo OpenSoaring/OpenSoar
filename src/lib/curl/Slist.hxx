@@ -31,7 +31,7 @@ public:
 		return *this;
 	}
 
-	struct curl_slist *Get() noexcept {
+	struct curl_slist *Get() const noexcept {
 		return head;
 	}
 
