@@ -151,6 +151,14 @@ elseif(WIN32)
   )
 endif()
 
+# Linux USB / serial hotplug monitor (libudev).
+# The translation unit is wrapped in #ifdef __linux__, so adding it
+# unconditionally is harmless on other platforms — but libudev itself
+# is only linked on Linux (see top-level CMakeLists.txt).
+list(APPEND _SOURCES
+      Device/PortMonitorLinux.cpp
+)
+
 set(SCRIPT_FILES
     CMakeSource.cmake
 )

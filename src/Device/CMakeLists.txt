@@ -55,6 +55,12 @@ add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
 
 target_link_libraries(${TARGET_NAME} PUBLIC Job NMEA FLARM)
 
+# Linux USB / serial hotplug monitor needs libudev.
+if (LIBUDEV_FOUND)
+  target_include_directories(${TARGET_NAME} PRIVATE ${LIBUDEV_INCLUDE_DIRS})
+  target_link_libraries(${TARGET_NAME} PRIVATE ${LIBUDEV_LIBRARIES})
+endif()
+
 # message(FATAL_ERROR "Stop!")
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Libs)
 

@@ -308,6 +308,47 @@ else (HAVE_SKYSIGHT)
   message(STATUS " -> No SkySight")
 endif (HAVE_SKYSIGHT)
 
+set(HAVE_REMOTESTICK ON)
+if (HAVE_REMOTESTICK)
+    add_compile_definitions(HAVE_REMOTE_STICK)
+
+# libudev for Linux USB / serial hotplug detection (PortMonitorLinux).
+# On non-Linux platforms the .cpp is an empty translation unit, so no
+# library is needed.
+#
+# We try pkg-config first (the usual case); if that fails we fall back
+# to a plain find_library / find_path search so that systems without
+# pkg-config or without a libudev.pc still get detected as long as
+# libudev.so + libudev.h are installed somewhere standard.
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND NOT ANDROID)
+  find_package(PkgConfig QUIET)
+  if (PkgConfig_FOUND)
+    pkg_check_modules(LIBUDEV QUIET libudev)
+  endif()
+
+  if (NOT LIBUDEV_FOUND)
+    find_path(LIBUDEV_INCLUDE_DIRS NAMES libudev.h)
+    find_library(LIBUDEV_LIB        NAMES udev)
+    if (LIBUDEV_INCLUDE_DIRS AND LIBUDEV_LIB)
+      set(LIBUDEV_FOUND TRUE)
+      set(LIBUDEV_LIBRARIES ${LIBUDEV_LIB})
+      message(STATUS "libudev: pkg-config miss, but found header (${LIBUDEV_INCLUDE_DIRS}) and library (${LIBUDEV_LIB})")
+    endif()
+  endif()
+
+  if (LIBUDEV_FOUND)
+    add_compile_definitions(HAVE_LIBUDEV)
+    message(STATUS "libudev found: hotplug monitor enabled")
+    # NOTE: link LIBUDEV_LIBRARIES into the Device target — done where
+    # the Device target is defined.
+  else()
+    message(STATUS "libudev not found: hotplug monitor disabled "
+                   "(install libudev-dev + pkg-config, or set "
+                   "LIBUDEV_INCLUDE_DIRS / LIBUDEV_LIB manually)")
+  endif()
+endif()
+endif (HAVE_REMOTESTICK)
+
 include(CMakeSource.cmake)
 set(3RDPARTY_DEPENDENCIES ON)
 set(3RDPARTY_TARGETS )
