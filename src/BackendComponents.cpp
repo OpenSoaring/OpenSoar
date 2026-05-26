@@ -3,6 +3,9 @@
 
 #include "BackendComponents.hpp"
 #include "Device/MultipleDevices.hpp"
+#if defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
+# include "Device/PortMonitorLinux.hpp"
+#endif
 #include "Blackboard/DeviceBlackboard.hpp"
 #include "Task/ProtectedTaskManager.hpp"
 #include "Computer/GlideComputer.hpp"

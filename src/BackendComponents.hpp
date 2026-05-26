@@ -10,6 +10,7 @@ class Logger;
 class NMEALogger;
 class GlueFlightLogger;
 class MultipleDevices;
+class PortMonitorLinux;
 class DeviceBlackboard;
 class MergeThread;
 class ProtectedTaskManager;
@@ -30,6 +31,10 @@ struct BackendComponents {
 
   const std::unique_ptr<DeviceBlackboard> device_blackboard;
   std::unique_ptr<MultipleDevices> devices;
+#if defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
+  /** Linux USB / serial hotplug monitor; nullptr on other platforms. */
+  std::unique_ptr<PortMonitorLinux> port_monitor;
+#endif
   std::unique_ptr<MergeThread> merge_thread;
 
   std::unique_ptr<ProtectedTaskManager> protected_task_manager;
