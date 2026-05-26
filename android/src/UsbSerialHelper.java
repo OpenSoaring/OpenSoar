@@ -315,6 +315,7 @@ public final class UsbSerialHelper extends BroadcastReceiver {
         UsbDeviceInterface deviface = new UsbDeviceInterface(device, iface);
         interfaces.add(deviface);
         broadcastDetectedDeviceInterface(deviface);
+        nativeOnPortDetected(deviface.id);
       }
     }
   }
@@ -333,6 +334,7 @@ public final class UsbSerialHelper extends BroadcastReceiver {
       UsbDeviceInterface iface = iter.next();
       if (iface.isDevice(removeddevice)) {
         iface.onDisconnect();
+        nativeOnPortRemoved(iface.id);
         iter.remove();
       }
     }
@@ -408,4 +410,18 @@ public final class UsbSerialHelper extends BroadcastReceiver {
   public synchronized void removeDetectDeviceListener(DetectDeviceListener l) {
     detectListeners.remove(l);
   }
+
+  /**
+   * Forward USB attach to the native MultipleDevices, so a device whose
+   * port (VID:PID[serial]) is configured can be reopened automatically.
+   * Mirrors the WM_DEVICECHANGE path on Windows and PortMonitorLinux on
+   * Linux.
+   */
+  private static native void nativeOnPortDetected(String id);
+
+  /**
+   * Forward USB detach to the native MultipleDevices, so the matching
+   * device port can be closed cleanly.
+   */
+  private static native void nativeOnPortRemoved(String id);
 }

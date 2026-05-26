@@ -5,9 +5,15 @@
 #include "Context.hpp"
 #include "NativeDetectDeviceListener.hpp"
 #include "PortBridge.hpp"
+#include "Components.hpp"
+#include "BackendComponents.hpp"
+#include "Device/MultipleDevices.hpp"
+#include "Operation/PopupOperationEnvironment.hpp"
 #include "java/Class.hxx"
 #include "java/Env.hxx"
 #include "java/String.hxx"
+
+#include <jni.h>
 
 static Java::TrivialClass cls;
 static jmethodID ctor;
@@ -92,3 +98,51 @@ UsbSerialHelper::Connect(JNIEnv *env, const char *name, unsigned baud)
 
   return new PortBridge(env, obj);
 }
+
+/*
+ * Hotplug bridge from android/src/UsbSerialHelper.java.
+ *
+ * On USB device attach/detach, Java calls into these static native
+ * methods with the port identifier (VID:PID[serial], same format
+ * stored in the device config "path"). We forward to MultipleDevices,
+ * which finds any DeviceDescriptor whose config.path matches and
+ * reopens / closes it — mirroring the Windows WM_DEVICECHANGE handler
+ * and PortMonitorLinux.
+ */
+
+static void
+ForwardPortEvent(JNIEnv *env, jstring _id, bool attached) noexcept
+{
+  if (backend_components == nullptr ||
+      backend_components->devices == nullptr ||
+      _id == nullptr)
+    return;
+
+  const auto id = Java::String::GetUTFChars(env, _id);
+  static PopupOperationEnvironment op_env;
+
+  if (attached)
+    backend_components->devices->DetectedPort(id.c_str(), op_env);
+  else
+    backend_components->devices->RemovedPort(id.c_str(), op_env);
+}
+
+extern "C" {
+
+JNIEXPORT void JNICALL
+Java_de_opensoar_UsbSerialHelper_nativeOnPortDetected(JNIEnv *env,
+                                                      jclass /*cls*/,
+                                                      jstring id) noexcept
+{
+  ForwardPortEvent(env, id, true);
+}
+
+JNIEXPORT void JNICALL
+Java_de_opensoar_UsbSerialHelper_nativeOnPortRemoved(JNIEnv *env,
+                                                     jclass /*cls*/,
+                                                     jstring id) noexcept
+{
+  ForwardPortEvent(env, id, false);
+}
+
+} // extern "C"
