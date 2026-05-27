@@ -57,18 +57,22 @@ public:
 private:
   PortState state;
   void UpdateList() {
+#if defined(__TEST__  )
     LogFmt("USB-Update");
+#endif   //defined(__TEST__  )
 
     if (state != port.GetState())
       state = port.GetState();
 
     if (state == PortState::READY) {
-
+#if defined(__TEST__  )
+      // heartbeat every second for testing
       try {
         PortWriteNMEA(port, "PSRCI,Q,Device", env);
       } catch (const std::exception &e) {
         LogFmt("StickRemoteControl: Write exception: {}", e.what());
       }
+#endif   //defined(__TEST__  )
     }
   }
 };
