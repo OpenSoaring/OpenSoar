@@ -6,8 +6,8 @@
 #include "Widget/RowFormWidget.hpp"
 #include "Form/DataField/Listener.hpp"
 #include "Device/Config.hpp"
-
-#include <cassert>
+#include "Blackboard/BlackboardListener.hpp"
+#include <string>
 
 class DeviceEditWidget : public RowFormWidget, DataFieldListener {
 public:
@@ -18,10 +18,13 @@ public:
 private:
   DeviceConfig config;
 
+  std::string firmware_version;
+
   Listener *listener = nullptr;
 
 public:
-  DeviceEditWidget(const DeviceConfig &_config) noexcept;
+  DeviceEditWidget(const DeviceConfig &_config,
+                 const char *_firmware_version = nullptr) noexcept;
 
   void SetListener(Listener *_listener) noexcept {
     assert(listener == nullptr);
@@ -48,4 +51,5 @@ public:
 private:
   /* virtual methods from DataFieldListener */
   void OnModified(DataField &df) noexcept override;
+  
 };

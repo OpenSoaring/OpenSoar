@@ -249,8 +249,8 @@ DeviceListWidget::Prepare(ContainerWindow &parent,
   const DialogLook &look = UIGlobals::GetDialogLook();
   const unsigned margin = Layout::GetTextPadding();
   font_height = look.list.font->GetHeight();
-  CreateList(parent, look, rc, 3 * margin + font_height +
-             look.small_font.GetHeight()).SetLength(NUMDEV);
+CreateList(parent, look, rc, 3 * margin + font_height +
+           look.small_font.GetHeight()).SetLength(NUMDEV);
 
   for (Item &i : items)
     i.Clear();
@@ -480,7 +480,8 @@ DeviceListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
 
   canvas.Select(look.small_font);
   canvas.DrawText(rc.GetTopLeft() + PixelSize{margin, 2 * margin + font_height},
-                  status);
+                  status);              
+
 }
 
 void
@@ -601,7 +602,22 @@ DeviceListWidget::EditCurrent()
 
   const unsigned index = current;
   DeviceConfig &config = CommonInterface::SetSystemSettings().devices[index];
-  DeviceEditWidget widget(config);
+  std::string firmware_version;
+
+  {
+    const std::lock_guard lock{device_blackboard.mutex};
+    const NMEAInfo &basic = device_blackboard.RealState(index);
+
+    firmware_version = basic.device.software_version.c_str();
+
+    if (firmware_version.empty())
+      firmware_version = basic.secondary_device.software_version.c_str();
+  }
+
+  DeviceEditWidget widget(config,
+                        firmware_version.empty()
+                          ? "No Device..."
+                          : firmware_version.c_str());
 
   if (!DefaultWidgetDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
                            _("Edit device"), widget))

@@ -102,9 +102,12 @@ EditPortCallback(const char *caption, DataField &df,
   return PortPicker((DataFieldEnum &)df, caption);
 }
 
-DeviceEditWidget::DeviceEditWidget(const DeviceConfig &_config) noexcept
+DeviceEditWidget::DeviceEditWidget(const DeviceConfig &_config,
+                                   const char *_firmware_version) noexcept
   :RowFormWidget(UIGlobals::GetDialogLook()),
-   config(_config) {}
+   config(_config),
+   firmware_version(_firmware_version != nullptr ? _firmware_version : "")
+{}
 
 void
 DeviceEditWidget::SetConfig(const DeviceConfig &_config) noexcept
@@ -133,7 +136,7 @@ DeviceEditWidget::SetConfig(const DeviceConfig &_config) noexcept
   LoadValue(SyncToDevice, config.sync_to_device);
   LoadValue(K6Bt, config.k6bt);
   LoadValueEnum(EngineTypes, config.engine_type);
-
+  
   UpdateVisibilities();
 }
 
@@ -338,7 +341,20 @@ DeviceEditWidget::Prepare(ContainerWindow &parent,
              _("Whether you use a K6Bt to connect the device."),
              config.k6bt, this);
   SetExpertRow(K6Bt);
+  
+if (StringIsEqual(config.driver_name, "Larus")) {
+  StaticString<80> firmware_text;
 
+  if (!firmware_version.empty())
+    firmware_text.Format("%s", firmware_version.c_str());
+  else
+    firmware_text.Format("%s", "No Device");
+
+  AddReadOnly(_("Firmware version"),
+              _("Larus firmware version"),
+              firmware_text);
+}
+  
   UpdateVisibilities();
 }
 

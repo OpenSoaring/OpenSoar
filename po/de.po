@@ -2434,6 +2434,7 @@ msgstr "Hardware-Version"
 #: src/Dialogs/Device/LX/ManageLXNAVVarioDialog.cpp:58
 #: src/Dialogs/Device/LX/ManageNanoDialog.cpp:57
 #: src/Dialogs/Device/LX/ManageLX16xxDialog.cpp:49
+#: src/Dialogs/Device/DeviceEditWidget.cpp:354
 msgid "Firmware version"
 msgstr "Firmware-Version"
 
