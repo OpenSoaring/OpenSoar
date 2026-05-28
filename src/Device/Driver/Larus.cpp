@@ -89,6 +89,14 @@ LarusDevice::ParseNMEA(const char *_line, NMEAInfo &info)
       return PLARW(line, info);
     case 'S':
       return PLARS(line, info);
+    case 'F':
+      /* $PLARF,<version>: the firmware version of the sensor box.
+         It belongs to the connected device, so the Larus manage
+         dialog shows it, not the device settings. */
+      info.device.product = "Larus"sv;
+      info.device.software_version = line.ReadView();
+      info.device.software_version.CleanASCII();
+      return true;
     default:
       break;
     }
@@ -451,6 +459,6 @@ LarusCreateOnPort([[maybe_unused]] const DeviceConfig &config, Port &com_port)
 const struct DeviceRegister larus_driver = {
   "Larus",
   "Larus",
-  DeviceRegister::SEND_SETTINGS,
+  DeviceRegister::SEND_SETTINGS | DeviceRegister::MANAGE,
   LarusCreateOnPort,
 };
