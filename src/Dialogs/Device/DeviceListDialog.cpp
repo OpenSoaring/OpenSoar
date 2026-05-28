@@ -10,6 +10,7 @@
 #include "ManageI2CPitotDialog.hpp"
 #include "ManageCAI302Dialog.hpp"
 #include "ManageFlarmDialog.hpp"
+#include "ManageLarusDialog.hpp"
 #include "LX/ManageLXNAVVarioDialog.hpp"
 #include "LX/ManageNanoDialog.hpp"
 #include "LX/ManageLX16xxDialog.hpp"
@@ -951,6 +952,18 @@ DeviceListWidget::ManageCurrent()
       ManageNanoDialog(lx_device, info);
     else if (lx_device.IsLX16xx())
       ManageLX16xxDialog(lx_device, info);
+  } else if (descriptor.IsDriver("Larus")) {
+    /* The firmware version belongs to the running device, not to the
+       configuration, so it is shown here and not in the edit dialog,
+       where the port may not even be open yet. */
+    DeviceInfo info;
+
+    {
+      const std::lock_guard lock{device_blackboard.mutex};
+      info = device_blackboard.RealState(current).device;
+    }
+
+    ManageLarusDialog(info);
   } else if (descriptor.IsDriver("Vega"))
     dlgConfigurationVarioShowModal(*device);
   else if (descriptor.IsDriver("BlueFly"))
