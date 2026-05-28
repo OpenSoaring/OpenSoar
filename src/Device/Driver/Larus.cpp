@@ -91,6 +91,13 @@ LarusDevice::ParseNMEA(const char *_line, NMEAInfo &info)
       return PLARW(line, info);
     case 'S':
       return PLARS(line, info);
+    case 'F': {
+      info.device.product = "Larus"sv;
+     char buffer[32];
+     CopyString(buffer, sizeof(buffer), line.ReadView());
+     info.device.software_version = buffer;
+     return true;
+    }
     default:
       break;
     }
