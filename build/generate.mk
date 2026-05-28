@@ -57,7 +57,7 @@ $(OUT)/include/InputEvents_Char2NE.hpp: $(SRC)/Input/InputQueue.hpp \
 XCI_LIST = default
 XCI_HEADERS = $(patsubst %,$(OUT)/include/InputEvents_%.hpp,$(XCI_LIST))
 
-ifeq ($(TARGET_IS_OPENVARIO),y)
+ifeq ($(TARGET_IS_OPENVARIO)$(TARGET_IS_ANDROID),yn)
   GETTEXT_EVENTS = Data/Input/defaultOV.xci
 else
   GETTEXT_EVENTS = Data/Input/default.xci
