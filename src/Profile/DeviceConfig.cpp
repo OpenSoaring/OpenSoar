@@ -264,6 +264,14 @@ Profile::GetDeviceConfig(ProfileMap &map, unsigned n,
 
   GET_PORT_VALUE("BluetoothMAC", n, config.bluetooth_mac, StandardPort.bluetooth_mac);
   GET_PORT_VALUE("PortName", n, config.port_name, StandardPort.port_name);
+#ifdef _WIN32
+    if (config.port_name.Contains("USBSER")) {
+      const char *start = config.port_name.c_str();
+      size_t pos = strstr(start, " (") - start;
+      if (pos > 0 && pos < strlen(start))
+          config.port_name.Truncate(pos);
+    }
+#endif
   GET_PORT_VALUE("IOIOUartID", n, config.ioio_uart_id, StandardPort.ioio_uart_id);
   GET_PORT_VALUE("IPAddress", n, config.ip_address, StandardPort.ip_address);
   GET_PORT_VALUE("TCPPort", n, config.tcp_port, StandardPort.tcp_port);

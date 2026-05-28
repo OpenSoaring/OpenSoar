@@ -56,7 +56,7 @@ private:
       return _("BLE sensor");
 
     case DeviceConfig::PortType::USB_SERIAL:
-      return _("USB serial");
+      return _("USB");
 
     default:
       return nullptr;

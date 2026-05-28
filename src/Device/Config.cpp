@@ -301,8 +301,11 @@ DeviceConfig::GetPortName(char *buffer, size_t max_size) const noexcept
     return buffer;
 
   case PortType::USB_SERIAL:
-    StringFormat(buffer, max_size, "%s: %s",
-                 _("USB serial"), path.c_str());
+    if (port_name.StartsWith("2341:8036"))
+      StringFormat(buffer, max_size, "%s",  "USB");
+    else
+      StringFormat(buffer, max_size, "%s: %s",
+                 "USB", port_name.c_str());
     return buffer;
   }
 
