@@ -194,9 +194,13 @@ try {
       std::string port_name;
       boost::split(strs, name, boost::is_any_of("\\"));
       port_name = value;
-      port_name += " (";
-      port_name += strs[2];
-      port_name += ")";
+      if (strs[2].starts_with("USBSER")) {
+        port_name += " (USB)";  // " (SteFly Stick)", " (Arduino)" or others
+      } else {
+        port_name += " (";
+        port_name += strs[2];
+        port_name += ")";
+      }
 
       AddPort(df, DeviceConfig::PortType::USB_SERIAL, value, port_name.c_str());
     } else if (dev.starts_with("\\\\?\\root#")) {
