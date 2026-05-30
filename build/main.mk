@@ -558,6 +558,7 @@ XCSOAR_SOURCES := \
 	$(SRC)/Device/Declaration.cpp \
 	$(SRC)/Device/MultipleDevices.cpp \
 	$(SRC)/Device/PortMonitorLinux.cpp \
+	$(SRC)/Device/PortMonitorWindows.cpp \
 	$(SRC)/Device/device.cpp \
 	$(SRC)/Device/Port/ConfiguredPort.cpp \
 	$(SRC)/Device/DataEditor.cpp \

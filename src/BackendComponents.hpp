@@ -11,6 +11,7 @@ class NMEALogger;
 class GlueFlightLogger;
 class MultipleDevices;
 class PortMonitorLinux;
+class PortMonitorWindows;
 class DeviceBlackboard;
 class MergeThread;
 class ProtectedTaskManager;
@@ -31,8 +32,19 @@ struct BackendComponents {
 
   const std::unique_ptr<DeviceBlackboard> device_blackboard;
   std::unique_ptr<MultipleDevices> devices;
-#if defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
-  /** Linux USB / serial hotplug monitor; nullptr on other platforms. */
+  /**
+   * USB / serial hotplug monitor. Platform-specific implementation:
+   *   Windows -> PortMonitorWindows (driven by WM_DEVICECHANGE)
+   *   Linux   -> PortMonitorLinux   (libudev, optional)
+   *   Android -> not used (the BroadcastReceiver in
+   *              UsbSerialHelper.java calls into MultipleDevices
+   *              directly via JNI)
+   * Field is absent on platforms without an implementation, so a
+   * `#ifdef` check is needed at every use site.
+   */
+#if defined(_WIN32)
+  std::unique_ptr<PortMonitorWindows> port_monitor;
+#elif defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
   std::unique_ptr<PortMonitorLinux> port_monitor;
 #endif
   std::unique_ptr<MergeThread> merge_thread;

@@ -48,7 +48,9 @@
 #include "Device/Factory.hpp"
 #include "Device/device.hpp"
 #include "Device/MultipleDevices.hpp"
-#if defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
+#if defined(_WIN32)
+# include "Device/PortMonitorWindows.hpp"
+#elif defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
 # include "Device/PortMonitorLinux.hpp"
 #endif
 #include "Topography/TopographyStore.hpp"
@@ -453,10 +455,13 @@ Startup(UI::Display &display)
     backend_components->nmea_logger.get(),
     *device_factory);
 
-#if defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
-  // Spin up the libudev hotplug monitor so USB / serial connect &
-  // disconnect events reach MultipleDevices::DetectedPort / RemovedPort,
-  // analogous to the Windows WM_DEVICECHANGE path.
+  // Wire up the per-platform USB / serial hotplug monitor so connect
+  // and disconnect events reach MultipleDevices::DetectedPort /
+  // RemovedPort.
+#if defined(_WIN32)
+  backend_components->port_monitor = std::make_unique<PortMonitorWindows>(
+    *backend_components->devices);
+#elif defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
   backend_components->port_monitor = std::make_unique<PortMonitorLinux>(
     asio_thread->GetEventLoop(), *backend_components->devices);
 #endif
@@ -760,9 +765,9 @@ Shutdown()
   // Close any device connections
   if (backend_components != nullptr && backend_components->devices != nullptr) {
     LogString("Stop devices");
-#if defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
+#if defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV))
     // Cancel the hotplug monitor before closing devices, otherwise a
-    // last-minute udev event could hit a half-destructed MultipleDevices.
+    // last-minute hotplug event could hit a half-destructed MultipleDevices.
     backend_components->port_monitor.reset();
 #endif
     backend_components->devices->Close();

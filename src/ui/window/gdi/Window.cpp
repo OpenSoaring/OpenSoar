@@ -9,17 +9,12 @@
 #include "Asset.hpp"
 #include "LogFile.hpp"
 
-#ifdef HAVE_REMOTE_STICK
-// new with usb detection:
+// Hotplug detection (WM_DEVICECHANGE) is forwarded to PortMonitorWindows,
+// which lives in BackendComponents. Keeping this window-message handler
+// thin avoids leaking Device-layer details into the GDI window code.
 #include "Components.hpp"
 #include "BackendComponents.hpp"
-#include "Device/MultipleDevices.hpp"
-#include "Operation/PopupOperationEnvironment.hpp"
-// #include <initguid.h>
-// #include <usbiodef.h>
-#include <Dbt.h>
-// #include "ProcessTimer.hpp"  
-#endif  //  HAVE_REMOTE_STICK
+#include "Device/PortMonitorWindows.hpp"
 
 #include <cassert>
 #include <windowsx.h>
@@ -313,51 +308,11 @@ Window::OnMessage([[maybe_unused]] HWND _hWnd, UINT message,
         return DLGC_WANTMESSAGE;
       break;
 
-#ifdef HAVE_REMOTE_STICK
     case WM_DEVICECHANGE:
-    {
-      // PDEV_BROADCAST_HDR lpdb = (PDEV_BROADCAST_HDR)lParam;
-      if (lParam) switch (((PDEV_BROADCAST_HDR)lParam)->dbch_devicetype) {
-        case DBT_DEVTYP_DEVICEINTERFACE:
-        {
-          PDEV_BROADCAST_DEVICEINTERFACE lpdbv = (PDEV_BROADCAST_DEVICEINTERFACE)lParam;
-          std::string path = std::string(lpdbv->dbcc_name);
-          switch (wParam)
-          {
-            case DBT_DEVICEARRIVAL:
-              LogFmt("new device connected: {}", lpdbv->dbcc_name);
-              break;
-            case DBT_DEVICEREMOVECOMPLETE:
-              LogFmt("new device disconnected: {}", lpdbv->dbcc_name);
-              break;
-          }
-          break;
-        }
-		
-        case DBT_DEVTYP_PORT: // serial or parallel (usb) port
-        {
-          PDEV_BROADCAST_PORT pDevPort = (PDEV_BROADCAST_PORT)lParam;
-          static PopupOperationEnvironment env;
-          switch (wParam)
-          {
-            case DBT_DEVICEARRIVAL:
-              backend_components->devices->DetectedPort(pDevPort->dbcp_name, env);
-              LogFmt("new device connected: {}", "device");
-              break;
-
-            case DBT_DEVICEREMOVECOMPLETE:
-              backend_components->devices->RemovedPort(pDevPort->dbcp_name, env);
-              LogFmt("device disconnected: {}", "device");
-              break;
-          }
-          break;
-        }
-        default:
-          LogFmt("WM_DEVICECHANGE: wParam={}, lParam={}", wParam, lParam);
-          break;
-        }
-      }
-#endif   // HAVE_REMOTE_STICK
+      if (backend_components != nullptr &&
+          backend_components->port_monitor != nullptr)
+        backend_components->port_monitor->HandleDeviceChange(wParam, lParam);
+      break;
   }
 
   if (message >= WM_USER && message <= 0x7FFF && OnUser(message - WM_USER))
