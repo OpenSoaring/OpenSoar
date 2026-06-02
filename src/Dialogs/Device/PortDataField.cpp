@@ -324,7 +324,7 @@ FillAndroidUsbSerialPorts([[maybe_unused]] DataFieldEnum &df,
 #ifdef ANDROID
   if (config.port_type == DeviceConfig::PortType::USB_SERIAL &&
       !config.path.empty())
-    SetPort(df, DeviceConfig::PortType::USB_SERIAL, config.path);
+    SetPort(df, DeviceConfig::PortType::USB_SERIAL, config.port_name);
 #endif
 }
 
