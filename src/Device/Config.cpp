@@ -303,6 +303,8 @@ DeviceConfig::GetPortName(char *buffer, size_t max_size) const noexcept
   case PortType::USB_SERIAL:
     if (port_name.StartsWith("2341:8036"))
       StringFormat(buffer, max_size, "%s",  "USB");
+    else if (port_name.StartsWith("1209:85"))
+      StringFormat(buffer, max_size, "%s",  "SteFly");
     else
       StringFormat(buffer, max_size, "%s: %s",
                  "USB", port_name.c_str());
