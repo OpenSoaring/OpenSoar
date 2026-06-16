@@ -757,7 +757,9 @@ Skysight::DisplayTileLayer()
       tile_no++) {
 
       if (!GeoBitmap::GetBounds(tile).Overlaps(map_bounds)) {
+#if defined(_DEBUG) && 0  // internal Debug only
         LogFmt("No Overlap: {}: {}-{}-{} ", active_layer->id, tile.zoom, tile.x, tile.y);
+#endif
 #if 1
         map_window->SetOverlay(tile_no, nullptr);
         tile_filenames[tile_no] = "";
