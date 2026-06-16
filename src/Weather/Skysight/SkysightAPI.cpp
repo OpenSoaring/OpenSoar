@@ -320,7 +320,8 @@ SkysightAPI::UpdateRegions(const boost::json::value &_regions)
 #ifdef SKYSIGHT_TIME_DELAY
     last_request = 0;  // the next request can be started
 #endif
-    TimerInvoke();
+    if (co_request && IsLoggedIn())
+      TimerInvoke();
   }
 #if defined(_DEBUG)
   LogFmt("{}: finished",__func__);
@@ -399,7 +400,7 @@ SkysightAPI::UpdateLayers(const boost::json::value &_layers)
 
     if (Skysight::GetSkysight()->NumSelectedLayers() == 0)
       Skysight::GetSkysight()->LoadSelectedLayers();
-    if(co_request)
+    if(co_request && IsLoggedIn())
        TimerInvoke();
   }
 
@@ -465,7 +466,8 @@ SkysightAPI::UpdateLastUpdates(const boost::json::value &_layers)
     }
     LogFmt("SkySight::LastUpdated count = {}: {}... ", layers.size(), str);
  #endif
-    TimerInvoke();
+    if (co_request && IsLoggedIn())
+      TimerInvoke();
   }
 #if defined(_DEBUG)
   LogFmt("{}: finished",__func__);
@@ -760,11 +762,12 @@ SkysightAPI::OnTimer()
   }
 
   if (!IsLoggedIn()) {
+    return;  // w/o login no further requests possible
+    if (!co_request->RequestCredentialKey())
+      return;
 #ifdef SKYSIGHT_TIME_DELAY
     last_request = now;
 #endif
-    co_request->RequestCredentialKey();
-    // return;
   }
 
   if (!inited_regions) {
