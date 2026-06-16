@@ -178,18 +178,23 @@ private:
   }
 };
 
+#ifdef SKYSIGHT_PENDING_REQUEST
 void
 SkysightRequest::OnRequestTimer()
 {
   std::lock_guard<Mutex> lock(request_mutex);
   if (!pending_requests.empty()) {
     RequestArgs args = pending_requests.front();
-    if (args.data->type == Net::FILE)
-      args.data->name = args.name;
+//    if (args.data->type == Net::FILE)
+//      args.data->name = args.name;
+#if defined(_DEBUG) && 1
+    LogFmt("OnRequestTimer: {} - {}", args.name, args.url);
+#endif
     Net::DownloadManager::Enqueue(args.url, args.name, std::move(args.data));
     pending_requests.pop_front();
   }
 }
+#endif  // def SKYSIGHT_PENDING_REQUEST
 
 bool
 SkysightRequest::SetCredentialKey(const boost::json::value &credentials)
@@ -244,7 +249,11 @@ try {
   url << SKYSIGHTAPI_BASE_URL;
   if (!url_part.empty())
      url << '/' << url_part;
+#ifdef SKYSIGHT_PENDING_REQUEST
   pending_requests.push_back({url.str(), name.data(), std::move(data)});
+#else  // def SKYSIGHT_PENDING_REQUEST
+  Net::DownloadManager::Enqueue(url.str(), name, std::move(data));
+#endif  // def SKYSIGHT_PENDING_REQUEST
   return true;
 }
 catch (...) {
@@ -292,8 +301,13 @@ try {
   data->type = Net::JSON;
 
   request_age = DateTime::now();
+#ifdef SKYSIGHT_PENDING_REQUEST
   pending_requests.push_back(
     { "https://skysight.io/api/auth", "authent", std::move(data) });
+#else  // def SKYSIGHT_PENDING_REQUEST
+  Net::DownloadManager::Enqueue(
+    "https://skysight.io/api/auth", "authent", std::move(data) );
+#endif  // def SKYSIGHT_PENDING_REQUEST
 
   return true;
 }
@@ -325,6 +339,7 @@ SkysightRequest::DownloadFile(const std::string_view url,
     default:
       break;
   }
+#ifdef SKYSIGHT_PENDING_REQUEST
   if (!pending_requests.empty()) {
     std::lock_guard<Mutex> lock(request_mutex);
     // Avoid doubled requests...
@@ -333,8 +348,12 @@ SkysightRequest::DownloadFile(const std::string_view url,
         return true;
       }
     }
-  }
+}
   pending_requests.push_back({ url.data(), filename.c_str(), std::move(data)});
+#else  // def SKYSIGHT_PENDING_REQUEST
+  Net::DownloadManager::Enqueue(
+       url.data(), filename.c_str(), std::move(data));
+#endif  // def SKYSIGHT_PENDING_REQUEST
 
   return true;
 }
@@ -360,7 +379,9 @@ SkysightRequest::SkysightRequest(SkysightAPI* _api,
   const std::string_view _password) : 
   api(_api), username(_username), password(_password) 
 {
+#ifdef  SKYSIGHT_PENDING_REQUEST
   request_timer.Schedule(std::chrono::milliseconds(1000));
+#endif  // SKYSIGHT_PENDING_REQUEST
   skysight_listener = new SkysightListener(this);
   request_headers = new CurlSlist();
   RequestCredentialKey();

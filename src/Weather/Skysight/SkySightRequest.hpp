@@ -46,7 +46,9 @@ private:
   time_t request_age = 0;
   std::vector<boost::json::string> allowed_regions;
   SkysightListener *skysight_listener = nullptr;
+#ifdef SKYSIGHT_PENDING_REQUEST
   UI::PeriodicTimer request_timer{ [this] { OnRequestTimer(); } };
+#endif  // SKYSIGHT_PENDING_REQUEST
   std::list<RequestArgs> pending_requests;
   Mutex request_mutex;
 
@@ -56,7 +58,9 @@ private:
   CurlSlist *request_headers = nullptr;
 
   void OnCompletion(std::exception_ptr error) noexcept;
+#ifdef SKYSIGHT_PENDING_REQUEST
   void OnRequestTimer();
+#endif  // SKYSIGHT_PENDING_REQUEST
 
 public:
   SkysightRequest(SkysightAPI *_api,
