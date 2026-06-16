@@ -176,11 +176,11 @@ try {
       // weird
       continue;
 
-    RegistryKey devices {HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\"
+    RegistryKey com_devices {HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\"
             "Control\\COM Name Arbiter\\Devices"};
     char name1[0x200];
 
-    if (!devices.GetValue(value, name1))
+    if (!com_devices.GetValue(value, name1))
       continue;
 
     // Registry "COM Name Arbiter\Devices" starts with
@@ -188,60 +188,73 @@ try {
     // USB:       "\\?\usb#"
     // root:       "\\?\root#" - possible virtual port
     // Normal:    "\\?\acpi#"   - an Kupschis Rechner!
-    std::string dev = name1;
-    if (dev.starts_with("\\\\?\\usb#")) {
+    std::string dev_name = name1;
+    if (dev_name.starts_with("\\\\?\\usb#")) {
       std::vector<std::string> strs;
-      std::string port_name;
+      std::string portname;
       boost::split(strs, name, boost::is_any_of("\\"));
-      port_name = value;
+      portname = value;
       if (strs[2].starts_with("USBSER")) {
-        port_name += " (USB)";  // " (SteFly Stick)", " (Arduino)" or others
+        boost::split(strs, dev_name, boost::is_any_of("#"));
+        std::string usb_device = "SYSTEM\\CurrentControlSet\\ENUM\\USB\\";
+        usb_device += strs[1]; // f.e.: "vid_1209&pid_8500&mi_00";
+        usb_device += "\\";
+        usb_device += strs[2]; // f.e. "7&3226aff9&0&0000";
+        RegistryKey usb_devices{ HKEY_LOCAL_MACHINE, usb_device.c_str()};
+        char friendly_name[0x100];// = nullptr;
+        // usb_devices.GetValue("DeviceDesc", name1);
+
+        if (usb_devices.GetValue("FriendlyName", friendly_name)) {
+          portname = friendly_name;  // " (SteFly Stick)", " (Arduino)" or others
+        }  else {
+          portname += " (USB)";  // " (SteFly Stick)", " (Arduino)" or others
+        }
       } else {
-        port_name += " (";
-        port_name += strs[2];
-        port_name += ")";
+        portname += " (";
+        portname += strs[2];
+        portname += ")";
       }
-
-      AddPort(df, DeviceConfig::PortType::USB_SERIAL, value, port_name.c_str());
-    } else if (dev.starts_with("\\\\?\\root#")) {
+      AddPort(df, DeviceConfig::PortType::USB_SERIAL, value, portname.c_str());
+    } else if (dev_name.starts_with("\\\\?\\root#")) {
       std::vector<std::string> strs;
-      std::string port_name;
+      std::string portname;
       boost::split(strs, name, boost::is_any_of("\\"));
-      port_name = value;
-      port_name += " (";
-      port_name += strs[2];
-      port_name += ")";
+      portname = value;
+      portname += " (";
+      portname += strs[2];
+      portname += ")";
 
-      AddPort(df, DeviceConfig::PortType::SERIAL, value, port_name.c_str());
-    } else if (dev.starts_with("\\\\?\\bthenum#")) {
+      AddPort(df, DeviceConfig::PortType::SERIAL, value, portname.c_str());
+    } else if (dev_name.starts_with("\\\\?\\bthenum#")) {
       std::vector<std::string> strs;
-      std::string port_name;
+      std::string portname;
       boost::split(strs, name1, boost::is_any_of("#"));
       boost::split(strs, strs[2], boost::is_any_of("_"));
       if (strs[1] == "c00000000") {
         boost::split(strs, strs[0], boost::is_any_of("&"));
         if (strs[3] != "000000000000") {
           DeviceConfig::PortType port_type = DeviceConfig::PortType::DISABLED;
-          port_name = value;
-          port_name += " (";
+          portname = value;
+          portname += " (";
           if (blemap.find(strs[3]) != blemap.end()) {
             port_type = DeviceConfig::PortType::RFCOMM;
             port_type = DeviceConfig::PortType::BLE_HM10;
             // port_type = DeviceConfig::PortType::BLE_SENSOR;
-            port_name += blemap[strs[3]];
+            portname += blemap[strs[3]];
           } else if (bthmap.find(strs[3]) != bthmap.end()) {
             port_type = DeviceConfig::PortType::RFCOMM;
-            port_name += bthmap[strs[3]];
+            portname += bthmap[strs[3]];
           }
 
-          port_name += ")";
+          portname += ")";
           if (port_type != DeviceConfig::PortType::DISABLED)
             AddPort(df, port_type, value,
-                   port_name.c_str());
+                   portname.c_str());
         }
       }
-    } else //  if (dev.starts_with("\\\\?\\acpi#"))
+    } else {  //  if (dev_name.starts_with("\\\\?\\acpi#"))
       AddPort(df, DeviceConfig::PortType::SERIAL, value, name);
+    }
   }
 } catch (const std::system_error &) {
   // silently ignore registry errors
@@ -275,9 +288,7 @@ SetPort(DataFieldEnum &df, DeviceConfig::PortType type,
 
 static void FillSerialPorts(DataFieldEnum &df,
                             const DeviceConfig &config) noexcept {
-#if defined(HAVE_POSIX) || defined(_WIN32)
   DetectSerialPorts(df);
-#endif
 
   switch (config.port_type) {
   case DeviceConfig::PortType::SERIAL:
