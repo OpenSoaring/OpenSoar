@@ -107,8 +107,10 @@ public final class UsbSerialHelper extends BroadcastReceiver {
     public final String id;
 
     /**
-     * The id without the serial number.  This is used to match
-     * old-style device ids from old XCSoar profiles.
+     * Historically the "id without the serial number" — used to match
+     * old-style profile ids. Since the id itself is now permission-
+     * independent (no serial), this is a synonym kept for source
+     * compatibility.
      */
     public final String oldId;
 
@@ -122,8 +124,18 @@ public final class UsbSerialHelper extends BroadcastReceiver {
     public UsbDeviceInterface(UsbDevice dev_,int iface_) {
       device = dev_;
       iface = iface_;
-      id = makePortId(device, iface, true);
-      oldId = makePortId(device, iface, false);
+      /* The id MUST be permission-independent so that:
+         - the port picker shows the same value the first time the
+           device appears and after permission is granted,
+         - the value persisted in the profile keeps matching across
+           app restarts (Android grants serial-number access only
+           after the user has confirmed the permission dialog,
+           making any serial-suffixed id unstable until then),
+         - hotplug events (UsbSerialHelper.nativeOnPort* in
+           src/Android/UsbSerialHelper.cpp) report the same id every
+           time. The serial number is still shown in getDisplayName(). */
+      id = makePortId(device, iface, false);
+      oldId = id;
     }
 
     public boolean isDevice(UsbDevice otherDevice) {
@@ -131,10 +143,18 @@ public final class UsbSerialHelper extends BroadcastReceiver {
     }
 
     public boolean isId(String otherId) {
-      /* compare both id and oldId, because the XCSoar profile setting
-         may be older than XCSoar 7.25 and thus may not have the
-         serial number */
-      return otherId.contentEquals(id) || otherId.contentEquals(oldId);
+      if (otherId.contentEquals(id))
+        return true;
+
+      /* Backward compat: profiles written by older OpenSoar / XCSoar
+         versions may include a "[serialNumber]" suffix in the id.
+         Strip it and compare against the prefix. */
+      int bracket = otherId.indexOf('[');
+      if (bracket > 0 &&
+          otherId.substring(0, bracket).contentEquals(id))
+        return true;
+
+      return false;
     }
 
     public String getDisplayName() {

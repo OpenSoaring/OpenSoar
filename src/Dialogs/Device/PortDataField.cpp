@@ -329,17 +329,6 @@ FillAndroidBluetoothPorts(DataFieldEnum &df,
 }
 
 static void
-FillAndroidUsbSerialPorts([[maybe_unused]] DataFieldEnum &df,
-                          [[maybe_unused]] const DeviceConfig &config) noexcept
-{
-#ifdef ANDROID
-  if (config.port_type == DeviceConfig::PortType::USB_SERIAL &&
-      !config.path.empty())
-    SetPort(df, DeviceConfig::PortType::USB_SERIAL, config.port_name);
-#endif
-}
-
-static void
 FillAndroidIOIOPorts([[maybe_unused]] DataFieldEnum &df, [[maybe_unused]] const DeviceConfig &config) noexcept
 {
 #if defined(ANDROID)
@@ -366,7 +355,6 @@ FillPorts(DataFieldEnum &df, const DeviceConfig &config) noexcept
   FillPortTypes(df, config);
   FillSerialPorts(df, config);
   FillAndroidBluetoothPorts(df, config);
-  FillAndroidUsbSerialPorts(df, config);
   FillAndroidIOIOPorts(df, config);
 }
 
