@@ -23,6 +23,7 @@ set(_SOURCES
         Dialogs/Device/LX/LXNAVVarioConfigWidget.cpp
         Dialogs/Device/ManageCAI302Dialog.cpp
         Dialogs/Device/ManageFlarmDialog.cpp
+        Dialogs/Device/SteFly/ManageRemoteDialog.cpp
         Dialogs/Device/PortMonitor.cpp
         Dialogs/Device/PortPicker.cpp
         Dialogs/Device/PortDataField.cpp
