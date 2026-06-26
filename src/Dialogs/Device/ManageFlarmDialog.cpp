@@ -136,7 +136,7 @@ ManageFLARMWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                         "FLARM", widget);
   });
 
-  AddButton(_("Reboot"), [this](){
+  AddButton(_("Reboot Flarm"), [this](){
     try {
       MessageOperationEnvironment env;
       device.Restart(env);
