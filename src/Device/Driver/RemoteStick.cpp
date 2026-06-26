@@ -17,6 +17,7 @@
 #include "Device/Port/State.hpp"
 #include "Device/Util/NMEAWriter.hpp"
 #include "Operation/MessageOperationEnvironment.hpp"
+#include "time/TimeoutClock.hpp"
 #ifdef _WIN32
 # include "Device/Port/SerialPort.hpp"
 #else
@@ -27,55 +28,6 @@
 #include <span>
 
 // PSRCI,R: (S)tick(R)emote(C)ontrol(I)nfo, (R)emote
-
-class StickRemoteControl : public AbstractDevice {
-#ifdef _WIN32
-  // config is unused up to now
-  [[maybe_unused]] const DeviceConfig &config;
-#endif
-  Port &port;
-  static MessageOperationEnvironment env;
-  UI::PeriodicTimer timer{ [this] { UpdateList(); }};
-  
-public:
-  StickRemoteControl([[maybe_unused]] const DeviceConfig &_config, Port &_port)
-#ifdef _WIN32
-    : config(_config), port(_port) {
-#else
-    : port(_port) {
-#endif
-    // PortWriteNMEA(port, "PSRCI,Q,Version", env);
-    PortWriteNMEA(port, "PSRCI,Q,Time", env);
-    
-    /* < 1sec for WatchDog heartbeat */
-    timer.Schedule(std::chrono::milliseconds(800));
-  }
-
-  /* virtual methods from class Device */
-  bool ParseNMEA(const char *line, NMEAInfo &info) override;
-
-private:
-  PortState state;
-  void UpdateList() {
-#if defined(__TEST__  )
-    LogFmt("USB-Update");
-#endif   //defined(__TEST__  )
-
-    if (state != port.GetState())
-      state = port.GetState();
-
-    if (state == PortState::READY) {
-#if defined(__TEST__  )
-      // heartbeat every second for testing
-      try {
-        PortWriteNMEA(port, "PSRCI,Q,Device", env);
-      } catch (const std::exception &e) {
-        LogFmt("StickRemoteControl: Write exception: {}", e.what());
-      }
-#endif   //defined(__TEST__  )
-    }
-  }
-};
 
 MessageOperationEnvironment StickRemoteControl::env;
 
@@ -108,16 +60,62 @@ StickRemoteControl::ParseNMEA(const char *_line,
   }
 }
 
+void
+StickRemoteControl::Send(const char *sentence, OperationEnvironment &env)
+{
+  assert(sentence != nullptr);
+
+  PortWriteNMEA(port, sentence, env);
+}
+
+bool
+StickRemoteControl::Receive(const char *prefix, char *buffer, size_t length,
+  OperationEnvironment &env,
+  std::chrono::steady_clock::duration _timeout)
+{
+  assert(prefix != nullptr);
+
+
+  TimeoutClock timeout(_timeout);
+
+  port.ExpectString(prefix, env, _timeout);
+
+  char *p = (char *)buffer, *end = p + length;
+  while (true) {
+    size_t nbytes = port.WaitAndRead(std::as_writable_bytes(std::span{ p, std::size_t(end - p) }),
+      env, timeout);
+
+    char *q = (char *)memchr(p, '*', nbytes);
+    if (q != nullptr) {
+      /* stop at checksum */
+      *q = 0;
+      return true;
+    }
+
+    p += nbytes;
+
+    if (p >= end)
+      /* line too long */
+      return false;
+  }
+}
+
+void
+StickRemoteControl::Restart(OperationEnvironment &env)
+{
+  Send("POPSQ,Reboot", env);
+}
+
 static Device *
 RemoteStickCreateOnPort(const DeviceConfig &config, Port &com_port)
 {
   return new StickRemoteControl(config, com_port);
 }
 
-
 const struct DeviceRegister remote_stick_driver = {
   "RemoteStick",
   "RemoteStick",
+  DeviceRegister::MANAGE |
     // DeviceRegister::NMEA_OUT | // sends all NMEA input to NMEA out
   DeviceRegister::NO_TIMEOUT |
   DeviceRegister::SEND_SETTINGS |
