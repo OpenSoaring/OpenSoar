@@ -12,6 +12,7 @@
 #include "LX/ManageLXNAVVarioDialog.hpp"
 #include "LX/ManageNanoDialog.hpp"
 #include "LX/ManageLX16xxDialog.hpp"
+#include "SteFly/ManageRemoteDialog.hpp"
 #include "PortMonitor.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Dialogs/Message.hpp"
@@ -683,9 +684,9 @@ DeviceListWidget::ManageCurrent()
 
   if (descriptor.IsDriver("CAI 302"))
     ManageCAI302Dialog(UIGlobals::GetMainWindow(), look, *device);
-  else if (descriptor.IsDriver("Stratux"))
+  else if (descriptor.IsStratux())
     ManageStratuxDialog(*device);
-  else if (descriptor.IsDriver("FLARM")) {
+  else if (descriptor.IsFlarm()) {
     FlarmVersion version;
     FlarmHardware hardware;
     FlarmState state;
@@ -698,7 +699,7 @@ DeviceListWidget::ManageCurrent()
     }
 
     ManageFlarmDialog(*device, version, hardware, state);
-  } else if (descriptor.IsDriver("LX")) {
+  } else if (descriptor.IsLXDriver()) {
     DeviceInfo info, secondary_info;
 
     {
