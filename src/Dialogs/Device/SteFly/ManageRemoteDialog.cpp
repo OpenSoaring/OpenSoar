@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#include "ManageSteFlyRSDialog.hpp"
-#include "FLARM/ConfigWidget.hpp"
+#include "ManageRemoteDialog.hpp"
+// #include "FLARM/ConfigWidget.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Dialogs/ComboPicker.hpp"
 #include "Dialogs/Error.hpp"
@@ -12,6 +12,7 @@
 #include "Language/Language.hpp"
 #include "Operation/MessageOperationEnvironment.hpp"
 #include "Operation/PopupOperationEnvironment.hpp"
+#include "Device/Driver/RemoteStick.hpp"
 // #include "Device/Driver/FLARM/Device.hpp"
 // #include "FLARM/Version.hpp"
 // #include "FLARM/Hardware.hpp"
@@ -19,31 +20,32 @@
 
 #include <string>
 
-class ManageFLARMWidget final
+
+class ManageRemoteWidget final
   : public RowFormWidget {
   enum Controls {
     Setup,
     Reboot,
   };
 
-  FlarmDevice &device;
-  const FlarmVersion version;
-  FlarmHardware hardware;
-  const FlarmState state;
+  StickRemoteControl &device;
+//  const FlarmVersion version;
+//  FlarmHardware hardware;
+//  const FlarmState state;
 
 public:
-  ManageFLARMWidget(const DialogLook &look, FlarmDevice &_device,
-                    const FlarmVersion &version,
-                    FlarmHardware &hardware,
-                    const FlarmState &_state)
-    :RowFormWidget(look), device(_device),
-     version(version), hardware(hardware), state(_state) {}
+  ManageRemoteWidget(const DialogLook &look, StickRemoteControl &_device)
+                    // const FlarmVersion &version,
+                    // FlarmHardware &hardware,
+                    // const FlarmState &_state)
+    :RowFormWidget(look), device(_device) {}
+//     version(version), hardware(hardware), state(_state) {}
 
   /* virtual methods from Widget */
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
 };
 
-static const char *const flarm_config_names[] = {
+static const char *const stefly_config_names[] = {
   "DEVTYPE",
   "CAP",
   "RADIOID",
@@ -51,10 +53,11 @@ static const char *const flarm_config_names[] = {
 };
 
 void
-ManageFLARMWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
+ManageRemoteWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                            [[maybe_unused]] const PixelRect &rc) noexcept
 {
   PopupOperationEnvironment env;
+#if 0
   if(device.RequestAllSettings(flarm_config_names, env)) {
     if (const auto x = device.GetSetting("DEVTYPE"))
       hardware.device_type = *x;
@@ -135,17 +138,21 @@ ManageFLARMWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     DefaultWidgetDialog(UIGlobals::GetMainWindow(), GetLook(),
                         "FLARM", widget);
   });
+#endif
 
   AddButton(_("Reboot"), [this](){
+    // device.NMEA
+#if 1
     try {
       MessageOperationEnvironment env;
       device.Restart(env);
-    } catch (OperationCancelled) {
+      // Destroy();  // ??    } catch (OperationCancelled) {
     } catch (...) {
       ShowError(std::current_exception(), _("Error"));
     }
+#endif
   });
-
+#if 0
   AddButton(_("Simulation"), [this](){
     ComboList list;
     const auto sim1_label = std::to_string(1) + " - " + _("FLARM collision");
@@ -193,18 +200,19 @@ ManageFLARMWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
       ShowError(std::current_exception(), _("Error"));
     }
   });
+#endif
 }
 
 void
-ManageFlarmDialog(Device &device, const FlarmVersion &version,
-                  FlarmHardware &hardware, const FlarmState &state)
+ManageRemoteDialog(Device &device /*, const FlarmVersion &version,
+                  FlarmHardware &hardware, const FlarmState &state*/)
 {
   WidgetDialog dialog(WidgetDialog::Auto{}, UIGlobals::GetMainWindow(),
                       UIGlobals::GetDialogLook(),
-                      "FLARM",
-                      new ManageFLARMWidget(UIGlobals::GetDialogLook(),
-                                            (FlarmDevice &)device,
-                                            version, hardware, state));
+                      "SteFly Remote",
+                      new ManageRemoteWidget(UIGlobals::GetDialogLook(),
+                                            (StickRemoteControl &)device /*,
+                                            version, hardware, state*/));
   dialog.AddButton(_("Close"), mrCancel);
   dialog.ShowModal();
 }

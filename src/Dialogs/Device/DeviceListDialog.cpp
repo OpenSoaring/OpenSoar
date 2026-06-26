@@ -686,6 +686,8 @@ DeviceListWidget::ManageCurrent()
     ManageCAI302Dialog(UIGlobals::GetMainWindow(), look, *device);
   else if (descriptor.IsStratux())
     ManageStratuxDialog(*device);
+  else if (descriptor.IsRemoteStick())
+    ManageRemoteDialog(*device);
   else if (descriptor.IsFlarm()) {
     FlarmVersion version;
     FlarmHardware hardware;

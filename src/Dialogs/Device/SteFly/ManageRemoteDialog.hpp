@@ -4,10 +4,10 @@
 #pragma once
 
 class Device;
-struct FlarmVersion;
-struct FlarmHardware;
-struct FlarmState;
+// struct FlarmVersion;
+// struct FlarmHardware;
+// struct FlarmState;
 
 void
-ManageFlarmDialog(Device &device, const FlarmVersion &version,
-                  FlarmHardware &hardware, const FlarmState &state);
+ManageRemoteDialog(Device &device /*, const FlarmVersion &version,
+                  FlarmHardware &hardware, const FlarmState &state*/);
