@@ -445,6 +445,22 @@ public:
     return IsDriver("Vega");
   }
 
+  bool IsFlarm() const noexcept {
+    return IsDriver("FLARM");
+  }
+
+  bool IsRemoteStick() const noexcept {
+    return IsDriver("RemoteStick");
+  }
+
+  bool IsLXDriver() const noexcept {
+    return IsDriver("LX");
+  }
+
+  bool IsStratux() const noexcept {
+    return IsDriver("Stratux");
+  }
+
   bool IsNMEAOut() const noexcept;
   bool IsManageable() const noexcept;
 
