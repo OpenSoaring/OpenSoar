@@ -1,9 +1,26 @@
 OpenSoar Version 7.44.24 - not released yet
+---------------
+
+OpenSoar Test Version v7.44.24.t06 > 2026/06/26
+* RemoteStick
+  - bugfix Android RemoteStick detection
+  - add Manage window to control the remote stick from OpenSoar
+  - add commands Send, Receive and Restart to reemote stick driver
+
+OpenSoar Test Version v7.44.24.t05 - released 2026/06/16 (prerelease for 7.44.24)
+Ich habe mal eine vor-vorläufige Testversion von OpenSoar (v7.44.24.t05) auf meine Homepage gelegt, siehe https://opensoar.de/releases/v7.44.24/Android/OpenSoar-7.44.24.t05-arm64.apk - mit Erkennung des seriellen Ports vom RemoteStick, SkySight-Wetter auf verschiedenen Pages, Merge mit XCSoar 7.44, ein 7.Driver-Port (soll später verborgen werden) und noch vielen anderen kleineren Verbesserungen...  
+Folgende Mankos: Die SkySight-Overlays sind momentan nur aus dem 'Selected'-Pool zu nehmen (Info->Weather->SkySight) - das soll später umgekehrt sein: Für die Overlays sollen alle Seiten möglich sein und die Selected-Gruppe speist sich aus den dort verwendeten Overlays - 
+Bei der ersten Treibersuche taucht der RemoteStick noch nicht auf, das muss man noch ein 2.Mal machen... Und wenn er dann ausgewählt ist taucht er noch einmal doppelt auf - ist aber nicht verwendbar! Im Monitor kann man da aber schön sehen, welche Tasten gedrückt wurden, da alle Events noch einmal über die serielle Schnittstelle geschickt werden. Beachtet bitte, dass durch den XCSoar-Merge die ganzen Disclaimer-Meldungen bei jeder neuen Version eingeblendet werden, m.E. ein wenig nervig...  Auch am Startup habe ich ein wenig 'herumgeschraubt', da fällt er bei mehreren Profiles nach 10s in den zuletzt verwendeten (bleibt also da nicht mehr stehen). wird in den Configs ein anderes Profil ausgewählt, startet OpenSoar noch einmal neu mit diesem Profile (also ohne manuell beenden und neu starten zu müssen)
+* RemoteStick
+  - add port and driver for detection of remote sticks (Arduino or better RemoteStick (1209:8500)
+
+#### XCSoar Version 7.44(3) - dev state on 2025/04/07
 
 OpenSoar Version 7.43-3.24 - released 2025/11/20
   v7.43-3.23.8 as release version
   
 OpenSoar Version 7.43-3.23.8 - released 2025/07/09 (prerelease for 7.43-3.24)
+---------------
 * Weather
   - SkySight:(Re-)Activation 'Update' and 'Update All'-Buttons in SkySight dialog for downloading offline charts
   - SkySight: Enable live view (Satellite and Rain) for OpenVario too (unfortunataly forecast not available yet)
