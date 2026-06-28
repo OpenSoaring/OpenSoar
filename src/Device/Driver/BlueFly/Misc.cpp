@@ -11,7 +11,7 @@ BlueFlyDevice::LinkTimeout()
 }
 
 BlueFlyDevice::BlueFlyDevice(Port &_port)
-    :port(_port),
+    :ManagedDevice(_port),
      settings({0}),
      settings_keys(nullptr)
 {

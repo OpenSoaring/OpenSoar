@@ -4,16 +4,15 @@
 #pragma once
 
 #include "Device/Driver.hpp"
+#include "Device/ManagedDevice.hpp"
 #include "Math/KalmanFilter1d.hpp"
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 
 #include <cassert>
 #include <string_view>
 
 struct NMEAInfo;
 
-class BlueFlyDevice : public AbstractDevice {
+class BlueFlyDevice : public ManagedDevice {
 public:
   struct BlueFlySettings {
     unsigned version;
@@ -54,10 +53,11 @@ public:
 };
 
 private:
-  Port &port;
-  Mutex mutex_settings;
-  Cond settings_cond;
-  bool settings_ready;
+  // Async-channel that holds the BST/SET reply state. The legacy field
+  // names (`mutex_settings`, `settings_cond`, `settings_ready`) used to
+  // live directly on the device; they are now the members of the base
+  // class's PendingBlock.
+  PendingBlock settings_block;
   BlueFlySettings settings;
   char *settings_keys;
 
