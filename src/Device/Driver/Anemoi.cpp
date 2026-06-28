@@ -7,6 +7,7 @@
 
 #include "Device/Driver/Anemoi.hpp"
 #include "Device/Driver.hpp"
+#include "Device/ManagedDevice.hpp"
 #include "Device/Port/Port.hpp"
 #include "NMEA/Info.hpp"
 #include "RadioFrequency.hpp"
@@ -28,8 +29,8 @@ using std::string_view_literals::operator""sv;
  */
 
 #define WITH_PORT 0
-class AnemoiDevice final : public AbstractDevice {
-  // unused up to now: Port &port;
+class AnemoiDevice final : public ManagedDevice {
+  // Port is now inherited from ManagedDevice.
 
   static constexpr std::byte StartByte{'$'}; //!< Command start character.
 
@@ -77,8 +78,7 @@ private:
   ~AnemoiDevice() { active = false; }
 
 public:
-  AnemoiDevice([[maybe_unused]] Port &_port) : active(true) {}
-  // port is unused: AnemoiDevice(Port &_port) : port(_port) {}
+  AnemoiDevice(Port &_port) : ManagedDevice(_port), active(true) {}
   
   /* virtual methods from class Device */
   virtual bool DataReceived(std::span<const std::byte> s,

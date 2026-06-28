@@ -10,6 +10,7 @@
 
 #include "Device/Driver/Larus.hpp"
 #include "Device/Driver.hpp"
+#include "Device/ManagedDevice.hpp"
 #include "Device/Port/Port.hpp"
 #include "Device/Util/NMEAWriter.hpp"
 #include "NMEA/Checksum.hpp"
@@ -25,12 +26,11 @@
 #include <span>
 using std::string_view_literals::operator""sv;
 
-class LarusDevice : public AbstractDevice {
-  Port &port;
-
+class LarusDevice : public ManagedDevice {
 public:
-  LarusDevice(Port &_port) : port(_port) {
-    // VarioSTFSwitch = *LarusVarioSTFSwitch;
+  LarusDevice(Port &_port) : ManagedDevice(_port) {
+    // Inherits Port reference from ManagedDevice. Async-settings
+    // helpers are available for future Larus settings R/W work.
   }
 
   /* virtual methods from class Device */

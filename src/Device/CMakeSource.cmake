@@ -129,6 +129,11 @@ set(_SOURCES
         Device/Driver/Stratux/Driver.cpp
         Device/Driver/LoEFGREN.cpp
         # Android or Apple only: Device/SmartDeviceSensors.cpp
+
+        # Reusable base for drivers with async block-oriented R/W:
+        # BlueFly, SteFly RemoteStick (and any future Larus / Anemoi
+        # settings work) inherit from this.
+        Device/ManagedDevice.cpp
 )
 if(IS_OPENSOAR)
   # additional OpenSoar device driver
