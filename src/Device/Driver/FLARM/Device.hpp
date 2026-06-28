@@ -138,6 +138,7 @@ public:
 
   void Restart(OperationEnvironment &env);
 
+
   /**
    * Start a FLARM simulation scenario (PFLAF).
    * Not available on Classic FLARM or while in flight.

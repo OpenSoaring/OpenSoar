@@ -49,7 +49,8 @@
 #include "util/StringAPI.hxx"
 
 #ifdef HAVE_REMOTE_STICK
-# include "Device/Driver/RemoteStick.hpp"
+# include "Device/Driver/RemoteStick.hpp"      // pulls in remote_stick_driver
+# include "Device/Driver/SteFly/RotaryPanel.hpp" // pulls in rotary_panel_driver
 #endif
 
 
@@ -103,6 +104,7 @@ static const struct DeviceRegister *const driver_list[] = {
   &stratux_driver,
 #ifdef HAVE_REMOTE_STICK
   &remote_stick_driver,
+  &rotary_panel_driver,
 #endif
   nullptr
 };

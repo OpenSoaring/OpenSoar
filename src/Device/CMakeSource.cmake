@@ -140,7 +140,15 @@ if(IS_OPENSOAR)
   list(APPEND _SOURCES
         Device/Driver/Anemoi.cpp
         Device/Driver/AR62xx.cpp
-        Device/Driver/RemoteStick.cpp
+        Device/Driver/RemoteStick.cpp        # backwards-compat stub
+        # SteFly device family — RemoteStick (joystick) and RotaryPanel
+        # (encoder panel, currently a scaffold). Both inherit from
+        # SteFlyDevice (CommonDevice.hpp), which in turn inherits from
+        # ManagedDevice.
+        Device/Driver/SteFly/CommonDevice.cpp
+        Device/Driver/SteFly/RemoteStick.cpp
+        Device/Driver/SteFly/RotaryPanel.cpp
+        Device/Driver/SteFly/Register.cpp
         Device/Driver/FreeVario.cpp
   )
 endif()
