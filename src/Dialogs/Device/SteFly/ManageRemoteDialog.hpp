@@ -4,10 +4,15 @@
 #pragma once
 
 class Device;
-// struct FlarmVersion;
-// struct FlarmHardware;
-// struct FlarmState;
+class DeviceDescriptor;
 
+/**
+ * Open the SteFly Remote Stick manage dialog.
+ *
+ * The dialog uses the DeviceDescriptor (not only the Device) so it
+ * can release and re-acquire the borrow during a Reboot — the stick
+ * disconnects from USB while rebooting and needs the PortMonitor's
+ * Close / Reopen to run without conflicting with the borrow.
+ */
 void
-ManageRemoteDialog(Device &device /*, const FlarmVersion &version,
-                  FlarmHardware &hardware, const FlarmState &state*/);
+ManageRemoteDialog(DeviceDescriptor &descriptor, Device &device);

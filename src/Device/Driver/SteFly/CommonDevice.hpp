@@ -15,24 +15,30 @@ class NMEAInputLine;
  * Common base for SteFly Arduino-based devices (RemoteStick,
  * RotaryPanel and any future siblings).
  *
- * Shared protocol surface (the parts identical across devices):
+ * Shared protocol surface (the parts identical across devices).
+ *
+ * Every sentence has the shape  "$PSRC<Group>,<Direction>,…*XX"
+ *
+ *   Group:    I = Info     S = Settings    C = Control
+ *             H = Health   P = Pin config  K = Key remap   …
+ *   Direction (host -> device):  R = Request   S = Set
+ *   Direction (device -> host):  A = Answer    I = Info (unsolicited)
  *
  *   --- Host -> Stick / Panel ------------------------------------
- *   $POPSQ,Info*XX            request the read-only info block
- *   $POPSQ,Settings*XX        request the editable settings block
- *   $POPSQ,Reboot*XX          reboot the firmware
+ *   $PSRCI,R,Info*XX           request the read-only info block
+ *   $PSRCS,R,Settings*XX       request the editable settings block
+ *   $PSRCS,S,<Key>,<Value>*XX  write one setting (e.g. Layout,2)
+ *   $PSRCC,S,Reboot*XX         reboot the firmware
  *
  *   --- Stick / Panel -> Host ------------------------------------
- *   $PSRCI,R,<Key>,<Value>*XX  info field   (Version, FileName, …)
- *   $PSRCI,R,Ready*XX          info block terminator
- *   $PSRCS,R,<Key>,<Value>*XX  setting field (device-specific keys)
- *   $PSRCS,R,Ready*XX          settings block terminator
+ *   $PSRCI,A,<Key>,<Value>*XX  info field   (Version, FileName, …)
+ *   $PSRCI,A,Ready*XX          info block terminator
+ *   $PSRCS,A,<Key>,<Value>*XX  setting field (device-specific keys)
+ *   $PSRCS,A,Ready*XX          settings block terminator
+ *   $PSRCI,I,<free text>*XX    unsolicited info / log line
  *
- * The two response talkers ("$PSRCI" for info, "$PSRCS" for settings)
- * line up with the SteFly firmware's sendNMEA() convention of using
- * the talker letter to encode the channel. Key and Value are separate
- * NMEA fields (comma-separated), so the driver reads them as two
- * consecutive line.ReadView() calls.
+ * Key and Value are separate NMEA fields (comma-separated), so the
+ * driver reads them as two consecutive line.ReadView() calls.
  *
  * Each block has its own ApplyXField hook on the base class:
  *   - ApplyInfoField has a default impl that claims the common info
@@ -48,6 +54,7 @@ public:
    * every SteFly device, so it lives here.
    */
   struct SteFlyInfo {
+    std::string name;           // firmware device name"
     std::string version;        // firmware version, e.g. "1.4.3"
     std::string file_name;      // currently loaded key-config file
     std::string serial_number;  // SteFly serial (from EEPROM)
@@ -55,8 +62,12 @@ public:
   };
 
 protected:
-  /** Talker the host uses for every outgoing sentence. */
-  static constexpr const char *WRITE_TALKER = "POPSQ";
+  // Per-group talker names. The host emits all sentences as
+  // "$PSRC<G>,<direction>,…*XX", so each group has its own talker
+  // string. Subclasses pick the right one when writing settings.
+  static constexpr const char *INFO_TALKER     = "PSRCI";
+  static constexpr const char *SETTINGS_TALKER = "PSRCS";
+  static constexpr const char *CONTROL_TALKER  = "PSRCC";
 
   PendingBlock info_block;
   PendingBlock settings_block;
@@ -98,7 +109,7 @@ public:
 
 protected:
   /**
-   * Apply an info field ("Version", "FileName", "SerialNumber").
+   * Apply an info field ("Device", "Version", "FileName", "SerialNumber").
    * Default implementation handles the common keys; override and
    * chain to the base if your device adds further info fields.
    *

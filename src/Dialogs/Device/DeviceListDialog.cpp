@@ -687,7 +687,10 @@ DeviceListWidget::ManageCurrent()
   else if (descriptor.IsStratux())
     ManageStratuxDialog(*device);
   else if (descriptor.IsRemoteStick())
-    ManageRemoteDialog(*device);
+    // Pass the descriptor as well — the manage dialog releases the
+    // borrow during a Reboot so the PortMonitor can Close/Reopen the
+    // disappearing stick without conflict, then re-borrows.
+    ManageRemoteDialog(descriptor, *device);
   else if (descriptor.IsFlarm()) {
     FlarmVersion version;
     FlarmHardware hardware;

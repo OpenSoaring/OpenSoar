@@ -687,6 +687,13 @@ public:
   }
 
   ~ScopeReturnDevice() noexcept {
+    // Idempotent guard: a Manage-dialog may have given the device
+    // back early (e.g. RemoteStick during a reboot, where Close /
+    // Reopen need to run while the dialog is still open). If the
+    // device was already returned we must not call Return() twice
+    // — Return() asserts IsBorrowed().
+    if (!device.IsBorrowed())
+      return;
     device.EnableNMEA(env);
     device.Return();
   }

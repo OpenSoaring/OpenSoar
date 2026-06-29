@@ -38,9 +38,8 @@ void
 StickRemoteControl::SetLayout(RemoteStickSettings::Layout layout,
                               OperationEnvironment &env)
 {
-  // "$POPSQ,Layout,<n>*XX" — confirmed by the firmware author as the
-  // command the current firmware still accepts.
-  WriteDeviceSetting(WRITE_TALKER,
+  // "$PSRCS,S,Layout,<n>*XX" — Settings group, Set direction.
+  WriteDeviceSetting(SETTINGS_TALKER, 'S',
                      RemoteStickSettings::LAYOUT_NAME,
                      std::to_string(uint32_t(layout)),
                      env);

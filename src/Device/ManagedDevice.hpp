@@ -92,13 +92,29 @@ protected:
   /**
    * Convenience for "single value per setting" protocols.
    *
-   * Builds "<write_talker>,<name>,<value>" and sends it.
-   * Example for the SteFly stick:
-   *   WriteDeviceSetting("POPSQ", "Layout", "2", env)
-   *   -> "$POPSQ,Layout,2*XX"
+   * Builds "<write_talker>,<direction>,<name>,<value>" and sends it.
+   * Example for the SteFly stick (group=S "Settings", dir='S' "Set"):
+   *   WriteDeviceSetting("PSRCS", 'S', "Layout", "2", env)
+   *   -> "$PSRCS,S,Layout,2*XX"
+   *
+   * The direction letter is part of the SteFly convention:
+   *   'R' = Request, 'S' = Set (host -> device)
+   *   'A' = Answer,  'I' = Info  (device -> host)
    *
    * Subclasses can also call SendNMEA directly if their protocol
    * uses a different separator or no name/value structure.
+   */
+  void WriteDeviceSetting(const char *write_talker,
+                          char direction,
+                          const char *name,
+                          std::string_view value,
+                          OperationEnvironment &env);
+
+  /**
+   * Legacy two-field variant — keeps "<talker>,<name>,<value>"
+   * without a direction letter. Kept around for drivers (e.g.
+   * BlueFly) whose protocol does not use the SteFly direction-letter
+   * convention.
    */
   void WriteDeviceSetting(const char *write_talker,
                           const char *name,

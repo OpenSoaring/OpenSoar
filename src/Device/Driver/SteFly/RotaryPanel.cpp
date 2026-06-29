@@ -24,8 +24,9 @@ RotaryPanelDevice::WriteDeviceSettings(
   [[maybe_unused]] OperationEnvironment &env)
 {
   // TODO(stefly): once RotaryPanelSettings has real fields, diff them
-  // against `settings` and call WriteDeviceSetting(WRITE_TALKER, NAME,
-  // value, env) for each change — same pattern as RemoteStick.cpp.
+  // against `settings` and call
+  //   WriteDeviceSetting(SETTINGS_TALKER, 'S', NAME, value, env);
+  // for each change — same pattern as RemoteStick.cpp::SetLayout.
   //
   // Then apply optimistically:
   //   const std::lock_guard lock{settings_block.mutex};

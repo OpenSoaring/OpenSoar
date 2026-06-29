@@ -57,7 +57,7 @@ void
 SteFlyDevice::RequestInfo(OperationEnvironment &env)
 {
   info_block.Reset();
-  SendNMEA("POPSQ,Info", env);
+  SendNMEA("PSRCI,R,Info", env);
 }
 
 bool
@@ -82,6 +82,8 @@ SteFlyDevice::ApplyInfoField(std::string_view key, std::string_view value)
   // driver stays forward-compatible.
   if (key == "Version") {
     info.version.assign(value);
+  } else if (key == "Device") {
+    info.name.assign(value);
   } else if (key == "FileName") {
     info.file_name.assign(value);
   } else if (key == "SerialNumber") {
@@ -95,7 +97,7 @@ void
 SteFlyDevice::RequestSettings(OperationEnvironment &env)
 {
   settings_block.Reset();
-  SendNMEA("POPSQ,Settings", env);
+  SendNMEA("PSRCI,R,Settings", env);
 }
 
 bool
@@ -110,14 +112,16 @@ bool
 SteFlyDevice::ParseInfoSentence(NMEAInputLine &line)
 {
   const auto kind = line.ReadOneChar();
-  if (kind != 'R') {
-    // Free-text legacy info ("$PSRCI,Pin updated", …). Log and drop.
+  if (kind == 'I') {
+    // Unsolicited info / log message ("$PSRCI,I,Pin updated*XX").
     const auto rest = line.ReadView();
     LogFmt("SteFly Info: {}", std::string(rest).c_str());
     return true;
   }
+  if (kind != 'A')
+    return false;  // not an answer; ignore other directions
 
-  // After 'R': either standalone "Ready" (block terminator) or a
+  // After 'A': either standalone "Ready" (block terminator) or a
   // "<Key>,<Value>" pair as two consecutive NMEA fields.
   const auto key = line.ReadView();
   if (key == "Ready") {
@@ -139,8 +143,8 @@ bool
 SteFlyDevice::ParseSettingsSentence(NMEAInputLine &line)
 {
   const auto kind = line.ReadOneChar();
-  if (kind != 'R')
-    return false;
+  if (kind != 'A')
+    return false;  // only answers carry settings data
 
   // Same shape as the info block: "<Key>,<Value>" fields with a
   // standalone "Ready" as terminator.
@@ -164,7 +168,8 @@ SteFlyDevice::ParseSettingsSentence(NMEAInputLine &line)
 void
 SteFlyDevice::Restart(OperationEnvironment &env)
 {
-  SendNMEA("POPSQ,Reboot", env);
+  // Control group: "$PSRCC,S,Reboot*XX"
+  SendNMEA("PSRCC,S,Reboot", env);
 }
 
 #endif // HAVE_REMOTE_STICK
