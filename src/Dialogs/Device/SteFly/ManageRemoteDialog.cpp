@@ -52,11 +52,32 @@ static constexpr auto REBOOT_DISCONNECT_TIMEOUT = std::chrono::seconds(3);
 static constexpr unsigned REBOOT_BORROW_RETRIES  = 50;
 static constexpr auto REBOOT_BORROW_INTERVAL     = std::chrono::milliseconds(100);
 
+// The "User" mode is read-only — the firmware reports it when the
+// active key map doesn't match any preset, but it can never be set
+// from this dialog. We therefore keep two near-identical layout
+// lists: the regular one (no USER row, that's what the dropdown
+// shows in 99% of opens) and an extended one that includes USER
+// purely so the dropdown can DISPLAY a USER state when the stick is
+// actually in it. Picking USER would still be a no-op (see Save()
+// and StickRemoteControl::WriteDeviceSettings).
 static constexpr StaticEnumChoice stefly_layout_names[] = {
   { unsigned(StickRemoteControl::RemoteStickSettings::Layout::BASIC),    "Basic" },
   { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ADVANCED), "Advanced" },
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ANDROID_), "Android" },
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER),  "Starter-Key" },
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ANDROID0), "Android" },
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ANDROID1), "Android (/w App switch)" },
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER0), "Starter-Key" },
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER1), "Starter-Key (/w App switch)" },
+  nullptr
+};
+
+static constexpr StaticEnumChoice stefly_layout_names_with_user[] = {
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::BASIC),    "Basic" },
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ADVANCED), "Advanced" },
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ANDROID0), "Android" },
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ANDROID1), "Android (/w App switch)" },
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER0), "Starter-Key" },
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER1), "Starter-Key (/w App switch)" },
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::USER),     "User (custom keys)" },
   nullptr
 };
 
@@ -319,10 +340,19 @@ ManageRemoteWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   RefreshFromDevice();
 
   // --- editable settings (MUST come first so the Controls enum
-  //     indices line up — SaveValueEnum below uses LAYOUT == 0)
+  //     indices line up — SaveValueEnum below uses LAYOUT == 0).
+  //
+  // Show the "User" entry only when the stick is actually in the
+  // USER state right now (i.e. the EEPROM holds a custom key map).
+  // Otherwise it stays hidden so the user is not tempted to pick a
+  // value that we can't actually write to the device.
+  const auto *layout_choices =
+    settings.layout == StickRemoteControl::RemoteStickSettings::Layout::USER
+      ? stefly_layout_names_with_user
+      : stefly_layout_names;
   AddEnum(_("Key Configuration"),
           _("Default Key Configuration"),
-          stefly_layout_names,
+          layout_choices,
           unsigned(settings.layout));
 
   // --- read-only info ----------------------------------------------
@@ -358,8 +388,17 @@ ManageRemoteWidget::Save(bool &changed) noexcept
 
   unsigned layout_value = unsigned(new_settings.layout);
   changed |= SaveValueEnum(LAYOUT, layout_value);
-  new_settings.layout =
+  const auto chosen =
     StickRemoteControl::RemoteStickSettings::Layout(layout_value);
+
+  // USER is a read-only state the firmware reports when the active
+  // key map doesn't match any preset — it "emerges" from custom key
+  // assignments and cannot be selected explicitly. If the user
+  // picked USER from the dropdown we silently keep the previous
+  // layout so the dialog does not write a meaningless "Layout=255"
+  // sentence to the stick.
+  if (chosen != StickRemoteControl::RemoteStickSettings::Layout::USER)
+    new_settings.layout = chosen;
 
   if (device == nullptr)
     return false;  // device gone after a failed reboot; nothing to write

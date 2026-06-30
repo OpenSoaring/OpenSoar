@@ -22,8 +22,11 @@ public:
     enum class Layout : uint32_t {
       BASIC    = 0,
       ADVANCED = 1,
-      ANDROID_ = 2,  // ANDROID is defined on target ANDROID platforms
-      STARTER  = 3,
+      ANDROID0 = 2,
+      ANDROID1 = 3,
+      STARTER0 = 4,
+      STARTER1 = 5,
+      USER  = 255,
     };
     Layout layout = Layout::BASIC;
 
