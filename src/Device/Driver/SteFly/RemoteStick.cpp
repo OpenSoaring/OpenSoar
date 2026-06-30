@@ -26,7 +26,11 @@ StickRemoteControl::WriteDeviceSettings(const RemoteStickSettings &new_settings,
                                         OperationEnvironment &env)
 {
   // Diff against the cached snapshot, write only what changed.
-  if (new_settings.layout != settings.layout)
+  // USER is a read-only state the firmware reports when the active
+  // key map doesn't match any preset; we must never send "Layout,255"
+  // back to the firmware (it would be a meaningless command).
+  if (new_settings.layout != settings.layout &&
+      new_settings.layout != RemoteStickSettings::Layout::USER)
     SetLayout(new_settings.layout, env);
 
   // Apply optimistically — the firmware does not ack writes.
