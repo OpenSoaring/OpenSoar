@@ -464,6 +464,13 @@ public:
   bool IsNMEAOut() const noexcept;
   bool IsManageable() const noexcept;
 
+  /**
+   * True if the underlying driver carries the SEND_SETTINGS flag —
+   * i.e. it makes sense to push host-originated NMEA sentences at
+   * this device. Used by the PortMonitor's "Send…" button.
+   */
+  bool CanSendSettings() const noexcept;
+
   bool IsBorrowed() const noexcept {
     return borrowed;
   }

@@ -3,17 +3,22 @@
 
 #include "PortMonitor.hpp"
 #include "Dialogs/Message.hpp"
+#include "Dialogs/TextEntry.hpp"
+#include "Dialogs/Error.hpp"
 #include "Look/Look.hpp"
 #include "ui/control/TerminalWindow.hpp"
 #include "Widget/WindowWidget.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Device/Descriptor.hpp"
 #include "util/StaticFifoBuffer.hxx"
+#include "util/StaticString.hxx"
 #include "Language/Language.hpp"
 #include "Operation/MessageOperationEnvironment.hpp"
 #include "ui/event/DelayedNotify.hpp"
 #include "thread/Mutex.hxx"
 #include "UIGlobals.hpp"
+
+#include <cstring>
 
 /**
  * A bridge between DataHandler and TerminalWindow: copy all data
@@ -93,6 +98,14 @@ public:
   void Reconnect();
   void TogglePause();
 
+  /**
+   * Prompt the user for a raw NMEA sentence (body without "$" prefix
+   * and without "*XX" checksum) and write it to the port. Only wired
+   * up by CreateButtons() when the underlying driver carries the
+   * SEND_SETTINGS flag.
+   */
+  void Send();
+
   /* virtual methods from class Widget */
 
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override {
@@ -119,6 +132,13 @@ PortMonitorWidget::CreateButtons(WidgetDialog &dialog)
   dialog.AddButton(_("Clear"), [this](){ Clear(); });
   dialog.AddButton(_("Reconnect"), [this](){ Reconnect(); });
   pause_button = dialog.AddButton(_("Pause"), [this](){ TogglePause(); });
+
+  // Diagnostic "type one NMEA sentence and send it" button — only
+  // for drivers that actually accept host-originated sentences
+  // (FLARM, BlueFly, SteFly RemoteStick, …). Later also Larus and
+  // Anemoi once they declare SEND_SETTINGS.
+  if (device.CanSendSettings())
+    dialog.AddButton(_("Send…"), [this](){ Send(); });
 }
 
 void
@@ -147,6 +167,44 @@ PortMonitorWidget::TogglePause()
   } else {
     pause_button->SetCaption(_("Pause"));
     device.SetMonitor(bridge.get());
+  }
+}
+
+void
+PortMonitorWidget::Send()
+{
+  // Keep a static buffer so the last entered sentence is preselected
+  // when the user opens the dialog again — handy for tweak-and-resend
+  // workflows while debugging a firmware command.
+  static StaticString<128> sentence;
+
+  if (!TextEntryDialog(sentence, _("Send NMEA sentence")))
+    return;
+  if (sentence.empty())
+    return;
+
+  // Accept (and silently strip) a leading "$" — PortWriteNMEA adds
+  // one itself. Likewise strip any "*XX" checksum the user may have
+  // typed; the wrapper computes the checksum on its own.
+  const char *body = sentence.c_str();
+  if (*body == '$')
+    ++body;
+
+  StaticString<128> clean;
+  clean = body;
+  if (char *star = std::strchr(clean.data(), '*'); star != nullptr)
+    *star = '\0';
+
+  if (clean.empty())
+    return;
+
+  MessageOperationEnvironment env;
+  try {
+    if (!device.WriteNMEA(clean.c_str(), env))
+      ShowMessageBox(_("Device is not connected"), _("Send"),
+                     MB_OK | MB_ICONERROR);
+  } catch (...) {
+    ShowError(std::current_exception(), _("Send"));
   }
 }
 

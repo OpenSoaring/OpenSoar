@@ -569,6 +569,12 @@ DeviceDescriptor::AutoReopen(OperationEnvironment &env)
   Reopen(env);
 }
 
+bool 
+DeviceDescriptor::CanSendSettings() const noexcept
+{
+  return driver != nullptr && driver->CanSendSettings();
+}
+
 bool
 DeviceDescriptor::EnableNMEA(OperationEnvironment &env) noexcept
 {
