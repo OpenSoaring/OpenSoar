@@ -30,20 +30,13 @@
 static constexpr unsigned INFO_TIMEOUT_MS     = 800;
 static constexpr unsigned SETTINGS_TIMEOUT_MS = 800;
 
-// Reboot has to wait for USB to re-enumerate. On Windows that is
-// usually well under 3 s; Linux/udev can be a bit slower; Android
-// USB can take noticeably longer.
-static constexpr auto REBOOT_RECONNECT_TIMEOUT = std::chrono::seconds(15);
-static constexpr auto REBOOT_POLL_INTERVAL     = std::chrono::milliseconds(200);
-
-// Right after the firmware acknowledges Reboot it still takes a
-// moment for the USB stack to drop the device. If we polled
-// GetState() == READY immediately we would race straight through the
-// "still ready" window and report success before anything actually
-// happened. Wait at most this long for the disconnect edge before
-// giving up on phase 1 — the stick might already have come back if
-// we're really unlucky with our polling cadence.
-static constexpr auto REBOOT_DISCONNECT_TIMEOUT = std::chrono::seconds(3);
+// Reboot wait budget — the wait job needs to see BOTH the USB
+// disconnect and the subsequent reconnect within this window. On
+// Windows the disconnect edge alone can take 5-7 seconds after the
+// firmware acknowledges the reboot command (USB stack timing), so
+// be generous.
+static constexpr auto REBOOT_TOTAL_TIMEOUT = std::chrono::seconds(20);
+static constexpr auto REBOOT_POLL_INTERVAL = std::chrono::milliseconds(200);
 
 // PortMonitor's Reopen() runs on the main thread; right after it
 // finishes async work may still be settling. Retry the Borrow many
@@ -108,40 +101,45 @@ public:
 
     LogString("RebootStick: wait job started");
 
-    // ---- Phase 1: wait for the disconnect edge ----
+    // Single combined wait: we must observe a real state TRANSITION
+    // (disconnect followed by reconnect) before declaring success.
+    // Just polling for "state == READY" would race straight through
+    // the "still ready" window — on Windows the USB stack can take
+    // 5–7 seconds to drop the device after the firmware ack'd the
+    // Reboot command, and during that window descriptor.GetState()
+    // is still READY even though the device is about to disappear.
+    // Re-borrowing in that window means the PortMonitor's later
+    // Close() trips assert(!IsBorrowed()) — which is the bug this
+    // logic exists to prevent.
     env.SetText(_("Waiting for stick to reboot…"));
-    const auto disconnect_deadline = Clock::now() + REBOOT_DISCONNECT_TIMEOUT;
+    const auto deadline = Clock::now() + total_timeout;
     bool saw_disconnect = false;
-    while (Clock::now() < disconnect_deadline) {
-      if (env.IsCancelled()) {
-        LogString("RebootStick: cancelled in phase 1");
-        return;
-      }
-      if (descriptor.GetState() != PortState::READY) {
-        saw_disconnect = true;
-        break;
-      }
-      env.Sleep(REBOOT_POLL_INTERVAL);
-    }
-    LogFmt("RebootStick: phase 1 done (disconnect={})",
-           saw_disconnect ? "seen" : "not seen, moving on");
 
-    // ---- Phase 2: wait for the reconnect edge ----
-    env.SetText(_("Waiting for stick to reconnect…"));
-    const auto reconnect_deadline = Clock::now() + total_timeout;
-    while (Clock::now() < reconnect_deadline) {
+    while (Clock::now() < deadline) {
       if (env.IsCancelled()) {
-        LogString("RebootStick: cancelled in phase 2");
-        return;
-      } 
-      if (descriptor.GetState() == PortState::READY) {
-        success = true;
-        LogString("RebootStick: phase 2 done (state READY)");
+        LogString("RebootStick: cancelled");
         return;
       }
+
+      const auto state = descriptor.GetState();
+      if (state != PortState::READY) {
+        if (!saw_disconnect) {
+          saw_disconnect = true;
+          env.SetText(_("Waiting for stick to reconnect…"));
+          LogString("RebootStick: disconnect seen");
+        }
+      } else if (saw_disconnect) {
+        // back to READY after we had observed the disconnect
+        success = true;
+        LogString("RebootStick: reconnect seen, state READY");
+        return;
+      }
+
       env.Sleep(REBOOT_POLL_INTERVAL);
     }
-    LogString("RebootStick: phase 2 timed out");
+
+    LogFmt("RebootStick: wait timed out (saw_disconnect={})",
+           saw_disconnect ? "yes" : "no");
   }
 };
 
@@ -271,7 +269,7 @@ ManageRemoteWidget::RebootStick() noexcept
   // 3. Modal wait until the port shows up as READY again. JobDialog
   //    runs the job on a worker thread and pops a small dialog with
   //    a Cancel button; we poll descriptor.GetState() every 200 ms.
-  WaitForReconnectJob job{descriptor, REBOOT_RECONNECT_TIMEOUT};
+  WaitForReconnectJob job{descriptor, REBOOT_TOTAL_TIMEOUT};
   const bool job_finished =
     JobDialog(UIGlobals::GetMainWindow(),
               UIGlobals::GetDialogLook(),
