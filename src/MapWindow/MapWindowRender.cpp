@@ -111,7 +111,7 @@ inline void
 MapWindow::RenderOverlays([[maybe_unused]] Canvas &canvas) noexcept
 {
 #ifdef HAVE_SKYSIGHT
-  for (uint16_t i = 0; i < 9; i++) if (overlay[i])
+  for (uint16_t i = 0; i < max_skysight_overlays; i++) if (overlay[i])
     overlay[i]->Draw(canvas, render_projection);
 #else
   if (overlay)

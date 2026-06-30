@@ -98,7 +98,7 @@ GlueMapWindow::ShowMapItems(const GeoPoint &location,
 
 #ifdef HAVE_SKYSIGHT
   if (skysight != nullptr && skysight->IsActive()) {
-    for (uint16_t i = 0; i < 9; i++)
+    for (uint16_t i = 0; i < max_skysight_overlays; i++)
       if (!list.full() && overlay[i] && overlay[i]->IsInside(location))
         list.push_back(new OverlayMapItem(*overlay[i]));
   }

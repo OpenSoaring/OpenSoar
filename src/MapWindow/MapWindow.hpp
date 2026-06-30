@@ -19,6 +19,10 @@
 #include "Weather/Features.hpp"
 #include "Tracking/SkyLines/Features.hpp"
 
+#ifdef HAVE_SKYSIGHT
+# include "Weather/Skysight/Skysight.hpp"
+#endif
+
 #include <memory>
 
 struct MapLook;
@@ -117,7 +121,8 @@ protected:
    */
   std::unique_ptr<RaspRenderer> rasp_renderer;
 #ifdef HAVE_SKYSIGHT
-  std::unique_ptr<MapOverlay> overlay[9];
+  std::unique_ptr<MapOverlay> overlay[max_skysight_overlays];
+    // instead 9 overlays, see SkySight
 #else
   std::unique_ptr<MapOverlay> overlay;
 #endif
@@ -235,7 +240,7 @@ public:
     return overlay[0].get();
   }
   const MapOverlay *GetOverlay(const uint16_t index) const noexcept {
-    if (index < 9)
+    if (index < max_skysight_overlays)
       return overlay[index].get();
     else
       return nullptr;
