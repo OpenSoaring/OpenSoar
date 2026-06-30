@@ -154,12 +154,10 @@ DRIVER_SOURCES = \
   endif
 
   ifeq ($(HAVE_REMOTESTICK),y)
-    # RemoteStick.cpp is a backwards-compat stub now; the real driver
-    # lives in src/Device/Driver/SteFly/ — the device family currently
-    # has two members (RemoteStick joystick + RotaryPanel encoder,
-    # scaffold), both built on the shared SteFlyDevice base.
+    # SteFly device family — RemoteStick (joystick) and RotaryPanel
+    # (encoder panel, scaffold). Both built on the shared SteFlyDevice
+    # base, which inherits from ManagedDevice.
     DRIVER_SOURCES += \
-	$(DRIVER_SRC_DIR)/RemoteStick.cpp \
 	$(DRIVER_SRC_DIR)/SteFly/CommonDevice.cpp \
 	$(DRIVER_SRC_DIR)/SteFly/RemoteStick.cpp \
 	$(DRIVER_SRC_DIR)/SteFly/RotaryPanel.cpp \
