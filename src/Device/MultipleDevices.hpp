@@ -83,9 +83,9 @@ public:
    * DeviceListDialog exposes the 7th row at all, and whether the
    * Manage / Reconnect buttons apply to that slot.
    *
-   * Phase 1 stub: currently returns false unconditionally until the
-   * platform-specific VID/PID discovery (Phase 2) is wired up in
-   * Startup.cpp.
+   * The actual check is "descriptor at REMOTE_PORT has a configured
+   * port" — i.e. Startup.cpp's SteFly::DiscoverPortByUsbId() call
+   * found a matching USB device and populated SystemSettings.
    */
   [[gnu::pure]]
   bool HasRemoteStick() const noexcept;

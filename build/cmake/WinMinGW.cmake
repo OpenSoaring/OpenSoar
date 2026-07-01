@@ -154,6 +154,8 @@ endif()
         kernel32
         # ?? msvcrt32
         shell32
+        # SetupAPI for SteFly Discovery.cpp (USB / COM enumeration)
+        setupapi
         gcc_s
       )
 

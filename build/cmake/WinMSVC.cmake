@@ -82,6 +82,8 @@ set(BASIC_LINK_LIBRARIES
         winmm.lib
         ws2_32.lib
         gdiplus
+        # SetupAPI for SteFly Discovery.cpp (USB / COM enumeration)
+        setupapi.lib
 )
 
 list(APPEND BASIC_LINK_LIBRARIES

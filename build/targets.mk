@@ -637,6 +637,10 @@ endif
 
 ifeq ($(HAVE_WIN32),y)
   TARGET_LDLIBS += -lwinmm  -lole32  -luuid
+  # NOTE: -lsetupapi (used by Device/Driver/SteFly/Discovery.cpp on
+  # Windows) is added in build/driver.mk under HAVE_REMOTESTICK,
+  # because driver.mk is included after this file — the variable
+  # is not yet visible here.
 endif
 
 ifeq ($(TARGET),UNIX)

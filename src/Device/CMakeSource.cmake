@@ -148,6 +148,9 @@ if(IS_OPENSOAR)
         Device/Driver/SteFly/RemoteStick.cpp
         Device/Driver/SteFly/RotaryPanel.cpp
         Device/Driver/SteFly/Register.cpp
+        # Startup-time USB / serial discovery for the SteFly
+        # RemoteStick — populates the fixed REMOTE_PORT slot.
+        Device/Driver/SteFly/Discovery.cpp
         Device/Driver/FreeVario.cpp
   )
 endif()

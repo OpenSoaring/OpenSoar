@@ -48,6 +48,11 @@
 #include "Device/Factory.hpp"
 #include "Device/device.hpp"
 #include "Device/MultipleDevices.hpp"
+#include "Device/Features.hpp" // for REMOTE_PORT
+#ifdef HAVE_REMOTE_STICK
+# include "Device/Driver/SteFly/Discovery.hpp"
+# include "SystemSettings.hpp"
+#endif
 #if defined(_WIN32)
 # include "Device/PortMonitorWindows.hpp"
 #elif defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
@@ -454,6 +459,32 @@ Startup(UI::Display &display)
     *backend_components->device_blackboard,
     backend_components->nmea_logger.get(),
     *device_factory);
+
+#ifdef HAVE_REMOTE_STICK
+  // Scan the USB bus once at startup for a SteFly RemoteStick and, if
+  // one is attached, pre-configure the fixed REMOTE_PORT slot in
+  // SystemSettings so the subsequent devStartup() call opens it with
+  // the "RemoteStick" driver. This slot is NOT persisted to profile —
+  // every launch rescans, and if no matching device is present the
+  // DeviceListDialog simply hides row 7 (see HasRemoteStick()).
+  if (auto stefly_port =
+        SteFly::DiscoverPortByUsbId(SteFly::VID_STEFLY,
+                                    SteFly::PID_REMOTE_STICK)) {
+    LogFmt("SteFly RemoteStick detected on {} — binding to REMOTE_PORT slot",
+           stefly_port->c_str());
+    DeviceConfig &cfg =
+      CommonInterface::SetSystemSettings().devices[REMOTE_PORT];
+    cfg.Clear();
+    cfg.port_type = DeviceConfig::PortType::SERIAL;
+    cfg.path = stefly_port->c_str();
+    cfg.driver_name = "RemoteStick";
+    cfg.enabled = true;
+  } else {
+    // Make sure the slot stays disabled even if the profile ever
+    // stored something there in a previous life.
+    CommonInterface::SetSystemSettings().devices[REMOTE_PORT].Clear();
+  }
+#endif // HAVE_REMOTE_STICK
 
   // Wire up the per-platform USB / serial hotplug monitor so connect
   // and disconnect events reach MultipleDevices::DetectedPort /

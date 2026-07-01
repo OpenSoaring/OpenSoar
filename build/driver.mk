@@ -162,9 +162,20 @@ DRIVER_SOURCES = \
 	$(DRIVER_SRC_DIR)/SteFly/CommonDevice.cpp \
 	$(DRIVER_SRC_DIR)/SteFly/RemoteStick.cpp \
 	$(DRIVER_SRC_DIR)/SteFly/RotaryPanel.cpp \
-	$(DRIVER_SRC_DIR)/SteFly/Register.cpp
+	$(DRIVER_SRC_DIR)/SteFly/Register.cpp \
+	$(DRIVER_SRC_DIR)/SteFly/Discovery.cpp
 
     DRIVER_CPPFLAGS += -DHAVE_REMOTE_STICK
+
+    # SetupAPI for the startup-time USB / COM enumeration in
+    # SteFly/Discovery.cpp — resolves SetupDiGetClassDevs,
+    # SetupDiEnumDeviceInfo, SetupDiGetDeviceRegistryProperty,
+    # SetupDiOpenDevRegKey. Only relevant on Windows targets;
+    # linkers on other platforms silently ignore unknown -l flags
+    # only when the library is missing, so we gate on HAVE_WIN32.
+    ifeq ($(HAVE_WIN32),y)
+      TARGET_LDLIBS += -lsetupapi
+    endif
   endif
 
 DRIVER_DEPENDS = TIME LIBNMEA GEO OPERATION UNITS FMT PROFILE FLARM GLIDE

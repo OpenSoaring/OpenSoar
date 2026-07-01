@@ -72,12 +72,15 @@ MultipleDevices::HasVega() const noexcept
 bool
 MultipleDevices::HasRemoteStick() const noexcept
 {
-  // Phase 1 stub: returns false until the startup-time VID/PID
-  // discovery (Phase 2) actually populates the REMOTE_PORT slot. The
-  // DeviceListDialog therefore keeps hiding row REMOTE_PORT for now.
-  // When Phase 2 lands, this check becomes something like:
-  //   return devices[REMOTE_PORT]->GetConfig().UsesPort();
-  return false;
+  // The REMOTE_PORT slot is populated at startup by
+  //   SteFly::DiscoverPortByUsbId() -> SystemSettings::devices[REMOTE_PORT]
+  //   -> devStartup() -> DeviceDescriptor::SetConfig()
+  // (Startup.cpp). If discovery found nothing, the descriptor keeps
+  // its default-constructed DISABLED config and UsesPort() returns
+  // false, which in turn tells DeviceListDialog to shorten the row
+  // list to VISIBLE_NUMDEV and skip painting the 7th row.
+  auto *d = devices[REMOTE_PORT];
+  return d != nullptr && d->GetConfig().UsesPort();
 }
 
 void
