@@ -77,6 +77,19 @@ public:
   [[gnu::pure]]
   bool HasVega() const noexcept;
 
+  /**
+   * True if the fixed REMOTE_PORT slot has been auto-set-up at
+   * startup (SteFly RemoteStick present). Controls whether the
+   * DeviceListDialog exposes the 7th row at all, and whether the
+   * Manage / Reconnect buttons apply to that slot.
+   *
+   * Phase 1 stub: currently returns false unconditionally until the
+   * platform-specific VID/PID discovery (Phase 2) is wired up in
+   * Startup.cpp.
+   */
+  [[gnu::pure]]
+  bool HasRemoteStick() const noexcept;
+
   void VegaWriteNMEA(const char *text, OperationEnvironment &env) noexcept;
 
   void PutMacCready(double mac_cready, OperationEnvironment &env) noexcept;

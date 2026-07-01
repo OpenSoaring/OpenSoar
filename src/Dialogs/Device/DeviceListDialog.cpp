@@ -256,8 +256,15 @@ DeviceListWidget::Prepare(ContainerWindow &parent,
   const DialogLook &look = UIGlobals::GetDialogLook();
   const unsigned margin = Layout::GetTextPadding();
   font_height = look.list.font->GetHeight();
+  // The REMOTE_PORT slot (index 6) is only visible when the SteFly
+  // RemoteStick was auto-detected at startup. Otherwise stop the
+  // list at VISIBLE_NUMDEV so the row does not appear at all.
+  const unsigned row_count =
+    (devices != nullptr && devices->HasRemoteStick())
+      ? NUMDEV : VISIBLE_NUMDEV;
+
   CreateList(parent, look, rc, 3 * margin + font_height +
-             look.small_font.GetHeight()).SetLength(NUMDEV);
+             look.small_font.GetHeight()).SetLength(row_count);
 
   for (Item &i : items)
     i.Clear();
@@ -333,7 +340,11 @@ DeviceListWidget::UpdateButtons()
 {
   const unsigned current = GetList().GetCursorIndex();
 
-  if (current < NUMDEV) {
+  // The REMOTE_PORT slot (SteFly RemoteStick) is hardcoded/auto and
+  // must not be manually enabled/disabled or edited.
+  const bool is_remote_slot = (current == REMOTE_PORT);
+
+  if (current < NUMDEV && !is_remote_slot) {
     const auto &config = CommonInterface::GetSystemSettings().devices[current];
 
     if (config.port_type != DeviceConfig::PortType::DISABLED) {
@@ -361,7 +372,10 @@ DeviceListWidget::UpdateButtons()
                              device.GetState() == PortState::READY);
   }
 
-  edit_button->SetEnabled(current < NUMDEV);
+  // Edit is enabled for every regular slot; the REMOTE_PORT slot is
+  // hardcoded (auto-detected at startup, driver locked) and must not
+  // be user-editable.
+  edit_button->SetEnabled(current < NUMDEV && !is_remote_slot);
 }
 
 void
@@ -369,6 +383,13 @@ DeviceListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
                               unsigned idx) noexcept
 {
   assert(idx < NUMDEV);
+
+  // Visual separator above the REMOTE_PORT row (SteFly RemoteStick)
+  // so it is clearly set apart from the regular editable ports.
+  if (idx == REMOTE_PORT) {
+    canvas.SelectBlackPen();
+    canvas.DrawLine({rc.left, rc.top}, {rc.right, rc.top});
+  }
 
   const DeviceConfig &config =
     CommonInterface::SetSystemSettings().devices[idx];

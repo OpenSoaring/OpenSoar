@@ -309,9 +309,22 @@ DeviceEditWidget::Prepare(ContainerWindow &parent,
 
   DataFieldEnum *driver_df = new DataFieldEnum(this);
 
+  // Drivers that are reserved for the auto-detected SteFly slots
+  // (REMOTE_PORT, ROTARY_PORT). They must not appear in the driver
+  // dropdown for any regular editable port — the DeviceListDialog
+  // never lets the user edit REMOTE_PORT / ROTARY_PORT anyway, so
+  // hiding these drivers here is enough.
+  const auto driver_is_stefly_reserved = [](const char *name) {
+    return StringIsEqual(name, "RemoteStick") ||
+           StringIsEqual(name, "RotaryPanel");
+  };
+
   const struct DeviceRegister *driver;
-  for (unsigned i = 0; (driver = GetDriverByIndex(i)) != nullptr; i++)
+  for (unsigned i = 0; (driver = GetDriverByIndex(i)) != nullptr; i++) {
+    if (driver_is_stefly_reserved(driver->name))
+      continue;
     driver_df->addEnumText(driver->name, driver->display_name);
+  }
 
   driver_df->Sort(1);
   driver_df->SetValue(config.driver_name);
@@ -325,8 +338,11 @@ DeviceEditWidget::Prepare(ContainerWindow &parent,
              config.use_second_device, this);
 
   DataFieldEnum *driver2_df = new DataFieldEnum(this);
-  for (unsigned i = 0; (driver = GetDriverByIndex(i)) != nullptr; i++)
+  for (unsigned i = 0; (driver = GetDriverByIndex(i)) != nullptr; i++) {
+    if (driver_is_stefly_reserved(driver->name))
+      continue;
     driver2_df->addEnumText(driver->name, driver->display_name);
+  }
 
   driver2_df->Sort(1);
   driver2_df->SetValue(config.driver2_name);

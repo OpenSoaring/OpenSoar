@@ -69,6 +69,17 @@ MultipleDevices::HasVega() const noexcept
                      [](const auto *d) { return d->IsVega(); });
 }
 
+bool
+MultipleDevices::HasRemoteStick() const noexcept
+{
+  // Phase 1 stub: returns false until the startup-time VID/PID
+  // discovery (Phase 2) actually populates the REMOTE_PORT slot. The
+  // DeviceListDialog therefore keeps hiding row REMOTE_PORT for now.
+  // When Phase 2 lands, this check becomes something like:
+  //   return devices[REMOTE_PORT]->GetConfig().UsesPort();
+  return false;
+}
+
 void
 MultipleDevices::VegaWriteNMEA(const char *text,
                                OperationEnvironment &env) noexcept
