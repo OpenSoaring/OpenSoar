@@ -102,6 +102,7 @@ STRATUX_SOURCES = \
 
 DRIVER_SOURCES = \
 	$(SRC)/Device/Driver.cpp \
+	$(SRC)/Device/ManagedDevice.cpp \
 	$(SRC)/Device/Register.cpp \
 	$(VOLKSLOGGER_SOURCES) \
 	$(CAI302_SOURCES) \

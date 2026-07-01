@@ -10,6 +10,7 @@ class Logger;
 class NMEALogger;
 class GlueFlightLogger;
 class MultipleDevices;
+class PortMonitor;
 class PortMonitorLinux;
 class PortMonitorWindows;
 class DeviceBlackboard;
@@ -43,7 +44,10 @@ struct BackendComponents {
    * `#ifdef` check is needed at every use site.
    */
 #if defined(_WIN32)
-  std::unique_ptr<PortMonitorWindows> port_monitor;
+  // Held via the abstract PortMonitor base so the screen library (which
+  // dispatches WM_DEVICECHANGE through Window) needs no link-time
+  // reference to the concrete PortMonitorWindows in main.
+  std::unique_ptr<PortMonitor> port_monitor;
 #elif defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
   std::unique_ptr<PortMonitorLinux> port_monitor;
 #endif
