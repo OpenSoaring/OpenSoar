@@ -386,9 +386,24 @@ DeviceListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
 
   // Visual separator above the REMOTE_PORT row (SteFly RemoteStick)
   // so it is clearly set apart from the regular editable ports.
+  //
+  // A single-pixel hairline was too subtle against the row grid, so
+  // we draw a short thick bar plus a follow-up hairline a couple of
+  // pixels below it — a classic "double rule" section break that
+  // reads unambiguously as "this is a new group" on both low- and
+  // high-DPI displays. The thick bar's width is DPI-scaled; the
+  // hairline stays a single pixel to keep the separator crisp.
   if (idx == REMOTE_PORT) {
+    const int thick = Layout::Scale(3);
+    const int gap   = Layout::Scale(2);
+
+    canvas.SelectBlackPen(thick);
+    canvas.DrawLine({rc.left, rc.top + thick / 2},
+                    {rc.right, rc.top + thick / 2});
+
     canvas.SelectBlackPen();
-    canvas.DrawLine({rc.left, rc.top}, {rc.right, rc.top});
+    canvas.DrawLine({rc.left,  rc.top + thick + gap},
+                    {rc.right, rc.top + thick + gap});
   }
 
   const DeviceConfig &config =
