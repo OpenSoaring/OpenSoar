@@ -60,6 +60,9 @@ static constexpr StaticEnumChoice stefly_layout_names[] = {
   { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ANDROID1), "Android (/w App switch)" },
   { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER0), "Starter-Key" },
   { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER1), "Starter-Key (/w App switch)" },
+#ifdef XCSOAR_TESTING
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::TEST),     "Test-Layout" },
+#endif
   nullptr
 };
 
@@ -70,6 +73,9 @@ static constexpr StaticEnumChoice stefly_layout_names_with_user[] = {
   { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ANDROID1), "Android (/w App switch)" },
   { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER0), "Starter-Key" },
   { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER1), "Starter-Key (/w App switch)" },
+#ifdef XCSOAR_TESTING
+  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::TEST),     "Test-Layout" },
+#endif
   { unsigned(StickRemoteControl::RemoteStickSettings::Layout::USER),     "User (custom keys)" },
   nullptr
 };

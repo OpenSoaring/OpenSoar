@@ -26,6 +26,9 @@ public:
       ANDROID1 = 3,
       STARTER0 = 4,
       STARTER1 = 5,
+#ifdef XCSOAR_TESTING
+      TEST = 6,
+#endif
       USER  = 255,
     };
     Layout layout = Layout::BASIC;
