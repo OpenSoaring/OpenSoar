@@ -22,6 +22,9 @@
 
 #include <chrono>
 #include <thread>
+#ifdef __MINGW32__
+#include <synchapi.h> // ::Sleep(): win32 GCC threading model has no std::this_thread
+#endif
 
 // Per-block wait timeout for the post-open info / settings query.
 // Generous on purpose — the stick replies in a few milliseconds, but
@@ -311,7 +314,14 @@ ManageRemoteWidget::RebootStick() noexcept
              int(descriptor.GetState()),
              descriptor.GetDevice() != nullptr);
     }
+#ifdef __MINGW32__
+    // The win32 GCC threading model leaves libstdc++ <thread> empty, so
+    // std::this_thread does not exist. Use the Win32 API directly here;
+    // MSVC and POSIX builds keep std::this_thread below.
+    ::Sleep(static_cast<unsigned long>(REBOOT_BORROW_INTERVAL.count()));
+#else
     std::this_thread::sleep_for(REBOOT_BORROW_INTERVAL);
+#endif
   }
   if (!reborrowed) {
     ShowMessageBox(_("Could not re-acquire device after reboot."),
