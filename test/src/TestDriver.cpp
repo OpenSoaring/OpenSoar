@@ -65,7 +65,7 @@
 #include "util/PackedFloat.hxx"
 
 #ifdef HAVE_REMOTE_STICK
-# include "Device/Driver/RemoteStick.hpp"
+# include "Device/Driver/SteFly/RemoteStick.hpp"
 #endif
 
 #include <memory>
