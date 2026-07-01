@@ -8,7 +8,7 @@
 #include "LogFile.hpp"
 
 #include <windows.h>
-#include <Dbt.h>
+#include <dbt.h>
 
 PortMonitorWindows::PortMonitorWindows(MultipleDevices &_devices) noexcept
   :devices(_devices)
