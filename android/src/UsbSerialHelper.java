@@ -107,7 +107,7 @@ public final class UsbSerialHelper extends BroadcastReceiver {
     public final String id;
 
     /**
-     * Historically the "id without the serial number" — used to match
+     * Historically the "id without the serial number" - used to match
      * old-style profile ids. Since the id itself is now permission-
      * independent (no serial), this is a synonym kept for source
      * compatibility.
