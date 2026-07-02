@@ -2,7 +2,7 @@
 # ./3rd_party/3rd_party.cmake
 # =================================================================
 set(BOOST_VERSION       "1.90.0") # (2025-12-10)
-set(ZLIB_VERSION        "1.3.1" )  # 2025-..
+set(ZLIB_VERSION        "1.3.2" )  # 2025-..
 set(CARES_VERSION       "1.24.0")  # XCSoar version () # not valid?
 set(CURL_VERSION        "8.5.0" )  # functional with OpenSoar(2025-12-23)
 set(PNG_VERSION         "1.6.43") # XCSoar version

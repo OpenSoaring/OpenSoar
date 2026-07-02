@@ -19,7 +19,9 @@ fmt_version = ["11.1.4", "ac366b7b4c2e9f0dde63a59b3feb5ee59b67974b14ee5dc9ea8ad7
 # netcdfcxx_version = [ "4.2",   "95ed6ab49a0ee001255eac4e44aacb5ca4ea96ba850c08337a3e4c9a0872ccd1" ]
 
 netcdf_version   =  [ "4.10.0","CE160F9C1483B32D1BA8B7633D7984510259E4E439C48A218B95A023DC02FD4C"]
-netcdfcxx_version = [ "4.3.1", "6A1189A181EED043B5859E15D5C080C30D0E107406FBB212C8FB9814E90F3445" ]
+netcdfcxx_version = [ "4.3.1", "E3FE3D2EC06C1C2772555BF1208D220AAB5FEE186D04BD265219B0BC7A978EDC" ]
+
+zlib_version      = [ "1.3.2", "d7a0654783a4da529d1bb793b7ad9c3318020af77667bcae35f95d0e42a792f3" ]
 
 binutils = BinutilsProject(
     (
@@ -191,10 +193,10 @@ libsodium = AutotoolsProject(
 
 zlib = ZlibProject(
     (
-        "http://zlib.net/zlib-1.3.1.tar.xz",
-        "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.xz",
+        "http://zlib.net/zlib-" + zlib_version[0] + ".tar.xz",
+        "https://github.com/madler/zlib/releases/download/v" + zlib_version[0] + "/zlib-" + zlib_version[0] + ".tar.xz",
     ),
-    "38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32",
+    zlib_version[1],
     "lib/libz.a",
 )
 
