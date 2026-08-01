@@ -13,6 +13,8 @@
 #include "UIGlobals.hpp"
 #include "ui/window/SingleWindow.hpp"
 
+void CloudEnableDialog() noexcept;
+
 void
 CloudEnableDialog() noexcept
 {
