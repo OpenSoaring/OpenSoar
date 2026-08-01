@@ -4,6 +4,7 @@
 #include "InfoBoxes/InfoBoxLayout.hpp"
 #include "Border.hpp"
 #include "util/Macros.hpp"
+#include "LogFile.hpp"
 
 #include <algorithm> // for std::clamp()
 
@@ -121,7 +122,13 @@ InfoBoxLayout::Calculate(PixelRect rc, InfoBoxSettings::Geometry geometry) noexc
   unsigned right = rc.right;
 
   switch (geometry) {
-  case InfoBoxSettings::Geometry::SPLIT_8:
+    case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_5:
+    case InfoBoxSettings::Geometry::TOP_12_VARIO:
+    case InfoBoxSettings::Geometry::TOP_16_VARIO:
+    case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_10:
+      LogFormat("unhandled geometry: %d", (int )geometry);
+      break;
+    case InfoBoxSettings::Geometry::SPLIT_8:
   case InfoBoxSettings::Geometry::OBSOLETE_SPLIT_8:
     if (layout.landscape) {
       rc.left = MakeLeftColumn(layout, layout.positions, 4,
@@ -425,7 +432,13 @@ InfoBoxLayout::ValidateGeometry(InfoBoxSettings::Geometry geometry,
     /* landscape */
 
     switch (geometry) {
-    case InfoBoxSettings::Geometry::SPLIT_8:
+      case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_5:
+      case InfoBoxSettings::Geometry::TOP_12_VARIO:
+      case InfoBoxSettings::Geometry::TOP_16_VARIO:
+      case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_10:
+        LogFormat("unhandled geometry: %d", (int )geometry);
+        break;
+      case InfoBoxSettings::Geometry::SPLIT_8:
     case InfoBoxSettings::Geometry::SPLIT_10:
     case InfoBoxSettings::Geometry::SPLIT_3X4:
     case InfoBoxSettings::Geometry::SPLIT_3X5:
@@ -464,7 +477,13 @@ InfoBoxLayout::ValidateGeometry(InfoBoxSettings::Geometry geometry,
     /* portrait and square */
 
     switch (geometry) {
-    case InfoBoxSettings::Geometry::SPLIT_8:
+      case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_5:
+      case InfoBoxSettings::Geometry::TOP_12_VARIO:
+      case InfoBoxSettings::Geometry::TOP_16_VARIO:
+      case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_10:
+        LogFormat("unhandled geometry: %d", (int )geometry);
+        break;
+      case InfoBoxSettings::Geometry::SPLIT_8:
     case InfoBoxSettings::Geometry::SPLIT_10:
     case InfoBoxSettings::Geometry::SPLIT_3X4:
     case InfoBoxSettings::Geometry::SPLIT_3X5:
@@ -537,7 +556,13 @@ InfoBoxLayout::CalcInfoBoxSizes(Layout &layout, PixelSize screen_size,
   const bool landscape = screen_size.width > screen_size.height;
 
   switch (geometry) {
-  case InfoBoxSettings::Geometry::SPLIT_8:
+    case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_5:
+    case InfoBoxSettings::Geometry::TOP_12_VARIO:
+    case InfoBoxSettings::Geometry::TOP_16_VARIO:
+    case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_10:
+      LogFormat("unhandled geometry: %d", (int )geometry);
+      break;
+    case InfoBoxSettings::Geometry::SPLIT_8:
   case InfoBoxSettings::Geometry::SPLIT_10:
   case InfoBoxSettings::Geometry::BOTTOM_RIGHT_8:
   case InfoBoxSettings::Geometry::BOTTOM_RIGHT_12:
@@ -654,7 +679,13 @@ InfoBoxLayout::GetBorder(InfoBoxSettings::Geometry geometry, bool landscape,
   unsigned border = 0;
 
   switch (geometry) {
-  case InfoBoxSettings::Geometry::SPLIT_8:
+    case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_5:
+    case InfoBoxSettings::Geometry::TOP_12_VARIO:
+    case InfoBoxSettings::Geometry::TOP_16_VARIO:
+    case InfoBoxSettings::Geometry::TOP_8_VARIO_BOTTOM_10:
+      LogFormat("unhandled geometry: %d", (int)geometry);
+      break;
+    case InfoBoxSettings::Geometry::SPLIT_8:
     if (landscape) {
       if (i != 3 && i != 7)
         border |= BORDERBOTTOM;
