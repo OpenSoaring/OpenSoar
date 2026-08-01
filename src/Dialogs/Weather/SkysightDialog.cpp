@@ -320,7 +320,7 @@ void SkysightWidget::AddClicked()
   if (i < 0)
     return;
 
-  assert(i < skysight->NumLayers());
+  assert(i < (int)skysight->NumLayers());
   auto layer = skysight->GetLayer(i);
   if (layer)
     skysight->AddSelectedLayer(layer->id.c_str());
