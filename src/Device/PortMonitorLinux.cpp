@@ -9,6 +9,7 @@
 #include "MultipleDevices.hpp"
 #include "LogFile.hpp"
 #include "io/FileDescriptor.hxx"
+#include "event/Call.hxx"
 
 #include <libudev.h>
 
@@ -19,6 +20,7 @@ PortMonitorLinux::PortMonitorLinux(EventLoop &event_loop,
   :fd_event(event_loop, BIND_THIS_METHOD(OnEvent)),
    devices(_devices)
 {
+  LogString("PortMonitorLinux: udev hotplug monitor active");
   udev_handle = udev_new();
   if (udev_handle == nullptr) {
     LogString("PortMonitorLinux: udev_new() failed");
@@ -55,9 +57,26 @@ PortMonitorLinux::PortMonitorLinux(EventLoop &event_loop,
     udev_handle = nullptr;
     return;
   }
-
+/*
   fd_event.Open(FileDescriptor{fd});
   fd_event.ScheduleRead();
+  LogString("PortMonitorLinux: udev hotplug monitor active");
+
+  BlockingCall(event_loop, [this]() {
+    fd_event.ScheduleRead();
+    });
+*/
+  /* Open() only stores the fd and does not touch the EventLoop, so it
+    is safe to call from this (the main) thread */
+  fd_event.Open(FileDescriptor{ fd });
+
+  /* ScheduleRead() registers the fd in the EventLoop (epoll); while the
+     loop is running, that is only allowed from inside the loop thread,
+     therefore marshal the call with BlockingCall() */
+  BlockingCall(event_loop, [this]() {
+    fd_event.ScheduleRead();
+    });
+
   LogString("PortMonitorLinux: udev hotplug monitor active");
 }
 
@@ -65,9 +84,11 @@ PortMonitorLinux::~PortMonitorLinux() noexcept
 {
   // PipeEvent does NOT close the FD — that's owned by udev_monitor.
   // Cancel polling first, then release the FD without closing it.
-  fd_event.Cancel();
-  if (fd_event.IsDefined())
-    fd_event.ReleaseFileDescriptor();
+  BlockingCall(fd_event.GetEventLoop(), [this]() {
+    fd_event.Cancel();
+    if (fd_event.IsDefined())
+      fd_event.ReleaseFileDescriptor();
+    });
 
   if (monitor != nullptr)
     udev_monitor_unref(monitor);
