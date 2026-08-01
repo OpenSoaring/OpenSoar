@@ -29,6 +29,7 @@
 #include "Components.hpp"
 #include "DataComponents.hpp"
 #include "Interface.hpp"
+#include "LogFile.hpp"
 
 #include <cassert>
 
@@ -147,6 +148,11 @@ LoadTaskList(WeGlideTaskSelection selection,
   case WeGlideTaskSelection::PUBLIC_DECLARED:
     return WeGlide::ListDeclaredTasks(*Net::curl, settings,
                                       progress);
+
+  case WeGlideTaskSelection::DAILY_COMPETITIONS:
+  case WeGlideTaskSelection::RECENT_SCORES:
+    LogString("DAILY_COMPETITIONS");
+    break;
   }
 
   gcc_unreachable();
