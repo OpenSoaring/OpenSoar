@@ -547,7 +547,7 @@ SkysightAPI::CallCDFDecoder(const SkySight::Layer *layer,
 bool
 SkysightAPI::GetTileData(const std::string_view layer_id,
     const time_t from, [[maybe_unused]] const time_t to,
-    SkysightCallback cb, [[maybe_unused]] bool force_recache)
+    [[maybe_unused]] SkysightCallback cb, [[maybe_unused]] bool force_recache)
 {
 
   GlueMapWindow *map_window = UIGlobals::GetMap();
@@ -598,7 +598,7 @@ bool
 SkysightAPI::GetData(SkysightCallType type, const std::string_view layer_id,
     const time_t from, [[maybe_unused]] const time_t to,
     [[maybe_unused]] const std::string_view link,
-    SkysightCallback cb, [[maybe_unused]] bool force_recache)
+    [[maybe_unused]] SkysightCallback cb, [[maybe_unused]] bool force_recache)
 {
   const std::string url = link.empty() || !link.starts_with("https://") ? 
        GetUrl(type, layer_id, from) : std::string(link);
@@ -832,7 +832,7 @@ SkysightAPI::OnTimer()
           for (time_t time_index = ((now + HALF_HOUR) / HALF_HOUR) * HALF_HOUR;
             time_index <= now + ONLINE_FORECAST; time_index += HALF_HOUR) {
             if (layer->forecast_links.find(time_index) != layer->forecast_links.end()) {
-              bool success = GetData(SkysightCallType::Data, layer->id,
+              /* ua: bool success = */ GetData(SkysightCallType::Data, layer->id,
                 time_index, layer->update_time, layer->forecast_links[time_index]);
               // if (success && layer->update_time < time_index)
               //  layer->update_time = time_index;
