@@ -1257,6 +1257,7 @@ DeclareToFLARM(const struct Declaration &declaration,
   return DeclareToFLARM(declaration, port, home, env);
 }
 
+#if 0  // not used yet
 static bool
 DoDeclare(const struct Declaration &declaration,
           Port &port, const DeviceRegister &driver, Device *device,
@@ -1278,6 +1279,7 @@ DoDeclare(const struct Declaration &declaration,
 
   return result;
 }
+#endif
 
 bool
 DeviceDescriptor::Declare(const struct Declaration &declaration,
