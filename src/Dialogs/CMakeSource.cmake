@@ -116,6 +116,8 @@ set(_SOURCES
         Dialogs/StatusPanels/TaskStatusPanel.cpp
         Dialogs/StatusPanels/TimesStatusPanel.cpp
 
+        Dialogs/Tracking/CloudEnableDialog.cpp
+
         Dialogs/Task/AlternatesListDialog.cpp
         Dialogs/Task/dlgTaskHelpers.cpp
         Dialogs/Task/Manager/TaskActionsPanel.cpp
