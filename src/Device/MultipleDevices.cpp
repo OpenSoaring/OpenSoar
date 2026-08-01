@@ -293,7 +293,7 @@ MultipleDevices::DetectedPort(std::string_view portname,
 
 void
 MultipleDevices::RemovedPort(std::string_view portname,
-  OperationEnvironment &env) noexcept
+  [[maybe_unused]] OperationEnvironment &env) noexcept
 {
   for (DeviceDescriptor *device : devices) {
     if (device == nullptr)
