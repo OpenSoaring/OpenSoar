@@ -7,6 +7,7 @@
 // sysroot has no libudev — so require !__ANDROID__ as well.
 #if defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
 
+#include "PortMonitor.hpp"
 #include "event/PipeEvent.hxx"
 #include "Operation/PopupOperationEnvironment.hpp"
 
@@ -25,7 +26,7 @@ struct udev_monitor;
  * The monitor's file descriptor is integrated into the OpenSoar
  * EventLoop via PipeEvent, so events arrive without polling.
  */
-class PortMonitorLinux final {
+class PortMonitorLinux final : public PortMonitor {
   ::udev *udev_handle = nullptr;
   ::udev_monitor *monitor = nullptr;
   PipeEvent fd_event;
@@ -34,7 +35,7 @@ class PortMonitorLinux final {
 
 public:
   PortMonitorLinux(EventLoop &event_loop, MultipleDevices &devices) noexcept;
-  ~PortMonitorLinux() noexcept;
+  ~PortMonitorLinux() noexcept override;
 
   PortMonitorLinux(const PortMonitorLinux &) = delete;
   PortMonitorLinux &operator=(const PortMonitorLinux &) = delete;

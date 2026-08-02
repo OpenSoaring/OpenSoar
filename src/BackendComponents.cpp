@@ -3,11 +3,9 @@
 
 #include "BackendComponents.hpp"
 #include "Device/MultipleDevices.hpp"
-#if defined(_WIN32)
-# include "Device/PortMonitorWindows.hpp"
-#elif defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
-# include "Device/PortMonitorLinux.hpp"
-#endif
+// Complete type needed for ~unique_ptr<PortMonitor> in the defaulted
+// BackendComponents destructor. Unconditional on purpose (ODR).
+#include "Device/PortMonitor.hpp"
 #include "Blackboard/DeviceBlackboard.hpp"
 #include "Task/ProtectedTaskManager.hpp"
 #include "Computer/GlideComputer.hpp"

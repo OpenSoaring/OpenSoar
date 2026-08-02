@@ -53,6 +53,7 @@
 # include "Device/Driver/SteFly/Discovery.hpp"
 # include "SystemSettings.hpp"
 #endif
+#include "Device/PortMonitor.hpp" // unconditional: port_monitor.reset() in Shutdown()
 #if defined(_WIN32)
 # include "Device/PortMonitorWindows.hpp"
 #elif defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
@@ -796,11 +797,11 @@ Shutdown()
   // Close any device connections
   if (backend_components != nullptr && backend_components->devices != nullptr) {
     LogString("Stop devices");
-#if defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV))
     // Cancel the hotplug monitor before closing devices, otherwise a
-    // last-minute hotplug event could hit a half-destructed MultipleDevices.
+    // last-minute hotplug event could hit a half-destructed
+    // MultipleDevices. The member exists on all platforms (empty
+    // where there is no monitor), so no #ifdef is needed here.
     backend_components->port_monitor.reset();
-#endif
     backend_components->devices->Close();
   }
 

@@ -11,8 +11,6 @@ class NMEALogger;
 class GlueFlightLogger;
 class MultipleDevices;
 class PortMonitor;
-class PortMonitorLinux;
-class PortMonitorWindows;
 class DeviceBlackboard;
 class MergeThread;
 class ProtectedTaskManager;
@@ -40,17 +38,17 @@ struct BackendComponents {
    *   Android -> not used (the BroadcastReceiver in
    *              UsbSerialHelper.java calls into MultipleDevices
    *              directly via JNI)
-   * Field is absent on platforms without an implementation, so a
-   * `#ifdef` check is needed at every use site.
+   *
+   * Held through the abstract PortMonitor base and declared
+   * UNCONDITIONALLY: this member must exist on every platform and in
+   * every translation unit. A layout depending on an optional feature
+   * macro (HAVE_LIBUDEV) is an ODR violation — it shifted all
+   * following members by 8 bytes in TUs compiled without the define
+   * and caused real memory corruption. On platforms without an
+   * implementation the pointer simply stays empty.
    */
-#if defined(_WIN32)
-  // Held via the abstract PortMonitor base so the screen library (which
-  // dispatches WM_DEVICECHANGE through Window) needs no link-time
-  // reference to the concrete PortMonitorWindows in main.
   std::unique_ptr<PortMonitor> port_monitor;
-#elif defined(__linux__) && !defined(__ANDROID__) && defined(HAVE_LIBUDEV)
-  std::unique_ptr<PortMonitorLinux> port_monitor;
-#endif
+
   std::unique_ptr<MergeThread> merge_thread;
 
   std::unique_ptr<ProtectedTaskManager> protected_task_manager;

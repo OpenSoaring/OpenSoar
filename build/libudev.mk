@@ -49,13 +49,18 @@ endif
 
 ifeq ($(LIBUDEV_AVAILABLE),y)
   # Tell the C++ code that libudev is available.
-  LIBUDEV_CPPFLAGS += -DHAVE_LIBUDEV
+  #
+  # The define MUST be global (every translation unit): a per-file
+  # define once made BackendComponents.hpp declare its port_monitor
+  # member only in some TUs — an ODR violation that shifted the struct
+  # layout and corrupted memory. The layout no longer depends on
+  # HAVE_LIBUDEV, but keeping the define global is cheap insurance
+  # against reintroducing that trap.
+  TARGET_CPPFLAGS += -DHAVE_LIBUDEV
 
-  # Make the affected translation units pick up the include path /
-  # availability define.
+  # The include path (from pkg-config) is only needed where libudev.h
+  # is actually included.
   $(call SRC_TO_OBJ,$(SRC)/Device/PortMonitorLinux.cpp): CPPFLAGS += $(LIBUDEV_CPPFLAGS)
-  $(call SRC_TO_OBJ,$(SRC)/BackendComponents.cpp): CPPFLAGS += $(LIBUDEV_CPPFLAGS)
-  $(call SRC_TO_OBJ,$(SRC)/Startup.cpp): CPPFLAGS += $(LIBUDEV_CPPFLAGS)
 
   # Linker needs -ludev for the final executable.
   TARGET_LDLIBS += $(LIBUDEV_LDLIBS)
