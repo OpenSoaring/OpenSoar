@@ -1,6 +1,9 @@
 OpenSoar Version 7.44.24 - not released yet
 ---------------
 
+OpenSoar Test Version v7.44.24.t08 > 2026/08/XX
+* .t07 was wrong: Linux and Android crashed
+---------------
 OpenSoar Test Version v7.44.24.t07 > 2026/07/03
 ---------------
 * RemoteStick
