@@ -12,6 +12,7 @@
 # include "APIGlue.hpp"
 #endif  // SKYSIGHT_FORECAST 
 #include "ui/event/PeriodicTimer.hpp"
+#include "ui/event/Notify.hpp"
 
 #include "Layers.hpp"
 #include "system/Path.hpp"
@@ -69,6 +70,15 @@ const std::string OSM_BASE_URL("https://tile.openstreetmap.org");
 class SkysightAPI final {
   friend class CDFDecoder;
   UI::PeriodicTimer timer{ [this] { OnTimer(); } };
+  /**
+   * Marshals TimerInvoke() calls into the UI thread.
+   * UI::PeriodicTimer may only be invoked/scheduled from the UI
+   * thread, but TimerInvoke() is called from other threads as well
+   * (e.g. the CURL/IO thread after the credential key arrived, or
+   * the draw thread from the map overlay code) — on the UNIX poll
+   * backend that trips the EventLoop's IsInside() assertion.
+   */
+  UI::Notify timer_invoke_notify{ [this] { timer.Invoke(); } };
   SkysightRequest *co_request = nullptr;
   /** Cache directory for Skysight forecast data (= <cache_root>/skysight). */
   static AllocatedPath cache_path;

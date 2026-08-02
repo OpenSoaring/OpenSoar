@@ -49,11 +49,13 @@
 
 SkysightAPI *SkysightAPI::self;
 
+/* forecast_count  is unused yet:
 #ifdef _DEBUG
 static constexpr uint32_t forecast_count = 2;
 #else
 static constexpr uint32_t forecast_count = 6;
 #endif
+*/
 
 #ifdef THREAD_TIMER_START
 // =======================================================
@@ -703,7 +705,11 @@ SkysightAPI::MakeCallback(SkysightCallback cb, const std::string &&details,
 void
 SkysightAPI::TimerInvoke()
 {
-  timer.Invoke();
+  /* May be called from any thread (CURL/IO completion, draw thread).
+     UI::PeriodicTimer must only be touched from the UI thread, so
+     dispatch through UI::Notify; the timer callback then runs in the
+     next UI event loop iteration. */
+  timer_invoke_notify.SendNotification();
 }
 
 bool
