@@ -53,6 +53,7 @@ public:
 
   static SkySight::Layer *GetActiveLayer() { return self->active_layer; }
   Skysight(CurlGlobal &_curl);
+  ~Skysight() noexcept;
 
   static void APIInited(const std::string details, const bool success,
       const std::string layer_id, const time_t time_index);

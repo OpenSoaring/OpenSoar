@@ -307,6 +307,23 @@ Skysight::Skysight(CurlGlobal &_curl)
   Init();
 }
 
+Skysight::~Skysight() noexcept
+{
+  /* api is a raw pointer created in Init(); without deleting it here
+     the SkysightAPI leaks together with its UI::PeriodicTimer, which
+     is then still registered when the UI event queue is destroyed at
+     program exit — tripping the
+
+       TimerList::~TimerList(): Assertion 'timers.empty()'
+
+     on the UNIX poll backend. */
+  delete api;
+  api = nullptr;
+
+  if (self == this)
+    self = nullptr;
+}
+
 void
 Skysight::Init()
 {
