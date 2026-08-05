@@ -81,7 +81,7 @@ diff --git a/src/transformations/gridshift.cpp b/src/transformations/gridshift.c
  static std::map<std::string, bool> gKnownGrids{};
  
  using namespace NS_PROJ;
-@@ -1006,7 +1013,7 @@ }
+@@ -1007,7 +1014,7 @@ }
  
  // ---------------------------------------------------------------------------
  
@@ -160,7 +160,7 @@ diff --git a/src/iso19111/factory.cpp b/src/iso19111/factory.cpp
  using namespace NS_PROJ::common;
  
  NS_PROJ_START
-@@ -586,8 +590,8 @@ class SQLiteHandleCache {
+@@ -584,8 +598,8 @@ class SQLiteHandleCache {
  #ifdef REOPEN_SQLITE_DB_AFTER_FORK
      bool firstTime_ = true;
  #endif
@@ -187,7 +187,7 @@ diff --git a/src/iso19111/factory.cpp b/src/iso19111/factory.cpp
  
  #ifdef REOPEN_SQLITE_DB_AFTER_FORK
      if (firstTime_) {
-@@ -638,6 +652,6 @@ // ---------------------------------------------------------------------------
+@@ -646,6 +660,6 @@ // ---------------------------------------------------------------------------
  
  void SQLiteHandleCache::invalidateHandles() {
 -    std::lock_guard<std::mutex> lock(sMutex_);

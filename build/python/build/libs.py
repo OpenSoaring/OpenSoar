@@ -296,11 +296,11 @@ sqlite3 = AutotoolsProject(
 # suppress "visibility default" from geodesic.h
 proj = CmakeProject(
     (
-        "http://download.osgeo.org/proj/proj-9.4.0.tar.gz",
+        "http://download.osgeo.org/proj/proj-9.4.1.tar.gz",
         # HTTPS mirror (same infra, different scheme)
-        "https://download.osgeo.org/proj/proj-9.4.0.tar.gz",
+        "https://download.osgeo.org/proj/proj-9.4.1.tar.gz",
     ),
-    "3643b19b1622fe6b2e3113bdb623969f5117984b39f173b4e3fb19a8833bd216",
+    "FFE20170EE2B952207ADF8A195E2141EAB12CDA181E49FDEB54425D98C7171D7",
     "lib/libproj.a",
     [
         "-DCMAKE_C_COMPILER_WORKS=ON",
