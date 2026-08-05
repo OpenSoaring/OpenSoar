@@ -2,27 +2,25 @@ cmake_minimum_required(VERSION 3.15)
 
 set(INCLUDE_WITH_TOOLCHAIN 0)  # special include path for every toolchain!
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-  set(_LIB_NAME zlibstatic)
+  set(_LIB_NAME zs) # since 1.3.2
 else()
   set(_LIB_NAME z)
 endif()
 
+# prepare_3rdparty(zlib ${_LIB_NAME} ${_LIB_NAME}d)
 prepare_3rdparty(zlib ${_LIB_NAME} ${_LIB_NAME}d)
 
 if (_COMPLETE_INSTALL)
-#   endif()
-#   if (ON)
     #----------------------
     set(CMAKE_ARGS
         "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
-        "-DINSTALL_BIN_DIR:PATH=${_INSTALL_DIR}/${_INSTALL_BIN_DIR}"
-        "-DINSTALL_LIB_DIR:PATH=${_INSTALL_DIR}/${_INSTALL_LIB_DIR}"
+        "-DCMAKE_INSTALL_LIBDIR:PATH=${_INSTALL_LIB_DIR}"
+        "-DCMAKE_INSTALL_BINDIR:PATH=${_INSTALL_BIN_DIR}"
         # ??? "-DCMAKE_CONFIGURATION_TYPES=Release"
         "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
 
         "-DZ_HAVE_UNISTD_H=OFF"  # MSVC only!!!!
     )
-    # message(FATAL_ERROR "+++ BINARY_STEP (${TARGET_CNAME}): ${_BINARY_STEP}")
 
     ExternalProject_Add(
         ${_BUILD_TARGET}

@@ -243,6 +243,7 @@ elseif(EXISTS ${_TARGET_LIBRARY})
         # ${lib_name} STREQUAL "geotiff" OR 
         # ${lib_name} STREQUAL "netcdf" OR
         # ${lib_name} STREQUAL "netcdf-cxx4" OR
+        # ${lib_name} STREQUAL "zs" OR
         OFF  # finish entry :)
      )
      set(_COMPLETE_INSTALL ON)
