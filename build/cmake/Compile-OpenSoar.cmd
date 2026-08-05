@@ -17,7 +17,7 @@ echo %CD%
 echo OPENSOAR_TOOLCHAIN = %OPENSOAR_TOOLCHAIN%
 echo COMPILE_PARTS      = %COMPILE_PARTS%
 :: PATH=%CD%;%CD%\build\cmake\python;%PATH%
-PATH=%CD%;%CD%\build\cmake\python;%PATH%
+PATH=%CD%;%CD%\build\cmake\python;%PATH%;C:\Program Files\7-Zip
 
 REM pause
 

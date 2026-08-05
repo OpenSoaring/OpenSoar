@@ -2,9 +2,9 @@
 
 import os, sys, subprocess
 
-Configuration = 'Release'
+Configuration = 'Multi'
+# Configuration = 'Release'
 # Configuration = 'Debug'
-# Configuration = 'Multi'
 
 
 # if len(sys.argv) > 1:
@@ -190,8 +190,12 @@ def create_opensoar(args):
 
   if sys.platform.startswith('win'):
     is_windows = True
-    project_dir = 'D:/Projects'
-    program_dir = 'D:/Programs'
+    if False:
+      project_dir = 'D:/Projects'
+      program_dir = 'D:/Programs'
+    else:
+      project_dir = 'c:/Projects'
+      program_dir = 'c:/Program Files'
     # not necessary ?! install_bindir = 'bin'
     # src_dir = start_dir  # changed 05.12.2022
 	# ATTENTION: this isn't finished yet!!!

@@ -48,6 +48,7 @@ endif()
 set(CMAKE_BUILD_TYPE Debug)
 # set(CMAKE_BUILD_TYPE Release)
 
+add_compile_definitions(USE_WIN32_RESOURCES)
 add_compile_definitions(NO_ERROR_CHECK)  # EnumBitSet funktioniert m.E. noch nicht korrekt!!!!
 add_compile_definitions(WIN32_LEAN_AND_MEAN)
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
