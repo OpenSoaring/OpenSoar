@@ -236,19 +236,19 @@ add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc ${_INCLU
 )
 
 add_custom_command(OUTPUT ${_INCLUDE_OUTPUT}/ResourceLookup_entries.hpp
-  COMMENT "Create Resource File! from ${PROJECTGROUP_SOURCE_DIR}/tmp/resources.txt"
-  COMMAND perl ${PROJECTGROUP_SOURCE_DIR}/tools/GenerateResourceLookup.pl 
+  COMMENT "Create Resource File! from ${PROJECTGROUP_SOURCE_DIR}/Data/resources.txt"
+  COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/GenerateResourceLookup.py
           ## ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt 
-          ${PROJECTGROUP_SOURCE_DIR}/tmp/resources.txt   # das ist falsch!
+          ${PROJECTGROUP_SOURCE_DIR}/Data/resources.txt   # das ist falsch!
           > ${_INCLUDE_OUTPUT}/ResourceLookup_entries.hpp
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt
-          ${PROJECTGROUP_SOURCE_DIR}/tools/GenerateResourceLookup.pl
+          ${PROJECTGROUP_SOURCE_DIR}/tools/python/GenerateResourceLookup.py
 )
 # message(FATAL_ERROR "!!!!!! ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc")
 # if (_COMPLETE_INSTALL)
 set(GRAPHIC_BITMAPS
-   ${_GRAPHICS_OUTPUT}/logo_160.bmp
    ${_GRAPHICS_OUTPUT}/logo_80.bmp
+   ${_GRAPHICS_OUTPUT}/logo_160.bmp
    ${_GRAPHICS_OUTPUT}/launcher_640.bmp
    ${_GRAPHICS_OUTPUT}/launcher_640_1.bmp
    ${_GRAPHICS_OUTPUT}/launcher_640_2.bmp
@@ -269,6 +269,9 @@ set(GRAPHIC_BITMAPS
    ${_GRAPHICS_OUTPUT}/launcher_red_640.bmp
    ${_GRAPHICS_OUTPUT}/launcher_red_640_1.bmp
    ${_GRAPHICS_OUTPUT}/launcher_red_640_2.bmp
+   ${_GRAPHICS_OUTPUT}/launcher_red_640_rgba.bmp
+   ${_GRAPHICS_OUTPUT}/launcher_red_640_rgba_1.bmp
+   ${_GRAPHICS_OUTPUT}/launcher_red_640_rgba_2.bmp
    ${_GRAPHICS_OUTPUT}/title_red_320.bmp
    ${_GRAPHICS_OUTPUT}/title_red_110.bmp
 ) # set
@@ -281,8 +284,8 @@ if(IS_OPENSOAR)
   add_custom_command(OUTPUT ${STEFLY_BITMAPS}
     COMMENT "Convert graphics!"
     COMMAND ${CMAKE_COMMAND} -E make_directory ${_GRAPHICS_OUTPUT}
-    COMMAND ${BMP_CONVERT_APP} -size 160 Data/graphics/logo_stefly.svg bmp3:${_GRAPHICS_OUTPUT}/logo_stefly_160.bmp
-    COMMAND ${BMP_CONVERT_APP} -size 80 Data/graphics/logo_stefly.svg bmp3:${_GRAPHICS_OUTPUT}/logo_stefly_80.bmp
+    COMMAND "${BMP_CONVERT_APP}" -size 160 Data/graphics/logo_stefly.svg bmp3:${_GRAPHICS_OUTPUT}/logo_stefly_160.bmp
+    COMMAND "${BMP_CONVERT_APP}" -size 80 Data/graphics/logo_stefly.svg bmp3:${_GRAPHICS_OUTPUT}/logo_stefly_80.bmp
     DEPENDS ${_DATA_INPUT}/graphics/logo_stefly.svg
     WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
   )
@@ -291,36 +294,45 @@ endif()
 add_custom_command(OUTPUT ${GRAPHIC_BITMAPS}
   COMMENT "Convert graphics!"
   COMMAND ${CMAKE_COMMAND} -E make_directory ${_GRAPHICS_OUTPUT}
-  COMMAND ${BMP_CONVERT_APP} -size 320 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_320.bmp
-  COMMAND ${BMP_CONVERT_APP} -size 160 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_160.bmp
-  COMMAND ${BMP_CONVERT_APP} -size 80 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_80.bmp
-  COMMAND ${BMP_CONVERT_APP} -size 320 Data/graphics/logo_red.svg bmp3:${_GRAPHICS_OUTPUT}/logo_red_320.bmp
-  COMMAND ${BMP_CONVERT_APP} -size 160 Data/graphics/logo_red.svg bmp3:${_GRAPHICS_OUTPUT}/logo_red_160.bmp
-  COMMAND ${BMP_CONVERT_APP} -size 80 Data/graphics/logo_red.svg bmp3:${_GRAPHICS_OUTPUT}/logo_red_80.bmp
+  COMMAND "${BMP_CONVERT_APP}" -size 320 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_320.bmp
+  COMMAND "${BMP_CONVERT_APP}" -size 160 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_160.bmp
+  COMMAND "${BMP_CONVERT_APP}" -size 80 Data/graphics/logo.svg bmp3:${_GRAPHICS_OUTPUT}/logo_80.bmp
+  COMMAND "${BMP_CONVERT_APP}" -size 320 Data/graphics/logo_red.svg bmp3:${_GRAPHICS_OUTPUT}/logo_red_320.bmp
+  COMMAND "${BMP_CONVERT_APP}" -size 160 Data/graphics/logo_red.svg bmp3:${_GRAPHICS_OUTPUT}/logo_red_160.bmp
+  COMMAND "${BMP_CONVERT_APP}" -size 80 Data/graphics/logo_red.svg bmp3:${_GRAPHICS_OUTPUT}/logo_red_80.bmp
 
-  COMMAND ${BMP_CONVERT_APP} -background white -layers flatten +matte +dither -compress none -type optimize -colors 256  Data/graphics/launcher.svg bmp3:${_GRAPHICS_OUTPUT}/launcher_640.bmp
-  COMMAND ${BMP_CONVERT_APP} -crop "50${PERCENT_CHAR}x100${PERCENT_CHAR}" -scene 1  ${_GRAPHICS_OUTPUT}/launcher_640.bmp "bmp3:${_GRAPHICS_OUTPUT}/launcher_640_${PERCENT_CHAR}d.bmp"
-  COMMAND ${BMP_CONVERT_APP} -background white -layers flatten +matte +dither -compress none -type optimize -colors 256  Data/graphics/launcher_red.svg bmp3:${_GRAPHICS_OUTPUT}/launcher_red_640.bmp
-  COMMAND ${BMP_CONVERT_APP} -crop "50${PERCENT_CHAR}x100${PERCENT_CHAR}" -scene 1  ${_GRAPHICS_OUTPUT}/launcher_red_640.bmp "bmp3:${_GRAPHICS_OUTPUT}/launcher_red_640_${PERCENT_CHAR}d.bmp"
+  COMMAND "${BMP_CONVERT_APP}" Data/graphics/launcher.svg -background white -flatten -alpha Off +dither -compress none -type optimize -colors 256  bmp3:${_GRAPHICS_OUTPUT}/launcher_640.bmp
+  COMMAND "${BMP_CONVERT_APP}" ${_GRAPHICS_OUTPUT}/launcher_640.bmp -crop "50${PERCENT_CHAR}x100${PERCENT_CHAR}" -scene 1  "bmp3:${_GRAPHICS_OUTPUT}/launcher_640_${PERCENT_CHAR}d.bmp"
+  COMMAND "${BMP_CONVERT_APP}" Data/graphics/launcher_red.svg -background white -flatten -alpha Off  +dither -compress none -type optimize -colors 256  bmp3:${_GRAPHICS_OUTPUT}/launcher_red_640.bmp
+  COMMAND "${BMP_CONVERT_APP}" ${_GRAPHICS_OUTPUT}/launcher_red_640.bmp -crop "50${PERCENT_CHAR}x100${PERCENT_CHAR}" -scene 1  "bmp3:${_GRAPHICS_OUTPUT}/launcher_red_640_${PERCENT_CHAR}d.bmp"
+# IM6:  COMMAND "${BMP_CONVERT_APP}" -size 320 -background white -layers flatten +matte +dither -compress none -type optimize -colors 256  Data/graphics/launcher.svg bmp3:${_GRAPHICS_OUTPUT}/launcher_640.bmp
+# IM6:  COMMAND "${BMP_CONVERT_APP}" -crop "50${PERCENT_CHAR}x100${PERCENT_CHAR}" -scene 1  ${_GRAPHICS_OUTPUT}/launcher_640.bmp "bmp3:${_GRAPHICS_OUTPUT}/launcher_640_${PERCENT_CHAR}d.bmp"
+# IM6:  COMMAND "${BMP_CONVERT_APP}" -background white -layers flatten +matte +dither -compress none -type optimize -colors 256  Data/graphics/launcher_red.svg bmp3:${_GRAPHICS_OUTPUT}/launcher_red_640.bmp
+# IM6:  COMMAND "${BMP_CONVERT_APP}" -crop "50${PERCENT_CHAR}x100${PERCENT_CHAR}" -scene 1  ${_GRAPHICS_OUTPUT}/launcher_red_640.bmp "bmp3:${_GRAPHICS_OUTPUT}/launcher_red_640_${PERCENT_CHAR}d.bmp"
+
+# launcher_rgba?
+  COMMAND "${BMP_CONVERT_APP}" Data/graphics/launcher.svg -background white -flatten -alpha Off +dither -compress none -type optimize -colors 256  bmp3:${_GRAPHICS_OUTPUT}/launcher_640_rgba.bmp
+  COMMAND "${BMP_CONVERT_APP}" ${_GRAPHICS_OUTPUT}/launcher_640_rgba.bmp -crop "50${PERCENT_CHAR}x100${PERCENT_CHAR}" -scene 1  "bmp3:${_GRAPHICS_OUTPUT}/launcher_640_rgba_${PERCENT_CHAR}d.bmp"
+  COMMAND "${BMP_CONVERT_APP}" Data/graphics/launcher_red.svg -background white -flatten -alpha Off  +dither -compress none -type optimize -colors 256  bmp3:${_GRAPHICS_OUTPUT}/launcher_red_640_rgba.bmp
+  COMMAND "${BMP_CONVERT_APP}" ${_GRAPHICS_OUTPUT}/launcher_red_640_rgba.bmp -crop "50${PERCENT_CHAR}x100${PERCENT_CHAR}" -scene 1  "bmp3:${_GRAPHICS_OUTPUT}/launcher_red_640_rgba_${PERCENT_CHAR}d.bmp"
+#     COMMAND "${BMP_CONVERT_APP}"  Data/graphics/progress_border.svg bmp3:${_GRAPHICS_OUTPUT}/progress_border.bmp
+  COMMAND "${BMP_CONVERT_APP}"  Data/graphics/progress_border_red.svg bmp3:${_GRAPHICS_OUTPUT}/progress_border_red.bmp
   
-  COMMAND ${BMP_CONVERT_APP}  Data/graphics/progress_border.svg bmp3:${_GRAPHICS_OUTPUT}/progress_border.bmp
-  COMMAND ${BMP_CONVERT_APP}  Data/graphics/progress_border_red.svg bmp3:${_GRAPHICS_OUTPUT}/progress_border_red.bmp
+  COMMAND "${BMP_CONVERT_APP}"  -size 110x110 ${_TEMP_OUTPUT}/title.svg bmp3:${_GRAPHICS_OUTPUT}/title_110.bmp 
+  COMMAND "${BMP_CONVERT_APP}"  -size 320x320 ${_TEMP_OUTPUT}/title.svg bmp3:${_GRAPHICS_OUTPUT}/title_320.bmp
+  COMMAND "${BMP_CONVERT_APP}"  -size 640x640 ${_TEMP_OUTPUT}/title.svg bmp3:${_GRAPHICS_OUTPUT}/title_640.bmp
+  COMMAND "${BMP_CONVERT_APP}"  -size 110x110 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_110.bmp 
+  COMMAND "${BMP_CONVERT_APP}"  -size 320x320 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_320.bmp
+  COMMAND "${BMP_CONVERT_APP}"  -size 640x640 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_640.bmp
   
-  COMMAND ${BMP_CONVERT_APP}  -size 110x110 ${_TEMP_OUTPUT}/title.svg bmp3:${_GRAPHICS_OUTPUT}/title_110.bmp 
-  COMMAND ${BMP_CONVERT_APP}  -size 320x320 ${_TEMP_OUTPUT}/title.svg bmp3:${_GRAPHICS_OUTPUT}/title_320.bmp
-  COMMAND ${BMP_CONVERT_APP}  -size 640x640 ${_TEMP_OUTPUT}/title.svg bmp3:${_GRAPHICS_OUTPUT}/title_640.bmp
-  COMMAND ${BMP_CONVERT_APP}  -size 110x110 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_110.bmp 
-  COMMAND ${BMP_CONVERT_APP}  -size 320x320 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_320.bmp
-  COMMAND ${BMP_CONVERT_APP}  -size 640x640 ${_TEMP_OUTPUT}/title_red.svg bmp3:${_GRAPHICS_OUTPUT}/title_red_640.bmp
-  
-  COMMAND ${BMP_CONVERT_APP}  -size 110x110 Data/graphics/dialog_title.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_110.bmp 
-  COMMAND ${BMP_CONVERT_APP}  -size 320x320 Data/graphics/dialog_title.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_320.bmp
-  COMMAND ${BMP_CONVERT_APP}  -size 320x320 Data/graphics/dialog_title.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title.bmp
-  COMMAND ${BMP_CONVERT_APP}  -size 640x640 Data/graphics/dialog_title.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_640.bmp
-  COMMAND ${BMP_CONVERT_APP}  -size 110x110 Data/graphics/dialog_title_red.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_red_110.bmp 
-  COMMAND ${BMP_CONVERT_APP}  -size 320x320 Data/graphics/dialog_title_red.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_red_320.bmp
-  COMMAND ${BMP_CONVERT_APP}  -size 320x320 Data/graphics/dialog_title_red.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_red.bmp
-  COMMAND ${BMP_CONVERT_APP}  -size 640x640 Data/graphics/dialog_title_red.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_red_640.bmp
+  COMMAND "${BMP_CONVERT_APP}"  -size 110x110 Data/graphics/dialog_title.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_110.bmp 
+  COMMAND "${BMP_CONVERT_APP}"  -size 320x320 Data/graphics/dialog_title.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_320.bmp
+  COMMAND "${BMP_CONVERT_APP}"  -size 320x320 Data/graphics/dialog_title.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title.bmp
+  COMMAND "${BMP_CONVERT_APP}"  -size 640x640 Data/graphics/dialog_title.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_640.bmp
+  COMMAND "${BMP_CONVERT_APP}"  -size 110x110 Data/graphics/dialog_title_red.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_red_110.bmp 
+  COMMAND "${BMP_CONVERT_APP}"  -size 320x320 Data/graphics/dialog_title_red.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_red_320.bmp
+  COMMAND "${BMP_CONVERT_APP}"  -size 320x320 Data/graphics/dialog_title_red.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_red.bmp
+  COMMAND "${BMP_CONVERT_APP}"  -size 640x640 Data/graphics/dialog_title_red.svg bmp3:${_GRAPHICS_OUTPUT}/dialog_title_red_640.bmp
   
   DEPENDS ${_DATA_INPUT}/graphics/logo.svg
           ${_DATA_INPUT}/graphics/logo_xcs.svg
@@ -338,7 +350,7 @@ foreach(file ${GRAPHIC_ICONS})
     list(APPEND GRAPHIC_BMP_FILES ${bmp_file})
     add_custom_command(OUTPUT ${bmp_file}
       COMMENT "Convert single graphic-icons (${file})!"
-      COMMAND ${BMP_CONVERT_APP} -size 80 ${svg_file} bmp3:${bmp_file}
+      COMMAND "${BMP_CONVERT_APP}" -size 80 ${svg_file} bmp3:${bmp_file}
       
       DEPENDS ${svg_file}
       WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
@@ -352,7 +364,7 @@ foreach(file ${GESTURE_ICONS})
     list(APPEND GRAPHIC_BMP_FILES ${bmp_file})
     add_custom_command(OUTPUT ${bmp_file}
       COMMENT "Convert single gesture-icons (${file})!"
-      COMMAND ${BMP_CONVERT_APP} -size 82 ${svg_file} bmp3:${bmp_file}
+      COMMAND "${BMP_CONVERT_APP}" -size 82 ${svg_file} bmp3:${bmp_file}
       
       DEPENDS ${svg_file}
       WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
@@ -409,14 +421,14 @@ foreach(icon_file ${ICON_FILES})
      COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}/icons
      COMMAND ${CMAKE_COMMAND} -E copy ${icon_file} ${icon_file_out}.svg
      ${COPY_CMD}
-     COMMAND ${BMP_CONVERT_APP} ${icon_file_uhd}.png -alpha Extract -colors 8 ${tmp_file}_alpha.png
+     COMMAND "${BMP_CONVERT_APP}" ${icon_file_uhd}.png -alpha Extract -colors 8 ${tmp_file}_alpha.png
      # "-alpha Off" == "+matte"
-     COMMAND ${BMP_CONVERT_APP} ${icon_file_uhd}.png -background ${BMP_BACKGROUND} -flatten -alpha Off +dither -colors 64  ${tmp_file}_rgb.png
+     COMMAND "${BMP_CONVERT_APP}" ${icon_file_uhd}.png -background ${BMP_BACKGROUND} -flatten -alpha Off +dither -colors 64  ${tmp_file}_rgb.png
      COMMAND ${BMP_MONTAGE_APP} -tile 2x1 -geometry +0+0 ${tmp_file}_alpha.png ${tmp_file}_rgb.png -depth 8 ${tmp_file}.png
-     COMMAND ${BMP_CONVERT_APP} ${tmp_file}.png  -resize 132x66 -colors 64 BMP3:${icon_file_uhd}.bmp
-     COMMAND ${BMP_CONVERT_APP} ${tmp_file}.png  -resize  44x22 -colors 64 BMP3:${icon_file_hd}.bmp
-     COMMAND ${BMP_CONVERT_APP} ${tmp_file}.png  -resize  44x22 -colors 64 BMP3:${icon_file_std}.bmp
-     # COMMAND ${BMP_CONVERT_APP} ${tmp_file}.png  -resize 20x10 -colors 64 BMP3:${icon_file_std}.bmp
+     COMMAND "${BMP_CONVERT_APP}" ${tmp_file}.png  -resize 132x66 -colors 64 BMP3:${icon_file_uhd}.bmp
+     COMMAND "${BMP_CONVERT_APP}" ${tmp_file}.png  -resize  44x22 -colors 64 BMP3:${icon_file_hd}.bmp
+     COMMAND "${BMP_CONVERT_APP}" ${tmp_file}.png  -resize  44x22 -colors 64 BMP3:${icon_file_std}.bmp
+     # COMMAND "${BMP_CONVERT_APP}" ${tmp_file}.png  -resize 20x10 -colors 64 BMP3:${icon_file_std}.bmp
      ${REMOVE_CMD}
      MAIN_DEPENDENCY ${icon_file}
      DEPENDS ${icon_file}
