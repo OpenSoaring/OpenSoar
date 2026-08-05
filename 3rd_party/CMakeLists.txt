@@ -34,6 +34,8 @@ if (NOT LINK_LIBS)
   message(STATUS "+++ No LINK_LIBS!!!")
   if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
     set (LINK_LIBS D:/Projects/link_libs)  # August2111: this Windows, Flaps6,....
+    # since Flaps7:
+	set (LINK_LIBS c:/Projects/link_libs)  # August2111: this Windows, Flaps6,....
   else()
     set (LINK_LIBS /usr/lib/link_libs)  # Linux,...
     message(STATUS "+++ LINK_LIBS not Windows (${LINK_LIBS})!!!")
@@ -47,12 +49,18 @@ endif()
      message(Status "THIRD_PARTY is empty!")
      if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
        set(THIRD_PARTY D:/Libs)   ## shorter and better? (August2111, 2025-12-15)
+       # since Flaps7:
+       set(THIRD_PARTY c:/Libs)   ## shorter and better? (August2111, 2025-12-15)
      endif()
   endif()
-  if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" AND NOT THIRD_PARTY STREQUAL "D:/Libs")
+  #if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" AND NOT THIRD_PARTY STREQUAL "D:/Libs")
+  # since Flaps7:
+  if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" AND NOT THIRD_PARTY STREQUAL "c:/Libs")
      message(STATUS "THIRD_PARTY = ${THIRD_PARTY}!")
      # message(FATAL_ERROR "THIRD_PARTY = ${}!")
      set(THIRD_PARTY D:/Libs)   ## 
+     # since Flaps7:
+     set(THIRD_PARTY c:/Libs)   ## 
   endif()
 
   set(EP_CMAKE "${THIRD_PARTY}")
