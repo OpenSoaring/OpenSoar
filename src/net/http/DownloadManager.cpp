@@ -15,52 +15,58 @@
 #include "thread/Mutex.hxx"
 #include "thread/SafeList.hxx"
 #include "co/InjectTask.hxx"
+#include "event/Call.hxx"
 
 #include <string>
 #include <list>
 #include <algorithm>
 
-  struct Item {
-    std::string uri;
-    std::string name;
-    const Net::DownloadType type;
-    boost::json::value* json;
-    boost::json::value  tmp_json;
-    Net::CurlData *data;
+struct Item {
+  std::string uri;
+  std::string name;
+  const Net::DownloadType type;
+  boost::json::value *json;
+  boost::json::value  tmp_json;
+  Net::CurlData *data;
 
-    Item(const Item &other) : uri(other.uri), name(other.name),
-      type(other.type), json(other.json), data(other.data) {}
+  Item(const Item &other) : uri(other.uri), name(other.name),
+    type(other.type), json(other.json), data(other.data) {
+  }
 
-    Item(Item &&other) noexcept = default;
+  Item(Item &&other) noexcept = default;
 
-    Item(const std::string_view _uri, const std::string_view _name,
-      const Net::DownloadType _type) noexcept
-      :uri(_uri), name(_name), type(_type) , json(&tmp_json), data(nullptr) {}
+  Item(const std::string_view _uri, const std::string_view _name,
+    const Net::DownloadType _type) noexcept
+    :uri(_uri), name(_name), type(_type), json(&tmp_json), data(nullptr) {
+  }
 
-    Item(const std::string_view _uri, const std::string_view _name,
-      Net::CurlData *_data, boost::json::value *_json) noexcept
-      :uri(_uri), name(_name), type(Net::JSON), json(_json), data(_data) {}
+  Item(const std::string_view _uri, const std::string_view _name,
+    Net::CurlData *_data, boost::json::value *_json) noexcept
+    :uri(_uri), name(_name), type(Net::JSON), json(_json), data(_data) {
+  }
 
-    Item(const std::string_view _uri, Net::CurlData *_data) noexcept
-      :uri(_uri), name(_data->name), type(_data->type), data(_data) {}
+  Item(const std::string_view _uri, Net::CurlData *_data) noexcept
+    :uri(_uri), name(_data->name), type(_data->type), data(_data) {
+  }
 
-    Item(const std::string_view _uri, const Path path_relative) noexcept
-      :uri(_uri), name(path_relative.c_str()), type(Net::FILE), data(nullptr) {}
+  Item(const std::string_view _uri, const Path path_relative) noexcept
+    :uri(_uri), name(path_relative.c_str()), type(Net::FILE), data(nullptr) {
+  }
 
-    Item &operator=(const Item &other) = delete;
+  Item &operator=(const Item &other) = delete;
 
-    [[gnu::pure]]
-    bool operator==(std::string_view  other) const noexcept {
-      return name == other;
-    }
-  };
+  [[gnu::pure]]
+  bool operator==(std::string_view  other) const noexcept {
+    return name == other;
+  }
+};
 
-  class DownloadManagerThread final
-    : ProgressListener {
-    /**
-   * The coroutine performing the current download.
-   */
-  Co::InjectTask task{Net::curl->GetEventLoop()};
+class DownloadManagerThread final
+  : ProgressListener {
+  /**
+ * The coroutine performing the current download.
+ */
+  Co::InjectTask task{ Net::curl->GetEventLoop() };
 
   Mutex mutex;
 
@@ -83,103 +89,126 @@ public:
     listeners.Remove(&listener);
   }
 
+  /* All state (queue, task, current_*) is confined to the curl
+     EventLoop thread: the public methods below marshal their body
+     with BlockingCall(), and Start()/OnCompletion() run in that
+     thread anyway.  Callers may live in any thread (UI thread via
+     dialogs and the SkySight timer, the IO thread via listener
+     callbacks) -- without this, Enqueue() racing OnCompletion()
+     corrupted the queue and tripped assert(current_position == -1).
+     DownloadListener callbacks are therefore invoked in the curl
+     thread; that matches their contract (implementations marshal to
+     the UI thread themselves, e.g. via UI::Notify). */
   void Enumerate(Net::DownloadListener &listener) noexcept {
-    for (auto i = queue.begin(), end = queue.end(); i != end; ++i) {
-      const Item &item = *i;
+    BlockingCall(Net::curl->GetEventLoop(), [&] {
+      for (auto i = queue.begin(), end = queue.end(); i != end; ++i) {
+        const Item &item = *i;
 
-      int64_t size = -1, position = -1;
+        int64_t size = -1, position = -1;
+        if (i == queue.begin()) {
+          const std::lock_guard lock{ mutex };
+          size = current_size;
+          position = current_position;
+        }
+
+        listener.OnDownloadAdded(item.name, size, position);
+      }
+      });
+  }
+
+  void
+    Enqueue(const std::string_view uri, Path path_relative) noexcept
+  {
+    BlockingCall(Net::curl->GetEventLoop(), [&] {
+      queue.emplace_back(uri, LocalPath(path_relative));
+
+      listeners.ForEach([name = path_relative.c_str()](auto *listener) {
+        listener->OnDownloadAdded(name, -1, -1);
+        });
+
+      if (!task)
+        Start();
+      });
+  }
+
+  void
+    Enqueue(const std::string_view uri, const Path path,
+      Net::CurlData *data) noexcept
+  {
+    BlockingCall(Net::curl->GetEventLoop(), [&] {
+      if (data)
+        data->name = path.c_str();
+      queue.emplace_back(uri, data);
+      std::string_view name = path.GetBase().c_str();
+      listeners.ForEach([name](auto *listener) {
+        listener->OnDownloadAdded(name, -1, -1);
+        });
+
+      if (!task)
+        Start();
+      });
+  }
+  void
+    Enqueue(const std::string_view uri, const std::string_view name,
+      boost::json::value *json) noexcept
+  {
+    BlockingCall(Net::curl->GetEventLoop(), [&] {
+      queue.emplace_back(uri, name, nullptr, json);
+
+      listeners.ForEach([name](auto *listener) {
+        listener->OnDownloadAdded(name, -1, -1);
+        });
+
+      if (!task)
+        Start();
+      });
+  }
+
+  void
+    Enqueue(const std::string_view uri, const std::string_view name,
+      Net::CurlData *data) noexcept
+  {
+    BlockingCall(Net::curl->GetEventLoop(), [&] {
+      queue.emplace_back(uri, data);
+      if (data)
+        data->name = name;
+      listeners.ForEach([name](auto *listener) {
+        listener->OnDownloadAdded(name, -1, -1);
+        });
+
+      if (!task)
+        Start();
+      });
+  }
+
+  void
+    Cancel(const std::string_view name) noexcept
+  {
+    BlockingCall(Net::curl->GetEventLoop(), [&] {
+      auto i = std::find(queue.begin(), queue.end(), name);
+      if (i == queue.end())
+        return;
+
       if (i == queue.begin()) {
-        const std::lock_guard lock{mutex};
-        size = current_size;
-        position = current_position;
+        /* current download; stop the thread to cancel the current file
+           and restart the thread to continue downloading the following
+           files */
+
+        task.Cancel();
+        current_size = current_position = -1;
+
+        if (!queue.empty())
+          Start();
+      }
+      else {
+        /* queued download; simply remove it from the list */
+        queue.erase(i);
       }
 
-      listener.OnDownloadAdded(item.name, size, position);
-    }
-  }
-
-  void 
-  Enqueue(const std::string_view uri, Path path_relative) noexcept
-  {
-    queue.emplace_back(uri, LocalPath(path_relative));
-
-    listeners.ForEach([name = path_relative.c_str()](auto *listener){
-      listener->OnDownloadAdded(name, -1, -1);
-    });
-
-    if (!task)
-      Start();
-  }
-
-  void
-  Enqueue(const std::string_view uri, const Path path,
-    Net::CurlData *data) noexcept
-  {
-    if (data) 
-        data->name = path.c_str();
-    queue.emplace_back(uri, data);
-    std::string_view name = path.GetBase().c_str();
-    listeners.ForEach([name](auto *listener) {
-      listener->OnDownloadAdded(name, -1, -1);
-    });
-
-    if (!task)
-      Start();
-  }
-  void
-  Enqueue(const std::string_view uri, const std::string_view name,
-    boost::json::value *json) noexcept
-  {
-    queue.emplace_back(uri, name, nullptr, json);
-  
-    listeners.ForEach([name](auto *listener){
-      listener->OnDownloadAdded(name, -1, -1);
-    });
-  
-    if (!task)
-      Start();
-  }
-  
-  void
-  Enqueue(const std::string_view uri, const std::string_view name,
-    Net::CurlData *data) noexcept
-  {
-    queue.emplace_back(uri, data);
-    if (data)
-      data->name = name;
-    listeners.ForEach([name](auto *listener){
-      listener->OnDownloadAdded(name, -1, -1);
-    });
-  
-    if (!task)
-      Start();
-  }
-    
-  void
-  Cancel(const std::string_view name) noexcept
-  {
-    auto i = std::find(queue.begin(), queue.end(), name);
-    if (i == queue.end())
-      return;
-
-    if (i == queue.begin()) {
-      /* current download; stop the thread to cancel the current file
-         and restart the thread to continue downloading the following
-         files */
-
-      task.Cancel();
-      current_size = current_position = -1;
-
-      if (!queue.empty())
-        Start();
-    } else {
-      /* queued download; simply remove it from the list */
-      queue.erase(i);
-    }
-
-    listeners.ForEach([name](auto *listener){
-      listener->OnDownloadError(name, {});
-    });
+      listeners.ForEach([name](auto *listener) {
+        listener->OnDownloadError(name, {});
+        });
+      });
   }
 
 private:
@@ -188,12 +217,12 @@ private:
 
   /* methods from class ProgressListener */
   void SetProgressRange(unsigned range) noexcept override {
-    const std::lock_guard lock{mutex};
+    const std::lock_guard lock{ mutex };
     current_size = range;
   }
 
   void SetProgressPosition(unsigned position) noexcept override {
-    const std::lock_guard lock{mutex};
+    const std::lock_guard lock{ mutex };
     current_position = position;
   }
 };
@@ -210,11 +239,11 @@ DownloadTask(CurlGlobal &curl,
         Net::CoDownloadToJson(curl, item->uri, std::move(item->data), progress);
       break;
     case Net::FILE: {
-        auto path = AllocatedPath(item->name);
-        const auto ignored_response = co_await
+      auto path = AllocatedPath(item->name);
+      const auto ignored_response = co_await
         Net::CoDownloadToFile(curl, item->uri, path, std::move(item->data), progress);
-      }
-      break;
+    }
+                  break;
     default:
       break;
 
@@ -255,11 +284,12 @@ DownloadManagerThread::OnCompletion(std::exception_ptr error) noexcept
     LogFmt("OnCompletion-Error with {}", name);
     listeners.ForEach([_name = name, &error](auto *listener) {
       listener->OnDownloadError(_name, error);
-    });
-  } else {  // complete w/o error:
+      });
+  }
+  else {  // complete w/o error:
     listeners.ForEach([_name = name](auto *listener) {
       listener->OnDownloadComplete(_name);
-    });
+      });
   }
 
   // start the next download:
