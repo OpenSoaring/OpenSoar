@@ -19,7 +19,7 @@ set(SCRIPT_FILES )
 set(MO_C_FILES)
 set(output_dir ${OUTPUT_FOLDER}/Data)
 get_filename_component(_python_dir ${PYTHON_APP} DIRECTORY)
-set(MSGFMT  "${_python_dir}/Tools/i18n/msgfmt.py")
+set(MSGFMT  "tools/python/msgfmt.py")
 
 if (1)  # only if a po_file changed...
     foreach(po_file ${PO_FILES})
@@ -30,9 +30,10 @@ if (1)  # only if a po_file changed...
         # add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
         add_custom_command(OUTPUT ${out_file}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${output_dir}/temp 
-            COMMAND ${PYTHON_APP} ${MSGFMT} --output-file=${_mo_file} ${po_file}
+            COMMAND ${PYTHON_APP} ${MSGFMT} ${po_file} ${_mo_file} 
             COMMAND ${PYTHON_APP} tools/python/bin2c.py ${_mo_file} ${output_dir}
             WORKING_DIRECTORY  ${PROJECTGROUP_SOURCE_DIR}
+            COMMENT "${PYTHON_APP} ${MSGFMT} --output-file=${_mo_file} ${po_file}"
             COMMENT "${lang_name} ==> ${out_file}"
             DEPENDS ${po_file}
         )
