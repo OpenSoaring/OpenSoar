@@ -275,12 +275,26 @@ IsWarrantyAcknowledged() noexcept
  * Check if the user has already seen the news for this version.
  */
 static bool
+CompareAppVersion(std::string_view last_seen, std::string_view app_version, int max_parts) noexcept
+{
+  size_t pos = 0;
+  for (int i = 0; i < max_parts; ++i) {
+    pos = app_version.find('.', pos);
+    if (pos == std::string_view::npos) 
+      break;          // not available anymore
+    if (i < max_parts - 1) ++pos; // for next pos one step more
+  }
+
+  return StringIsEqual(last_seen.substr(0, pos), app_version.substr(0, pos));
+}
+
+static bool
 IsNewsSeen() noexcept
 {
   const char *last_seen =
     Profile::Get(ProfileKeys::LastSeenNewsVersion);
   return last_seen != nullptr &&
-         StringIsEqual(last_seen, App_Version);
+    CompareAppVersion(last_seen, App_Version, 3);
 }
 
 /**
