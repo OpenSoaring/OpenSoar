@@ -32,7 +32,6 @@ private:
   void MakeCallback(bool result);
   bool DecodeError();
   bool DecodeSuccess();
-  time_t filetime;
 
 public:
   enum class Result {Available, Requested, Error};
@@ -41,7 +40,7 @@ public:
              const std::map<float, LegendColor> _legend, SkysightCallback _callback) : 
              StandbyThread("CDFDecoder"), path(_path), output_path(AllocatedPath(_output.c_str())), 
              data_varname(_varname), legend(_legend), callback(_callback), 
-             status(Status::Idle), filetime(0) {};
+    status(Status::Idle) {};
   ~CDFDecoder() {};
 
   void DecodeAsync();
