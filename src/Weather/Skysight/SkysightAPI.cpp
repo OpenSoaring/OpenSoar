@@ -740,14 +740,12 @@ void
 SkysightAPI::OnTimer()
 {
   const std::lock_guard lock{ mutex };
-#if 1  // test to debug the timer behaviour - and vector.size
-   LogFmt("{}: {} vs.{}", __func__,layers_vector.size(), layers.size());
+
+#ifdef _DEBUG  // test to debug the timer behaviour - and vector.size
+   LogFmt("{}, layers.size: {} vs.{}", __func__,
+     layers_vector.size(), layers.size());
 #endif
   assert(layers_vector.size() == layers.size());
-#if 1  // test to debug the timer behaviour - and vector.size
-  // LogString("OnTimer: 0");
-#endif
-
   timer.Schedule(std::chrono::seconds(60));
 
   /* TODO(August2111, 2026-04-26):
