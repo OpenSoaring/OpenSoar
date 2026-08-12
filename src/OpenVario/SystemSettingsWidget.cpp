@@ -199,9 +199,9 @@ SystemSettingsWidget::Save([[maybe_unused]] bool &_changed) noexcept
   }
 #endif
 
-#if 0 // TOD(August2111) Only Test
+#if 0 // TODO(August2111) Only Test
   ovdevice.settings.insert_or_assign("OpenSoarData",
-                                     "D:/Data/OpenSoarData");
+                                     "E:/Data/OpenSoarData");
 #endif
 
   if (changed) {
