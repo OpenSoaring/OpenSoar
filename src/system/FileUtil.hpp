@@ -48,8 +48,9 @@ Exists(Path path) noexcept;
 /**
  * Creates a new folder at the given path
  * @param path Path to the folder that should be created
+ * @return True if the folder is created
  */
-void
+bool
 Create(Path path) noexcept;
 
 /**

@@ -19,6 +19,8 @@
 #include "Terrain/AsyncLoader.hpp"
 #include "io/ZipArchive.hpp"
 #include "Message.hpp"
+#include "Dialogs/Message.hpp"
+#include "util/StaticString.hxx"
 
 #include "Weather/Features.hpp"
 #ifdef HAVE_RASP
@@ -389,13 +391,22 @@ Startup(UI::Display &display)
   const auto &ui_settings = CommonInterface::GetUISettings();
   auto &live_blackboard = CommonInterface::GetLiveBlackboard();
 
+  /* create XCSoarData on the first start; if the configured data
+     path is not accessible (e.g. on a currently disconnected
+     external drive), fall back to the default data path and let
+     the user know */
+  if (!CreateDataPath()) {
+    StaticString<512> msg;
+    msg.Format(_("The configured data folder is not accessible.\nUsing the default data folder instead:\n%s"),
+               GetPrimaryDataPath().c_str());
+    ShowMessageBox(msg, _("Data path"), MB_OK | MB_ICONWARNING);
+  }
+
   if (!LoadProfile())
     return false;
 
   operation.SetText(_("Initialising"));
 
-  /* create XCSoarData on the first start */
-  CreateDataPath();
 
 #ifdef ANDROID
   {

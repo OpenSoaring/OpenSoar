@@ -28,9 +28,12 @@ void
 DeinitialiseDataPath() noexcept;
 
 /**
- * Create the primary data path;
+ * Create the primary data path.
+ *
+ * @return true on success; false if the configured data path was not
+ * accessible and the default data path has been activated instead
  */
-void
+bool
 CreateDataPath();
 
 /**

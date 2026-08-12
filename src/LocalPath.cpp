@@ -397,8 +397,18 @@ DeinitialiseDataPath() noexcept
   data_paths.clear();
 }
 
-void
+bool
 CreateDataPath()
 {
+  if (Directory::Create(GetPrimaryDataPath()))
+    return true;
+
+  /* if creation of GetPrimaryDataPath() isn't possible (permission issue,
+     drive not available etc.) use the standard data path */
+  DeinitialiseDataPath();
+  InitialiseDataPath();
+
+  /* make sure the fallback directory exists (e.g. on first start) */
   Directory::Create(GetPrimaryDataPath());
+  return false;
 }

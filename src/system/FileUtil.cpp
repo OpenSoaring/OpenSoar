@@ -6,6 +6,7 @@
 #include "util/StringCompare.hxx"
 #include "Compatibility/path.h"
 #include "time/DateTime.hpp"
+#include "LogFile.hpp"
 
 #ifdef _WIN32
 #include "time/FileTime.hxx"
@@ -15,6 +16,8 @@
 #include <windef.h> /* for MAX_PATH */
 
 #include <cassert>
+#include <cerrno>
+#include <cstring>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -34,13 +37,33 @@
 #include <regex>
 #include <filesystem>
 
-void
+bool
 Directory::Create(Path path) noexcept
 {
 #ifdef HAVE_POSIX
-  mkdir(path.c_str(), 0777);
+  /* mkdir() does not throw; check the return value and treat an
+     already existing directory as success */
+  if (mkdir(path.c_str(), 0777) == 0)
+    return true;
+
+  if (errno == EEXIST)
+    return Exists(path);
+
+  LogFmt("Creating path {} not possible, reason: {}",
+         path.c_str(), strerror(errno));
+  return false;
 #else /* !HAVE_POSIX */
-  std::filesystem::create_directories(path.c_str());
+  /* use the non-throwing overload; already existing directories are
+     not an error */
+  std::error_code ec;
+  std::filesystem::create_directories(path.c_str(), ec);
+  if (ec) {
+    LogFmt("Creating path {} not possible, reason: {}",
+           path.c_str(), ec.message());
+    return false;
+  }
+
+  return Exists(path);
 #endif /* !HAVE_POSIX */
 }
 
