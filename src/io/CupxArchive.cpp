@@ -290,6 +290,12 @@ CupxArchive::ExtractImage(Path cupx_path, std::string_view image_name)
     return {};
   }
 
+#ifdef _WIN32
+  /* the file descriptor defaults to O_TEXT mode on Windows, which
+     corrupts binary reads (CR/LF translation, 0x1A = EOF) */
+  fd.SetBinaryMode();
+#endif
+
   if (!SkipCupxHeader(fd))
     return {};
 
@@ -312,6 +318,12 @@ CupxArchive::ExtractPointsCup(Path cupx_path)
   } catch (...) {
     return {};
   }
+
+#ifdef _WIN32
+  /* the file descriptor defaults to O_TEXT mode on Windows, which
+     corrupts binary reads (CR/LF translation, 0x1A = EOF) */
+  fd.SetBinaryMode();
+#endif
 
   const off_t filesize = fd.GetSize();
   if (filesize < 0)
