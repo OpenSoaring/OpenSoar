@@ -34,10 +34,16 @@
 #include "system/RunFile.hpp"
 #include "system/Path.hpp"
 #include "LogFile.hpp"
+#include "io/CupxArchive.hpp"
+#include "io/FileOutputStream.hxx"
+#include "system/FileUtil.hpp"
+#include "Profile/Profile.hpp"
 #include "util/StringPointer.hxx"
 #include "util/AllocatedString.hxx"
 #include "BackendComponents.hpp"
 #include "Pan.hpp"
+
+#include <span>
 
 #ifdef ANDROID
 #include "Android/NativeView.hpp"
@@ -406,17 +412,73 @@ WaypointDetailsWidget::Layout::Layout(const PixelRect &rc,
 #endif
 }
 
+/**
+ * Determine the path of the waypoint file this waypoint was loaded
+ * from, or nullptr if it is unknown.
+ */
+[[gnu::pure]]
+static AllocatedPath
+GetWaypointSourcePath(const Waypoint &waypoint) noexcept
+{
+  std::string_view key{};
+
+  switch (waypoint.origin) {
+  case WaypointOrigin::PRIMARY:
+    key = ProfileKeys::WaypointFileList;
+    break;
+
+  case WaypointOrigin::WATCHED:
+    key = ProfileKeys::WatchedWaypointFileList;
+    break;
+
+  default:
+    return nullptr;
+  }
+
+  auto paths = Profile::GetMultiplePaths(key, nullptr);
+  if (waypoint.file_num < paths.size())
+    return std::move(paths[waypoint.file_num]);
+
+  return nullptr;
+}
+
 void
 WaypointDetailsWidget::Prepare(ContainerWindow &parent,
                                const PixelRect &rc) noexcept
 {
+  const auto source_path = GetWaypointSourcePath(*waypoint);
+  const bool is_cupx = source_path != nullptr &&
+    source_path.EndsWithIgnoreCase(".cupx");
+
   for (const auto &i : waypoint->files_embed) {
     if (images.full())
       break;
 
     try {
-      if (!images.append().LoadFile(LocalPath(i.c_str())))
-        images.shrink(images.size() - 1);
+      if (is_cupx) {
+        auto data = CupxArchive::ExtractImage(source_path, i.c_str());
+        if (data.empty())
+          continue;
+
+        /* write the image to a temporary cache file; loading via
+           Bitmap::LoadFile() works on all platforms, unlike
+           in-memory decoding */
+        const auto tmp_dir = MakeCacheDirectory("cupx");
+        const auto tmp_file = AllocatedPath::Build(tmp_dir, i.c_str());
+
+        FileOutputStream fos(tmp_file,
+                             FileOutputStream::Mode::CREATE_VISIBLE);
+        fos.Write(std::as_bytes(std::span{data}));
+        fos.Commit();
+
+        if (!images.append().LoadFile(tmp_file))
+          images.shrink(images.size() - 1);
+
+        File::Delete(tmp_file);
+      } else {
+        if (!images.append().LoadFile(LocalPath(i.c_str())))
+          images.shrink(images.size() - 1);
+      }
     } catch (const std::exception &e) {
       LogFormat("Failed to load %s: %s",
                 i.c_str(),
