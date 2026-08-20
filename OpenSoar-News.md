@@ -1,7 +1,13 @@
 OpenSoar Version 7.44.24 - not released yet
 ---------------
 
-OpenSoar Test Version v7.44.24.t08 > 2026/08/XX
+OpenSoar Test Version v7.44.24.t09 > 2026/08/XX
+* Test BlueTooth detection: very very often w/ a blocking behavior
+* cupx reader copied from XCSoar (w/ a windows bugfix)
+* some small bugfix and cleanup actions
+
+---------------
+OpenSoar Test Version v7.44.24.t08 > 2026/08/07
 * .t07 was wrong: Linux and Android crashed
 ---------------
 OpenSoar Test Version v7.44.24.t07 > 2026/07/03
