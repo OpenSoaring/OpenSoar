@@ -20,6 +20,9 @@ static jmethodID ctor;
 static jfieldID hasLe_field;
 static jmethodID isEnabled_method;
 static jmethodID getDiagnostics_method;
+static jmethodID hasPermissions_method;
+static jmethodID requestPermissions_method;
+static jmethodID showAppSettings_method;
 static jmethodID getNameFromAddress_method;
 static jmethodID connect_method, createServer_method;
 static jmethodID hm10connect_method;
@@ -54,6 +57,10 @@ BluetoothHelper::Initialise(JNIEnv *env) noexcept
   isEnabled_method = env->GetMethodID(cls, "isEnabled", "()Z");
   getDiagnostics_method = env->GetMethodID(cls, "getDiagnostics",
                                            "()Ljava/lang/String;");
+  hasPermissions_method = env->GetMethodID(cls, "hasPermissions", "()Z");
+  requestPermissions_method = env->GetMethodID(cls, "requestPermissions",
+                                               "()I");
+  showAppSettings_method = env->GetMethodID(cls, "showAppSettings", "()V");
   getNameFromAddress_method = env->GetMethodID(cls, "getNameFromAddress",
                                                "(Ljava/lang/String;)Ljava/lang/String;");
   connectSensor_method = env->GetMethodID(cls, "connectSensor",
@@ -120,6 +127,25 @@ BluetoothHelper::GetNameFromAddress(JNIEnv *env,
 
   auto j = address_to_name.emplace(x_address, std::move(name));
   return j.first->second.c_str();
+}
+
+bool
+BluetoothHelper::HasPermissions(JNIEnv *env) const noexcept
+{
+  return env->CallBooleanMethod(Get(), hasPermissions_method);
+}
+
+BluetoothHelper::PermissionResult
+BluetoothHelper::RequestPermissions(JNIEnv *env) noexcept
+{
+  return (PermissionResult)
+    env->CallIntMethod(Get(), requestPermissions_method);
+}
+
+void
+BluetoothHelper::ShowAppSettings(JNIEnv *env) noexcept
+{
+  env->CallVoidMethod(Get(), showAppSettings_method);
 }
 
 std::string

@@ -809,9 +809,57 @@ DeviceListWidget::OnGPSUpdate([[maybe_unused]] const MoreData &basic)
     UpdateButtons();
 }
 
+#ifdef ANDROID
+
+/**
+ * Without the "nearby devices" permission, the Bluetooth device list
+ * stays empty and Android reports the failure only to logcat.  Tell
+ * the user about it and offer both ways to fix it: asking Android for
+ * the permission, and opening the app settings - the latter is the
+ * only way left once the permission was denied permanently, because
+ * Android then ignores requestPermissions() without showing anything.
+ */
+static void
+CheckBluetoothPermissions() noexcept
+{
+  if (bluetooth_helper == nullptr)
+    return;
+
+  const auto env = Java::GetEnv();
+  if (bluetooth_helper->HasPermissions(env))
+    return;
+
+  using PermissionResult = BluetoothHelper::PermissionResult;
+
+  switch (ShowMessageBox(_("OpenSoar is not allowed to access nearby Bluetooth devices. Without this permission, no Bluetooth device can be selected or connected.\n\nYes: ask Android for the permission\nNo: open the app settings (necessary if Android does not ask any more)"),
+                         _("Bluetooth"),
+                         MB_YESNOCANCEL | MB_ICONQUESTION)) {
+  case IDYES:
+    if (bluetooth_helper->RequestPermissions(env) ==
+        PermissionResult::DENIED_PERMANENTLY)
+      /* Android will not show its dialog any more; the app settings
+         are the only remaining way */
+      bluetooth_helper->ShowAppSettings(env);
+    break;
+
+  case IDNO:
+    bluetooth_helper->ShowAppSettings(env);
+    break;
+
+  default:
+    break;
+  }
+}
+
+#endif /* ANDROID */
+
 void
 ShowDeviceList(DeviceBlackboard &device_blackboard, MultipleDevices *devices)
 {
+#ifdef ANDROID
+  CheckBluetoothPermissions();
+#endif
+
   TWidgetDialog<DeviceListWidget>
     dialog(WidgetDialog::Full{}, UIGlobals::GetMainWindow(),
            UIGlobals::GetDialogLook(), _("Devices"));

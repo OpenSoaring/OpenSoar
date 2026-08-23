@@ -11,7 +11,13 @@ import java.util.List;
 import java.util.LinkedList;
 import java.io.IOException;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelUuid;
+import android.provider.Settings;
 import android.util.Log;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothAdapter;
@@ -37,6 +43,22 @@ final class BluetoothHelper
   private static final String TAG = "OpenSoar";
   private static final UUID THE_UUID =
         UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+  /**
+   * Remembers whether the Bluetooth permissions have ever been
+   * requested; needed to tell "not asked yet" apart from "denied
+   * permanently".
+   */
+  private static final String PERMISSION_PREFS = "bluetooth";
+  private static final String PERMISSION_REQUESTED = "permission_requested";
+
+  /**
+   * Request code for our direct Activity.requestPermissions() call.
+   * PermissionHelper allocates its codes from zero upwards, so this
+   * value does not collide; it deliberately has no handler registered
+   * there, and PermissionHelper ignores unknown codes.
+   */
+  private static final int PERMISSION_REQUEST_CODE = 0x4254;
 
   private final Context context;
   private final PermissionManager permissionManager;
@@ -67,6 +89,115 @@ final class BluetoothHelper
       throw new Exception("No Bluetooth adapter found");
 
     hasLe = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
+  }
+
+  /**
+   * Are all runtime permissions needed for the Bluetooth device list
+   * granted?
+   */
+  public boolean hasPermissions() {
+    if (android.os.Build.VERSION.SDK_INT < 31)
+      /* BLUETOOTH/BLUETOOTH_ADMIN are granted at install time */
+      return true;
+
+    return hasPermission(Manifest.permission.BLUETOOTH_CONNECT) &&
+      (!hasLe || hasPermission(Manifest.permission.BLUETOOTH_SCAN));
+  }
+
+  private boolean wasPermissionRequested() {
+    try {
+      return context.getSharedPreferences(PERMISSION_PREFS,
+                                          Context.MODE_PRIVATE)
+        .getBoolean(PERMISSION_REQUESTED, false);
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  private void setPermissionRequested() {
+    try {
+      context.getSharedPreferences(PERMISSION_PREFS, Context.MODE_PRIVATE)
+        .edit().putBoolean(PERMISSION_REQUESTED, true).apply();
+    } catch (Exception e) {
+      Log.w(TAG, "Failed to save permission state", e);
+    }
+  }
+
+  /**
+   * Has the user denied the permission permanently ("don't ask
+   * again")?  Android then ignores requestPermissions() silently, and
+   * only the app settings page can still grant it.
+   */
+  private boolean isDeniedPermanently(String permission) {
+    if (android.os.Build.VERSION.SDK_INT < 23 || !wasPermissionRequested())
+      return false;
+
+    if (!(context instanceof Activity))
+      return false;
+
+    return !((Activity)context).shouldShowRequestPermissionRationale(permission);
+  }
+
+  /**
+   * Ask the user for the Bluetooth permissions which are missing.
+   *
+   * The request is made directly on the Activity instead of going
+   * through PermissionManager: that one queues the request behind its
+   * own disclosure dialog and a "one request at a time" state
+   * machine, and the request can get stuck there without any visible
+   * feedback.  The prominent disclosure required by Google Play has
+   * already been shown by the caller.
+   *
+   * @return 0 = nothing is missing, 1 = the user is being asked,
+   * 2 = cannot ask, only showAppSettings() can still help
+   */
+  public int requestPermissions() {
+    if (hasPermissions())
+      return 0;
+
+    if (!(context instanceof Activity))
+      return 2;
+
+    if (isDeniedPermanently(Manifest.permission.BLUETOOTH_CONNECT))
+      return 2;
+
+    setPermissionRequested();
+
+    final Activity activity = (Activity)context;
+
+    /* Activity.requestPermissions() must run on the Android main
+       thread; we are called from the native UI thread */
+    new Handler(Looper.getMainLooper()).post(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            activity.requestPermissions(new String[]{
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.BLUETOOTH_SCAN,
+              }, PERMISSION_REQUEST_CODE);
+          } catch (Exception e) {
+            Log.e(TAG, "Failed to request the Bluetooth permissions", e);
+          }
+        }
+      });
+
+    return 1;
+  }
+
+  /**
+   * Open the Android app settings page, where the user can grant
+   * permissions which were denied permanently.
+   */
+  public void showAppSettings() {
+    try {
+      Intent intent =
+        new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                   Uri.fromParts("package", context.getPackageName(), null));
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      context.startActivity(intent);
+    } catch (Exception e) {
+      Log.e(TAG, "Failed to open the app settings", e);
+    }
   }
 
   private boolean hasPermission(String permission) {

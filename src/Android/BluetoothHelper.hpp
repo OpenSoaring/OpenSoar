@@ -33,6 +33,38 @@ public:
   bool IsEnabled(JNIEnv *env) const noexcept;
 
   /**
+   * Are all runtime permissions needed for the Bluetooth device list
+   * granted?
+   */
+  [[gnu::pure]]
+  bool HasPermissions(JNIEnv *env) const noexcept;
+
+  enum class PermissionResult {
+    /** all permissions are granted */
+    GRANTED,
+
+    /** the user is being asked right now */
+    REQUESTED,
+
+    /**
+     * The user has denied the permission permanently; Android will
+     * not show the dialog again, only ShowAppSettings() can help.
+     */
+    DENIED_PERMANENTLY,
+  };
+
+  /**
+   * Ask the user for the missing Bluetooth permissions.
+   */
+  PermissionResult RequestPermissions(JNIEnv *env) noexcept;
+
+  /**
+   * Open the Android app settings page so the user can grant a
+   * permission which was denied permanently.
+   */
+  void ShowAppSettings(JNIEnv *env) noexcept;
+
+  /**
    * Returns a human-readable summary of the Bluetooth state
    * (permissions, adapter, number of bonded devices) for the log
    * file.
