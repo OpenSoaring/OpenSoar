@@ -202,6 +202,14 @@ CollectBluetoothNames(const char *key_name) noexcept
 }
 
 /**
+ * A port which is only offered when nothing better turned up.
+ */
+struct PendingPort {
+  DeviceConfig::PortType type;
+  std::string value, display;
+};
+
+/**
  * Classify one entry of Hardware\DeviceMap\SerialComm and add it to
  * the list.  Every port ends up in the list; when the device class
  * cannot be determined, it is offered as a plain serial port rather
@@ -211,7 +219,9 @@ static void
 AddDetectedPort(DataFieldEnum &df, const char *value, const char *name,
                 const std::string &dev_name,
                 const std::map<std::string, std::string> &bthmap,
-                const std::map<std::string, std::string> &blemap) noexcept
+                const std::map<std::string, std::string> &blemap,
+                unsigned &n_bluetooth,
+                std::vector<PendingPort> &deferred) noexcept
 {
   std::vector<std::string> strs;
   std::string portname{value};
@@ -264,54 +274,62 @@ AddDetectedPort(DataFieldEnum &df, const char *value, const char *name,
   }
 
   if (dev_name.starts_with("\\\\?\\bthenum#")) {
-    boost::split(strs, dev_name, boost::is_any_of("#"));
+    /* the instance path looks like
+       \\?\bthenum#{0000...}_localmfg&005d#9&2566f247&0&c049ef635562_c00000000#{...}
+       where the field before the trailing "_" is the address of the
+       remote device, and the field after it marks the direction:
+       "c00000000" for the outgoing port, "00000000" for the local
+       listener which Windows creates alongside it */
+    std::string address;
 
+    boost::split(strs, dev_name, boost::is_any_of("#"));
     if (strs.size() > 2) {
-      /* split into a second vector: boost::split() clears its output
-         container first, so splitting strs into strs would read from
-         elements it has already destroyed */
+      /* split into a separate vector: boost::split() clears its
+         output container first, so splitting strs into strs would
+         read from elements it has already destroyed */
       std::vector<std::string> parts;
       boost::split(parts, strs[2], boost::is_any_of("_"));
 
-      if (parts.size() > 1 && parts[1] == "c00000000") {
+      if (parts.size() > 1) {
         std::vector<std::string> fields;
         boost::split(fields, parts[0], boost::is_any_of("&"));
-
-        if (fields.size() > 3) {
-          if (fields[3] == "000000000000")
-            /* the local service, i.e. the incoming COM port Windows
-               creates alongside the outgoing one; it cannot be used
-               to connect to the device, so keep it out of the list */
-            return;
-
-          const auto ble = blemap.find(fields[3]);
-          if (ble != blemap.end()) {
-            portname += " (" + ble->second + ")";
-            AddPort(df, DeviceConfig::PortType::BLE_HM10, value,
-                    portname.c_str());
-            return;
-          }
-
-          const auto bth = bthmap.find(fields[3]);
-          if (bth != bthmap.end()) {
-            portname += " (" + bth->second + ")";
-            AddPort(df, DeviceConfig::PortType::RFCOMM, value,
-                    portname.c_str());
-            return;
-          }
-
-          /* the device is a remote one, we just have no name for it;
-             show the address so the port can at least be identified */
-          portname += " (" + fields[3] + ")";
-          AddPort(df, DeviceConfig::PortType::RFCOMM, value,
-                  portname.c_str());
-          return;
-        }
+        if (fields.size() > 3)
+          address = fields[3];
       }
     }
 
-    /* an unparseable bthenum entry is still a usable RFCOMM port -
-       offer it rather than hiding it */
+    if (address == "000000000000") {
+      /* no remote device: this is the incoming port, waiting for the
+         device to call us, which none of our devices does.  All
+         traffic goes through the outgoing port, so keep this one out
+         of the way - unless it turns out to be all we have */
+      deferred.push_back({DeviceConfig::PortType::RFCOMM, value,
+                          std::string{value} + " (" + _("incoming") + ")"});
+      return;
+    }
+
+    ++n_bluetooth;
+
+    if (!address.empty()) {
+      if (const auto ble = blemap.find(address); ble != blemap.end()) {
+        portname += " (" + ble->second + ")";
+        AddPort(df, DeviceConfig::PortType::BLE_HM10, value,
+                portname.c_str());
+        return;
+      }
+
+      if (const auto bth = bthmap.find(address); bth != bthmap.end()) {
+        portname += " (" + bth->second + ")";
+        AddPort(df, DeviceConfig::PortType::RFCOMM, value,
+                portname.c_str());
+        return;
+      }
+
+      /* a remote device we have no name for; show the address, which
+         the user can look up in the Windows Bluetooth settings */
+      portname += " (" + address + ")";
+    }
+
     AddPort(df, DeviceConfig::PortType::RFCOMM, value, portname.c_str());
     return;
   }
@@ -353,6 +371,11 @@ DetectSerialPorts(DataFieldEnum &df) noexcept
   // when nothing was auto-detected.
   const char *const reserved = GetStePortReserved();
 
+  /* Bluetooth ports which are only offered if nothing better shows
+     up, so that this filter can never leave the user without a port */
+  std::vector<PendingPort> deferred;
+  unsigned n_bluetooth = 0;
+
   for (unsigned i = 0;; ++i) {
     char name[128];
     char value[64];
@@ -383,8 +406,18 @@ DetectSerialPorts(DataFieldEnum &df) noexcept
     LogFormat("PortPicker: serial %s (%s) class=%s", value, name,
               dev_name.empty() ? "unknown" : dev_name.c_str());
 
-    AddDetectedPort(df, value, name, dev_name, bthmap, blemap);
+    AddDetectedPort(df, value, name, dev_name, bthmap, blemap,
+                    n_bluetooth, deferred);
   }
+
+  if (n_bluetooth == 0)
+    /* no usable Bluetooth port was found, so offer the doubtful ones
+       after all */
+    for (const auto &i : deferred) {
+      LogFormat("PortPicker: no other Bluetooth port, offering %s",
+                i.value.c_str());
+      AddPort(df, i.type, i.value.c_str(), i.display.c_str());
+    }
 }
 
 #endif
