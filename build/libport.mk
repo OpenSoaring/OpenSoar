@@ -8,7 +8,8 @@ PORT_SOURCES = \
 	$(SRC)/Device/Port/TCPPort.cpp \
 	$(SRC)/Device/Port/K6BtPort.cpp \
 	$(SRC)/Device/Port/DumpPort.cpp \
-	$(SRC)/Device/Port/NullPort.cpp
+	$(SRC)/Device/Port/NullPort.cpp \
+	$(SRC)/Device/Port/SerialPortClassify.cpp
 
 ifeq ($(HAVE_POSIX),y)
 PORT_SOURCES += \

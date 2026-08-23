@@ -116,6 +116,7 @@ set(_SOURCES
         Device/Port/K6BtPort.cpp
         Device/Port/NullPort.cpp
         Device/Port/Port.cpp
+        Device/Port/SerialPortClassify.cpp
         Device/Port/SocketPort.cpp
         Device/Port/TCPClientPort.cpp
         Device/Port/TCPPort.cpp

@@ -65,7 +65,9 @@ DumpSerialPorts() noexcept
       printf("    HIDDEN     %s\n", port.hidden_reason);
   }
 
-  return !e.ports.empty();
+  /* a machine without a single serial port is a perfectly normal
+     machine, so this is not a failure - the output is the result */
+  return true;
 }
 
 #endif /* _WIN32 */

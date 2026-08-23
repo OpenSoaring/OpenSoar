@@ -226,6 +226,7 @@ set(TEST_LIST
 )
 
 set(TEST_LIST
+  ${SRC_DIR}/TestSerialPorts.cpp
   ${SRC_DIR}/EnumeratePorts.cpp
   ${SRC_DIR}/UploadFile.cpp
   ${SRC_DIR}/RunWeGlideClient.cpp
