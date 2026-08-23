@@ -200,6 +200,19 @@ final class BluetoothHelper
     }
   }
 
+  private synchronized void stopLeScan() {
+    if (scanner == null)
+      return;
+
+    try {
+      scanner.stopScan(this);
+    } catch (Exception e) {
+      Log.w(TAG, "Failed to stop Bluetooth LE scan", e);
+    }
+
+    scanner = null;
+  }
+
   private final PermissionManager.PermissionHandler leScanPermissionHandler =
     new PermissionManager.PermissionHandler() {
       @Override
@@ -284,9 +297,11 @@ final class BluetoothHelper
     // TODO wait for permission to be granted
     requestConnectPermission(null);
 
-    BluetoothSocket socket =
-      device.createRfcommSocketToServiceRecord(THE_UUID);
-    return new BluetoothClientPort(socket);
+    /* a running LE scan (SCAN_MODE_LOW_LATENCY) starves the classic
+       Bluetooth radio and makes RFCOMM connects fail */
+    stopLeScan();
+
+    return new BluetoothClientPort(adapter, device, THE_UUID);
   }
 
   public AndroidPort createServer() throws IOException {
