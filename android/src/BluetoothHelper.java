@@ -69,6 +69,51 @@ final class BluetoothHelper
     hasLe = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
   }
 
+  private boolean hasPermission(String permission) {
+    if (android.os.Build.VERSION.SDK_INT < 23)
+      /* granted at install time */
+      return true;
+
+    try {
+      return context.checkSelfPermission(permission) ==
+        PackageManager.PERMISSION_GRANTED;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  /**
+   * Collect the state which decides whether the device list can be
+   * populated.  Called by C++ code so that it ends up in the log file
+   * (Log.d() would only be visible in logcat).
+   */
+  public String getDiagnostics() {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("sdk=").append(android.os.Build.VERSION.SDK_INT);
+
+    try {
+      sb.append(" enabled=").append(adapter.isEnabled());
+    } catch (SecurityException e) {
+      sb.append(" enabled=SecurityException");
+    }
+
+    sb.append(" hasLe=").append(hasLe);
+    sb.append(" CONNECT=").append(hasPermission(Manifest.permission.BLUETOOTH_CONNECT));
+    sb.append(" SCAN=").append(hasPermission(Manifest.permission.BLUETOOTH_SCAN));
+
+    try {
+      Set<BluetoothDevice> devices = adapter.getBondedDevices();
+      sb.append(" bonded=").append(devices == null ? -1 : devices.size());
+    } catch (SecurityException e) {
+      sb.append(" bonded=SecurityException");
+    } catch (Exception e) {
+      sb.append(" bonded=").append(e.getClass().getSimpleName());
+    }
+
+    return sb.toString();
+  }
+
   public boolean isEnabled() {
     try {
       return adapter.isEnabled();

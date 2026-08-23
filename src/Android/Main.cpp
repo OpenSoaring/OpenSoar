@@ -282,10 +282,14 @@ try {
     try {
       bluetooth_helper = new BluetoothHelper(env, *context,
                                              permission_manager);
+      LogFormat("Bluetooth: %s",
+                bluetooth_helper->GetDiagnostics(env).c_str());
     } catch (...) {
       LogError(std::current_exception(), "Failed to initialise Bluetooth");
     }
-  }
+  } else
+    LogString("Bluetooth: BluetoothHelper::Initialise() failed, "
+              "Bluetooth is not available");
 
   AtScopeExit() {
     delete bluetooth_helper;

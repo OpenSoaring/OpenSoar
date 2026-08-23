@@ -6,6 +6,8 @@
 #include "java/Object.hxx"
 #include <jni.h>
 
+#include <string>
+
 class Context;
 class SensorListener;
 class DetectDeviceListener;
@@ -29,6 +31,13 @@ public:
    */
   [[gnu::pure]]
   bool IsEnabled(JNIEnv *env) const noexcept;
+
+  /**
+   * Returns a human-readable summary of the Bluetooth state
+   * (permissions, adapter, number of bonded devices) for the log
+   * file.
+   */
+  std::string GetDiagnostics(JNIEnv *env) const noexcept;
 
   [[gnu::pure]]
   const char *GetNameFromAddress(JNIEnv *env,

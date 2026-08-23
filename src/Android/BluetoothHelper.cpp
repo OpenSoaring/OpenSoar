@@ -9,6 +9,7 @@
 #include "java/Env.hxx"
 #include "java/String.hxx"
 #include "java/Class.hxx"
+#include "java/Exception.hxx"
 
 #include <map>
 #include <string>
@@ -18,6 +19,7 @@ static Java::TrivialClass cls;
 static jmethodID ctor;
 static jfieldID hasLe_field;
 static jmethodID isEnabled_method;
+static jmethodID getDiagnostics_method;
 static jmethodID getNameFromAddress_method;
 static jmethodID connect_method, createServer_method;
 static jmethodID hm10connect_method;
@@ -50,6 +52,8 @@ BluetoothHelper::Initialise(JNIEnv *env) noexcept
 
   hasLe_field = env->GetFieldID(cls, "hasLe", "Z");
   isEnabled_method = env->GetMethodID(cls, "isEnabled", "()Z");
+  getDiagnostics_method = env->GetMethodID(cls, "getDiagnostics",
+                                           "()Ljava/lang/String;");
   getNameFromAddress_method = env->GetMethodID(cls, "getNameFromAddress",
                                                "(Ljava/lang/String;)Ljava/lang/String;");
   connectSensor_method = env->GetMethodID(cls, "connectSensor",
@@ -116,6 +120,17 @@ BluetoothHelper::GetNameFromAddress(JNIEnv *env,
 
   auto j = address_to_name.emplace(x_address, std::move(name));
   return j.first->second.c_str();
+}
+
+std::string
+BluetoothHelper::GetDiagnostics(JNIEnv *env) const noexcept
+{
+  jstring j_value = (jstring)
+    env->CallObjectMethod(Get(), getDiagnostics_method);
+  if (Java::DiscardException(env) || j_value == nullptr)
+    return "n/a";
+
+  return Java::String(env, j_value).ToString();
 }
 
 bool

@@ -20,6 +20,7 @@
 #include "Android/BluetoothHelper.hpp"
 #include "Android/UsbSerialHelper.hpp"
 #include "Android/DetectDeviceListener.hpp"
+#include "LogFile.hpp"
 #include "thread/Mutex.hxx"
 #include <list>
 #endif
@@ -141,9 +142,12 @@ public:
 #ifdef ANDROID
     if (bluetooth_helper != nullptr) {
       const auto env = Java::GetEnv();
+      LogFormat("PortPicker: Bluetooth: %s",
+                bluetooth_helper->GetDiagnostics(env).c_str());
       bluetooth_detect_listener =
         bluetooth_helper->AddDetectDeviceListener(env, *this);
-    }
+    } else
+      LogString("PortPicker: no BluetoothHelper");
 
     if (usb_serial_helper != nullptr) {
       const auto env = Java::GetEnv();
