@@ -4,12 +4,7 @@
 #ifdef HAVE_POSIX
 #include "Device/Port/TTYEnumerator.hpp"
 #elif defined(_WIN32)
-#include "system/WindowsRegistry.hpp"
-
-#include <map>
-#include <optional>
-#include <span>
-#include <string>
+#include "Device/Port/WindowsSerialPorts.hpp"
 #endif
 
 #include <stdio.h>
@@ -17,109 +12,60 @@
 
 #ifdef _WIN32
 
-/**
- * Open a registry key; report a missing key instead of throwing.
- */
-static std::optional<RegistryKey>
-TryOpenRegistryKey(HKEY parent, const char *key) noexcept
-try {
-  return RegistryKey{parent, key};
-} catch (const std::system_error &) {
-  return std::nullopt;
-}
-
-/**
- * Dump one of the Bluetooth enumeration keys: device address and the
- * friendly name Windows knows for it.
- */
-static void
-DumpBluetoothNames(const char *key_name) noexcept
+static const char *
+ToString(DeviceConfig::PortType type) noexcept
 {
-  printf("\n[%s]\n", key_name);
+  switch (type) {
+  case DeviceConfig::PortType::SERIAL:
+    return "serial";
 
-  const auto key = TryOpenRegistryKey(HKEY_LOCAL_MACHINE, key_name);
-  if (!key) {
-    printf("  (key does not exist - no device of this kind was ever paired)\n");
-    return;
+  case DeviceConfig::PortType::RFCOMM:
+    return "bluetooth";
+
+  case DeviceConfig::PortType::BLE_HM10:
+    return "bluetooth-le";
+
+  case DeviceConfig::PortType::USB_SERIAL:
+    return "usb";
+
+  default:
+    return "other";
   }
-
-  unsigned n = 0;
-  for (unsigned k = 0;; ++k) {
-    char dev_name[128], name[128], friendly_name[128];
-
-    if (!key->EnumKey(k, std::span{dev_name}))
-      break;
-
-    std::string map_name{dev_name};
-    if (!map_name.starts_with("Dev_"))
-      continue;
-
-    const auto dev = TryOpenRegistryKey(*key, dev_name);
-    if (!dev || !dev->EnumKey(0, std::span{name})) {
-      printf("  %-16s (no subkey)\n", map_name.c_str() + 4);
-      continue;
-    }
-
-    const auto sub = TryOpenRegistryKey(*dev, name);
-    if (!sub || !sub->GetValue("FriendlyName", std::span{friendly_name})) {
-      printf("  %-16s (no FriendlyName)\n", map_name.c_str() + 4);
-      continue;
-    }
-
-    printf("  %-16s %s\n", map_name.c_str() + 4, friendly_name);
-    ++n;
-  }
-
-  printf("  -> %u named device(s)\n", n);
 }
 
-/**
- * Dump the serial ports exactly as the registry offers them, without
- * interpreting anything: the COM name, the device path, and the class
- * string which tells Bluetooth, USB, virtual and on-board ports apart.
- */
 static bool
 DumpSerialPorts() noexcept
 {
-  printf("\n[Hardware\\DeviceMap\\SerialComm]\n");
+  const auto e = EnumerateSerialPorts();
 
-  const auto serialcomm =
-    TryOpenRegistryKey(HKEY_LOCAL_MACHINE, "Hardware\\DeviceMap\\SerialComm");
-  if (!serialcomm) {
-    printf("  (key does not exist - this machine has no serial port)\n");
-    return false;
+  printf("registry keys:\n");
+  printf("  Enum\\BthEnum            %s\n",
+         e.have_bthenum ? "yes" : "MISSING (no classic device ever paired)");
+  printf("  Enum\\BthLE              %s\n",
+         e.have_bthle ? "yes" : "MISSING (no LE device ever paired)");
+  printf("  DeviceMap\\SerialComm    %s\n",
+         e.have_serialcomm ? "yes" : "MISSING (no serial port at all)");
+  printf("  COM Name Arbiter        %s\n",
+         e.have_arbiter ? "yes" : "MISSING (device classes unknown)");
+
+  printf("\n%zu port(s):\n", e.ports.size());
+
+  for (const auto &port : e.ports) {
+    printf("\n  %s\n", port.path.c_str());
+    printf("    shown as   %s\n", port.display.c_str());
+    printf("    type       %s\n", ToString(port.type));
+    printf("    device     %s\n", port.device_path.c_str());
+    printf("    class      %s\n",
+           port.arbiter.empty() ? "(no arbiter entry)" : port.arbiter.c_str());
+
+    if (!port.address.empty())
+      printf("    address    %s\n", port.address.c_str());
+
+    if (port.hidden)
+      printf("    HIDDEN     %s\n", port.hidden_reason);
   }
 
-  const auto com_devices =
-    TryOpenRegistryKey(HKEY_LOCAL_MACHINE,
-                       "SYSTEM\\CurrentControlSet\\Control\\"
-                       "COM Name Arbiter\\Devices");
-  if (!com_devices)
-    printf("  (COM Name Arbiter not readable - no class information)\n");
-
-  unsigned n = 0;
-  for (unsigned i = 0;; ++i) {
-    char name[128], value[64];
-
-    DWORD type;
-    if (!serialcomm->EnumValue(i, std::span{name}, &type,
-                               std::as_writable_bytes(std::span{value})))
-      break;
-
-    if (type != REG_SZ)
-      continue;
-
-    char arbiter[0x200];
-    const bool have_class =
-      com_devices && com_devices->GetValue(value, std::span{arbiter});
-
-    printf("  %-8s %-24s %s\n", value, name,
-           have_class ? arbiter : "(no arbiter entry)");
-    ++n;
-  }
-
-  printf("  -> %u port(s)\n", n);
-  return n > 0;
+  return !e.ports.empty();
 }
 
 #endif /* _WIN32 */
@@ -142,9 +88,6 @@ int main()
     fprintf(stderr, "Failed to enumerate TTY ports\n");
 #elif defined(_WIN32)
   implemented = true;
-
-  DumpBluetoothNames("SYSTEM\\CurrentControlSet\\Enum\\BthEnum");
-  DumpBluetoothNames("SYSTEM\\CurrentControlSet\\Enum\\BthLE");
   success = DumpSerialPorts();
 #endif
 

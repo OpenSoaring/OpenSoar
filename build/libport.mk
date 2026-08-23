@@ -15,7 +15,9 @@ PORT_SOURCES += \
 	$(SRC)/Device/Port/TTYEnumerator.cpp \
 	$(SRC)/Device/Port/TTYPort.cpp
 else
-PORT_SOURCES += $(SRC)/Device/Port/SerialPort.cpp
+PORT_SOURCES += \
+	$(SRC)/Device/Port/SerialPort.cpp \
+	$(SRC)/Device/Port/WindowsSerialPorts.cpp
 endif
 
 PORT_SOURCES += $(SRC)/Device/Port/TCPClientPort.cpp
