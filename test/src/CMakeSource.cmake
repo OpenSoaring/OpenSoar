@@ -22,7 +22,6 @@ set(TEST_LIST
 # ${SRC_DIR}/DumpTextInflate.cpp
 # ${SRC_DIR}/DumpVario.cpp
 # ${SRC_DIR}/EmulateDevice.cpp
-# ${SRC_DIR}/EnumeratePorts.cpp
 # ${SRC_DIR}/FakeAsset.cpp
 # ${SRC_DIR}/FakeDialogs.cpp
 # ${SRC_DIR}/FakeGeoid.cpp
@@ -227,6 +226,7 @@ set(TEST_LIST
 )
 
 set(TEST_LIST
+  ${SRC_DIR}/EnumeratePorts.cpp
   ${SRC_DIR}/UploadFile.cpp
   ${SRC_DIR}/RunWeGlideClient.cpp
   ${SRC_DIR}/RunDownloadFlight.cpp

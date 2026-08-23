@@ -163,6 +163,7 @@ if(UNIX)
 elseif(WIN32)
   list(APPEND _SOURCES
         Device/Port/SerialPort.cpp
+        Device/Port/WindowsSerialPorts.cpp
   )
 endif()
 
