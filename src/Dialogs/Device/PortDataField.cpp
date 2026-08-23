@@ -18,9 +18,13 @@
 
 #ifdef _WIN32
 # include "system/WindowsRegistry.hpp"
+# include "LogFile.hpp"
 # include "util/StringFormat.hpp"
 # include <boost/algorithm/string.hpp>
 # include <map>
+# include <optional>
+# include <string>
+# include <vector>
 #endif
 
 #ifdef ANDROID
@@ -138,66 +142,211 @@ DetectSerialPorts(DataFieldEnum &df) noexcept
 
 #elif defined(_WIN32)
 
+/**
+ * Open a registry key.  Unlike the RegistryKey constructor, this does
+ * not throw when the key is missing or unreadable - a key which was
+ * never created (e.g. BthLE without a single paired BLE device) is a
+ * normal condition, not an error.
+ */
+static std::optional<RegistryKey>
+TryOpenRegistryKey(HKEY parent, const char *key) noexcept
+try {
+  return RegistryKey{parent, key};
+} catch (const std::system_error &) {
+  return std::nullopt;
+}
+
+/**
+ * Collect "device address" -> "friendly name" from one of the
+ * Bluetooth enumeration keys.  Failures are per-device: one unreadable
+ * entry must not cost us the whole map.
+ */
+static std::map<std::string, std::string>
+CollectBluetoothNames(const char *key_name) noexcept
+{
+  std::map<std::string, std::string> map;
+
+  const auto key = TryOpenRegistryKey(HKEY_LOCAL_MACHINE, key_name);
+  if (!key) {
+    LogFormat("PortPicker: registry key %s not available", key_name);
+    return map;
+  }
+
+  for (unsigned k = 0;; ++k) {
+    char dev_name[128], name[128], friendly_name[128];
+
+    if (!key->EnumKey(k, std::span{dev_name}))
+      break;
+
+    std::string map_name{dev_name};
+    if (!map_name.starts_with("Dev_"))
+      continue;
+
+    const auto dev = TryOpenRegistryKey(*key, dev_name);
+    if (!dev || !dev->EnumKey(0, std::span{name}))
+      continue;
+
+    const auto sub = TryOpenRegistryKey(*dev, name);
+    if (!sub || !sub->GetValue("FriendlyName", std::span{friendly_name}))
+      continue;
+
+    map_name = map_name.substr(4);
+    for (auto &ch : map_name)
+      if (ch >= 'A' && ch <= 'Z')
+        ch += 'a' - 'A';
+
+    map[map_name] = friendly_name;
+  }
+
+  return map;
+}
+
+/**
+ * Classify one entry of Hardware\DeviceMap\SerialComm and add it to
+ * the list.  Every port ends up in the list; when the device class
+ * cannot be determined, it is offered as a plain serial port rather
+ * than being dropped.
+ */
+static void
+AddDetectedPort(DataFieldEnum &df, const char *value, const char *name,
+                const std::string &dev_name,
+                const std::map<std::string, std::string> &bthmap,
+                const std::map<std::string, std::string> &blemap) noexcept
+{
+  std::vector<std::string> strs;
+  std::string portname{value};
+  const std::string device_path{name};
+
+  if (dev_name.starts_with("\\\\?\\usb#")) {
+    boost::split(strs, device_path, boost::is_any_of("\\"));
+
+    if (strs.size() > 2 && strs[2].starts_with("USBSER")) {
+      std::vector<std::string> dev;
+      boost::split(dev, dev_name, boost::is_any_of("#"));
+
+      char friendly_name[0x100];
+      std::optional<RegistryKey> usb_devices;
+
+      if (dev.size() > 2) {
+        std::string usb_device = "SYSTEM\\CurrentControlSet\\ENUM\\USB\\";
+        usb_device += dev[1]; // e.g. "vid_1209&pid_8500&mi_00"
+        usb_device += "\\";
+        usb_device += dev[2]; // e.g. "7&3226aff9&0&0000"
+        usb_devices = TryOpenRegistryKey(HKEY_LOCAL_MACHINE,
+                                         usb_device.c_str());
+      }
+
+      if (usb_devices &&
+          usb_devices->GetValue("FriendlyName", std::span{friendly_name}))
+        portname = friendly_name; // e.g. "SteFly Stick", "Arduino"
+      else
+        portname += " (USB)";
+    } else if (strs.size() > 2) {
+      portname += " (";
+      portname += strs[2];
+      portname += ")";
+    }
+
+    AddPort(df, DeviceConfig::PortType::USB_SERIAL, value, portname.c_str());
+    return;
+  }
+
+  if (dev_name.starts_with("\\\\?\\root#")) {
+    boost::split(strs, device_path, boost::is_any_of("\\"));
+    if (strs.size() > 2) {
+      portname += " (";
+      portname += strs[2];
+      portname += ")";
+    }
+
+    AddPort(df, DeviceConfig::PortType::SERIAL, value, portname.c_str());
+    return;
+  }
+
+  if (dev_name.starts_with("\\\\?\\bthenum#")) {
+    boost::split(strs, dev_name, boost::is_any_of("#"));
+
+    if (strs.size() > 2) {
+      /* split into a second vector: boost::split() clears its output
+         container first, so splitting strs into strs would read from
+         elements it has already destroyed */
+      std::vector<std::string> parts;
+      boost::split(parts, strs[2], boost::is_any_of("_"));
+
+      if (parts.size() > 1 && parts[1] == "c00000000") {
+        std::vector<std::string> fields;
+        boost::split(fields, parts[0], boost::is_any_of("&"));
+
+        if (fields.size() > 3) {
+          if (fields[3] == "000000000000")
+            /* the local service, i.e. the incoming COM port Windows
+               creates alongside the outgoing one; it cannot be used
+               to connect to the device, so keep it out of the list */
+            return;
+
+          const auto ble = blemap.find(fields[3]);
+          if (ble != blemap.end()) {
+            portname += " (" + ble->second + ")";
+            AddPort(df, DeviceConfig::PortType::BLE_HM10, value,
+                    portname.c_str());
+            return;
+          }
+
+          const auto bth = bthmap.find(fields[3]);
+          if (bth != bthmap.end()) {
+            portname += " (" + bth->second + ")";
+            AddPort(df, DeviceConfig::PortType::RFCOMM, value,
+                    portname.c_str());
+            return;
+          }
+
+          /* the device is a remote one, we just have no name for it;
+             show the address so the port can at least be identified */
+          portname += " (" + fields[3] + ")";
+          AddPort(df, DeviceConfig::PortType::RFCOMM, value,
+                  portname.c_str());
+          return;
+        }
+      }
+    }
+
+    /* an unparseable bthenum entry is still a usable RFCOMM port -
+       offer it rather than hiding it */
+    AddPort(df, DeviceConfig::PortType::RFCOMM, value, portname.c_str());
+    return;
+  }
+
+  AddPort(df, DeviceConfig::PortType::SERIAL, value,
+          dev_name.empty() ? value : name);
+}
+
 static void
 DetectSerialPorts(DataFieldEnum &df) noexcept
-try {
-//-------------------------------
-  RegistryKey bthenums{HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\"
-                                              "Enum\\BthEnum"};
-  std::map<const std::string, std::string> bthmap;
-  for (unsigned k = 0;; ++k) {
-    char dev_name[128];
-    char name[128];
-    char friendly_name[128];
-
-    if (!bthenums.EnumKey(k, std::span{dev_name}))
-      break;
-    std::string map_name(dev_name);
-    if (!map_name.starts_with("Dev_"))
-      continue;
-    RegistryKey bthenum_dev{bthenums, dev_name};
-    // only one is possible...
-    if (!bthenum_dev.EnumKey(0, std::span{name}))
-      break;
-    RegistryKey bthenum_key{bthenum_dev, name};
-    if (!bthenum_key.GetValue("FriendlyName", friendly_name))
-      break;
-    map_name = map_name.substr(4);
-    for (std::string::iterator it = map_name.begin(); it != map_name.end();
-         ++it)
-      *it = towlower(*it);
-    bthmap[map_name] = friendly_name; // Left "Dev_"
-  }
-  RegistryKey bthle{HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\"
-                                              "Enum\\BthLE"};
-  std::map<const std::string, std::string> blemap;
-  for (unsigned k = 0;; ++k) {
-    char dev_name[128];
-    char name[128];
-    char friendly_name[128];
-
-    if (!bthle.EnumKey(k, std::span{dev_name}))
-      break;
-    std::string map_name(dev_name);
-    if (!map_name.starts_with("Dev_"))
-      continue;
-    RegistryKey bthle_dev{bthle, dev_name};
-    // only one is possible...
-    if (!bthle_dev.EnumKey(0, std::span{name}))
-      break;
-    RegistryKey bthle_key{bthle_dev, name};
-    if (!bthle_key.GetValue("FriendlyName", friendly_name))
-      break;
-    map_name = map_name.substr(4);
-    for (std::string::iterator it = map_name.begin(); it != map_name.end();
-         ++it)
-      *it = towlower(*it);
-    blemap[map_name] = friendly_name; // Left "Dev_"
-  }
+{
+  /* the friendly names are optional; a missing Bluetooth key must not
+     cost us the serial ports */
+  const auto bthmap =
+    CollectBluetoothNames("SYSTEM\\CurrentControlSet\\Enum\\BthEnum");
+  const auto blemap =
+    CollectBluetoothNames("SYSTEM\\CurrentControlSet\\Enum\\BthLE");
 
   /* the registry key HKEY_LOCAL_MACHINE/Hardware/DEVICEMAP/SERIALCOMM
      is the best way to discover serial ports on Windows */
-  RegistryKey serialcomm{HKEY_LOCAL_MACHINE, "Hardware\\DeviceMap\\SerialComm"};
+  const auto serialcomm =
+    TryOpenRegistryKey(HKEY_LOCAL_MACHINE, "Hardware\\DeviceMap\\SerialComm");
+  if (!serialcomm) {
+    LogString("PortPicker: no serial ports "
+              "(Hardware\\DeviceMap\\SerialComm is missing)");
+    return;
+  }
+
+  const auto com_devices =
+    TryOpenRegistryKey(HKEY_LOCAL_MACHINE,
+                       "SYSTEM\\CurrentControlSet\\Control\\"
+                       "COM Name Arbiter\\Devices");
+  if (!com_devices)
+    LogString("PortPicker: COM Name Arbiter not readable, "
+              "device classes are unknown");
 
   // Skip the port that the SteFly RemoteStick has been auto-bound
   // to (REMOTE_PORT slot); nullptr on non-RemoteStick builds and
@@ -209,102 +358,33 @@ try {
     char value[64];
 
     DWORD type;
-    if (!serialcomm.EnumValue(i, std::span{name}, &type,
-                              std::as_writable_bytes(std::span{value})))
+    if (!serialcomm->EnumValue(i, std::span{name}, &type,
+                               std::as_writable_bytes(std::span{value})))
       break;  //  end of the list
 
     if (type != REG_SZ)
       // weird
       continue;
 
-    // value holds the COM name (e.g. "COM7") — same shape as what
+    // value holds the COM name (e.g. "COM7") - same shape as what
     // SteFly::Discovery returned, so a plain string compare is
     // enough.
     if (reserved != nullptr && StringIsEqual(value, reserved))
       continue;
 
-    RegistryKey com_devices {HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\"
-            "Control\\COM Name Arbiter\\Devices"};
-    char name1[0x200];
+    /* Registry "COM Name Arbiter\Devices" tells the device class:
+       BlueTooth: "\\?\bthenum#", USB: "\\?\usb#",
+       root: "\\?\root#" (virtual port), normal: "\\?\acpi#" */
+    char arbiter[0x200];
+    std::string dev_name;
+    if (com_devices && com_devices->GetValue(value, std::span{arbiter}))
+      dev_name = arbiter;
 
-    if (!com_devices.GetValue(value, name1))
-      continue;
+    LogFormat("PortPicker: serial %s (%s) class=%s", value, name,
+              dev_name.empty() ? "unknown" : dev_name.c_str());
 
-    // Registry "COM Name Arbiter\Devices" starts with
-    // BlueTooth: "\\?\bthenum#"
-    // USB:       "\\?\usb#"
-    // root:       "\\?\root#" - possible virtual port
-    // Normal:    "\\?\acpi#"   - an Kupschis Rechner!
-    std::string dev_name = name1;
-    if (dev_name.starts_with("\\\\?\\usb#")) {
-      std::vector<std::string> strs;
-      std::string portname;
-      boost::split(strs, name, boost::is_any_of("\\"));
-      portname = value;
-      if (strs[2].starts_with("USBSER")) {
-        boost::split(strs, dev_name, boost::is_any_of("#"));
-        std::string usb_device = "SYSTEM\\CurrentControlSet\\ENUM\\USB\\";
-        usb_device += strs[1]; // f.e.: "vid_1209&pid_8500&mi_00";
-        usb_device += "\\";
-        usb_device += strs[2]; // f.e. "7&3226aff9&0&0000";
-        RegistryKey usb_devices{ HKEY_LOCAL_MACHINE, usb_device.c_str()};
-        char friendly_name[0x100];// = nullptr;
-        // usb_devices.GetValue("DeviceDesc", name1);
-
-        if (usb_devices.GetValue("FriendlyName", friendly_name)) {
-          portname = friendly_name;  // " (SteFly Stick)", " (Arduino)" or others
-        }  else {
-          portname += " (USB)";  // " (SteFly Stick)", " (Arduino)" or others
-        }
-      } else {
-        portname += " (";
-        portname += strs[2];
-        portname += ")";
-      }
-      AddPort(df, DeviceConfig::PortType::USB_SERIAL, value, portname.c_str());
-    } else if (dev_name.starts_with("\\\\?\\root#")) {
-      std::vector<std::string> strs;
-      std::string portname;
-      boost::split(strs, name, boost::is_any_of("\\"));
-      portname = value;
-      portname += " (";
-      portname += strs[2];
-      portname += ")";
-
-      AddPort(df, DeviceConfig::PortType::SERIAL, value, portname.c_str());
-    } else if (dev_name.starts_with("\\\\?\\bthenum#")) {
-      std::vector<std::string> strs;
-      std::string portname;
-      boost::split(strs, name1, boost::is_any_of("#"));
-      boost::split(strs, strs[2], boost::is_any_of("_"));
-      if (strs[1] == "c00000000") {
-        boost::split(strs, strs[0], boost::is_any_of("&"));
-        if (strs[3] != "000000000000") {
-          DeviceConfig::PortType port_type = DeviceConfig::PortType::DISABLED;
-          portname = value;
-          portname += " (";
-          if (blemap.find(strs[3]) != blemap.end()) {
-            port_type = DeviceConfig::PortType::RFCOMM;
-            port_type = DeviceConfig::PortType::BLE_HM10;
-            // port_type = DeviceConfig::PortType::BLE_SENSOR;
-            portname += blemap[strs[3]];
-          } else if (bthmap.find(strs[3]) != bthmap.end()) {
-            port_type = DeviceConfig::PortType::RFCOMM;
-            portname += bthmap[strs[3]];
-          }
-
-          portname += ")";
-          if (port_type != DeviceConfig::PortType::DISABLED)
-            AddPort(df, port_type, value,
-                   portname.c_str());
-        }
-      }
-    } else {  //  if (dev_name.starts_with("\\\\?\\acpi#"))
-      AddPort(df, DeviceConfig::PortType::SERIAL, value, name);
-    }
+    AddDetectedPort(df, value, name, dev_name, bthmap, blemap);
   }
-} catch (const std::system_error &) {
-  // silently ignore registry errors
 }
 
 #endif
