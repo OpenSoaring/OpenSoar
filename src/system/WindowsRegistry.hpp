@@ -72,7 +72,7 @@ public:
   bool EnumValue(DWORD idx, std::span<char> name, LPDWORD type,
                  std::span<std::byte> value) const noexcept {
     DWORD name_max_size = (DWORD)name.size();
-    DWORD value_max_size = (DWORD)name.size();
+    DWORD value_max_size = (DWORD)value.size();
 
     return RegEnumValue(h, idx, name.data(), &name_max_size,
                         nullptr, type,
