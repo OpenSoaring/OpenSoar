@@ -491,6 +491,20 @@ DeviceDescriptor::Close() noexcept
   assert(InMainThread());
   assert(!IsBorrowed());
 
+  /* only report a disconnect if there was something connected; a
+     disabled or never-opened device would otherwise log a spurious
+     "Device error on Disabled: Disconnected", and a device whose
+     Open() has just failed would have its real error message
+     overwritten by the useless "Disconnected" */
+  const bool was_connected = port != nullptr || device != nullptr
+#ifdef HAVE_INTERNAL_GPS
+    || internal_sensors != nullptr
+#endif
+#ifdef ANDROID
+    || java_sensor != nullptr
+#endif
+    ;
+
   CancelAsync();
 
 #ifdef HAVE_INTERNAL_GPS
@@ -524,7 +538,8 @@ DeviceDescriptor::Close() noexcept
 
   port.reset();
 
-  PortError("Disconnected");
+  if (was_connected)
+    PortError("Disconnected");
 
   has_failed = false;
   ticker = false;
