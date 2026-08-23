@@ -228,8 +228,13 @@ PortPickerWidget::OnDeviceDetected(Type type, const char *address,
                                    const char *name,
                                    uint64_t features) noexcept
 {
-  if (name == nullptr)
-    name = "";
+  if (name == nullptr || *name == 0)
+    /* Bluetooth devices without a cached name would otherwise show up
+       as an empty list entry; the address is at least identifiable */
+    name = address;
+
+  LogFormat("PortPicker: detected type=%d address=%s name=%s",
+            (int)type, address, name);
 
   DeviceConfig::PortType port_type;
   switch (type) {
