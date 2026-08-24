@@ -1,0 +1,91 @@
+set(_SOURCES
+        Renderer/AircraftRenderer.cpp
+        Renderer/AirspaceLabelList.cpp
+        Renderer/AirspaceLabelRenderer.cpp
+        Renderer/AirspaceListRenderer.cpp
+        Renderer/AirspacePreviewRenderer.cpp
+        Renderer/AirspaceRenderer.cpp
+        Renderer/AirspaceRendererGL.cpp
+        Renderer/AirspaceRendererOther.cpp
+        Renderer/AirspaceRendererSettings.cpp
+        Renderer/BackgroundRenderer.cpp
+        Renderer/BarographRenderer.cpp
+        Renderer/BestCruiseArrowRenderer.cpp
+        Renderer/BitmapButtonRenderer.cpp
+        Renderer/ButtonRenderer.cpp
+        Renderer/ChartRenderer.cpp
+        Renderer/ClimbChartRenderer.cpp
+        Renderer/ClimbPercentRenderer.cpp
+        Renderer/ColorButtonRenderer.cpp
+        Renderer/CompassRenderer.cpp
+        Renderer/CuRenderer.cpp
+        Renderer/FAITriangleAreaRenderer.cpp
+        Renderer/FinalGlideBarRenderer.cpp
+        Renderer/FlightStatisticsRenderer.cpp
+        Renderer/GeoBitmapRenderer.cpp
+        Renderer/GlassRenderer.cpp
+        Renderer/GlidePolarInfoRenderer.cpp
+        Renderer/GlidePolarRenderer.cpp
+        Renderer/GradientRenderer.cpp
+        Renderer/HorizonRenderer.cpp
+        Renderer/LabelBlock.cpp
+        Renderer/MacCreadyRenderer.cpp
+        Renderer/MapItemListRenderer.cpp
+        Renderer/MapScaleRenderer.cpp
+        Renderer/NextArrowRenderer.cpp
+        Renderer/NOAAListRenderer.cpp
+        Renderer/OZPreviewRenderer.cpp
+        Renderer/OZRenderer.cpp
+        Renderer/SymbolButtonRenderer.cpp
+        Renderer/SymbolRenderer.cpp
+        Renderer/TabRenderer.cpp
+        Renderer/TaskLegRenderer.cpp
+        Renderer/TaskPointRenderer.cpp
+        Renderer/TaskProgressRenderer.cpp
+        Renderer/TaskRenderer.cpp
+        Renderer/TaskSpeedRenderer.cpp
+        Renderer/TextButtonRenderer.cpp
+        Renderer/TextInBox.cpp
+        Renderer/TextRenderer.cpp
+        Renderer/TextRowRenderer.cpp
+        Renderer/ThermalBandRenderer.cpp
+        Renderer/TraceHistoryRenderer.cpp
+        Renderer/TrackLineRenderer.cpp
+        Renderer/TrafficRenderer.cpp
+        Renderer/TrailRenderer.cpp
+        Renderer/TransparentRendererCache.cpp
+        Renderer/TwoTextRowsRenderer.cpp
+        Renderer/UnitSymbolRenderer.cpp
+        Renderer/VarioBarRenderer.cpp
+        Renderer/VarioHistogramRenderer.cpp
+        Renderer/WaveRenderer.cpp
+        Renderer/WaypointIconRenderer.cpp
+        Renderer/WaypointLabelList.cpp
+        Renderer/WaypointListRenderer.cpp
+        Renderer/WaypointRenderer.cpp
+        Renderer/WaypointRendererSettings.cpp
+        Renderer/WindArrowRenderer.cpp
+        Renderer/WindChartRenderer.cpp
+
+        Renderer/ProgressBarRenderer.cpp
+        Renderer/RadarRenderer.cpp
+)
+
+if(IS_OPENSOAR)
+  list(APPEND _SOURCES
+        # Renderer/FrequencyListRenderer.cpp  # [topic/device-misc] not in upstream XCSoar yet
+  )
+endif()
+
+set(SCRIPT_FILES
+    CMakeSource.cmake
+
+    ../../build/screen.mk
+)
+
+# --- synced from upstream XCSoar (v7.44 -> master, 2026-08-13) ---
+list(APPEND _SOURCES
+        Renderer/AirspaceWarningStatusRenderer.cpp
+        Renderer/DistanceRingsRenderer.cpp
+        Renderer/TurnBackMarkerRenderer.cpp
+)
