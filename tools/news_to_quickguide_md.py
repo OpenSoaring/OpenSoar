@@ -145,6 +145,11 @@ def emit_header(markdown: str) -> None:
 
 
 def main() -> int:
+    # the header is written to stdout: force UTF-8 there - on Windows
+    # the default console encoding is cp1252, which cannot represent
+    # characters like the arrows used in NEWS.txt
+    if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
+        sys.stdout.reconfigure(encoding="utf-8")
     p = argparse.ArgumentParser()
     p.add_argument(
         "news_file",
