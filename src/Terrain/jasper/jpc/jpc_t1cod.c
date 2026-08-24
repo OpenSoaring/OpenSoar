@@ -164,6 +164,7 @@ unsigned JPC_NOMINALGAIN(unsigned qmfbid, unsigned numlvls, unsigned lvlno, enum
 		default:
 			assert(false);
 			JAS_UNREACHABLE();
+            return 999;
 		}
 	}
 }
