@@ -8,6 +8,7 @@
 #include <fmt/format.h>
 
 #include <cstdarg>
+#include <iterator>
 
 #include <string.h>
 
