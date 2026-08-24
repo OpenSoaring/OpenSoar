@@ -1,0 +1,3 @@
+no_atof_cmake.diff
+tiff_pkg_config_cmake
+no_CHECK_FUNCTION_EXISTS_cmake
