@@ -1,0 +1,16 @@
+set(_SOURCES
+        Hardware/Battery.cpp
+        Hardware/CPU.cpp
+        Hardware/DisplayBrightness.cpp
+        Hardware/DisplayDPI.cpp
+        Hardware/DisplayGlue.cpp
+        Hardware/RotateDisplay.cpp
+        Hardware/Vibrator.cpp
+        Hardware/PowerGlobal.cpp
+        Hardware/SystemPower.cpp
+)
+
+set(SCRIPT_FILES
+    CMakeSource.cmake
+)
+
