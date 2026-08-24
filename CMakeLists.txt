@@ -740,6 +740,10 @@ foreach(_opt_file ${APP_NAME}.config OpenSoar-News.md OpenSoar-AddOn.md)
   endif()
 endforeach()
 
+if (MSVC)
+  list(APPEND SCRIPT_FILES ${PROJECTGROUP_SOURCE_DIR}/ide/msvc/OpenSoar.vcxproj.user.in)
+endif()
+
 if (ANDROID)  # library!
    add_library(${APP_NAME} STATIC ${SOURCE_FILES})
 elseif(MINGW)
