@@ -154,7 +154,17 @@ find_program(PYTHON_APP         NAMES python3 python REQUIRED)
 find_program(PERL_APP           NAMES perl   REQUIRED)
 # find_program(BMP_CONVERT_APP    NAMES ImageMagick/convert )
     list(APPEND CMAKE_PROGRAM_PATH "${USER_PROGRAM_PATH}/GnuWin/libxslt/bin")
-find_program(XSLTPROC_APP    NAMES xsltproc REQUIRED)
+# optional: the xslt step only switches off anti-aliasing on the mask
+# parts of the icons, and gen_resources_data.py renders the plain SVG
+# without it.  Windows has no obvious xsltproc - Git for Windows brings
+# perl, but not this - so a cosmetic detail must not fail configure.
+find_program(XSLTPROC_APP    NAMES xsltproc)
+if (XSLTPROC_APP)
+  set(XSLTPROC_ARG --xsltproc ${XSLTPROC_APP})
+else()
+  set(XSLTPROC_ARG)
+  message(STATUS "xsltproc not found - icons come from the unprocessed SVG")
+endif()
     list(APPEND CMAKE_PROGRAM_PATH "${USER_PROGRAM_PATH}/Inkscape/bin")
 find_program(INKSCAPE_APP    NAMES inkscape REQUIRED)
     list(APPEND CMAKE_PROGRAM_PATH "${USER_PROGRAM_PATH}/ImageMagick")
