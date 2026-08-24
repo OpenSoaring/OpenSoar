@@ -34,40 +34,40 @@ $(OUT)/include/QuickGuideNEWS.hpp: $(topdir)/NEWS.txt \
 
 $(call SRC_TO_OBJ,$(SRC)/Dialogs/dlgQuickGuide.cpp): $(OUT)/include/QuickGuideNEWS.hpp
 
-$(OUT)/include/InputEvents_Text2Event.cpp: $(SRC)/Input/InputEvents.hpp \
+$(OUT)/include/InputEvents_Text2Event.hpp: $(SRC)/Input/InputEvents.hpp \
 	$(topdir)/tools/Text2Event.pl | $(OUT)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
 	$(Q)$(PERL) $(topdir)/tools/Text2Event.pl $< >$@.$(RANDOM_NUMBER).tmp
 	@mv $@.$(RANDOM_NUMBER).tmp $@
 
-$(OUT)/include/InputEvents_Text2GCE.cpp: $(SRC)/Input/InputQueue.hpp \
+$(OUT)/include/InputEvents_Text2GCE.hpp: $(SRC)/Input/InputQueue.hpp \
 	$(topdir)/tools/Text2GCE.pl | $(OUT)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
 	$(Q)$(PERL) $(topdir)/tools/Text2GCE.pl $< >$@.$(RANDOM_NUMBER).tmp
 	@mv $@.$(RANDOM_NUMBER).tmp $@
 
-$(OUT)/include/InputEvents_Text2NE.cpp: $(SRC)/Input/InputQueue.hpp \
+$(OUT)/include/InputEvents_Text2NE.hpp: $(SRC)/Input/InputQueue.hpp \
 	$(topdir)/tools/Text2NE.pl | $(OUT)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
 	$(Q)$(PERL) $(topdir)/tools/Text2NE.pl $< >$@.$(RANDOM_NUMBER).tmp
 	@mv $@.$(RANDOM_NUMBER).tmp $@
 
-$(OUT)/include/InputEvents_Char2GCE.cpp: $(SRC)/Input/InputQueue.hpp \
+$(OUT)/include/InputEvents_Char2GCE.hpp: $(SRC)/Input/InputQueue.hpp \
 	$(topdir)/tools/Char2GCE.pl | $(OUT)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
 	$(Q)$(PERL) $(topdir)/tools/Char2GCE.pl $< >$@.$(RANDOM_NUMBER).tmp
 	@mv $@.$(RANDOM_NUMBER).tmp $@
 
-$(OUT)/include/InputEvents_Char2NE.cpp: $(SRC)/Input/InputQueue.hpp \
+$(OUT)/include/InputEvents_Char2NE.hpp: $(SRC)/Input/InputQueue.hpp \
 	$(topdir)/tools/Char2NE.pl | $(OUT)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
 	$(Q)$(PERL) $(topdir)/tools/Char2NE.pl $< >$@.$(RANDOM_NUMBER).tmp
 	@mv $@.$(RANDOM_NUMBER).tmp $@
 
 XCI_LIST = default
-XCI_HEADERS = $(patsubst %,$(OUT)/include/InputEvents_%.cpp,$(XCI_LIST))
+XCI_HEADERS = $(patsubst %,$(OUT)/include/InputEvents_%.hpp,$(XCI_LIST))
 
-$(OUT)/include/InputEvents_default.cpp: $(topdir)/Data/Input/default.xci \
+$(OUT)/include/InputEvents_default.hpp: $(topdir)/Data/Input/default.xci \
 	$(topdir)/tools/xci2cpp.pl \
 	| $(OUT)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
@@ -75,23 +75,23 @@ $(OUT)/include/InputEvents_default.cpp: $(topdir)/Data/Input/default.xci \
 	@mv $@.$(RANDOM_NUMBER).tmp $@
 
 $(call SRC_TO_OBJ,$(SRC)/Input/InputDefaults.cpp): $(XCI_HEADERS)
-$(call SRC_TO_OBJ,$(SRC)/Input/InputLookup.cpp): $(OUT)/include/InputEvents_Text2Event.cpp $(OUT)/include/InputEvents_Text2GCE.cpp $(OUT)/include/InputEvents_Text2NE.cpp
+$(call SRC_TO_OBJ,$(SRC)/Input/InputLookup.cpp): $(OUT)/include/InputEvents_Text2Event.hpp $(OUT)/include/InputEvents_Text2GCE.hpp $(OUT)/include/InputEvents_Text2NE.hpp
 
-$(call SRC_TO_OBJ,$(SRC)/lua/InputEvent.cpp): $(OUT)/include/InputEvents_Char2GCE.cpp $(OUT)/include/InputEvents_Char2NE.cpp
+$(call SRC_TO_OBJ,$(SRC)/lua/InputEvent.cpp): $(OUT)/include/InputEvents_Char2GCE.hpp $(OUT)/include/InputEvents_Char2NE.hpp
 
-$(OUT)/include/Status_defaults.cpp: Data/Status/default.xcs \
+$(OUT)/include/Status_defaults.hpp: Data/Status/default.xcs \
 	tools/xcs2cpp.pl | $(OUT)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
 	$(Q)$(PERL) tools/xcs2cpp.pl $< >$@.$(RANDOM_NUMBER).tmp
 	@mv $@.$(RANDOM_NUMBER).tmp $@
 
 SM_OBJ = $(call SRC_TO_OBJ,$(SRC)/StatusMessage.cpp)
-$(SM_OBJ): $(OUT)/include/Status_defaults.cpp
+$(SM_OBJ): $(OUT)/include/Status_defaults.hpp
 
 generate:: $(OUT)/include/MathTables.h $(XCI_HEADERS) \
-	$(OUT)/include/Status_defaults.cpp \
-	$(OUT)/include/InputEvents_Text2Event.cpp $(OUT)/include/InputEvents_Text2GCE.cpp $(OUT)/include/InputEvents_Text2NE.cpp \
-	$(OUT)/include/InputEvents_Char2GCE.cpp $(OUT)/include/InputEvents_Char2NE.cpp \
+	$(OUT)/include/Status_defaults.hpp \
+	$(OUT)/include/InputEvents_Text2Event.hpp $(OUT)/include/InputEvents_Text2GCE.hpp $(OUT)/include/InputEvents_Text2NE.hpp \
+	$(OUT)/include/InputEvents_Char2GCE.hpp $(OUT)/include/InputEvents_Char2NE.hpp \
 	$(OUT)/include/QuickGuideNEWS.hpp
 
 # UNIX resources
