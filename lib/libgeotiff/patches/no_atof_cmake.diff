@@ -1,0 +1,15 @@
+Index: libgeotiff-1.7.4/geo_strtod.c
+===================================================================
+--- libgeotiff-1.7.4.orig/geo_strtod.c
++++ libgeotiff-1.7.4/geo_strtod.c
+@@ -151,8 +151,10 @@ double GTIFStrtod(const char *nptr, char
+ /*                              GTIFAtof()                              */
+ /************************************************************************/
+ 
++#if 0
+ double GTIFAtof(const char *nptr)
+ {
+     return GTIFStrtod(nptr, 0);
+ }
++#endif
+ 

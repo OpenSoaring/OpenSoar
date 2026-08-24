@@ -1,0 +1,70 @@
+cmake_minimum_required(VERSION 3.18)
+
+# set (TARGET_NAME      libsodium)
+set (TARGET_NAME      sodium)
+project(${TARGET_NAME})
+
+
+if(SODIUM_STATIC)
+    add_compile_definitions(SODIUM_STATIC)
+endif()
+
+set(_INCLUDE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include)
+file(GLOB_RECURSE ${TARGET_NAME}_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.c")
+file(GLOB_RECURSE HEADER_FILES "${_INCLUDE_DIR}/*.h")
+
+message(STATUS -- Sodium!!!)
+foreach(SRC ${${TARGET_NAME}_SOURCES})
+     set(${TARGET_NAME}_LIBRARY ${${TARGET_NAME}_LIBRARY} ${SRC})
+     message(STATUS -- Sodium:  ${SRC})
+endforeach()
+
+add_compile_definitions(__AVX512F__)  # ???
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium
+    # ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include
+    # ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium
+    #For version.h.in to version.h
+    ${CMAKE_CURRENT_BINARY_DIR}/src/libsodium/include/sodium
+    
+    ${_INCLUDE_DIR}
+    ${_INCLUDE_DIR}/sodium
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/quirks  # test only 
+)
+
+set(VERSION "1.0.20")
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium/version.h.in 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium/version.h
+)
+
+if(MINGW)
+  #MinGW 14.3:
+  # string(APPEND CMAKE_C_FLAGS  " -Wno-implicit-function-declaration")
+  string(APPEND CMAKE_C_FLAGS   " -Wno-error=implicit-function-declaration")
+endif(MINGW)
+
+## message(FATAL_ERROR CMAKE_C_FLAGS  = ${CMAKE_C_FLAGS})
+
+# add_definitions(-DLUA_ANSI=1)
+add_library(${TARGET_NAME} STATIC ${${TARGET_NAME}_LIBRARY} ${HEADER_FILES})
+
+install(TARGETS ${TARGET_NAME}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+## August 2024-12-16
+target_compile_options(${TARGET_NAME} PUBLIC "-mavx2")
+
+foreach(header ${HEADER_FILES})
+    string(REPLACE "${_INCLUDE_DIR}/" "" inc_file ${header})
+    get_filename_component(inc_path ${inc_file} DIRECTORY)
+    install(FILES ${header}  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${inc_path}")
+endforeach()
+
+## message(FATAL_ERROR +++ Sodium: Stop!)
