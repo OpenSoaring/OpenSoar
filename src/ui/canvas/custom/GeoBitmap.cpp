@@ -127,8 +127,12 @@ ParseTileBounds(std::string_view name)
 
   auto parse = [](std::string_view value) {
     uint32_t result = 0;
-    const auto [end, error] = std::from_chars(value.begin(), value.end(), result);
-    if (error != std::errc{} || end != value.end())
+    /* use data()/data()+size() instead of begin()/end(): from_chars
+       takes const char*, and on MSVC's STL the string_view iterators
+       are a distinct class type */
+    const char *const first = value.data(), *const last = first + value.size();
+    const auto [end, error] = std::from_chars(first, last, result);
+    if (error != std::errc{} || end != last)
       throw std::runtime_error("Unsupported geo image file");
 
     return result;
