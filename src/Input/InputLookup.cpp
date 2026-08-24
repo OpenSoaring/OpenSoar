@@ -13,19 +13,19 @@ struct Text2EventSTRUCT {
 };
 
 static constexpr Text2EventSTRUCT Text2Event[] = {
-#include "InputEvents_Text2Event.cpp"
+#include "InputEvents_Text2Event.hpp"
   { nullptr, nullptr }
 };
 
 // Mapping text names of events to the real thing
 static const char *const Text2GCE[] = {
-#include "InputEvents_Text2GCE.cpp"
+#include "InputEvents_Text2GCE.hpp"
   nullptr
 };
 
 // Mapping text names of events to the real thing
 static const char *const Text2NE[] = {
-#include "InputEvents_Text2NE.cpp"
+#include "InputEvents_Text2NE.hpp"
   nullptr
 };
 

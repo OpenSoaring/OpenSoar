@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "Icon.hpp"
+#include "LogFile.hpp"
 #include "Canvas.hpp"
 #include "Screen/Layout.hpp"
 
@@ -133,6 +134,17 @@ MaskedIcon::LoadResource(ResourceId id, ResourceId mdpi_id,
   const unsigned stretch =
     IconStretchFixed10(source_dpi * ICON_SUPERSAMPLE);
   bitmap.Load(id);
+
+#ifdef USE_WIN32_RESOURCES
+  if (!bitmap.IsDefined())
+    /* make the failing resource identifiable before the assert fires -
+       a typical cause is a corrupt .bmp embedded by the resource
+       compiler after an interrupted graphics conversion */
+    LogFormat("MaskedIcon::LoadResource failed: id=%u big_id=%u "
+              "ultra_id=%u vdpi=%u",
+              (unsigned)id, (unsigned)big_id, (unsigned)ultra_id,
+              Layout::vdpi);
+#endif
 
   assert(IsDefined());
 
