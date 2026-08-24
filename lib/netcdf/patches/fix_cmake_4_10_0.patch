@@ -1,0 +1,48 @@
+ CMakeLists.txt             |  1 +
+ libdispatch/CMakeLists.txt | 10 ++++++++--
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 881d2c409..d6d7f98ed 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -930,6 +930,7 @@ endif()
+ # Dependencies
+ ##################################
+ 
++set(USE_HDF5 OFF)
+ include(cmake/dependencies.cmake)
+ 
+ ################################
+diff --git a/libdispatch/CMakeLists.txt b/libdispatch/CMakeLists.txt
+index 7f07d17b0..2e20bdef0 100644
+--- a/libdispatch/CMakeLists.txt
++++ b/libdispatch/CMakeLists.txt
+@@ -10,7 +10,7 @@ target_include_directories(dispatch PUBLIC ${CURL_INCLUDE_DIRS})
+ target_sources(dispatch 
+   PRIVATE
+     dcopy.c dfile.c ddim.c datt.c dattinq.c dattput.c dattget.c derror.c dvar.c dvarget.c dvarput.c dvarinq.c ddispatch.c nclog.c dstring.c dutf8.c dinternal.c doffsets.c ncuri.c nclist.c ncbytes.c nchashmap.c nctime.c nc.c nclistmgr.c utf8proc.h utf8proc.c dpathmgr.c dutil.c drc.c dauth.c dreadonly.c dnotnc4.c dnotnc3.c dinfermodel.c
+-    daux.c dinstance.c dinstance_intern.c
++    dinstance.c dinstance_intern.c
+     dcrc32.c dcrc32.h dcrc64.c ncexhash.c ncxcache.c ncjson.c ds3util.c dparallel.c dmissing.c
+     ncproplist.c 
+     ncindex.c
+@@ -36,11 +36,17 @@ set_property(SOURCE dinstance_intern.c dinstance.c dvarput.c
+     SKIP_UNITY_BUILD_INCLUSION ON)
+ 
+ # Netcdf-4 only functions. Must be defined even if not used
++if (USE_HDF5)
+ target_sources(dispatch
+   PRIVATE
+     dgroup.c dvlen.c dcompound.c dtype.c denum.c dopaque.c dfilter.c dplugins.c
+ )
+-
++else(USE_HDF5)
++target_sources(dispatch
++  PRIVATE
++    dgroup.c dvlen.c dcompound.c dtype.c denum.c dopaque.c dfilter.c
++)
++endif(USE_HDF5)
+ if(BUILD_V2)
+   target_sources(dispatch
+     PRIVATE

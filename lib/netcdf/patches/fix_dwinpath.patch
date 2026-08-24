@@ -1,0 +1,25 @@
+diff --git a/libdispatch/dwinpath.c b/libdispatch/dwinpath.c
+--- a/libdispatch/dwinpath.c
++++ b/libdispatch/dwinpath.c
+@@ -154,8 +154,8 @@      static char*
+ makeabsolute(const char* relpath)
+ {
+     char* path = NULL;
+-#ifdef _MSC_VER
++#ifdef _WIN32
+     path = _fullpath(NULL,relpath,8192);
+ #else
+     path = realpath(relpath, NULL);
+ 
+@@ -222,7 +222,11 @@      free(cvtname);    
+     return status;
+ }
+ 
++#ifndef ENOENT
++# define ENOENT 2
++#endif
++
+ EXTERNL
+ int
+ NCremove(const char* path)
+ 

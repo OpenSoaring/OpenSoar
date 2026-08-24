@@ -1,0 +1,14 @@
+diff --git a/libsrc/memio.c b/libsrc/memio.c
+--- a/libsrc/memio.c
++++ b/libsrc/memio.c
+@@ -17,8 +17,9 @@ #ifdef HAVE_FCNTL_H
+ #include <fcntl.h>
+ #endif
+-#ifdef _MSC_VER /* Microsoft Compilers */
++// #ifdef _MSC_VER /* Microsoft Compilers ! */
++#if defined (_WIN32) || defined(_WIN64)
+ #include <windows.h>
+ #include <winbase.h>
+ #include <io.h>
+ #endif
+
