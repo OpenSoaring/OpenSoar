@@ -1,0 +1,42 @@
+ CMakeLists.txt | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 60c699d..50b3a96 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -5,7 +5,7 @@
+ ##################################
+ 
+ #Minimum required CMake Version
+-cmake_minimum_required(VERSION 2.8.12)
++cmake_minimum_required(VERSION 3.20)
+ 
+ #Project Name
+ PROJECT(NCXX C CXX)
+@@ -392,6 +392,7 @@ IF(NC_HAS_DEF_VAR_FILTER)
+   SET(HAS_DEF_VAR_FILTER ${NC_HAS_DEF_VAR_FILTER} CACHE STRING "")
+ ENDIF(NC_HAS_DEF_VAR_FILTER)
+ 
++if(USE_HDF5)
+ ###
+ # Find HDF5
+ ###
+@@ -407,6 +408,7 @@ IF(NOT HAVE_H5FREE_MEMORY)
+   MESSAGE(STATUS "Plugin support requires libhdf5 with H5Free support. Your libhdf5 install does not provide H5Free.  Please install a newer version of libhdf5 if you require plugin compression support.")
+   SET(NC_HAS_DEF_VAR_FILTER "")
+ ENDIF()
++endif(USE_HDF5)
+ 
+ ################################
+ # End 'seek out dependent libraries'
+@@ -639,6 +641,9 @@ INCLUDE_DIRECTORIES(cxx4 examples)
+ ADD_SUBDIRECTORY(cxx4)
+ ADD_SUBDIRECTORY(examples)
+ 
++if(NOT USE_HDF5)
++  set(NC_HAS_DEF_VAR_FILTER OFF)
++endif(USE_HDF5)
+ IF(NC_HAS_DEF_VAR_FILTER)
+   #####
+   # Build cxx4/findplugin.sh
