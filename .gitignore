@@ -28,6 +28,7 @@ test/data/private
 .DS_Store
 massif.out.*
 build/local-config.mk
+build/cmake/local-config.cmake
 
 *.pyc
 *.pyo
