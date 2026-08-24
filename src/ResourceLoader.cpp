@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "ResourceLoader.hpp"
+#include "LogFile.hpp"
 #include "ResourceId.hpp"
 
 #include <cassert>
@@ -79,6 +80,12 @@ ResourceLoader::Load(ResourceId id)
 HBITMAP
 ResourceLoader::LoadBitmap2(ResourceId id)
 {
-  return ::LoadBitmap(ResourceLoaderInstance, MAKEINTRESOURCE((unsigned)id));
+  HBITMAP h = ::LoadBitmap(ResourceLoaderInstance,
+                           MAKEINTRESOURCE((unsigned)id));
+#ifndef NDEBUG
+  if (h == nullptr)
+    LogFormat("ResourceLoader::LoadBitmap2 failed: id=%u", (unsigned)id);
+#endif
+  return h;
 }
 #endif

@@ -152,7 +152,13 @@ class IntrusiveHashSet {
 		}
 	};
 
-	using Bucket = IntrusiveList<T, BucketHookTraits, IntrusiveListOptions{.zero_initialized = options.zero_initialized}>;
+	/* MSVC (C2131) cannot read the NTTP struct 'options' inside a
+	   designated-initializer template argument; route the value
+	   through a static constexpr member first */
+	static constexpr bool zero_initialized = options.zero_initialized;
+	static constexpr IntrusiveListOptions bucket_options{.zero_initialized = zero_initialized};
+
+	using Bucket = IntrusiveList<T, BucketHookTraits, bucket_options>;
 	std::array<Bucket, table_size> table;
 
 	using bucket_iterator = typename Bucket::iterator;

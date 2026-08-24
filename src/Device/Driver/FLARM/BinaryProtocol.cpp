@@ -10,6 +10,12 @@
 
 #include <algorithm> // for std::find_if()
 
+/* damn you, windows.h! (one of the includes above pulls it in and
+   redefines ERROR after BinaryProtocol.hpp already removed it) */
+#ifdef ERROR
+#undef ERROR
+#endif
+
 static constexpr auto
 FindSpecial(std::span<const std::byte>::iterator begin,
             std::span<const std::byte>::iterator end) noexcept

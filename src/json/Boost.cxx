@@ -11,7 +11,10 @@
 #pragma GCC diagnostic ignored "-Wdouble-promotion"
 #endif
 
-/* suppress -Wundef */
+/* suppress -Wundef (GCC/clang only; on MSVC the dummy would just
+   produce a C4005 redefinition warning) */
+#ifdef __GNUC__
 #define BOOST_VERSION 0
+#endif
 
 #include <boost/json/src.hpp>
