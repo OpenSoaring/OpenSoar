@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    The data directory the debugger starts against.  XCSOAR_BASEDATA
+    (machine-specific, e.g.  set XCSOAR_BASEDATA=C:/Data) is resolved
+    by MSBuild when the debugger starts, so changing it needs no
+    re-configure; each brand gets its own <base>/<brand>Data.  Without
+    the variable the value CMake guessed at configure time is used.
+  -->
+  <PropertyGroup>
+    <OpenSoarDataPath Condition="'$(XCSOAR_BASEDATA)'!=''">$(XCSOAR_BASEDATA)/@APP_NAME@Data</OpenSoarDataPath>
+    <OpenSoarDataPath Condition="'$(OpenSoarDataPath)'==''">@APP_DATA@</OpenSoarDataPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LocalDebuggerCommandArguments>-1400x700 -datapath=$(OpenSoarDataPath)</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommandArguments>-1400x700 -datapath=$(OpenSoarDataPath)</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+</Project>
