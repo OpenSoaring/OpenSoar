@@ -6,6 +6,10 @@
 #include <type_traits>
 #include <utility>
 
+#ifdef _MSC_VER
+# define NoExcept true
+#endif // _MSCVER
+
 /**
  * This object stores a function pointer wrapping a method, and a
  * reference to an instance of the method's class.  It can be used to
@@ -17,7 +21,9 @@ template<typename S=void()>
 class BoundMethod;
 
 template<typename R,
+#ifndef _MSC_VER
 	 bool NoExcept,
+#endif  // _MSCVER
 	 typename... Args>
 class BoundMethod<R(Args...) noexcept(NoExcept)> {
 	using function_pointer = R (*)(void *, Args...) noexcept(NoExcept);
@@ -63,7 +69,11 @@ namespace BindMethodDetail {
 template<typename M>
 struct SignatureHelper;
 
-template<typename R, bool NoExcept, typename T, typename... Args>
+template<typename R,
+#ifndef _MSC_VER
+	bool NoExcept,
+#endif // _MSCVER
+	typename T, typename... Args>
 struct SignatureHelper<R (T::*)(Args...) noexcept(NoExcept)> {
 	/**
 	 * The class which contains the given method (signature).
@@ -79,7 +89,11 @@ struct SignatureHelper<R (T::*)(Args...) noexcept(NoExcept)> {
 	using function_pointer = R (*)(void *, Args...) noexcept(NoExcept);
 };
 
-template<typename R, bool NoExcept, typename... Args>
+template<typename R,
+#ifndef _MSC_VER
+	bool NoExcept,
+#endif // _MSCVER
+	typename... Args>
 struct SignatureHelper<R (*)(Args...) noexcept(NoExcept)> {
 	using plain_signature = R (Args...) noexcept(NoExcept);
 
@@ -94,7 +108,10 @@ struct SignatureHelper<R (*)(Args...) noexcept(NoExcept)> {
 template<typename M, auto method>
 struct WrapperGenerator;
 
-template<typename T, bool NoExcept,
+template<typename T,
+#ifndef _MSC_VER
+	bool NoExcept,
+#endif // _MSCVER
 	 auto method, typename R, typename... Args>
 struct WrapperGenerator<R (T::*)(Args...) noexcept(NoExcept), method> {
 	static R Invoke(void *_instance, Args... args) noexcept(NoExcept) {
@@ -103,7 +120,11 @@ struct WrapperGenerator<R (T::*)(Args...) noexcept(NoExcept), method> {
 	}
 };
 
-template<auto function, bool NoExcept, typename R, typename... Args>
+template<auto function,
+#ifndef _MSC_VER
+	bool NoExcept,
+#endif // _MSCVER
+        typename R, typename... Args>
 struct WrapperGenerator<R (*)(Args...) noexcept(NoExcept), function> {
 	static R Invoke(void *, Args... args) noexcept(NoExcept) {
 		return function(std::forward<Args>(args)...);

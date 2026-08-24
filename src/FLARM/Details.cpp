@@ -15,7 +15,18 @@
 #include <utility>
 
 // Weak reference to SaveFlarmMessagingPeriodic to avoid requiring Glue.cpp in all tests
+#ifdef _MSC_VER
+/* MSVC (and clang-cl) has no weak externals; emulate them with the
+   /alternatename linker directive: if no real definition (FLARM/Glue.cpp)
+   is linked in, the symbol resolves to the no-op stub below.  The
+   behaviour matches the weak variant - in tests without Glue.cpp the
+   call does nothing. */
+extern void SaveFlarmMessagingPeriodic() noexcept;
+void SaveFlarmMessagingPeriodicStub() noexcept {}
+#pragma comment(linker,   "/alternatename:?SaveFlarmMessagingPeriodic@@YAXXZ=?SaveFlarmMessagingPeriodicStub@@YAXXZ")
+#else
 extern void SaveFlarmMessagingPeriodic() noexcept __attribute__((weak));
+#endif
 
 namespace FlarmDetails {
 
@@ -63,8 +74,13 @@ StoreMessagingRecord(const MessagingRecord &record) noexcept
 
   traffic_databases->flarm_messages.Update(record);
 
+#ifdef _MSC_VER
+  /* never null here: unresolved weak refs map to the stub */
+  SaveFlarmMessagingPeriodic();
+#else
   if (SaveFlarmMessagingPeriodic != nullptr)
     SaveFlarmMessagingPeriodic();
+#endif
 }
 
 unsigned

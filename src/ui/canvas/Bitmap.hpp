@@ -21,6 +21,7 @@
 
 #include <cassert>
 #include <span>
+#include <string_view>
 
 class Path;
 class ResourceId;
@@ -71,6 +72,7 @@ protected:
 #else
   HBITMAP bitmap = nullptr;
 #endif
+  GeoQuadrilateral SetTileKoordinates(std::string_view tile_string);
 
   /**
    * True if the decoded image contained non-grayscale pixels.
@@ -161,14 +163,10 @@ public:
   }
 #endif
 
-#if !defined(USE_GDI) || defined(ENABLE_OPENGL)
   bool Load(UncompressedImage &&uncompressed, Type type=Type::STANDARD);
-#endif
 
-#if !defined(USE_GDI) && !defined(ANDROID)
 #ifndef ANDROID
   bool Load(std::span<const std::byte> buffer, Type type=Type::STANDARD);
-#endif
 #endif
 
   bool Load(ResourceId id, Type type=Type::STANDARD);
