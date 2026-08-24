@@ -8,7 +8,7 @@
 #include <cassert>
 
 static constexpr StatusMessage default_status_messages[] = {
-#include "Status_defaults.cpp"
+#include "Status_defaults.hpp"
 };
 
 [[gnu::pure]]
