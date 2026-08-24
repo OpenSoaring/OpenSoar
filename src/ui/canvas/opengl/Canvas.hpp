@@ -15,6 +15,14 @@
 
 /* Workaround: Some Win32 headers define OPAQUE, TRANSPARENT and DrawText as preprocessor
  * defines. Undefine them to avoid name conflict. */
+#ifdef _WIN32
+/* include <windows.h> *here*, before the #undefs: its include guard
+   turns every later #include <windows.h>/<winuser.h> (e.g. from a
+   third-party header included after this one) into a no-op, so the
+   macros cannot come back and turn canvas.DrawText() into DrawTextA */
+#include <windows.h>
+#endif
+
 #ifdef OPAQUE
 #undef OPAQUE
 #endif
