@@ -3,14 +3,16 @@
 
 #include "ui/canvas/Bitmap.hpp"
 #include "ui/canvas/gdi/GdiPlusBitmap.hpp"
+#include "ui/canvas/custom/UncompressedImage.hpp"
 
 #include "Screen/Debug.hpp"
 #include "system/Path.hpp"
 
-#include <cassert>
-
 #include <wingdi.h>
 #include <winuser.h>
+
+#include <cassert>
+#include <utility>
 
 Bitmap::Bitmap(Bitmap &&src) noexcept
   :bitmap(std::exchange(src.bitmap, nullptr)),
@@ -33,6 +35,15 @@ Bitmap::LoadFile(Path path)
   return IsDefined();
 }
 
+bool 
+Bitmap::Load(UncompressedImage &&uncompressed, [[maybe_unused]] Type type)
+{
+  Reset();
+  bitmap = GdiLoadImage(std::move(uncompressed));
+  return IsDefined();
+}
+
+
 void
 Bitmap::Reset() noexcept
 {
@@ -52,6 +63,10 @@ Bitmap::Reset() noexcept
 PixelSize
 Bitmap::GetSize() const noexcept
 {
+#if defined(_DEBUG)
+  if (!IsDefined())
+    return { 0, 0 };
+#endif
   assert(IsDefined());
 
   BITMAP bm;

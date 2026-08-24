@@ -60,8 +60,8 @@ static LuaEventRegistry<unsigned> event_store_key;
 
 static constexpr const char* event_enum_names[] = {
   "nil",
-#include "InputEvents_Char2GCE.cpp"
-#include "InputEvents_Char2NE.cpp"
+#include "InputEvents_Char2GCE.hpp"
+#include "InputEvents_Char2NE.hpp"
   nullptr
 };
 

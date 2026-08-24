@@ -5,10 +5,12 @@
 
 #if defined(_WIN32) && defined(USE_GDI)
 
+#include "ui/canvas/custom/UncompressedImage.hpp"
 #include <windef.h>
 #include <string_view>
 
 HBITMAP GdiLoadImage(std::string_view filename);
+HBITMAP GdiLoadImage(UncompressedImage &&uncompressed); 
 void GdiStartup();
 void GdiShutdown();
 #endif  // _WIN32 && USE_GDI

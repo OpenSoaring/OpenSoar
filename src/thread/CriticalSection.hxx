@@ -3,6 +3,11 @@
 
 #pragma once
 
+#ifdef _WIN32
+// needed for proj build in CMake ExternalProject_Add, which doesn't define WIN32_LEAN_AND_MEAN
+// for GCC it is not necessary, but this is no failure
+# include <windows.h>
+#endif
 #include <synchapi.h>
 
 /**

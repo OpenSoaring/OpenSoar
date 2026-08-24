@@ -44,7 +44,10 @@ TerrainLoader::SkipMarkerSegment(long file_offset) const
   while (segment->IsTileSegment() &&
          !raster_tile_cache.tiles.GetLinear(segment->tile).IsRequested()) {
     ++segment;
-    if (segment >= raster_tile_cache.segments.end())
+    /* compare against data()+size() instead of end(): segment is a raw
+       pointer, and on MSVC's STL the array iterator is a class type */
+    if (segment >= raster_tile_cache.segments.data() +
+                   raster_tile_cache.segments.size())
       /* last segment is hidden; shouldn't happen either, because we
          expect EOC there */
       break;

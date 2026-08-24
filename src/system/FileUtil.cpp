@@ -32,6 +32,7 @@
 #include "UTF8Win32.hpp"
 
 #include <windows.h>
+#include <io.h>  /* _wopen, read, write, close */
 #endif
 
 void
@@ -528,11 +529,16 @@ File::ReadString(Path path, char *buffer, size_t size) noexcept
   flags |= O_CLOEXEC;
 #endif
 
+#ifdef _WIN32
+  /* open by wide path: the UTF-8 path may contain non-ANSI characters */
+  int fd = ::_wopen(UTF8ToWide(path.c_str()).c_str(), flags | O_BINARY);
+#else
   int fd = open(path.c_str(), flags);
+#endif
   if (fd < 0)
     return false;
 
-  ssize_t nbytes = read(fd, buffer, size - 1);
+  const auto nbytes = read(fd, buffer, size - 1);
   close(fd);
   if (nbytes < 0)
     return false;
@@ -583,13 +589,17 @@ File::WriteExisting(Path path, const char *value) noexcept
   flags |= O_CLOEXEC;
 #endif
 
+#ifdef _WIN32
+  int fd = ::_wopen(UTF8ToWide(path.c_str()).c_str(), flags | O_BINARY);
+#else
   int fd = open(path.c_str(), flags);
+#endif
   if (fd < 0)
     return false;
 
   const size_t length = strlen(value);
-  ssize_t nbytes = write(fd, value, length);
-  return close(fd) == 0 && nbytes == (ssize_t)length;
+  const auto nbytes = write(fd, value, length);
+  return close(fd) == 0 && nbytes == static_cast<decltype(nbytes)>(length);
 }
 
 bool
@@ -605,7 +615,11 @@ File::CreateExclusive(Path path) noexcept
   flags |= O_CLOEXEC;
 #endif
 
+#ifdef _WIN32
+  int fd = ::_wopen(UTF8ToWide(path.c_str()).c_str(), flags | O_BINARY, 0666);
+#else
   int fd = open(path.c_str(), flags, 0666);
+#endif
   if (fd < 0)
     return false;
 

@@ -126,7 +126,7 @@ InputEvents::LoadDefaults(InputConfig &input_config)
   // Get defaults
   input_config.SetDefaults();
 
-#include "InputEvents_default.cpp"
+#include "InputEvents_default.hpp"
   apply_defaults(input_config,
                  default_modes,
                  default_events,
