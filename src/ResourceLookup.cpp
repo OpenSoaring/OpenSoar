@@ -14,7 +14,7 @@ LookupResourceByName(const char *name) noexcept
   };
 
   static constexpr Entry entries[] = {
-#include "ResourceLookup_entries.cpp"
+#include "ResourceLookup_entries.hpp"
   };
 
   for (const auto &e : entries)

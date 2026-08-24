@@ -2,6 +2,11 @@
 // Copyright The XCSoar Project
 
 #pragma once
+
+#ifdef __MSVC__
+# include <corecrt_math_defines.h>
+#endif
+
 #include <math.h>
 
 #ifndef M_PI

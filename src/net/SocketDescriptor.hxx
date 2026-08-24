@@ -16,6 +16,9 @@
 
 #ifdef _WIN32
 #include <winsock2.h> // for SOCKET, INVALID_SOCKET
+#if defined(__MSVC__) || defined(__clang__) // not defined in MSVC only
+  typedef SSIZE_T ssize_t;
+# endif
 #endif
 
 struct msghdr;

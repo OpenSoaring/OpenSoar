@@ -20,9 +20,13 @@ public:
 	template<typename C>
 	PipeEvent(EventLoop &event_loop, C callback,
 		  FileDescriptor fd=FileDescriptor::Undefined()) noexcept
-		:event(event_loop, callback,
+#ifdef _WIN32
+      // TODO(August2111): needs work!
+      : event(event_loop, callback, SocketDescriptor()){}
+#else
+      : event(event_loop, callback,
 		       SocketDescriptor::FromFileDescriptor(fd)) {}
-
+#endif
 	EventLoop &GetEventLoop() const noexcept {
 		return event.GetEventLoop();
 	}
@@ -31,7 +35,21 @@ public:
 		return event.IsDefined();
 	}
 
+#ifdef _WIN32
+  // TODO(August2111): needs work!
 	FileDescriptor GetFileDescriptor() const noexcept {
+		return FileDescriptor();
+	}
+
+	FileDescriptor ReleaseFileDescriptor() noexcept {
+		return FileDescriptor();
+	}
+
+	void Open([[maybe_unused]] FileDescriptor fd) noexcept {
+		// event.Open(SocketDescriptor::FromFileDescriptor(fd));
+	}
+#else
+  FileDescriptor GetFileDescriptor() const noexcept {
 		return event.GetSocket().ToFileDescriptor();
 	}
 
@@ -42,6 +60,7 @@ public:
 	void Open(FileDescriptor fd) noexcept {
 		event.Open(SocketDescriptor::FromFileDescriptor(fd));
 	}
+  #endif
 
 	void Close() noexcept {
 		event.Close();

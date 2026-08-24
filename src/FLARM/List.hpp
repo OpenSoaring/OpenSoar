@@ -190,7 +190,7 @@ struct TrafficList {
    * Search for the previous traffic in the ordered list.
    */
   constexpr const FlarmTraffic *PreviousTraffic(const FlarmTraffic *t) const noexcept {
-    return t > list.begin()
+    return t > list.data()
       ? t - 1
       : NULL;
   }
@@ -199,7 +199,7 @@ struct TrafficList {
    * Search for the next traffic in the ordered list.
    */
   constexpr const FlarmTraffic *NextTraffic(const FlarmTraffic *t) const noexcept {
-    return t + 1 < list.end()
+    return t + 1 < list.data() + list.size()
       ? t + 1
       : NULL;
   }
@@ -208,14 +208,14 @@ struct TrafficList {
    * Search for the first traffic in the ordered list.
    */
   constexpr const FlarmTraffic *FirstTraffic() const noexcept {
-    return list.empty() ? NULL : list.begin();
+    return list.empty() ? NULL : list.data();
   }
 
   /**
    * Search for the last traffic in the ordered list.
    */
   constexpr const FlarmTraffic *LastTraffic() const noexcept {
-    return list.empty() ? NULL : list.end() - 1;
+    return list.empty() ? NULL : list.data() + list.size() - 1;
   }
 
   /**
@@ -226,7 +226,7 @@ struct TrafficList {
   const FlarmTraffic *FindMaximumAlert() const noexcept;
 
   constexpr unsigned TrafficIndex(const FlarmTraffic *t) const noexcept {
-    return t - list.begin();
+    return t - list.data();
   }
 
   /**
