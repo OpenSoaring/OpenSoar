@@ -1,0 +1,15 @@
+# Line-ending policy:
+# - source and build files are stored and checked out with LF,
+#   independent of the local core.autocrlf setting
+# - Windows batch files are the exception: cmd.exe requires CRLF,
+#   so they are stored with CRLF and never converted (-text)
+# - test fixtures / corpora stay byte-exact (IGC etc. are CRLF by spec)
+* text=auto eol=lf
+*.cmd -text
+*.bat -text
+test/data/** -text
+fuzzer/corpus/** -text
+.settings/** -text
+ide/eclipse/** -text
+doc/manual/en/.project -text
+doc/manual/figures/*.svg -text
