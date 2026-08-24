@@ -3,6 +3,12 @@
 
 #pragma once
 
+#ifdef USE_GDI
+/* use the canonical DT_* values from the Windows headers - defining
+   deviating values here would break DrawText() and only produce
+   C4005 redefinition warnings */
+#include <windows.h>
+#else
 #ifndef DT_LEFT
 #define DT_LEFT 0x2
 #endif
@@ -21,3 +27,4 @@
 #ifndef DT_UNDERLINE
 #define DT_UNDERLINE 0x800
 #endif
+#endif  /* !USE_GDI */

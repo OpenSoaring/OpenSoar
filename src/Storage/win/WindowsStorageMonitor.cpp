@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <windows.h>
+#include <cwctype>  // std::towupper (MSVC needs the explicit include)
 
 std::vector<std::shared_ptr<StorageDevice>>
 WindowsStorageMonitor::Enumerate()
