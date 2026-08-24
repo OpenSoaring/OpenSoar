@@ -1,0 +1,13 @@
+diff --git a/src/filemanager.cpp b/src/filemanager.cpp
+index c6c646ea..3b97c718 100644
+--- a/src/filemanager.cpp
++++ b/src/filemanager.cpp
+@@ -60,6 +60,7 @@
+ #define UWP 0
+ #endif
+ #include <shlobj.h>
++#include <cstdint>
+ #include <windows.h>
+ #else
+ #ifdef HAVE_LIBDL
+
