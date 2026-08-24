@@ -1,0 +1,17 @@
+# the name of the target operating system
+# set(cmake_system_name unix)
+set(cmake_system_name linux)
+
+# which compilers to use for c and c++
+ set(cmake_c_compiler gcc)
+ set(cmake_cxx_compiler g++)
+ set(cmake_rc_compiler windres)
+ # here is the target environment located
+ set(cmake_find_root_path  /usr/bin /usr/lib )  
+
+# adjust the default behaviour of the find_xxx() commands:
+# search headers and libraries in the target environment, search
+# programs in the host environment
+set(cmake_find_root_path_mode_program never)
+set(cmake_find_root_path_mode_library only)
+set(cmake_find_root_path_mode_include only)
