@@ -10,6 +10,7 @@
    __builtin_isfinite() check, because it might be helpful with some
    compilers or compiler versions, and it's only used as sanity
    check */
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wnan-infinity-disabled"
 #endif
 
@@ -21,5 +22,9 @@
 constexpr bool
 IsFinite(std::floating_point auto value) noexcept
 {
+#if defined _MSC_VER
+  return std::isfinite(value);
+#else
   return __builtin_isfinite(value);
+#endif
 }

@@ -9,6 +9,12 @@
 #include "util/SpanCast.hxx"
 #include "util/StaticArray.hxx"
 
+/* damn you, windows.h! (one of the includes above pulls it in and
+   redefines ERROR after BinaryProtocol.hpp already removed it) */
+#ifdef ERROR
+#undef ERROR
+#endif
+
 void
 FLARM::SendEscaped(Port &port, std::span<const std::byte> src,
                    OperationEnvironment &env,

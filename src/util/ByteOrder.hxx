@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <stdlib.h>
 
 #if defined(__i386__) || defined(__x86_64__) || defined(__ARMEL__)
 /* well-known little-endian */
@@ -81,6 +82,9 @@ ByteSwap16(uint16_t value) noexcept
 {
 #ifdef __GNUC__
 	return __builtin_bswap16(value);
+#elif _MSC_VER >= 2000 // 1500 - VS 2008
+	// TODO(August2111): isn't possible with constexpr
+	return _byteswap_ushort(value);
 #else
 	return GenericByteSwap16(value);
 #endif
@@ -91,6 +95,8 @@ ByteSwap32(uint32_t value) noexcept
 {
 #ifdef __GNUC__
 	return __builtin_bswap32(value);
+#elif _MSC_VER >= 2000 // 1500 - VS 2008
+	return (const uint32_t)_byteswap_ulong(value);
 #else
 	return GenericByteSwap32(value);
 #endif
@@ -101,6 +107,8 @@ ByteSwap64(uint64_t value) noexcept
 {
 #ifdef __GNUC__
 	return __builtin_bswap64(value);
+#elif _MSC_VER >= 2000 // 1500 - VS 2008
+	return _byteswap_uint64(value);
 #else
 	return GenericByteSwap64(value);
 #endif

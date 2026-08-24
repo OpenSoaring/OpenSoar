@@ -12,6 +12,10 @@
 
 #include <cassert>
 
+#ifdef __MSVC__
+# include "LogFile.hpp"
+#endif
+
 void
 Thread::SetIdlePriority() noexcept
 {
@@ -77,7 +81,13 @@ Thread::Join() noexcept
   pthread_join(handle, nullptr);
   defined = false;
 #else
-  ::WaitForSingleObject(handle, INFINITE);
+  DWORD result = ::WaitForSingleObject(handle, 10000);  // INFINITE);
+  if (result != WAIT_OBJECT_0) {  // TODO(August2111): Too much? INFINITE);
+# ifdef __MSVC__
+    // TODO(August2111) commented out for PC and WIN64:
+    LogFormat("WaitForSingleObject with error %lu", result);
+# endif
+  }
   ::CloseHandle(handle);
   handle = nullptr;
 #endif
