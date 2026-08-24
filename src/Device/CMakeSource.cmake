@@ -1,0 +1,197 @@
+set(_SOURCES
+        Device/Config.cpp
+        Device/Factory.cpp
+        Device/Declaration.cpp
+        Device/Descriptor.cpp
+        Device/device.cpp
+        Device/Dispatcher.cpp
+        Device/DataEditor.cpp
+        Device/Driver.cpp
+        Device/Driver/AirControlDisplay.cpp
+        Device/Driver/AltairPro.cpp
+        Device/Driver/ATR833/Register.cpp
+        Device/Driver/ATR833/Device.cpp
+        Device/Driver/BlueFly/Misc.cpp
+        Device/Driver/BlueFly/Parser.cpp
+        Device/Driver/BlueFly/Register.cpp
+        Device/Driver/BlueFly/Settings.cpp
+        Device/Driver/BorgeltB50.cpp
+        Device/Driver/CAI302/Declare.cpp
+        Device/Driver/CAI302/Logger.cpp
+        Device/Driver/CAI302/Manage.cpp
+        Device/Driver/CAI302/Mode.cpp
+        Device/Driver/CAI302/Parser.cpp
+        Device/Driver/CAI302/PocketNav.cpp
+        Device/Driver/CAI302/Protocol.cpp
+        # Device/Driver/CAI302/RegisterCAI302.cpp  # [topic/device-misc] not in upstream XCSoar yet
+        Device/Driver/CAI302/Register.cpp
+        Device/Driver/CAI302/Settings.cpp
+        Device/Driver/CaiGpsNav.cpp
+        Device/Driver/CaiLNav.cpp
+        Device/Driver/Condor.cpp
+        Device/Driver/CProbe.cpp
+        Device/Driver/EW.cpp
+        Device/Driver/EWMicroRecorder.cpp
+        Device/Driver/Eye.cpp
+        Device/Driver/FLARM/BinaryProtocol.cpp
+        Device/Driver/FLARM/CRC16.cpp
+        Device/Driver/FLARM/Declare.cpp
+        Device/Driver/FLARM/Device.cpp
+        Device/Driver/FLARM/Logger.cpp
+        Device/Driver/FLARM/Mode.cpp
+        Device/Driver/FLARM/Parser.cpp
+        # Device/Driver/FLARM/RegisterFLARM.cpp  # [topic/device-misc] not in upstream XCSoar yet
+        Device/Driver/FLARM/Register.cpp
+        Device/Driver/FLARM/Settings.cpp
+        Device/Driver/FLARM/StaticParser.cpp
+        Device/Driver/FLARM/TextProtocol.cpp
+        Device/Driver/FlymasterF1.cpp
+        Device/Driver/FlyNet.cpp
+        Device/Driver/Flytec/Logger.cpp
+        Device/Driver/Flytec/Parser.cpp
+        Device/Driver/Flytec/Register.cpp
+        Device/Driver/Generic.cpp
+        Device/Driver/ILEC.cpp
+        Device/Driver/IMI/Declare.cpp
+        Device/Driver/IMI/Internal.cpp
+        Device/Driver/IMI/Logger.cpp
+        Device/Driver/IMI/Protocol/Checksum.cpp
+        Device/Driver/IMI/Protocol/Communication.cpp
+        Device/Driver/IMI/Protocol/Conversion.cpp
+        Device/Driver/IMI/Protocol/IGC.cpp
+        Device/Driver/IMI/Protocol/MessageParser.cpp
+        Device/Driver/IMI/Protocol/Protocol.cpp
+        # Device/Driver/IMI/RegisterIMI.cpp  # [topic/device-misc] not in upstream XCSoar yet
+        Device/Driver/IMI/Register.cpp
+        Device/Driver/KRT2.cpp
+        Device/Driver/Larus.cpp
+        Device/Driver/Leonardo.cpp
+        Device/Driver/LevilAHRS_G.cpp
+        Device/Driver/LX/Convert.cpp
+        Device/Driver/LX/Declare.cpp
+        Device/Driver/LX/Logger.cpp
+        Device/Driver/LX/LXN.cpp
+        Device/Driver/LX/Mode.cpp
+        Device/Driver/LX/NanoDeclare.cpp
+        Device/Driver/LX/NanoLogger.cpp
+        Device/Driver/LX/Parser.cpp
+        Device/Driver/LX/Protocol.cpp
+        Device/Driver/LX/Register.cpp
+        Device/Driver/LX/Settings.cpp
+        Device/Driver/NmeaOut.cpp
+        Device/Driver/OpenVario.cpp
+        Device/Driver/PosiGraph.cpp
+        Device/Driver/ThermalExpress/Driver.cpp
+        Device/Driver/Vaulter.cpp
+        Device/Driver/Vega/Misc.cpp
+        Device/Driver/Vega/Parser.cpp
+        Device/Driver/Vega/Register.cpp
+        Device/Driver/Vega/Settings.cpp
+        Device/Driver/Vega/Volatile.cpp
+        Device/Driver/Volkslogger/Database.cpp
+        Device/Driver/Volkslogger/dbbconv.cpp
+        Device/Driver/Volkslogger/Declare.cpp
+        Device/Driver/Volkslogger/grecord.cpp
+        Device/Driver/Volkslogger/Logger.cpp
+        Device/Driver/Volkslogger/Parser.cpp
+        Device/Driver/Volkslogger/Protocol.cpp
+        Device/Driver/Volkslogger/Register.cpp
+        Device/Driver/Volkslogger/Util.cpp
+        Device/Driver/Volkslogger/vlapi2.cpp
+        Device/Driver/Volkslogger/vlapihlp.cpp
+        Device/Driver/Volkslogger/vlconv.cpp
+        Device/Driver/Westerboer.cpp
+        Device/Driver/XCOM760.cpp
+        Device/Driver/XCTracer/Parser.cpp
+        Device/Driver/XCTracer/Register.cpp
+        Device/Driver/XCVario.cpp
+        Device/Driver/Zander.cpp
+        Device/Driver/LX_EOS/LXEosDeclare.cpp
+        Device/Driver/LX_EOS/LXEosDevice.cpp
+        Device/Driver/LX_EOS/LXEosDownload.cpp
+        Device/Driver/LX_EOS/LXEosParser.cpp
+        Device/Driver/LX_EOS/LXEosRegister.cpp
+        Device/MultipleDevices.cpp
+        Device/Parser.cpp
+        Device/Port/BufferedPort.cpp
+        Device/Port/ConfiguredPort.cpp
+        Device/Port/DumpPort.cpp
+        Device/Port/K6BtPort.cpp
+        Device/Port/NullPort.cpp
+        Device/Port/Port.cpp
+        Device/Port/SocketPort.cpp
+        Device/Port/TCPClientPort.cpp
+        Device/Port/TCPPort.cpp
+        Device/Port/UDPPort.cpp
+        Device/Register.cpp
+        Device/Simulator.cpp
+        Device/Util/LineSplitter.cpp
+        Device/Util/NMEAReader.cpp
+        Device/Util/NMEAWriter.cpp
+
+        Device/Driver/Stratux/Driver.cpp
+        Device/Driver/LoEFGREN.cpp
+        # Android or Apple only: Device/SmartDeviceSensors.cpp
+
+        # Reusable base for drivers with async block-oriented R/W:
+        # BlueFly, SteFly RemoteStick (and any future Larus / Anemoi
+        # settings work) inherit from this.
+        # Device/ManagedDevice.cpp  # [topic/device-misc] not in upstream XCSoar yet
+)
+if(IS_OPENSOAR)
+  # additional OpenSoar device driver
+  list(APPEND _SOURCES
+        # Device/Driver/Anemoi.cpp  # [topic/device-misc] not in upstream XCSoar yet
+        # Device/Driver/AR62xx.cpp  # [topic/device-misc] not in upstream XCSoar yet
+        # SteFly device family — RemoteStick (joystick) and RotaryPanel
+        # (encoder panel, currently a scaffold). Both inherit from
+        # SteFlyDevice (CommonDevice.hpp), which in turn inherits from
+        # ManagedDevice.
+        # Device/Driver/SteFly/CommonDevice.cpp  # [topic/device-stefly] not in upstream XCSoar yet
+        # Device/Driver/SteFly/RemoteStick.cpp  # [topic/device-stefly] not in upstream XCSoar yet
+        # Device/Driver/SteFly/RotaryPanel.cpp  # [topic/device-stefly] not in upstream XCSoar yet
+        # Device/Driver/SteFly/Register.cpp  # [topic/device-stefly] not in upstream XCSoar yet
+        # Startup-time USB / serial discovery for the SteFly
+        # RemoteStick — populates the fixed REMOTE_PORT slot.
+        # Device/Driver/SteFly/Discovery.cpp  # [topic/device-stefly] not in upstream XCSoar yet
+        # Device/Driver/FreeVario.cpp  # [topic/device-misc] not in upstream XCSoar yet
+  )
+endif()
+
+if(UNIX)
+  list(APPEND _SOURCES
+        Device/Port/TTYEnumerator.cpp
+        Device/Port/TTYPort.cpp
+  )
+elseif(WIN32)
+  list(APPEND _SOURCES
+        Device/Port/SerialPort.cpp
+  )
+endif()
+
+# Per-platform USB / serial hotplug monitors. Each translation unit is
+# wrapped in its own platform #ifdef, so adding them unconditionally is
+# harmless on the other platforms. libudev (Linux) is linked separately
+# via top-level CMakeLists.txt; Windows needs no extra link library.
+list(APPEND _SOURCES
+      # Device/PortMonitorLinux.cpp  # [topic/device-misc] not in upstream XCSoar yet
+      # Device/PortMonitorWindows.cpp  # [topic/device-misc] not in upstream XCSoar yet
+)
+
+set(SCRIPT_FILES
+    CMakeSource.cmake
+)
+
+# --- synced from upstream XCSoar (v7.44 -> master, 2026-08-13) ---
+list(APPEND _SOURCES
+        Device/Driver/BlueFly/Logger.cpp
+        Device/Driver/Condor3Spectate.cpp
+        Device/Driver/Condor3UDP.cpp
+        # do NOT list Driver.cpp here: GDL90Driver.cpp textually includes
+        # it (upstream workaround for an object-name collision in driver.a);
+        # compiling both duplicates every GDL90 symbol (LNK4006)
+        Device/Driver/GDL90/GDL90Driver.cpp
+        Device/Driver/GDL90/Register.cpp
+        Device/Driver/LX160.cpp
+        Device/Port/SpectateFilePort.cpp
+)
