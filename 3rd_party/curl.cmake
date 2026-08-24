@@ -1,0 +1,102 @@
+cmake_minimum_required(VERSION 3.15)
+
+set(INCLUDE_WITH_TOOLCHAIN 0)  # special include path for every toolchain!
+
+prepare_3rdparty(curl curl curl-d)
+# prepare_3rdparty(curl curl-d)  # ??
+# prepare_3rdparty(curl)  # ??
+
+# is not standard:
+string(APPEND CURL_CMAKE_DIR  /CURL)
+# set(${TARGET_CNAME}_CMAKE_DIR ${${TARGET_CNAME}_CMAKE_DIR}/CURL)
+
+if (_COMPLETE_INSTALL)
+    set(CMAKE_ARGS
+             "-DCMAKE_INSTALL_PREFIX=${_INSTALL_DIR}"
+             "-DCMAKE_INSTALL_BINDIR=${_INSTALL_BIN_DIR}"
+             "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB_DIR}"
+             # "-DCMAKE_INSTALL_COMPONENT=bin/${TOOLCHAIN}"
+             "-DCMAKE_INSTALL_INCLUDEDIR=include"
+             # not used: 
+             "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+             # "-DCMAKE_BUILD_TYPE=Release"
+             
+            "-DBUILD_CURL_EXE=OFF"
+            "-DBUILD_SHARED_LIBS=OFF"
+            "-DENABLE_ARES=ON"
+            "-DCURL_DISABLE_LDAP=ON"
+            "-DCURL_DISABLE_TELNET=ON"
+            "-DCURL_DISABLE_DICT=ON"
+            "-DCURL_DISABLE_FILE=ON"
+            "-DCURL_DISABLE_TFTP=ON"
+            "-DCURL_DISABLE_LDAPS=ON"
+            "-DCURL_DISABLE_RTSP=ON"
+            "-DCURL_DISABLE_PROXY=ON"
+            "-DCURL_DISABLE_POP3=ON"
+            "-DCURL_DISABLE_IMAP=ON"
+            "-DCURL_DISABLE_SMTP=ON"
+            "-DCURL_DISABLE_GOPHER=ON"
+            "-DCURL_DISABLE_COOKIES=ON"
+            # "-DCURL_DISABLE_CRYPTO_AUTH=ON"
+            "-DCURL_DISABLE_IMAP=ON"
+            # "-DCMAKE_USE_LIBSSH2:BOOL=OFF"
+            "-DBUILD_TESTING=OFF"
+            "-DPERL_EXECUTABLE=${PERL_APP}"     #### "D:/Programs/Perl64/bin/perl.exe"  # Windows only!!
+
+             "-DZLIB_INCLUDE_DIR=${ZLIB_INCLUDE_DIR}"
+             "-DZLIB_LIBRARY=${ZLIB_LIBRARY}"
+             # "-DZLIB_LIBRARY_DEBUG=${ZLIB_LIB}"
+             # "-DZLIB_LIBRARY_RELEASE=${ZLIB_LIB}"
+            "-DCARES_LIBRARY=${CARES_LIBRARY}"
+            # "-DCARES_LIBRARY_RELEASE=${CARES_LIB}"
+            # "-DCARES_LIBRARY_DEBUG=${CARES_LIB}"
+            "-DCARES_INCLUDE_DIR=${CARES_INCLUDE_DIR}"
+
+            "-DHAVE_IOCTLSOCKET_FIONBIO=1"
+        
+# 2025.12-31:             "-DLIBCURL_OUTPUT_NAME=${LIB_PREFIX}curl"
+#            "-DLIBCURL_OUTPUT_NAME=${LIB_PREFIX}curl-static"
+            "-DLIBCURL_OUTPUT_NAME=${LIB_PREFIX}curl"  # 2026/01/06
+
+            "-DBUILD_STATIC_CURL=ON"
+            "-DBUILD_STATIC_LIBS=ON"
+            # Curl 8.12...
+            "-DUSE_LIBIDN2:BOOL=OFF"
+            "-DUSE_NGHTTP2:BOOL=OFF"
+            "-DCURL_USE_LIBPSL:BOOL=OFF"
+            "-DCURL_USE_LIBSSH2:BOOL=OFF"
+
+            "-DCURL_BROTLI=OFF"
+            "-DCURL_ZSTD=OFF"
+      )
+
+       if(WIN32)
+            list(APPEND CMAKE_ARGS  # Windows Only
+                "-DCURL_USE_SCHANNEL=ON"
+            )
+       else()
+            list(APPEND CMAKE_ARGS    # for Linux/Android,...?
+                "-DLIB_EAY_DEBUG=${_CRYPTO_LIB}"
+                "-DLIB_EAY_RELEASE=${_CRYPTO_LIB}"
+                "-DOPENSSL_INCLUDE_DIR=${_SSL_DIR}"
+            )
+       endif()
+    string(REPLACE "." "_" GIT_TAG ${XCSOAR_${TARGET_CNAME}_VERSION})
+    ExternalProject_Add(
+        ${_BUILD_TARGET}
+        GIT_REPOSITORY "https://github.com/curl/curl.git"
+        GIT_TAG  ${GIT_TAG}
+        PREFIX  "${CURL_PREFIX}"
+        ${_BINARY_STEP}
+        INSTALL_DIR "${_INSTALL_DIR}"  # ${LINK_LIBS}/${LIB_TARGET_NAME}/${XCSOAR_${TARGET_CNAME}_VERSION}"
+        CMAKE_ARGS ${CMAKE_ARGS}
+        PATCH_COMMAND ${PYTHON_APP} ${_PATCH_DIR}/cmake_patch.py curl
+        INSTALL_COMMAND ${_INSTALL_COMMAND}
+        BUILD_ALWAYS ${EP_BUILD_ALWAYS}
+        # BUILD_IN_SOURCE ${EP_BUILD_IN_SOURCE}
+        DEPENDS  ${ZLIB_TARGET} ${CARES_TARGET}
+        BUILD_BYPRODUCTS  ${_TARGET_BYPRODUCTS} # ${${TARGET_CNAME}_LIB}
+    )
+endif()
+
+post_3rdparty()
