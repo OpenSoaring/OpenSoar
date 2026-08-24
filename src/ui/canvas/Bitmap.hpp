@@ -17,6 +17,7 @@
 
 #include <cassert>
 #include <span>
+#include <string_view>
 
 class Path;
 class ResourceId;
@@ -65,6 +66,7 @@ protected:
 #elif defined(USE_MEMORY_CANVAS)
   WritableImageBuffer<BitmapPixelTraits> buffer = WritableImageBuffer<BitmapPixelTraits>::Empty();
 #endif
+  GeoQuadrilateral SetTileKoordinates(std::string_view tile_string);
 
   /**
    * True if the decoded image contained non-grayscale pixels.
