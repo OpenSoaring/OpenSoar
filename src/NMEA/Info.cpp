@@ -139,6 +139,7 @@ NMEAInfo::Reset() noexcept
   settings.Clear();
 
   external_wind_available.Clear();
+  external_instantaneous_wind_available.Clear();
 
   temperature_available.Clear();
   humidity_available.Clear();
@@ -319,6 +320,10 @@ NMEAInfo::Complement(const NMEAInfo &add) noexcept
 
   if (external_wind_available.Complement(add.external_wind_available))
     external_wind = add.external_wind;
+
+  if (external_instantaneous_wind_available.Complement(
+          add.external_instantaneous_wind_available))
+    external_instantaneous_wind = add.external_instantaneous_wind;
 
   if (temperature_available.Complement(add.temperature_available))
     temperature = add.temperature;
