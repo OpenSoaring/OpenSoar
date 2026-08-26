@@ -193,6 +193,9 @@ list(APPEND _SOURCES
         Device/Driver/GDL90/GDL90Driver.cpp
         Device/Driver/GDL90/Register.cpp
         Device/Driver/LX160.cpp
+        Device/Driver/Anemoi.cpp
+        Device/Driver/AR62xx.cpp
+        Device/Driver/FreeVario.cpp
 
         # Reusable base for drivers with async block-oriented R/W
         # (SteFly device family; BlueFly/Larus may follow later)
