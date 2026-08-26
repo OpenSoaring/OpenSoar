@@ -187,7 +187,7 @@ else()
 endif()
 
 if (NOT CMAKE_BUILD_TYPE)
-    message(FATAL_ERROR "+++++ CMAKE_BUILD_TYPE = empty ++++++")
+    message(FATAL_ERROR "+++++ CMAKE_BUILD_TYPE = empty ++++++ (${CMAKE_BUILD_TYPE})")
 endif()
 
 set(_INSTALL_COMMAND cmake --build . --target install)

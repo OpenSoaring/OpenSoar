@@ -50,29 +50,23 @@ if (NOT CMAKE_BUILD_TYPE) # variable is only set AFTER the project cmd!!!
   endif()
 endif()
 
-#==========================================
-if (0)
-# August2111: Why that????
 if (MSVC)    # VisualStudio:
-    set(LIB_PREFIX "" )
-    set(LIB_SUFFIX ".lib")
-    set(EXE_PREFIX ".exe")
-elseif(WIN32 AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-    set(LIB_PREFIX "lib")
-    set(LIB_SUFFIX ".a")
-    set(EXE_PREFIX ".exe")
-elseif (MINGW) # MinGW
-    set(LIB_PREFIX "lib")
-    set(LIB_SUFFIX ".a")
-    set(EXE_PREFIX ".exe")
-else()
-#     message(FATAL_ERROR "+++ unknown (3rd party-)System: ${CMAKE_SYSTEM}, Compiler = ${CMAKE_CXX_COMPILER_ID} !")
-    set(LIB_PREFIX "lib")
-    set(LIB_SUFFIX ".a")
-    set(EXE_PREFIX "")
-endif()
-endif() # : 1 or 0
-#=========================
+    if ($ENV{USERNAME} STREQUAL August2111 OR $ENV{USERNAME} STREQUAL Flaps)
+      message(STATUS "*** USERNAME = '$ENV{USERNAME}', COMPUTERNAME = '$ENV{COMPUTERNAME}'")
+      if ($ENV{COMPUTERNAME}  STREQUAL FLAPS7)
+        set(APP_DATA E:/Data/${TARGET_NAME}Data)
+      endif()  # COMPUTERNAME
+    endif()  # USERNAME
+	if ("${APP_DATA}" STREQUAL "")
+        set(APP_DATA $ENV{USERPROFILE}/Documents/${TARGET_NAME}Data)   
+        string(REPLACE "\\" "/" APP_DATA  ${APP_DATA})
+    endif()
+	
+	message(STATUS "*** APP_DATA = '${APP_DATA}'!!!")
+    ### message(FATAL_ERROR "~~~ STOP  ~~~")
+endif (MSVC)    # VisualStudio:
+
+#==========================================
 
 ### file(READ "VERSION.txt" PROGRAM_VERSION)
 # add version string to ${APP_NAME}Soar:
@@ -264,7 +258,7 @@ endif(MINGW)
 if (CMAKE_BUILD_TYPE MATCHES "")
    # message(FATAL_ERROR " Stop !!!!!!!!!!!!!!!! - '${CMAKE_BUILD_TYPE}'")
    set(CMAKE_BUILD_TYPE Debug) 
-  # set(CMAKE_BUILD_TYPE Release)
+   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -272,7 +266,7 @@ if (CMAKE_BUILD_TYPE MATCHES "Debug")
   ### message(FATAL_ERROR " Stop !!!!!!!!!!!!!!!! - ${CMAKE_BUILD_TYPE}")
 else()
   message(STATUS "+++ Release build: CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}") 
-  message(FATAL_ERROR " Stop !!!!!!!!!!!!!!!! - ${CMAKE_BUILD_TYPE}")
+  ### message(FATAL_ERROR " Stop !!!!!!!!!!!!!!!! - ${CMAKE_BUILD_TYPE}")
 endif()
 
 # git commit hash macro
@@ -744,11 +738,6 @@ list(APPEND SOURCE_FILES ${RES_TEST})  ## "${PROJECTGROUP_BINARY_DIR}/${APP_NAME
 # isn't possible: set_target_properties(ALL_BUILD PROPERTIES FOLDER _CMake)
 # isn't possible: set_target_properties(ZERO_CHECK PROPERTIES FOLDER _CMake)
 if (MSVC)
-    if (EXISTS /Data/${APP_NAME}Data/August.prf)
-      set(APP_DATA /Data/${APP_NAME}Data)  # this is only valid for August/Flaps6!
-    else ()
-      set(APP_DATA /${APP_NAME}Data)
-    endif ()
     message(STATUS "Configure:     ${PROJECTGROUP_BINARY_DIR}/${APP_NAME}.vcxproj.user")
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/ide/msvc/${APP_NAME}.vcxproj.user.in"
