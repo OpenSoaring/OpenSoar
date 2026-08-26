@@ -1,0 +1,12 @@
+// Minimal resource file for OpenGL/SDL builds
+// Contains only the application icon for Windows Explorer/taskbar display.
+// Testing builds (XCSOAR_TESTING) carry the red icon, releases the green
+// one - matching the red/green title graphics.
+
+#define IDI_OPENSOAR 101
+
+#ifdef XCSOAR_TESTING
+IDI_OPENSOAR ICON DISCARDABLE "bitmaps/OpenSoar_red.ico"
+#else
+IDI_OPENSOAR ICON DISCARDABLE "bitmaps/OpenSoar.ico"
+#endif
