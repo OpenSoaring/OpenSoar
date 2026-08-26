@@ -193,5 +193,19 @@ list(APPEND _SOURCES
         Device/Driver/GDL90/GDL90Driver.cpp
         Device/Driver/GDL90/Register.cpp
         Device/Driver/LX160.cpp
+
+        # Reusable base for drivers with async block-oriented R/W
+        # (SteFly device family; BlueFly/Larus may follow later)
+        Device/ManagedDevice.cpp
+        # SteFly device family - RemoteStick (joystick) and RotaryPanel
+        # (encoder panel). Both inherit from SteFlyDevice
+        # (CommonDevice.hpp), which in turn inherits from ManagedDevice.
+        Device/Driver/SteFly/CommonDevice.cpp
+        Device/Driver/SteFly/RemoteStick.cpp
+        Device/Driver/SteFly/RotaryPanel.cpp
+        Device/Driver/SteFly/Register.cpp
+        # Startup-time USB / serial discovery for the SteFly
+        # RemoteStick - populates the fixed REMOTE_PORT slot.
+        Device/Driver/SteFly/Discovery.cpp
         Device/Port/SpectateFilePort.cpp
 )
