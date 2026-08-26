@@ -117,6 +117,15 @@ string(TOLOWER "${PROGRAM_NAME}" _PROGRAM_NAME_LC)
 add_compile_definitions("PRODUCT_NAME_LC=\"${_PROGRAM_NAME_LC}\"")
 file(WRITE "${PROJECTGROUP_BINARY_DIR}/VERSION.txt" ${PROGRAM_VERSION})
 
+# SteFly device family (RemoteStick / RotaryPanel) incl. startup-time
+# USB discovery; mirrors HAVE_REMOTESTICK in build/driver.mk.  The
+# discovery code has per-platform backends (SetupAPI / libudev) and a
+# no-op fallback, so the define is safe on every target.
+option(HAVE_REMOTESTICK "SteFly RemoteStick/RotaryPanel drivers" ON)
+if (HAVE_REMOTESTICK)
+    add_compile_definitions(HAVE_REMOTE_STICK)
+endif()
+
 # use the actually running cmake instead of a hardcoded path
 set(CMAKE_APP ${CMAKE_COMMAND})
 get_filename_component(CMAKE_PROGRAM_PATH ${CMAKE_APP} DIRECTORY)
