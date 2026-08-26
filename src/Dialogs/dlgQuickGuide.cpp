@@ -13,6 +13,8 @@
 #include "Profile/Profile.hpp"
 #include "Profile/Keys.hpp"
 #include "system/Path.hpp"
+
+#include <string_view>
 #include "Language/Language.hpp"
 #include "Version.hpp"
 #include "QuickGuideNEWS.hpp"
@@ -317,13 +319,38 @@ IsWarrantyAcknowledged() noexcept
 /**
  * Check if the user has already seen the news for this version.
  */
+/**
+ * Compare only the leading fields of two version strings
+ * ("major.minor" with max_parts=2).  Test/patch releases then do NOT
+ * re-trigger the what's-new / consent tour on every update.
+ */
+static bool
+VersionPrefixEquals(std::string_view last_seen, std::string_view current,
+                    unsigned max_parts) noexcept
+{
+  size_t pos = 0;
+  for (unsigned i = 0; i < max_parts; ++i) {
+    pos = current.find('.', pos);
+    if (pos == std::string_view::npos) {
+      pos = current.size();
+      break;
+    }
+    if (i + 1 < max_parts)
+      ++pos;
+  }
+
+  return last_seen.substr(0, pos) == current.substr(0, pos) &&
+    (last_seen.size() <= pos || last_seen[pos] == '.');
+}
+
 static bool
 IsNewsSeen() noexcept
 {
   const char *last_seen =
     Profile::Get(ProfileKeys::LastSeenNewsVersion);
   return last_seen != nullptr &&
-         StringIsEqual(last_seen, XCSoar_Version);
+    /* only major.minor: a new test or patch version is not "news" */
+    VersionPrefixEquals(last_seen, XCSoar_Version, 2);
 }
 
 /**
