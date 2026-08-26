@@ -282,6 +282,18 @@ struct NMEAInfo {
   SpeedVector external_wind;
 
   /**
+   * Is external instantaneous wind information available?
+   * @see external_instantaneous_wind
+   */
+  Validity external_instantaneous_wind_available;
+
+  /**
+   * The instantaneous (unfiltered, live) wind read from the device
+   * (e.g. Anemoi).
+   */
+  SpeedVector external_instantaneous_wind;
+
+  /**
    * Is temperature information available?
    * @see OutsideAirTemperature
    */
@@ -609,6 +621,14 @@ struct NMEAInfo {
   constexpr void ProvideExternalWind(const SpeedVector &value) noexcept {
     external_wind = value;
     external_wind_available.Update(clock);
+  }
+
+  /**
+   * Set the external instantaneous wind value.
+   */
+  constexpr void ProvideExternalInstantaneousWind(const SpeedVector &value) noexcept {
+    external_instantaneous_wind = value;
+    external_instantaneous_wind_available.Update(clock);
   }
 
   /**
