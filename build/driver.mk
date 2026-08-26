@@ -167,7 +167,11 @@ ifeq ($(HAVE_REMOTESTICK),y)
 	$(DRIVER_SRC_DIR)/SteFly/Register.cpp \
 	$(DRIVER_SRC_DIR)/SteFly/Discovery.cpp
 
-  DRIVER_CPPFLAGS += -DHAVE_REMOTE_STICK
+  # global, like the CMake build (add_compile_definitions): NUMDEV
+  # depends on it (Device/Features.hpp), and a slot count that differs
+  # between translation units is a trap - every target that touches
+  # SystemSettings must see the same value
+  TARGET_CPPFLAGS += -DHAVE_REMOTE_STICK
 
   # SetupAPI for the startup-time USB / COM enumeration in
   # SteFly/Discovery.cpp (Windows only)
