@@ -27,7 +27,7 @@
   #endif
 #elif !defined(_WIN32)
   #define TARGET "UNIX"
-#elif !defined(WIN64)
+#elif defined(WIN64)
 # define TARGET "WIN64"
 #else
 # define TARGET "WIN32"
