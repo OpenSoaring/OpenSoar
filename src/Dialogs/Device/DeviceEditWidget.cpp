@@ -7,6 +7,7 @@
 #include "UIGlobals.hpp"
 #include "util/Compiler.h"
 #include "util/NumberParser.hpp"
+#include "util/StringAPI.hxx"
 #include "Language/Language.hpp"
 #include "Form/DataField/Enum.hpp"
 #include "Form/DataField/Boolean.hpp"
@@ -409,8 +410,18 @@ DeviceEditWidget::Prepare(ContainerWindow &parent,
   DataFieldEnum *driver_df = new DataFieldEnum(this);
 
   const struct DeviceRegister *driver;
-  for (unsigned i = 0; (driver = GetDriverByIndex(i)) != nullptr; i++)
+  for (unsigned i = 0; (driver = GetDriverByIndex(i)) != nullptr; i++) {
+#ifdef HAVE_REMOTE_STICK
+    /* drivers reserved for the auto-detected SteFly slot must not
+       appear in the dropdown for regular editable ports - the
+       DeviceListDialog never lets the user edit REMOTE_PORT anyway,
+       so hiding them here is enough */
+    if (StringIsEqual(driver->name, "RemoteStick") ||
+        StringIsEqual(driver->name, "RotaryPanel"))
+      continue;
+#endif
     driver_df->addEnumText(driver->name, driver->display_name);
+  }
 
   driver_df->Sort(1);
   driver_df->SetValue(config.driver_name);

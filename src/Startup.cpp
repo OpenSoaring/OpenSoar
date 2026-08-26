@@ -45,6 +45,12 @@
 #include "Device/Factory.hpp"
 #include "Device/device.hpp"
 #include "Device/MultipleDevices.hpp"
+#ifdef HAVE_REMOTE_STICK
+# include "Device/Features.hpp"  // REMOTE_PORT
+# include "Device/Driver/SteFly/Discovery.hpp"
+# include "SystemSettings.hpp"
+# include "LogFile.hpp"
+#endif
 #include "Topography/TopographyStore.hpp"
 #include "Topography/TopographyGlue.hpp"
 #include "Audio/Features.hpp"
@@ -666,6 +672,33 @@ Startup(UI::Display &display)
 
   AudioVarioGlue::Initialise();
   AudioVarioGlue::Configure(ui_settings.sound.vario);
+
+#ifdef HAVE_REMOTE_STICK
+  /* scan the USB bus once at startup for a SteFly RemoteStick and, if
+     one is attached, pre-configure the fixed REMOTE_PORT slot in
+     SystemSettings so the subsequent devStartup() call opens it with
+     the "RemoteStick" driver; this slot is NOT persisted to the
+     profile - every launch rescans, and if no matching device is
+     present the DeviceListDialog simply hides the extra row (see
+     MultipleDevices::HasRemoteStick()) */
+  if (auto stefly_port =
+        SteFly::DiscoverPortByUsbId(SteFly::VID_STEFLY,
+                                    SteFly::PID_REMOTE_STICK)) {
+    LogFmt("SteFly RemoteStick detected on {} - binding to REMOTE_PORT slot",
+           stefly_port->c_str());
+    DeviceConfig &cfg =
+      CommonInterface::SetSystemSettings().devices[REMOTE_PORT];
+    cfg.Clear();
+    cfg.port_type = DeviceConfig::PortType::SERIAL;
+    cfg.path = stefly_port->c_str();
+    cfg.driver_name = "RemoteStick";
+    cfg.enabled = true;
+  } else {
+    /* make sure the slot stays disabled even if the profile ever
+       stored something there */
+    CommonInterface::SetSystemSettings().devices[REMOTE_PORT].Clear();
+  }
+#endif // HAVE_REMOTE_STICK
 
   // Start the device thread(s)
   if (backend_components->devices != nullptr) {

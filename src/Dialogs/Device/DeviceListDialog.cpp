@@ -13,6 +13,9 @@
 #include "LX/ManageLXNAVVarioDialog.hpp"
 #include "LX/ManageNanoDialog.hpp"
 #include "LX/ManageLX16xxDialog.hpp"
+#ifdef HAVE_REMOTE_STICK
+# include "SteFly/ManageRemoteDialog.hpp"
+#endif
 #include "PortMonitor.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Dialogs/Message.hpp"
@@ -271,8 +274,19 @@ DeviceListWidget::Prepare(ContainerWindow &parent,
   const DialogLook &look = UIGlobals::GetDialogLook();
   const unsigned margin = Layout::GetTextPadding();
   font_height = look.list.font->GetHeight();
+#ifdef HAVE_REMOTE_STICK
+  /* the REMOTE_PORT row is only visible while a SteFly RemoteStick
+     was auto-detected at startup; otherwise stop the list at
+     VISIBLE_NUMDEV so the row does not appear at all */
+  const unsigned row_count =
+    (devices != nullptr && devices->HasRemoteStick())
+      ? NUMDEV : VISIBLE_NUMDEV;
+#else
+  const unsigned row_count = NUMDEV;
+#endif
+
   CreateList(parent, look, rc, 3 * margin + font_height +
-             look.small_font.GetHeight()).SetLength(NUMDEV);
+             look.small_font.GetHeight()).SetLength(row_count);
 
   for (Item &i : items)
     i.Clear();
@@ -348,7 +362,15 @@ DeviceListWidget::UpdateButtons()
 {
   const unsigned current = GetList().GetCursorIndex();
 
-  if (current < NUMDEV) {
+#ifdef HAVE_REMOTE_STICK
+  /* the REMOTE_PORT slot (SteFly RemoteStick) is auto-configured and
+     must not be manually enabled/disabled or edited */
+  const bool is_remote_slot = (current == REMOTE_PORT);
+#else
+  constexpr bool is_remote_slot = false;
+#endif
+
+  if (current < NUMDEV && !is_remote_slot) {
     const auto &config = CommonInterface::GetSystemSettings().devices[current];
 
     if (config.port_type != DeviceConfig::PortType::DISABLED) {
@@ -377,7 +399,7 @@ DeviceListWidget::UpdateButtons()
                              device.GetState() == PortState::READY);
   }
 
-  edit_button->SetEnabled(current < NUMDEV);
+  edit_button->SetEnabled(current < NUMDEV && !is_remote_slot);
 }
 
 void
@@ -385,6 +407,24 @@ DeviceListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
                               unsigned idx) noexcept
 {
   assert(idx < NUMDEV);
+
+#ifdef HAVE_REMOTE_STICK
+  /* visual separator above the REMOTE_PORT row (SteFly RemoteStick)
+     so it is clearly set apart from the regular editable ports: a
+     DPI-scaled thick bar plus a hairline below it */
+  if (idx == REMOTE_PORT) {
+    const int thick = Layout::Scale(3);
+    const int gap   = Layout::Scale(2);
+
+    canvas.SelectBlackPen(thick);
+    canvas.DrawLine({rc.left, rc.top + thick / 2},
+                    {rc.right, rc.top + thick / 2});
+
+    canvas.SelectBlackPen();
+    canvas.DrawLine({rc.left,  rc.top + thick + gap},
+                    {rc.right, rc.top + thick + gap});
+  }
+#endif // HAVE_REMOTE_STICK
 
   const DeviceConfig &config =
     CommonInterface::SetSystemSettings().devices[idx];
@@ -719,6 +759,13 @@ DeviceListWidget::ManageCurrent()
 
   if (descriptor.IsDriver("CAI 302"))
     ManageCAI302Dialog(UIGlobals::GetMainWindow(), look, *device);
+#ifdef HAVE_REMOTE_STICK
+  else if (descriptor.IsDriver("RemoteStick"))
+    /* pass the descriptor as well - the manage dialog releases the
+       borrow during a reboot so the port can be closed/reopened while
+       the stick re-enumerates, then re-borrows */
+    ManageRemoteDialog(descriptor, *device);
+#endif
   else if (descriptor.IsDriver("Stratux"))
     ManageStratuxDialog(*device);
   else if (descriptor.IsDriver("FLARM")) {
