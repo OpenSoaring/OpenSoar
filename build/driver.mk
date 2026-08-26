@@ -1,5 +1,7 @@
 DRIVER_SRC_DIR = $(SRC)/Device/Driver
 
+HAVE_REMOTESTICK = y
+
 VOLKSLOGGER_SOURCES = \
 	$(DRIVER_SRC_DIR)/Volkslogger/Register.cpp \
 	$(DRIVER_SRC_DIR)/Volkslogger/Parser.cpp \
@@ -108,6 +110,7 @@ GDL90_SOURCES = \
 
 DRIVER_SOURCES = \
 	$(SRC)/Device/Driver.cpp \
+	$(SRC)/Device/ManagedDevice.cpp \
 	$(SRC)/Device/Register.cpp \
 	$(VOLKSLOGGER_SOURCES) \
 	$(CAI302_SOURCES) \
@@ -155,6 +158,26 @@ DRIVER_SOURCES = \
 	$(DRIVER_SRC_DIR)/LX160.cpp \
 	$(DRIVER_SRC_DIR)/ATR833/Device.cpp \
 	$(DRIVER_SRC_DIR)/ATR833/Register.cpp
+
+ifeq ($(HAVE_REMOTESTICK),y)
+  # SteFly device family - RemoteStick (joystick) and RotaryPanel
+  # (encoder panel). Both built on the shared SteFlyDevice base,
+  # which inherits from ManagedDevice.
+  DRIVER_SOURCES += \
+	$(DRIVER_SRC_DIR)/SteFly/CommonDevice.cpp \
+	$(DRIVER_SRC_DIR)/SteFly/RemoteStick.cpp \
+	$(DRIVER_SRC_DIR)/SteFly/RotaryPanel.cpp \
+	$(DRIVER_SRC_DIR)/SteFly/Register.cpp \
+	$(DRIVER_SRC_DIR)/SteFly/Discovery.cpp
+
+  DRIVER_CPPFLAGS += -DHAVE_REMOTE_STICK
+
+  # SetupAPI for the startup-time USB / COM enumeration in
+  # SteFly/Discovery.cpp (Windows only)
+  ifeq ($(HAVE_WIN32),y)
+    TARGET_LDLIBS += -lsetupapi
+  endif
+endif
 
 DRIVER_DEPENDS = TIME LIBNMEA GEO OPERATION UNITS FMT PROFILE FLARM GLIDE JSON
 
