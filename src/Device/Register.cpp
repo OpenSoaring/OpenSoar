@@ -47,6 +47,10 @@
 #include "Device/Driver/Stratux.hpp"
 #include "Device/Driver/GDL90.hpp"
 #include "Device/Driver/LoEFGREN.hpp"
+#ifdef HAVE_REMOTE_STICK
+# include "Device/Driver/SteFly/RemoteStick.hpp"  // pulls in remote_stick_driver
+# include "Device/Driver/SteFly/RotaryPanel.hpp"  // pulls in rotary_panel_driver
+#endif
 #include "util/Macros.hpp"
 #include "util/StringAPI.hxx"
 
@@ -100,6 +104,10 @@ static const struct DeviceRegister *const driver_list[] = {
   &loe_fgren_driver,
   &lx160_driver,
   &gdl90_driver,
+#ifdef HAVE_REMOTE_STICK
+  &remote_stick_driver,
+  &rotary_panel_driver,
+#endif
   nullptr
 };
 
