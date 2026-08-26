@@ -26,10 +26,11 @@ message(STATUS "*** PROJECTGROUP_SOURCE_DIR = '${PROJECTGROUP_SOURCE_DIR}'")
 message(STATUS "*** PROJECTGROUP_BINARY_DIR = '${PROJECTGROUP_BINARY_DIR}'")
 
 # get_filename_component(PROJECT_NAME ${CMAKE_CURRENT_BINARY_DIR} NAME)
-# brand-neutral default; the OpenSoar branding topic switches this to OpenSoar
-set(TARGET_NAME XCSoar)
+# OpenSoar branding (this commit stays on top of the stack and never
+# goes upstream; everything below builds as brand-neutral XCSoar)
+set(TARGET_NAME OpenSoar)
 set(APP_NAME ${TARGET_NAME})
-set(IS_OPENSOAR OFF)  # ON in the OpenSoar branding topic
+set(IS_OPENSOAR ON)
 # The solution is named after the application, not after the toolchain -
 # each toolchain builds in its own directory anyway.  An OpenVario test
 # build (-DTARGET_IS_OPENVARIO=ON) says so in the name, so the IDE title
