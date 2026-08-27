@@ -178,9 +178,14 @@ def create_xcsoar(args):
   branch = args[1]
   toolchain = args[2]
 
-  start_dir = os.path.dirname(filename)
-  if len(start_dir) > 0:
-      start_dir = start_dir.replace('build/cmake/python', '');
+  # the source root is three levels above this script
+  # (<root>/build/cmake/python/) - derive it from the script location
+  # with normalized slashes: the old string-replace missed the
+  # backslash spelling ("python build\cmake\python\Start-...") and
+  # handed CMake the python dir as source dir
+  start_dir = os.path.dirname(os.path.abspath(filename)).replace('\\', '/')
+  if start_dir.endswith('/build/cmake/python'):
+    start_dir = start_dir[:-len('/build/cmake/python')]
   if len(start_dir) == 0:
      start_dir = os.getcwd();
   print('Start CMake Creation of ', project_name, ' / ', branch, ' / ', toolchain)
@@ -188,6 +193,22 @@ def create_xcsoar(args):
   print('====================================\n')
   print('CurrDir  :',os.getcwd())
   print('StartDir :',start_dir)
+  # current git state ("Kontrollwert"): short hash + commit title +
+  # branch - the same at-a-glance line as on Linux.  Printed here AND
+  # again at the very end of the run, so nobody has to scroll back up.
+  git_line = ''
+  try:
+    git_head = subprocess.run(
+        ['git', '-C', start_dir, 'log', '-1', '--format=%h %s'],
+        capture_output = True, text = True, timeout = 10).stdout.strip()
+    git_branch = subprocess.run(
+        ['git', '-C', start_dir, 'rev-parse', '--abbrev-ref', 'HEAD'],
+        capture_output = True, text = True, timeout = 10).stdout.strip()
+    if git_head:
+      git_line = git_head + '  [' + git_branch + ']'
+      print('Git      :', git_line)
+  except Exception:
+    pass  # no git, no line - never break the build over cosmetics
 
   my_env = os.environ.copy()
   # ImageMagick sometimes deadlocks on Windows when its OpenMP thread
@@ -370,6 +391,16 @@ def create_xcsoar(args):
     if toolchain.startswith('msvc'):
       # all Windows msvc builds are the OpenGL flavor (GDI retired)
       arguments.append('-DXCSOAR_USE_OPENGL=ON')
+
+    # flavor switch: XCSOAR_TESTING=ON -> red testing build,
+    # XCSOAR_TESTING=OFF -> green release build; unset -> the
+    # toolchain file's default (currently ON) applies.  CI derives it
+    # from the tag: v7.45.25.t1 -> testing, v7.45.25 -> release.
+    testing = os.environ.get('XCSOAR_TESTING')
+    if testing:
+      on = testing.upper() in ('1', 'ON', 'TRUE', 'YES')
+      arguments.append('-DTARGET_TESTING=' + ('ON' if on else 'OFF'))
+
     arguments.append('-DTHIRD_PARTY=' + third_party)
     arguments.append('-DLINK_LIBS=' + link_libs)
     arguments.append('-Wno-dev')
@@ -476,5 +507,16 @@ def create_xcsoar(args):
             creation = 0
             print('cmd with failure! (', myprocess, ')')
 
+  # end-of-run summary: repeat the key facts from the header so they
+  # are visible without scrolling all the way up
+  print('\n====================================')
+  print('Project  :', project_name, '/', toolchain, '/', BuildConfig)
+  if git_line:
+    print('Git      :', git_line)
   if(not creation):
+    print('Result   : FAILED')
     print('Error in cmake python script')
+    # propagate the failure: callers (Compile-*.cmd, CI) check the
+    # exit code - without this a broken build looked successful
+    sys.exit(1)
+  print('Result   : OK')
