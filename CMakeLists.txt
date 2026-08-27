@@ -644,7 +644,6 @@ endif()
 add_subdirectory(src/lib)
 add_subdirectory(src)   # lib${APP_NAME}!
 
-
 add_subdirectory(src/Android)  # Android  -> EXCLUDE_FROM_ALL TRUE
 
 # the upstream main source file is XCSoar.cpp regardless of branding;
