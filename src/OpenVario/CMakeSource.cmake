@@ -1,23 +1,23 @@
 set(TEST_SRC_DIR "${PROJECTGROUP_SOURCE_DIR}/test/src")
 
 set(_SOURCES
-        # OpenVario/OpenVarioBaseMenu.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # OpenVario/FileMenuWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # OpenVario/DisplaySettingsWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # OpenVario/SystemSettingsWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # OpenVario/ExtraWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
+        OpenVario/OpenVarioBaseMenu.cpp
+        OpenVario/FileMenuWidget.cpp
+        OpenVario/DisplaySettingsWidget.cpp
+        OpenVario/SystemSettingsWidget.cpp
+        OpenVario/ExtraWidget.cpp
 
-        # OpenVario/System/OpenVarioDevice.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # OpenVario/System/OpenVarioTools.cpp  # [topic/openvario] not in upstream XCSoar yet
+        OpenVario/System/OpenVarioDevice.cpp
+        OpenVario/System/OpenVarioTools.cpp
 
-        # OpenVario/System/SystemMenuWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # OpenVario/System/Setting/RotationWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # OpenVario/System/Setting/WifiWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
+        OpenVario/System/SystemMenuWidget.cpp
+        OpenVario/System/Setting/RotationWidget.cpp 
+        OpenVario/System/Setting/WifiWidget.cpp
 
-        # OpenVario/System/WifiDialogOV.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # OpenVario/System/WifiSupplicantOV.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # OpenVario/System/WifiDBus.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # OpenVario/System/NMConnector.cpp  # [topic/openvario] not in upstream XCSoar yet
+        OpenVario/System/WifiDialogOV.cpp
+        OpenVario/System/WifiSupplicantOV.cpp
+        OpenVario/System/WifiDBus.cpp
+        OpenVario/System/NMConnector.cpp
 
         ${SRC}/Version.cpp
        	${SRC}/Asset.cpp
