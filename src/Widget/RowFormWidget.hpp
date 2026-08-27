@@ -465,6 +465,11 @@ public:
 
   Button *AddButton(const char *label, std::function<void()> callback) noexcept;
 
+  /**
+   * Add a static text label row (OpenVario menu widgets).
+   */
+  void AddLabel(const char *label, unsigned lines = 1) noexcept;
+
   [[gnu::pure]]
   Widget &GetRowWidget(unsigned i) noexcept {
     return rows[i].GetWidget();
