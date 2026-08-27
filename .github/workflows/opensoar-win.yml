@@ -1,0 +1,150 @@
+# OpenSoar CI: Windows x64 build (CMake / MSVC / OpenGL)
+#
+# Triggers
+#   * push of a tag "v*" -> build + GitHub release
+#       v7.45.25.tN  : N-th test version  -> testing flavor (red),
+#                      published as pre-release
+#       v7.45.25     : real release       -> release flavor (green)
+#       v7.45.25.N   : bugfix on the real release -> also green
+#     The tag must match PROGRAM_VERSION in OpenSoar.config - the
+#     build fails on a mismatch so tag and app never drift apart.
+#   * manual run (workflow_dispatch) -> build only, zip as workflow
+#     artifact, no release; flavor selectable (default: testing)
+#
+# Versioning scheme (see OpenSoar.config): MAJOR.MINOR come from the
+# XCSoar version the code base is derived from, the third number is
+# the OpenSoar release counter.
+
+name: OpenSoar Windows
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: 'Build flavor'
+        type: choice
+        options:
+          - testing
+          - release
+        default: testing
+
+concurrency:
+  group: opensoar-win-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-2025
+    timeout-minutes: 150
+
+    env:
+      # keep all build output next to (not inside) the checkout
+      XCSOAR_PROJECT_DIR: ${{ github.workspace }}\..\out
+      # unbuffered python output so runner logs stay in order
+      PYTHONUNBUFFERED: '1'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # the resource pipeline renders the SVG graphics with Inkscape;
+      # the GitHub runner image does not ship it (ImageMagick, perl,
+      # xsltproc and 7-Zip are already present).  The CMake script
+      # looks in "<Program Files>/Inkscape/bin" - exactly where the
+      # chocolatey package installs to.
+      - name: Install Inkscape
+        shell: pwsh
+        run: |
+          choco install inkscape -y --no-progress
+          & "C:\Program Files\Inkscape\bin\inkscape.exe" --version
+
+      - name: Determine version and flavor
+        id: ver
+        shell: bash
+        run: |
+          CONFIG_VER=$(sed -n 's/^PROGRAM_VERSION=//p' OpenSoar.config | tr -d '\r')
+          echo "version=$CONFIG_VER" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG_VER="${GITHUB_REF_NAME#v}"
+            if [[ "$TAG_VER" != "$CONFIG_VER" ]]; then
+              echo "::error::tag $TAG_VER != OpenSoar.config PROGRAM_VERSION $CONFIG_VER"
+              exit 1
+            fi
+            if [[ "$TAG_VER" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.t[0-9]+$ ]]; then
+              echo "testing=ON" >> "$GITHUB_OUTPUT"
+              echo "prerelease=true" >> "$GITHUB_OUTPUT"
+            elif [[ "$TAG_VER" =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+              echo "testing=OFF" >> "$GITHUB_OUTPUT"
+              echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "::error::version scheme not recognized: $TAG_VER"
+              exit 1
+            fi
+          else
+            FLAVOR="${{ github.event.inputs.flavor || 'testing' }}"
+            if [[ "$FLAVOR" == "release" ]]; then
+              echo "testing=OFF" >> "$GITHUB_OUTPUT"
+            else
+              echo "testing=ON" >> "$GITHUB_OUTPUT"
+            fi
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Cache third-party libraries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}\..\out\link_libs
+            ${{ github.workspace }}\..\out\Libs
+          key: 3rdparty-msvc2026-${{ hashFiles('3rd_party/**') }}
+          restore-keys: |
+            3rdparty-msvc2026-
+
+      - name: Build
+        shell: cmd
+        env:
+          XCSOAR_CONFIG: Release
+          XCSOAR_TESTING: ${{ steps.ver.outputs.testing }}
+        run: python build/cmake/python/Start-CMake-SoaringProject.py auto msvc2026 3
+
+      - name: Package
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          $exe = Get-ChildItem -Path "$env:XCSOAR_PROJECT_DIR\Binaries" -Recurse -Filter OpenSoar.exe |
+                 Where-Object { $_.FullName -match '\\Release\\' } |
+                 Select-Object -First 1
+          if (-not $exe) { throw "OpenSoar.exe not found below $env:XCSOAR_PROJECT_DIR\Binaries" }
+          Write-Host "Found: $($exe.FullName)"
+          $stage = Join-Path $env:RUNNER_TEMP "OpenSoar-$env:VERSION-win64"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item $exe.FullName $stage
+          Copy-Item (Join-Path $exe.DirectoryName '*.dll') $stage -ErrorAction SilentlyContinue
+          Compress-Archive -Path "$stage\*" -DestinationPath "OpenSoar-$env:VERSION-win64.zip" -Force
+          Get-Item "OpenSoar-$env:VERSION-win64.zip" | Format-List Name,Length
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenSoar-${{ steps.ver.outputs.version }}-win64
+          path: OpenSoar-${{ steps.ver.outputs.version }}-win64.zip
+
+      - name: GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: OpenSoar-${{ steps.ver.outputs.version }}-win64.zip
+          prerelease: ${{ steps.ver.outputs.prerelease }}
+          generate_release_notes: true
