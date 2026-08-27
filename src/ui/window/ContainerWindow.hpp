@@ -16,12 +16,39 @@ class WindowReference;
 #endif
 
 /**
+ * Process/application exit codes used by the OpenVario base menu to
+ * communicate the next action (start shell, run an upgrade, ...) to
+ * the wrapper script that launched the process.
+ */
+enum ExitValues {
+  EXIT_NORMAL = 100,
+  EXIT_SYSTEM = 200,
+  EXIT_REBOOT = 201,
+  EXIT_SHUTDOWN = 202,
+#ifdef IS_OPENVARIO
+  LAUNCH_SHELL = 203,
+  LAUNCH_SHELL_STOP = 204,
+  START_UPGRADE = 205,
+  LAUNCH_TOUCH_CALIBRATE = 206,
+  EXIT_BASE_MENU = 207,
+#endif
+  EXIT_RESTART = 208,
+#ifdef IS_OPENVARIO
+  EXIT_NEWSTART = 209,
+#endif
+};
+
+/**
  * A container for more #Window objects.  It is also derived from
  * #PaintWindow, because you might want to paint a border between the
  * child windows.
  */
 class ContainerWindow : public PaintWindow {
 protected:
+  /** @see SetExitValue() */
+  static unsigned exit_value;
+
+
 #ifndef USE_WINUSER
   friend class WindowList;
   WindowList children;
@@ -169,6 +196,18 @@ public:
    * rectangle visible in the view port.
    */
   virtual   void ScrollTo(const PixelRect &rc) noexcept;
+
+  /**
+   * The value the process should exit with (see enum ExitValues);
+   * used by the OpenVario base menu.
+   */
+  static void SetExitValue(unsigned value) noexcept {
+    exit_value = value;
+  }
+
+  static unsigned GetExitValue() noexcept {
+    return exit_value;
+  }
 
 #ifdef USE_WINUSER
   /**

@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "RowFormWidget.hpp"
+#include "Form/Frame.hpp"
 #include "Form/Panel.hpp"
 #include "Form/Button.hpp"
 #include "Form/HLine.hpp"
@@ -296,6 +297,20 @@ RowFormWidget::AddMultiLine(const char *text) noexcept
     ltw->SetText(text);
 
   Add(Row::Type::MULTI_LINE, std::move(ltw));
+}
+
+void
+RowFormWidget::AddLabel(const char *text, unsigned lines) noexcept
+{
+  ContainerWindow &panel = (ContainerWindow &)GetWindow();
+  if (lines == 0)
+    lines = 1;
+  const PixelRect rc = InitialControlRect(
+      Layout::Scale(lines * look.text_font.GetHeight()));
+
+  auto window = std::make_unique<WndFrame>(panel, look, rc);
+  window->SetText(text);
+  Add(std::move(window));
 }
 
 Button *
