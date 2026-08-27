@@ -67,7 +67,13 @@ $(OUT)/include/InputEvents_Char2NE.hpp: $(SRC)/Input/InputQueue.hpp \
 XCI_LIST = default
 XCI_HEADERS = $(patsubst %,$(OUT)/include/InputEvents_%.hpp,$(XCI_LIST))
 
-$(OUT)/include/InputEvents_default.hpp: $(topdir)/Data/Input/default.xci \
+ifeq ($(TARGET_IS_OPENVARIO),y)
+  DEFAULT_XCI = Data/Input/defaultOV.xci
+else
+  DEFAULT_XCI = Data/Input/default.xci
+endif
+
+$(OUT)/include/InputEvents_default.hpp: $(topdir)/$(DEFAULT_XCI) \
 	$(topdir)/tools/xci2cpp.pl \
 	| $(OUT)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
