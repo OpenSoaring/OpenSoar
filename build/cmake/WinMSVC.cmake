@@ -16,7 +16,12 @@ endif()
 
 add_compile_definitions(TWO_LOGO_APP)
 
-set(TARGET_TESTING ON)  # Testing App On/Off
+# Testing App On/Off: red flavor + XCSOAR_TESTING define.  Default ON
+# (developer build); overridable from outside via -DTARGET_TESTING=OFF -
+# CI uses that for real releases (green flavor)
+if (NOT DEFINED TARGET_TESTING)
+  set(TARGET_TESTING ON)  # Testing App On/Off
+endif()
 if (TARGET_TESTING)
   add_compile_definitions(XCSOAR_TESTING)
   set(XCSOAR_TESTING ON)   # also as CMake variable (resource pipeline)

@@ -29,8 +29,14 @@ echo .
 %cmd%
 
 :: if errorlevel 1 pause
-if errorlevel 1 echo "!!! ERROR !!! ERROR !!! ERROR !!! ERROR !!! ERROR"
+if errorlevel 1 goto :build_error
 echo =====================  Finish ====================================
+exit /b 0
+
+:build_error
+echo "!!! ERROR !!! ERROR !!! ERROR !!! ERROR !!! ERROR"
+echo =====================  Finish ====================================
+exit /b 1
 
 REM pause
 
