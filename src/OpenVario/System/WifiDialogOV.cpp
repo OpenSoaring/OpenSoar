@@ -22,6 +22,7 @@
 #include "LocalPath.hpp"
 #include "LogFile.hpp"
 #include "system/Process.hpp"
+#include "OpenVarioTools.hpp"
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #include "system/FileUtil.hpp"
 #include "io/FileReader.hxx"
@@ -206,10 +207,10 @@ WifiListWidget::ScanWifi()
   File::CreateExclusive(file);
   File::WriteExisting(file, buffer);
 #else
-  Run(Path("connman-technologies.txt"), connmanctl, "technologies");
-  Run(Path("connman-enable.txt"), connmanctl, "enable", "wifi");
-  Run(Path("connman-scan.txt"), connmanctl, "scan", "wifi");
-  Run(Path("connman-scan-results.txt"), connmanctl, "services");
+  RunCapture(Path("connman-technologies.txt"), connmanctl, "technologies");
+  RunCapture(Path("connman-enable.txt"), connmanctl, "enable", "wifi");
+  RunCapture(Path("connman-scan.txt"), connmanctl, "scan", "wifi");
+  RunCapture(Path("connman-scan-results.txt"), connmanctl, "services");
 #endif
 }
 
@@ -318,7 +319,7 @@ void WifiListWidget::WifiDisconnect( const char *ssid) {
 //                 network->bssid.c_str()));
 #if defined(IS_OPENVARIO_CB2)
   // disconnect port
-  Run(Path("wifi-disconnect.txt"), connmanctl, "disconnect", network->base_id.c_str());
+  RunCapture(Path("wifi-disconnect.txt"), connmanctl, "disconnect", network->base_id.c_str());
 #endif
   ShowMessageBox(network->base_id.c_str(), "Disconnected", MB_OK);
 }
@@ -406,15 +407,15 @@ void WifiListWidget::WifiConnect(enum WifiSecurity security,
 
 #if defined(IS_OPENVARIO_CB2)
     // disable wifi
-    Run(Path("wifi-disable.txt"), connmanctl, "disable", "wifi");
+    RunCapture(Path("wifi-disable.txt"), connmanctl, "disable", "wifi");
     // wait a second
     std::this_thread::sleep_for(std::chrono::seconds(1));
     // enable wifi again for AutoConnect
-    Run(Path("wifi-enable.txt"), connmanctl, "enable", "wifi");
+    RunCapture(Path("wifi-enable.txt"), connmanctl, "enable", "wifi");
     // wait a second after wifi enabling (?)
     std::this_thread::sleep_for(std::chrono::seconds(1));
     // ask state of the wifi connection
-    Run(Path("wifi-connect.txt"), connmanctl, "services",
+    RunCapture(Path("wifi-connect.txt"), connmanctl, "services",
         network->base_id.c_str());
 #endif
   }
@@ -474,15 +475,15 @@ WifiListWidget::ReConnect()
 
 #if defined(IS_OPENVARIO_CB2)
   // disable wifi
-  Run(Path("wifi-disable.txt"), connmanctl, "disable", "wifi");
+  RunCapture(Path("wifi-disable.txt"), connmanctl, "disable", "wifi");
   // wait a second
   std::this_thread::sleep_for(std::chrono::seconds(1));
   // enable wifi again for AutoConnect
-  Run(Path("wifi-enable.txt"), connmanctl, "enable", "wifi");
+  RunCapture(Path("wifi-enable.txt"), connmanctl, "enable", "wifi");
   // wait a second after wifi enabling (?)
   std::this_thread::sleep_for(std::chrono::seconds(1));
 //  // ask state of the wifi connection
-//  Run(Path("wifi-connect.txt"), connmanctl, "services",
+//  RunCapture(Path("wifi-connect.txt"), connmanctl, "services",
 //      network->base_id.c_str());
 #endif
 
