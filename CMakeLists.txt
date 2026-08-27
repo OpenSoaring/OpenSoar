@@ -620,7 +620,12 @@ endif()
 add_subdirectory(src/lib)
 add_subdirectory(src)   # lib${APP_NAME}!
 
-add_subdirectory(src/OpenVario)
+# OpenVarioBaseMenu (standalone tool for the OpenVario flight computer,
+# src/OpenVario/) - opt-in: it is not needed for the normal app build
+option(WITH_OPENVARIO_BASEMENU "build the OpenVarioBaseMenu tool" OFF)
+if (WITH_OPENVARIO_BASEMENU OR TARGET_IS_OPENVARIO)
+    add_subdirectory(src/OpenVario)
+endif()
 
 add_subdirectory(src/Android)  # Android  -> EXCLUDE_FROM_ALL TRUE
 
