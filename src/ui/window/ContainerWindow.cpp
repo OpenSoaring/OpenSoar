@@ -3,6 +3,8 @@
 
 #include "ContainerWindow.hpp"
 
+unsigned ContainerWindow::exit_value = 0;
+
 void
 ContainerWindow::ScrollTo(const PixelRect &rc) noexcept
 {
