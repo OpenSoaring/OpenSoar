@@ -182,20 +182,18 @@ endif()
 
 if(IS_OPENVARIO)
   list(APPEND _SOURCES
-        # ../OpenVario/FileMenuWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # ../OpenVario/DisplaySettingsWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # ../OpenVario/SystemSettingsWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # ../OpenVario/ExtraWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
+        ../OpenVario/FileMenuWidget.cpp
+        ../OpenVario/DisplaySettingsWidget.cpp
+        ../OpenVario/SystemSettingsWidget.cpp
+        ../OpenVario/ExtraWidget.cpp
 
-        # ../OpenVario/System/OpenVarioDevice.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # ../OpenVario/System/OpenVarioTools.cpp  # [topic/openvario] not in upstream XCSoar yet
+        ../OpenVario/System/OpenVarioDevice.cpp
+        ../OpenVario/System/OpenVarioTools.cpp
+        ../OpenVario/System/SystemMenuWidget.cpp
+        ../OpenVario/System/Setting/RotationWidget.cpp
+        ../OpenVario/System/WifiDialogOV.cpp
+        ../OpenVario/System/WifiSupplicantOV.cpp
 
-        # ../OpenVario/System/SystemMenuWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
-
-        # ../OpenVario/System/Setting/RotationWidget.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # ../OpenVario/System/WifiDialogOV.cpp  # [topic/openvario] not in upstream XCSoar yet
-        # ../OpenVario/System/WifiSupplicantOV.cpp  # [topic/openvario] not in upstream XCSoar yet
-        
         Dialogs/ProcessDialog.cpp
   )
 endif(IS_OPENVARIO) 
