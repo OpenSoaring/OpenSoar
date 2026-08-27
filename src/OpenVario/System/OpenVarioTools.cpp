@@ -82,3 +82,44 @@ CalibrateSensors() noexcept
                                 : 0;
                    });
 }
+
+
+#ifdef HAVE_POSIX
+#include <fcntl.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+int
+RunCapture(Path output_file, const char *const *argv) noexcept
+{
+  const pid_t pid = fork();
+  if (pid == 0) {
+    /* the child: redirect stdout, then exec or die */
+    const int fd = open(output_file.c_str(),
+                        O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    if (fd >= 0) {
+      dup2(fd, STDOUT_FILENO);
+      close(fd);
+    }
+    execv(argv[0], const_cast<char **>(argv));
+    _exit(1);
+  }
+
+  if (pid < 0)
+    return -1;
+
+  int status;
+  if (waitpid(pid, &status, 0) < 0)
+    return -1;
+
+  return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+}
+#else
+
+int
+RunCapture([[maybe_unused]] Path output_file,
+           [[maybe_unused]] const char *const *argv) noexcept
+{
+  return -1;
+}
+#endif
