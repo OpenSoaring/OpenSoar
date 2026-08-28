@@ -6,7 +6,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>English</string>
     <key>CFBundleExecutable</key>
-    <string>XCSoar</string>
+    <string>OSX_PRODUCT_NAME_PLACEHOLDER</string>
     <key>CFBundleIdentifier</key>
     <string>OSX_BUNDLE_ID_PLACEHOLDER</string>
     <key>CFBundleInfoDictionaryVersion</key>
@@ -30,7 +30,7 @@
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.navigation</string>
     <key>NSLocationUsageDescription</key>
-    <string>XCSoar uses your location to provide onboard GPS navigation and to record your flight track.</string>
+    <string>OSX_PRODUCT_NAME_PLACEHOLDER uses your location to provide onboard GPS navigation and to record your flight track.</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
   </dict>

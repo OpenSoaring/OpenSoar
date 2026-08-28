@@ -1,4 +1,8 @@
-VERSION = $(strip $(shell cat $(topdir)/VERSION.txt))
+# brand hook (build/brand.mk, included from options.mk): a
+# <Brand>.config in the repository root - shared with the CMake build -
+# overrides the version via BRAND_VERSION; VERSION.txt stays the
+# XCSoar default
+VERSION = $(or $(BRAND_VERSION),$(strip $(shell cat $(topdir)/VERSION.txt)))
 FULL_VERSION = $(VERSION)
 
 # VERSION.txt is major.minor or major.minor.patch (policy.rst / release.rst).
@@ -30,7 +34,7 @@ PRODUCT_NAME_LOWER := $(shell echo $(PRODUCT_NAME) | tr '[:upper:]' '[:lower:]')
 # NOTE: These must match the #ifndef guards in src/ProductName.hpp
 PRODUCT_NAME_CPPFLAGS = -DPRODUCT_NAME=\"$(PRODUCT_NAME)\" -DPRODUCT_NAME_LC=\"$(PRODUCT_NAME_LOWER)\"
 
-VERSION_CPPFLAGS = -DXCSOAR_VERSION=\"$(VERSION)\" $(PRODUCT_NAME_CPPFLAGS)
+VERSION_CPPFLAGS = -DXCSOAR_VERSION=\"$(VERSION)\" $(PRODUCT_NAME_CPPFLAGS) $(BRAND_CPPFLAGS)
 
 GIT_COMMIT_ID := $(shell git rev-parse --short --verify HEAD 2>$(NUL))
 RELEASE_COMMIT_ID := $(shell git rev-parse --short --verify "v$(VERSION)^{commit}" 2>$(NUL))
