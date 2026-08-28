@@ -46,27 +46,33 @@ endif
 
 JAVA_PACKAGE = org.xcsoar
 
+# Application id base for the manifest.  The Java sources stay in
+# org.xcsoar (JAVA_PACKAGE above) - the manifest package is what the
+# user's device sees, and a brand config (build/brand.mk) replaces it
+# (e.g. de.opensoar)
+BRAND_ANDROID_PACKAGE ?= org.xcsoar
+
 # Use template manifest for all builds
 MANIFEST_TEMPLATE = android/AndroidManifest.xml.template
 
 # Determine package name for manifest based on build flags
 # Priority: FOSS > PLAY > TESTING > default
 ifeq ($(FOSS),y)
-MANIFEST_PACKAGE = org.xcsoar.foss
+MANIFEST_PACKAGE = $(BRAND_ANDROID_PACKAGE).foss
 MANIFEST_APP_LABEL = @string/app_name
 else ifeq ($(PLAY),y)
-MANIFEST_PACKAGE = org.xcsoar.play
+MANIFEST_PACKAGE = $(BRAND_ANDROID_PACKAGE).play
 MANIFEST_APP_LABEL = @string/app_name
 else ifeq ($(TESTING),y)
-MANIFEST_PACKAGE = org.xcsoar.testing
+MANIFEST_PACKAGE = $(BRAND_ANDROID_PACKAGE).testing
 MANIFEST_APP_LABEL = @string/app_name_testing
 else
-MANIFEST_PACKAGE = org.xcsoar
+MANIFEST_PACKAGE = $(BRAND_ANDROID_PACKAGE)
 MANIFEST_APP_LABEL = @string/app_name
 endif
 
 # Set XCSOAR_TESTING based on package name (for red resources in testing builds)
-ifeq ($(MANIFEST_PACKAGE),org.xcsoar.testing)
+ifeq ($(MANIFEST_PACKAGE),$(BRAND_ANDROID_PACKAGE).testing)
   TARGET_CPPFLAGS += -DXCSOAR_TESTING
 endif
 
@@ -202,10 +208,23 @@ ANDROID_XML_RES_COPIES := $(patsubst android/res/%,$(RES_DIR)/%,$(ANDROID_XML_RE
 
 # Filter out strings.xml for special handling with product name replacement
 ANDROID_XML_RES_NO_STRINGS := $(filter-out android/res/values/strings.xml,$(ANDROID_XML_RES))
+
+# A brand may override the adaptive-icon background layer
+# (android/res/values*/ic_launcher.xml).  Those files are then
+# generated instead of copied; without the setting nothing changes.
+ANDROID_XML_RES_ICON :=
+ifneq ($(BRAND_ANDROID_ICON_BACKGROUND),)
+ANDROID_XML_RES_ICON := $(filter android/res/values%/ic_launcher.xml,$(ANDROID_XML_RES_NO_STRINGS))
+ANDROID_XML_RES_NO_STRINGS := $(filter-out $(ANDROID_XML_RES_ICON),$(ANDROID_XML_RES_NO_STRINGS))
+endif
+ANDROID_XML_RES_ICON_COPIES := $(patsubst android/res/%,$(RES_DIR)/%,$(ANDROID_XML_RES_ICON))
+
 ANDROID_XML_RES_COPIES_NO_STRINGS := $(patsubst android/res/%,$(RES_DIR)/%,$(ANDROID_XML_RES_NO_STRINGS))
 
-# Use red icon only for testing package (check package name, not just TESTING flag)
-ifeq ($(MANIFEST_PACKAGE),org.xcsoar.testing)
+# Use red icon only for testing package (check package name, not just
+# TESTING flag).  The comparison is against the branded package so that
+# a rebranded testing build (de.opensoar.testing) gets the red icon too.
+ifeq ($(MANIFEST_PACKAGE),$(BRAND_ANDROID_PACKAGE).testing)
 ICON_SVG = $(topdir)/Data/graphics/logo_red.svg
 else
 ICON_SVG = $(topdir)/Data/graphics/logo.svg
@@ -335,12 +354,28 @@ $(ANDROID_XML_RES_COPIES_NO_STRINGS): $(RES_DIR)/%: android/res/%
 	$(Q)-$(MKDIR) -p $(dir $@)
 	$(Q)cp $< $@
 
-# Special handling for strings.xml to replace product name
+# Special handling for strings.xml to replace product name; branded
+# builds also rewrite the testing label ("XCS-test"), unbranded
+# XCSoar builds keep it untouched
+ifeq ($(PRODUCT_NAME),XCSoar)
+BRAND_STRINGS_SED =
+else
+BRAND_STRINGS_SED = -e 's/XCS-test/$(PRODUCT_NAME)-test/g'
+endif
 $(RES_DIR)/values/strings.xml: android/res/values/strings.xml | $(RES_DIR)/values/dirstamp
 	$(Q)-$(MKDIR) -p $(dir $@)
-	$(Q)sed 's/XCSoar/$(PRODUCT_NAME)/g' $< > $@
+	$(Q)sed $(BRAND_STRINGS_SED) -e 's/XCSoar/$(PRODUCT_NAME)/g' $< > $@
 
-$(ANDROID_OUTPUT_DIR)/resources.apk: $(PNG_FILES) $(SOUND_FILES) $(ANDROID_XML_RES_COPIES_NO_STRINGS) $(RES_DIR)/values/strings.xml $(MANIFEST) | $(GEN_DIR)/dirstamp
+# Branded launcher background: the value is 8 hex digits (AARRGGBB)
+# without the leading "#" - see build/brand.mk.  "00000000" keeps the
+# transparent look the desktop icon has; day and night resource
+# variants get the same value.
+$(ANDROID_XML_RES_ICON_COPIES): $(RES_DIR)/%: android/res/% $(BRAND_CONFIG)
+	$(Q)-$(MKDIR) -p $(dir $@)
+	$(Q)sed -e '/<!--/,/-->/d' \
+		-e 's|\(<color name="ic_launcher_background">\)[^<]*|\1#$(BRAND_ANDROID_ICON_BACKGROUND)|' $< > $@
+
+$(ANDROID_OUTPUT_DIR)/resources.apk: $(PNG_FILES) $(SOUND_FILES) $(ANDROID_XML_RES_COPIES_NO_STRINGS) $(ANDROID_XML_RES_ICON_COPIES) $(RES_DIR)/values/strings.xml $(MANIFEST) | $(GEN_DIR)/dirstamp
 	@$(NQ)echo "  AAPT"
 	$(Q)find $(RES_DIR) -name dirstamp -type f -delete
 	$(Q)$(AAPT) package -f -m --auto-add-overlay -0 ogg \

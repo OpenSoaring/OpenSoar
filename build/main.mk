@@ -854,7 +854,10 @@ endif
 XCSOAR_STRIP = y
 
 ifeq ($(TARGET),ANDROID)
-$(eval $(call link-shared-library,$(PROGRAM_NAME),XCSOAR))
+# The shared library keeps its fixed name regardless of branding: the
+# Java side loads it via System.loadLibrary("xcsoar") (Loader.java)
+# and android.mk packages lib$(ANDROID_LIB_NAMES).so
+$(eval $(call link-shared-library,xcsoar,XCSOAR))
 else
 $(eval $(call link-program,$(PROGRAM_NAME),XCSOAR))
 endif
