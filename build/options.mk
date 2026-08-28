@@ -1,3 +1,7 @@
+# brand hook: reads <Brand>.config (see build/brand.mk) early, so the
+# TESTING default below can be brand-driven (test versions vX.Y.Z.tN)
+include $(topdir)/build/brand.mk
+
 LLVM ?= n
 THIN_LTO ?= n
 CLANG ?= $(THIN_LTO)
@@ -64,8 +68,9 @@ endif
 # When enabled, the Androidpackage org.xcsoar.testing is created, with
 # a red Activity icon, to allow simultaneous installation of "stable"
 # and "testing".
-# In the stable branch, this should default to "n".
-TESTING = n
+# In the stable branch, this should default to "n".  "?=" so the
+# brand hook above may pre-set it for .tN test versions.
+TESTING ?= n
 
 # Default Android package flavor:
 # - FOSS is the default for regular Android builds
