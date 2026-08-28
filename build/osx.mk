@@ -26,19 +26,27 @@ MACOS_APP_VERSION ?= $(VERSION_SHORT)
 endif
 MACOS_APP_BUILD_NUMBER ?= 1
 
-# App name and package names are always the same
-APP_NAME = XCSoar.app
-DMG_NAME = XCSoar.dmg
-PKG_NAME = XCSoar.pkg
+# App name and package names are always the same; they follow the
+# product name, which is "XCSoar" unless a brand overrides it
+APP_NAME = $(PRODUCT_NAME).app
+DMG_NAME = $(PRODUCT_NAME).dmg
+PKG_NAME = $(PRODUCT_NAME).pkg
+ifeq ($(PRODUCT_NAME),XCSoar)
 MACOS_APP_BUNDLE_IDENTIFIER ?= org.xcsoar.XCSoar
+else
+# a branded build derives the bundle id from the Android package id of
+# the brand (de.opensoar -> de.opensoar.OpenSoar); override on the
+# command line for a real App Store submission
+MACOS_APP_BUNDLE_IDENTIFIER ?= $(or $(BRAND_ANDROID_PACKAGE),org.$(PROGRAM_NAME)).$(PRODUCT_NAME)
+endif
 HDIUTIL_CREATE_DMG = hdiutil create -volname "$(OSX_APP_LABEL)" -srcfolder $(DMG_TMPDIR) -ov -format UDZO $@
 
 # Testing version uses red icon and "Testing" label
 ifeq ($(TESTING),y)
-OSX_APP_LABEL = XCSoar Testing
+OSX_APP_LABEL = $(PRODUCT_NAME) Testing
 OSX_LOGO = $(DATA)/graphics/logo_red_1024.icns
 else
-OSX_APP_LABEL = XCSoar
+OSX_APP_LABEL = $(PRODUCT_NAME)
 OSX_LOGO = $(DATA)/graphics/logo_1024.icns
 endif
 
@@ -48,8 +56,17 @@ APP_MACOS = $(APP_CONTENTS)/MacOS
 APP_RESOURCES = $(APP_CONTENTS)/Resources
 APP_FRAMEWORKS = $(APP_CONTENTS)/Frameworks
 
-# Build the .app bundle
-$(APP_BUNDLE): $(TARGET_BIN_DIR)/xcsoar Data/OSX/Info.plist.in.xml $(OSX_LOGO) $(ANGLE_FIX_STAMP)
+# the executable inside the bundle, matching CFBundleExecutable
+APP_EXECUTABLE = $(APP_MACOS)/$(PRODUCT_NAME)
+
+# Build the .app bundle.
+#
+# The binary is a secondary expansion: this file is included before
+# main.mk, which is where PROGRAM_NAME is defined - without it the
+# prerequisite would be fixed to whatever the name happens to be at
+# this point.
+.SECONDEXPANSION:
+$(APP_BUNDLE): $$(TARGET_BIN_DIR)/$$(PROGRAM_NAME) Data/OSX/Info.plist.in.xml $(OSX_LOGO) $(ANGLE_FIX_STAMP)
 	@$(NQ)echo "  APP     $@"
 	$(Q)[ ! -d $(APP_BUNDLE) ] || (chmod -R u+w $(APP_BUNDLE) && xattr -cr $(APP_BUNDLE))
 	$(Q)rm -rf $(APP_BUNDLE)
@@ -61,9 +78,10 @@ $(APP_BUNDLE): $(TARGET_BIN_DIR)/xcsoar Data/OSX/Info.plist.in.xml $(OSX_LOGO) $
 	    -e 's/BUILD_NUMBER_PLACEHOLDER/$(MACOS_APP_BUILD_NUMBER)/g' \
 	    -e 's/OSX_APP_LABEL_PLACEHOLDER/$(OSX_APP_LABEL)/g' \
 	    -e 's/OSX_BUNDLE_ID_PLACEHOLDER/$(MACOS_APP_BUNDLE_IDENTIFIER)/g' \
+	    -e 's/OSX_PRODUCT_NAME_PLACEHOLDER/$(PRODUCT_NAME)/g' \
 	    < Data/OSX/Info.plist.in.xml > $(APP_CONTENTS)/Info.plist
-	@$(NQ)echo "  COPY    xcsoar binary"
-	$(Q)cp $(TARGET_BIN_DIR)/xcsoar $(APP_MACOS)/XCSoar
+	@$(NQ)echo "  COPY    $(PROGRAM_NAME) binary"
+	$(Q)cp $(TARGET_BIN_DIR)/$(PROGRAM_NAME) $(APP_EXECUTABLE)
 	@$(NQ)echo "  COPY    icon"
 	$(Q)cp $(OSX_LOGO) $(APP_RESOURCES)/logo_1024.icns
 	@$(NQ)echo "  COPY    third-party notices"
@@ -78,20 +96,20 @@ ifeq ($(USE_ANGLE),y)
 	$(Q)if ! install_name_tool -change "$$(otool -L $(APP_FRAMEWORKS)/libEGL.dylib | grep libGLESv2 | awk '{print $$1}')" "@rpath/libGLESv2.dylib" $(APP_FRAMEWORKS)/libEGL.dylib 2>/dev/null; then \
 		echo "  WARN    Failed to update libEGL.dylib dependency"; \
 	fi
-	$(Q)if ! install_name_tool -change "./libEGL.dylib" "@rpath/libEGL.dylib" $(APP_MACOS)/XCSoar 2>/dev/null; then \
+	$(Q)if ! install_name_tool -change "./libEGL.dylib" "@rpath/libEGL.dylib" $(APP_EXECUTABLE) 2>/dev/null; then \
 		echo "  WARN    Failed to update xcsoar libEGL.dylib reference"; \
 	fi
-	$(Q)if ! install_name_tool -change "./libGLESv2.dylib" "@rpath/libGLESv2.dylib" $(APP_MACOS)/XCSoar 2>/dev/null; then \
+	$(Q)if ! install_name_tool -change "./libGLESv2.dylib" "@rpath/libGLESv2.dylib" $(APP_EXECUTABLE) 2>/dev/null; then \
 		echo "  WARN    Failed to update xcsoar libGLESv2.dylib reference"; \
 	fi
 endif
 # Bundle Homebrew libraries and fix all @rpath references
 	@$(NQ)echo "  BUNDLE  Homebrew libraries"
-	$(Q)if ! install_name_tool -add_rpath "@executable_path/../Frameworks" $(APP_MACOS)/XCSoar 2>/dev/null; then \
+	$(Q)if ! install_name_tool -add_rpath "@executable_path/../Frameworks" $(APP_EXECUTABLE) 2>/dev/null; then \
 		echo "  WARN    Failed to add rpath to xcsoar"; \
 	fi
 	$(Q)ANGLE_PATTERN="$(if $(ANGLE_PREFIX),|$(ANGLE_PREFIX),)"; \
-	for lib in $$(otool -L $(APP_MACOS)/XCSoar | \
+	for lib in $$(otool -L $(APP_EXECUTABLE) | \
 		grep -E "/opt/homebrew|/usr/local$$ANGLE_PATTERN" | \
 		awk '{print $$1}'); do \
 		[ -f "$$lib" ] || continue; \
@@ -107,7 +125,7 @@ endif
 		if ! install_name_tool -id "@rpath/$$base" $(APP_FRAMEWORKS)/$$base; then \
 			echo "  WARN    Failed to set install_name for $$base"; \
 		fi; \
-		if ! install_name_tool -change "$$lib" "@rpath/$$base" $(APP_MACOS)/XCSoar; then \
+		if ! install_name_tool -change "$$lib" "@rpath/$$base" $(APP_EXECUTABLE); then \
 			echo "  WARN    Failed to update xcsoar reference for $$base"; \
 		fi; \
 	done
