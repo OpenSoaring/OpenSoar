@@ -1,0 +1,290 @@
+# OpenSoar CI: Android / Kobo / Linux / macOS builds (upstream make
+# system).
+#
+# Companion to opensoar-win.yml (Windows/CMake).  Same trigger scheme:
+# a "v*" tag builds and attaches the packages to the same GitHub
+# release; a manual run builds artifacts only.  The branding comes
+# from OpenSoar.config via build/brand.mk - name, version, Android
+# package (de.opensoar), red testing flavor for .tN versions.
+#
+# Android: a release builds two APKs from the same tree - the slim
+# arm64-only package (~9 MB, the right download for every current
+# device) and the "fat" package with all four ABIs (~39 MB, for older
+# or exotic hardware).  A manual run builds arm64 only unless the
+# "android_fat" input is set; the fat build costs about four times the
+# native compile time.
+#
+# Android signing: with the repository secrets
+#   OPENSOAR_UPLOAD_KEY_JKS_BASE64 / OPENSOAR_UPLOAD_KEY_JKS_PASSWORD /
+#   OPENSOAR_UPLOAD_KEY_JKS_KEY_ALIAS
+# the APK is release-signed; without them a debug-signed APK is built
+# (fine for test versions, not for real releases).
+#
+# macOS: builds the unsigned .dmg and .pkg on a GitHub macOS runner.
+# Without an Apple Developer certificate the packages are only ad-hoc
+# signed, so Gatekeeper asks for a right-click "Open" on first start -
+# that is expected, not a build error.  The leg is not required: an
+# Apple-side breakage must not block the Android/Kobo release.
+
+name: OpenSoar Targets
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      android_fat:
+        description: 'Android: also build the fat APK (all ABIs)'
+        type: boolean
+        default: false
+        required: false
+
+concurrency:
+  group: opensoar-targets-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    timeout-minutes: 180
+    continue-on-error: ${{ matrix.required == false }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: ANDROID
+            os: ubuntu-24.04
+            container: debian:trixie-slim
+            ndk: r26d
+            required: true
+          - target: KOBO
+            os: ubuntu-24.04
+            container: debian:trixie-slim
+            required: true
+          - target: UNIX
+            os: ubuntu-24.04
+            container: debian:trixie-slim
+            required: false
+          - target: MACOS
+            os: macos-26
+            container: ''
+            required: false
+
+    steps:
+      - name: Install checkout dependencies
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates \
+            rsync openssh-client xz-utils zip unzip
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Mark workspace safe for git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Check version against OpenSoar.config
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          CONFIG_VER=$(sed -n 's/^PROGRAM_VERSION=//p' OpenSoar.config | tr -d '\r')
+          TAG_VER="${GITHUB_REF_NAME#v}"
+          if [ "$TAG_VER" != "$CONFIG_VER" ]; then
+            echo "::error::tag $TAG_VER != OpenSoar.config PROGRAM_VERSION $CONFIG_VER"
+            exit 1
+          fi
+
+      - name: Determine version and flavor
+        id: ver
+        run: |
+          CONFIG_VER=$(sed -n 's/^PROGRAM_VERSION=//p' OpenSoar.config | tr -d '\r')
+          echo "version=$CONFIG_VER" >> "$GITHUB_OUTPUT"
+          case "$CONFIG_VER" in
+            *.t*) echo "prerelease=true" >> "$GITHUB_OUTPUT" ;;
+            *)    echo "prerelease=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Cache ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: opensoar-${{ matrix.target }}-ccache
+          max-size: 2G
+
+      - name: Cache downloads
+        uses: actions/cache@v4
+        with:
+          key: downloads-${{ matrix.target }}-${{ hashFiles('build/libboost.mk', 'build/thirdparty.py', 'build/python/build/libs.py') }}
+          restore-keys: |
+            downloads-${{ matrix.target }}-
+            downloads-
+          path: output/download
+
+      - name: Cache third-party libraries
+        if: matrix.target != 'UNIX'
+        uses: actions/cache@v4
+        with:
+          key: thirdparty-${{ matrix.target }}-${{ hashFiles('build/thirdparty.py', 'build/python/build/*.py', 'lib/**/patches/**') }}
+          path: output/${{ matrix.target }}/lib
+
+      - name: Cache Android SDK/NDK
+        if: matrix.target == 'ANDROID'
+        uses: actions/cache@v4
+        with:
+          key: android-tools-${{ matrix.ndk }}-${{ hashFiles('ide/provisioning/install-android-tools.sh') }}
+          path: |
+            ~/opt/android-sdk-linux
+            ~/opt/android-ndk-${{ matrix.ndk }}
+
+      - name: Cache Homebrew packages
+        if: matrix.target == 'MACOS'
+        uses: actions/cache@v4
+        with:
+          key: brew-${{ matrix.os }}-${{ hashFiles('ide/provisioning/install-darwin-packages.sh') }}
+          restore-keys: |
+            brew-${{ matrix.os }}-
+            brew-
+          path: |
+            /opt/homebrew/var/cache
+            ~/Library/Caches/Homebrew
+
+      - name: Cache ANGLE download
+        if: matrix.target == 'MACOS'
+        uses: actions/cache@v4
+        with:
+          key: angle-${{ hashFiles('darwin/fetch-angle-from-chrome.sh') }}
+          restore-keys: angle-
+          path: output/angle-download
+
+      - name: Install dependencies
+        run: |
+          if [ "${{ matrix.os }}" = 'macos-26' ]; then
+            ./ide/provisioning/install-darwin-packages.sh BASE
+            ./ide/provisioning/install-darwin-packages.sh MACOS
+            exit 0
+          fi
+          ./ide/provisioning/install-debian-packages.sh UPDATE
+          ./ide/provisioning/install-debian-packages.sh BASE
+          ./ide/provisioning/install-debian-packages.sh LINUX
+          if [ "${{ matrix.target }}" = 'ANDROID' ]; then
+            ./ide/provisioning/install-debian-packages.sh ARM
+            ./ide/provisioning/install-debian-packages.sh LLVM
+            ./ide/provisioning/install-debian-packages.sh ANDROID
+            ./ide/provisioning/install-android-tools.sh NDK
+            ./ide/provisioning/install-android-tools.sh SDK
+          fi
+          if [ "${{ matrix.target }}" = 'KOBO' ]; then
+            ./ide/provisioning/install-debian-packages.sh ARM
+            ./ide/provisioning/install-debian-packages.sh KOBO
+          fi
+          if [ "${{ matrix.target }}" = 'UNIX' ]; then
+            ./ide/provisioning/install-debian-packages.sh LIBINPUT_GBM
+          fi
+          ./ide/provisioning/install-debian-packages.sh CLEAN
+
+      - name: Prepare Android signing key
+        if: matrix.target == 'ANDROID'
+        run: |
+          if [ -n "${{ secrets.OPENSOAR_UPLOAD_KEY_JKS_BASE64 }}" ]; then
+            mkdir -p ~/.android
+            echo "${{ secrets.OPENSOAR_UPLOAD_KEY_JKS_BASE64 }}" | base64 -d > ~/.android/signing-key.jks
+            echo "SIGNED_RELEASE=y" >> "$GITHUB_ENV"
+          else
+            echo "SIGNED_RELEASE=n" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build ANDROID
+        if: matrix.target == 'ANDROID'
+        env:
+          ANDROID_KEYSTORE_PASS: ${{ secrets.OPENSOAR_UPLOAD_KEY_JKS_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.OPENSOAR_UPLOAD_KEY_JKS_KEY_ALIAS }}
+        run: |
+          set -e
+          VERSION='${{ steps.ver.outputs.version }}'
+          # release tags always ship both variants; a manual run builds
+          # arm64 only unless the workflow input asks for the fat APK
+          if [ "${GITHUB_REF#refs/tags/}" != "$GITHUB_REF" ] || \
+             [ "${{ inputs.android_fat }}" = 'true' ]; then
+            BUILD_FAT=y
+          else
+            BUILD_FAT=n
+          fi
+          if [ "$SIGNED_RELEASE" = 'y' ]; then
+            APK=output/ANDROID/bin/XCSoar.apk
+            SUFFIX=
+            set -- ANDROID_KEYSTORE="$HOME/.android/signing-key.jks" \
+                   ANDROID_KEY_ALIAS="$KEY_ALIAS"
+          else
+            APK=output/ANDROID/bin/XCSoar-debug.apk
+            SUFFIX=-debugsigned
+            set --
+          fi
+          echo "arm64 build"
+          make -j$(nproc) TARGET=ANDROIDAARCH64 DEBUG=n USE_CCACHE=y V=2 "$@" $APK
+          cp $APK "OpenSoar-$VERSION-android-arm64$SUFFIX.apk"
+          if [ "$BUILD_FAT" = 'y' ]; then
+            echo "fat build (all ABIs)"
+            make -j$(nproc) TARGET=ANDROIDFAT DEBUG=n USE_CCACHE=y V=2 "$@" $APK
+            cp $APK "OpenSoar-$VERSION-android-fat$SUFFIX.apk"
+            # guard against picking up the arm64 APK a second time: the
+            # two builds write to the same output path
+            ABIS=$(unzip -Z1 "OpenSoar-$VERSION-android-fat$SUFFIX.apk" 'lib/*' \
+                   | cut -d/ -f2 | sort -u)
+            echo "fat APK ABIs: $(echo $ABIS)"
+            if [ "$(echo "$ABIS" | wc -l)" -lt 4 ]; then
+              echo "::error::fat APK does not contain all four ABIs"
+              exit 1
+            fi
+          fi
+          ls -la OpenSoar-*.apk
+
+      - name: Build KOBO
+        if: matrix.target == 'KOBO'
+        run: |
+          make -j$(nproc) TARGET=KOBO DEBUG=n USE_CCACHE=y V=2 \
+            output/KOBO/KoboRoot.tgz
+          cp output/KOBO/KoboRoot.tgz KoboRoot.tgz
+          ls -la KoboRoot.tgz
+
+      - name: Build UNIX (build check)
+        if: matrix.target == 'UNIX'
+        run: make -j$(nproc) TARGET=UNIX DEBUG=n USE_CCACHE=y V=2
+
+      - name: Build MACOS
+        if: matrix.target == 'MACOS'
+        run: |
+          set -e
+          VERSION='${{ steps.ver.outputs.version }}'
+          gmake -j$(sysctl -n hw.ncpu) TARGET=MACOS DEBUG=n USE_CCACHE=y V=2 dmg pkg
+          cp output/MACOS/*.dmg "OpenSoar-$VERSION-macos.dmg"
+          cp output/MACOS/*.pkg "OpenSoar-$VERSION-macos.pkg"
+          ls -la OpenSoar-*.dmg OpenSoar-*.pkg
+
+      - name: Upload artifact
+        if: matrix.target != 'UNIX'
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenSoar-${{ steps.ver.outputs.version }}-${{ matrix.target }}
+          path: |
+            OpenSoar-*.apk
+            OpenSoar-*.dmg
+            OpenSoar-*.pkg
+            KoboRoot.tgz
+          if-no-files-found: error
+
+      - name: GitHub release
+        if: startsWith(github.ref, 'refs/tags/') && matrix.target != 'UNIX'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            OpenSoar-*.apk
+            OpenSoar-*.dmg
+            OpenSoar-*.pkg
+            KoboRoot.tgz
+          prerelease: ${{ steps.ver.outputs.prerelease }}
