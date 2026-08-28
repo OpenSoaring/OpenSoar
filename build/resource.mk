@@ -148,6 +148,21 @@ endif
 
 ####### version
 
+# The title graphics carry @PROGRAM_NAME@ / @PROGRAM_VERSION@ tokens
+# (shared with the CMake build, which substitutes them the same way):
+# substitute product name and version before rendering, so the start
+# screen always shows the real brand and version.  It is VERSION and
+# not FULL_VERSION, because the title has room for the version only and
+# the CMake build puts the plain version there as well; the commit id
+# of an unreleased build stays in the version text of the program
+# (Version.cpp) and in the Windows file version.  The rule depends on
+# this file, so a change of the substitution reaches existing builds.
+BRAND_SVG_DIR = $(DATA)/graphics_brand
+$(BRAND_SVG_DIR)/%.svg: Data/graphics/%.svg $(BRAND_CONFIG) build/resource.mk | $(BRAND_SVG_DIR)/dirstamp
+	@$(NQ)echo "  BRAND   $@"
+	$(Q)sed -e 's/@PROGRAM_NAME@/$(PRODUCT_NAME)/g' \
+		-e 's|@PROGRAM_VERSION@|$(VERSION)|g' $< > $@
+
 SVG_TITLE = Data/graphics/title.svg Data/graphics/title_red.svg
 PNG_TITLE_110 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_110.png,$(SVG_TITLE))
 BMP_TITLE_110 = $(PNG_TITLE_110:.png=.bmp)
@@ -163,15 +178,15 @@ SVG_TITLE_WHITE = Data/graphics/title_white.svg Data/graphics/title_red_white.sv
 PNG_TITLE_WHITE_320_RGBA = $(patsubst Data/graphics/%.svg,$(DATA)/graphics2/%_320_rgba.png,$(SVG_TITLE_WHITE))
 PNG_TITLE_WHITE_640_RGBA = $(patsubst Data/graphics/%.svg,$(DATA)/graphics2/%_640_rgba.png,$(SVG_TITLE_WHITE))
 
-# render from SVG to PNG
-$(eval $(call rsvg-convert,$(PNG_TITLE_110),$(DATA)/graphics/%_110.png,Data/graphics/%.svg,--width=110))
-$(eval $(call rsvg-convert,$(PNG_TITLE_320),$(DATA)/graphics/%_320.png,Data/graphics/%.svg,--width=320))
-$(eval $(call rsvg-convert,$(PNG_TITLE_640),$(DATA)/graphics/%_640.png,Data/graphics/%.svg,--width=640))
-$(eval $(call rsvg-convert,$(PNG_TITLE_110_RGBA),$(DATA)/graphics2/%_110_rgba.png,Data/graphics/%.svg,--width=110))
-$(eval $(call rsvg-convert,$(PNG_TITLE_320_RGBA),$(DATA)/graphics2/%_320_rgba.png,Data/graphics/%.svg,--width=320))
-$(eval $(call rsvg-convert,$(PNG_TITLE_640_RGBA),$(DATA)/graphics2/%_640_rgba.png,Data/graphics/%.svg,--width=640))
-$(eval $(call rsvg-convert,$(PNG_TITLE_WHITE_320_RGBA),$(DATA)/graphics2/%_320_rgba.png,Data/graphics/%.svg,--width=320))
-$(eval $(call rsvg-convert,$(PNG_TITLE_WHITE_640_RGBA),$(DATA)/graphics2/%_640_rgba.png,Data/graphics/%.svg,--width=640))
+# render from SVG to PNG (from the token-substituted copies)
+$(eval $(call rsvg-convert,$(PNG_TITLE_110),$(DATA)/graphics/%_110.png,$(BRAND_SVG_DIR)/%.svg,--width=110))
+$(eval $(call rsvg-convert,$(PNG_TITLE_320),$(DATA)/graphics/%_320.png,$(BRAND_SVG_DIR)/%.svg,--width=320))
+$(eval $(call rsvg-convert,$(PNG_TITLE_640),$(DATA)/graphics/%_640.png,$(BRAND_SVG_DIR)/%.svg,--width=640))
+$(eval $(call rsvg-convert,$(PNG_TITLE_110_RGBA),$(DATA)/graphics2/%_110_rgba.png,$(BRAND_SVG_DIR)/%.svg,--width=110))
+$(eval $(call rsvg-convert,$(PNG_TITLE_320_RGBA),$(DATA)/graphics2/%_320_rgba.png,$(BRAND_SVG_DIR)/%.svg,--width=320))
+$(eval $(call rsvg-convert,$(PNG_TITLE_640_RGBA),$(DATA)/graphics2/%_640_rgba.png,$(BRAND_SVG_DIR)/%.svg,--width=640))
+$(eval $(call rsvg-convert,$(PNG_TITLE_WHITE_320_RGBA),$(DATA)/graphics2/%_320_rgba.png,$(BRAND_SVG_DIR)/%.svg,--width=320))
+$(eval $(call rsvg-convert,$(PNG_TITLE_WHITE_640_RGBA),$(DATA)/graphics2/%_640_rgba.png,$(BRAND_SVG_DIR)/%.svg,--width=640))
 
 # convert to uncompressed 8-bit BMP
 $(eval $(call convert-to-bmp-white,$(BMP_TITLE_110) $(BMP_TITLE_320) $(BMP_TITLE_640),%.bmp,%.png))

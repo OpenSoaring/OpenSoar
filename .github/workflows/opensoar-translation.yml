@@ -1,0 +1,51 @@
+# OpenSoar translations: run upstream's "make update-po" on Linux and
+# offer the result as a patch artifact for review - no automatic
+# commits.  Replaces the role of upstream's build-translation.yml for
+# the OpenSoar repositories.
+
+name: OpenSoar Translation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update-po:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo ./ide/provisioning/install-debian-packages.sh UPDATE
+          sudo ./ide/provisioning/install-debian-packages.sh BASE
+          sudo apt-get install -y --no-install-recommends gettext
+
+      - name: Run update-po
+        run: make update-po
+
+      - name: Collect result
+        id: diff
+        run: |
+          git diff --stat -- po/ | tee po-stat.txt
+          if git diff --quiet -- po/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No translation changes."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff -- po/ > update-po.patch
+          fi
+
+      - name: Upload patch
+        if: steps.diff.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: update-po
+          path: |
+            update-po.patch
+            po-stat.txt
