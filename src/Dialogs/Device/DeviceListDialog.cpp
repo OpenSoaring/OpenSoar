@@ -39,6 +39,7 @@
 #include "Operation/MessageOperationEnvironment.hpp"
 #include "Simulator.hpp"
 #include "Logger/ExternalLogger.hpp"
+#include "Device/PortsConfig.hpp"
 #include "Profile/Current.hpp"
 #include "Profile/Profile.hpp"
 #include "Profile/DeviceConfig.hpp"
@@ -583,8 +584,7 @@ DeviceListWidget::EnableDisableCurrent()
   /* save new config to profile .. */
 
   config.enabled = !config.enabled;
-  Profile::SetDeviceConfig(Profile::map, index, config);
-  Profile::Save();
+  DevicePorts::SaveOne(index, config);
 
   /* update the UI */
 
@@ -688,8 +688,7 @@ DeviceListWidget::EditCurrent()
   /* save new config to profile .. */
 
   config = widget.GetConfig();
-  Profile::SetDeviceConfig(Profile::map, index, config);
-  Profile::Save();
+  DevicePorts::SaveOne(index, config);
 
   /* update the UI */
 
