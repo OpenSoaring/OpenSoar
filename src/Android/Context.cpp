@@ -13,6 +13,7 @@ static jmethodID getExternalFilesDir_method,
   getExternalFilesDirs_method,
   getExternalMediaDirs_method,
   getExternalCacheDir_method,
+  getFilesDir_method,
   getSystemService_method;
 
 void
@@ -27,6 +28,8 @@ Context::Initialise(JNIEnv *env) noexcept
   getExternalMediaDirs_method = env->GetMethodID(cls, "getExternalMediaDirs", "()[Ljava/io/File;");
   getExternalCacheDir_method = env->GetMethodID(cls, "getExternalCacheDir",
                                                 "()Ljava/io/File;");
+  getFilesDir_method = env->GetMethodID(cls, "getFilesDir",
+                                        "()Ljava/io/File;");
   getSystemService_method = env->GetMethodID(cls, "getSystemService",
                                              "(Ljava/lang/String;)Ljava/lang/Object;");
 }
@@ -103,6 +106,13 @@ AllocatedPath
 Context::GetExternalCacheDir(JNIEnv *env) noexcept
 {
   Java::File dir{env, env->CallObjectMethod(Get(), getExternalCacheDir_method)};
+  return ToPathChecked(dir.GetAbsolutePathChecked());
+}
+
+AllocatedPath
+Context::GetFilesDir(JNIEnv *env) noexcept
+{
+  Java::File dir{env, env->CallObjectMethod(Get(), getFilesDir_method)};
   return ToPathChecked(dir.GetAbsolutePathChecked());
 }
 
