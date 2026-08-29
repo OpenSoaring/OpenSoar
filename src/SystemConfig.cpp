@@ -16,9 +16,11 @@
 static constexpr char SYSTEM_CONFIG_FILE[] = "system.prf";
 
 static constexpr char KEY_XCSOAR_BEHAVIOUR[] = "XCSoarBehaviour";
+static constexpr char KEY_DEVICES_IN_PROFILE[] = "DevicesInProfile";
 
 static SystemConfig::Settings the_config = {
   .xcsoar_behaviour = false,
+  .devices_in_profile = false,
 };
 
 [[gnu::pure]]
@@ -51,6 +53,7 @@ SystemConfig::Load() noexcept
   }
 
   map.Get(KEY_XCSOAR_BEHAVIOUR, the_config.xcsoar_behaviour);
+  map.Get(KEY_DEVICES_IN_PROFILE, the_config.devices_in_profile);
 }
 
 void
@@ -67,6 +70,7 @@ SystemConfig::Save() noexcept
 
   ProfileMap map;
   map.Set(KEY_XCSOAR_BEHAVIOUR, the_config.xcsoar_behaviour);
+  map.Set(KEY_DEVICES_IN_PROFILE, the_config.devices_in_profile);
 
   try {
     Profile::SaveFile(map, path);

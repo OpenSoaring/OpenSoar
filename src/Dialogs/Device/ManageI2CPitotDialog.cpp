@@ -8,6 +8,7 @@
 #include "Language/Language.hpp"
 #include "NMEA/Info.hpp"
 #include "Device/Descriptor.hpp"
+#include "Device/PortsConfig.hpp"
 #include "Profile/Current.hpp"
 #include "Profile/Profile.hpp"
 #include "Profile/DeviceConfig.hpp"
@@ -92,8 +93,7 @@ ManageI2CPitotWidget::Calibrate() noexcept
   config.sensor_offset = GetValueFloat(PITOT)
     + device.GetConfig().sensor_offset - GetValueFloat(STATIC);
 
-  Profile::SetDeviceConfig(Profile::map, index, config);
-  Profile::Save();
+  DevicePorts::SaveOne(index, config);
 
   device.SetConfig(config);
 

@@ -26,8 +26,17 @@ struct Settings {
    */
   bool xcsoar_behaviour;
 
+  /**
+   * Keep the NMEA devices and their ports in the profile, the way
+   * XCSoar does it, instead of in the device port file.  For the rare
+   * case where one machine flies with several sets of instruments -
+   * a phone in two different gliders, say.
+   */
+  bool devices_in_profile;
+
   constexpr void SetDefaults() noexcept {
     xcsoar_behaviour = false;
+    devices_in_profile = false;
   }
 };
 
