@@ -134,6 +134,7 @@ DIALOG_SOURCES = \
 	$(SRC)/Dialogs/Settings/Panels/RouteConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/SafetyFactorsConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/SiteConfigPanel.cpp \
+	$(SRC)/Dialogs/Settings/Panels/SystemConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/SymbolsConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/TaskRulesConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/TaskDefaultsConfigPanel.cpp \
@@ -485,6 +486,7 @@ XCSOAR_SOURCES := \
 	$(SRC)/DataFilePath.cpp \
 	$(SRC)/LocalPath.cpp \
 	$(SRC)/PowerControl.cpp \
+	$(SRC)/SystemConfig.cpp \
 	$(SRC)/UIActions.cpp \
 	$(SRC)/Interface.cpp \
 	$(SRC)/ActionInterface.cpp \
