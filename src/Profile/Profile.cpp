@@ -30,6 +30,9 @@ static AllocatedPath next_start_profile = nullptr;
 /** True after Load() has been called for startProfileFile. */
 static bool loaded = false;
 
+/** set by SetReadOnly(): the file on disk is newer than the memory */
+static bool read_only = false;
+
 static AllocatedPath
 BuildProfilePath(Path base_name) noexcept
 {
@@ -92,6 +95,13 @@ TouchNextStartProfile() noexcept
 }
 
 void
+Profile::SetReadOnly() noexcept
+{
+  LogString("Profile: read-only from now on, restart to reload");
+  read_only = true;
+}
+
+void
 Profile::Save() noexcept
 {
   if (!loaded) {
@@ -100,7 +110,7 @@ Profile::Save() noexcept
     return;
   }
 
-  if (!IsModified())
+  if (!IsModified() || read_only)
     return;
 
   LogString("Saving profiles");
