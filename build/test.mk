@@ -2803,6 +2803,8 @@ RUN_PROFILE_LIST_DIALOG_SOURCES = \
 	$(SRC)/LocalPath.cpp \
 	$(SRC)/Formatter/HexColor.cpp \
 	$(SRC)/Repository/FileType.cpp \
+	$(SRC)/Profile/Profile.cpp \
+	$(SRC)/PowerControl.cpp \
 	$(MORE_SCREEN_SOURCES) \
 	$(TEST_SRC_DIR)/Fonts.cpp \
 	$(TEST_SRC_DIR)/FakeAsset.cpp \

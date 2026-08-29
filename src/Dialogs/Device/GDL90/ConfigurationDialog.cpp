@@ -5,6 +5,7 @@
 #include "Device/Driver/GDL90/Driver.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Dialogs/Message.hpp"
+#include "Dialogs/PowerDialog.hpp"
 #include "Language/Language.hpp"
 #include "Profile/Profile.hpp"
 #include "UIGlobals.hpp"
@@ -96,8 +97,7 @@ public:
 
     _changed |= changed;
     if (_changed)
-      ShowMessageBox(_("Changes to configuration saved. Restart XCSoar to apply changes."),
-                     "", MB_OK);
+      OfferRestart(_("Changes to configuration saved."));
 
     return true;
   }
