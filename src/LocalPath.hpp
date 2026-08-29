@@ -106,6 +106,24 @@ void VisitDataFiles(const char* filter, File::Visitor &visitor);
 Path
 GetCachePath() noexcept;
 
+/**
+ * The directory for settings that belong to this device rather than
+ * to a profile: outside the data directory and never below it, so
+ * that copying or replacing the data directory leaves them alone.
+ * May be nullptr if the platform offers no such place.
+ */
+[[gnu::pure]]
+Path
+GetSystemConfigPath() noexcept;
+
+/**
+ * Like GetSystemConfigPath(), and creates the directory.
+ *
+ * @return the path, or nullptr if it could not be created
+ */
+Path
+MakeSystemConfigPath() noexcept;
+
 [[gnu::pure]]
 AllocatedPath
 MakeCacheDirectory(const char *name) noexcept;
