@@ -95,6 +95,7 @@ set(_SOURCES
         Dialogs/Settings/Panels/SafetyFactorsConfigPanel.cpp
         Dialogs/Settings/Panels/ScoringConfigPanel.cpp
         Dialogs/Settings/Panels/SiteConfigPanel.cpp
+        Dialogs/Settings/Panels/SystemConfigPanel.cpp
         Dialogs/Settings/Panels/SymbolsConfigPanel.cpp
         Dialogs/Settings/Panels/TaskDefaultsConfigPanel.cpp
         Dialogs/Settings/Panels/TaskRulesConfigPanel.cpp

@@ -12,6 +12,7 @@
 #include "LogFile.hpp"
 #include "CommandLine.hpp"
 #include "PowerControl.hpp"
+#include "SystemConfig.hpp"
 #include "MainWindow.hpp"
 #include "Interface.hpp"
 #include "Look/GlobalFonts.hpp"
@@ -137,6 +138,10 @@ try {
 
   InitialiseDataPath();
   CommandLine::ApplyPendingProfile();
+
+  /* device settings (not part of any profile) decide how the program
+     starts and how it is left */
+  SystemConfig::Load();
 
   // Write startup note + version to logfile
   LogFormat("Starting %s", XCSoar_ProductToken);
