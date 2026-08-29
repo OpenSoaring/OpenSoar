@@ -560,6 +560,9 @@ protected:
   static PixelRect GetShowRotateButtonRect(const PixelRect rc) noexcept;
 #endif
 
+  /* virtual methods from class SingleWindow */
+  void RemoveDialog(WndForm *dialog) noexcept override;
+
   /* virtual methods from class TopWindow */
   bool OnClose() noexcept override;
 
