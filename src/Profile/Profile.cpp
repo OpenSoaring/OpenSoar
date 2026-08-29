@@ -7,6 +7,7 @@
 #include "File.hpp"
 #include "LocalPath.hpp"
 #include "LogFile.hpp"
+#include "SystemConfig.hpp"
 #include "Map.hpp"
 #include "lib/fmt/PathFormatter.hpp"
 #include "system/FileUtil.hpp"
@@ -125,6 +126,12 @@ Profile::MarkForNextStart(Path path) noexcept
     return false;
 
   next_start_profile = path;
+
+  /* remember the choice where a timestamp cannot get lost in the
+     two-second resolution of a FAT card */
+  SystemConfig::Get().last_profile = path.c_str();
+  SystemConfig::Save();
+
   return true;
 }
 
