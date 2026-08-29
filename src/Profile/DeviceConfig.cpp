@@ -61,8 +61,9 @@ MakeDeviceSettingName(char *buffer, size_t buffer_size,
   return buffer;
 }
 
-static bool
-StringToPortType(const char *value, DeviceConfig::PortType &type)
+bool
+Profile::StringToPortType(const char *value,
+                          DeviceConfig::PortType &type) noexcept
 {
   for (auto i = port_type_strings; *i != NULL; ++i) {
     if (StringIsEqual(value, *i)) {
@@ -83,7 +84,7 @@ ReadPortType(const ProfileMap &map, unsigned n, DeviceConfig::PortType &type)
     return false;
 
   const char *value = map.Get(name);
-  return value != NULL && StringToPortType(value, type);
+  return value != NULL && Profile::StringToPortType(value, type);
 }
 
 static bool
@@ -248,8 +249,8 @@ Profile::GetDeviceConfig(const ProfileMap &map, unsigned n,
     config.instrument_alignment = DeviceConfig::InstrumentAlignment::NONE;
 }
 
-static const char *
-PortTypeToString(DeviceConfig::PortType type)
+const char *
+Profile::PortTypeToString(DeviceConfig::PortType type) noexcept
 {
   const unsigned i = (unsigned)type;
   return i < ARRAY_SIZE(port_type_strings)
@@ -260,7 +261,7 @@ PortTypeToString(DeviceConfig::PortType type)
 static void
 WritePortType(ProfileMap &map, unsigned n, DeviceConfig::PortType type)
 {
-  const char *value = PortTypeToString(type);
+  const char *value = Profile::PortTypeToString(type);
   if (value == NULL)
     return;
 
