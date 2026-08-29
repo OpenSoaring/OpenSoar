@@ -93,6 +93,7 @@ DIALOG_SOURCES = \
 	$(SRC)/Dialogs/ReplayDialog.cpp \
 	$(SRC)/Dialogs/dlgSimulatorPrompt.cpp \
 	$(SRC)/Dialogs/SimulatorPromptWindow.cpp \
+	$(SRC)/Dialogs/PowerDialog.cpp \
 	$(SRC)/Dialogs/StartupDialog.cpp \
 	$(SRC)/Dialogs/ProfilePasswordDialog.cpp \
 	\
@@ -483,6 +484,7 @@ XCSOAR_SOURCES := \
 	$(SRC)/Language/Table.cpp \
 	$(SRC)/DataFilePath.cpp \
 	$(SRC)/LocalPath.cpp \
+	$(SRC)/PowerControl.cpp \
 	$(SRC)/UIActions.cpp \
 	$(SRC)/Interface.cpp \
 	$(SRC)/ActionInterface.cpp \

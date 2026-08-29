@@ -20,5 +20,5 @@ EditDataFieldDialog([[maybe_unused]] const char *caption,
 static void
 Main([[maybe_unused]] TestMainWindow &main_window)
 {
-  ProfileListDialog();
+  ProfileListDialog(nullptr);
 }
