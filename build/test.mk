@@ -150,6 +150,7 @@ ifeq ($(HAVE_WIN32),n)
 TEST_NAMES += \
 	TestDataLayoutMigration \
 	TestDevicePorts \
+	TestFileCheck \
 	TestLocalPathResolve
 endif
 
@@ -900,6 +901,15 @@ TEST_DEVICE_PORTS_SOURCES = \
 	$(TEST_SRC_DIR)/TestDevicePorts.cpp
 TEST_DEVICE_PORTS_DEPENDS = JSON PROFILE IO OS UTIL
 $(eval $(call link-program,TestDevicePorts,TEST_DEVICE_PORTS))
+
+TEST_FILE_CHECK_SOURCES = \
+	$(SRC)/Repository/FileType.cpp \
+	$(SRC)/Repository/FileCheck.cpp \
+	$(TEST_SRC_DIR)/FakeLanguage.cpp \
+	$(TEST_SRC_DIR)/tap.c \
+	$(TEST_SRC_DIR)/TestFileCheck.cpp
+TEST_FILE_CHECK_DEPENDS = IO OS UTIL
+$(eval $(call link-program,TestFileCheck,TEST_FILE_CHECK))
 
 TEST_LOCAL_PATH_RESOLVE_SOURCES = \
 	$(SRC)/DataFileLayout.cpp \
