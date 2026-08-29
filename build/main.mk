@@ -552,6 +552,7 @@ XCSOAR_SOURCES := \
 	\
 	$(SRC)/Repository/FileRepository.cpp \
 	$(SRC)/Repository/FileType.cpp \
+	$(SRC)/Repository/FileCheck.cpp \
 	$(SRC)/Repository/Parser.cpp \
 	\
 	$(SRC)/Storage/PlatformStorageMonitor.cpp \
