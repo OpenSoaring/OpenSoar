@@ -17,6 +17,7 @@
 #include "Hardware/CPU.hpp"
 #include "Simulator.hpp"
 #include "SystemConfig.hpp"
+#include "Device/PortsConfig.hpp"
 #include "InfoBoxes/InfoBoxManager.hpp"
 #include "Terrain/RasterTerrain.hpp"
 #include "Terrain/AsyncLoader.hpp"
@@ -191,6 +192,11 @@ LoadProfile()
 
   Profile::Load();
   Profile::Use(Profile::map);
+
+  /* the NMEA devices belong to the machine, not to the profile: they
+     come from the device port file (unless the system settings say
+     otherwise) */
+  DevicePorts::Apply(CommonInterface::SetSystemSettings());
 
   Units::SetConfig(CommonInterface::GetUISettings().format.units);
   SetUserCoordinateFormat(CommonInterface::GetUISettings().format.coordinate_format);
