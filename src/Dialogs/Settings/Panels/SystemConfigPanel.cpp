@@ -20,6 +20,7 @@
 class SystemConfigPanel final : public RowFormWidget {
   enum ControlIndex {
     XCSOAR_BEHAVIOUR,
+    DEVICES_IN_PROFILE,
     DEVICES,
     LOCATION,
   };
@@ -47,6 +48,13 @@ SystemConfigPanel::Prepare(ContainerWindow &parent,
                "start."),
              SystemConfig::Get().xcsoar_behaviour);
 
+  AddBoolean(_("Devices in the profile"),
+             _("Keep the NMEA devices and their ports in the profile, the "
+               "way XCSoar does it, instead of in the device port file.  "
+               "For a machine that flies with more than one set of "
+               "instruments.  Takes effect on the next start."),
+             SystemConfig::Get().devices_in_profile);
+
   /* second way to the NMEA devices and their ports: they belong to
      the device just as much as the settings above */
   AddButton(_("Devices"), [](){
@@ -67,16 +75,27 @@ SystemConfigPanel::Prepare(ContainerWindow &parent,
 bool
 SystemConfigPanel::Save(bool &changed) noexcept
 {
+  bool modified = false;
+
   if (const bool xcsoar_behaviour = GetValueBoolean(XCSOAR_BEHAVIOUR);
       xcsoar_behaviour != SystemConfig::Get().xcsoar_behaviour) {
     SystemConfig::Get().xcsoar_behaviour = xcsoar_behaviour;
-    SystemConfig::Save();
+    modified = true;
 
     /* "changed" reports profile changes, and this is not one of
        them - the value has just been written to its own file, so the
        flag is deliberately left alone (it is shared with the other
        pages of the dialog) */
   }
+
+  if (const bool devices_in_profile = GetValueBoolean(DEVICES_IN_PROFILE);
+      devices_in_profile != SystemConfig::Get().devices_in_profile) {
+    SystemConfig::Get().devices_in_profile = devices_in_profile;
+    modified = true;
+  }
+
+  if (modified)
+    SystemConfig::Save();
 
   return true;
 }
