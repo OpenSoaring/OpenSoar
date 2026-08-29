@@ -9,6 +9,8 @@
 #include "Language/Language.hpp"
 #include "Dialogs/Message.hpp"
 #include "Dialogs/PowerDialog.hpp"
+#include "ProductName.hpp"
+#include "SystemConfig.hpp"
 #include "FLARM/Glue.hpp"
 #include "Gauge/BigTrafficWidget.hpp"
 #include "Gauge/BigThermalAssistantWidget.hpp"
@@ -31,6 +33,10 @@ UIActions::CheckShutdown() noexcept
 {
   if (force_shutdown)
     return true;
+
+  if (SystemConfig::IsXCSoarBehaviour())
+    return ShowMessageBox(_("Quit program?"), PRODUCT_NAME,
+                          MB_YESNO | MB_ICONQUESTION) == IDYES;
 
   /* closing the window (system menu, Alt+F4, window manager) leads to
      the same dialog as the menu entry; it also offers reboot and power

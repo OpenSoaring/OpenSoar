@@ -28,6 +28,7 @@
 #include "Language/Language.hpp"
 #include "Language/LanguageGlue.hpp"
 #include "LocalPath.hpp"
+#include "SystemConfig.hpp"
 #include "PowerControl.hpp"
 #include "LogFile.hpp"
 #include "Version.hpp"
@@ -270,6 +271,10 @@ try {
 
   InitialiseDataPath();
   AtScopeExit() { DeinitialiseDataPath(); };
+
+  /* device settings (not part of any profile) decide how the program
+     starts and how it is left */
+  SystemConfig::Load();
 
   LogFormat("Starting %s", XCSoar_ProductToken);
 

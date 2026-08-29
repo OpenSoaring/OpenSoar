@@ -25,6 +25,7 @@
 #include "Widget/TwoWidgets.hpp"
 #include "WidgetDialog.hpp"
 #include "system/FileUtil.hpp"
+#include "SystemConfig.hpp"
 #include "UISettings.hpp"
 #include "ui/canvas/Canvas.hpp"
 #include "ui/event/PeriodicTimer.hpp"
@@ -298,6 +299,10 @@ GetStartupTimeout(Path profile_path) noexcept
   if (CommandLine::startup_timeout >= 0)
     return unsigned(CommandLine::startup_timeout);
 
+  if (SystemConfig::IsXCSoarBehaviour())
+    /* upstream waits for the user */
+    return 0;
+
   auto value = DEFAULT_STARTUP_TIMEOUT;
 
   if (profile_path != nullptr) {
@@ -331,7 +336,18 @@ dlgStartupShowModal() noexcept
     return true;
   }
 
-  /* unlike upstream, the dialog is shown even when there is only one
+  if (SystemConfig::IsXCSoarBehaviour() && dff->GetNumFiles() == 1) {
+    /* upstream behaviour: skip the dialog if there is only one
+       profile to choose from */
+    const auto path = dff->GetValue();
+    if (ProfileFileHasPassword(path) == TriState::FALSE &&
+        SelectProfile(path)) {
+      delete dff;
+      return true;
+    }
+  }
+
+  /* otherwise the dialog is shown even when there is only one
      profile: it is the start screen, and the countdown below carries
      on by itself */
 
