@@ -18,9 +18,16 @@ static PeriodClock throttle_clock;
 void
 ProgressGlue::Create(const char *text) noexcept
 {
-  /* Skip showing progress dialog during shutdown */
-  if (!global_running)
+  if (!global_running) {
+    /* during shutdown no new window is created, but one that is
+       already on screen still shows what is going on */
+    if (global_progress_window != nullptr) {
+      global_progress_window->SetMessage(text);
+      UIGlobals::GetMainWindow().Refresh();
+    }
+
     return;
+  }
 
   UIGlobals::GetMainWindow().RefreshSize();
 
