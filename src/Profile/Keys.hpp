@@ -147,6 +147,7 @@ constexpr std::string_view UTCOffsetSigned = "UTCOffsetSigned";
 constexpr std::string_view BlockSTF = "BlockSpeedToFly";
 constexpr std::string_view AutoZoom = "AutoZoom";
 constexpr std::string_view MenuTimeout = "MenuTimeout";
+constexpr std::string_view StartupTimeout = "StartupTimeout";
 constexpr std::string_view TerrainContrast = "TerrainContrast";
 constexpr std::string_view TerrainBrightness = "TerrainBrightness";
 constexpr std::string_view TerrainRamp = "TerrainRamp";

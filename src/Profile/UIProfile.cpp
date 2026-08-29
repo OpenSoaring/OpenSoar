@@ -107,6 +107,7 @@ Profile::Load(const ProfileMap &map, UISettings &settings)
   Load(map, settings.display);
 
   map.Get(ProfileKeys::MenuTimeout, settings.menu_timeout);
+  map.Get(ProfileKeys::StartupTimeout, settings.startup_timeout);
 
   map.Get(ProfileKeys::UIScale, settings.scale);
   if (settings.scale < 50 || settings.scale > 200)
