@@ -18,6 +18,12 @@
 #include <type_traits>
 
 /**
+ * Default for UISettings::startup_timeout, also used by the startup
+ * dialog, which reads the value before the profile is loaded.
+ */
+static constexpr std::chrono::duration<unsigned> DEFAULT_STARTUP_TIMEOUT{4};
+
+/**
  * User interface settings.
  */
 struct UISettings {
@@ -30,6 +36,12 @@ struct UISettings {
   static constexpr unsigned SCALE_MIN = 75;
   static constexpr unsigned SCALE_MAX = 200;
   static constexpr unsigned SCALE_STEP = 5;
+  /**
+   * Seconds until the startup profile dialog continues on its own
+   * with the preselected profile; 0 waits for the user.  Read from
+   * the profile file before the profile is loaded (StartupDialog).
+   */
+  std::chrono::duration<unsigned> startup_timeout;
 
   unsigned scale;
 
