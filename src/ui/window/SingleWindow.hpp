@@ -43,7 +43,7 @@ public:
   }
 
   void AddDialog(WndForm *dialog) noexcept;
-  void RemoveDialog(WndForm *dialog) noexcept;
+  virtual void RemoveDialog(WndForm *dialog) noexcept;
 
   /** Raise a child above page content while preserving the dialog stack. */
   void BringToTopBelowDialogs(Window &window) noexcept;
