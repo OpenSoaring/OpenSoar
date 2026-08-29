@@ -171,9 +171,11 @@ LoadProfile()
      upgrade) */
   MigrateDataLayoutToSubdirs();
 
-  if (Profile::GetPath() == nullptr &&
-      !dlgStartupShowModal()) {
-    LogString("LoadProfile: no profile path and startup dialog was cancelled");
+  /* the profile dialog is the start screen and always appears; a
+     profile given with "-profile=" is preselected there instead of
+     the most recently used one */
+  if (!dlgStartupShowModal()) {
+    LogString("LoadProfile: the startup dialog was cancelled");
     startup_cancelled_by_user = true;
     return false;
   }
@@ -385,8 +387,11 @@ Startup(UI::Display &display)
   main_window->Initialise();
 
 #ifdef SIMULATOR_AVAILABLE
-  // prompt for simulator if not set by command line argument "-simulator" or "-fly"
-  if (!sim_set_in_cmd_line_flag) {
+  /* The fly/simulator prompt is not part of the normal start: it only
+     appears on request ("-ask").  Without it OpenSoar flies, unless
+     "-simulator" or "-fly" already decided.  The start screen the user
+     sees is the profile dialog below. */
+  if (ask_simulator_flag && !sim_set_in_cmd_line_flag) {
     SimulatorPromptResult result = dlgSimulatorPromptShowModal();
     switch (result) {
     case SPR_QUIT:

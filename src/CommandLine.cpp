@@ -47,7 +47,10 @@ static const char option_summary[] =
 #ifdef SIMULATOR_AVAILABLE
   "  -simulator          bypass startup-screen, use simulator mode directly\n"
   "  -fly                bypass startup-screen, use fly mode directly\n"
+  "  -ask                show the fly/simulator prompt at startup\n"
 #endif
+  "  -startup-timeout=N  seconds until the profile dialog continues on its\n"
+  "                      own (0 waits forever)\n"
   "  -profile=FNAME      load profile from file FNAME\n"
   "  -WIDTHxHEIGHT       use screen resolution WIDTH x HEIGHT\n"
   "  -portrait           use a 480x640 screen resolution\n"
@@ -144,7 +147,14 @@ CommandLine::Parse(Args &args)
     } else if (StringIsEqual(s, "-fly")) {
       global_simulator_flag=false;
       sim_set_in_cmd_line_flag=true;
+    } else if (StringIsEqual(s, "-ask")) {
+      ask_simulator_flag = true;
 #endif
+    } else if (StringIsEqual(s, "-startup-timeout=", 17)) {
+      char *p;
+      startup_timeout = (int)ParseUnsigned(s + 17, &p);
+      if (*p != '\0')
+        args.UsageError();
     } else if (isdigit(s[1])) {
       char *p;
       width = ParseUnsigned(s + 1, &p);
