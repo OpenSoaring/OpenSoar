@@ -1,5 +1,6 @@
 set(_SOURCES
         Repository/CountryName.cpp
+        Repository/FileCheck.cpp
         Repository/FileRepository.cpp
         Repository/Glue.cpp
         Repository/Parser.cpp
