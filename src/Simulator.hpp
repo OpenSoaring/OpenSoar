@@ -13,6 +13,13 @@
 extern bool global_simulator_flag;
 extern bool sim_set_in_cmd_line_flag;
 
+/**
+ * Set by the command line option "-ask": show the fly/simulator
+ * prompt at startup.  Without it, OpenSoar starts in fly mode unless
+ * "-simulator" or "-fly" says otherwise.
+ */
+extern bool ask_simulator_flag;
+
 #endif
 
 /**
