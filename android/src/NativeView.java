@@ -305,6 +305,15 @@ class NativeView extends SurfaceView
     quitHandler.sendEmptyMessage(0);
   }
 
+  /**
+   * Called by native code when the user chose "Restart" in the power
+   * dialog: the activity then launches a fresh instance right before
+   * System.exit() kills this process.
+   */
+  void requestRestart() {
+    XCSoar.requestRestart();
+  }
+
   static native void initNative();
   static native void deinitNative();
 

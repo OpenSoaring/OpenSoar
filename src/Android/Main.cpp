@@ -27,6 +27,7 @@
 #include "Language/Language.hpp"
 #include "Language/LanguageGlue.hpp"
 #include "LocalPath.hpp"
+#include "PowerControl.hpp"
 #include "LogFile.hpp"
 #include "Version.hpp"
 #include "Screen/Debug.hpp"
@@ -358,6 +359,12 @@ try {
   }
 
   Shutdown();
+
+  /* "Restart" cannot exec() on Android the way it does on the other
+     targets: hand the wish to the Java side, which starts a fresh
+     instance right before System.exit() ends this process */
+  if (PowerControl::Get() == PowerAction::RESTART)
+    native_view->RequestRestart(env);
 } catch (...) {
   /* if an error occurs, rethrow the C++ exception as Java exception,
      to be displayed by the Java glue code */
