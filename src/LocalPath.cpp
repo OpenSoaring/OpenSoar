@@ -59,6 +59,14 @@ static std::list<AllocatedPath> data_paths;
 
 static AllocatedPath cache_path;
 
+/**
+ * Settings that belong to the device, not to a profile or a data
+ * directory: deliberately outside the data path (and not below it),
+ * so that copying or replacing the data directory does not carry
+ * them along.
+ */
+static AllocatedPath system_config_path;
+
 Path
 GetPrimaryDataPath() noexcept
 {
@@ -356,6 +364,53 @@ VisitDataFiles(const char* filter, File::Visitor &visitor)
     Directory::VisitSpecificFiles(i, filter, visitor, true);
 }
 
+/**
+ * Where the device keeps settings that must not travel with the data
+ * directory.  Each platform has a place for this; the data path is
+ * only the last resort, and even then it is a hidden sibling
+ * directory, never a subdirectory.
+ */
+static AllocatedPath
+FindSystemConfigPath() noexcept
+{
+#ifdef ANDROID
+  /* private internal storage: invisible to the user, kept when the
+     cache is cleared */
+  if (auto path = context->GetFilesDir(Java::GetEnv()); path != nullptr)
+    return path;
+#elif defined(KOBO)
+  /* next to the data directory on the partition the user sees */
+  return AllocatedPath{Path{KOBO_USER_DATA DIR_SEPARATOR_S "." PRODUCT_NAME_LC}};
+#elif defined(_WIN32)
+  {
+    wchar_t buffer[MAX_PATH];
+    if (SHGetSpecialFolderPathW(nullptr, buffer, CSIDL_LOCAL_APPDATA, true)) {
+      const std::string local_app_data = WideToUTF8(buffer);
+      if (!local_app_data.empty())
+        return AllocatedPath::Build(local_app_data.c_str(), PRODUCT_NAME);
+    }
+  }
+#elif defined(HAVE_POSIX)
+  if (const char *xdg = getenv("XDG_CONFIG_HOME");
+      xdg != nullptr && *xdg != '\0') {
+    const std::string dir = std::string{xdg} + DIR_SEPARATOR_S PRODUCT_NAME_LC;
+    return AllocatedPath{Path{dir.c_str()}};
+  }
+
+  if (const char *home = getenv("HOME"); home != nullptr && *home != '\0') {
+    const std::string dir = std::string{home}
+      + DIR_SEPARATOR_S ".config" DIR_SEPARATOR_S PRODUCT_NAME_LC;
+    return AllocatedPath{Path{dir.c_str()}};
+  }
+#endif
+
+  /* last resort: a hidden directory beside the data directory */
+  if (const auto parent = GetPrimaryDataPath().GetParent(); parent != nullptr)
+    return AllocatedPath::Build(parent, Path{"." PRODUCT_NAME_LC});
+
+  return nullptr;
+}
+
 Path
 GetCachePath() noexcept
 {
@@ -391,12 +446,35 @@ InitialiseDataPath()
 #else
   cache_path = LocalPath("cache");
 #endif
+
+  system_config_path = FindSystemConfigPath();
 }
 
 void
 DeinitialiseDataPath() noexcept
 {
   data_paths.clear();
+}
+
+Path
+GetSystemConfigPath() noexcept
+{
+  return system_config_path;
+}
+
+Path
+MakeSystemConfigPath() noexcept
+{
+  if (system_config_path == nullptr)
+    return nullptr;
+
+  try {
+    Directory::Create(system_config_path);
+  } catch (...) {
+    return nullptr;
+  }
+
+  return system_config_path;
 }
 
 void
