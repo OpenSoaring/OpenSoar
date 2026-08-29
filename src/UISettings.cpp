@@ -10,6 +10,7 @@ UISettings::SetDefaults() noexcept
   display.SetDefaults();
 
   menu_timeout = std::chrono::seconds{8 * 4};
+  startup_timeout = DEFAULT_STARTUP_TIMEOUT;
 
   scale = 100;
 
