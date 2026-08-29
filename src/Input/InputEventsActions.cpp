@@ -46,6 +46,7 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "Dialogs/PowerDialog.hpp"
 #include "Dialogs/ProfileListDialog.hpp"
 #include "Profile/Profile.hpp"
+#include "SystemConfig.hpp"
 #include "Dialogs/dlgAnalysis.hpp"
 #include "Dialogs/FileManager.hpp"
 #include "Dialogs/ReplayDialog.hpp"
@@ -687,6 +688,12 @@ InputEvents::eventBrightness([[maybe_unused]] const char *misc)
 void
 InputEvents::eventExit([[maybe_unused]] const char *misc)
 {
+  if (SystemConfig::IsXCSoarBehaviour()) {
+    /* upstream asks "Quit program?" (UIActions::CheckShutdown) */
+    UIActions::SignalShutdown(false);
+    return;
+  }
+
   /* one button, one dialog: quit, restart, and - where the device
      allows it - reboot or switch off */
   ShowPowerDialog();

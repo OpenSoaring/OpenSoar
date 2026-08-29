@@ -26,6 +26,12 @@ public:
 
   AllocatedPath GetExternalCacheDir(JNIEnv *env) noexcept;
 
+  /**
+   * The application's private directory on internal storage; it is
+   * not visible to the user and survives a cleared cache.
+   */
+  AllocatedPath GetFilesDir(JNIEnv *env) noexcept;
+
   Java::LocalObject GetSystemService(JNIEnv *env, jstring name);
   Java::LocalObject GetSystemService(JNIEnv *env, const char *name);
   Java::LocalObject GetVibrator(JNIEnv *env);
