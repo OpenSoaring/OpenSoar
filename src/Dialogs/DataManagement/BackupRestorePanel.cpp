@@ -8,6 +8,7 @@
 #include "io/OutputStream.hxx"
 #include "io/Reader.hxx"
 #include "Dialogs/Message.hpp"
+#include "Dialogs/PowerDialog.hpp"
 #include "Dialogs/JobDialog.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Job/Job.hpp"
@@ -27,6 +28,7 @@
 #include "fmt/format.h"
 #include "Storage/StorageUtil.hpp"
 #include "Storage/StorageDevice.hpp"
+#include "Profile/Profile.hpp"
 #include "util/StringCompare.hxx"
 
 #include <algorithm>
@@ -169,14 +171,25 @@ RunRestoreJob(Path device_root, Path tar_name)
     const std::string fullmsg = std::string(_("Restore failed.")) +
       "\n\n" + job.error_message;
     ShowMessageBox(fullmsg.c_str(), C_("Button", "Restore"), MB_OK | MB_ICONERROR);
-  } else if (failed > 0) {
-    StaticString<256> msg;
-    msg.Format(_("Restore finished with %u failed files. Restart XCSoar to apply restored settings."), failed);
-    ShowMessageBox(msg, C_("Button", "Restore"), MB_OK | MB_ICONINFORMATION);
-  } else {
-    ShowMessageBox(_("Restore complete. Restart XCSoar to apply restored settings."),
-                   C_("Button", "Restore"), MB_OK | MB_ICONINFORMATION);
+
+    if (restored == 0)
+      return;
+
+    /* some files are back already - the profile may be among them:
+       carry on like after a complete restore */
   }
+
+  /* the files on disk are the restored ones now, and the settings in
+     memory are not: nothing may be written back, and the program
+     restarts right away to load what was restored */
+  Profile::SetReadOnly();
+
+  if (failed > 0) {
+    StaticString<256> msg;
+    msg.Format(_("Restore finished with %u failed files."), failed);
+    RestartNow(msg);
+  } else
+    RestartNow(_("Restore complete."));
 }
 
 struct BackupContainer : public PropertyWidgetContainer {

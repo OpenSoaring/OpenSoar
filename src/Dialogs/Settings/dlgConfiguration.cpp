@@ -3,6 +3,7 @@
 
 #include "Dialogs/Dialogs.h"
 #include "Dialogs/Message.hpp"
+#include "Dialogs/PowerDialog.hpp"
 #include "Widget/ArrowPagerWidget.hpp"
 #include "Widget/CreateWindowWidget.hpp"
 #include "Dialogs/WidgetDialog.hpp"
@@ -428,7 +429,6 @@ void dlgConfigurationShowModal()
   if (dialog.GetChanged() || expert_changed) {
     Profile::Save();
     if (require_restart)
-      ShowMessageBox(_("Changes to configuration saved. Restart XCSoar to apply changes."),
-                  "", MB_OK);
+      OfferRestart(_("Changes to configuration saved."));
   }
 }

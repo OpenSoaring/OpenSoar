@@ -11,6 +11,7 @@
 #include "Version.hpp"
 #include "LogFile.hpp"
 #include "CommandLine.hpp"
+#include "PowerControl.hpp"
 #include "MainWindow.hpp"
 #include "Interface.hpp"
 #include "Look/GlobalFonts.hpp"
@@ -128,13 +129,19 @@ try {
     CommandLine::Parse(args);
   }
 
+#ifndef _WIN32
+  /* remember the command line: a restart needs it after the program
+     has shut down (PowerControl::Perform()) */
+  PowerControl::SaveCommandLine(argc, argv);
+#endif
+
   InitialiseDataPath();
   CommandLine::ApplyPendingProfile();
 
   // Write startup note + version to logfile
   LogFormat("Starting %s", XCSoar_ProductToken);
 
-  int ret = Main();
+  int ret = PowerControl::Perform(Main());
 
 #if defined(__APPLE__) && TARGET_OS_IPHONE
   /* For some reason, the app process does not exit on iOS, but a black

@@ -3,11 +3,20 @@
 
 #pragma once
 
-class Path;
-class AllocatedPath;
+#include "system/Path.hpp"
 
-void
-ProfileListDialog();
+/**
+ * Manage the profile files.  The user can also mark another profile
+ * for use, which takes effect on the next start; the dialog closes
+ * right away then.
+ *
+ * @param current_profile the profile in use, which cannot be
+ * activated again; may be nullptr
+ * @param preselect the profile to put the cursor on; may be nullptr
+ * @return the profile that was activated, or nullptr
+ */
+AllocatedPath
+ProfileListDialog(Path current_profile, Path preselect=nullptr);
 
 /**
  * Let the user select a profile file.  Returns the absolute path of

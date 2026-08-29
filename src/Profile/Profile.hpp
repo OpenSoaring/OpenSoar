@@ -55,6 +55,14 @@ void
 Save() noexcept;
 
 /**
+ * Never write the profile again in this run: the file on disk was
+ * replaced (a backup was restored), so what is in memory is stale
+ * now, and only a restart reloads it.  Save() becomes a no-op.
+ */
+void
+SetReadOnly() noexcept;
+
+/**
  * Mark another profile as the one to use from the next start on:
  * the running profile is saved first, then the other file gets the
  * newest timestamp - and keeps it, whatever is saved later (see
