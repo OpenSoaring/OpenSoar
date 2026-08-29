@@ -22,6 +22,7 @@
 #include "util/Macros.hpp"
 #include "Repository/FileRepository.hpp"
 #include "UtilsSettings.hpp"
+#include "Repository/FileCheck.hpp"
 
 #ifdef HAVE_DOWNLOAD_MANAGER
 #include "Repository/Glue.hpp"
@@ -30,6 +31,10 @@
 #include "net/http/DownloadManager.hpp"
 #include "ui/event/Notify.hpp"
 #include "thread/Mutex.hxx"
+
+#include <forward_list>
+#include <string>
+#include <utility>
 #include "ui/event/PeriodicTimer.hpp"
 
 #include <map>
@@ -186,6 +191,13 @@ class ManagedFileListWidget
    * Has the repository file download failed?
    */
   bool repository_failed;
+
+  /**
+   * Files whose content did not match what the repository claims,
+   * collected by the download thread and reported by the UI thread.
+   */
+  using ContentFailure = std::pair<std::string, FileCheckResult>;
+  std::forward_list<ContentFailure> content_failures;
 #endif
 
   TrivialArray<FileItem, 64u> items;
@@ -559,6 +571,21 @@ void
 ManagedFileListWidget::DownloadRemoteFile(const AvailableFile &remote_file)
 {
   assert(Net::DownloadManager::IsAvailable());
+
+  /* the name in the repository becomes the file name on disk: without
+     an extension that fits the type, the file is downloaded but never
+     appears in any list.  Say so instead of downloading it again and
+     again. */
+  if (!CheckFileName(remote_file.GetName(), remote_file.type)) {
+    StaticString<256> msg;
+    msg.Format(_("The repository entry \"%s\" has no file name extension "
+                 "that fits its type.  The file would be downloaded but "
+                 "not found again."),
+               remote_file.GetName());
+    ShowMessageBox(msg, _("File Manager"), MB_OK | MB_ICONEXCLAMATION);
+    return;
+  }
+
   EnqueueRemoteFileDownload(remote_file);
 }
 
@@ -747,10 +774,24 @@ ManagedFileListWidget::OnDownloadComplete(Path path_relative) noexcept
   if (name == nullptr || name.empty())
     return;
 
+  /* look at what actually arrived: a repository is a hand-written
+     file on somebody's server, and a wrong address usually answers
+     with a web page rather than an error */
+  FileCheckResult check = FileCheckResult::UNKNOWN;
+  if (name.c_str() != "repository"sv && !IsUserRepositoryFile(name.c_str())) {
+    if (const auto *remote_file = FindRemoteFile(repository, name.c_str());
+        remote_file != nullptr)
+      check = CheckFileContent(LocalPath(path_relative), remote_file->type);
+  }
+
   {
     const std::lock_guard lock{mutex};
 
     downloads.erase(name.c_str());
+
+    if (GetFileCheckMessage(check) != nullptr)
+      /* reported by the UI thread in OnDownloadNotification() */
+      content_failures.emplace_front(name.c_str(), check);
 
     if (name.c_str() == "repository"sv) {
       repository_failed = false;
@@ -792,11 +833,13 @@ ManagedFileListWidget::OnDownloadNotification() noexcept
 {
   bool repository_modified2, repository_failed2;
   std::vector<std::string> completed2;
+  std::forward_list<ContentFailure> content_failures2;
 
   {
     const std::lock_guard lock{mutex};
     repository_modified2 = std::exchange(repository_modified, false);
     repository_failed2 = std::exchange(repository_failed, false);
+    content_failures2 = std::exchange(content_failures, {});
     completed2.swap(completed);
   }
 
@@ -818,6 +861,13 @@ ManagedFileListWidget::OnDownloadNotification() noexcept
   if (repository_failed2)
     ShowMessageBox(_("Failed to download the repository index."),
                    _("Error"), MB_OK);
+
+  for (const auto &i : content_failures2) {
+    StaticString<320> msg;
+    msg.Format("%s\n%s", i.first.c_str(),
+               gettext(GetFileCheckMessage(i.second)));
+    ShowMessageBox(msg, _("File Manager"), MB_OK | MB_ICONEXCLAMATION);
+  }
 }
 
 static void
