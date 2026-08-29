@@ -9,9 +9,13 @@
 #include "Gauge/LogoView.hpp"
 #include "Language/Language.hpp"
 #include "LocalPath.hpp"
+#include "CommandLine.hpp"
 #include "LogFile.hpp"
 #include "Look/DialogLook.hpp"
 #include "Profile/Profile.hpp"
+#include "Profile/File.hpp"
+#include "Profile/Keys.hpp"
+#include "Profile/Map.hpp"
 #include "Repository/FileType.hpp"
 #include "ProfileListDialog.hpp"
 #include "ProfilePasswordDialog.hpp"
@@ -21,7 +25,10 @@
 #include "Widget/TwoWidgets.hpp"
 #include "WidgetDialog.hpp"
 #include "system/FileUtil.hpp"
+#include "UISettings.hpp"
 #include "ui/canvas/Canvas.hpp"
+#include "ui/event/PeriodicTimer.hpp"
+#include "util/StaticString.hxx"
 
 class LogoWindow final : public PaintWindow {
   LogoView logo;
@@ -111,15 +118,79 @@ class StartupWidget final : public RowFormWidget {
   WndForm &dialog;
   DataField *const df;
 
+  /**
+   * Seconds left until the dialog continues with the preselected
+   * profile; zero means there is no countdown (the user decides).
+   */
+  unsigned countdown;
+
+  UI::PeriodicTimer countdown_timer{[this]{ OnCountdown(); }};
+
 public:
   StartupWidget(const DialogLook &look, WndForm &_dialog,
-                DataField *_df) noexcept
-    :RowFormWidget(look), dialog(_dialog), df(_df) {}
+                DataField *_df, unsigned _timeout) noexcept
+    :RowFormWidget(look), dialog(_dialog), df(_df), countdown(_timeout) {}
 
+  ~StartupWidget() noexcept;
+
+  /**
+   * Any user input stops the countdown: from here on the dialog waits
+   * for a decision.
+   */
+  void CancelCountdown() noexcept {
+    if (countdown == 0)
+      return;
+
+    countdown = 0;
+    countdown_timer.Cancel();
+    ((Button &)GetRow(CONTINUE)).SetCaption(_("Continue"));
+  }
+
+private:
+  void UpdateContinueButton() noexcept {
+    StaticString<64> caption;
+    caption.Format("%s (%u)", _("Continue"), countdown);
+    ((Button &)GetRow(CONTINUE)).SetCaption(caption);
+  }
+
+  void OnCountdown() noexcept {
+    if (countdown <= 1) {
+      /* CancelCountdown() first: if Save() fails (a password-protected
+         profile), the dialog stays open without a stale counter */
+      CancelCountdown();
+      dialog.SetModalResult(mrOK);
+      return;
+    }
+
+    --countdown;
+    UpdateContinueButton();
+  }
+
+public:
   /* virtual methods from class Widget */
   void Prepare(ContainerWindow &parent,
                const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
+
+  void Show(const PixelRect &rc) noexcept override {
+    RowFormWidget::Show(rc);
+
+    if (countdown > 0) {
+      UpdateContinueButton();
+      countdown_timer.Schedule(std::chrono::seconds{1});
+    }
+  }
+
+  void Hide() noexcept override {
+    countdown_timer.Cancel();
+    RowFormWidget::Hide();
+  }
+
+  bool KeyPress(unsigned key_code) noexcept override {
+    /* the key itself is still handled by the focused control */
+    CancelCountdown();
+    return RowFormWidget::KeyPress(key_code);
+  }
 
   bool SetFocus() noexcept override {
     /* focus the "Continue" button by default */
@@ -128,10 +199,26 @@ public:
   }
 };
 
+/**
+ * The startup dialog exists once at a time; the profile editor is a
+ * plain callback function and reaches the widget through this.
+ */
+static StartupWidget *startup_widget;
+
+StartupWidget::~StartupWidget() noexcept
+{
+  if (startup_widget == this)
+    startup_widget = nullptr;
+}
+
 static bool
 SelectProfileCallback([[maybe_unused]] const char *caption, [[maybe_unused]] DataField &_df,
                       [[maybe_unused]] const char *help_text) noexcept
 {
+  /* touching the profile is a decision: no countdown from here on */
+  if (startup_widget != nullptr)
+    startup_widget->CancelCountdown();
+
   FileDataField &df = (FileDataField &)_df;
 
   const auto path = SelectProfileDialog(df.GetValue());
@@ -146,6 +233,8 @@ void
 StartupWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                        [[maybe_unused]] const PixelRect &rc) noexcept
 {
+  startup_widget = this;
+
   auto *pe = Add(_("Profile"), nullptr, df);
   pe->SetEditCallback(SelectProfileCallback);
 
@@ -165,10 +254,21 @@ SelectProfile(Path path) noexcept
 
   Profile::SetFiles(path);
 
-  if (RelativePath(path) == nullptr)
+  if (RelativePath(path) == nullptr) {
     /* When a profile from a secondary data path is used, this path
-       becomes the primary data path */
-    SetPrimaryDataPath(path.GetParent());
+       becomes the primary data path.  Since the data layout migration
+       the profiles live in a "profiles" subdirectory, and that
+       subdirectory is not the data directory: promoting it would send
+       logs, cache and every relative path one level too deep. */
+    auto dir = path.GetParent();
+    if (dir != nullptr && dir.GetBase() == Path{"profiles"})
+      dir = dir.GetParent();
+
+    if (dir != nullptr) {
+      LogFmt("Startup dialog: primary data path is now {}", dir.c_str());
+      SetPrimaryDataPath(dir);
+    }
+  }
 
   File::Touch(path);
   return true;
@@ -186,6 +286,33 @@ StartupWidget::Save(bool &changed) noexcept
   return true;
 }
 
+/**
+ * How long the dialog waits before it continues with the preselected
+ * profile.  The command line wins; otherwise the value comes straight
+ * from the profile file - the profile itself is not loaded yet, it is
+ * being selected right now.
+ */
+static unsigned
+GetStartupTimeout(Path profile_path) noexcept
+{
+  if (CommandLine::startup_timeout >= 0)
+    return unsigned(CommandLine::startup_timeout);
+
+  auto value = DEFAULT_STARTUP_TIMEOUT;
+
+  if (profile_path != nullptr) {
+    try {
+      ProfileMap map;
+      Profile::LoadFile(map, profile_path);
+      map.Get(ProfileKeys::StartupTimeout, value);
+    } catch (...) {
+      /* unreadable profile: keep the default */
+    }
+  }
+
+  return value.count();
+}
+
 bool
 dlgStartupShowModal() noexcept
 {
@@ -196,36 +323,55 @@ dlgStartupShowModal() noexcept
   dff->SetFileType(FileType::PROFILE);
   dff->ScanDirectoryTop(GetFileTypePatterns(FileType::PROFILE));
 
-  if (dff->GetNumFiles() == 1) {
-    /* skip this dialog if there is only one */
-    const auto path = dff->GetValue();
-    if (ProfileFileHasPassword(path) == TriState::FALSE &&
-        SelectProfile(path)) {
-      delete dff;
-      return true;
-    }
-  } else if (dff->GetNumFiles() == 0) {
-    /* no profile exists yet: create default profile */
+  if (dff->GetNumFiles() == 0 && Profile::GetPath() == nullptr) {
+    /* no profile exists yet, and none was given: create the default
+       profile without asking - there is nothing to choose from */
     Profile::SetFiles(nullptr);
+    delete dff;
     return true;
   }
 
-  /* preselect the most recently used profile */
-  unsigned best_index = 0;
-  std::chrono::system_clock::time_point best_timestamp =
-    std::chrono::system_clock::time_point::min();
+  /* unlike upstream, the dialog is shown even when there is only one
+     profile: it is the start screen, and the countdown below carries
+     on by itself */
+
   unsigned length = dff->size();
 
-  for (unsigned i = 0; i < length; ++i) {
-    const auto path = Path(dff->GetItem(i).path);
-    const auto timestamp = File::GetLastModification(path);
-    if (timestamp > best_timestamp) {
-      best_timestamp = timestamp;
-      best_index = i;
+  /* a profile given with "-profile=" is preselected ... */
+  const Path configured_profile = Profile::GetPath();
+  int configured_index = -1;
+
+  if (configured_profile != nullptr)
+    for (unsigned i = 0; i < length; ++i)
+      if (Path(dff->GetItem(i).path) == configured_profile) {
+        configured_index = (int)i;
+        break;
+      }
+
+  if (configured_index >= 0)
+    dff->SetIndex((unsigned)configured_index);
+  else if (configured_profile != nullptr)
+    /* a profile outside the data directory: add it to the list */
+    dff->ForceModify(configured_profile);
+  else {
+    /* ... otherwise the most recently used one */
+    unsigned best_index = 0;
+    std::chrono::system_clock::time_point best_timestamp =
+      std::chrono::system_clock::time_point::min();
+
+    for (unsigned i = 0; i < length; ++i) {
+      const auto path = Path(dff->GetItem(i).path);
+      const auto timestamp = File::GetLastModification(path);
+      if (timestamp > best_timestamp) {
+        best_timestamp = timestamp;
+        best_index = i;
+      }
     }
+
+    dff->SetIndex(best_index);
   }
 
-  dff->SetIndex(best_index);
+  const unsigned timeout = GetStartupTimeout(dff->GetValue());
 
   /* show the dialog */
   const DialogLook &look = UIGlobals::GetDialogLook();
@@ -236,7 +382,7 @@ dlgStartupShowModal() noexcept
 
   dialog.SetWidget(std::make_unique<LogoQuitWidget>(look.button, dialog,
                                                     look.dark_mode, look.background_color),
-                   std::make_unique<StartupWidget>(look, dialog, dff));
+                   std::make_unique<StartupWidget>(look, dialog, dff, timeout));
 
   return dialog.ShowModal() == mrOK;
 }
