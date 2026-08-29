@@ -149,6 +149,7 @@ endif
 ifeq ($(HAVE_WIN32),n)
 TEST_NAMES += \
 	TestDataLayoutMigration \
+	TestDevicePorts \
 	TestLocalPathResolve
 endif
 
@@ -886,6 +887,19 @@ TEST_DATA_LAYOUT_MIGRATION_SOURCES = \
 	$(TEST_SRC_DIR)/TestDataLayoutMigration.cpp
 TEST_DATA_LAYOUT_MIGRATION_DEPENDS = PROFILE IO OS UTIL
 $(eval $(call link-program,TestDataLayoutMigration,TEST_DATA_LAYOUT_MIGRATION))
+
+TEST_DEVICE_PORTS_SOURCES = \
+	$(SRC)/Device/Config.cpp \
+	$(SRC)/Device/PortsConfig.cpp \
+	$(SRC)/LocalPath.cpp \
+	$(SRC)/Profile/DeviceConfig.cpp \
+	$(SRC)/Repository/FileType.cpp \
+	$(TEST_SRC_DIR)/FakeAsset.cpp \
+	$(TEST_SRC_DIR)/FakeLogFile.cpp \
+	$(TEST_SRC_DIR)/tap.c \
+	$(TEST_SRC_DIR)/TestDevicePorts.cpp
+TEST_DEVICE_PORTS_DEPENDS = JSON PROFILE IO OS UTIL
+$(eval $(call link-program,TestDevicePorts,TEST_DEVICE_PORTS))
 
 TEST_LOCAL_PATH_RESOLVE_SOURCES = \
 	$(SRC)/DataFileLayout.cpp \
