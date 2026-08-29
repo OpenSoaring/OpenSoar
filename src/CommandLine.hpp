@@ -41,6 +41,17 @@ namespace CommandLine {
 
   extern unsigned width, height;
 
+  /**
+   * Seconds until the startup profile dialog continues with the
+   * preselected profile; set by @c -startup-timeout=.  -1 means the
+   * option was not given, so the profile setting applies.
+   *
+   * An inline variable like #touch_input above: Android builds do not
+   * compile CommandLine.cpp at all, but the startup dialog is the
+   * same everywhere and reads this.
+   */
+  inline int startup_timeout = -1;
+
 #ifdef KOBO
   static constexpr bool full_screen = false;
 #elif defined(ENABLE_SDL) || defined(USE_X11)

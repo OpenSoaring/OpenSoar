@@ -24,6 +24,9 @@
 
 static AllocatedPath startProfileFile = nullptr;
 
+/** the profile for the next start, if the user picked another one */
+static AllocatedPath next_start_profile = nullptr;
+
 /** True after Load() has been called for startProfileFile. */
 static bool loaded = false;
 
@@ -58,6 +61,12 @@ Profile::Load() noexcept
   SetModified(false);
 }
 
+bool
+Profile::IsLoaded() noexcept
+{
+  return loaded;
+}
+
 void
 Profile::LoadFile(Path path) noexcept
 {
@@ -67,6 +76,19 @@ Profile::LoadFile(Path path) noexcept
   } catch (...) {
     LogError(std::current_exception(), "Failed to load profile");
   }
+}
+
+/**
+ * The profile marked for the next start shall have the newest
+ * timestamp: that is what the startup dialog preselects.
+ */
+static void
+TouchNextStartProfile() noexcept
+{
+  if (next_start_profile != nullptr &&
+      next_start_profile != startProfileFile &&
+      !File::Touch(next_start_profile))
+    LogFmt("Failed to touch {}", next_start_profile);
 }
 
 void
@@ -92,6 +114,29 @@ Profile::Save() noexcept
   } catch (...) {
     LogError(std::current_exception(), "Failed to save profile");
   }
+
+  TouchNextStartProfile();
+}
+
+bool
+Profile::MarkForNextStart(Path path) noexcept
+{
+  /* whatever this session changed belongs to the running profile:
+     write it now, so that no later save gives it a newer timestamp
+     than the one picked */
+  Save();
+
+  if (!File::Touch(path))
+    return false;
+
+  next_start_profile = path;
+  return true;
+}
+
+Path
+Profile::GetNextStartPath() noexcept
+{
+  return next_start_profile;
 }
 
 void

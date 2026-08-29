@@ -29,6 +29,7 @@ enum ControlIndex {
   LanguageFile,
 #endif
   MenuTimeout,
+  StartupTimeout,
   TextInput,
 #ifdef HAVE_VIBRATOR
   HapticFeedback,
@@ -129,6 +130,13 @@ InterfaceConfigPanel::Prepare(ContainerWindow &parent,
               seconds{1}, minutes{1}, seconds{1},
               settings.menu_timeout / 2);
   SetExpertRow(MenuTimeout);
+
+  AddDuration(_("Startup timeout"),
+              _("How long the profile dialog waits at startup before it "
+                "continues with the preselected profile.  Any input stops "
+                "the countdown; zero waits for the user."),
+              seconds{0}, minutes{2}, seconds{1},
+              settings.startup_timeout);
 
   static constexpr StaticEnumChoice text_input_list[] = {
     { DialogSettings::TextInputStyle::Default, N_("Default") },
@@ -260,6 +268,13 @@ InterfaceConfigPanel::Save(bool &_changed) noexcept
   if (settings.menu_timeout != menu_timeout) {
     settings.menu_timeout = menu_timeout;
     Profile::Set(ProfileKeys::MenuTimeout, menu_timeout);
+    changed = true;
+  }
+
+  duration<unsigned> startup_timeout = GetValueTime(StartupTimeout);
+  if (settings.startup_timeout != startup_timeout) {
+    settings.startup_timeout = startup_timeout;
+    Profile::Set(ProfileKeys::StartupTimeout, startup_timeout);
     changed = true;
   }
 
