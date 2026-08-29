@@ -6,8 +6,16 @@
 class Path;
 class AllocatedPath;
 
-void
-ProfileListDialog();
+/**
+ * Manage the profile files.  The user can also mark another profile
+ * for use, which takes effect on the next start.
+ *
+ * @param current_profile the profile in use, which cannot be
+ * activated again; may be nullptr
+ * @return true if another profile was activated
+ */
+bool
+ProfileListDialog(Path current_profile);
 
 /**
  * Let the user select a profile file.  Returns the absolute path of

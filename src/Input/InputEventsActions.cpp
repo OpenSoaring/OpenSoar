@@ -43,7 +43,9 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "Dialogs/Plane/PlaneDialogs.hpp"
 #include "Dialogs/DataManagement/DataManagement.hpp"
 #include "Dialogs/DataManagement/ExportFlightsPanel.hpp"
+#include "Dialogs/PowerDialog.hpp"
 #include "Dialogs/ProfileListDialog.hpp"
+#include "Profile/Profile.hpp"
 #include "Dialogs/dlgAnalysis.hpp"
 #include "Dialogs/FileManager.hpp"
 #include "Dialogs/ReplayDialog.hpp"
@@ -628,8 +630,10 @@ InputEvents::eventSetup(const char *misc)
     dlgTargetShowModal();
   else if (StringIsEqual(misc, "Plane"))
     dlgPlanesShowModal();
-  else if (StringIsEqual(misc, "Profile"))
-    ProfileListDialog();
+  else if (StringIsEqual(misc, "Profile")) {
+    if (ProfileListDialog(Profile::GetPath()))
+      OfferRestart(_("Another profile was activated."));
+  }
   else if (StringIsEqual(misc, "Alternates")) {
     dlgAlternatesListShowModal(data_components->waypoints.get(),
                                AlternateInfoBoxSlot::FIRST);
@@ -677,7 +681,9 @@ InputEvents::eventBrightness([[maybe_unused]] const char *misc)
 void
 InputEvents::eventExit([[maybe_unused]] const char *misc)
 {
-  UIActions::SignalShutdown(false);
+  /* one button, one dialog: quit, restart, and - where the device
+     allows it - reboot or switch off */
+  ShowPowerDialog();
 }
 
 void

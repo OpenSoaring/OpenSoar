@@ -8,6 +8,7 @@
 #include "io/OutputStream.hxx"
 #include "io/Reader.hxx"
 #include "Dialogs/Message.hpp"
+#include "Dialogs/PowerDialog.hpp"
 #include "Dialogs/JobDialog.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Job/Job.hpp"
@@ -171,11 +172,10 @@ RunRestoreJob(Path device_root, Path tar_name)
     ShowMessageBox(fullmsg.c_str(), C_("Button", "Restore"), MB_OK | MB_ICONERROR);
   } else if (failed > 0) {
     StaticString<256> msg;
-    msg.Format(_("Restore finished with %u failed files. Restart XCSoar to apply restored settings."), failed);
-    ShowMessageBox(msg, C_("Button", "Restore"), MB_OK | MB_ICONINFORMATION);
+    msg.Format(_("Restore finished with %u failed files."), failed);
+    OfferRestart(msg);
   } else {
-    ShowMessageBox(_("Restore complete. Restart XCSoar to apply restored settings."),
-                   C_("Button", "Restore"), MB_OK | MB_ICONINFORMATION);
+    OfferRestart(_("Restore complete."));
   }
 }
 
