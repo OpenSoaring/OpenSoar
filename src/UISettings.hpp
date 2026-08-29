@@ -18,6 +18,12 @@
 #include <type_traits>
 
 /**
+ * Default for UISettings::startup_timeout, also used by the startup
+ * dialog, which reads the value before the profile is loaded.
+ */
+static constexpr std::chrono::duration<unsigned> DEFAULT_STARTUP_TIMEOUT{4};
+
+/**
  * User interface settings.
  */
 struct UISettings {
@@ -25,6 +31,13 @@ struct UISettings {
 
   /** timeout in quarter seconds of menu button */
   std::chrono::duration<unsigned> menu_timeout;
+
+  /**
+   * Seconds until the startup profile dialog continues on its own
+   * with the preselected profile; 0 waits for the user.  Read from
+   * the profile file before the profile is loaded (StartupDialog).
+   */
+  std::chrono::duration<unsigned> startup_timeout;
 
   unsigned scale;
 

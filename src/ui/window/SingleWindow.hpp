@@ -46,7 +46,7 @@ public:
   }
 
   void AddDialog(WndForm *dialog) noexcept;
-  void RemoveDialog(WndForm *dialog) noexcept;
+  virtual void RemoveDialog(WndForm *dialog) noexcept;
 
   /**
    * Forcefully cancel the top-most dialog.

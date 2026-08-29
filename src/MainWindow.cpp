@@ -34,6 +34,7 @@
 #include "UIReceiveBlackboard.hpp"
 #include "UISettings.hpp"
 #include "Interface.hpp"
+#include "Profile/Profile.hpp"
 
 #include <utility>
 #include "Components.hpp"
@@ -1323,6 +1324,18 @@ MainWindow::OnDestroy() noexcept
   KillBottomWidget();
 
   SingleWindow::OnDestroy();
+}
+
+void
+MainWindow::RemoveDialog(WndForm *dialog) noexcept
+{
+  SingleWindow::RemoveDialog(dialog);
+
+  /* the last dialog is gone: whatever it changed goes to disk now,
+     not only when the program ends - a device that loses power
+     without a proper quit would lose the settings otherwise */
+  if (!HasDialog() && Profile::IsLoaded())
+    Profile::Save();
 }
 
 bool
