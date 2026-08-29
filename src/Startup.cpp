@@ -15,6 +15,7 @@
 #include "Asset.hpp"
 #include "Hardware/CPU.hpp"
 #include "Simulator.hpp"
+#include "SystemConfig.hpp"
 #include "InfoBoxes/InfoBoxManager.hpp"
 #include "Terrain/RasterTerrain.hpp"
 #include "Terrain/AsyncLoader.hpp"
@@ -173,8 +174,10 @@ LoadProfile()
 
   /* the profile dialog is the start screen and always appears; a
      profile given with "-profile=" is preselected there instead of
-     the most recently used one */
-  if (!dlgStartupShowModal()) {
+     the most recently used one.  In XCSoar mode (system settings) it
+     appears only when no profile was chosen yet */
+  if ((!SystemConfig::IsXCSoarBehaviour() || Profile::GetPath() == nullptr) &&
+      !dlgStartupShowModal()) {
     LogString("LoadProfile: the startup dialog was cancelled");
     startup_cancelled_by_user = true;
     return false;
@@ -390,8 +393,10 @@ Startup(UI::Display &display)
   /* The fly/simulator prompt is not part of the normal start: it only
      appears on request ("-ask").  Without it OpenSoar flies, unless
      "-simulator" or "-fly" already decided.  The start screen the user
-     sees is the profile dialog below. */
-  if (ask_simulator_flag && !sim_set_in_cmd_line_flag) {
+     sees is the profile dialog below.  In XCSoar mode (system
+     settings) the prompt appears as upstream does it. */
+  if ((ask_simulator_flag || SystemConfig::IsXCSoarBehaviour()) &&
+      !sim_set_in_cmd_line_flag) {
     SimulatorPromptResult result = dlgSimulatorPromptShowModal();
     switch (result) {
     case SPR_QUIT:
