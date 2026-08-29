@@ -184,8 +184,15 @@ DeviceConfig::Clear() noexcept
   i2c_addr = 0;
   press_use = PressureUse::STATIC_ONLY;
   path.clear();
+  port_name.clear();
   bluetooth_mac.clear();
+  ip_address.clear();
   driver_name.clear();
+  driver2_name.clear();
+  use_second_device = false;
+  ioio_uart_id = 0u;
+  sensor_offset = 0;
+  sensor_factor = 0;
   enabled = true;
   sync_from_device = true;
   sync_to_device = true;

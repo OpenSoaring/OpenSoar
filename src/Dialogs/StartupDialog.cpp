@@ -272,6 +272,12 @@ SelectProfile(Path path) noexcept
   }
 
   File::Touch(path);
+
+  /* remember the choice for the next start screen; the timestamp
+     alone is not reliable on a FAT card (two second resolution) */
+  SystemConfig::Get().last_profile = path.c_str();
+  SystemConfig::Save();
+
   return true;
 }
 
@@ -370,21 +376,39 @@ dlgStartupShowModal() noexcept
     /* a profile outside the data directory: add it to the list */
     dff->ForceModify(configured_profile);
   else {
-    /* ... otherwise the most recently used one */
-    unsigned best_index = 0;
-    std::chrono::system_clock::time_point best_timestamp =
-      std::chrono::system_clock::time_point::min();
+    /* ... otherwise the profile chosen last (recorded in the system
+       configuration - see SystemConfig::Settings::last_profile), and
+       when there is no such record, the most recently modified one */
+    int last_index = -1;
+    const auto &last_profile = SystemConfig::Get().last_profile;
 
-    for (unsigned i = 0; i < length; ++i) {
-      const auto path = Path(dff->GetItem(i).path);
-      const auto timestamp = File::GetLastModification(path);
-      if (timestamp > best_timestamp) {
-        best_timestamp = timestamp;
-        best_index = i;
-      }
+    if (!last_profile.empty()) {
+      const Path last_path{last_profile.c_str()};
+      for (unsigned i = 0; i < length; ++i)
+        if (Path(dff->GetItem(i).path) == last_path) {
+          last_index = (int)i;
+          break;
+        }
     }
 
-    dff->SetIndex(best_index);
+    if (last_index >= 0)
+      dff->SetIndex((unsigned)last_index);
+    else {
+      unsigned best_index = 0;
+      std::chrono::system_clock::time_point best_timestamp =
+        std::chrono::system_clock::time_point::min();
+
+      for (unsigned i = 0; i < length; ++i) {
+        const auto path = Path(dff->GetItem(i).path);
+        const auto timestamp = File::GetLastModification(path);
+        if (timestamp > best_timestamp) {
+          best_timestamp = timestamp;
+          best_index = i;
+        }
+      }
+
+      dff->SetIndex(best_index);
+    }
   }
 
   const unsigned timeout = GetStartupTimeout(dff->GetValue());
