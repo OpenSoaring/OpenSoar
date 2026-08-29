@@ -115,6 +115,7 @@ set(_SOURCES
         Dialogs/Settings/WindSettingsPanel.cpp
 
         Dialogs/SimulatorPromptWindow.cpp
+        Dialogs/PowerDialog.cpp
         Dialogs/StartupDialog.cpp
 
         Dialogs/StatusPanels/FlightStatusPanel.cpp
