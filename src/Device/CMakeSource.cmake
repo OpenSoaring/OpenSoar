@@ -1,5 +1,7 @@
 set(_SOURCES
         Device/Config.cpp
+        Device/PortsConfig.cpp
+        Device/PortsGlue.cpp
         Device/Factory.cpp
         Device/Declaration.cpp
         Device/Descriptor.cpp

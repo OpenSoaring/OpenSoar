@@ -487,6 +487,8 @@ XCSOAR_SOURCES := \
 	$(SRC)/LocalPath.cpp \
 	$(SRC)/PowerControl.cpp \
 	$(SRC)/SystemConfig.cpp \
+	$(SRC)/Device/PortsConfig.cpp \
+	$(SRC)/Device/PortsGlue.cpp \
 	$(SRC)/UIActions.cpp \
 	$(SRC)/Interface.cpp \
 	$(SRC)/ActionInterface.cpp \
