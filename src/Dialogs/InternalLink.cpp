@@ -12,6 +12,7 @@
 #include "Dialogs/dlgGestureHelp.hpp"
 #include "Dialogs/ReplayDialog.hpp"
 #include "Dialogs/Settings/Panels/SiteConfigPanel.hpp"
+#include "Dialogs/Settings/Panels/SystemConfigPanel.hpp"
 #include "Dialogs/Settings/Panels/LoggerConfigPanel.hpp"
 #include "Dialogs/Settings/Panels/TimeConfigPanel.hpp"
 #include "Dialogs/Settings/Panels/InfoBoxesConfigPanel.hpp"
@@ -76,6 +77,7 @@ struct ConfigPanelLink {
 
 static constexpr ConfigPanelLink config_panel_links[] = {
   {"config/site-files", N_("Site Files"), CreateSiteConfigPanel},
+  {"config/system",     NC_("Setting", "System"), CreateSystemConfigPanel},
   {"config/logger",     N_("Logger"),     CreateLoggerConfigPanel},
   {"config/time",       NC_("Setting", "Time"), CreateTimeConfigPanel},
   {"config/infoboxes",  N_("InfoBox Sets"), CreateInfoBoxesConfigPanel},
