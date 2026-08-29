@@ -24,6 +24,7 @@
 #include "Panels/LoggerConfigPanel.hpp"
 #include "Panels/AirspaceConfigPanel.hpp"
 #include "Panels/SiteConfigPanel.hpp"
+#include "Panels/SystemConfigPanel.hpp"
 #include "Panels/MapDisplayConfigPanel.hpp"
 #include "Panels/WaypointDisplayConfigPanel.hpp"
 #include "Panels/SymbolsConfigPanel.hpp"
@@ -92,8 +93,9 @@ static unsigned current_page;
 // TODO: eliminate global variables
 static ArrowPagerWidget *pager;
 
-static constexpr TabMenuPage files_pages[] = {
+static constexpr TabMenuPage system_pages[] = {
   { N_("Site Files"), CreateSiteConfigPanel },
+  { NC_("Setting", "System"), CreateSystemConfigPanel },
   { nullptr, nullptr }
 };
 
@@ -182,7 +184,7 @@ static constexpr TabMenuPage setup_pages[] = {
 };
 
 static constexpr TabMenuGroup main_menu_captions[] = {
-  { N_("Site Files"), files_pages },
+  { NC_("Menu", "System"), system_pages },
   { N_("Map Display"), map_pages },
   { N_("Glide Computer"), computer_pages },
   { N_("Gauges"), gauge_pages },
