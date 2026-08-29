@@ -14,6 +14,8 @@
 #include "LocalPath.hpp"
 #include "Profile/Map.hpp"
 #include "Profile/File.hpp"
+#include "Profile/Profile.hpp"
+#include "PowerControl.hpp"
 #include "Repository/FileType.hpp"
 #include "UIGlobals.hpp"
 #include "Language/Language.hpp"
@@ -51,14 +53,22 @@ class ProfileListWidget final
 
   const bool select;
 
+  /** the profile in use; it cannot be activated again */
+  const AllocatedPath current_profile;
+
   WndForm *form;
   Button *password_button;
   Button *copy_button, *delete_button;
+  Button *activate_button = nullptr;
+
+  /** did the user pick another profile for the next start? */
+  bool activated = false;
 
   std::vector<ListItem> list;
 
 public:
-  ProfileListWidget(bool _select):select(_select) {}
+  ProfileListWidget(bool _select, Path _current_profile=nullptr)
+    :select(_select), current_profile(_current_profile) {}
 
   void CreateButtons(WidgetDialog &dialog);
 
@@ -72,12 +82,17 @@ public:
 
   void SelectPath(Path path);
 
+  bool WasActivated() const noexcept {
+    return activated;
+  }
+
 private:
   void UpdateList();
 
   [[gnu::pure]]
   int FindPath(Path path) const;
 
+  void ActivateClicked();
   void NewClicked();
   void PasswordClicked();
   void CopyClicked();
@@ -122,6 +137,8 @@ ProfileListWidget::UpdateList()
   list_control.Invalidate();
 
   const bool empty = list.empty();
+  if (activate_button != nullptr)
+    activate_button->SetEnabled(!empty);
   password_button->SetEnabled(!empty);
   copy_button->SetEnabled(!empty);
   delete_button->SetEnabled(!empty);
@@ -149,6 +166,13 @@ void
 ProfileListWidget::CreateButtons(WidgetDialog &dialog)
 {
   form = &dialog;
+
+  if (!select)
+    /* the running program keeps its profile; activating marks the
+       chosen one as the most recent, which is what the startup dialog
+       preselects after a restart */
+    activate_button = dialog.AddButton(_("Activate"),
+                                       [this](){ ActivateClicked(); });
 
   dialog.AddButton(_("New"), [this](){ NewClicked(); });
   password_button = dialog.AddButton(_("Password"), [this](){ PasswordClicked(); });
@@ -313,18 +337,57 @@ ProfileListWidget::DeleteClicked()
   UpdateList();
 }
 
-void
-ProfileListDialog()
+inline void
+ProfileListWidget::ActivateClicked()
+{
+  const auto path = GetSelectedPath();
+  if (path == nullptr)
+    return;
+
+  if (path == current_profile) {
+    ShowMessageBox(_("This profile is already in use."), _("Activate"),
+                   MB_OK | MB_ICONINFORMATION);
+    return;
+  }
+
+  if (!Profile::MarkForNextStart(path)) {
+    ShowMessageBox(_("Failed to activate the profile."), _("Activate"),
+                   MB_OK | MB_ICONERROR);
+    return;
+  }
+
+  /* a restart shall pick the newest profile, not the one the command
+     line names */
+  PowerControl::DropRestartOption("-profile=");
+
+  activated = true;
+
+  /* done here: the caller offers the restart, and comes back to this
+     list only if the user declines it */
+  form->SetModalResult(mrOK);
+}
+
+AllocatedPath
+ProfileListDialog(Path current_profile, Path preselect)
 {
   TWidgetDialog<ProfileListWidget>
     dialog(WidgetDialog::Full{}, UIGlobals::GetMainWindow(),
            UIGlobals::GetDialogLook(), _("Profiles"));
-  dialog.SetWidget(false);
+  dialog.SetWidget(false, current_profile);
   dialog.GetWidget().CreateButtons(dialog);
   dialog.AddButton(_("Close"), mrOK);
   dialog.EnableCursorSelection();
 
+  if (preselect != nullptr) {
+    dialog.PrepareWidget();
+    dialog.GetWidget().SelectPath(preselect);
+  }
+
   dialog.ShowModal();
+
+  return dialog.GetWidget().WasActivated()
+    ? AllocatedPath(dialog.GetWidget().GetSelectedPath())
+    : nullptr;
 }
 
 AllocatedPath
