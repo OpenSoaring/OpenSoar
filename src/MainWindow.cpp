@@ -37,6 +37,7 @@
 #ifdef HAVE_TEXT_CACHE
 #include "ui/canvas/custom/Cache.hpp"
 #endif
+#include "Profile/Profile.hpp"
 
 #include <algorithm>
 #include <utility>
@@ -1679,6 +1680,18 @@ MainWindow::OnDestroy() noexcept
   KillBottomWidget();
 
   SingleWindow::OnDestroy();
+}
+
+void
+MainWindow::RemoveDialog(WndForm *dialog) noexcept
+{
+  SingleWindow::RemoveDialog(dialog);
+
+  /* the last dialog is gone: whatever it changed goes to disk now,
+     not only when the program ends - a device that loses power
+     without a proper quit would lose the settings otherwise */
+  if (!HasDialog() && Profile::IsLoaded())
+    Profile::Save();
 }
 
 bool
