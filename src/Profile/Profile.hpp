@@ -39,7 +39,18 @@ void
 LoadFile(Path path) noexcept;
 
 /**
- * Saves the profile into the profile files.
+ * Has Load() been called?  Before that, there is nothing worth
+ * saving: the map is empty, and saving would wipe the file.
+ */
+[[gnu::pure]]
+bool
+IsLoaded() noexcept;
+
+/**
+ * Saves the profile into the profile files, if anything was
+ * modified since the last save.  A profile marked for the next start
+ * (see MarkForNextStart()) is touched afterwards, so that it stays
+ * the most recent one.
  *
  * No-op if Load() has not run, even when the map is marked modified.
  * That keeps an unused -profile= path from being overwritten with an
@@ -49,6 +60,24 @@ LoadFile(Path path) noexcept;
  */
 void
 Save() noexcept;
+
+/**
+ * Mark another profile as the one to use from the next start on:
+ * the running profile is saved first, then the other file gets the
+ * newest timestamp - and keeps it, whatever is saved later (see
+ * Save()).
+ *
+ * @return false if the file could not be touched
+ */
+bool
+MarkForNextStart(Path path) noexcept;
+
+/**
+ * The profile marked with MarkForNextStart(), or nullptr.
+ */
+[[gnu::pure]]
+Path
+GetNextStartPath() noexcept;
 
 /**
  * Saves the profile into the given profile file
