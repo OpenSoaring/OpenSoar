@@ -11,6 +11,7 @@
 #include "Language/Language.hpp"
 #include "LocalPath.hpp"
 #include "Dialogs/Message.hpp"
+#include "Dialogs/PowerDialog.hpp"
 #include "Dialogs/TextEntry.hpp"
 #include "Form/Form.hpp"
 #include "Profile/Profile.hpp"
@@ -526,11 +527,17 @@ PerformTransferTo(FileMultiSelectWidget &file_list, Path base_root, Path initial
              ? _("Moved %u file(s). Skipped %u. Failed %u.")
              : _("Copied %u file(s). Skipped %u. Failed %u."),
              transferred, skipped, failed);
-  if (profile_updates > 0)
-    msg.append(_("\nRestart recommended for moved configured files."));
+  if (profile_updates > 0 && failed == 0) {
+    /* configured files were moved: the paths only take effect on the
+       next start */
+    OfferRestart(msg);
+  } else {
+    if (profile_updates > 0)
+      msg.append(_("\nRestart recommended for moved configured files."));
 
-  ShowMessageBox(msg, caption,
-                 failed > 0 ? MB_OK | MB_ICONERROR : MB_OK | MB_ICONINFORMATION);
+    ShowMessageBox(msg, caption,
+                   failed > 0 ? MB_OK | MB_ICONERROR : MB_OK | MB_ICONINFORMATION);
+  }
   file_list.Refresh();
 }
 
@@ -579,10 +586,11 @@ PerformOrganizeFiles(FileMultiSelectWidget &file_list)
   StaticString<256> msg;
   msg.Format(_("Organized %u file(s). Failed %u.\nSkipped unknown: %u\nSkipped conflicts: %u"),
              moved, failed, plan.skipped_unknown, plan.skipped_conflicts);
-  if (profile_updates > 0)
-    msg.append(_("\nRestart recommended for moved configured files."));
-
-  ShowMessageBox(msg, C_("Button", "Organize files"), MB_OK | MB_ICONINFORMATION);
+  if (profile_updates > 0) {
+    OfferRestart(msg);
+  } else {
+    ShowMessageBox(msg, C_("Button", "Organize files"), MB_OK | MB_ICONINFORMATION);
+  }
   file_list.Refresh();
 }
 

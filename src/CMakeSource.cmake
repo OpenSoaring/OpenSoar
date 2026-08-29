@@ -34,6 +34,7 @@ set(BASIC_SOURCES
     ${SRC}/DataFileLayout.cpp
     ${SRC}/DataLayoutMigration.cpp
     ${SRC}/PageOverlayTitle.cpp
+    ${SRC}/PowerControl.cpp
     ${SRC}/UIActions.cpp
 
     ${SRC}/Pan.cpp

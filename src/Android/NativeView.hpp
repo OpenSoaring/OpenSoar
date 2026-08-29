@@ -42,6 +42,7 @@ class NativeView {
   static jmethodID getPhysicalOrientation_method;
   static jmethodID getTopGestureClearance_method;
   static jmethodID startMyService_method;
+  static jmethodID requestRestart_method;
   static jmethodID launchSAFTreePicker_method;
   static jmethodID reportSize_method;
 
@@ -218,6 +219,14 @@ public:
    */
   void StartMyService(JNIEnv *env) const noexcept {
     env->CallVoidMethod(obj, startMyService_method);
+  }
+
+  /**
+   * Tell the Java side that the user chose "Restart": the activity
+   * starts a fresh instance right before System.exit().
+   */
+  void RequestRestart(JNIEnv *env) const noexcept {
+    env->CallVoidMethod(obj, requestRestart_method);
   }
 
   /**
