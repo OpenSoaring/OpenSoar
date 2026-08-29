@@ -54,6 +54,18 @@ public class XCSoar extends Activity implements PermissionManager {
    */
   private static XCSoar currentActivity;
 
+  /**
+   * Set via requestRestart(): onDestroy() starts a fresh instance of
+   * this application right before System.exit() kills the process.
+   * This is how "Restart" from the power dialog works on Android -
+   * the app cannot exec() itself the way the other targets do.
+   */
+  private static boolean restartRequested = false;
+
+  static void requestRestart() {
+    restartRequested = true;
+  }
+
   private Handler mainHandler;
   private PermissionHelper permissionHelper;
 
@@ -406,6 +418,22 @@ public class XCSoar extends Activity implements PermissionManager {
     IOIOHelper.onDestroyContext();
 
     NativeView.deinitNative();
+
+    if (restartRequested) {
+      restartRequested = false;
+
+      /* hand the launch request to the ActivityManager now; it
+         survives the System.exit() below, which then makes room for
+         the fresh instance */
+      try {
+        final Intent launch = getPackageManager()
+          .getLaunchIntentForPackage(getPackageName());
+        if (launch != null)
+          startActivity(Intent.makeRestartActivityTask(launch.getComponent()));
+      } catch (Exception e) {
+        Log.e(TAG, "restart failed", e);
+      }
+    }
 
     super.onDestroy();
     System.exit(0);

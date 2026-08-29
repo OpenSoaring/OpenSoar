@@ -27,6 +27,7 @@ jmethodID NativeView::getWifiIpAddress_method;
 jmethodID NativeView::isAutoRotateEnabled_method;
 jmethodID NativeView::getPhysicalOrientation_method;
 jmethodID NativeView::startMyService_method;
+jmethodID NativeView::requestRestart_method;
 jmethodID NativeView::launchSAFTreePicker_method;
 
 Java::TrivialClass NativeView::clsBitmap;
@@ -86,6 +87,9 @@ NativeView::Initialise(JNIEnv *env)
 
   startMyService_method =
     env->GetMethodID(cls, "startMyService", "()V");
+
+  requestRestart_method =
+    env->GetMethodID(cls, "requestRestart", "()V");
 
   launchSAFTreePicker_method =
     env->GetMethodID(cls, "launchSAFTreePicker",
