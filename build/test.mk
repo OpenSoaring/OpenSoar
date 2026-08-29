@@ -177,6 +177,7 @@ endif
 ifeq ($(HAVE_WIN32),n)
 TEST_NAMES += \
 	TestDataLayoutMigration \
+	TestDevicePorts \
 	TestLocalPathResolve \
 	TestFileOutputStream
 endif
@@ -620,6 +621,7 @@ TEST_PROFILE_SOURCES = \
 	$(SRC)/Profile/Profile.cpp \
 	$(SRC)/Profile/RouteProfile.cpp \
 	$(SRC)/Profile/TaskProfile.cpp \
+	$(SRC)/SystemConfig.cpp \
 	$(SRC)/Profile/WeatherProfile.cpp \
 	$(TEST_SRC_DIR)/tap.c \
 	$(TEST_SRC_DIR)/FakeLogFile.cpp \
@@ -1187,6 +1189,7 @@ TEST_DATA_LAYOUT_MIGRATION_SOURCES = \
 	$(SRC)/DataFilePath.cpp \
 	$(SRC)/LocalPath.cpp \
 	$(SRC)/Profile/Profile.cpp \
+	$(SRC)/SystemConfig.cpp \
 	$(SRC)/Profile/PathValue.cpp \
 	$(SRC)/Repository/FileType.cpp \
 	$(SRC)/system/FileUtil.cpp \
@@ -1199,6 +1202,19 @@ TEST_DATA_LAYOUT_MIGRATION_SOURCES = \
 	$(TEST_SRC_DIR)/TestDataLayoutMigration.cpp
 TEST_DATA_LAYOUT_MIGRATION_DEPENDS = PROFILE IO OS UTIL
 $(eval $(call link-program,TestDataLayoutMigration,TEST_DATA_LAYOUT_MIGRATION))
+
+TEST_DEVICE_PORTS_SOURCES = \
+	$(SRC)/Device/Config.cpp \
+	$(SRC)/Device/PortsConfig.cpp \
+	$(SRC)/LocalPath.cpp \
+	$(SRC)/Profile/DeviceConfig.cpp \
+	$(SRC)/Repository/FileType.cpp \
+	$(TEST_SRC_DIR)/FakeAsset.cpp \
+	$(TEST_SRC_DIR)/FakeLogFile.cpp \
+	$(TEST_SRC_DIR)/tap.c \
+	$(TEST_SRC_DIR)/TestDevicePorts.cpp
+TEST_DEVICE_PORTS_DEPENDS = JSON PROFILE IO OS UTIL
+$(eval $(call link-program,TestDevicePorts,TEST_DEVICE_PORTS))
 
 TEST_LOCAL_PATH_RESOLVE_SOURCES = \
 	$(SRC)/DataFileLayout.cpp \
@@ -1440,6 +1456,7 @@ TEST_DRIVER_SOURCES = \
 	$(SRC)/LocalPath.cpp \
 	$(SRC)/Profile/FlarmProfile.cpp \
 	$(SRC)/Profile/Profile.cpp \
+	$(SRC)/SystemConfig.cpp \
 	$(SRC)/IGC/IGCParser.cpp \
 	$(SRC)/IGC/Generator.cpp \
 	$(SRC)/Computer/ClimbAverageCalculator.cpp \
@@ -1848,6 +1865,7 @@ $(eval $(call link-program,ReadMO,READ_MO))
 READ_PROFILE_STRING_SOURCES = \
 	$(SRC)/LocalPath.cpp \
 	$(SRC)/Profile/Profile.cpp \
+	$(SRC)/SystemConfig.cpp \
 	$(TEST_SRC_DIR)/FakeLogFile.cpp \
 	$(TEST_SRC_DIR)/ReadProfileString.cpp
 READ_PROFILE_STRING_DEPENDS = PROFILE IO OS UTIL
@@ -1856,6 +1874,7 @@ $(eval $(call link-program,ReadProfileString,READ_PROFILE_STRING))
 READ_PROFILE_INT_SOURCES = \
 	$(SRC)/LocalPath.cpp \
 	$(SRC)/Profile/Profile.cpp \
+	$(SRC)/SystemConfig.cpp \
 	$(TEST_SRC_DIR)/FakeLogFile.cpp \
 	$(TEST_SRC_DIR)/ReadProfileInt.cpp
 READ_PROFILE_INT_DEPENDS = PROFILE IO OS UTIL
@@ -2668,6 +2687,7 @@ RUN_MAP_WINDOW_SOURCES = \
 	$(SRC)/Formatter/HexColor.cpp \
 	$(SRC)/DataFilePath.cpp \
 	$(SRC)/Profile/Profile.cpp \
+	$(SRC)/SystemConfig.cpp \
 	$(SRC)/Profile/ComputerProfile.cpp \
 	$(SRC)/Profile/TaskProfile.cpp \
 	$(SRC)/Profile/RouteProfile.cpp \
@@ -3065,6 +3085,7 @@ RUN_ANALYSIS_SOURCES = \
 	$(SRC)/LocalPath.cpp \
 	$(MORE_SCREEN_SOURCES) \
 	$(SRC)/Profile/Profile.cpp \
+	$(SRC)/SystemConfig.cpp \
 	$(SRC)/Dialogs/WidgetDialog.cpp \
 	$(SRC)/Dialogs/dlgAnalysis.cpp \
 	$(SRC)/Dialogs/DialogSettings.cpp \
@@ -3222,6 +3243,7 @@ RUN_PROFILE_LIST_DIALOG_SOURCES = \
 	$(SRC)/Formatter/HexColor.cpp \
 	$(SRC)/Repository/FileType.cpp \
 	$(SRC)/Profile/Profile.cpp \
+	$(SRC)/SystemConfig.cpp \
 	$(SRC)/PowerControl.cpp \
 	$(MORE_SCREEN_SOURCES) \
 	$(TEST_SRC_DIR)/Fonts.cpp \
