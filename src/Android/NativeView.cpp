@@ -29,6 +29,7 @@ jmethodID NativeView::isAutoRotateEnabled_method;
 jmethodID NativeView::getPhysicalOrientation_method;
 jmethodID NativeView::getTopGestureClearance_method;
 jmethodID NativeView::startMyService_method;
+jmethodID NativeView::requestRestart_method;
 jmethodID NativeView::launchSAFTreePicker_method;
 jmethodID NativeView::reportSize_method;
 jmethodID NativeView::scanQRCode_method;
@@ -93,6 +94,9 @@ NativeView::Initialise(JNIEnv *env)
 
   startMyService_method =
     env->GetMethodID(cls, "startMyService", "()V");
+
+  requestRestart_method =
+    env->GetMethodID(cls, "requestRestart", "()V");
 
   launchSAFTreePicker_method =
     env->GetMethodID(cls, "launchSAFTreePicker",
