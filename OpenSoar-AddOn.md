@@ -31,6 +31,47 @@ is no longer an add-on and gets REMOVED from this list.  Items marked
   XCSoar base version (major.minor) changes, not for every OpenSoar
   update
 
+## Startup and leaving the program
+
+* the profile dialog is the start screen: it always appears, with a
+  configurable countdown ("Startup timeout"); any input stops the
+  countdown, zero waits for the user; `-profile=X` preselects X
+* the fly/simulator prompt appears only with the `-ask` command line
+  option (`-simulator` works as before)
+* one power dialog for leaving: Quit / Restart / Reboot / Shutdown,
+  each only where the target can do it (Android: Quit and Restart;
+  Kobo and OpenVario: all four; desktop: Quit and Restart)
+* wherever XCSoar asks the user to quit and restart by hand, OpenSoar
+  offers the internal restart directly
+* a per-device system setting restores the XCSoar behaviour for
+  everybody who prefers it
+
+## Device-specific settings outside the profile
+
+* system settings (XCSoar behaviour, devices in the profile) live in
+  a file outside the data folder - they belong to the device, not to
+  a profile, and do not travel when the data folder is copied
+* the NMEA devices and their ports live in `device_ports.xcd`, a JSON
+  file carrying only non-default fields; an old key=value file is
+  converted automatically; a switch brings back the XCSoar way
+  (ports in the profile) per device
+
+## File manager
+
+* repository entries are checked before and after the download: a
+  name without an extension matching the declared type is refused
+  with a message, and a downloaded file whose content does not match
+  the type (a "404" web page, an empty file, the wrong format)
+  produces a clear error message
+
+## Frequency card
+
+* a small frequency list file per competition (`*.xcf`, selected
+  under System > Site Files > Radio frequencies), one tap to the
+  standby or active frequency; plain text ("name : frequency") or
+  JSON; reachable via Info page 4/4, the RemoteStick menu and the
+  `FrequencyCard` input event
+
 ## Fixes ahead of upstream
 
 * port monitor no longer crashes on MSVC debug builds (undefined
