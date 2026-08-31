@@ -151,6 +151,7 @@ TEST_NAMES += \
 	TestDataLayoutMigration \
 	TestDevicePorts \
 	TestFileCheck \
+	TestFrequencyList \
 	TestLocalPathResolve
 endif
 
@@ -910,6 +911,15 @@ TEST_FILE_CHECK_SOURCES = \
 	$(TEST_SRC_DIR)/TestFileCheck.cpp
 TEST_FILE_CHECK_DEPENDS = IO OS UTIL
 $(eval $(call link-program,TestFileCheck,TEST_FILE_CHECK))
+
+TEST_FREQUENCY_LIST_SOURCES = \
+	$(SRC)/FrequencyList.cpp \
+	$(SRC)/RadioFrequency.cpp \
+	$(TEST_SRC_DIR)/FakeLogFile.cpp \
+	$(TEST_SRC_DIR)/tap.c \
+	$(TEST_SRC_DIR)/TestFrequencyList.cpp
+TEST_FREQUENCY_LIST_DEPENDS = JSON IO OS UTIL
+$(eval $(call link-program,TestFrequencyList,TEST_FREQUENCY_LIST))
 
 TEST_LOCAL_PATH_RESOLVE_SOURCES = \
 	$(SRC)/DataFileLayout.cpp \
