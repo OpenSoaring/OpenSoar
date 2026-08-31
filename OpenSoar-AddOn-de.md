@@ -32,6 +32,49 @@ Liste voraussichtlich verlassen.
   zugrunde liegende XCSoar-Basisversion (Major.Minor) ändert, nicht
   bei jedem OpenSoar-Update
 
+## Start und Beenden
+
+* der Profildialog ist der Startbildschirm: er erscheint immer, mit
+  einstellbarem Countdown ("Start-Timeout"); jede Eingabe stoppt den
+  Countdown, Null wartet auf den Benutzer; `-profile=X` wählt X vor
+* die Fliegen/Simulator-Frage erscheint nur mit der Kommandozeilen-
+  Option `-ask` (`-simulator` funktioniert wie bisher)
+* ein Dialog zum Beenden: Beenden / Neu starten / Gerät neu starten /
+  Ausschalten - jeweils nur, wo das Ziel es wirklich kann (Android:
+  Beenden und Neu starten; Kobo und OpenVario: alle vier; Desktop:
+  Beenden und Neu starten)
+* überall, wo XCSoar zum manuellen Beenden und Neustarten auffordert,
+  bietet OpenSoar den internen Neustart direkt an
+* eine geräteweite Systemeinstellung stellt das XCSoar-Verhalten
+  wieder her, für alle, die es lieber so haben
+
+## Geräteeinstellungen außerhalb des Profils
+
+* Systemeinstellungen (XCSoar-Verhalten, Geräte im Profil) liegen in
+  einer Datei außerhalb des Datenordners - sie gehören zum Gerät,
+  nicht zum Profil, und wandern nicht mit, wenn der Datenordner auf
+  ein anderes Gerät kopiert wird
+* die NMEA-Geräte und ihre Ports liegen in `device_ports.xcd`, einer
+  JSON-Datei mit nur den Nicht-Standard-Feldern; eine alte
+  key=value-Datei wird automatisch umgewandelt; ein Schalter stellt
+  pro Gerät den XCSoar-Weg (Ports im Profil) wieder her
+
+## Dateimanager
+
+* Repository-Einträge werden vor und nach dem Download geprüft: ein
+  Name ohne zum Typ passende Endung wird mit einer Meldung abgelehnt,
+  und eine heruntergeladene Datei, deren Inhalt nicht zum Typ passt
+  (eine "404"-Webseite, eine leere Datei, das falsche Format), ergibt
+  eine klare Fehlermeldung
+
+## Frequenzkarte
+
+* eine kleine Frequenzlisten-Datei pro Wettbewerb (`*.xcf`, gewählt
+  unter System > Standortdateien > Funkfrequenzen), ein Fingertipp
+  zur Standby- oder Aktiv-Frequenz; einfacher Text
+  ("Name : Frequenz") oder JSON; erreichbar über Info-Seite 4/4, das
+  RemoteStick-Menü und das Eingabe-Event `FrequencyCard`
+
 ## Korrekturen vor Upstream
 
 * der Port-Monitor stürzt in MSVC-Debug-Builds nicht mehr ab

@@ -35,6 +35,45 @@ v7.45.25.t2 (not released yet)
 * the CUPX binary-mode fix was retired: upstream fixed the underlying
   problem centrally in April 2026 (FileDescriptor opens O_BINARY),
   the local workaround is obsolete
+* startup: the profile dialog is the start screen - it always
+  appears, with a countdown (10 s, configurable as "Startup timeout"
+  in System > Site Files > System; any input stops it, zero waits);
+  `-profile=X` preselects X instead of skipping the dialog; the
+  fly/simulator prompt appears only on request (`-ask`; `-simulator`
+  still works)
+* leaving the program: one power dialog offering Quit / Restart /
+  Reboot / Shutdown, each only where the target can actually do it -
+  Restart now also on Android, where the app launches a fresh
+  instance of itself; quitting gives immediate feedback instead of a
+  frozen screen, and the Windows system-menu close uses the same
+  dialog.  Wherever XCSoar asks the user to quit and restart by hand
+  (profile switch, changed system settings), OpenSoar offers the
+  internal restart directly
+* device settings out of the profile:
+  - system settings of the device (XCSoar behaviour on/off, devices
+    in the profile on/off) live in a file outside the data folder,
+    so they survive profile changes and do not travel when the data
+    folder is copied to another device; settings page under
+    System > System
+  - the NMEA devices and their ports live in `device_ports.xcd`,
+    which is now a JSON file with only the non-default fields; an old
+    key=value `device_ports.xcd` is converted automatically, and a
+    per-device switch brings back the XCSoar way (ports in the
+    profile) for machines that fly with several instrument sets
+* file manager: downloads are checked - a repository entry whose
+  name has no extension matching its type is refused with a message
+  before the download (the file would never appear in any list), and
+  after the download the content is compared with the declared type,
+  so a "404" web page, an empty file or a wrong file type produces a
+  clear error message instead of silent nothing
+* frequency card: the OpenSoar frequency list is back as a second way
+  next to the checklist links - one small file per competition
+  (System > Site Files > Radio frequencies, `*.xcf`), one tap to the
+  standby or active frequency.  The plain text list ("Stuttgart
+  Info : 128.950") is read unchanged; alternatively the file can be
+  JSON with comments shown as a second line.  Reachable via the new
+  Info page 4/4, the RemoteStick menu and the `FrequencyCard` event
+* German translations for everything above
 
 v7.45.25.t1 (first test version of the rebased OpenSoar)
 
