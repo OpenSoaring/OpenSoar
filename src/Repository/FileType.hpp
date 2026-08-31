@@ -18,6 +18,7 @@ enum class FileType : uint8_t {
   NMEA,
   TASK,
   CHECKLIST,
+  FREQUENCIES, // frequency list for the frequency card (*.xcf)
   PROFILE,
   PLANE,
   XCI,
