@@ -36,6 +36,7 @@ set(_SOURCES
         Dialogs/DialogSettings.cpp
         Dialogs/dlgAnalysis.cpp
         Dialogs/dlgChecklist.cpp
+        Dialogs/FrequencyDialog.cpp
         Dialogs/dlgCredits.cpp
         Dialogs/dlgInfoBoxAccess.cpp
         Dialogs/dlgQuickMenu.cpp
@@ -177,7 +178,6 @@ endif(HAVE_SKYSIGHT)
 if(IS_OPENSOAR)
   list(APPEND _SOURCES
         # Dialogs/Settings/Panels/ConfigurationConfigPanel.cpp  # [topic/misc] not in upstream XCSoar yet
-        # Dialogs/FrequencyDialog.cpp  # [topic/device-misc] not in upstream XCSoar yet
   )
 endif()
 

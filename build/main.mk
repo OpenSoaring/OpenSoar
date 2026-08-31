@@ -75,6 +75,7 @@ DIALOG_SOURCES = \
 	$(SRC)/Dialogs/Traffic/TeamCodeDialog.cpp \
 	$(SRC)/Dialogs/dlgAnalysis.cpp \
 	$(SRC)/Dialogs/dlgChecklist.cpp \
+	$(SRC)/Dialogs/FrequencyDialog.cpp \
 	$(SRC)/Dialogs/ProfileListDialog.cpp \
 	$(SRC)/Dialogs/Plane/PlaneListDialog.cpp \
 	$(SRC)/Dialogs/Plane/PlaneDetailsDialog.cpp \
@@ -220,6 +221,7 @@ XCSOAR_SOURCES := \
 	$(SRC)/Task/ValidationErrorStrings.cpp \
 	\
 	$(SRC)/RadioFrequency.cpp \
+	$(SRC)/FrequencyList.cpp \
 	$(SRC)/TransponderCode.cpp \
 	$(SRC)/TransponderMode.cpp \
 	\
