@@ -1424,7 +1424,7 @@ msgid "Do you really want to delete all flights from the device?"
 msgstr "Bestätige, wirklich alle Flüge vom Gerät löschen?"
 
 msgid "Reboot"
-msgstr "Neustart"
+msgstr "Gerät neu starten"
 
 #, no-c-format
 msgid "Temperature"
@@ -11224,3 +11224,298 @@ msgctxt "Setting"
 msgid "Manual"
 msgstr "Manuell"
 
+msgid "- Complete System Data Transfers"
+msgstr "- Komplette System-Datenübertragung"
+
+msgid "A web page was downloaded instead of the file - the address in the repository is probably wrong."
+msgstr "Statt der Datei wurde eine Webseite heruntergeladen - die Adresse im Repository ist vermutlich falsch."
+
+msgid "Another profile was activated."
+msgstr "Ein anderes Profil wurde aktiviert."
+
+msgid "Backup Image"
+msgstr "Abbild sichern"
+
+msgid "Backup System"
+msgstr "System sichern"
+
+msgid "Backup: OpenVario System to USB"
+msgstr "Sichern: OpenVario-System auf USB"
+
+msgid "Brightness"
+msgstr "Helligkeit"
+
+msgid "Brightness Display OpenVario"
+msgstr "Helligkeit des OpenVario-Displays"
+
+msgid "Calibrate Sensors"
+msgstr "Sensoren kalibrieren"
+
+msgid "Calibrate Touch"
+msgstr "Touchscreen kalibrieren"
+
+msgid "Changes to configuration saved."
+msgstr "Änderungen an der Konfiguration gespeichert."
+
+msgid "Config file"
+msgstr "Konfigurationsdatei"
+
+msgid "Could not re-acquire device after reboot."
+msgstr "Gerät war nach dem Neustart nicht wieder erreichbar."
+
+msgid "Current OpenSoar"
+msgstr "Aktuelles OpenSoar"
+
+msgid "Current firmware file version of OpenVario"
+msgstr "Version der OpenVario-Firmware-Datei"
+
+msgid "Current firmware version of OpenVario"
+msgstr "Aktuelle Firmware-Version des OpenVario"
+
+msgid "Default Key Configuration"
+msgstr "Standard-Tastenbelegung"
+
+msgid "Device did not reconnect after reboot."
+msgstr "Gerät hat sich nach dem Neustart nicht wieder verbunden."
+
+msgid "Device name"
+msgstr "Gerätename"
+
+msgid "Devices in the profile"
+msgstr "Geräte im Profil"
+
+msgid "Display Settings"
+msgstr "Display-Einstellungen"
+
+msgid "Download IGC Files"
+msgstr "IGC-Dateien herunterladen"
+
+msgid "Download files"
+msgstr "Dateien herunterladen"
+
+msgid "Enable the SSH Connection"
+msgstr "SSH-Zugang aktivieren"
+
+msgid "Enable the SensorD"
+msgstr "SensorD aktivieren"
+
+msgid "Enable the Settings Page"
+msgstr "Einstellungsseite aktivieren"
+
+msgid "Enable the VarioD"
+msgstr "VarioD aktivieren"
+
+msgid "Enabling the tTouch Screen"
+msgstr "Touchscreen aktivieren"
+
+msgid "Failed to activate the profile."
+msgstr "Das Profil konnte nicht aktiviert werden."
+
+msgid "File Transfers"
+msgstr "Dateiübertragung"
+
+msgid "Frequency Card"
+msgstr "Frequenzkarte"
+
+msgid "How long the profile dialog waits at startup before it continues with the preselected profile.  Any input stops the countdown; zero waits for the user."
+msgstr "Wie lange der Profildialog beim Start wartet, bevor er mit dem vorausgewählten Profil fortfährt.  Jede Eingabe stoppt den Countdown; bei Null wartet er auf den Benutzer."
+
+msgid "Image Backup to USB (WIP)"
+msgstr "Abbild-Sicherung auf USB (in Arbeit)"
+
+msgid "Keep the NMEA devices and their ports in the profile, the way XCSoar does it, instead of in the device port file.  For a machine that flies with more than one set of instruments.  Takes effect on the next start."
+msgstr "NMEA-Geräte und ihre Ports wie bei XCSoar im Profil halten statt in der Geräteport-Datei.  Für ein Gerät, das mit mehr als einem Instrumentensatz fliegt.  Wirkt ab dem nächsten Start."
+
+msgid "Key Configuration"
+msgstr "Tastenbelegung"
+
+msgid "No active device."
+msgstr "Kein aktives Gerät."
+
+msgid "No frequency list is loaded.  Select one under System > Site Files > Radio frequencies."
+msgstr "Keine Frequenzliste geladen.  Auswahl unter System > Standortdateien > Funkfrequenzen."
+
+msgid "No place for device settings on this system."
+msgstr "Auf diesem System gibt es keinen Ort für Geräteeinstellungen."
+
+msgid "OpenVario Extra menu "
+msgstr "OpenVario-Extramenü "
+
+msgid "OpenVario File Transfers"
+msgstr "OpenVario-Dateiübertragung"
+
+msgid "Program Timeout"
+msgstr "Programm-Timeout"
+
+msgid "Program file doesnt exist!"
+msgstr "Programmdatei existiert nicht!"
+
+msgid "Radio frequencies"
+msgstr "Funkfrequenzen"
+
+msgid "Re-Connect"
+msgstr "Neu verbinden"
+
+msgid "Reboot Remote Stick"
+msgstr "Remote Stick neu starten"
+
+msgid "Rebooting Remote Stick"
+msgstr "Remote Stick startet neu"
+
+msgid "Rebooting, please wait..."
+msgstr "Gerät startet neu, bitte warten..."
+
+msgid "Reopen left no active device."
+msgstr "Nach dem Neuöffnen ist kein Gerät aktiv."
+
+msgid "Restart"
+msgstr "Neu starten"
+
+msgid "Restart now?"
+msgstr "Jetzt neu starten?"
+
+msgid "The program restarts now."
+msgstr "Das Programm startet jetzt neu."
+
+msgid "The program quits now, please start it again."
+msgstr "Das Programm wird jetzt beendet, bitte neu starten."
+
+msgid "Restarting, please wait..."
+msgstr "Programm startet neu, bitte warten..."
+
+msgid "Restore %s"
+msgstr "%s wiederherstellen"
+
+msgid "Restore System"
+msgstr "System wiederherstellen"
+
+msgid "Restore complete."
+msgstr "Wiederherstellung abgeschlossen."
+
+msgid "Restore: OpenVario <- USB"
+msgstr "Wiederherstellen: OpenVario <- USB"
+
+msgid "Restore: OpenVario System from USB"
+msgstr "Wiederherstellen: OpenVario-System von USB"
+
+msgid "Rotation Display OpenVario"
+msgstr "Ausrichtung des OpenVario-Displays"
+
+msgid "Save: OpenVario -> USB"
+msgstr "Sichern: OpenVario -> USB"
+
+msgid "Saved and visible"
+msgstr "Gespeichert und sichtbar"
+
+msgid "Saved, but not visible"
+msgstr "Gespeichert, aber nicht sichtbar"
+
+msgid "Serial number"
+msgstr "Seriennummer"
+
+msgid "Settings Enabled"
+msgstr "Einstellungen aktiviert"
+
+msgid "Shutdown"
+msgstr "Ausschalten"
+
+msgid "Start OpenSoar"
+msgstr "OpenSoar starten"
+
+msgid "Start OpenSoar (Club)"
+msgstr "OpenSoar starten (Club)"
+
+msgid "Start XCSoar"
+msgstr "XCSoar starten"
+
+msgid "Start and leave the program the way XCSoar does it: the fly/simulator prompt at every start, the profile dialog only when it is needed and without a countdown, and a plain question when quitting.  Takes effect on the next start."
+msgstr "Programmstart und Beenden wie bei XCSoar: die Fliegen/Simulator-Frage bei jedem Start, der Profildialog nur bei Bedarf und ohne Countdown, beim Beenden eine einfache Rückfrage.  Wirkt ab dem nächsten Start."
+
+msgid "Startup timeout"
+msgstr "Start-Timeout"
+
+msgid "Switching off, please wait..."
+msgstr "Ausschalten, bitte warten..."
+
+msgid "System Info"
+msgstr "Systeminfo"
+
+msgid "System Settings"
+msgstr "Systemeinstellungen"
+
+msgid "The change takes effect on the next start."
+msgstr "Die Änderung wirkt ab dem nächsten Start."
+
+msgid "The downloaded file cannot be read."
+msgstr "Die heruntergeladene Datei lässt sich nicht lesen."
+
+msgid "The downloaded file does not look like the type the repository says it is."
+msgstr "Die heruntergeladene Datei sieht nicht nach dem Typ aus, den das Repository angibt."
+
+msgid "The downloaded file is empty."
+msgstr "Die heruntergeladene Datei ist leer."
+
+msgid "The frequency list shown by the frequency card: one station per line, \"name : frequency\", or a JSON file with a \"stations\" array."
+msgstr "Die Frequenzliste der Frequenzkarte: eine Station pro Zeile, \"Name : Frequenz\", oder eine JSON-Datei mit einem \"stations\"-Feld."
+
+msgid "The repository entry \"%s\" has no file name extension that fits its type.  The file would be downloaded but not found again."
+msgstr "Der Repository-Eintrag \"%s\" hat keine zum Typ passende Dateiendung.  Die Datei würde heruntergeladen, aber nie wiedergefunden."
+
+msgid "This profile is already in use."
+msgstr "Dieses Profil wird bereits verwendet."
+
+msgid "Timeout for Program Start."
+msgstr "Timeout für den Programmstart."
+
+msgid "Touch enabled"
+msgstr "Touch aktiviert"
+
+msgid "Update System"
+msgstr "System aktualisieren"
+
+msgid "Upgrade Firmware"
+msgstr "Firmware aktualisieren"
+
+msgid "Upgrade Firmware (.img.gz) "
+msgstr "Firmware aktualisieren (.img.gz) "
+
+msgid "Upgrade Firmware (temp.)"
+msgstr "Firmware aktualisieren (temp.)"
+
+msgid "Upload IGC Files to USB (WIP)"
+msgstr "IGC-Dateien auf USB kopieren (in Arbeit)"
+
+msgid "Visible"
+msgstr "Sichtbar"
+
+msgid "Waiting for stick to reboot…"
+msgstr "Warte auf den Neustart des Sticks…"
+
+msgid "Waiting for stick to reconnect…"
+msgstr "Warte, bis sich der Stick wieder verbindet…"
+
+msgid "Wifi"
+msgstr "WLAN"
+
+msgid "XCSoar behaviour"
+msgstr "XCSoar-Verhalten"
+
+msgid "Frequency\nCard"
+msgstr "Frequenz-\nkarte"
+
+msgid "Info\nPage 2/4"
+msgstr "Info\nSeite 2/4"
+
+msgid "Info\nPage 3/4"
+msgstr "Info\nSeite 3/4"
+
+msgid "Info\nPage 4/4"
+msgstr "Info\nSeite 4/4"
+
+msgctxt "Setting"
+msgid "System"
+msgstr "System"
+
+msgctxt "Menu"
+msgid "System"
+msgstr "System"
