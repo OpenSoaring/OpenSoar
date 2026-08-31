@@ -26,6 +26,7 @@ set(BASIC_SOURCES
     ${SRC}/ProgressGlue.cpp
     ${SRC}/Protection.cpp
     ${SRC}/RadioFrequency.cpp
+    ${SRC}/FrequencyList.cpp
     ${SRC}/ResourceLoader.cpp
     ${SRC}/Simulator.cpp
     ${SRC}/Startup.cpp
