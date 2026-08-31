@@ -275,6 +275,10 @@ Event list
    - Opens the task manager dialog.
  * - ``Checklist``
    - Displays the checklist dialog.
+ * - ``FrequencyCard``
+   - Displays the frequency card: the stations of the frequency list
+     file (System > Site Files > Radio frequencies); Enter sets the
+     selected one as standby frequency.
  * - ``ClearAirspaceWarnings``
    - Acknowledges all active airspace warnings.
  * - ``ClearStatusMessages``
