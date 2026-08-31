@@ -205,6 +205,7 @@ CheckFileContent(Path path, FileType type) noexcept
       ? FileCheckResult::OK
       : FileCheckResult::MISMATCH;
 
+  case FileType::FREQUENCIES:
   case FileType::PLANE:
   case FileType::PROFILE:
   case FileType::XCI:

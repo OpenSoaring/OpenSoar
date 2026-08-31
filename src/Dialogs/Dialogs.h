@@ -17,6 +17,11 @@ void dlgChecklistShowModal();
  * was saved so the next checklist open uses the new profile entry.
  */
 void dlgChecklistNotifySiteFileChanged() noexcept;
+
+/**
+ * The frequency card: see FrequencyDialog.cpp.
+ */
+void FrequencyDialogShowModal() noexcept;
 void dlgConfigurationShowModal();
 
 /** Open Configuration on an existing menu page. */
