@@ -600,6 +600,179 @@ msgid "Show"
 msgstr "Anzeigen"
 
 #, no-c-format
+msgid "Search"
+msgstr "Suche"
+
+msgid "Countries"
+msgstr "Länder"
+
+msgid ""
+"Show only the files of these countries - the same selection for maps, "
+"waypoints and airspaces, kept in the profile.  Files that concern every "
+"country stay listed."
+msgstr ""
+"Nur die Dateien dieser Länder anzeigen - dieselbe Auswahl für Karten, "
+"Wegpunkte und Lufträume, gespeichert im Profil.  Dateien, die alle Länder "
+"betreffen, bleiben sichtbar."
+
+msgid ""
+"Show only the files whose name or description contains this text."
+msgstr ""
+"Nur die Dateien anzeigen, deren Name oder Beschreibung diesen Text enthält."
+
+msgid "No file matches the filter."
+msgstr "Keine Datei passt zum Filter."
+
+msgid "Argentina"
+msgstr "Argentinien"
+
+msgid "Austria"
+msgstr "Österreich"
+
+msgid "Australia"
+msgstr "Australien"
+
+msgid "Belgium"
+msgstr "Belgien"
+
+msgid "Bulgaria"
+msgstr "Bulgarien"
+
+msgid "Brazil"
+msgstr "Brasilien"
+
+msgid "Canada"
+msgstr "Kanada"
+
+msgid "Switzerland"
+msgstr "Schweiz"
+
+msgid "Chile"
+msgstr "Chile"
+
+msgid "Colombia"
+msgstr "Kolumbien"
+
+msgid "Czechia"
+msgstr "Tschechien"
+
+msgid "Germany"
+msgstr "Deutschland"
+
+msgid "Denmark"
+msgstr "Dänemark"
+
+msgid "Estonia"
+msgstr "Estland"
+
+msgid "Spain"
+msgstr "Spanien"
+
+msgid "Finland"
+msgstr "Finnland"
+
+msgid "France"
+msgstr "Frankreich"
+
+msgid "United Kingdom"
+msgstr "Vereinigtes Königreich"
+
+msgid "Greece"
+msgstr "Griechenland"
+
+msgid "Croatia"
+msgstr "Kroatien"
+
+msgid "Hungary"
+msgstr "Ungarn"
+
+msgid "Ireland"
+msgstr "Irland"
+
+msgid "Israel"
+msgstr "Israel"
+
+msgid "India"
+msgstr "Indien"
+
+msgid "Iceland"
+msgstr "Island"
+
+msgid "Italy"
+msgstr "Italien"
+
+msgid "Japan"
+msgstr "Japan"
+
+msgid "Kenya"
+msgstr "Kenia"
+
+msgid "Lithuania"
+msgstr "Litauen"
+
+msgid "Luxembourg"
+msgstr "Luxemburg"
+
+msgid "Latvia"
+msgstr "Lettland"
+
+msgid "Morocco"
+msgstr "Marokko"
+
+msgid "Mexico"
+msgstr "Mexiko"
+
+msgid "Namibia"
+msgstr "Namibia"
+
+msgid "Netherlands"
+msgstr "Niederlande"
+
+msgid "Norway"
+msgstr "Norwegen"
+
+msgid "New Zealand"
+msgstr "Neuseeland"
+
+msgid "Poland"
+msgstr "Polen"
+
+msgid "Portugal"
+msgstr "Portugal"
+
+msgid "Romania"
+msgstr "Rumänien"
+
+msgid "Serbia"
+msgstr "Serbien"
+
+msgid "Russia"
+msgstr "Russland"
+
+msgid "Sweden"
+msgstr "Schweden"
+
+msgid "Slovenia"
+msgstr "Slowenien"
+
+msgid "Slovakia"
+msgstr "Slowakei"
+
+msgid "Türkiye"
+msgstr "Türkei"
+
+msgid "Ukraine"
+msgstr "Ukraine"
+
+msgid "United States"
+msgstr "Vereinigte Staaten"
+
+msgid "Uruguay"
+msgstr "Uruguay"
+
+msgid "South Africa"
+msgstr "Südafrika"
+
 msgid "All"
 msgstr "Alle"
 
@@ -1413,7 +1586,7 @@ msgid "Do you really want to delete all flights from the device?"
 msgstr "Bestätige, wirklich alle Flüge vom Gerät löschen?"
 
 msgid "Reboot"
-msgstr "Neustart"
+msgstr "Gerät neu starten"
 
 #, no-c-format
 msgid "Temperature"
@@ -8691,6 +8864,15 @@ msgstr "Zuerst ein Ziel wählen."
 msgid "Backup failed."
 msgstr "Sicherung fehlgeschlagen."
 
+msgid "Backup complete."
+msgstr "Sicherung abgeschlossen."
+
+msgid "Left out, being written right now:"
+msgstr "Ausgelassen, wird gerade geschrieben:"
+
+msgid "Not available while flying."
+msgstr "Im Flug nicht verfügbar."
+
 #, no-c-format
 msgctxt "Button"
 msgid "Restore backup"
@@ -10911,6 +11093,7 @@ msgstr "InfoBox-Bereich strecken"
 
 msgid "System status bar"
 msgstr "System-Statusleiste"
+
 msgid "Determines whether the snail trail is drifted with the wind when displayed in circling mode at near map scales. Switched Off, the snail trail stays uncompensated for wind drift. In circling this also applies to the projected track curve: On keeps it relative to the air mass; Off includes wind."
 msgstr "Bestimmt, ob die Flugspur bei Anzeige im Kreisflug bei nahen Kartenmaßstäben mit dem Wind verdriftet wird. Ausgeschaltet bleibt die Spur ohne Winddrift-Kompensation. Im Kreisflug gilt das auch für die projizierte Spurkurve: Ein hält sie relativ zur Luftmasse; Aus schließt den Wind ein."
 
@@ -11190,9 +11373,6 @@ msgstr "Die Seite wechselt, der Flugmodus nicht. Vorflug zeigt die Vorflugseite,
 msgid "System Tools"
 msgstr "Systemwerkzeuge"
 
-msgid "Not available while flying."
-msgstr "Während des Fluges nicht verfügbar."
-
 msgid "User"
 msgstr "Benutzer"
 
@@ -11384,20 +11564,8 @@ msgid "Antarctica"
 msgstr "Antarktis"
 
 #, no-c-format
-msgid "Argentina"
-msgstr "Argentinien"
-
-#, no-c-format
 msgid "American Samoa"
 msgstr "Amerikanisch-Samoa"
-
-#, no-c-format
-msgid "Austria"
-msgstr "Österreich"
-
-#, no-c-format
-msgid "Australia"
-msgstr "Australien"
 
 #, no-c-format
 msgid "Aruba"
@@ -11424,16 +11592,8 @@ msgid "Bangladesh"
 msgstr "Bangladesch"
 
 #, no-c-format
-msgid "Belgium"
-msgstr "Belgien"
-
-#, no-c-format
 msgid "Burkina Faso"
 msgstr "Burkina Faso"
-
-#, no-c-format
-msgid "Bulgaria"
-msgstr "Bulgarien"
 
 #, no-c-format
 msgid "Bahrain"
@@ -11468,10 +11628,6 @@ msgid "Caribbean Netherlands"
 msgstr "Karibische Niederlande"
 
 #, no-c-format
-msgid "Brazil"
-msgstr "Brasilien"
-
-#, no-c-format
 msgid "Bahamas"
 msgstr "Bahamas"
 
@@ -11496,10 +11652,6 @@ msgid "Belize"
 msgstr "Belize"
 
 #, no-c-format
-msgid "Canada"
-msgstr "Kanada"
-
-#, no-c-format
 msgid "Cocos Islands"
 msgstr "Kokosinseln"
 
@@ -11516,10 +11668,6 @@ msgid "Congo-Brazzaville"
 msgstr "Kongo-Brazzaville"
 
 #, no-c-format
-msgid "Switzerland"
-msgstr "Schweiz"
-
-#, no-c-format
 msgid "Côte d'Ivoire"
 msgstr "Côte d’Ivoire"
 
@@ -11528,20 +11676,12 @@ msgid "Cook Islands"
 msgstr "Cookinseln"
 
 #, no-c-format
-msgid "Chile"
-msgstr "Chile"
-
-#, no-c-format
 msgid "Cameroon"
 msgstr "Kamerun"
 
 #, no-c-format
 msgid "China"
 msgstr "China"
-
-#, no-c-format
-msgid "Colombia"
-msgstr "Kolumbien"
 
 #, no-c-format
 msgid "Costa Rica"
@@ -11568,20 +11708,8 @@ msgid "Cyprus"
 msgstr "Zypern"
 
 #, no-c-format
-msgid "Czechia"
-msgstr "Tschechien"
-
-#, no-c-format
-msgid "Germany"
-msgstr "Deutschland"
-
-#, no-c-format
 msgid "Djibouti"
 msgstr "Dschibuti"
-
-#, no-c-format
-msgid "Denmark"
-msgstr "Dänemark"
 
 #, no-c-format
 msgid "Dominica"
@@ -11600,10 +11728,6 @@ msgid "Ecuador"
 msgstr "Ecuador"
 
 #, no-c-format
-msgid "Estonia"
-msgstr "Estland"
-
-#, no-c-format
 msgid "Egypt"
 msgstr "Ägypten"
 
@@ -11616,16 +11740,8 @@ msgid "Eritrea"
 msgstr "Eritrea"
 
 #, no-c-format
-msgid "Spain"
-msgstr "Spanien"
-
-#, no-c-format
 msgid "Ethiopia"
 msgstr "Äthiopien"
-
-#, no-c-format
-msgid "Finland"
-msgstr "Finnland"
 
 #, no-c-format
 msgid "Fiji"
@@ -11644,16 +11760,8 @@ msgid "Faroe Islands"
 msgstr "Färöer"
 
 #, no-c-format
-msgid "France"
-msgstr "Frankreich"
-
-#, no-c-format
 msgid "Gabon"
 msgstr "Gabun"
-
-#, no-c-format
-msgid "United Kingdom"
-msgstr "Vereinigtes Königreich"
 
 #, no-c-format
 msgid "Grenada"
@@ -11700,10 +11808,6 @@ msgid "Equatorial Guinea"
 msgstr "Äquatorialguinea"
 
 #, no-c-format
-msgid "Greece"
-msgstr "Griechenland"
-
-#, no-c-format
 msgid "South Georgia"
 msgstr "Südgeorgien und die Südlichen Sandwichinseln"
 
@@ -11736,36 +11840,16 @@ msgid "Honduras"
 msgstr "Honduras"
 
 #, no-c-format
-msgid "Croatia"
-msgstr "Kroatien"
-
-#, no-c-format
 msgid "Haiti"
 msgstr "Haiti"
-
-#, no-c-format
-msgid "Hungary"
-msgstr "Ungarn"
 
 #, no-c-format
 msgid "Indonesia"
 msgstr "Indonesien"
 
 #, no-c-format
-msgid "Ireland"
-msgstr "Irland"
-
-#, no-c-format
-msgid "Israel"
-msgstr "Israel"
-
-#, no-c-format
 msgid "Isle of Man"
 msgstr "Isle of Man"
-
-#, no-c-format
-msgid "India"
-msgstr "Indien"
 
 #, no-c-format
 msgid "British Indian Ocean Territory"
@@ -11780,14 +11864,6 @@ msgid "Iran"
 msgstr "Iran"
 
 #, no-c-format
-msgid "Iceland"
-msgstr "Island"
-
-#, no-c-format
-msgid "Italy"
-msgstr "Italien"
-
-#, no-c-format
 msgid "Jersey"
 msgstr "Jersey"
 
@@ -11798,14 +11874,6 @@ msgstr "Jamaika"
 #, no-c-format
 msgid "Jordan"
 msgstr "Jordanien"
-
-#, no-c-format
-msgid "Japan"
-msgstr "Japan"
-
-#, no-c-format
-msgid "Kenya"
-msgstr "Kenia"
 
 #, no-c-format
 msgid "Kyrgyzstan"
@@ -11876,24 +11944,8 @@ msgid "Lesotho"
 msgstr "Lesotho"
 
 #, no-c-format
-msgid "Lithuania"
-msgstr "Litauen"
-
-#, no-c-format
-msgid "Luxembourg"
-msgstr "Luxemburg"
-
-#, no-c-format
-msgid "Latvia"
-msgstr "Lettland"
-
-#, no-c-format
 msgid "Libya"
 msgstr "Libyen"
-
-#, no-c-format
-msgid "Morocco"
-msgstr "Marokko"
 
 #, no-c-format
 msgid "Monaco"
@@ -11972,20 +12024,12 @@ msgid "Malawi"
 msgstr "Malawi"
 
 #, no-c-format
-msgid "Mexico"
-msgstr "Mexiko"
-
-#, no-c-format
 msgid "Malaysia"
 msgstr "Malaysia"
 
 #, no-c-format
 msgid "Mozambique"
 msgstr "Mosambik"
-
-#, no-c-format
-msgid "Namibia"
-msgstr "Namibia"
 
 #, no-c-format
 msgid "New Caledonia"
@@ -12008,14 +12052,6 @@ msgid "Nicaragua"
 msgstr "Nicaragua"
 
 #, no-c-format
-msgid "Netherlands"
-msgstr "Niederlande"
-
-#, no-c-format
-msgid "Norway"
-msgstr "Norwegen"
-
-#, no-c-format
 msgid "Nepal"
 msgstr "Nepal"
 
@@ -12026,10 +12062,6 @@ msgstr "Nauru"
 #, no-c-format
 msgid "Niue"
 msgstr "Niue"
-
-#, no-c-format
-msgid "New Zealand"
-msgstr "Neuseeland"
 
 #, no-c-format
 msgid "Oman"
@@ -12060,10 +12092,6 @@ msgid "Pakistan"
 msgstr "Pakistan"
 
 #, no-c-format
-msgid "Poland"
-msgstr "Polen"
-
-#, no-c-format
 msgid "Saint Pierre and Miquelon"
 msgstr "St. Pierre und Miquelon"
 
@@ -12080,10 +12108,6 @@ msgid "Palestine"
 msgstr "Palästinensische Autonomiegebiete"
 
 #, no-c-format
-msgid "Portugal"
-msgstr "Portugal"
-
-#, no-c-format
 msgid "Palau"
 msgstr "Palau"
 
@@ -12098,18 +12122,6 @@ msgstr "Katar"
 #, no-c-format
 msgid "Réunion"
 msgstr "Réunion"
-
-#, no-c-format
-msgid "Romania"
-msgstr "Rumänien"
-
-#, no-c-format
-msgid "Serbia"
-msgstr "Serbien"
-
-#, no-c-format
-msgid "Russia"
-msgstr "Russland"
 
 #, no-c-format
 msgid "Rwanda"
@@ -12132,10 +12144,6 @@ msgid "Sudan"
 msgstr "Sudan"
 
 #, no-c-format
-msgid "Sweden"
-msgstr "Schweden"
-
-#, no-c-format
 msgid "Singapore"
 msgstr "Singapur"
 
@@ -12144,16 +12152,8 @@ msgid "Saint Helena"
 msgstr "St. Helena"
 
 #, no-c-format
-msgid "Slovenia"
-msgstr "Slowenien"
-
-#, no-c-format
 msgid "Svalbard and Jan Mayen"
 msgstr "Spitzbergen und Jan Mayen"
-
-#, no-c-format
-msgid "Slovakia"
-msgstr "Slowakei"
 
 #, no-c-format
 msgid "Sierra Leone"
@@ -12264,24 +12264,12 @@ msgid "Tanzania"
 msgstr "Tansania"
 
 #, no-c-format
-msgid "Ukraine"
-msgstr "Ukraine"
-
-#, no-c-format
 msgid "Uganda"
 msgstr "Uganda"
 
 #, no-c-format
 msgid "U.S. Outlying Islands"
 msgstr "Amerikanische Überseeinseln"
-
-#, no-c-format
-msgid "United States"
-msgstr "Vereinigte Staaten"
-
-#, no-c-format
-msgid "Uruguay"
-msgstr "Uruguay"
 
 #, no-c-format
 msgid "Uzbekistan"
@@ -12336,24 +12324,12 @@ msgid "Mayotte"
 msgstr "Mayotte"
 
 #, no-c-format
-msgid "South Africa"
-msgstr "Südafrika"
-
-#, no-c-format
 msgid "Zambia"
 msgstr "Sambia"
 
 #, no-c-format
 msgid "Zimbabwe"
 msgstr "Simbabwe"
-
-#. the backup is there, but on purpose without the files the
-#. loggers are writing right now: say so, and which ones
-msgid "Backup complete."
-msgstr "Sicherung abgeschlossen."
-
-msgid "Left out, being written right now:"
-msgstr "Ausgelassen, wird gerade geschrieben:"
 
 msgid "Don't use"
 msgstr "Nicht verwenden"
@@ -12746,25 +12722,6 @@ msgstr "Schnellscan Naturfarbe"
 msgid "No satellite imagery here right now"
 msgstr "Hier ist gerade kein Satellitenbild verfügbar"
 
-msgid "Countries"
-msgstr "Länder"
-
-msgid "Show only the files of these countries - the same selection for maps, waypoints and airspaces, kept in the profile.  Files that concern every country stay listed."
-msgstr ""
-"Nur die Dateien dieser Länder anzeigen — dieselbe Auswahl für Karten, Wegpu"
-"nkte und Lufträume, im Profil gespeichert. Dateien, die jedes Land betreffe"
-"n, bleiben aufgelistet."
-
-msgid "Search"
-msgstr "Suche"
-
-msgid "Show only the files whose name or description contains this text."
-msgstr ""
-"Nur Dateien anzeigen, deren Name oder Beschreibung diesen Text enthält."
-
-msgid "No file matches the filter."
-msgstr "Keine Datei entspricht dem Filter."
-
 msgid "Complete"
 msgstr "Abgeschlossen"
 
@@ -12878,3 +12835,292 @@ msgstr ""
 "ist blau, während Ballast abgelassen wird. Antippen, um den Ballast zu ände"
 "rn."
 
+msgid "- Complete System Data Transfers"
+msgstr "- Komplette System-Datenübertragung"
+
+msgid "A web page was downloaded instead of the file - the address in the repository is probably wrong."
+msgstr "Statt der Datei wurde eine Webseite heruntergeladen - die Adresse im Repository ist vermutlich falsch."
+
+msgid "Another profile was activated."
+msgstr "Ein anderes Profil wurde aktiviert."
+
+msgid "Backup Image"
+msgstr "Abbild sichern"
+
+msgid "Backup System"
+msgstr "System sichern"
+
+msgid "Backup: OpenVario System to USB"
+msgstr "Sichern: OpenVario-System auf USB"
+
+msgid "Brightness"
+msgstr "Helligkeit"
+
+msgid "Brightness Display OpenVario"
+msgstr "Helligkeit des OpenVario-Displays"
+
+msgid "Calibrate Sensors"
+msgstr "Sensoren kalibrieren"
+
+msgid "Calibrate Touch"
+msgstr "Touchscreen kalibrieren"
+
+msgid "Changes to configuration saved."
+msgstr "Änderungen an der Konfiguration gespeichert."
+
+msgid "Config file"
+msgstr "Konfigurationsdatei"
+
+msgid "Could not re-acquire device after reboot."
+msgstr "Gerät war nach dem Neustart nicht wieder erreichbar."
+
+msgid "Current OpenSoar"
+msgstr "Aktuelles OpenSoar"
+
+msgid "Current firmware file version of OpenVario"
+msgstr "Version der OpenVario-Firmware-Datei"
+
+msgid "Current firmware version of OpenVario"
+msgstr "Aktuelle Firmware-Version des OpenVario"
+
+msgid "Default Key Configuration"
+msgstr "Standard-Tastenbelegung"
+
+msgid "Device did not reconnect after reboot."
+msgstr "Gerät hat sich nach dem Neustart nicht wieder verbunden."
+
+msgid "Device name"
+msgstr "Gerätename"
+
+msgid "Devices in the profile"
+msgstr "Geräte im Profil"
+
+msgid "Display Settings"
+msgstr "Display-Einstellungen"
+
+msgid "Download IGC Files"
+msgstr "IGC-Dateien herunterladen"
+
+msgid "Download files"
+msgstr "Dateien herunterladen"
+
+msgid "Enable the SSH Connection"
+msgstr "SSH-Zugang aktivieren"
+
+msgid "Enable the SensorD"
+msgstr "SensorD aktivieren"
+
+msgid "Enable the Settings Page"
+msgstr "Einstellungsseite aktivieren"
+
+msgid "Enable the VarioD"
+msgstr "VarioD aktivieren"
+
+msgid "Enabling the tTouch Screen"
+msgstr "Touchscreen aktivieren"
+
+msgid "Failed to activate the profile."
+msgstr "Das Profil konnte nicht aktiviert werden."
+
+msgid "File Transfers"
+msgstr "Dateiübertragung"
+
+msgid "Frequency Card"
+msgstr "Frequenzkarte"
+
+msgid "How long the profile dialog waits at startup before it continues with the preselected profile.  Any input stops the countdown; zero waits for the user."
+msgstr "Wie lange der Profildialog beim Start wartet, bevor er mit dem vorausgewählten Profil fortfährt.  Jede Eingabe stoppt den Countdown; bei Null wartet er auf den Benutzer."
+
+msgid "Image Backup to USB (WIP)"
+msgstr "Abbild-Sicherung auf USB (in Arbeit)"
+
+msgid "Keep the NMEA devices and their ports in the profile, the way XCSoar does it, instead of in the device port file.  For a machine that flies with more than one set of instruments.  Takes effect on the next start."
+msgstr "NMEA-Geräte und ihre Ports wie bei XCSoar im Profil halten statt in der Geräteport-Datei.  Für ein Gerät, das mit mehr als einem Instrumentensatz fliegt.  Wirkt ab dem nächsten Start."
+
+msgid "Key Configuration"
+msgstr "Tastenbelegung"
+
+msgid "No active device."
+msgstr "Kein aktives Gerät."
+
+msgid "No frequency list is loaded.  Select one under System > Site Files > Radio frequencies."
+msgstr "Keine Frequenzliste geladen.  Auswahl unter System > Standortdateien > Funkfrequenzen."
+
+msgid "No place for device settings on this system."
+msgstr "Auf diesem System gibt es keinen Ort für Geräteeinstellungen."
+
+msgid "OpenVario Extra menu "
+msgstr "OpenVario-Extramenü "
+
+msgid "OpenVario File Transfers"
+msgstr "OpenVario-Dateiübertragung"
+
+msgid "Program Timeout"
+msgstr "Programm-Timeout"
+
+msgid "Program file doesnt exist!"
+msgstr "Programmdatei existiert nicht!"
+
+msgid "Radio frequencies"
+msgstr "Funkfrequenzen"
+
+msgid "Re-Connect"
+msgstr "Neu verbinden"
+
+msgid "Reboot Remote Stick"
+msgstr "Remote Stick neu starten"
+
+msgid "Rebooting Remote Stick"
+msgstr "Remote Stick startet neu"
+
+msgid "Rebooting, please wait..."
+msgstr "Gerät startet neu, bitte warten..."
+
+msgid "Reopen left no active device."
+msgstr "Nach dem Neuöffnen ist kein Gerät aktiv."
+
+msgid "Restart now?"
+msgstr "Jetzt neu starten?"
+
+msgid "The program restarts now."
+msgstr "Das Programm startet jetzt neu."
+
+msgid "The program quits now, please start it again."
+msgstr "Das Programm wird jetzt beendet, bitte neu starten."
+
+msgid "Restarting, please wait..."
+msgstr "Programm startet neu, bitte warten..."
+
+msgid "Restore %s"
+msgstr "%s wiederherstellen"
+
+msgid "Restore System"
+msgstr "System wiederherstellen"
+
+msgid "Restore complete."
+msgstr "Wiederherstellung abgeschlossen."
+
+msgid "Restore: OpenVario <- USB"
+msgstr "Wiederherstellen: OpenVario <- USB"
+
+msgid "Restore: OpenVario System from USB"
+msgstr "Wiederherstellen: OpenVario-System von USB"
+
+msgid "Rotation Display OpenVario"
+msgstr "Ausrichtung des OpenVario-Displays"
+
+msgid "Save: OpenVario -> USB"
+msgstr "Sichern: OpenVario -> USB"
+
+msgid "Saved and visible"
+msgstr "Gespeichert und sichtbar"
+
+msgid "Saved, but not visible"
+msgstr "Gespeichert, aber nicht sichtbar"
+
+msgid "Serial number"
+msgstr "Seriennummer"
+
+msgid "Settings Enabled"
+msgstr "Einstellungen aktiviert"
+
+msgid "Shutdown"
+msgstr "Ausschalten"
+
+msgid "Start OpenSoar"
+msgstr "OpenSoar starten"
+
+msgid "Start OpenSoar (Club)"
+msgstr "OpenSoar starten (Club)"
+
+msgid "Start XCSoar"
+msgstr "XCSoar starten"
+
+msgid "Start and leave the program the way XCSoar does it: the fly/simulator prompt at every start, the profile dialog only when it is needed and without a countdown, and a plain question when quitting.  Takes effect on the next start."
+msgstr "Programmstart und Beenden wie bei XCSoar: die Fliegen/Simulator-Frage bei jedem Start, der Profildialog nur bei Bedarf und ohne Countdown, beim Beenden eine einfache Rückfrage.  Wirkt ab dem nächsten Start."
+
+msgid "Startup timeout"
+msgstr "Start-Timeout"
+
+msgid "Switching off, please wait..."
+msgstr "Ausschalten, bitte warten..."
+
+msgid "System Info"
+msgstr "Systeminfo"
+
+msgid "System Settings"
+msgstr "Systemeinstellungen"
+
+msgid "The change takes effect on the next start."
+msgstr "Die Änderung wirkt ab dem nächsten Start."
+
+msgid "The downloaded file cannot be read."
+msgstr "Die heruntergeladene Datei lässt sich nicht lesen."
+
+msgid "The downloaded file does not look like the type the repository says it is."
+msgstr "Die heruntergeladene Datei sieht nicht nach dem Typ aus, den das Repository angibt."
+
+msgid "The downloaded file is empty."
+msgstr "Die heruntergeladene Datei ist leer."
+
+msgid "The frequency list shown by the frequency card: one station per line, \"name : frequency\", or a JSON file with a \"stations\" array."
+msgstr "Die Frequenzliste der Frequenzkarte: eine Station pro Zeile, \"Name : Frequenz\", oder eine JSON-Datei mit einem \"stations\"-Feld."
+
+msgid "The repository entry \"%s\" has no file name extension that fits its type.  The file would be downloaded but not found again."
+msgstr "Der Repository-Eintrag \"%s\" hat keine zum Typ passende Dateiendung.  Die Datei würde heruntergeladen, aber nie wiedergefunden."
+
+msgid "This profile is already in use."
+msgstr "Dieses Profil wird bereits verwendet."
+
+msgid "Timeout for Program Start."
+msgstr "Timeout für den Programmstart."
+
+msgid "Touch enabled"
+msgstr "Touch aktiviert"
+
+msgid "Update System"
+msgstr "System aktualisieren"
+
+msgid "Upgrade Firmware"
+msgstr "Firmware aktualisieren"
+
+msgid "Upgrade Firmware (.img.gz) "
+msgstr "Firmware aktualisieren (.img.gz) "
+
+msgid "Upgrade Firmware (temp.)"
+msgstr "Firmware aktualisieren (temp.)"
+
+msgid "Upload IGC Files to USB (WIP)"
+msgstr "IGC-Dateien auf USB kopieren (in Arbeit)"
+
+msgid "Waiting for stick to reboot…"
+msgstr "Warte auf den Neustart des Sticks…"
+
+msgid "Waiting for stick to reconnect…"
+msgstr "Warte, bis sich der Stick wieder verbindet…"
+
+msgid "Wifi"
+msgstr "WLAN"
+
+msgid "XCSoar behaviour"
+msgstr "XCSoar-Verhalten"
+
+msgid "Frequency\nCard"
+msgstr "Frequenz-\nkarte"
+
+msgid "Info\nPage 2/4"
+msgstr "Info\nSeite 2/4"
+
+msgid "Info\nPage 3/4"
+msgstr "Info\nSeite 3/4"
+
+msgid "Info\nPage 4/4"
+msgstr "Info\nSeite 4/4"
+
+msgctxt "Setting"
+msgid "System"
+msgstr "System"
+
+msgctxt "Menu"
+msgid "System"
+msgstr "System"
