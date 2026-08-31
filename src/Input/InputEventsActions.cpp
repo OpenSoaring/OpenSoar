@@ -315,6 +315,16 @@ InputEvents::eventChecklist([[maybe_unused]] const char *misc)
   dlgChecklistShowModal();
 }
 
+// FrequencyCard
+// Displays the frequency card: the stations of the frequency list
+// file (System > Site Files > Radio frequencies), one tap away from
+// the standby or active frequency of the radio.
+void
+InputEvents::eventFrequencyCard([[maybe_unused]] const char *misc)
+{
+  FrequencyDialogShowModal();
+}
+
 // Status
 // Displays one of the three status dialogs:
 //    system: display the system status
@@ -644,7 +654,9 @@ InputEvents::eventSetup(const char *misc)
   else if (StringIsEqual(misc, "Alternates")) {
     dlgAlternatesListShowModal(data_components->waypoints.get(),
                                AlternateInfoBoxSlot::FIRST);
-  }
+  } else if (StringIsEqual(misc, "FrequencyCard"))
+    /* the name OpenSoar's xci files have used all along */
+    FrequencyDialogShowModal();
 
   trigger_redraw();
 }
