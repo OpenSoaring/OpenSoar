@@ -239,20 +239,56 @@ RichTextWindow::LoadImage(const std::string &url) const noexcept
   return defined ? &pos->second : nullptr;
 }
 
-const MarkdownImage *
-RichTextWindow::FindBlockImageForLine(
-  std::size_t line_start,
-  std::size_t line_length) const noexcept
+/**
+ * The width a block image is laid out with: bitmaps are authored for
+ * a 96 dpi screen, so on a denser display they keep their physical
+ * size instead of shrinking to a thumbnail - the same rule fonts and
+ * paddings follow.  Never smaller than the bitmap itself.
+ */
+static unsigned
+BlockImageWidth(unsigned bitmap_width) noexcept
 {
+  return std::max(bitmap_width, Layout::PtScale(bitmap_width * 3 / 4));
+}
+
+/**
+ * The size a block image is drawn with: dpi-scaled
+ * (BlockImageWidth()), but never wider than its slot and never taller
+ * than a quarter of the viewport - a logo must not turn an About
+ * page into a scroll page on a small screen.
+ */
+static PixelSize
+FitBlockImage(PixelSize image, unsigned slot_width,
+              unsigned viewport_height) noexcept
+{
+  if (image.width == 0 || image.height == 0)
+    return {1, 1};
+
+  unsigned w = std::min(slot_width, BlockImageWidth(image.width));
+  unsigned h = std::max(1u, image.height * w / image.width);
+
+  const unsigned max_h = std::max(viewport_height / 4, 16u);
+  if (h > max_h) {
+    h = max_h;
+    w = std::max(1u, image.width * h / image.height);
+  }
+
+  return {w, h};
+}
+
+std::vector<const MarkdownImage *>
+RichTextWindow::BlockImagesForLine(std::size_t line_start,
+                                   std::size_t line_length) const noexcept
+{
+  std::vector<const MarkdownImage *> result;
   const std::size_t line_end = line_start + line_length;
 
-  for (const auto &img : parsed.images) {
-    if (!img.is_block)
-      continue;
-    if (img.position >= line_start && img.position < line_end)
-      return &img;
-  }
-  return nullptr;
+  for (const auto &img : parsed.images)
+    if (img.is_block && img.position >= line_start &&
+        img.position < line_end)
+      result.push_back(&img);
+
+  return result;
 }
 
 const MarkdownImage *
@@ -362,23 +398,26 @@ RichTextWindow::EnsureLineLayout() const noexcept
             + touch_line_pad
         : base_line_height;
 
-    const MarkdownImage *block_img =
-      FindBlockImageForLine(line.start, line.length);
+    const auto block_images = BlockImagesForLine(line.start, line.length);
 
-    if (block_img != nullptr) {
-      const Bitmap *bmp = LoadImage(block_img->url);
-      if (bmp != nullptr && bmp->IsDefined()) {
-        PixelSize img_size = bmp->GetSize();
-        if (img_size.width == 0)
-          img_size.width = 1;
-        /* Scale to fit within the full column (not wrap slack). */
-        unsigned target_w = std::min(column_width, img_size.width);
-        unsigned target_h = img_size.height * target_w / img_size.width;
-        /* Add small vertical padding around the image */
-        line_heights[i] = static_cast<int>(target_h) + padding;
-      } else {
-        line_heights[i] = line_height;
+    if (!block_images.empty()) {
+      /* the row is as tall as its tallest image; each image gets an
+         equal share of the full column (not wrap slack) */
+      const unsigned slot_width =
+        std::max(1u, column_width / unsigned(block_images.size()));
+      unsigned row_h = 0;
+      for (const auto *img : block_images) {
+        const Bitmap *bmp = LoadImage(img->url);
+        if (bmp != nullptr && bmp->IsDefined())
+          row_h = std::max(row_h,
+                           FitBlockImage(bmp->GetSize(), slot_width,
+                                         size.height).height);
       }
+
+      /* Add small vertical padding around the image */
+      line_heights[i] = row_h > 0
+        ? static_cast<int>(row_h) + padding
+        : line_height;
     } else {
       /* Check for inline images that may be taller than text */
       const MarkdownImage *inline_img =
@@ -398,7 +437,7 @@ RichTextWindow::EnsureLineLayout() const noexcept
     }
 
     if (IsTouchLayout() && font != nullptr &&
-        block_img == nullptr &&
+        block_images.empty() &&
         LineSpanStartsWithCheckbox(parsed, line.start)) {
       const int need = CheckboxBoxSize(*font) + Layout::Scale(4);
       line_heights[i] = std::max(line_heights[i], need);
@@ -1248,33 +1287,41 @@ RichTextWindow::PaintContent(Canvas &canvas, int y_origin,
 
     if (!line.segments.empty()) {
       const auto &first_seg = line.segments.front();
-      const MarkdownImage *img =
-        FindBlockImageForLine(first_seg.start,
-                              line.segments.back().start +
-                              line.segments.back().length -
-                              first_seg.start);
-      if (img != nullptr) {
-        const Bitmap *bmp = LoadImage(img->url);
-        if (bmp != nullptr && bmp->IsDefined()) {
-          PixelSize img_size = bmp->GetSize();
-          if (img_size.width == 0)
-            img_size.width = 1;
-          unsigned target_w = std::min(text_width, img_size.width);
-          unsigned target_h =
-            img_size.height * target_w / img_size.width;
-          int img_x = padding +
-            static_cast<int>(text_width - target_w) / 2;
-          int img_y = y + (cur_line_height -
-                           static_cast<int>(target_h)) / 2;
+      const auto block_images =
+        BlockImagesForLine(first_seg.start,
+                           line.segments.back().start +
+                           line.segments.back().length -
+                           first_seg.start);
+      if (!block_images.empty()) {
+        bool drawn = false;
+        const unsigned slot_width =
+          std::max(1u, text_width / unsigned(block_images.size()));
+
+        for (const auto *img : block_images) {
+          const Bitmap *bmp = LoadImage(img->url);
+          if (bmp == nullptr || !bmp->IsDefined())
+            continue;
+
+          const PixelSize img_size = bmp->GetSize();
+          const PixelSize target =
+            FitBlockImage(img_size, slot_width, widget_size.height);
+
+          /* centred in its slot of the row */
+          const int slot_x = padding + int(slot_width * img->row_index);
+          const int img_x = slot_x +
+            static_cast<int>(slot_width - target.width) / 2;
+          const int img_y = y + (cur_line_height -
+                                 static_cast<int>(target.height)) / 2;
 
 #ifdef ENABLE_OPENGL
           const ScopeAlphaBlend alpha_blend;
 #endif
-          canvas.Stretch({img_x, img_y},
-                         {target_w, target_h},
-                         *bmp, {0, 0}, img_size);
-          continue;
+          canvas.Stretch({img_x, img_y}, target, *bmp, {0, 0}, img_size);
+          drawn = true;
         }
+
+        if (drawn)
+          continue;
       }
     }
 

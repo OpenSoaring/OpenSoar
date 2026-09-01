@@ -89,6 +89,10 @@ bitmap_graphic IDB_LOGO_UHD_RGBA "logo_320_rgba"
 bitmap_graphic IDB_LOGO_HD_RGBA "logo_160_rgba"
 bitmap_graphic IDB_LOGO_RGBA "logo_80_rgba"
 #endif
+#ifdef HAVE_SPONSOR_LOGO
+bitmap_graphic IDB_LOGO_SPONSOR_HD "logo_sponsor_160"
+bitmap_graphic IDB_LOGO_SPONSOR_HD_RGBA "logo_sponsor_160_rgba"
+#endif
 bitmap_icon_scaled IDB_TARGET "map_target"
 bitmap_icon_scaled IDB_TEAMMATE_POS "map_teammate"
 bitmap_icon_scaled IDB_TERRAINWARNING "map_terrainw"
