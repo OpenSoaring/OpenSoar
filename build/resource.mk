@@ -89,7 +89,8 @@ $(eval $(call convert-to-bmp,$(BMP_ICONS_ALL),%.bmp,%_tile.png))
 
 ####### splash logo
 
-SVG_SPLASH = Data/graphics/logo.svg Data/graphics/logo_red.svg
+SVG_SPLASH = Data/graphics/logo.svg Data/graphics/logo_red.svg \
+	$(wildcard Data/graphics/logo_sponsor.svg)
 PNG_SPLASH_320 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_320.png,$(SVG_SPLASH))
 BMP_SPLASH_320 = $(PNG_SPLASH_320:.png=.bmp)
 PNG_SPLASH_160 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_160.png,$(SVG_SPLASH))
@@ -271,6 +272,19 @@ $(TEXT_COMPRESSED): $(DATA)/%.gz: % | $(DATA)/dirstamp
 	@$(NQ)echo "  GZIP    $@"
 	$(Q)gzip --best <$< >$@.$(RANDOM_NUMBER).tmp
 	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
+
+# the brand's own news (OpenSoar-News.md), embedded like NEWS.txt for
+# the About dialog.  The C symbol is derived from the file name, so
+# the "-" has to go: the archive is called OpenSoar_News.md.gz
+BRAND_NEWS = $(wildcard $(topdir)/OpenSoar-News.md)
+ifneq ($(BRAND_NEWS),)
+BRAND_NEWS_GZ = $(DATA)/OpenSoar_News.md.gz
+$(BRAND_NEWS_GZ): $(BRAND_NEWS) | $(DATA)/dirstamp
+	@$(NQ)echo "  GZIP    $@"
+	$(Q)gzip --best <$< >$@.$(RANDOM_NUMBER).tmp
+	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
+TEXT_COMPRESSED += $(BRAND_NEWS_GZ)
+endif
 
 RESOURCE_FILES =
 
