@@ -8978,6 +8978,15 @@ msgstr "Zuerst ein Ziel wählen."
 msgid "Backup failed."
 msgstr "Sicherung fehlgeschlagen."
 
+msgid "Backup complete."
+msgstr "Sicherung abgeschlossen."
+
+msgid "Left out, being written right now:"
+msgstr "Ausgelassen, wird gerade geschrieben:"
+
+msgid "Not available while flying."
+msgstr "Im Flug nicht verfügbar."
+
 #, no-c-format
 msgctxt "Button"
 msgid "Restore backup"
