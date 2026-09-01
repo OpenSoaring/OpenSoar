@@ -17,6 +17,8 @@
 #include "InfoBoxes/InfoBoxSettings.hpp"
 #include "InfoBoxes/InfoBoxLayout.hpp"
 #include "InfoBoxes/Content/Factory.hpp"
+#include "InfoBoxes/Content/Extension.hpp"
+#include "Dialogs/InfoBoxPicker.hpp"
 #include "Interface.hpp"
 #include "Look/InfoBoxLook.hpp"
 #include "Language/Language.hpp"
@@ -56,7 +58,7 @@ class InfoBoxesConfigWidget final
   : public RowFormWidget, DataFieldListener {
 
   enum Controls {
-    NAME, INFOBOX, CONTENT, DESCRIPTION
+    NAME, INFOBOX, GROUP, CONTENT, DESCRIPTION
   };
 
   struct Layout {
@@ -112,6 +114,11 @@ public:
 
   void RefreshEditContentDescription();
   void RefreshEditContent();
+
+  /** Fill the "Content" enum with every selectable InfoBox. */
+  void FillContentChoices() noexcept;
+
+
 
   void OnCopy();
   void OnPaste();
@@ -232,18 +239,22 @@ InfoBoxesConfigWidget::Prepare(ContainerWindow &parent,
 
   Add(_("InfoBox"), nullptr, dfe);
 
+  /* the groups the content picker narrows its list down to - the
+     same filter the picker on the map uses; the row opens the
+     checkbox list */
+  Add(_("Groups"),
+      _("Show only the InfoBoxes of these groups when choosing a content."),
+      new InfoBoxGroupsDataField(GetInfoBoxGroupFilter(), this));
+  GetControl(GROUP).SetEditCallback(EditInfoBoxGroups);
+
+  /* the content: the enum holds every selectable InfoBox so that the
+     row can show the current one; editing opens InfoBoxPicker() -
+     groups row on top, filtered list below */
   dfe = new DataFieldEnum(this);
-  for (unsigned i = InfoBoxFactory::MIN_TYPE_VAL; i < InfoBoxFactory::NUM_TYPES; i++) {
-    const char *name = InfoBoxFactory::GetName((InfoBoxFactory::Type) i);
-    const char *desc = InfoBoxFactory::GetDescription((InfoBoxFactory::Type) i);
-    if (name != NULL)
-      dfe->addEnumText(gettext(name), i, desc != NULL ? gettext(desc) : NULL);
-  }
-
   dfe->EnableItemHelp(true);
-  dfe->Sort(0);
-
   Add(_("Content"), nullptr, dfe);
+  GetControl(CONTENT).SetEditCallback(EditInfoBoxContent);
+  FillContentChoices();
 
   ContainerWindow &form_parent = (ContainerWindow &)RowFormWidget::GetWindow();
   AddRemaining(std::make_unique<WndFrame>(form_parent, GetLook(), rc));
@@ -300,9 +311,53 @@ InfoBoxesConfigWidget::RefreshEditContentDescription()
 }
 
 void
+InfoBoxesConfigWidget::FillContentChoices() noexcept
+{
+  DataFieldEnum &dfe = (DataFieldEnum &)GetDataField(CONTENT);
+
+  dfe.ClearChoices();
+
+  const auto add = [&](unsigned i){
+    const auto type = (InfoBoxFactory::Type)i;
+    if (!InfoBoxFactory::IsSelectable(type))
+      return;
+
+    const char *name = InfoBoxFactory::GetName(type);
+    const char *desc = InfoBoxFactory::GetDescription(type);
+    if (name != nullptr)
+      dfe.addEnumText(gettext(name), i, desc != nullptr ? gettext(desc) : nullptr);
+  };
+
+  for (unsigned i = InfoBoxFactory::MIN_TYPE_VAL; i < InfoBoxFactory::NUM_TYPES; i++)
+    add(i);
+
+  /* the OpenSoar block */
+  for (unsigned i = InfoBoxFactory::OPENSOAR_FIRST; i < InfoBoxFactory::OPENSOAR_END; i++)
+    add(i);
+
+  dfe.Sort(0);
+}
+
+void
 InfoBoxesConfigWidget::RefreshEditContent()
 {
-  LoadValueEnum(CONTENT, data.contents[current_preview]);
+  const auto current = data.contents[current_preview];
+
+  /* a box that is not selectable any more (placeholder, superseded)
+     still has to be shown for what it is */
+  DataFieldEnum &dfe = (DataFieldEnum &)GetDataField(CONTENT);
+  if (!InfoBoxFactory::IsSelectable(current)) {
+    /* SetValue() ignores an id the enum does not have: that is the
+       cue to add it */
+    dfe.SetValue(unsigned(current));
+    if (dfe.GetValue() != unsigned(current)) {
+      const char *name = InfoBoxFactory::IsValid(current)
+        ? InfoBoxFactory::GetName(current) : nullptr;
+      dfe.addEnumText(name != nullptr ? gettext(name) : _("Invalid"), current);
+    }
+  }
+
+  LoadValueEnum(CONTENT, current);
   RefreshEditContentDescription();
 }
 
@@ -327,7 +382,7 @@ InfoBoxesConfigWidget::OnPaste()
 
   for (unsigned item = 0; item < clipboard_size; item++) {
     InfoBoxFactory::Type content = clipboard.contents[item];
-    if (content >= InfoBoxFactory::NUM_TYPES)
+    if (!InfoBoxFactory::IsValid(content))
       continue;
 
     data.contents[item] = content;
@@ -389,7 +444,7 @@ InfoBoxPreview::OnPaint(Canvas &canvas) noexcept
   canvas.DrawRectangle(PixelRect{PixelSize{canvas.GetWidth() - 1, canvas.GetHeight() - 1}});
 
   InfoBoxFactory::Type type = parent->GetContents(i);
-  const char *caption = type < InfoBoxFactory::NUM_TYPES
+  const char *caption = InfoBoxFactory::IsValid(type)
     ? InfoBoxFactory::GetCaption(type)
     : NULL;
   if (caption == NULL)
