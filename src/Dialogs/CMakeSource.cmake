@@ -38,6 +38,8 @@ set(_SOURCES
         Dialogs/dlgAnalysis.cpp
         Dialogs/dlgChecklist.cpp
         Dialogs/FrequencyDialog.cpp
+        Dialogs/InfoBoxGroupPicker.cpp
+        Dialogs/InfoBoxPicker.cpp
         Dialogs/dlgCredits.cpp
         Dialogs/dlgInfoBoxAccess.cpp
         Dialogs/dlgQuickMenu.cpp
