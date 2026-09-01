@@ -88,6 +88,11 @@ code, migration-before-profile-load, CUPX binary mode).
     logo next to the OpenSoar logo, and carries these OpenSoar news
     as a page of its own; logos scale with the display density
 * fixes (also submitted to XCSoar)
+  - backup: a running logger no longer fails the whole backup - the
+    files being written right now (the NMEA log, the IGC file) are
+    left out of the archive and named afterwards; any other
+    unreadable file still fails it, and backup and restore refuse
+    to run while flying [upstream PR]
   - fix undefined behaviour when a terminal/grid widget grows from
     empty (port monitor crash on MSVC debug builds) [upstream PR]
   - block images in rich text (checklists, About page) keep their

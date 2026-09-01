@@ -34,6 +34,11 @@
 #include "Components.hpp"
 #include "BackendComponents.hpp"
 #include "Profile/Profile.hpp"
+#include "Interface.hpp"
+#include "Logger/Logger.hpp"
+#include "Logger/NMEALogger.hpp"
+#include "Components.hpp"
+#include "BackendComponents.hpp"
 #include "util/StringCompare.hxx"
 
 #include <algorithm>
