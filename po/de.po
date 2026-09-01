@@ -11522,3 +11522,100 @@ msgstr "System"
 
 msgid "Visit us at:"
 msgstr "Mehr im Web:"
+
+msgid "Wind - live speed"
+msgstr "Wind - Live-Geschwindigkeit"
+
+msgid "Live Wind"
+msgstr "Live-Wind"
+
+msgid "Speed of the instantaneous wind reported by an external sensor (Anemoi, ...), unfiltered; the bearing in the comment."
+msgstr "Geschwindigkeit des momentanen Windes von einem externen Sensor (Anemoi, ...), ungefiltert; die Richtung im Kommentar."
+
+msgid "Wind - live bearing"
+msgstr "Wind - Live-Richtung"
+
+msgid "Bearing of the instantaneous wind reported by an external sensor (Anemoi, ...), unfiltered; the speed in the comment."
+msgstr "Richtung des momentanen Windes von einem externen Sensor (Anemoi, ...), ungefiltert; die Geschwindigkeit im Kommentar."
+
+msgid "Wind - internal estimate"
+msgstr "Wind - interne Schätzung"
+
+msgid "Int Wind"
+msgstr "Int. Wind"
+
+msgid "The wind XCSoar estimates itself from circling and from the EKF, whatever the effective wind is set to (external sensor, manual)."
+msgstr "Der Wind, den XCSoar selbst aus dem Kreisen und dem EKF schätzt - unabhängig davon, woher der wirksame Wind kommt (externer Sensor, manuell)."
+
+msgid "Wind - zig-zag estimate"
+msgstr "Wind - Zick-Zack-Schätzung"
+
+msgid "ZigZag Wind"
+msgstr "ZickZack-Wind"
+
+msgid "The wind of the zig-zag (EKF) estimator, shown while it is the source of the effective wind."
+msgstr "Der Wind des Zick-Zack-Schätzers (EKF), angezeigt, solange er die Quelle des wirksamen Windes ist."
+
+msgid "Page number"
+msgstr "Seitennummer"
+
+msgid ""
+"Number of the page on display and the number of pages, with the kind of "
+"the page in the comment."
+msgstr ""
+"Nummer der angezeigten Seite und Anzahl der Seiten, die Art der Seite im "
+"Kommentar."
+
+msgid "STF switch"
+msgstr "STF-Schalter"
+
+msgid "STF"
+msgstr "STF"
+
+msgid "State of the speed-to-fly / vario switch as reported by the connected vario."
+msgstr "Stellung des Sollfahrt/Vario-Schalters, wie das angeschlossene Vario sie meldet."
+
+msgid "Bugs setting"
+msgstr "Mücken-Einstellung"
+
+msgid "The bugs setting: 100 % is a clean wing."
+msgstr "Die Mücken-Einstellung: 100 % ist ein sauberer Flügel."
+
+msgid "True heading"
+msgstr "Rechtweisender Steuerkurs"
+
+msgid "True heading from the attitude sensor of a connected device."
+msgstr "Rechtweisender Steuerkurs vom Lagesensor eines angeschlossenen Geräts."
+
+msgid "Water ballast"
+msgstr "Wasserballast"
+
+msgid "Water ballast in litres, with the share of the maximum in the comment."
+msgstr "Wasserballast in Litern, der Anteil am Maximum im Kommentar."
+
+msgid "Vario and thermal"
+msgstr "Vario und Thermik"
+
+msgid "Glide"
+msgstr "Gleiten"
+
+msgid "Speed and attitude"
+msgstr "Geschwindigkeit und Lage"
+
+msgid "Wind and weather"
+msgstr "Wind und Wetter"
+
+msgid "Airspace and team"
+msgstr "Luftraum und Team"
+
+msgid "Other"
+msgstr "Sonstige"
+
+msgid "Groups"
+msgstr "Gruppen"
+
+msgid "Show only the InfoBoxes of these groups in the list."
+msgstr "Nur die InfoBoxen dieser Gruppen in der Liste zeigen."
+
+msgid "Show only the InfoBoxes of these groups when choosing a content."
+msgstr "Nur die InfoBoxen dieser Gruppen bei der Auswahl eines Inhalts zeigen."
