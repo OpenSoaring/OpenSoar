@@ -176,13 +176,13 @@ private:
   const Bitmap *LoadImage(const std::string &url) const noexcept;
 
   /**
-   * Find the block image (if any) whose placeholder text falls
-   * within [line_start, line_start+line_length).
+   * The block images on a wrapped line: one, or the members of an
+   * image row (MarkdownImage::row_size) in row order; empty when the
+   * line carries no block image.
    */
-  [[gnu::pure]]
-  const MarkdownImage *FindBlockImageForLine(
-    std::size_t line_start,
-    std::size_t line_length) const noexcept;
+  std::vector<const MarkdownImage *>
+  BlockImagesForLine(std::size_t line_start,
+                     std::size_t line_length) const noexcept;
 
   /**
    * Find any image (block or inline) whose placeholder position
