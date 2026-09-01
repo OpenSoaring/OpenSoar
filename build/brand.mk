@@ -68,6 +68,30 @@ FOSS ?= n
 # version.mk): the Android package for src/ProductName.hpp
 BRAND_CPPFLAGS = -DANDROID_PACKAGE=\"$(BRAND_ANDROID_PACKAGE)\"
 
+# the brand's own news file, shown as a page of the About dialog
+ifneq ($(wildcard $(topdir)/OpenSoar-News.md),)
+BRAND_CPPFLAGS += -DHAVE_BRAND_NEWS
+endif
+
+# the product's own web site (credits page, --help footer)
+ifneq ($(WEB_SITE_URL),)
+BRAND_CPPFLAGS += -DPRODUCT_WEB_SITE_URL=\"$(WEB_SITE_URL)\"
+endif
+
+# optional sponsor on the credits page: name and link from the config,
+# the logo from Data/graphics/logo_sponsor.svg (when the file exists,
+# HAVE_SPONSOR_LOGO adds the IDB_LOGO_SPONSOR_* resources)
+ifneq ($(SPONSOR_NAME),)
+BRAND_CPPFLAGS += -DSPONSOR_NAME=\"$(SPONSOR_NAME)\"
+ifneq ($(SPONSOR_URL),)
+BRAND_CPPFLAGS += -DSPONSOR_URL=\"$(SPONSOR_URL)\"
+endif
+ifneq ($(wildcard $(topdir)/Data/graphics/logo_sponsor.svg),)
+HAVE_SPONSOR_LOGO = y
+BRAND_CPPFLAGS += -DHAVE_SPONSOR_LOGO
+endif
+endif
+
 endif
 
 endif

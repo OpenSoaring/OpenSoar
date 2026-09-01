@@ -75,6 +75,14 @@ struct MarkdownImage {
 
   /** True if the image is the sole content on its line (block image) */
   bool is_block;
+
+  /**
+   * Images that share a line with nothing but other images form an
+   * "image row" and are laid out side by side: this is the number of
+   * images in that row (1 for an ordinary block image) and the
+   * position of this one in it.
+   */
+  uint8_t row_size = 1, row_index = 0;
 };
 
 /**

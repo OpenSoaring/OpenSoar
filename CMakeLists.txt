@@ -118,6 +118,29 @@ string(TOLOWER "${PROGRAM_NAME}" _PROGRAM_NAME_LC)
 add_compile_definitions("PRODUCT_NAME_LC=\"${_PROGRAM_NAME_LC}\"")
 file(WRITE "${PROJECTGROUP_BINARY_DIR}/VERSION.txt" ${PROGRAM_VERSION})
 
+# the rest of the brand configuration (mirrors build/brand.mk): the
+# product's web site, and an optional sponsor for the credits page -
+# name and link from the config, the logo from
+# Data/graphics/logo_sponsor.svg when that file exists
+if(WEB_SITE_URL)
+  add_compile_definitions("PRODUCT_WEB_SITE_URL=\"${WEB_SITE_URL}\"")
+endif()
+# the brand's own news file (embedded by Data/CMakeLists.txt), shown
+# as a page of the About dialog
+if(EXISTS ${PROJECTGROUP_SOURCE_DIR}/OpenSoar-News.md)
+  add_compile_definitions(HAVE_BRAND_NEWS)
+endif()
+if(SPONSOR_NAME)
+  add_compile_definitions("SPONSOR_NAME=\"${SPONSOR_NAME}\"")
+  if(SPONSOR_URL)
+    add_compile_definitions("SPONSOR_URL=\"${SPONSOR_URL}\"")
+  endif()
+  if(EXISTS ${PROJECTGROUP_SOURCE_DIR}/Data/graphics/logo_sponsor.svg)
+    set(HAVE_SPONSOR_LOGO ON)
+    add_compile_definitions(HAVE_SPONSOR_LOGO)
+  endif()
+endif()
+
 # SteFly device family (RemoteStick / RotaryPanel) incl. startup-time
 # USB discovery; mirrors HAVE_REMOTESTICK in build/driver.mk.  The
 # discovery code has per-platform backends (SetupAPI / libudev) and a

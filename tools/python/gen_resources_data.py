@@ -225,8 +225,9 @@ def make_graphic(t: Tools, name: str) -> str:
             t.svg_to_png(svg, out, width=82, height=82)
         return out
 
-    # logo[_red]_{80,160,320}[_rgba], title[_red][_white]_{110,320,640}[_rgba]
-    m = re.match(r"^(logo(?:_red)?|title(?:_red)?(?:_white)?)_(\d+)(_rgba)?$", name)
+    # logo[_red|_sponsor]_{80,160,320}[_rgba],
+    # title[_red][_white]_{110,320,640}[_rgba]
+    m = re.match(r"^(logo(?:_red|_sponsor)?|title(?:_red)?(?:_white)?)_(\d+)(_rgba)?$", name)
     if m:
         base, width, rgba = m.group(1), int(m.group(2)), bool(m.group(3))
         svg = t.resolve_svg(os.path.join(gfx, base + ".svg"))
