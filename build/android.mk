@@ -81,15 +81,28 @@ MANIFEST_PROCESSED = $(ANDROID_OUTPUT_DIR)/AndroidManifest.xml
 MANIFEST_PACKAGE_STAMP = $(ANDROID_OUTPUT_DIR)/.manifest_package.stamp
 MANIFEST = $(MANIFEST_PROCESSED)
 
+# the stamp carries everything the processed manifest depends on
+# besides its template: the package, and the debuggable flag
+MANIFEST_STAMP_CONTENT = $(MANIFEST_PACKAGE) debug=$(DEBUG)
 $(MANIFEST_PACKAGE_STAMP): FORCE | $(ANDROID_OUTPUT_DIR)/dirstamp
-	@if [ ! -f $@ ] || [ "$$(cat $@ 2>/dev/null)" != "$(MANIFEST_PACKAGE)" ]; then \
-		echo "$(MANIFEST_PACKAGE)" > $@.tmp && mv $@.tmp $@; \
+	@if [ ! -f $@ ] || [ "$$(cat $@ 2>/dev/null)" != "$(MANIFEST_STAMP_CONTENT)" ]; then \
+		echo "$(MANIFEST_STAMP_CONTENT)" > $@.tmp && mv $@.tmp $@; \
 	fi
+
+# A DEBUG=y build declares itself debuggable, so that Android Studio
+# (Profile or Debug APK) and lldb can attach to it on an ordinary
+# device; release builds must not carry the flag (Play rejects them)
+ifeq ($(DEBUG),y)
+MANIFEST_DEBUGGABLE_SED = -e 's|<application|<application android:debuggable="true"|'
+else
+MANIFEST_DEBUGGABLE_SED =
+endif
 
 $(MANIFEST_PROCESSED): $(MANIFEST_TEMPLATE) $(MANIFEST_PACKAGE_STAMP) $(topdir)/VERSION.txt | $(ANDROID_OUTPUT_DIR)/dirstamp
 	@$(NQ)echo "  PROCESS $@"
 	$(Q)sed -e 's/@PACKAGE_NAME@/$(MANIFEST_PACKAGE)/g' \
 		-e 's|@APP_LABEL@|$(MANIFEST_APP_LABEL)|g' \
+		$(MANIFEST_DEBUGGABLE_SED) \
 		-e 's/android:versionCode="[0-9][0-9]*"/android:versionCode="$(ANDROID_VERSION_CODE)"/' \
 		-e 's/android:versionName="[^"]*"/android:versionName="$(ANDROID_VERSION_NAME)"/' \
 		$< > $@
