@@ -320,6 +320,51 @@ FinishVhfMarkdownLink(MarkdownLink &link)
   link.end = link.start + link.display_text.size();
 }
 
+/**
+ * Two or more images on one line with nothing else on it - "![a](x)
+ * ![b](y)" - become an image row, laid out side by side (an About
+ * page with a logo and a sponsor logo, say).  Each image was parsed
+ * as an inline one because it is not alone on its line; this pass
+ * turns them into block images that know their row.
+ */
+static void
+MarkImageRows(ParsedMarkdown &result) noexcept
+{
+  const std::string &text = result.text;
+  std::size_t line_start = 0;
+
+  while (line_start < text.size()) {
+    std::size_t line_end = text.find('\n', line_start);
+    if (line_end == std::string::npos)
+      line_end = text.size();
+
+    /* the images on this line */
+    std::vector<MarkdownImage *> row;
+    for (auto &img : result.images)
+      if (img.position >= line_start && img.position < line_end)
+        row.push_back(&img);
+
+    if (row.size() >= 2) {
+      /* nothing but the images' placeholders and whitespace? */
+      bool only_images = true;
+      for (std::size_t i = line_start; i < line_end && only_images; ++i)
+        if (text[i] != ' ' && text[i] != '\t')
+          only_images = false;
+
+      if (only_images) {
+        uint8_t index = 0;
+        for (auto *img : row) {
+          img->is_block = true;
+          img->row_size = static_cast<uint8_t>(row.size());
+          img->row_index = index++;
+        }
+      }
+    }
+
+    line_start = line_end + 1;
+  }
+}
+
 ParsedMarkdown
 ParseMarkdown(const char *input)
 {
@@ -710,6 +755,8 @@ ParseMarkdown(const char *input)
     result.styles.push_back(
       {bold_start, result.text.size(), TextStyle::Bold});
   }
+
+  MarkImageRows(result);
 
   return result;
 }

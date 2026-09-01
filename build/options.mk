@@ -85,6 +85,12 @@ ifneq ($(filter ANDROID%,$(TARGET)),)
   endif
 endif
 
+# sponsor logo resources (build/brand.mk): resources.txt is preprocessed
+# with TARGET_CPPFLAGS, so the define has to be there as well
+ifeq ($(HAVE_SPONSOR_LOGO),y)
+  TARGET_CPPFLAGS += -DHAVE_SPONSOR_LOGO
+endif
+
 # Set XCSOAR_TESTING for non-Android builds (Android builds set it based on package name)
 ifeq ($(TESTING),y)
   ifneq ($(TARGET_IS_ANDROID),y)
