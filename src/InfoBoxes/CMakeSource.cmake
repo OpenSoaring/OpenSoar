@@ -6,6 +6,8 @@ set(_SOURCES
         InfoBoxes/Content/Contest.cpp
         InfoBoxes/Content/Direction.cpp
         InfoBoxes/Content/Engine.cpp
+        InfoBoxes/Content/Extension.cpp
+        InfoBoxes/Content/OpenSoar.cpp
         InfoBoxes/Content/Factory.cpp
         InfoBoxes/Content/Glide.cpp
         InfoBoxes/Content/MacCready.cpp
