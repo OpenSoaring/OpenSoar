@@ -5,9 +5,9 @@
 #include "InfoBoxes/InfoBoxWindow.hpp"
 #include "InfoBoxes/InfoBoxLayout.hpp"
 #include "InfoBoxes/Content/Factory.hpp"
+#include "InfoBoxes/Content/Extension.hpp"
 #include "Language/Language.hpp"
-#include "Form/DataField/ComboList.hpp"
-#include "Dialogs/ComboPicker.hpp"
+#include "Dialogs/InfoBoxPicker.hpp"
 #include "Profile/InfoBoxConfig.hpp"
 #include "Profile/Current.hpp"
 #include "Interface.hpp"
@@ -105,8 +105,9 @@ InfoBoxManager::DisplayInfoBox() noexcept
     // should apply to the function DoCalculationsSlow()
     // Do not put calculations here!
 
-    InfoBoxFactory::Type DisplayType = settings.contents[i];
-    if ((unsigned)DisplayType > (unsigned)InfoBoxFactory::MAX_TYPE_VAL)
+    InfoBoxFactory::Type DisplayType =
+      InfoBoxFactory::Resolve(settings.contents[i]);
+    if (!InfoBoxFactory::IsSelectable(DisplayType))
       DisplayType = InfoBoxFactory::NavAltitude;
 
     const bool needupdate = ((DisplayType != DisplayTypeLast[i]) || first);
@@ -245,28 +246,17 @@ InfoBoxManager::ShowInfoBoxPicker(const int i) noexcept
 
   const InfoBoxFactory::Type old_type = panel.contents[i];
 
-  ComboList list;
-  for (unsigned j = InfoBoxFactory::MIN_TYPE_VAL; j < InfoBoxFactory::NUM_TYPES; j++) {
-    const char *desc = InfoBoxFactory::GetDescription((InfoBoxFactory::Type)j);
-    list.Append(j, gettext(InfoBoxFactory::GetName((InfoBoxFactory::Type)j)),
-                gettext(InfoBoxFactory::GetName((InfoBoxFactory::Type)j)),
-                desc != NULL ? gettext(desc) : NULL);
-  }
+  /* say which set this goes into: the one of the current flight
+     mode, which is not necessarily the one on the screen a minute
+     later */
+  StaticString<96> caption;
+  caption.Format("%s %d (%s)", _("InfoBox"), i + 1, gettext(panel.name));
 
-  list.Sort();
-  list.current_index = list.LookUp(old_type);
-
-  /* let the user select */
-
-  StaticString<20> caption;
-  caption.Format("%s: %d", _("InfoBox"), i + 1);
-  int result = ComboPicker(caption, list, nullptr, true);
-  if (result < 0)
+  InfoBoxFactory::Type new_type = old_type;
+  if (!InfoBoxPicker(caption, new_type))
     return;
 
   /* was there a modification? */
-
-  InfoBoxFactory::Type new_type = (InfoBoxFactory::Type)list[result].int_value;
   if (new_type == old_type)
     return;
 

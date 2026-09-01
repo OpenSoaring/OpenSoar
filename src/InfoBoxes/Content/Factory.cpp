@@ -23,6 +23,7 @@
 #include "InfoBoxes/Content/Airspace.hpp"
 #include "InfoBoxes/Content/Radio.hpp"
 #include "InfoBoxes/Content/Engine.hpp"
+#include "InfoBoxes/Content/Extension.hpp"
 
 #include "util/Macros.hpp"
 #include "Language/Language.hpp"
@@ -1219,7 +1220,8 @@ static_assert(ARRAY_SIZE(meta_data) == NUM_TYPES,
 const char *
 InfoBoxFactory::GetName(Type type) noexcept
 {
-  assert(type < NUM_TYPES);
+  if (type >= NUM_TYPES)
+    return Extension::GetName(type);
 
   return meta_data[type].name;
 }
@@ -1227,7 +1229,8 @@ InfoBoxFactory::GetName(Type type) noexcept
 const char *
 InfoBoxFactory::GetCaption(Type type) noexcept
 {
-  assert(type < NUM_TYPES);
+  if (type >= NUM_TYPES)
+    return Extension::GetCaption(type);
 
   if (type == e_Load_G)
     return C_("InfoBox caption (gravity/load factor)", "G");
@@ -1241,7 +1244,8 @@ InfoBoxFactory::GetCaption(Type type) noexcept
 const char *
 InfoBoxFactory::GetDescription(Type type) noexcept
 {
-  assert(type < NUM_TYPES);
+  if (type >= NUM_TYPES)
+    return Extension::GetDescription(type);
 
   return meta_data[type].description;
 }
@@ -1249,7 +1253,9 @@ InfoBoxFactory::GetDescription(Type type) noexcept
 std::unique_ptr<InfoBoxContent>
 InfoBoxFactory::Create(Type type) noexcept
 {
-  assert(type < NUM_TYPES);
+  if (type >= NUM_TYPES)
+    return Extension::Create(type);
+
   const auto &m = meta_data[type];
 
   assert(m.create != nullptr ||
