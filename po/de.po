@@ -8978,6 +8978,12 @@ msgstr "Zuerst ein Ziel wählen."
 msgid "Backup failed."
 msgstr "Sicherung fehlgeschlagen."
 
+msgid "Backup complete."
+msgstr "Sicherung abgeschlossen."
+
+msgid "Skipped, in use:"
+msgstr "Übersprungen, in Benutzung:"
+
 #, no-c-format
 msgctxt "Button"
 msgid "Restore backup"
