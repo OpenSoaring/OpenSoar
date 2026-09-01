@@ -11522,3 +11522,6 @@ msgstr "System"
 msgctxt "Menu"
 msgid "System"
 msgstr "System"
+
+msgid "Visit us at:"
+msgstr "Mehr im Web:"

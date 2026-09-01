@@ -258,7 +258,7 @@ set(RESOURCE_FILES ${RESOURCE_FILES} PARENT_SCOPE)
 # ---------------------------------------------------------------------------
 if (ENABLE_SDL OR NOT WIN32)
     set(RESOURCE_DEFINES)
-    foreach(_d XCSOAR_TESTING ENABLE_OPENGL EYE_CANDY ENABLE_SDL)
+    foreach(_d XCSOAR_TESTING ENABLE_OPENGL EYE_CANDY ENABLE_SDL HAVE_SPONSOR_LOGO)
         if(${_d})
             list(APPEND RESOURCE_DEFINES --define ${_d})
         endif()
