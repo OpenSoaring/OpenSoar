@@ -11,7 +11,6 @@
 #include "util/SpanCast.hxx"
 
 #include <algorithm>
-#include <cassert>
 
 Port::Port(PortListener *_listener, DataHandler &_handler) noexcept
   :listener(_listener), handler(_handler) {}
@@ -49,10 +48,19 @@ Port::FullWrite(std::span<const std::byte> src,
       throw DeviceTimeout{"Port write timeout"};
 
     std::size_t nbytes = Write(src);
-    assert(nbytes > 0);
 
     if (env.IsCancelled())
       throw OperationCancelled{};
+
+    if (nbytes == 0) {
+      /* the port took nothing this time: a serial port on Windows
+         does that when its own write timeout expires first, e.g. on
+         a USB adapter that is still coming up right after the
+         machine did - try again until our timeout expires, but do
+         not spin on a port that returns at once */
+      env.Sleep(std::chrono::milliseconds(20));
+      continue;
+    }
 
     src = src.subspan(nbytes);
   }
