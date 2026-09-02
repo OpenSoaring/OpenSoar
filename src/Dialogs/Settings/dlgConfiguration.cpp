@@ -82,6 +82,7 @@
 #include "Panels/WeGlideConfigPanel.hpp"
 #include "Panels/NetworkConfigPanel.hpp"
 
+
 #if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
 #include "Panels/SystemdConfigPanel.hpp"
 #endif

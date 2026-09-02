@@ -142,6 +142,7 @@ try {
 #endif
 
   InitialiseDataPath();
+
   CommandLine::ApplyPendingProfile();
 
   /* device settings (not part of any profile) decide how the program
