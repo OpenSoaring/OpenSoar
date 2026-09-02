@@ -104,7 +104,8 @@ void DisplaySettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
   if (IsDataField(ROTATION, df)) {
     RotateDisplay((DisplayOrientation)((const DataFieldEnum &)df).GetValue());
   } else if (IsDataField(BRIGHTNESS, df)) {
-    auto new_brightness = ((const DataFieldInteger &)df).GetValue();
+    const auto new_brightness =
+      unsigned(((const DataFieldInteger &)df).GetValue());
     if (new_brightness != brightness)
         ovdevice.SetBrightness(new_brightness / 10);
   } else if (IsDataField(TOUCH_SCREEN, df)) {

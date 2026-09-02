@@ -4,10 +4,32 @@ TARGETS = PC WIN64 \
 	WAYLAND \
 	FUZZER \
 	PI PI2 CUBIE KOBO NEON \
+	OPENVARIO CUBIE2 \
 	ANDROID ANDROID7 ANDROID86 \
 	ANDROIDAARCH64 ANDROIDX64 \
 	ANDROIDFAT \
 	OSX64 MACOS IOS32 IOS64 IOS64SIM
+
+ifeq ($(TARGET),OPENVARIO)
+  # the OpenVario functions and menus on an ordinary Linux PC, to try
+  # them without the device
+  override TARGET = UNIX
+  TARGET_IS_OPENVARIO = y
+else
+  TARGET_IS_OPENVARIO = n
+endif
+
+ifeq ($(TARGET),CUBIE2)
+  # the same, but compiled for the OpenVario device itself (its
+  # Cubieboard2); the Yocto SDK provides toolchain and sysroot, so
+  # this stays a plain UNIX build with the device defines
+  override TARGET = UNIX
+  TARGET_IS_OPENVARIO = y
+  TARGET_IS_OVDEVICE = y
+  TARGET_CPPFLAGS += -isystem /usr/include
+else
+  TARGET_IS_OVDEVICE = n
+endif
 
 ifeq ($(TARGET),)
   ifeq ($(HOST_IS_UNIX),y)
@@ -486,6 +508,19 @@ endif
 
 ifeq ($(HAVE_HTTP),y)
   TARGET_CPPFLAGS += -DHAVE_HTTP
+endif
+
+ifeq ($(TARGET_IS_OPENVARIO),y)
+  ifeq ($(TARGET_IS_OVDEVICE),y)
+    override TARGET_FLAVOR = CUBIE2
+  else
+    override TARGET_FLAVOR = OPENVARIO
+  endif
+  TARGET_CPPFLAGS += -DIS_OPENVARIO
+endif
+
+ifeq ($(TARGET_IS_OVDEVICE),y)
+  TARGET_CPPFLAGS += -DIS_OPENVARIO_CB2
 endif
 
 ifeq ($(HAVE_MSVCRT),y)

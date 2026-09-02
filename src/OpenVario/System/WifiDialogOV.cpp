@@ -68,6 +68,11 @@ GetKoboWifiInterface() noexcept
 #undef UI
 #endif // WithWPA
 
+/* everything up to ShowWifiDialog() is local to this file: upstream's
+   Dialogs/WifiDialog.cpp defines a class of the same name, and both
+   end up in the same library */
+namespace {
+
 class WifiListWidget final
   : public ListWidget {
 
@@ -324,7 +329,7 @@ void WifiListWidget::WifiDisconnect( const char *ssid) {
   ShowMessageBox(network->base_id.c_str(), "Disconnected", MB_OK);
 }
 
-void WifiListWidget::WifiConnect(enum WifiSecurity security,
+void WifiListWidget::WifiConnect([[maybe_unused]] enum WifiSecurity security,
                                         // WPASupplicant &wpa_supplicant,
                                         const char *ssid, const char *psk)
 {
@@ -615,12 +620,11 @@ WifiListWidget::MergeList(const WifiVisibleNetwork *p, unsigned n)
 
 }
 
-size_t 
+static size_t
 ParseConnmanScan(WifiVisibleNetwork *dest, BufferedReader &reader,
                       [[maybe_unused]] OperationEnvironment &env, size_t max) {
   StringConverter string_converter;
 
-  bool ignore = false;
   const char *line;
   size_t n = 0;
 
@@ -709,8 +713,8 @@ try {
 }
 
 #ifndef WithWPA
-unsigned 
-ScanResults(WifiVisibleNetwork *dest, unsigned max) 
+static unsigned
+ScanResults(WifiVisibleNetwork *dest, unsigned max)
 {
   const Path file = Path("connman-scan-results.txt");
   if (File::Exists(file)) {
@@ -738,11 +742,9 @@ WifiListWidget::UpdateScanResults()
 #ifdef WithWPA
   int n = wpa_supplicant.ScanResults(buffer, networks.capacity());
 #else
-  auto n = ScanResults(buffer, networks.capacity());
+  const unsigned n = ScanResults(buffer, networks.capacity());
 #endif
-  // int n = networks.capacity();
-  if (n >= 0)
-    MergeList(buffer, n);
+  MergeList(buffer, n);
 
   delete[] buffer;
 }
@@ -854,6 +856,8 @@ WifiListWidget::UpdateList()
   UpdateButtons();
   // std::cout << "After UpdateButton!" << std::endl;
 }
+
+} // namespace
 
 void
 ShowWifiDialog()

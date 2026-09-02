@@ -187,6 +187,29 @@ DIALOG_SOURCES = \
 	$(SRC)/Dialogs/dlgGestureHelp.cpp \
 	$(SRC)/Dialogs/dlgQuickMenu.cpp
 
+ifeq ($(TARGET_IS_OPENVARIO),y)
+# the OpenVario pages of the configuration dialog (dlgConfiguration)
+DIALOG_SOURCES += \
+	$(SRC)/Dialogs/ProcessDialog.cpp \
+	\
+	$(SRC)/OpenVario/SystemSettingsWidget.cpp \
+	$(SRC)/OpenVario/DisplaySettingsWidget.cpp \
+	$(SRC)/OpenVario/FileMenuWidget.cpp \
+	$(SRC)/OpenVario/ExtraWidget.cpp \
+	\
+	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
+	$(SRC)/OpenVario/System/OpenVarioDevice.cpp \
+	$(SRC)/OpenVario/System/OpenVarioTools.cpp \
+	\
+	$(SRC)/OpenVario/System/Setting/RotationWidget.cpp \
+	$(SRC)/OpenVario/System/Setting/WifiWidget.cpp \
+	\
+	$(SRC)/OpenVario/System/WifiDialogOV.cpp \
+	$(SRC)/OpenVario/System/WifiSupplicantOV.cpp \
+	$(SRC)/OpenVario/System/WifiDBus.cpp \
+	$(SRC)/OpenVario/System/NMConnector.cpp
+endif
+
 ifeq ($(HAVE_PCM_PLAYER),y)
 DIALOG_SOURCES += \
 	$(SRC)/Dialogs/Settings/Panels/AudioVarioConfigPanel.cpp \
