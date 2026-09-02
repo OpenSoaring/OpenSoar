@@ -50,6 +50,7 @@ set(_SOURCES
         Dialogs/dlgQuickGuide.cpp
 
         Dialogs/DownloadFilePicker.cpp
+        Dialogs/DownloadFilter.cpp
         Dialogs/Error.cpp
         Dialogs/FileManager.cpp
         Dialogs/FilePicker.cpp
