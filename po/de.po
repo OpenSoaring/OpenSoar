@@ -600,6 +600,179 @@ msgid "Show"
 msgstr "Anzeigen"
 
 #, no-c-format
+msgid "Search"
+msgstr "Suche"
+
+msgid "Countries"
+msgstr "Länder"
+
+msgid ""
+"Show only the files of these countries - the same selection for maps, "
+"waypoints and airspaces, kept in the profile.  Files that concern every "
+"country stay listed."
+msgstr ""
+"Nur die Dateien dieser Länder anzeigen - dieselbe Auswahl für Karten, "
+"Wegpunkte und Lufträume, gespeichert im Profil.  Dateien, die alle Länder "
+"betreffen, bleiben sichtbar."
+
+msgid ""
+"Show only the files whose name or description contains this text."
+msgstr ""
+"Nur die Dateien anzeigen, deren Name oder Beschreibung diesen Text enthält."
+
+msgid "No file matches the filter."
+msgstr "Keine Datei passt zum Filter."
+
+msgid "Argentina"
+msgstr "Argentinien"
+
+msgid "Austria"
+msgstr "Österreich"
+
+msgid "Australia"
+msgstr "Australien"
+
+msgid "Belgium"
+msgstr "Belgien"
+
+msgid "Bulgaria"
+msgstr "Bulgarien"
+
+msgid "Brazil"
+msgstr "Brasilien"
+
+msgid "Canada"
+msgstr "Kanada"
+
+msgid "Switzerland"
+msgstr "Schweiz"
+
+msgid "Chile"
+msgstr "Chile"
+
+msgid "Colombia"
+msgstr "Kolumbien"
+
+msgid "Czechia"
+msgstr "Tschechien"
+
+msgid "Germany"
+msgstr "Deutschland"
+
+msgid "Denmark"
+msgstr "Dänemark"
+
+msgid "Estonia"
+msgstr "Estland"
+
+msgid "Spain"
+msgstr "Spanien"
+
+msgid "Finland"
+msgstr "Finnland"
+
+msgid "France"
+msgstr "Frankreich"
+
+msgid "United Kingdom"
+msgstr "Vereinigtes Königreich"
+
+msgid "Greece"
+msgstr "Griechenland"
+
+msgid "Croatia"
+msgstr "Kroatien"
+
+msgid "Hungary"
+msgstr "Ungarn"
+
+msgid "Ireland"
+msgstr "Irland"
+
+msgid "Israel"
+msgstr "Israel"
+
+msgid "India"
+msgstr "Indien"
+
+msgid "Iceland"
+msgstr "Island"
+
+msgid "Italy"
+msgstr "Italien"
+
+msgid "Japan"
+msgstr "Japan"
+
+msgid "Kenya"
+msgstr "Kenia"
+
+msgid "Lithuania"
+msgstr "Litauen"
+
+msgid "Luxembourg"
+msgstr "Luxemburg"
+
+msgid "Latvia"
+msgstr "Lettland"
+
+msgid "Morocco"
+msgstr "Marokko"
+
+msgid "Mexico"
+msgstr "Mexiko"
+
+msgid "Namibia"
+msgstr "Namibia"
+
+msgid "Netherlands"
+msgstr "Niederlande"
+
+msgid "Norway"
+msgstr "Norwegen"
+
+msgid "New Zealand"
+msgstr "Neuseeland"
+
+msgid "Poland"
+msgstr "Polen"
+
+msgid "Portugal"
+msgstr "Portugal"
+
+msgid "Romania"
+msgstr "Rumänien"
+
+msgid "Serbia"
+msgstr "Serbien"
+
+msgid "Russia"
+msgstr "Russland"
+
+msgid "Sweden"
+msgstr "Schweden"
+
+msgid "Slovenia"
+msgstr "Slowenien"
+
+msgid "Slovakia"
+msgstr "Slowakei"
+
+msgid "Türkiye"
+msgstr "Türkei"
+
+msgid "Ukraine"
+msgstr "Ukraine"
+
+msgid "United States"
+msgstr "Vereinigte Staaten"
+
+msgid "Uruguay"
+msgstr "Uruguay"
+
+msgid "South Africa"
+msgstr "Südafrika"
+
 msgid "All"
 msgstr "Alle"
 
