@@ -20,11 +20,18 @@ NETCDF_LDLIBS += $(LIBNETCDF_LDLIBS)
 else ifeq ($(HOST_IS_LINUX)$(TARGET_IS_LINUX),yy)
 ifeq ($(HOST_TRIPLET),)
 
+# netcdf is optional on Linux: SkySight forecasts decode where the
+# development package is installed (libnetcdf-dev), everywhere else
+# the build simply goes on without them - it must not die here
+ifeq ($(shell $(PKG_CONFIG) --exists netcdf 2>/dev/null && echo y),y)
+
 $(eval $(call pkg-config-library,LIBNETCDF,netcdf))
 
 HAVE_SKYSIGHT_NETCDF := y
 NETCDF_CPPFLAGS += $(LIBNETCDF_CPPFLAGS) -DHAVE_SKYSIGHT_NETCDF
 NETCDF_LDLIBS += $(LIBNETCDF_LDLIBS)
+
+endif
 
 endif
 endif

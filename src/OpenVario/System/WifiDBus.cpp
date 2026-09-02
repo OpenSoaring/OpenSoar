@@ -101,6 +101,6 @@ void TestDBus() {
     throw GlibException("Get network by name", error);
 }
 
-#endif 0
+#endif
 //-----------------------------------------------------------------------------
 #endif  // __GNUC__

@@ -2,6 +2,36 @@
 // Copyright The XCSoar Project
 
 #include "ProcessDialog.hpp"
+
+#ifdef _WIN32
+
+/* the dialog runs a child process and streams its output - there are
+   no such processes on Windows, where the OpenVario menus are only a
+   mock-up: show the command instead of running it */
+
+#include "Message.hpp"
+
+#include <string>
+
+int
+RunProcessDialog([[maybe_unused]] UI::SingleWindow &parent,
+                 [[maybe_unused]] const DialogLook &dialog_look,
+                 const char *caption,
+                 const char *const*argv,
+                 [[maybe_unused]] std::function<int(int)> on_exit) noexcept
+{
+  std::string text{"Not available on Windows:\n"};
+  for (auto i = argv; *i != nullptr; ++i) {
+    text += ' ';
+    text += *i;
+  }
+
+  ShowMessageBox(text.c_str(), caption, MB_OK | MB_ICONINFORMATION);
+  return -1;
+}
+
+#else // !_WIN32
+
 #include "WidgetDialog.hpp"
 #include "Widget/LargeTextWidget.hpp"
 #include "ui/event/poll/Queue.hpp"
@@ -217,3 +247,5 @@ RunProcessDialog(UI::SingleWindow &parent,
   dialog.EnableCursorSelection();
   return dialog.ShowModal();
 }
+
+#endif // !_WIN32

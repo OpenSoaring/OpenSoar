@@ -73,7 +73,16 @@ else
   DEFAULT_XCI = Data/Input/default.xci
 endif
 
+# $(OUT)/include is shared between the targets, but the chosen xci
+# file is not: remember it in a stamp, so that switching between
+# OPENVARIO and the other targets regenerates the header
+XCI_SELECTED = $(OUT)/include/InputEvents_default.selected
+.PHONY: update-xci-selected
+$(XCI_SELECTED): update-xci-selected | $(OUT)/include/dirstamp
+	@echo $(DEFAULT_XCI) | cmp -s - $@ || echo $(DEFAULT_XCI) > $@
+
 $(OUT)/include/InputEvents_default.hpp: $(topdir)/$(DEFAULT_XCI) \
+	$(XCI_SELECTED) \
 	$(topdir)/tools/xci2cpp.pl \
 	| $(OUT)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
