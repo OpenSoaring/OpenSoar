@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "OpenVario/System/OpenVarioDevice.hpp"
+#include "OpenVario/System/OpenVarioTools.hpp"
 #ifdef DBUS_FUNCTIONS
 # include "lib/dbus/Connection.hxx"
 # include "lib/dbus/ScopeMatch.hxx"
@@ -59,9 +60,17 @@ void ReadString(std::map<std::string, std::string, std::less<>> &map,
   void
 OpenVario_Device::Initialise() noexcept {
   if (!initialised) {
-    InitialiseDataPath();
+    /* the data path is already initialised - the callers did that
+       (running InitialiseDataPath() from here broke the global
+       AllocatedPath list when the old constructor called this
+       before main()) */
     StaticString<0x100> home;
-    home.SetUTF8(getenv("HOME"));
+    const char *home_env = getenv("HOME");
+#ifdef _WIN32
+    if (home_env == nullptr)
+      home_env = getenv("USERPROFILE");
+#endif
+    home.SetUTF8(home_env != nullptr ? home_env : ".");
     home_path = Path(home);
 #ifdef _WIN32
     data_path = Path("D:/Data/OpenSoarData");
@@ -370,7 +379,8 @@ OpenVario_Device::GetSystemStatus(std::string_view system) noexcept
 
   if (File::Exists(tmp_file))
     File::Delete(tmp_file);  // remove, if exists
-  auto run_value = Run(tmp_file, "/bin/systemctl", "is-enabled", system.data());
+  auto run_value = RunCapture(tmp_file, "/bin/systemctl", "is-enabled",
+                              std::string(system).c_str());
   char buffer[0x20]; 
   File::ReadString(tmp_file, buffer, sizeof(buffer));
   switch (run_value) {
