@@ -88,6 +88,13 @@
 #include "Panels/WeGlideConfigPanel.hpp"
 #include "Panels/NetworkConfigPanel.hpp"
 
+#ifdef IS_OPENVARIO
+#include "OpenVario/SystemSettingsWidget.hpp"
+#include "OpenVario/DisplaySettingsWidget.hpp"
+#include "OpenVario/FileMenuWidget.hpp"
+#include "OpenVario/ExtraWidget.hpp"
+#endif
+
 #if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
 #include "Panels/SystemdConfigPanel.hpp"
 #ifdef USE_POLL_EVENT
@@ -201,6 +208,19 @@ static constexpr TabMenuPage setup_pages[] = {
   { nullptr, nullptr }
 };
 
+#ifdef IS_OPENVARIO
+static constexpr TabMenuPage openvario_pages[] = {
+  { N_("System Settings"), CreateSystemSettingsWidget },
+  { N_("Display Settings"), CreateDisplaySettingsWidget },
+  { N_("File Transfer"), CreateFileMenuWidget },
+#ifndef NDEBUG
+  /* remove with a better firmware upgrade */
+  { N_("Advanced Menu (temp)"), CreateExtraWidget },
+#endif
+  { nullptr, nullptr }
+};
+#endif
+
 static constexpr TabMenuGroup main_menu_captions[] = {
   { NC_("Menu", "System"), system_pages },
   { N_("Map Display"), map_pages },
@@ -211,6 +231,9 @@ static constexpr TabMenuGroup main_menu_captions[] = {
   { N_("Weather"), weather_pages },
   { NC_("Menu", "Services"), online_pages },
   { NC_("Menu", "Setup"), setup_pages },
+#ifdef IS_OPENVARIO
+  { "OpenVario", openvario_pages },
+#endif
 };
 
 static void
