@@ -21,7 +21,7 @@
 #include "Dialogs/Message.hpp"
 #include "./LogFile.hpp"
 #include "UIActions.hpp"
-#include "ProgramVersion.h"
+#include "Version.hpp"
 
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/OpenVarioTools.hpp"
@@ -116,11 +116,7 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
   RowFormWidget::Prepare(parent, rc);
 
   AddReadOnly(_("Current OpenSoar"), _("Current firmware version of OpenVario"),
-#if defined(PROGRAM_VERSION)
-              PROGRAM_VERSION);
-#else
-              "7.42.21.3");
-#endif
+              XCSoar_VersionString);
   AddFile(_("OV-Firmware"), _("Current firmware file version of OpenVario"),
           "OVImage", "*.img.gz\0", FileType::IMAGE);  // no callback... , this);
   
