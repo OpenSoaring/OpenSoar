@@ -53,7 +53,9 @@ public:
 
   /* virtual methods from class Widget */
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
-  bool Save(bool &changed) noexcept override { return true; }
+  bool Save([[maybe_unused]] bool &changed) noexcept override {
+    return true;
+  }
 
 private:
 
@@ -228,7 +230,7 @@ SystemMenuWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     StaticString<0x200> str;
     str.Format("%s/%s", ovdevice.GetHomePath().c_str(), "process.txt");
     Path output = Path(str);
-#ifdef __AUGUST__
+#if defined(__AUGUST__) && defined(HAVE_POSIX)
     auto ret_value = Run(
       output,
       "/home/august2111/TestProcess.sh");
