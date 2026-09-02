@@ -1,4 +1,5 @@
 set(_SOURCES
+        Repository/AreaName.cpp
         Repository/FileCheck.cpp
         Repository/FileRepository.cpp
         Repository/Glue.cpp
