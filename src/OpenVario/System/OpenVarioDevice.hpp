@@ -24,7 +24,7 @@
 #if defined(IS_OPENVARIO_CB2) 
   // && __has_include("dbus/dbus.h")
 # define DBUS_FUNCTIONS 1
-# warning (Attention: DBUS is enabled)
+// DBUS is enabled here (IS_OPENVARIO_CB2)
 #elif __GNUC__
 // # warning (Attention: No DBUS!)
 #else
@@ -39,9 +39,13 @@ enum class SSHStatus {
 
 class OpenVario_Device {
 public:
-  OpenVario_Device() { 
-    Initialise();
-  }
+  /**
+   * The constructor of the global instance runs before main(): it
+   * must not do anything.  Initialise() is called once the data path
+   * exists - by XCSoar.cpp for the app, by OpenVarioBaseMenu.cpp for
+   * the standalone tool; calling it twice is harmless.
+   */
+  OpenVario_Device() = default;
 
   void Initialise() noexcept;
   void Deinitialise() noexcept;

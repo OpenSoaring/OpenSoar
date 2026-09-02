@@ -13,8 +13,10 @@ class PagerWidget;
 
 class TabMenuDisplay final : public PaintWindow
 {
-  /* excludes "Main Menu" which is a "super menu" */
-  static constexpr unsigned MAX_MAIN_MENU_ITEMS = 9;
+  /* excludes "Main Menu" which is a "super menu"; XCSoar has nine
+     groups, the OpenVario build adds its own as the tenth (the layout
+     shrinks the buttons to fit) */
+  static constexpr unsigned MAX_MAIN_MENU_ITEMS = 10;
 
   /**
    * The offset from a page number in the #TabMenuDisplay to a page
