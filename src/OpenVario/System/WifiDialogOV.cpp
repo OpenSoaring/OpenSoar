@@ -208,7 +208,8 @@ WifiListWidget::ScanWifi()
 #ifdef __MSVC__
   char buffer[0x1000];
   auto file = Path("connman-scan-results.txt");
-  File::ReadString(Path("/Data/connman-services.txt"), buffer, sizeof(buffer));
+  File::ReadString(ovdevice.MapSystemPath(Path("/Data/connman-services.txt")),
+                   buffer, sizeof(buffer));
   File::CreateExclusive(file);
   File::WriteExisting(file, buffer);
 #else
