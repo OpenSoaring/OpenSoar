@@ -403,6 +403,9 @@ CreateDataPath()
   if (Directory::Create(GetPrimaryDataPath()))
     return true;
 
+  LogFmt("Creating data path {} not possible, falling back to the default path",
+         GetPrimaryDataPath().c_str());
+
   /* if creation of GetPrimaryDataPath() isn't possible (permission issue,
      drive not available etc.) use the standard data path */
   DeinitialiseDataPath();

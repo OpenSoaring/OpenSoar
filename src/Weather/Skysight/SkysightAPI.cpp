@@ -519,7 +519,8 @@ SkysightAPI::BuildForecastTiff(const Path filename)
   if (!File::Exists(nc_file) &&
     // do it one time only
     File::Exists(zip_file)) {
-    ZipIO::UnzipSingleFile(zip_file, nc_file);
+    if (!ZipIO::UnzipSingleFile(zip_file, nc_file))
+      LogFmt("Error: Failed to unzip {}", zip_file.ToUTF8().c_str());
     if (File::Exists(nc_file)) {
       char buffer[8];
       File::ReadString(nc_file, buffer, sizeof(buffer));  // read buffer

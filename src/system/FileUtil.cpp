@@ -6,7 +6,6 @@
 #include "util/StringCompare.hxx"
 #include "Compatibility/path.h"
 #include "time/DateTime.hpp"
-#include "LogFile.hpp"
 
 #ifdef _WIN32
 #include "time/FileTime.hxx"
@@ -49,19 +48,16 @@ Directory::Create(Path path) noexcept
   if (errno == EEXIST)
     return Exists(path);
 
-  LogFmt("Creating path {} not possible, reason: {}",
-         path.c_str(), strerror(errno));
+  /* no logging here: libos must not depend on LogFile (tests link
+     without it); the caller reports the failure */
   return false;
 #else /* !HAVE_POSIX */
   /* use the non-throwing overload; already existing directories are
      not an error */
   std::error_code ec;
   std::filesystem::create_directories(path.c_str(), ec);
-  if (ec) {
-    LogFmt("Creating path {} not possible, reason: {}",
-           path.c_str(), ec.message());
+  if (ec)
     return false;
-  }
 
   return Exists(path);
 #endif /* !HAVE_POSIX */

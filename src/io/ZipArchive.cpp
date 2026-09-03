@@ -4,7 +4,6 @@
 #include "ZipArchive.hpp"
 #include "lib/fmt/RuntimeError.hxx"
 #include "lib/fmt/PathFormatter.hpp"
-#include "LogFile.hpp"
 
 #include <zzip/zzip.h>
 #include <zlib.h>
@@ -45,10 +44,9 @@ ZipIO::UnzipSingleFile(Path zipfile, Path output)
   unsigned char unzipBuffer[0x1000];
 
   gzFile inFileZ = gzopen(zipfile.ToUTF8().c_str(), "rb");
-  if (inFileZ == NULL) {
-    LogFmt("Error: Failed to gzopen {}", zipfile.ToUTF8().c_str());
+  if (inFileZ == NULL)
+    // caller is responsible for logging (keep libio free of LogFile)
     return false;
-  }
   std::vector<unsigned char> unzippedData;
   while (true) {
     auto unzippedBytes = gzread(inFileZ, unzipBuffer, 0x1000);
@@ -62,6 +60,8 @@ ZipIO::UnzipSingleFile(Path zipfile, Path output)
   gzclose(inFileZ);
 
   auto expandfile = fopen(output.ToUTF8().c_str(), "wb");
+  if (expandfile == nullptr)
+    return false;
   fwrite(unzippedData.data(), 1, unzippedData.size(), expandfile);
   fclose(expandfile);
   return true;
