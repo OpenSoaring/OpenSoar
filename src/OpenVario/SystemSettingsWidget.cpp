@@ -14,6 +14,7 @@
 #include "Form/DataField/Listener.hpp"
 #include "Form/DataField/Enum.hpp"
 #include "Form/DataField/Integer.hpp"
+#include "Form/DataField/File.hpp"
 #include "Interface.hpp"
 #include "UIGlobals.hpp"
 #include "ui/window/SingleWindow.hpp"
@@ -22,13 +23,17 @@
 #include "./LogFile.hpp"
 #include "UIActions.hpp"
 #include "Version.hpp"
+#include "system/FileUtil.hpp"
 
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/OpenVarioTools.hpp"
 #include "OpenVario/System/WifiDialogOV.hpp"
 
 
+#include "util/StringAPI.hxx"
+
 #include <stdio.h>
+#include <string.h>
 
 enum ControlIndex {
   FW_VERSION,
@@ -119,6 +124,34 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
               XCSoar_VersionString);
   AddFile(_("OV-Firmware"), _("Current firmware file version of OpenVario"),
           "OVImage", "*.img.gz\0", FileType::IMAGE);  // no callback... , this);
+
+  /* no image chosen yet: show the one the device is running - the
+     first line of /boot/image-version-info names its file (reachable
+     on a development PC through OPENVARIO_ROOT) */
+  if (auto &df = (FileDataField &)GetDataField(FIRMWARE);
+      df.GetValue() == nullptr || df.GetValue().empty()) {
+    char line[0x100];
+    if (File::ReadString(ovdevice.MapSystemPath(Path("/boot/image-version-info")),
+                         line, sizeof(line))) {
+      /* the first line only, without trailing whitespace */
+      line[strcspn(line, "\r\n")] = '\0';
+
+      /* drop the file suffixes: "....img.gz" -> "..." */
+      for (const char *suffix : {".gz", ".img"}) {
+        const std::size_t line_length = strlen(line),
+          suffix_length = strlen(suffix);
+        if (line_length > suffix_length &&
+            StringIsEqual(line + line_length - suffix_length, suffix))
+          line[line_length - suffix_length] = '\0';
+      }
+
+      if (line[0] != '\0') {
+        df.ForceModify(Path(line));
+        /* the row was rendered before: show the new value */
+        GetControl(FIRMWARE).RefreshDisplay();
+      }
+    }
+  }
   
   AddBoolean(
       _("Settings Enabled"),
