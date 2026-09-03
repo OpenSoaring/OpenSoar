@@ -57,6 +57,21 @@ void ReadInteger(std::map<std::string, std::string, std::less<>> &map,
 void ReadString(std::map<std::string, std::string, std::less<>> &map,
                 std::string_view name, std::string_view &value) noexcept;
 
+AllocatedPath
+OpenVario_Device::MapSystemPath(Path path) const noexcept
+{
+  if (system_root == nullptr)
+    return AllocatedPath(path);
+
+  /* strip the leading separator, so that Build() puts the path
+     below the root */
+  const char *relative = path.c_str();
+  while (*relative == '/' || *relative == '\\')
+    ++relative;
+
+  return AllocatedPath::Build(system_root, Path(relative));
+}
+
   void
 OpenVario_Device::Initialise() noexcept {
   if (!initialised) {
@@ -76,11 +91,18 @@ OpenVario_Device::Initialise() noexcept {
     data_path = Path("D:/Data/OpenSoarData");
 #else
     data_path = Path("data");
-
-    system_config =
-        AllocatedPath::Build(Path("/boot"), Path("config.uEnv"));
-    is_real = File::Exists(system_config);
 #endif
+
+    /* while developing on a PC, OPENVARIO_ROOT points at a copy of
+       the OpenVario system structure; the system paths then live
+       inside it, and the functions behave like on the device */
+    if (const char *root = getenv("OPENVARIO_ROOT");
+        root != nullptr && *root != '\0')
+      system_root = Path(root);
+
+    system_config = MapSystemPath(Path("/boot/config.uEnv"));
+    is_real = File::Exists(system_config);
+
     if (!is_real)  // a pseudo 'config' file in home_path
       system_config = AllocatedPath::Build(home_path, Path("config.uEnv"));
 
@@ -220,7 +242,8 @@ OpenVario_Device::GetBrightness() noexcept
   char line[4];
   int result = 10;
 
-  if (File::ReadString(Path("/sys/class/backlight/lcd/brightness"), line, sizeof(line))) {
+  if (File::ReadString(MapSystemPath(Path("/sys/class/backlight/lcd/brightness")),
+                       line, sizeof(line))) {
     result = atoi(line);
   }
 
@@ -240,7 +263,7 @@ OpenVario_Device::SetBrightness(uint_least8_t value) noexcept
   std::string brightness_string = fmt::format_int{ brightness }.c_str();
   settings.insert_or_assign("Brightness", // brightness_string); 
                                       std::to_string(value));
-  File::WriteExisting(Path("/sys/class/backlight/lcd/brightness"),
+  File::WriteExisting(MapSystemPath(Path("/sys/class/backlight/lcd/brightness")),
     brightness_string.c_str());  // fmt::format_int{ value }.c_str());
 
   if (map["brightness"] != brightness_string) {
