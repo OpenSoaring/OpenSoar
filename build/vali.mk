@@ -1,8 +1,9 @@
 # Rules for VALI-XCS.exe, the non-interactive G record validation tool
 
 
-### ??? ifeq ($(PROGRAM_NAME), xcsoar)
-# don't do it with OpenSoar!
+# Each app (target) can and should build and install `vali-xcs`; the issue 
+# of multiple installations on OpenVario is resolved using Yocto's magic 
+# "alternatives" mechanism.
 VALI_XCS_SOURCES = \
 	$(SRC)/Logger/GRecord.cpp \
 	$(SRC)/util/MD5.cpp \
@@ -12,5 +13,3 @@ VALI_XCS_DEPENDS = IO OS UTIL
 VALI_XCS_STRIP = y
 
 $(eval $(call link-program,vali-xcs,VALI_XCS))
-
-### ??? endif
