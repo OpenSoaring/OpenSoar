@@ -48,6 +48,15 @@ public:
   OpenVario_Device() = default;
 
   void Initialise() noexcept;
+
+  /**
+   * The place to read an absolute path of the OpenVario system
+   * ("/boot/config.uEnv", "/sys/..."): on the device the path
+   * itself, on a development PC with OPENVARIO_ROOT set the same
+   * path inside that copy of the system structure.
+   */
+  [[gnu::pure]]
+  AllocatedPath MapSystemPath(Path path) const noexcept;
   void Deinitialise() noexcept;
   void LoadSettings() noexcept;
   void ReadSettings() noexcept;
@@ -132,6 +141,14 @@ public:
 
   AllocatedPath home_path;
   AllocatedPath data_path;
+
+  /**
+   * While developing on a PC, the OPENVARIO_ROOT environment
+   * variable points at a copy of the OpenVario system structure;
+   * MapSystemPath() prefixes the absolute system paths with it.
+   * nullptr on the device itself (and when the variable is unset).
+   */
+  AllocatedPath system_root;
 
   bool is_real = false;
   bool initialised = false;
