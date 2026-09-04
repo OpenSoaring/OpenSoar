@@ -4,14 +4,7 @@
 #include "CDFDecoder.hpp"
 #include "Skysight.hpp"
 
-// no forecast for Darwin, Kobo, OpenVario
-#if defined(CMAKE_PROJECT) || 1 || !(defined(ANDROID) || defined(_WIN32))
-# include <netcdf>
-#else
-# include <netcdfcpp.h>
-# define NETCDF_CPP
-#endif
-
+#include <netcdf>
 #include <geotiffio.h>
 #include <xtiffio.h>
 
@@ -105,33 +98,19 @@ CDFDecoder::DecodeSuccess()
 
 bool CDFDecoder::Decode() {
 
-#ifdef NETCDF_CPP
-  NcFile data_file(path.data(), NcFile::FileMode::ReadOnly);
-  if (!data_file.is_valid())
-    return DecodeError();
-
-  size_t lat_size = data_file.get_dim("lat")->size();
-  size_t lon_size = data_file.get_dim("lon")->size();
-#else
   netCDF::NcFile data_file(path.data(), netCDF::NcFile::read);
   if (data_file.isNull())
     return DecodeError();
 
   size_t lat_size = data_file.getDim("lat").getSize();
   size_t lon_size = data_file.getDim("lon").getSize();
-#endif
 
   AllocatedArray<double> lat_vals(lat_size);
   AllocatedArray<double> lon_vals(lon_size);
   AllocatedArray<double> var_vals(lat_size * lon_size);
 
-#ifdef NETCDF_CPP
-  data_file.get_var("lat")->get(&lat_vals[0], lat_size);
-  data_file.get_var("lon")->get(&lon_vals[0], lon_size);
-#else
   data_file.getVar("lat").getVar(&lat_vals[0]);
   data_file.getVar("lon").getVar(&lon_vals[0]);
-#endif
 
   double lat_min = lat_vals[lat_size - 1];
   double lat_max = lat_vals[0];
@@ -140,16 +119,6 @@ bool CDFDecoder::Decode() {
   double lon_scale = (lon_max - lon_min) / lon_size;
   double lat_scale = (lat_max - lat_min) / lat_size;
 
-#ifdef NETCDF_CPP
-  NcVar *data_var = data_file.get_var(data_varname.c_str());
-  if (!data_var->is_valid())
-    return DecodeError();
-
-  data_var->get(&var_vals[0], (long)lat_size, (long)lon_size);
-  double fill_value = data_var->get_att("_FillValue")->values()->as_double(0);
-  float var_offset = data_var->get_att("add_offset")->values()->as_float(0);
-  float var_scale = data_var->get_att("scale_factor")->values()->as_float(0);
-#else
   netCDF::NcVar data_var = data_file.getVar(data_varname);
   if (data_var.isNull())
     return DecodeError();
@@ -161,7 +130,6 @@ bool CDFDecoder::Decode() {
   data_var.getAtt("_FillValue").getValues(&fill_value);
   data_var.getAtt("add_offset").getValues(&var_offset);
   data_var.getAtt("scale_factor").getValues(&var_scale);
-#endif
 
   // Generate GeoTiff
   TIFF *tf = XTIFFOpen(output_path.c_str(), "w");

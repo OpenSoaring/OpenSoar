@@ -157,7 +157,8 @@ SkysightAPI::GetUrl(SkysightCallType type, const std::string_view layer_id,
   switch (type) {
     case SkysightCallType::DataDetails:
       url.Format("%s/data?region_id=%s&layer_ids=%s&from_time=%llu", 
-        SKYSIGHTAPI_BASE_URL.c_str(), region.c_str(), layer_id.data(), from);
+        SKYSIGHTAPI_BASE_URL.c_str(), region.c_str(), layer_id.data(),
+        (unsigned long long)from);
       break;
     case SkysightCallType::Tile: {
 #ifdef SKYSIGHT_LIVE
@@ -203,13 +204,13 @@ SkysightAPI::GetPath(SkysightCallType type, const std::string_view layer_id,
     break;
   case SkysightCallType::DataDetails:
     filename.Format("datalinks-%s-%s-%llu", region.c_str(), 
-      layer_id.data(), fctime);
+      layer_id.data(), (unsigned long long)fctime);
     return AllocatedPath(filename.data());  // w/0 Cache-Path..
   case SkysightCallType::Data: {
     auto layer = GetLayer(layer_id);
     filename.Format("%s-%s-%llu-%llu-%s.zip", region.c_str(), layer_id.data(),
-      fctime,
-      layer ? layer->update_time : 0, 
+      (unsigned long long)fctime,
+      (unsigned long long)(layer ? layer->update_time : 0), 
       DateTime::time_str(fctime, "%d-%H%M").c_str());
     }
     break;

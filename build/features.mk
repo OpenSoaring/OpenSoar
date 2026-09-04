@@ -11,14 +11,14 @@ ifeq ($(TARGET_IS_KOBO)$(TARGET_IS_DARWIN),nn)
     # for build:
     HAVE_SKYSIGHT := y
 
-    ifneq ($(TARGET_IS_OPENVARIO),y)
-        HAVE_GEOTIFF = y
-    endif
+    # ifneq ($(TARGET_IS_OPENVARIO),y)
+    HAVE_GEOTIFF = y
+    # endif
     
     ifeq ($(HAVE_SKYSIGHT),y)
-        ifneq ($(TARGET_IS_OPENVARIO),y)
-            SKYSIGHT_FORECAST := y
-        endif
+        # ifneq ($(TARGET_IS_OPENVARIO),y)
+        SKYSIGHT_FORECAST := y
+        # endif
     
         # for cpp sources:
         TARGET_CPPFLAGS += -DHAVE_SKYSIGHT
