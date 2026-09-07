@@ -17,12 +17,70 @@
 #include "Repository/FileType.hpp"
 #include "system/Path.hpp"
 #include "Form/DataField/File.hpp"
+#include "Form/Button.hpp"
+#include "Form/ButtonPanel.hpp"
+#include "Widget/ButtonPanelWidget.hpp"
+#include "Renderer/ButtonRenderer.hpp"
+#include "Renderer/SymbolRenderer.hpp"
+#include "Look/ButtonLook.hpp"
+#include "Look/DialogLook.hpp"
+#include "ui/canvas/Canvas.hpp"
 #include "ui/event/PeriodicTimer.hpp"
 #include "time/BrokenTime.hpp"
 #include "util/StaticString.hxx"
 
 #include <algorithm>
 #include <chrono>
+#include <memory>
+
+/**
+ * The play/pause toggle: it renders the pause bars while the replay
+ * is playing, the play triangle while it is paused or off.
+ */
+class PlayPauseButtonRenderer final : public ButtonRenderer {
+  ButtonFrameRenderer frame_renderer;
+  const Replay &replay;
+
+public:
+  PlayPauseButtonRenderer(const ButtonLook &_look,
+                          const Replay &_replay) noexcept
+    :frame_renderer(_look), replay(_replay) {}
+
+  void DrawButton(Canvas &canvas, const PixelRect &rc,
+                  ButtonState state) const noexcept override {
+    frame_renderer.DrawButton(canvas, rc, state);
+
+    const ButtonLook &look = frame_renderer.GetLook();
+
+    canvas.SelectNullPen();
+
+    switch (state) {
+    case ButtonState::DISABLED:
+      canvas.Select(look.disabled.brush);
+      break;
+
+    case ButtonState::FOCUSED:
+    case ButtonState::PRESSED:
+      canvas.Select(look.focused.foreground_brush);
+      break;
+
+    case ButtonState::SELECTED:
+      canvas.Select(look.selected.foreground_brush);
+      break;
+
+    case ButtonState::ENABLED:
+      canvas.Select(look.standard.foreground_brush);
+      break;
+    }
+
+    const PixelRect draw_rc = frame_renderer.GetDrawingRect(rc, state);
+    if (replay.IsActive() && !replay.IsPaused())
+      SymbolRenderer::DrawMedia(canvas, draw_rc,
+                                SymbolRenderer::MediaSymbol::PAUSE);
+    else
+      SymbolRenderer::DrawArrow(canvas, draw_rc, SymbolRenderer::RIGHT);
+  }
+};
 
 class ReplayControlWidget final
   : public RowFormWidget
@@ -35,11 +93,18 @@ class ReplayControlWidget final
 
   Replay &replay;
 
+  ButtonPanelWidget *buttons_widget = nullptr;
+  Button *play_button = nullptr;
+
   UI::PeriodicTimer status_timer{[this]{ UpdateStatus(); }};
 
 public:
   ReplayControlWidget(Replay &_replay, const DialogLook &look) noexcept
     :RowFormWidget(look), replay(_replay) {}
+
+  void SetButtonPanel(ButtonPanelWidget &_buttons) noexcept {
+    buttons_widget = &_buttons;
+  }
 
   /* virtual methods from class Widget */
   void Show(const PixelRect &rc) noexcept override {
@@ -87,24 +152,28 @@ private:
     }
 
     SetText(STATUS, text.c_str());
+
+    /* the play/pause button follows the engine state */
+    if (play_button != nullptr)
+      play_button->Invalidate();
   }
 
-public:
-  void CreateButtons(WidgetDialog &dialog) noexcept {
-    /* the tape deck, left to right */
-    dialog.AddButton("|<", [this](){ OnResetClicked(); });
-    dialog.AddButton("T/O", [this](){ OnTakeoffClicked(); });
-    dialog.AddButton("<<", [this](){ OnRewindClicked(); });
-    dialog.AddButton(">", [this](){ OnGoClicked(); });
-    dialog.AddButton("||", [this](){ OnPauseClicked(); });
-    dialog.AddButton(">>", [this](){ OnFastForwardClicked(); });
-    dialog.AddButton(">|", [this](){ OnEndClicked(); });
+  /** the tape deck, one row, left to right */
+  void CreateTapeButtons(ButtonPanel &panel) noexcept {
+    panel.AddSymbol("|<", [this](){ OnResetClicked(); });
+    panel.AddSymbol("T/O", [this](){ OnTakeoffClicked(); });
+    panel.AddSymbol("<<", [this](){ OnRewindClicked(); });
+    play_button =
+      panel.Add(std::make_unique<PlayPauseButtonRenderer>(GetLook().button,
+                                                          replay),
+                [this](){ OnPlayPauseClicked(); });
+    panel.AddSymbol(">>", [this](){ OnFastForwardClicked(); });
+    panel.AddSymbol(">|", [this](){ OnEndClicked(); });
   }
 
 private:
   bool StartFromFile() noexcept;
-  void OnGoClicked() noexcept;
-  void OnPauseClicked() noexcept;
+  void OnPlayPauseClicked() noexcept;
   void OnResetClicked() noexcept;
   void OnTakeoffClicked() noexcept;
   void OnRewindClicked() noexcept;
@@ -140,25 +209,15 @@ ReplayControlWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddReadOnly(_("Position"),
               _("The current fix number, its UTC time, and how much of the file has been played.  "
                 "The buttons work like a tape deck: |< back to the start, "
-                "T/O jump to the takeoff, << jump back 10 minutes, > play, "
-                "|| pause (twice: end the replay), >> forward 10 minutes, "
-                ">| play the rest at once - the whole flight appears in the "
-                "trail and the statistics.  |<, T/O and << jump only: "
-                "paused stays paused."),
+                "T/O jump to the takeoff, << jump back 10 minutes, "
+                "play/pause, >> forward 10 minutes, >| play the rest at "
+                "once - the whole flight appears in the trail and the "
+                "statistics.  |<, T/O and << jump only: paused stays "
+                "paused.  \"Hide\" leaves the replay running; \"Cancel\" "
+                "ends it."),
               "-");
-}
 
-inline void
-ReplayControlWidget::OnPauseClicked() noexcept
-{
-  if (replay.IsActive() && replay.IsPaused()) {
-    /* a second "||" while paused ends the replay altogether */
-    replay.Stop();
-  } else {
-    /* pause only - ">" continues from here */
-    replay.SetTimeScale(0);
-  }
-  UpdateStatus();
+  CreateTapeButtons(buttons_widget->GetButtonPanel());
 }
 
 inline bool
@@ -177,14 +236,20 @@ ReplayControlWidget::StartFromFile() noexcept
 }
 
 inline void
-ReplayControlWidget::OnGoClicked() noexcept
+ReplayControlWidget::OnPlayPauseClicked() noexcept
 {
+  if (replay.IsActive() && !replay.IsPaused()) {
+    /* pause; another press continues from here */
+    replay.SetTimeScale(0);
+    UpdateStatus();
+    return;
+  }
+
   if (!replay.IsActive()) {
     if (!StartFromFile())
       return;
   }
 
-  /* "Go" also resumes after "Stop" */
   double rate = GetValueFloat(RATE);
   if (rate <= 0) {
     rate = 1;
@@ -224,7 +289,7 @@ ReplayControlWidget::OnResetClicked() noexcept
 /**
  * Jump to the takeoff point - also backwards, by rewinding the file
  * first.  Like "Reset" this only positions the tape: it keeps
- * playing when it was playing, otherwise it waits there for "Go".
+ * playing when it was playing, otherwise it waits there for play.
  */
 inline void
 ReplayControlWidget::OnTakeoffClicked() noexcept
@@ -309,11 +374,24 @@ void
 ShowReplayDialog(Replay &replay) noexcept
 {
   const DialogLook &look = UIGlobals::GetDialogLook();
-  ReplayControlWidget *widget = new ReplayControlWidget(replay, look);
+
+  auto control = std::make_unique<ReplayControlWidget>(replay, look);
+  auto *panel =
+    new ButtonPanelWidget(std::move(control),
+                          ButtonPanelWidget::Alignment::BOTTOM);
+  ((ReplayControlWidget &)panel->GetWidget()).SetButtonPanel(*panel);
+
   WidgetDialog dialog(WidgetDialog::Auto{}, UIGlobals::GetMainWindow(),
-                      look, _("Replay"), widget);
-  widget->CreateButtons(dialog);
-  dialog.AddButton(_("Close"), mrOK);
+                      look, _("Replay"), panel);
+
+  /* "Hide" only closes the window - the replay keeps running */
+  dialog.AddButton(_("Hide"), mrOK);
+
+  /* "Cancel" ends the replay altogether */
+  dialog.AddButton(_("Cancel"), [&replay, &dialog](){
+    replay.Stop();
+    dialog.SetModalResult(mrCancel);
+  });
 
   dialog.ShowModal();
 }
