@@ -325,6 +325,7 @@ XCSOAR_SOURCES := \
 	$(SRC)/Replay/Replay.cpp \
 	$(SRC)/Replay/IgcReplay.cpp \
 	$(SRC)/Replay/NmeaReplay.cpp \
+	$(SRC)/Replay/SensorLogReplay.cpp \
 	$(SRC)/Replay/DemoReplay.cpp \
 	$(SRC)/Replay/DemoReplayGlue.cpp \
 	$(SRC)/Replay/TaskAutoPilot.cpp \
