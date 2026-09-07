@@ -64,6 +64,36 @@ class Replay final
   /** the number of fixes read from the input so far */
   unsigned fix_count = 0;
 
+  /**
+   * A running seek: instead of blocking the UI until the target is
+   * found, the timer processes the input in small chunks, so the
+   * dialog stays alive and its progress bar really moves.
+   */
+  enum class SeekMode : uint8_t {
+    NONE,
+    /** read forward until #seek_target */
+    TIME,
+    /** read forward until the takeoff (SeekTakeoff()) */
+    TAKEOFF,
+    /** feed the rest through the computers (PlayToEnd()) */
+    END,
+  } seek_mode = SeekMode::NONE;
+
+  TimeStamp seek_target;
+
+  /** speed derivation state for the TAKEOFF seek (IGC input) */
+  GeoPoint seek_last_location;
+  TimeStamp seek_last_time;
+
+  /** parameters of the END seek */
+  FloatDuration end_interval{};
+  TimeStamp end_last_processed;
+  MergeThread *end_merge = nullptr;
+  CalculationThread *end_calc = nullptr;
+
+  /** are the computer threads suspended for the END seek? */
+  bool end_suspended = false;
+
 public:
   Replay(DeviceBlackboard &_device_blackboard,
          Logger *_logger, ProtectedTaskManager &_task_manager)
@@ -106,21 +136,41 @@ public:
   }
 
   /**
-   * Read forward to the takeoff: the first fix moving faster than
+   * Seek forward to the takeoff: the first fix moving faster than
    * gliders taxi.  The caller restarts the replay first when the
-   * cursor may already be beyond that point.  The new position is
-   * pushed to the map at once, also while paused.  Returns false
-   * when no such fix exists.
+   * cursor may already be beyond that point.  The seek runs in
+   * chunks from the timer; when it arrives, the new position is
+   * pushed to the map, also while paused.
    */
   bool SeekTakeoff() noexcept;
 
   /**
-   * Jump to the given time - also backwards, by restarting the
-   * input file internally.  The play/pause state is untouched, and
-   * the new position is pushed to the map at once.  Returns false
-   * when the file ends before that time.
+   * Seek to the given time - also backwards, by restarting the
+   * input file internally.  The seek runs in chunks from the timer
+   * and leaves the play/pause state untouched; when it arrives, the
+   * new position is pushed to the map.
    */
   bool SeekTo(TimeStamp target) noexcept;
+
+  /**
+   * Feed the rest of the file through the computers, thinned to \a
+   * interval between processed fixes, chunk by chunk from the
+   * timer; afterwards the replay holds paused at the last fix, with
+   * the whole flight in the trail and the statistics.  The threads
+   * are suspended around each chunk.
+   */
+  bool PlayToEnd(MergeThread &merge_thread,
+                 CalculationThread &calc_thread,
+                 FloatDuration interval) noexcept;
+
+  /** is a seek (takeoff, time, play-to-end) in progress? */
+  bool IsSeeking() const noexcept {
+    return seek_mode != SeekMode::NONE;
+  }
+
+  bool IsFastForwarding() const noexcept {
+    return fast_forward.IsDefined();
+  }
 
   /** 0..1, or negative when unknown */
   [[gnu::pure]]
@@ -180,6 +230,15 @@ private:
    * (also while paused), and make sure the timer runs.
    */
   void FinishSeek() noexcept;
+
+  /**
+   * Process one bounded slice of the running seek.  Returns false
+   * when the replay died (input error before the target).
+   */
+  bool RunSeekChunk() noexcept;
+
+  /** undo the END seek's thread suspension, if active */
+  void ResumeEnd() noexcept;
 
   void OnTimer();
 };
