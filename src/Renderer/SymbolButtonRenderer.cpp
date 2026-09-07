@@ -5,6 +5,37 @@
 #include "SymbolRenderer.hpp"
 #include "ui/canvas/Canvas.hpp"
 #include "Look/ButtonLook.hpp"
+#include "util/StringAPI.hxx"
+
+namespace {
+
+/**
+ * The tape deck captions of the replay dialog, drawn as vector
+ * icons.  Returns (unsigned)-1 when the caption is not one of them.
+ */
+[[gnu::pure]]
+unsigned
+MediaSymbolCaption(const char *caption) noexcept
+{
+  using MS = SymbolRenderer::MediaSymbol;
+
+  if (StringIsEqual(caption, "||"))
+    return unsigned(MS::PAUSE);
+  if (StringIsEqual(caption, "<<"))
+    return unsigned(MS::REWIND);
+  if (StringIsEqual(caption, ">>"))
+    return unsigned(MS::FORWARD);
+  if (StringIsEqual(caption, "|<"))
+    return unsigned(MS::SKIP_START);
+  if (StringIsEqual(caption, ">|"))
+    return unsigned(MS::SKIP_END);
+  if (StringIsEqual(caption, "T/O"))
+    return unsigned(MS::TAKEOFF);
+
+  return unsigned(-1);
+}
+
+} // anonymous namespace
 
 bool
 SymbolButtonRenderer::IsSymbolCaption(const char *caption) noexcept
@@ -14,7 +45,7 @@ SymbolButtonRenderer::IsSymbolCaption(const char *caption) noexcept
 
   const char ch = caption[0];
   if (caption[1] != '\0')
-    return false;
+    return MediaSymbolCaption(caption) != unsigned(-1);
 
   return ch == '+' || ch == '-' || ch == '<' || ch == '>' ||
     ch == '^' || ch == 'v' || ch == 'h' || ch == 'q';
@@ -58,6 +89,14 @@ SymbolButtonRenderer::DrawSymbol(Canvas &canvas, PixelRect rc,
   case ButtonState::ENABLED:
     canvas.Select(look.standard.foreground_brush);
     break;
+  }
+
+  if (const unsigned media = MediaSymbolCaption(caption.c_str());
+      media != unsigned(-1)) {
+    SymbolRenderer::DrawMedia(canvas, rc,
+                              SymbolRenderer::MediaSymbol(media),
+                              max_draw_size);
+    return;
   }
 
   const char ch = (char)caption[0u];
