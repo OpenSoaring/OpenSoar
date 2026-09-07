@@ -128,7 +128,10 @@ ScanLogs(bool igc_only)
   if (igc_only)
     df->Scan(logs_path, {FileType::IGC}, true);
   else
-    df->Scan(logs_path, {FileType::IGC, FileType::NMEA}, true);
+    /* the flight sensor logs (*.lrsx) live in the same folder and
+       play in the replay like the others */
+    df->Scan(logs_path, {FileType::IGC, FileType::NMEA, FileType::SENSORLOG},
+             true);
   return df;
 }
 

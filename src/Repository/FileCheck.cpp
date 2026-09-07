@@ -191,6 +191,10 @@ CheckFileContent(Path path, FileType type) noexcept
       ? FileCheckResult::OK
       : FileCheckResult::MISMATCH;
 
+  case FileType::SENSORLOG:
+    /* a binary format; nothing cheap to verify */
+    return FileCheckResult::OK;
+
   case FileType::IGC:
     return IsText(head) && LooksLikeIGC(head)
       ? FileCheckResult::OK
