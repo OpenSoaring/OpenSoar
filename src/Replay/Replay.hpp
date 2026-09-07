@@ -114,12 +114,26 @@ public:
    */
   bool SeekTakeoff() noexcept;
 
+  /**
+   * Jump to the given time - also backwards, by restarting the
+   * input file internally.  The play/pause state is untouched, and
+   * the new position is pushed to the map at once.  Returns false
+   * when the file ends before that time.
+   */
+  bool SeekTo(TimeStamp target) noexcept;
+
   /** 0..1, or negative when unknown */
   [[gnu::pure]]
   double GetProgress() const noexcept;
 
   void SetTimeScale(const double _time_scale) {
     time_scale = _time_scale;
+
+    /* re-arm the timer: should its schedule chain ever have been
+       lost, the next button press revives the replay instead of
+       leaving it silently stuck */
+    if (replay != nullptr && !timer.IsPending())
+      timer.Schedule(std::chrono::milliseconds(100));
   }
 
   /**
@@ -130,6 +144,9 @@ public:
   bool FastForward(FloatDuration delta_s) noexcept {
     if (!IsActive())
       return false;
+
+    if (!timer.IsPending())
+      timer.Schedule(std::chrono::milliseconds(100));
 
     if (virtual_time.IsDefined()) {
       fast_forward = virtual_time + delta_s;
@@ -154,5 +171,12 @@ public:
                            CalculationThread &calc_thread);
 
 private:
+  /**
+   * The common tail of the seek functions: fix up the virtual time
+   * and the interpolator, show the new position on the map at once
+   * (also while paused), and make sure the timer runs.
+   */
+  void FinishSeek() noexcept;
+
   void OnTimer();
 };
