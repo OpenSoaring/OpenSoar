@@ -70,6 +70,25 @@ code, migration-before-profile-load, CUPX binary mode).
   Info : 128.950") is read unchanged; alternatively the file can be
   JSON with comments shown as a second line.  Reachable via the new
   Info page 4/4, the RemoteStick menu and the `FrequencyCard` event
+* vario display page: a big round vario as a page of its own
+  (Config > Look > Pages, main area "Vario") - scale ring with
+  climb needle, 30 s averager and MacCready markers, speed command
+  arc, wind arrow (absolute with North mark while circling, heading
+  relative with a glider silhouette in cruise), wind and thermal
+  climb / speed to fly read-outs, plus the final glide bar, flight
+  mode icon and GPS state known from the map.  All four views
+  (centre, top row, bottom row, right margin) are configurable per
+  flight state - circling and straight flight separately, stored in
+  the profile - under Config > Look > Vario Display, also reachable
+  through the quick menu button "Vario Display" and by a tap on the
+  page itself; the choices match the original's view lists
+  (arrows, thermal assistants, and eighteen info line values from
+  average climb to UTC time).  The design follows
+  the display of the Larus frontend project
+  (github.com/larus-breeze/sw_frontend_rs) - thanks for the
+  inspiration!  The values come from OpenSoar's own computations, so
+  the page works with any connected vario - with a Larus sensor box
+  it shows that box's values  [upstream PR planned]
 * devices
   - SteFly device family: RemoteStick (auto-detected on its own
     device slot, never occupying a user-configurable port) and
