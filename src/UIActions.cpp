@@ -16,6 +16,7 @@
 #include "Gauge/BigThermalAssistantWidget.hpp"
 #include "Look/Look.hpp"
 #include "HorizonWidget.hpp"
+#include "Gauge/VarioDisplayWidget.hpp"
 
 static bool force_shutdown = false;
 
@@ -64,6 +65,17 @@ UIActions::ShowThermalAssistant()
                                   UIGlobals::GetLook().thermal_assistant_dialog);
   CommonInterface::main_window->SetWidget(ta_widget);
   InputEvents::SetFlavour("TA");
+}
+
+void
+UIActions::ShowVarioDisplay()
+{
+  if (InputEvents::IsFlavour("Vario"))
+    return;
+
+  auto widget = new VarioDisplayWidget();
+  CommonInterface::main_window->SetWidget(widget);
+  InputEvents::SetFlavour("Vario");
 }
 
 void

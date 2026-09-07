@@ -535,6 +535,10 @@ LoadMain(PageLayout::Main main)
     UIActions::ShowHorizon();
     break;
 
+  case PageLayout::Main::VARIO:
+    UIActions::ShowVarioDisplay();
+    break;
+
   case PageLayout::Main::MAX:
     gcc_unreachable();
   }

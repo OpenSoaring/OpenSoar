@@ -35,6 +35,9 @@ PageLayout::MakeTitle(const InfoBoxSettings &info_box_settings,
   case PageLayout::Main::HORIZON:
     return _("Horizon");
 
+  case PageLayout::Main::VARIO:
+    return _("Vario");
+
   case PageLayout::Main::MAX:
     gcc_unreachable();
   }

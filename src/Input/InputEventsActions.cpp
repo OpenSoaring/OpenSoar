@@ -38,6 +38,7 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #endif
 #include "Dialogs/Task/TaskDialogs.hpp"
 #include "Dialogs/Traffic/TrafficDialogs.hpp"
+#include "Dialogs/Settings/Panels/VarioDisplayConfigPanel.hpp"
 #include "Dialogs/Waypoint/WaypointDialogs.hpp"
 #include "Dialogs/Weather/WeatherDialog.hpp"
 #include "Dialogs/Plane/PlaneDialogs.hpp"
@@ -657,6 +658,8 @@ InputEvents::eventSetup(const char *misc)
   } else if (StringIsEqual(misc, "FrequencyCard"))
     /* the name OpenSoar's xci files have used all along */
     FrequencyDialogShowModal();
+  else if (StringIsEqual(misc, "VarioDisplay"))
+    ShowVarioDisplayConfigDialog();
 
   trigger_redraw();
 }
