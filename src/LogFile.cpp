@@ -36,12 +36,27 @@ OpenLog()
   if (!initialised) {
     initialised = true;
 
-    /* delete the obsolete log file */
+    /* delete the obsolete log files */
     File::Delete(LocalPath("xcsoar-startup.log"));
+    File::Delete(LocalPath("xcsoar-old.log"));
+    File::Delete(LocalPath("xcsoar.log"));
 
-    path = LocalPath("xcsoar.log");
+    /* keep the logs of the last nine runs in the debug folder:
+       OpenSoar-1.log is the previous run, OpenSoar-9.log the
+       oldest */
+    Directory::Create(LocalPath("debug"));
 
-    File::Replace(path, LocalPath("xcsoar-old.log"));
+    char name[32];
+    auto older = LocalPath("debug/OpenSoar-9.log");
+    for (unsigned i = 9; i > 1; --i) {
+      snprintf(name, sizeof(name), "debug/OpenSoar-%u.log", i - 1);
+      auto newer = LocalPath(name);
+      File::Replace(newer, older);
+      older = std::move(newer);
+    }
+
+    path = LocalPath("OpenSoar.log");
+    File::Replace(path, older);
 
 #ifdef ANDROID
     /* redirect stdout/stderr to xcsoar-startup.log on Android so we
