@@ -3,6 +3,8 @@ set(_SOURCES
         Gauge/BigThermalAssistantWindow.cpp
         Gauge/BigTrafficWidget.cpp
         Gauge/FlarmTrafficWindow.cpp
+        Gauge/VarioDisplayWindow.cpp
+        Gauge/VarioDisplayWidget.cpp
         Gauge/GaugeFLARM.cpp
         Gauge/GaugeThermalAssistant.cpp
         Gauge/GaugeVario.cpp
