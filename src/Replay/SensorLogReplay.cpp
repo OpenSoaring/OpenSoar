@@ -6,6 +6,7 @@
 #include "Atmosphere/Pressure.hpp"
 #include "system/Path.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 
@@ -174,6 +175,7 @@ SensorLogReplay::ReadFix(NMEAInfo &data) noexcept
                   sizeof(sensor.acceleration));
       sensor.pitot_pressure = r.pitot_pressure;
       sensor.static_pressure = r.static_pressure;
+      sensor.temperature = r.temperature;
       sensor.voltage = r.supply_voltage;
       sensor.available = true;
 
@@ -268,6 +270,9 @@ SensorLogReplay::ReadFix(NMEAInfo &data) noexcept
         data.acceleration.ProvideGLoad(g);
       }
 
+      if (sensor.available && have_heading)
+        EstimateWind(data, vn, ve, tail.rel_heading);
+
       return true;
     }
 
@@ -275,6 +280,62 @@ SensorLogReplay::ReadFix(NMEAInfo &data) noexcept
     if (!SkipBytes(payload))
       return false;
   }
+}
+
+inline void
+SensorLogReplay::EstimateWind(NMEAInfo &data, double vn, double ve,
+                              double heading_rad) noexcept
+{
+  if (sensor.static_pressure < 10000)
+    /* implausible static pressure: no usable air density */
+    return;
+
+  /* the true airspeed from the pitot pressure; the air density
+     follows from static pressure and outside temperature */
+  const double q = std::max(double(sensor.pitot_pressure), 0.);
+  const double temperature =
+    sensor.temperature > -60 && sensor.temperature < 60
+    ? sensor.temperature + 273.15
+    : 288.15;
+  const double rho = sensor.static_pressure / (287.058 * temperature);
+  const double tas = std::sqrt(2 * q / rho);
+
+  /* an estimate makes sense only in flight: on the ground the pitot
+     sees nothing, and the "wind" would just be the taxi speed */
+  if (tas < 10)
+    return;
+
+  /* the wind is what remains of the ground vector after removing
+     the airspeed along the true heading */
+  const double wind_n = vn - tas * std::cos(heading_rad);
+  const double wind_e = ve - tas * std::sin(heading_rad);
+
+  data.ProvideExternalInstantaneousWind(
+      SpeedVector(Angle::FromXY(-wind_n, -wind_e).AsBearing(),
+                  std::hypot(wind_n, wind_e)));
+
+  /* the average - a 30 s low-pass, the value the classic wind arrow
+     and the computations work with */
+  constexpr double tau = 30;
+  const double t = data.clock.ToDuration().count();
+
+  if (!avg_wind.valid || t <= avg_wind.last_time ||
+      t > avg_wind.last_time + tau) {
+    /* first estimate, or a gap/jump in the input: start over */
+    avg_wind.north = wind_n;
+    avg_wind.east = wind_e;
+    avg_wind.valid = true;
+  } else {
+    const double alpha = std::min((t - avg_wind.last_time) / tau, 1.);
+    avg_wind.north += alpha * (wind_n - avg_wind.north);
+    avg_wind.east += alpha * (wind_e - avg_wind.east);
+  }
+
+  avg_wind.last_time = t;
+
+  data.ProvideExternalWind(
+      SpeedVector(Angle::FromXY(-avg_wind.north, -avg_wind.east).AsBearing(),
+                  std::hypot(avg_wind.north, avg_wind.east)));
 }
 
 bool
