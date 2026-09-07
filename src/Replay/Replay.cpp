@@ -339,7 +339,8 @@ Replay::Update()
 
 unsigned
 Replay::ProcessAllFixes(MergeThread &merge_thread,
-                        CalculationThread &calc_thread)
+                        CalculationThread &calc_thread,
+                        FloatDuration interval)
 {
   if (replay == nullptr || path == nullptr || path.empty())
     return 0;
@@ -351,11 +352,28 @@ Replay::ProcessAllFixes(MergeThread &merge_thread,
   data.Reset();
   unsigned count = 0;
 
+  /* the time of the last fix fed through the computers: a high-rate
+     input (a 10 Hz sensor log, say) is thinned to the requested
+     interval - one fix per second is what the computers see from a
+     GPS in a real flight, so the statistics stay true while a whole
+     flight processes in a fraction of the time */
+  TimeStamp last_processed = TimeStamp::Undefined();
+
   while (replay->Update(data)) {
     assert(!data.gps.real);
 
-    if (data.time_available)
+    if (data.time_available) {
       virtual_time = data.time;
+      ++fix_count;
+
+      if (last_processed.IsDefined() &&
+          data.time >= last_processed &&
+          data.time < last_processed + interval)
+        /* too soon after the last processed fix: parse only */
+        continue;
+
+      last_processed = data.time;
+    }
 
     {
       const std::lock_guard lock{device_blackboard.mutex};
@@ -365,7 +383,6 @@ Replay::ProcessAllFixes(MergeThread &merge_thread,
     merge_thread.ProcessReplayFix();
     calc_thread.ProcessReplayFix();
     ++count;
-    ++fix_count;
 
     if (data.time_available)
       data.Expire();
