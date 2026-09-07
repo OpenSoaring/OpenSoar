@@ -8,6 +8,7 @@ void
 UISettings::SetDefaults() noexcept
 {
   display.SetDefaults();
+  vario_display.SetDefaults();
 
   menu_timeout = std::chrono::seconds{8 * 4};
   startup_timeout = DEFAULT_STARTUP_TIMEOUT;
