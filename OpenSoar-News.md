@@ -94,6 +94,12 @@ code, migration-before-profile-load, CUPX binary mode).
   which now shows two arrows - the average in light blue (gray when
   OpenSoar estimated it itself), the live wind in light green - and
   to the vario display page, whose centre arrow prefers it
+* replay: flight sensor logs in the LRSX format (*.lrsx) play
+  directly - pick the file in the replay dialog like an IGC or NMEA
+  log, no external player needed.  The raw GNSS fixes, pressures,
+  supply voltage, g load and (with a D-GNSS compass) the true
+  heading feed the replay; vario, wind and circling come from the
+  usual computations
 * devices
   - SteFly device family: RemoteStick (auto-detected on its own
     device slot, never occupying a user-configurable port) and
