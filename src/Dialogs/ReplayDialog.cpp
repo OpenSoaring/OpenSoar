@@ -10,7 +10,6 @@
 #include "BackendComponents.hpp"
 #include "CalculationThread.hpp"
 #include "MergeThread.hpp"
-#include "Protection.hpp"
 #include "Replay/Replay.hpp"
 #include "Form/DataField/Base.hpp"
 #include "Language/Language.hpp"
@@ -25,6 +24,8 @@
 #include "Look/ButtonLook.hpp"
 #include "Look/DialogLook.hpp"
 #include "ui/canvas/Canvas.hpp"
+#include "ui/control/ProgressBar.hpp"
+#include "Screen/Layout.hpp"
 #include "ui/event/PeriodicTimer.hpp"
 #include "time/BrokenTime.hpp"
 #include "util/StaticString.hxx"
@@ -96,7 +97,15 @@ class ReplayControlWidget final
   ButtonPanelWidget *buttons_widget = nullptr;
   Button *play_button = nullptr;
 
+  /** shown in place of the position row while seeking or
+      fast-forwarding */
+  ProgressBar progress_bar;
+
   UI::PeriodicTimer status_timer{[this]{ UpdateStatus(); }};
+
+  /** the current status update period; short while a seek runs, so
+      the progress bar moves smoothly */
+  std::chrono::steady_clock::duration status_interval{};
 
 public:
   ReplayControlWidget(Replay &_replay, const DialogLook &look) noexcept
@@ -109,8 +118,8 @@ public:
   /* virtual methods from class Widget */
   void Show(const PixelRect &rc) noexcept override {
     RowFormWidget::Show(rc);
+    status_interval = {};
     UpdateStatus();
-    status_timer.Schedule(std::chrono::milliseconds(500));
   }
 
   void Hide() noexcept override {
@@ -152,6 +161,35 @@ private:
     }
 
     SetText(STATUS, text.c_str());
+
+    /* while a seek runs, the progress bar takes the position row's
+       place */
+    const bool busy = replay.IsActive() && replay.IsSeeking();
+
+    /* update quickly while the bar shows, so it moves smoothly */
+    const auto interval = busy
+      ? std::chrono::milliseconds(100)
+      : std::chrono::milliseconds(500);
+    if (interval != status_interval) {
+      status_interval = interval;
+      status_timer.Schedule(interval);
+    }
+
+    if (busy && progress_bar.IsDefined()) {
+      const double progress = replay.GetProgress();
+      progress_bar.SetValue(progress >= 0
+                            ? unsigned(std::clamp(progress, 0., 1.) * 1000)
+                            : 0);
+
+      if (!progress_bar.IsVisible()) {
+        progress_bar.Move(GetControl(STATUS).GetPosition());
+        SetRowVisible(STATUS, false);
+        progress_bar.Show();
+      }
+    } else if (progress_bar.IsDefined() && progress_bar.IsVisible()) {
+      progress_bar.Hide();
+      SetRowVisible(STATUS, true);
+    }
 
     /* the play/pause button follows the engine state */
     if (play_button != nullptr)
@@ -216,6 +254,20 @@ ReplayControlWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                 "paused.  \"Hide\" leaves the replay running; \"Cancel\" "
                 "ends it."),
               "-");
+
+  {
+    /* a real progress bar, hidden for now: while a seek or the fast
+       forward is under way it appears in place of the position row */
+    ContainerWindow &panel = (ContainerWindow &)GetWindow();
+
+    WindowStyle style;
+    style.Hide();
+
+    progress_bar.Create(panel,
+                        InitialControlRect(Layout::GetMinimumControlHeight()),
+                        style);
+    progress_bar.SetRange(0, 1000);
+  }
 
   CreateTapeButtons(buttons_widget->GetButtonPanel());
 }
@@ -333,7 +385,16 @@ ReplayControlWidget::OnRewindClicked() noexcept
 inline void
 ReplayControlWidget::OnFastForwardClicked() noexcept
 {
-  replay.FastForward(std::chrono::minutes{10});
+  /* a jump, like "<<" - not the engine's fast forward, which plays
+     the span through the computers at high speed */
+  if (!replay.IsActive())
+    return;
+
+  const TimeStamp t = replay.GetVirtualTime();
+  if (!t.IsDefined())
+    return;
+
+  replay.SeekTo(t + FloatDuration{std::chrono::minutes{10}});
   UpdateStatus();
 }
 
@@ -350,7 +411,9 @@ ReplayControlWidget::OnEndClicked() noexcept
      this is a simulation shortcut, not real life */
   constexpr FloatDuration end_interval = std::chrono::seconds{10};
 
-  if (!replay.IsActive())
+  /* pressed with no replay running, it plays the whole file into
+     the trail and the statistics */
+  if (!replay.IsActive() && !StartFromFile())
     return;
 
   auto *merge_thread = backend_components->merge_thread.get();
@@ -358,20 +421,7 @@ ReplayControlWidget::OnEndClicked() noexcept
   if (merge_thread == nullptr || calc_thread == nullptr)
     return;
 
-  merge_thread->Suspend();
-
-  {
-    const ScopeSuspendAllThreads suspend;
-    replay.ProcessAllFixes(*merge_thread, *calc_thread, end_interval);
-  }
-
-  merge_thread->Resume();
-
-  TriggerCalculatedUpdate();
-  TriggerMapUpdate();
-
-  /* hold at the landing; "|<" or "T/O" start over */
-  replay.SetTimeScale(0);
+  replay.PlayToEnd(*merge_thread, *calc_thread, end_interval);
   UpdateStatus();
 }
 
