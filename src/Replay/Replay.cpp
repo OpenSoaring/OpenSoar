@@ -61,6 +61,45 @@ Replay::SeekTakeoff() noexcept
     ++fix_count;
   }
 
+  FinishSeek();
+  return true;
+}
+
+bool
+Replay::SeekTo(TimeStamp target) noexcept
+{
+  if (replay == nullptr || !target.IsDefined())
+    return false;
+
+  if (virtual_time.IsDefined() && target <= virtual_time) {
+    /* backwards: restart the input file and read forward again */
+    if (path == nullptr || path.empty())
+      return false;
+
+    const AllocatedPath restart_path{GetFilename()};
+    try {
+      Start(restart_path);
+    } catch (...) {
+      return false;
+    }
+  }
+
+  while (!next_data.time_available || next_data.time < target) {
+    if (!replay->Update(next_data)) {
+      Stop();
+      return false;
+    }
+
+    ++fix_count;
+  }
+
+  FinishSeek();
+  return true;
+}
+
+inline void
+Replay::FinishSeek() noexcept
+{
   if (next_data.time_available) {
     virtual_time = next_data.time;
     if (cli != nullptr) {
@@ -77,7 +116,8 @@ Replay::SeekTakeoff() noexcept
     device_blackboard.ScheduleMerge();
   }
 
-  return true;
+  if (!timer.IsPending())
+    timer.Schedule(std::chrono::milliseconds(100));
 }
 
 double
@@ -325,6 +365,7 @@ Replay::ProcessAllFixes(MergeThread &merge_thread,
     merge_thread.ProcessReplayFix();
     calc_thread.ProcessReplayFix();
     ++count;
+    ++fix_count;
 
     if (data.time_available)
       data.Expire();
