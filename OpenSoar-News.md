@@ -107,6 +107,10 @@ code, migration-before-profile-load, CUPX binary mode).
     logo next to the OpenSoar logo, and carries these OpenSoar news
     as a page of its own; logos scale with the display density
 * fixes (also submitted to XCSoar)
+  - status messages: the same message arriving many times in a row
+    (a condition monitor firing behind a modal dialog, say) is shown
+    once instead of filling the message window with a hundred
+    identical lines
   - block images in rich text (checklists, About page) keep their
     physical size on high-density displays instead of shrinking to
     thumbnails; two images on one line are laid out side by side
