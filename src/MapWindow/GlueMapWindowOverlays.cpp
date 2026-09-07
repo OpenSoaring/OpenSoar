@@ -193,13 +193,19 @@ GlueMapWindow::DrawGPSStatus(Canvas &canvas, const PixelRect &rc,
   const int clear_bottom = rc.bottom - (int)bottom_margin
     - scale_band - title_band - Layout::Scale(2);
 
-  const int row_height = std::max((int)icon->GetSize().height,
+  /* scale the icon to at least the text height - the icon variant
+     picked for low pixel densities can be much smaller */
+  const unsigned icon_height =
+    std::max(icon->GetSize().height, font.GetHeight());
+  const PixelSize icon_size = icon->GetScaledSize(icon_height);
+
+  const int row_height = std::max((int)icon_size.height,
                                   (int)font.GetHeight());
   PixelPoint p(rc.left + Layout::FastScale(2),
                clear_bottom - row_height);
-  icon->Draw(canvas, p);
+  icon->Draw(canvas, p, icon_height);
 
-  p.x += icon->GetSize().width + Layout::FastScale(4);
+  p.x += icon_size.width + Layout::FastScale(4);
   p.y = clear_bottom - (int)font.GetAscentHeight()
     - ((row_height - (int)font.GetHeight()) / 2);
 
@@ -227,11 +233,19 @@ GlueMapWindow::DrawFlightMode(Canvas &canvas,
   else
     bmp = &look.cruise_mode_icon;
 
-  offset += bmp->GetSize().width + Layout::Scale(6);
+  /* the icon variant picked for low pixel densities can end up
+     smaller than a fingertip; stretch it so the symbol is always
+     about 7 mm tall */
+  const unsigned target_height =
+    std::max(bmp->GetSize().height, Layout::vdpi * 7 / 25);
+  const PixelSize size = bmp->GetScaledSize(target_height);
+
+  offset += size.width + Layout::Scale(6);
 
   bmp->Draw(canvas,
             PixelPoint(rc.right - offset,
-                       rc.bottom - bottom_margin - bmp->GetSize().height - Layout::Scale(4)));
+                       rc.bottom - bottom_margin - int(size.height) - Layout::Scale(4)),
+            target_height);
 
   // draw flarm status
   if (!GetMapSettings().show_flarm_alarm_level)
