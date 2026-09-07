@@ -282,7 +282,12 @@ VarioDisplayWindow::ReadBlackboard(const MoreData &basic,
   data.wind_bearing = calculated.wind.bearing;
   data.wind_speed = calculated.wind.norm;
 
-  if (basic.external_wind_available) {
+  if (basic.external_instantaneous_wind_available) {
+    /* the real live wind from the sensor */
+    data.inst_wind_available = true;
+    data.inst_wind_bearing = basic.external_instantaneous_wind.bearing;
+    data.inst_wind_speed = basic.external_instantaneous_wind.norm;
+  } else if (basic.external_wind_available) {
     data.inst_wind_available = true;
     data.inst_wind_bearing = basic.external_wind.bearing;
     data.inst_wind_speed = basic.external_wind.norm;
