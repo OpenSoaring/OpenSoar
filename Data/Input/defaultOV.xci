@@ -692,6 +692,14 @@ event=Mode default
 label=Replay$(CheckReplay)
 location=9
 
+mode=Config2
+type=key
+data=V
+event=Setup VarioDisplay
+event=Mode default
+label=Vario Display
+location=10
+
 # -------------
 # mode=Config3
 # -------------
