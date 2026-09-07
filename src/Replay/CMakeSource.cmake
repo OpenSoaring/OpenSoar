@@ -4,6 +4,7 @@ set(_SOURCES
         Replay/DemoReplayGlue.cpp
         Replay/IgcReplay.cpp
         Replay/NmeaReplay.cpp
+        Replay/SensorLogReplay.cpp
         Replay/Replay.cpp
         Replay/TaskAutoPilot.cpp
 )
