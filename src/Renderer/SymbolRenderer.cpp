@@ -137,3 +137,74 @@ SymbolRenderer::DrawBolt(Canvas &canvas, PixelRect rc) noexcept
 
   canvas.DrawPolygon(bolt, 6);
 }
+
+void
+SymbolRenderer::DrawMedia(Canvas &canvas, PixelRect rc, MediaSymbol symbol,
+                          unsigned max_draw_size) noexcept
+{
+  if (MinDimension(rc) == 0)
+    return;
+
+  const unsigned size = DrawSize(rc, max_draw_size);
+  const auto center = rc.GetCenter();
+  const int s = int(size);
+  const unsigned bar_half = std::max(1u, size / 3);
+
+  /* a filled triangle with its tip at x_tip, its base at x_base */
+  const auto triangle = [&](int x_tip, int x_base) {
+    const BulkPixelPoint t[] = {
+      {x_base, center.y - s},
+      {x_tip, center.y},
+      {x_base, center.y + s},
+    };
+    canvas.DrawTriangleFan(t, 3);
+  };
+
+  /* a vertical bar centred at x */
+  const auto bar = [&](int x) {
+    DrawBarAt(canvas, {x, center.y}, {bar_half, size});
+  };
+
+  switch (symbol) {
+  case MediaSymbol::PAUSE:
+    bar(center.x - int(2 * bar_half));
+    bar(center.x + int(2 * bar_half));
+    break;
+
+  case MediaSymbol::REWIND:
+    triangle(center.x - s, center.x);
+    triangle(center.x, center.x + s);
+    break;
+
+  case MediaSymbol::FORWARD:
+    triangle(center.x + s, center.x);
+    triangle(center.x, center.x - s);
+    break;
+
+  case MediaSymbol::SKIP_START:
+    bar(center.x - s);
+    triangle(center.x - s + int(2 * bar_half), center.x + s);
+    break;
+
+  case MediaSymbol::SKIP_END:
+    triangle(center.x + s - int(2 * bar_half), center.x - s);
+    bar(center.x + s);
+    break;
+
+  case MediaSymbol::TAKEOFF:
+    {
+      /* the climbing arrow */
+      const BulkPixelPoint t[] = {
+        {center.x + s, center.y - s},
+        {center.x - s, center.y - s / 4},
+        {center.x - s / 4, center.y + s / 2},
+      };
+      canvas.DrawTriangleFan(t, 3);
+
+      /* the ground line it leaves behind */
+      DrawBarAt(canvas, {center.x, center.y + s},
+                {size, std::max(1u, size / 4)});
+    }
+    break;
+  }
+}
