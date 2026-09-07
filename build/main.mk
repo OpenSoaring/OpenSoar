@@ -121,6 +121,7 @@ DIALOG_SOURCES = \
 	$(if $(filter y,$(HAVE_HTTP)),$(SRC)/Dialogs/Settings/Panels/NOTAMConfigPanel.cpp) \
 	$(if $(filter y,$(HAVE_HTTP)),$(SRC)/Dialogs/NOTAM/NOTAMMessageListener.cpp) \
 	$(SRC)/Dialogs/Settings/Panels/GaugesConfigPanel.cpp \
+	$(SRC)/Dialogs/Settings/Panels/VarioDisplayConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/DisplayConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/VarioConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/GlideComputerConfigPanel.cpp \
@@ -342,6 +343,8 @@ XCSOAR_SOURCES := \
 	$(SRC)/CrossSection/CrossSectionWidget.cpp \
 	\
 	$(SRC)/Gauge/ThermalAssistantRenderer.cpp \
+	$(SRC)/Gauge/VarioDisplayWindow.cpp \
+	$(SRC)/Gauge/VarioDisplayWidget.cpp \
 	$(SRC)/Gauge/ThermalAssistantWindow.cpp \
 	$(SRC)/Gauge/BigThermalAssistantWindow.cpp \
 	$(SRC)/Gauge/BigThermalAssistantWidget.cpp \
