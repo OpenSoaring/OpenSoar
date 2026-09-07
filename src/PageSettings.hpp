@@ -57,6 +57,11 @@ struct PageLayout
     EDL_MAP,
 
     /**
+     * The big round vario display.
+     */
+    VARIO,
+
+    /**
      * A dummy entry that is used for validating profile values.
      */
     MAX
