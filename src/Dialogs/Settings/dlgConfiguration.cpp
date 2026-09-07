@@ -37,6 +37,7 @@
 #include "Panels/DisplayConfigPanel.hpp"
 #include "Panels/LayoutConfigPanel.hpp"
 #include "Panels/GaugesConfigPanel.hpp"
+#include "Panels/VarioDisplayConfigPanel.hpp"
 #include "Panels/VarioConfigPanel.hpp"
 #include "Panels/TaskRulesConfigPanel.hpp"
 #include "Panels/TaskDefaultsConfigPanel.hpp"
@@ -147,6 +148,7 @@ static constexpr TabMenuPage look_pages[] = {
   { N_("Display"), CreateDisplayConfigPanel },
   { N_("Layout"), CreateLayoutConfigPanel },
   { N_("Pages"), CreatePagesConfigPanel },
+  { N_("Vario Display"), CreateVarioDisplayConfigPanel },
   { N_("InfoBox Sets"), CreateInfoBoxesConfigPanel },
   { nullptr, nullptr }
 };
