@@ -162,13 +162,16 @@ public:
   }
 
   /**
-   * Feed every fix from the current replay file through merge and
-   * calculation without virtual-time skipping.  For trail testing.
-   * Returns the number of fixes processed (0 if replay is inactive or
-   * demo mode).  \a merge_thread and \a calc_thread must be suspended.
+   * Feed the rest of the current replay file through merge and
+   * calculation without virtual-time pacing, thinned to \a interval
+   * between processed fixes (one per second matches what a GPS
+   * delivers in a real flight).  Returns the number of fixes
+   * processed (0 if replay is inactive or demo mode).
+   * \a merge_thread and \a calc_thread must be suspended.
    */
   unsigned ProcessAllFixes(MergeThread &merge_thread,
-                           CalculationThread &calc_thread);
+                           CalculationThread &calc_thread,
+                           FloatDuration interval = std::chrono::seconds{1});
 
 private:
   /**

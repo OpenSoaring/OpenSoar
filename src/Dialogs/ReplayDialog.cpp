@@ -345,6 +345,11 @@ ReplayControlWidget::OnFastForwardClicked() noexcept
 inline void
 ReplayControlWidget::OnEndClicked() noexcept
 {
+  /* one processed fix per ten seconds of flight: coarse enough to
+     rush through a long log, fine enough for barogram and totals -
+     this is a simulation shortcut, not real life */
+  constexpr FloatDuration end_interval = std::chrono::seconds{10};
+
   if (!replay.IsActive())
     return;
 
@@ -357,7 +362,7 @@ ReplayControlWidget::OnEndClicked() noexcept
 
   {
     const ScopeSuspendAllThreads suspend;
-    replay.ProcessAllFixes(*merge_thread, *calc_thread);
+    replay.ProcessAllFixes(*merge_thread, *calc_thread, end_interval);
   }
 
   merge_thread->Resume();
