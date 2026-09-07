@@ -10,6 +10,7 @@
 #include "StatusMessage.hpp"
 #include "UISettings.hpp"
 #include "Form/Button.hpp"
+#include "util/StringAPI.hxx"
 
 #include <algorithm>
 
@@ -261,6 +262,18 @@ PopupMessage::AddMessage(std::chrono::steady_clock::duration tshow, Type type,
                          const char *Text, const char *snd) noexcept
 {
   const auto now = std::chrono::steady_clock::now();
+
+  /* the same message may arrive many times in a row - a condition
+     monitor keeps firing while a modal dialog holds the screen, and
+     afterwards the whole burst would be displayed line by line;
+     refresh the pending copy instead of queueing it again */
+  for (auto &m : messages) {
+    if (m.type == type && (m.IsNew() || m.texpiry >= now) &&
+        StringIsEqual(m.text.c_str(), Text)) {
+      m.Set(type, tshow, Text, now, snd);
+      return;
+    }
+  }
 
   int i = GetEmptySlot();
   messages[i].Set(type, tshow, Text, now, snd);
