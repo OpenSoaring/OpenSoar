@@ -15,9 +15,10 @@ class Path;
  * length-tagged binary records holding raw sensor data (IMU,
  * pressures, supply voltage at 100 Hz) and GNSS fixes (10 Hz).
  * Position, time, pressures, g load, voltage and - with a D-GNSS
- * heading - the true heading are fed into the replay; everything
- * else (vario, wind, circling) is computed by XCSoar's own
- * computers, as with any other replay.
+ * heading - the true heading are fed into the replay, and from
+ * heading, airspeed and ground vector the instantaneous and average
+ * wind are estimated; everything else (vario, circling) is computed
+ * by XCSoar's own computers, as with any other replay.
  */
 class SensorLogReplay : public AbstractReplay
 {
@@ -30,9 +31,20 @@ class SensorLogReplay : public AbstractReplay
   struct {
     float acceleration[3];
     float pitot_pressure, static_pressure;
+    float temperature;
     float voltage;
     bool available;
   } sensor{};
+
+  /**
+   * The running average of the estimated wind (north/east
+   * components [m/s]), a low-pass over the instantaneous estimates.
+   */
+  struct {
+    double north, east;
+    double last_time;
+    bool valid;
+  } avg_wind{};
 
   BrokenDate date;
 
@@ -48,6 +60,18 @@ public:
 
 private:
   bool SkipBytes(std::size_t n) noexcept;
+
+  /**
+   * Estimate the winds from the raw data, like the sensor's own
+   * firmware shows them in flight: the instantaneous wind is the
+   * GNSS ground vector minus the airspeed vector along the true
+   * heading, the average is a low-pass over it.
+   *
+   * @param vn,ve the GNSS ground velocity [m/s]
+   * @param heading_rad the D-GNSS true heading [radians]
+   */
+  void EstimateWind(NMEAInfo &data, double vn, double ve,
+                    double heading_rad) noexcept;
 
   /**
    * Read records until the next GNSS fix; keeps the latest sensor
