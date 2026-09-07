@@ -7,6 +7,10 @@
 #include "Widget/RowFormWidget.hpp"
 #include "UIGlobals.hpp"
 #include "Components.hpp"
+#include "BackendComponents.hpp"
+#include "CalculationThread.hpp"
+#include "MergeThread.hpp"
+#include "Protection.hpp"
 #include "Replay/Replay.hpp"
 #include "Form/DataField/Base.hpp"
 #include "Language/Language.hpp"
@@ -87,20 +91,25 @@ private:
 
 public:
   void CreateButtons(WidgetDialog &dialog) noexcept {
-    dialog.AddButton(_("Go"), [this](){ OnGoClicked(); });
-    dialog.AddButton(_("Stop"), [this](){ OnStopClicked(); });
-    dialog.AddButton(_("Reset"), [this](){ OnResetClicked(); });
-    dialog.AddButton(_("Takeoff"), [this](){ OnTakeoffClicked(); });
-    dialog.AddButton("+10'", [this](){ OnFastForwardClicked(); });
+    /* the tape deck, left to right */
+    dialog.AddButton("|<", [this](){ OnResetClicked(); });
+    dialog.AddButton("T/O", [this](){ OnTakeoffClicked(); });
+    dialog.AddButton("<<", [this](){ OnRewindClicked(); });
+    dialog.AddButton(">", [this](){ OnGoClicked(); });
+    dialog.AddButton("||", [this](){ OnPauseClicked(); });
+    dialog.AddButton(">>", [this](){ OnFastForwardClicked(); });
+    dialog.AddButton(">|", [this](){ OnEndClicked(); });
   }
 
 private:
   bool StartFromFile() noexcept;
   void OnGoClicked() noexcept;
-  void OnStopClicked() noexcept;
+  void OnPauseClicked() noexcept;
   void OnResetClicked() noexcept;
   void OnTakeoffClicked() noexcept;
+  void OnRewindClicked() noexcept;
   void OnFastForwardClicked() noexcept;
+  void OnEndClicked() noexcept;
 
 public:
   /* virtual methods from class Widget */
@@ -129,18 +138,24 @@ ReplayControlWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   });
 
   AddReadOnly(_("Position"),
-              _("The current fix number, its UTC time, and how much of the file has been played."),
+              _("The current fix number, its UTC time, and how much of the file has been played.  "
+                "The buttons work like a tape deck: |< back to the start, "
+                "T/O jump to the takeoff, << jump back 10 minutes, > play, "
+                "|| pause (twice: end the replay), >> forward 10 minutes, "
+                ">| play the rest at once - the whole flight appears in the "
+                "trail and the statistics.  |<, T/O and << jump only: "
+                "paused stays paused."),
               "-");
 }
 
 inline void
-ReplayControlWidget::OnStopClicked() noexcept
+ReplayControlWidget::OnPauseClicked() noexcept
 {
   if (replay.IsActive() && replay.IsPaused()) {
-    /* a second "Stop" while paused ends the replay altogether */
+    /* a second "||" while paused ends the replay altogether */
     replay.Stop();
   } else {
-    /* pause only - "Go" continues from here, "Reset" rewinds */
+    /* pause only - ">" continues from here */
     replay.SetTimeScale(0);
   }
   UpdateStatus();
@@ -237,9 +252,57 @@ ReplayControlWidget::OnTakeoffClicked() noexcept
 }
 
 inline void
+ReplayControlWidget::OnRewindClicked() noexcept
+{
+  if (!replay.IsActive())
+    return;
+
+  const TimeStamp t = replay.GetVirtualTime();
+  if (!t.IsDefined())
+    return;
+
+  replay.SeekTo(t - FloatDuration{std::chrono::minutes{10}});
+  UpdateStatus();
+}
+
+inline void
 ReplayControlWidget::OnFastForwardClicked() noexcept
 {
   replay.FastForward(std::chrono::minutes{10});
+  UpdateStatus();
+}
+
+/**
+ * ">|": play the rest of the file through the computers at once, so
+ * the whole flight lands in the trail and the statistics (barogram,
+ * distances, speeds), then hold at the landing.
+ */
+inline void
+ReplayControlWidget::OnEndClicked() noexcept
+{
+  if (!replay.IsActive())
+    return;
+
+  auto *merge_thread = backend_components->merge_thread.get();
+  auto *calc_thread = backend_components->calculation_thread.get();
+  if (merge_thread == nullptr || calc_thread == nullptr)
+    return;
+
+  merge_thread->Suspend();
+
+  {
+    const ScopeSuspendAllThreads suspend;
+    replay.ProcessAllFixes(*merge_thread, *calc_thread);
+  }
+
+  merge_thread->Resume();
+
+  TriggerCalculatedUpdate();
+  TriggerMapUpdate();
+
+  /* hold at the landing; "|<" or "T/O" start over */
+  replay.SetTimeScale(0);
+  UpdateStatus();
 }
 
 void

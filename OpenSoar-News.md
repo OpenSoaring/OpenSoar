@@ -99,7 +99,11 @@ code, migration-before-profile-load, CUPX binary mode).
   log, no external player needed.  The raw GNSS fixes, pressures,
   supply voltage, g load and (with a D-GNSS compass) the true
   heading feed the replay; vario, wind and circling come from the
-  usual computations
+  usual computations.  The replay dialog is a tape deck for all
+  replay files: |< start, T/O takeoff, << back 10 minutes (jumps
+  work backwards too), > play, || pause, >> forward 10 minutes, and
+  >| plays the rest at once, so the whole flight lands in the trail
+  and the statistics (barogram, distances, speeds)
 * devices
   - SteFly device family: RemoteStick (auto-detected on its own
     device slot, never occupying a user-configurable port) and
