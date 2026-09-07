@@ -193,15 +193,31 @@ SymbolRenderer::DrawMedia(Canvas &canvas, PixelRect rc, MediaSymbol symbol,
 
   case MediaSymbol::TAKEOFF:
     {
-      /* the climbing arrow */
-      const BulkPixelPoint t[] = {
-        {center.x + s, center.y - s},
-        {center.x - s, center.y - s / 4},
-        {center.x - s / 4, center.y + s / 2},
-      };
-      canvas.DrawTriangleFan(t, 3);
+      /* the departure symbol: an arrow lifting off the runway at 45
+         degrees - shaft, head, and the ground line it leaves */
+      const int o = std::max(1, s / 4);        /* shaft half width */
+      const int hw = std::max(o + 1, s / 2);   /* head half width */
 
-      /* the ground line it leaves behind */
+      const PixelPoint tail{center.x - s, center.y + s / 2};
+      const PixelPoint neck{center.x + s / 4, center.y - s / 4};
+      const PixelPoint tip{center.x + s, center.y - s};
+
+      const BulkPixelPoint shaft[] = {
+        {tail.x + o, tail.y + o},
+        {neck.x + o, neck.y + o},
+        {neck.x - o, neck.y - o},
+        {tail.x - o, tail.y - o},
+      };
+      canvas.DrawTriangleFan(shaft, 4);
+
+      const BulkPixelPoint head[] = {
+        {neck.x + hw, neck.y + hw},
+        {tip.x, tip.y},
+        {neck.x - hw, neck.y - hw},
+      };
+      canvas.DrawTriangleFan(head, 3);
+
+      /* the runway */
       DrawBarAt(canvas, {center.x, center.y + s},
                 {size, std::max(1u, size / 4)});
     }
