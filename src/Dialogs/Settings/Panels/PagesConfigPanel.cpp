@@ -376,6 +376,7 @@ PageLayoutEditWidget::Prepare([[maybe_unused]] ContainerWindow &parent, [[maybe_
     { PageLayout::Main::FLARM_RADAR, N_("FLARM Radar") },
     { PageLayout::Main::THERMAL_ASSISTANT, N_("Thermal Assistant") },
     { PageLayout::Main::HORIZON, N_("Horizon") },
+    { PageLayout::Main::VARIO, N_("Vario") },
     nullptr
   };
   AddEnum(_("Main area"),
