@@ -124,6 +124,7 @@ DIALOG_SOURCES = \
 	$(SRC)/Dialogs/Settings/Panels/GaugesConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/MapOverlaysConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/TrafficConfigPanel.cpp \
+	$(SRC)/Dialogs/Settings/Panels/VarioDisplayConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/DisplayConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/VarioConfigPanel.cpp \
 	$(SRC)/Dialogs/Settings/Panels/GlideComputerConfigPanel.cpp \
@@ -345,6 +346,8 @@ XCSOAR_SOURCES := \
 	$(SRC)/CrossSection/CrossSectionWidget.cpp \
 	\
 	$(SRC)/Gauge/ThermalAssistantRenderer.cpp \
+	$(SRC)/Gauge/VarioDisplayWindow.cpp \
+	$(SRC)/Gauge/VarioDisplayWidget.cpp \
 	$(SRC)/Gauge/ThermalAssistantWindow.cpp \
 	$(SRC)/Gauge/BigThermalAssistantWindow.cpp \
 	$(SRC)/Gauge/BigThermalAssistantWidget.cpp \
