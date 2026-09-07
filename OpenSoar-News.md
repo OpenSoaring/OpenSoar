@@ -89,6 +89,11 @@ code, migration-before-profile-load, CUPX binary mode).
   inspiration!  The values come from OpenSoar's own computations, so
   the page works with any connected vario - with a Larus sensor box
   it shows that box's values  [upstream PR planned]
+* instantaneous wind: sensors that deliver the live wind next to the
+  average (Larus PLARW "I" sentence, Anemoi) feed it to the map,
+  which now shows two arrows - the average in light blue (gray when
+  OpenSoar estimated it itself), the live wind in light green - and
+  to the vario display page, whose centre arrow prefers it
 * devices
   - SteFly device family: RemoteStick (auto-detected on its own
     device slot, never occupying a user-configurable port) and
