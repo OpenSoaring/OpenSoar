@@ -88,6 +88,7 @@ set(_SOURCES
         Dialogs/Settings/Panels/WeGlideConfigPanel.cpp
         Dialogs/Settings/Panels/DisplayConfigPanel.cpp
         Dialogs/Settings/Panels/GaugesConfigPanel.cpp
+        Dialogs/Settings/Panels/VarioDisplayConfigPanel.cpp
         Dialogs/Settings/Panels/GlideComputerConfigPanel.cpp
         Dialogs/Settings/Panels/InfoBoxesConfigPanel.cpp
         Dialogs/Settings/Panels/InterfaceConfigPanel.cpp
