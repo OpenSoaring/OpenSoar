@@ -224,8 +224,9 @@ InfoBoxContentWindArrow::OnCustomPaint(Canvas &canvas,
 
   auto style = CommonInterface::GetMapSettings().wind_arrow_style;
 
-  WindArrowRenderer renderer(UIGlobals::GetLook().wind_arrow_info_box);
+  const WindArrowLook &look = UIGlobals::GetLook().wind_arrow_info_box;
+  WindArrowRenderer renderer(look);
   renderer.DrawArrow(canvas, radar_renderer.GetCenter(), angle,
                      arrow_width, length, arrow_tail_length,
-                     style, offset, scale);
+                     style, offset, scale, look.arrow_brush);
 }
