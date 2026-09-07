@@ -4,6 +4,7 @@
 #include "Replay.hpp"
 #include "IgcReplay.hpp"
 #include "NmeaReplay.hpp"
+#include "SensorLogReplay.hpp"
 #include "DemoReplayGlue.hpp"
 #include "io/FileLineReader.hpp"
 #include "Blackboard/DeviceBlackboard.hpp"
@@ -18,6 +19,72 @@
 #include <algorithm> // for std::clamp()
 #include <cassert>
 #include <stdexcept>
+
+bool
+Replay::SeekTakeoff() noexcept
+{
+  if (replay == nullptr)
+    return false;
+
+  /* faster than any taxi, slower than any winch launch */
+  constexpr double takeoff_speed = 15;
+
+  GeoPoint last_location = next_data.location_available
+    ? next_data.location : GeoPoint::Invalid();
+  TimeStamp last_time = next_data.time_available
+    ? next_data.time : TimeStamp::Undefined();
+
+  while (true) {
+    double speed = -1;
+    if (next_data.ground_speed_available)
+      speed = next_data.ground_speed;
+    else if (next_data.location_available && next_data.time_available &&
+             last_location.IsValid() && last_time.IsDefined() &&
+             next_data.time > last_time)
+      /* IGC files have no speed: derive it from the fix distance */
+      speed = next_data.location.DistanceS(last_location) /
+        (next_data.time - last_time).count();
+
+    if (speed >= takeoff_speed)
+      break;
+
+    if (next_data.location_available)
+      last_location = next_data.location;
+    if (next_data.time_available)
+      last_time = next_data.time;
+
+    if (!replay->Update(next_data)) {
+      Stop();
+      return false;
+    }
+
+    ++fix_count;
+  }
+
+  if (next_data.time_available) {
+    virtual_time = next_data.time;
+    if (cli != nullptr) {
+      cli->Reset();
+      cli->Update(next_data.time, next_data.location,
+                  next_data.gps_altitude, next_data.pressure_altitude);
+    }
+    clock.Update();
+
+    /* show the new position at once, even while paused - a jump the
+       map does not follow would look like nothing happened */
+    const std::lock_guard lock{device_blackboard.mutex};
+    device_blackboard.SetReplayState() = next_data;
+    device_blackboard.ScheduleMerge();
+  }
+
+  return true;
+}
+
+double
+Replay::GetProgress() const noexcept
+{
+  return replay != nullptr ? replay->GetProgress() : -1;
+}
 
 void
 Replay::Stop()
@@ -58,6 +125,9 @@ Replay::Start(Path _path)
 
     cli = new CatmullRomInterpolator(FloatDuration{0.98});
     cli->Reset();
+  } else if (FilenameMatchesFileType(path.GetBase().c_str(),
+                                     FileType::SENSORLOG)) {
+    replay = new SensorLogReplay(path);
   } else {
     replay = new NmeaReplay(std::make_unique<FileLineReaderA>(path),
                             CommonInterface::GetSystemSettings().devices[0]);
@@ -69,6 +139,7 @@ Replay::Start(Path _path)
   virtual_time = TimeStamp::Undefined();
   fast_forward = TimeStamp::Undefined();
   next_data.Reset();
+  fix_count = 0;
 
   timer.Schedule(std::chrono::milliseconds(100));
 }
@@ -81,6 +152,32 @@ Replay::Update()
 
   if (time_scale <= 0) {
     /* replay is paused */
+
+    if (!virtual_time.IsDefined()) {
+      /* started (or rewound) while paused: read up to the first fix
+         so the cursor and the map show where the tape stands */
+      while (!next_data.time_available) {
+        if (!replay->Update(next_data)) {
+          Stop();
+          return false;
+        }
+
+        ++fix_count;
+        assert(!next_data.gps.real);
+      }
+
+      virtual_time = next_data.time;
+      if (cli != nullptr) {
+        cli->Reset();
+        cli->Update(next_data.time, next_data.location,
+                    next_data.gps_altitude, next_data.pressure_altitude);
+      }
+
+      const std::lock_guard lock{device_blackboard.mutex};
+      device_blackboard.SetReplayState() = next_data;
+      device_blackboard.ScheduleMerge();
+    }
+
     /* to avoid a big fast-forward with the next
        PeriodClock::ElapsedUpdate() call below after unpausing, update
        the clock each time we're called while paused */
@@ -126,6 +223,7 @@ Replay::Update()
         return false;
       }
 
+      ++fix_count;
       assert(!next_data.gps.real);
 
       if (next_data.time_available) {
@@ -155,6 +253,7 @@ Replay::Update()
         return false;
       }
 
+      ++fix_count;
       assert(!next_data.gps.real);
 
       if (next_data.time_available)

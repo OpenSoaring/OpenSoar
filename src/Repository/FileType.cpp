@@ -37,6 +37,9 @@ GetFileTypePatterns(const FileType file_type) noexcept
   case FileType::NMEA:
     return "*.nmea\0";
 
+  case FileType::SENSORLOG:
+    return "*.lrsx\0";
+
   case FileType::RASP:
     return "*-rasp*.dat\0";
 
@@ -106,6 +109,7 @@ GetFileTypeDefaultDir(const FileType file_type)
 
   case FileType::IGC:
   case FileType::NMEA:
+  case FileType::SENSORLOG:
     return AllocatedPath("logs");
 
   case FileType::PLANE:

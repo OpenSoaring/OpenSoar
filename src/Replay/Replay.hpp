@@ -61,6 +61,9 @@ class Replay final
 
   CatmullRomInterpolator *cli = nullptr;
 
+  /** the number of fixes read from the input so far */
+  unsigned fix_count = 0;
+
 public:
   Replay(DeviceBlackboard &_device_blackboard,
          Logger *_logger, ProtectedTaskManager &_task_manager)
@@ -93,6 +96,27 @@ public:
   double GetTimeScale() const {
     return time_scale;
   }
+
+  unsigned GetFixCount() const {
+    return fix_count;
+  }
+
+  bool IsPaused() const {
+    return time_scale <= 0;
+  }
+
+  /**
+   * Read forward to the takeoff: the first fix moving faster than
+   * gliders taxi.  The caller restarts the replay first when the
+   * cursor may already be beyond that point.  The new position is
+   * pushed to the map at once, also while paused.  Returns false
+   * when no such fix exists.
+   */
+  bool SeekTakeoff() noexcept;
+
+  /** 0..1, or negative when unknown */
+  [[gnu::pure]]
+  double GetProgress() const noexcept;
 
   void SetTimeScale(const double _time_scale) {
     time_scale = _time_scale;
