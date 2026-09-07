@@ -112,6 +112,11 @@ code, migration-before-profile-load, CUPX binary mode).
     left out of the archive and named afterwards; any other
     unreadable file still fails it, and backup and restore refuse
     to run while flying [upstream PR]
+  - SDL event queue: timers no longer starve when events keep
+    arriving faster than the timer period - the cached clock was
+    only refreshed on an event-free timeout, so on busy displays
+    (e.g. Windows/ANGLE) every timer slower than the event stream
+    stood still: replay stuck after pause, process timer stalled
   - fix undefined behaviour when a terminal/grid widget grows from
     empty (port monitor crash on MSVC debug builds) [upstream PR]
   - block images in rich text (checklists, About page) keep their
