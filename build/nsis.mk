@@ -3,7 +3,7 @@
 
 ifeq ($(HAVE_WIN32),y)
 
-ifneq ($(filter WIN64OPENGL WIN32OPENGL,$(TARGET_FLAVOR)),)
+ifneq ($(filter WIN64,$(TARGET_FLAVOR)),)
 
 # Check for VERSION.txt
 ifeq ($(wildcard VERSION.txt),)
@@ -63,6 +63,6 @@ installer: $(INSTALLER_OUTPUT)
 
 .PHONY: installer
 
-endif # WIN64OPENGL / WIN32OPENGL
+endif # WIN64
 
 endif # HAVE_WIN32
