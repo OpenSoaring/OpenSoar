@@ -16,6 +16,13 @@
 
 #include <windows.h>
 #include <setupapi.h>
+/* initguid.h must come before devguid.h: it turns the DEFINE_GUID
+   declarations into definitions, so GUID_DEVCLASS_PORTS is emitted in
+   this translation unit.  Without it the symbol has to come from a
+   library such as uuid, which not every toolchain links by default -
+   a MinGW build then fails with "undefined reference to
+   GUID_DEVCLASS_PORTS". */
+#include <initguid.h>
 #include <devguid.h>
 
 namespace SteFly {
@@ -24,8 +31,8 @@ std::optional<std::string>
 DiscoverPortByUsbId(std::uint16_t vid, std::uint16_t pid) noexcept
 {
   HDEVINFO hdi = SetupDiGetClassDevsA(&GUID_DEVCLASS_PORTS,
-                                      /*Enumerator=*/ nullptr,
-                                      /*hwndParent=*/ nullptr,
+                                      nullptr,  // Enumerator
+                                      nullptr,  // hwndParent
                                       DIGCF_PRESENT);
   if (hdi == INVALID_HANDLE_VALUE) {
     LogFmt("SteFly::Discovery: SetupDiGetClassDevs failed ({})",
