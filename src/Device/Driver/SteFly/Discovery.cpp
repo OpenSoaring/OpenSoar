@@ -23,11 +23,15 @@ namespace SteFly {
 std::optional<std::string>
 DiscoverPortByUsbId(std::uint16_t vid, std::uint16_t pid) noexcept
 {
+  /*
   HDEVINFO hdi = SetupDiGetClassDevsA(&GUID_DEVCLASS_PORTS,
-                                      /*Enumerator=*/ nullptr,
-                                      /*hwndParent=*/ nullptr,
+                                      nullptr,  // Enumerator
+                                      nullptr,  // hwndParent
                                       DIGCF_PRESENT);
-  if (hdi == INVALID_HANDLE_VALUE) {
+/*/
+HDEVINFO hdi = INVALID_HANDLE_VALUE;
+/**/
+if (hdi == INVALID_HANDLE_VALUE) {
     LogFmt("SteFly::Discovery: SetupDiGetClassDevs failed ({})",
            (unsigned)GetLastError());
     return std::nullopt;
