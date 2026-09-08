@@ -133,6 +133,12 @@ code, migration-before-profile-load, CUPX binary mode).
     left out of the archive and named afterwards; any other
     unreadable file still fails it, and backup and restore refuse
     to run while flying [upstream PR]
+  - angle comparison broken by newer compilers: a too-strong
+    attribute on Angle::CompareRoughly ("const" instead of "pure" on
+    a member function) let gcc 15 drop the store into the compared
+    temporary - TestAngle failed, and FAI quadrants from .cup files
+    silently became plain sectors; same fix in the histogram and the
+    RASP store [upstream PR]
   - SDL event queue: timers no longer starve when events keep
     arriving faster than the timer period - the cached clock was
     only refreshed on an event-free timeout, so on busy displays
