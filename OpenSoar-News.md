@@ -67,5 +67,10 @@ v7.45.25.t1 (first test version of the rebased OpenSoar)
 * infrastructure
   - Windows: native CMake/MSVC build (Visual Studio 2022/2026),
     OpenGL-only; third-party libraries build automatically
+  - OpenGL everywhere, also in the make build: TARGET=WIN64 is the
+    OpenGL/ANGLE build (upstream's WIN64OPENGL) - the GDI flavor and
+    the *OPENGL alias targets are gone.  Without OpenGL there were
+    no weather map overlays (SkySight forecasts downloaded fine but
+    never appeared)
   - GitHub CI: every release tag builds and publishes the Windows
     package automatically; testing tags become pre-releases

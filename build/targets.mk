@@ -1,5 +1,4 @@
 TARGETS = PC WIN64 \
-  WIN64OPENGL WIN32OPENGL \
 	UNIX UNIX32 UNIX64 OPT \
 	WAYLAND \
 	FUZZER \
@@ -66,19 +65,10 @@ TARGET_ARCH :=
 # virtual targets ("flavors")
 
 ifeq ($(TARGET),WIN64)
-  $(error TARGET=WIN64 (GDI) has been removed; use TARGET=WIN64OPENGL)
-endif
-
-ifeq ($(TARGET),WIN64OPENGL)
+  # OpenSoar renders with OpenGL on every target: WIN64 is the
+  # OpenGL/ANGLE build (upstream's WIN64OPENGL); the GDI flavor and
+  # the *OPENGL alias targets are gone
   X64 := y
-  override TARGET = PC
-
-  OPENGL = y
-  ENABLE_SDL = y
-  USE_ANGLE = y
-endif
-
-ifeq ($(TARGET),WIN32OPENGL)
   override TARGET = PC
 
   OPENGL = y
