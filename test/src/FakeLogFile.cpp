@@ -10,9 +10,34 @@
 #include <exception>
 #include <cstdarg>
 #include <cstdio>
+#include <cstdlib>
 #include <iterator>
 
-static bool quiet;
+#ifdef _WIN32
+#include <io.h>
+#define ISATTY_STDERR() _isatty(_fileno(stderr))
+#else
+#include <unistd.h>
+#define ISATTY_STDERR() isatty(STDERR_FILENO)
+#endif
+
+/**
+ * Log output belongs to a person, not to a test harness: a program
+ * started by hand in a terminal prints, one whose stderr goes into a
+ * pipe (prove, make check) stays quiet - negative test cases would
+ * fill the report with error messages that are expected and boring.
+ * VERBOSE=1 forces printing, VERBOSE=0 forces silence.
+ */
+static bool
+DefaultQuiet() noexcept
+{
+  if (const char *v = getenv("VERBOSE"); v != nullptr)
+    return *v == '0';
+
+  return !ISATTY_STDERR();
+}
+
+static bool quiet = DefaultQuiet();
 
 void
 SetFakeLogFileQuiet(bool _quiet) noexcept
