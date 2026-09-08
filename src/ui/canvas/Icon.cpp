@@ -127,7 +127,8 @@ MaskedIcon::LoadResource(ResourceId id, ResourceId mdpi_id,
     bitmap.Load(id);
 #endif
 
-#ifdef USE_WIN32_RESOURCES
+#if 0
+// no win resources? #ifdef USE_WIN32_RESOURCES
   if (!bitmap.IsDefined())
     /* make the failing resource identifiable before the assert fires -
        a typical cause is a corrupt .bmp embedded by the resource
