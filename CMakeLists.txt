@@ -347,9 +347,16 @@ add_compile_definitions("GIT_COMMIT_ID=\"${GIT_COMMIT_ID}\"")
 
 if (HAVE_SKYSIGHT)
   add_compile_definitions(HAVE_SKYSIGHT)
-  add_compile_definitions(SKYSIGHT_LIVE) 
+  add_compile_definitions(SKYSIGHT_LIVE)
   if (SKYSIGHT_FORECAST)
     add_compile_definitions(SKYSIGHT_FORECAST)
+    # the upstream forecast decoder sits behind
+    # USE_GEOTIFF && HAVE_SKYSIGHT_NETCDF (see build/netcdf.mk); the
+    # third-party netcdf libraries are built and linked with
+    # SKYSIGHT_FORECAST, but the macro was never defined - so the
+    # forecast tiffs were downloaded and unpacked, yet silently
+    # neither decoded nor displayed
+    add_compile_definitions(HAVE_SKYSIGHT_NETCDF)
   endif (SKYSIGHT_FORECAST)
   if (SKYSIGHT_FILE_DEBUG)
     add_compile_definitions(SKYSIGHT_FILE_DEBUG)
