@@ -178,12 +178,23 @@ def create_xcsoar(args):
   branch = args[1]
   toolchain = args[2]
 
+  # A toolchain name may carry a build flavor: "msvc2026-OV" builds the
+  # same toolchain with the OpenVario menus, into its own directory and
+  # its own solution.  The flavor never reaches the compiler setup - it
+  # only names the build directory and adds the CMake option.
+  openvario = toolchain.endswith('-OV')
+  if openvario:
+    toolchain_flavor = toolchain
+    toolchain = toolchain[:-len('-OV')]
+  else:
+    toolchain_flavor = toolchain
+
   start_dir = os.path.dirname(filename)
   if len(start_dir) > 0:
       start_dir = start_dir.replace('build/cmake/python', '');
   if len(start_dir) == 0:
      start_dir = os.getcwd();
-  print('Start CMake Creation of ', project_name, ' / ', branch, ' / ', toolchain)
+  print('Start CMake Creation of ', project_name, ' / ', toolchain, 'with branch: ', branch)
   print('BuildConfig (XCSOAR_CONFIG) = ', BuildConfig)
   print('====================================\n')
   print('CurrDir  :',os.getcwd())
@@ -249,12 +260,9 @@ def create_xcsoar(args):
     program_dir = program_dir.replace('\\', '/')
     print('project_dir =', project_dir, ' program_dir =', program_dir)
     src_dir = start_dir
-    if branch:
-       binary_dir= project_dir + '/Binaries/' + project_name + '/' + branch
-    else:
-       binary_dir= project_dir + '/Binaries/' + project_name + '/build'
+    binary_dir= project_dir + '/Binaries/' + project_name # + '/build'
     link_libs = os.environ.get('XCSOAR_LINK_LIBS') or (project_dir + '/link_libs')
-    build_dir = binary_dir + '/'+ toolchain
+    build_dir = binary_dir + '/'+ toolchain_flavor
 
 
     third_party = os.environ.get('XCSOAR_THIRD_PARTY') or \
@@ -266,7 +274,7 @@ def create_xcsoar(args):
     project_dir = root_dir + '/Projects'
     program_dir = root_dir + '/Programs'
     binary_dir= start_dir + '/_build'
-    build_dir = binary_dir + '/'+ toolchain
+    build_dir = binary_dir + '/'+ toolchain_flavor
     link_libs = project_dir + '/link_libs'
     third_party = 'D:/LibsX'
     install_dir = program_dir + '/Install/' + project_name
@@ -367,6 +375,8 @@ def create_xcsoar(args):
       print('!!! USER = ', my_env['USER'], '!!!')
 
     arguments.append('-DTOOLCHAIN=' + toolchain)
+    if openvario:
+      arguments.append('-DTARGET_IS_OPENVARIO=ON')
     if toolchain.startswith('msvc'):
       # all Windows msvc builds are the OpenGL flavor (GDI retired)
       arguments.append('-DXCSOAR_USE_OPENGL=ON')
