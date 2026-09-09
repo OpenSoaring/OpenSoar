@@ -33,6 +33,10 @@ if (_COMPLETE_INSTALL )
         # w/ Debug too?
         "-DSQLite3_LIBRARY:FILEPATH=${SQLITE3_LIBRARY}/lib/${TOOLCHAIN}/sqlite3.lib"
         "-DSQLite3_INCLUDE_DIR:PATH=${SQLITE3_INCLUDE_DIR}"
+        "-DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}"
+        "-DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
+        # our libtiff links ZLIB::ZLIB - give this build that target
+        "-DCMAKE_PROJECT_INCLUDE_BEFORE=${PROJECTGROUP_SOURCE_DIR}/build/cmake/zlib-imported.cmake"
         
         "-DPROJ_DIR:PATH=${PROJ_CMAKE_DIR}"  # ${PROJ_DIR}"  # "/lib/${TOOLCHAIN}/cmake/proj"
         "-DPROJ_LIBRARY:PATH=${PROJ_LIBRARY}/lib/${TOOLCHAIN}/proj.lib"

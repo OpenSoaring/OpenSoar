@@ -731,8 +731,18 @@ DecodeNetCdf(const SkySightPreparedData &prepared,
     TIFFSetField(tf, TIFFTAG_SAMPLESPERPIXEL, samples_per_pixel);
     TIFFSetField(tf, TIFFTAG_BITSPERSAMPLE, bits_per_sample);
     TIFFSetField(tf, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
-    TIFFSetField(tf, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
-    TIFFSetField(tf, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);
+    /* DEFLATE is zlib inside libtiff: a library built without it would
+       write a file that nothing - not even this build - can read back,
+       so fall back to no compression and say so */
+    const bool deflate = TIFFIsCODECConfigured(COMPRESSION_ADOBE_DEFLATE);
+    if (!deflate)
+      LogString("SkySight: libtiff without DEFLATE, "
+                "writing the overlay uncompressed");
+
+    TIFFSetField(tf, TIFFTAG_COMPRESSION,
+                 deflate ? COMPRESSION_ADOBE_DEFLATE : COMPRESSION_NONE);
+    if (deflate)
+      TIFFSetField(tf, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);
     TIFFSetField(tf, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
     TIFFSetField(tf, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
     TIFFSetField(tf, TIFFTAG_EXTRASAMPLES, 1, &alpha_sample);
