@@ -15,6 +15,9 @@
 #include "Interface.hpp"
 #include "Language/Language.hpp"
 #include "LogFile.hpp"
+
+#include <cstdarg>
+#include <cstdio>
 #include "Message.hpp"
 #include "PageActions.hpp"
 #include "Profile/Current.hpp"
@@ -1053,6 +1056,29 @@ SkySightClient::OnForecastProgress(const SkySight::ForecastProgress &progress) n
   }
 }
 
+void
+SkySightClient::LogForecastState(const char *fmt, ...) noexcept
+{
+  /* the display runs on every map redraw: keep only state CHANGES in
+     the log, so it stays readable but says why nothing appears */
+  char buffer[256];
+  va_list ap;
+  va_start(ap, fmt);
+  vsnprintf(buffer, sizeof(buffer), fmt, ap);
+  va_end(ap);
+
+  try {
+    if (logged_forecast_state == buffer)
+      return;
+
+    logged_forecast_state = buffer;
+  } catch (...) {
+    return;
+  }
+
+  LogString(buffer);
+}
+
 bool
 SkySightClient::UpdateActiveLayer(unsigned index, Path path,
                             const GeoBitmap::TileData &tile)
@@ -1074,6 +1100,7 @@ SkySightClient::UpdateActiveLayer(unsigned index, Path path,
   try {
     bitmap = std::make_unique<MapOverlayBitmap>(path);
   } catch (...) {
+    LogError(std::current_exception(), "SkySight: failed to load overlay");
     return false;
   }
 
@@ -1127,6 +1154,11 @@ SkySightClient::DisplayForecastLayer()
                                                           active_layer->id,
                                                           active_layer->forecast_time);
   if (candidate.path == nullptr) {
+    const auto region = GetRegion();
+    LogForecastState("SkySight: no cached forecast image for %.*s-%s (wanted %ld)",
+                     int(region.size()), region.data(),
+                     active_layer->id.c_str(),
+                     long(active_layer->forecast_time));
     map_window->SetOverlay(0, nullptr);
     tile_filenames[0].clear();
     forecast_image_dirty = false;
@@ -1141,6 +1173,7 @@ SkySightClient::DisplayForecastLayer()
   if (tile_filenames[0] != candidate.path.c_str()) {
     if (!UpdateActiveLayer(0, candidate.path,
                            GeoBitmap::TileData{0, 0, 0})) {
+      LogForecastState("SkySight: cannot display %s", candidate.path.c_str());
       map_window->SetOverlay(0, nullptr);
       tile_filenames[0].clear();
       forecast_image_dirty = false;
@@ -1148,6 +1181,7 @@ SkySightClient::DisplayForecastLayer()
     }
 
     tile_filenames[0] = candidate.path.c_str();
+    LogForecastState("SkySight: overlay %s", candidate.path.c_str());
   }
 
   for (unsigned i = 1; i < tile_filenames.size(); ++i) {
