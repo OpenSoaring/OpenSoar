@@ -128,6 +128,11 @@ code, migration-before-profile-load, CUPX binary mode).
     (a condition monitor firing behind a modal dialog, say) is shown
     once instead of filling the message window with a hundred
     identical lines
+  - weather overlays stayed empty after a fresh CMake build: libtiff
+    was configured without zlib, so the DEFLATE compression of the
+    downloaded forecast images could neither be written nor read
+    ("requested compression method is not configured"); the SkySight
+    display now also says in the log why an overlay is missing
   - block images in rich text (checklists, About page) keep their
     physical size on high-density displays instead of shrinking to
     thumbnails; two images on one line are laid out side by side
