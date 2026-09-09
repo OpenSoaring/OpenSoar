@@ -45,6 +45,9 @@ class SkySightClient final {
   GeoBounds planned_live_bounds = GeoBounds::Invalid();
   std::vector<GeoBitmap::TileData> planned_live_tiles;
   unsigned logged_live_tile_count = 0;
+
+  /** the forecast overlay state already written to the log */
+  std::string logged_forecast_state;
   std::array<std::string, LIVE_TILE_OVERLAY_COUNT> tile_filenames;
   std::array<GeoBitmap::TileData, LIVE_TILE_OVERLAY_COUNT> tile_coordinates;
   std::array<time_t, LIVE_TILE_OVERLAY_COUNT> tile_timestamps{};
@@ -131,6 +134,9 @@ private:
   void SaveSelectedLayers() const;
   [[nodiscard]] bool CleanupFiles() noexcept;
   void ResetTiles() noexcept;
+
+  [[gnu::format(printf, 2, 3)]]
+  void LogForecastState(const char *fmt, ...) noexcept;
   bool UpdateActiveLayer(unsigned index, Path path,
                          const GeoBitmap::TileData &tile);
   bool DisplayForecastLayer();
