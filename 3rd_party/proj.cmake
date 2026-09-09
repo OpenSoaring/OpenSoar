@@ -46,6 +46,9 @@ if (_COMPLETE_INSTALL)
         "-DTiff_DIR:PATH=${TIFF_CMAKE_DIR}"    # /tiff"
         "-DENABLE_CURL=OFF"
         "-DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
+        "-DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}"
+        # our libtiff links ZLIB::ZLIB - give this build that target
+        "-DCMAKE_PROJECT_INCLUDE_BEFORE=${PROJECTGROUP_SOURCE_DIR}/build/cmake/zlib-imported.cmake"
 
         "-DEMBED_RESOURCE_FILES:BOOL=OFF" # start with 4.6.0
         # "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} /I\"/Projects/OpenSoaring/OpenSoar/src/ui/event/poll/linux""
