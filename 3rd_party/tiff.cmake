@@ -21,7 +21,14 @@ if (_COMPLETE_INSTALL)
              "-DCMAKE_INSTALL_LIBDIR=${_INSTALL_LIB_DIR}"
             "-DCMAKE_INSTALL_INCLUDEDIR=include"
             "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
-  
+
+        # zlib is what makes the DEFLATE codec: without these, libtiff's
+        # find_package(ZLIB) comes up empty on Windows and quietly builds
+        # a library that cannot read or write our GeoTIFF overlays
+        "-DZLIB_INCLUDE_DIR=${ZLIB_INCLUDE_DIR}"
+        "-DZLIB_LIBRARY=${ZLIB_LIBRARY}"
+        "-Dzlib=ON"
+
         "-DBUILD_SHARED_LIBS=OFF"
         "-Dtiff-tools=OFF"
         "-Dtiff-tests=OFF"
