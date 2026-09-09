@@ -5,7 +5,7 @@ from CMakeSoaringProject import create_xcsoar
 
 # ====================
 # The binary/output directory is FIXED by default
-# (<project_dir>/Binaries/<project>/build/<toolchain>), so generated IDE
+# (<project_dir>/Binaries/<project>/<toolchain>), so generated IDE
 # project files keep working across branch switches.
 #
 # To separate output per branch again, set the environment variable
