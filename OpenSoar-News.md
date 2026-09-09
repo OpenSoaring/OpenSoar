@@ -133,6 +133,11 @@ code, migration-before-profile-load, CUPX binary mode).
     left out of the archive and named afterwards; any other
     unreadable file still fails it, and backup and restore refuse
     to run while flying [upstream PR]
+  - weather overlays stayed empty after a fresh CMake build: libtiff
+    was configured without zlib, so the DEFLATE compression of the
+    downloaded forecast images could neither be written nor read
+    ("requested compression method is not configured"); the SkySight
+    display now also says in the log why an overlay is missing
   - angle comparison broken by newer compilers: a too-strong
     attribute on Angle::CompareRoughly ("const" instead of "pure" on
     a member function) let gcc 15 drop the store into the compared
