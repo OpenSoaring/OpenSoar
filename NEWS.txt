@@ -2,6 +2,8 @@ Version 7.45.3 - not yet released
 * input
   - add InfoBoxGeometry input events (next/previous/toggle/show) so
     layout can be changed in flight; default key L
+  - add DarkMode input events (toggle/off/on/auto/show) so night mode
+    can be changed in flight; default key N
 
 Version 7.45.2 - 2026-09-12
 * android
