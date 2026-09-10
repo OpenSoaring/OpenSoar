@@ -89,6 +89,7 @@ struct UISettings {
     OFF,
     ON,
     AUTO,
+    COUNT
   } dark_mode;
 
   FormatSettings format;
