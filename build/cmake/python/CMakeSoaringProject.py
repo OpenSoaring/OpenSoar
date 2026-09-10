@@ -91,8 +91,10 @@ generator = {
 }
 
 def find_vcvars(toolchain):
-  """Locate vcvars*.bat: first via vswhere (standard installs under
-  C:/Program Files), then via the classic hardcoded paths (D:/Programs)."""
+  """Locate vcvars*.bat: vswhere first (that is what a standard Visual
+  Studio installation answers), then the usual places under
+  %ProgramFiles%, and finally under XCSOAR_PROGRAM_DIR for an install
+  that lives somewhere else entirely."""
   import subprocess
   candidates = []
   vswhere = os.path.expandvars(
@@ -115,7 +117,8 @@ def find_vcvars(toolchain):
     candidates.append(pf + '/Microsoft Visual Studio/18/' + edition + '/VC/Auxiliary/Build/vcvars64.bat')
   for edition in ('Community', 'Professional', 'Enterprise', 'Preview'):
     candidates.append(pf + '/Microsoft Visual Studio/2022/' + edition + '/VC/Auxiliary/Build/vcvars64.bat')
-  # classic fallbacks (Flaps6 layout)
+  # last resort: a Visual Studio outside the standard location
+  # (XCSOAR_PROGRAM_DIR)
   if program_dir:
     if toolchain == 'msvc2022':
       candidates.append(program_dir + '/Microsoft Visual Studio/2022/Preview/VC/Auxiliary/Build/vcvars64.bat')
@@ -227,57 +230,47 @@ def create_xcsoar(args):
 
   if sys.platform.startswith('win'):
     is_windows = True
-    # configurable via environment, with existence-based fallbacks:
-    #   XCSOAR_PROJECT_DIR  - projects root   (default: D:/Projects, C:/Projects, ~/Projects)
-    #   XCSOAR_PROGRAM_DIR  - programs root   (default: D:/Programs, C:/Program Files)
-    #   XCSOAR_LINK_LIBS    - prebuilt libs   (default: <project_dir>/link_libs)
-    #   XCSOAR_THIRD_PARTY  - 3rd-party root  (default: D:/Libs, <project_dir>/Libs)
-    def _first_existing(paths, default):
-      for p in paths:
-        if p and os.path.isdir(p):
-          return p
-      return default
-    def _projects_ancestor(path):
-      # if the source tree lives inside a .../Projects/... folder,
-      # use that as the project root (e.g. C:/Projects/OpenSoaring/XCSoar
-      # -> C:/Projects) - outputs then land on the same drive as the code
-      p = os.path.abspath(path).replace('\\', '/')
-      while True:
-        if os.path.basename(p).lower() == 'projects':
-          return p
-        parent = os.path.dirname(p)
-        if parent == p:
-          return None
-        p = parent
-    project_dir = os.environ.get('XCSOAR_PROJECT_DIR') \
-        or _projects_ancestor(start_dir) \
-        or _first_existing(
-        ['D:/Projects', 'C:/Projects'],
-        os.path.expanduser('~/Projects').replace('\\', '/'))
-    program_dir = os.environ.get('XCSOAR_PROGRAM_DIR') or _first_existing(
-        ['D:/Programs', 'C:/Programs'], 'C:/Program Files')
-    project_dir = project_dir.replace('\\', '/')
-    program_dir = program_dir.replace('\\', '/')
-    print('project_dir =', project_dir, ' program_dir =', program_dir)
+    # Every directory has one fixed default and one way to change it:
+    # the XCSOAR_* environment variables.  No drive-letter guessing, no
+    # "take whatever exists" - a build that lands somewhere unexpected
+    # costs more time than typing a variable.
+    #   XCSOAR_PROJECT_DIR  - projects root  (default C:/Projects)
+    #   XCSOAR_PROGRAM_DIR  - programs root  (default C:/Programs)
+    #   XCSOAR_LINK_LIBS    - installed libs (default <project_dir>/link_libs)
+    #   XCSOAR_THIRD_PARTY  - 3rd-party root (default <project_dir>/Libs)
+    project_dir = (os.environ.get('XCSOAR_PROJECT_DIR')
+                   or 'C:/Projects').replace('\\', '/')
+    program_dir = (os.environ.get('XCSOAR_PROGRAM_DIR')
+                   or 'C:/Programs').replace('\\', '/')
     src_dir = start_dir
-    binary_dir= project_dir + '/Binaries/' + project_name # + '/build'
+    binary_dir = project_dir + '/Binaries/' + project_name
+    build_dir = binary_dir + '/' + toolchain_flavor
     link_libs = os.environ.get('XCSOAR_LINK_LIBS') or (project_dir + '/link_libs')
-    build_dir = binary_dir + '/'+ toolchain_flavor
-
-
-    third_party = os.environ.get('XCSOAR_THIRD_PARTY') or \
-        ('D:/Libs' if os.path.isdir('D:/Libs') else project_dir + '/Libs')
+    third_party = os.environ.get('XCSOAR_THIRD_PARTY') or (project_dir + '/Libs')
     install_dir = program_dir + '/Install/' + project_name
   else:
     src_dir = start_dir
     root_dir = my_env['HOME']
-    project_dir = root_dir + '/Projects'
-    program_dir = root_dir + '/Programs'
+    project_dir = os.environ.get('XCSOAR_PROJECT_DIR') or (root_dir + '/Projects')
+    program_dir = os.environ.get('XCSOAR_PROGRAM_DIR') or (root_dir + '/Programs')
     binary_dir= start_dir + '/_build'
     build_dir = binary_dir + '/'+ toolchain_flavor
-    link_libs = project_dir + '/link_libs'
-    third_party = 'D:/LibsX'
+    link_libs = os.environ.get('XCSOAR_LINK_LIBS') or (project_dir + '/link_libs')
+    third_party = os.environ.get('XCSOAR_THIRD_PARTY') or (project_dir + '/Libs')
     install_dir = program_dir + '/Install/' + project_name
+
+  # Where everything landed.  A directory that is not where the user
+  # expects it otherwise only shows up much later, as a puzzling build
+  # error - so say it once, plainly, at the start.
+  print('--- directories ---')
+  for _name, _value in (('source     ', src_dir),
+                        ('binaries   ', binary_dir),
+                        ('build      ', build_dir),
+                        ('link_libs  ', link_libs),
+                        ('third_party', third_party),
+                        ('install    ', install_dir)):
+    print('   ', _name, '=', _value)
+  print('-------------------')
 
   toolset = None
 
@@ -362,7 +355,6 @@ def create_xcsoar(args):
 
     print('---')
     if is_windows:
-      print('!!! COMPUTERNAME = ', my_env['COMPUTERNAME'],  ', USERNAME = ', my_env['USERNAME'], '!!!')
       if toolchain_file:
         arguments.append('-DCMAKE_TOOLCHAIN_FILE:PATH=' + toolchain_file)
       if build_system.startswith('android'):
@@ -372,7 +364,6 @@ def create_xcsoar(args):
         arguments.append('-DCMAKE_TOOLCHAIN_FILE:PATH=' + src_dir.replace('\\','/') + '/build/cmake/toolchains/MinGW.toolchain')
       else:
         arguments.append('-DCMAKE_TOOLCHAIN_FILE:PATH=' + src_dir.replace('\\','/') + '/build/cmake/toolchains/LinuxGCC.toolchain')
-      print('!!! USER = ', my_env['USER'], '!!!')
 
     arguments.append('-DTOOLCHAIN=' + toolchain)
     if openvario:
