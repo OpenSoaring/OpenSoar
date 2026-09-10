@@ -32,6 +32,13 @@ if (_COMPLETE_INSTALL)
         "-DBUILD_PROJINFO=OFF"
         "-DBUILD_PROJSYNC=OFF"
         "-DBUILD_SHARED_LIBS=OFF"
+        # PROJ 9.4 still links CMake's imported target by its old name
+        # (SQLite::SQLite3); newer CMake renamed it to SQLite3::SQLite3
+        # and keeps the old one as a deprecated alias.  Nothing we can
+        # fix in a pinned upstream release - so do not let its warning
+        # bury ours.
+        "-Wno-deprecated"
+
         "-DBUILD_TESTING=OFF"
         "-DCPACK_BINARY_NSIS=OFF"
         "-DUSE_PKGCONFIG_REQUIRES=OFF"
