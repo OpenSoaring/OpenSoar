@@ -1,12 +1,14 @@
 #!/bin/bash
+# Build the Linux version with the make build and run it.
+#
+#   MakeLinux.sh [options for the program]
+#
+# Nothing is fetched and nothing is reset here - the working tree is
+# built as it is.  (This script used to reset the repository to a fixed
+# remote branch, which quietly threw away local work.)
 
-git fetch OpenSoaring_OpenSoar
-# git reset --hard august/weglide-tmp 
-# git reset --hard flaps3/cmake
-# git reset --hard OpenSoaring_OpenSoar/opensoar-dev
-git reset --hard OpenSoaring_OpenSoar/master
-# git reset --hard OpenSoaring_OpenSoar/dev-branch
-sudo chmod 757 -R ./build/cmake
-## make TARGET=UNIX DEBUG=n
-output/UNIX/bin/xcsoar -fly -1000x500
+set -e
+cd "$(dirname "$0")/../.."
 
+make TARGET=UNIX DEBUG=n
+exec output/UNIX/bin/OpenSoar "${@:--fly}"
