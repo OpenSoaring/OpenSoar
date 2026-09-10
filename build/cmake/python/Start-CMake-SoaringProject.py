@@ -56,13 +56,22 @@ if len(sys.argv) > 3:
   creation_flag = sys.argv[3]
 
 
+# A toolchain name may carry a build flavor ("msvc2026-OV"): the flavor
+# names the build directory, the part in front names the compiler.
+KNOWN_WINDOWS_TOOLCHAINS = [
+    'mgw73', 'mgw103', 'mgw112', 'mgw122', 'mgw143', 'mgw152', 'ninja',
+    'msvc2019', 'msvc2022', 'msvc2026',
+    'clang10', 'clang11', 'clang12', 'clang13', 'clang14', 'clang15',
+    'clang16', 'clang17', 'clang19', 'clang21',
+]
+
 if sys.platform.startswith('win'):
-    if not toolchain in ['mgw73', 'mgw103', 'mgw112', 'mgw122', 'mgw143', 'mgw152',
-        'ninja', 'msvc2019', 'msvc2022', 'msvc2026',
-        'clang10', 'clang11', 'clang12', 'clang13', 'clang14', 'clang15', 'clang16' , 'clang17', 'clang19', 'clang21' ]:
-        _toolchain = toolchain
-        toolchain = 'mgw122'  # standard toolchain on windows
-        print('Use Standard Toolchain: ', _toolchain,' -> ', toolchain)
+    base = toolchain[:-3] if toolchain.endswith('-OV') else toolchain
+    if base not in KNOWN_WINDOWS_TOOLCHAINS:
+        print('unknown toolchain "%s" - using mgw122 instead' % toolchain)
+        print('known: %s (any of them with -OV for an OpenVario build)'
+              % ', '.join(KNOWN_WINDOWS_TOOLCHAINS))
+        toolchain = 'mgw122'
 else:
     if not toolchain in ['unix', 'mingw']:
         # toolchain = 'unix'  # standard toolchain on Linux
@@ -87,6 +96,6 @@ arguments.append(toolchain)     # build-toolchain
 arguments.append(creation_flag)
 
 
-print('Jetzt gehts los: ', arguments)
+print('Starting:', ' '.join(str(a) for a in arguments))
 create_xcsoar(arguments)
 

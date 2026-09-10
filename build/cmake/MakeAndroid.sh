@@ -1,11 +1,10 @@
-echo Make Android v7a (32 bit):
-make DEBUG=n TARGET=ANDROID
+#!/bin/bash
+# Build all four Android ABIs with the make build.
 
-echo Make Android v8a (64 bit):
-make DEBUG=n TARGET=ANDROIDAARCH64
+set -e
+cd "$(dirname "$0")/../.."
 
-echo Make Android x64:
-make DEBUG=n TARGET=ANDROIDX64
-
-echo Make Android x86:
-make DEBUG=n TARGET=ANDROID86
+for target in ANDROID ANDROIDAARCH64 ANDROIDX64 ANDROID86; do
+  echo "=== $target"
+  make DEBUG=n TARGET="$target"
+done
