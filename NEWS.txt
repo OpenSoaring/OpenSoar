@@ -1,3 +1,8 @@
+Version 7.45.4 - not yet released
+* input
+  - add InfoBoxGeometry input events (next/previous/toggle/show) so
+    layout can be changed in flight; default key L
+
 Version 7.45.3 - 2026-09-22
 * android
   - hide Engine Type on BLE heart-rate sensors; it is only for engine
