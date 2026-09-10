@@ -1,67 +1,63 @@
 #!/bin/bash
+# Build the release packages with the make build: the four Android ABIs,
+# then Windows and Linux.  Called by MakeComplete.sh, but works alone.
+#
+#   COMPLETE=y             rebuild from scratch (default; n keeps objects)
+#   ANDROID_ARM64_ONLY=y   only the 64 bit Android package
+#   ANDROID_ONLY=y         only the Android packages
+#   PROGRAM_VERSION=x.y.z  version in the copied file names
+#
+# The version comes from OpenSoar.config when the caller did not set it.
 
-if [ "$COMPLETE" == "" ]; then COMPLETE=y; fi
+cd "$(dirname "$0")/../.."
 
-BIN_NAME=output/ANDROID/bin/OpenSoar-unsigned.apk
+COMPLETE=${COMPLETE:-y}
+if [ -z "$PROGRAM_VERSION" ] && [ -f ./OpenSoar.config ]; then
+  . ./OpenSoar.config
+fi
+VERSION_SUFFIX=${PROGRAM_VERSION:+-${PROGRAM_VERSION}}
 
-#delete all old Android packages:
-rm -rv output/ANDROID/opt
-rm -v  $BIN_NAME
+APK=output/ANDROID/bin/OpenSoar-unsigned.apk
 
-echo "============================================================================="
-echo "Make Android v8a (64 bit):"
-if [ "$COMPLETE" == "y" ]; then rm -rv output/ANDROID/arm64-v8a/opt/src; fi
+# a fresh run must not pick up yesterday's packages
+rm -rf output/ANDROID/opt
+rm -f "$APK"
 
-make DEBUG=n TARGET=ANDROIDAARCH64
-echo "Android arm64-v8a ready!"
+build() {   # build <target> <what it is called> [object directory]
+  echo "============================================================="
+  echo "Make $2:"
+  if [ "$COMPLETE" == "y" ] && [ -n "$3" ]; then rm -rf "$3"; fi
+  make DEBUG=n TARGET="$1"
+  echo "$2 ready!"
+}
 
-if [ -e $BIN_NAME ]; then
-if [ "$EXPORT_ANDROID_ARM64" == "y" ]; then cp -v $BIN_NAME output/ANDROID/bin/OpenSoar-${PROGRAM_VERSION}-64.apk; fi 
+build ANDROIDAARCH64 "Android v8a (64 bit)" output/ANDROID/arm64-v8a/opt/src
 
-if [ ! "$ANDROID_ARM64_ONLY" == "y" ]; then
-echo "============================================================================="
-echo "Make Android v7a (32 bit):"
-if [ "$COMPLETE" == "y" ]; then rm -rv output/ANDROID/armeabi-v7a/opt/src; fi
-make DEBUG=n TARGET=ANDROID
-echo "Android armeabi_v7a ready!"
-
-echo "============================================================================="
-echo "Make Android x64:"
-if [ "$COMPLETE" == "y" ]; then rm -rv output/ANDROID/x86_64/opt/src; fi
-make DEBUG=n TARGET=ANDROIDX64
-echo "Android x86_64 ready!"
-
-echo "============================================================================="
-echo "Make Android x86:"
-if [ "$COMPLETE" == "y" ]; then rm -rv output/ANDROID/x86/opt/src; fi
-make DEBUG=n TARGET=ANDROID86
-echo "Android x86 ready!"
-
-cp -v $BIN_NAME output/ANDROID/bin/OpenSoar-${PROGRAM_VERSION}.apk 
-
-if [ ! "$ANDROID_ONLY" == "y" ]; then 
-echo "============================================================================="
-echo "Make Win64:"
-if [ "$COMPLETE" == "y" ]; then rm -rv output/WIN64/opt/src; fi
-make DEBUG=n TARGET=WIN64
-echo "Win64 ready!"
-cp -v output/WIN64/bin/OpenSoar.exe output/WIN64/bin/OpenSoar-${PROGRAM_VERSION}.exe 
-echo "============================================================================="
-echo "Make Linux:"
-if [ "$COMPLETE" == "y" ]; then rm -rv output/UNIX/opt/src; fi
-make DEBUG=n TARGET=UNIX
-echo "UNIX ready!"
-cp -v output/UNIX/bin/OpenSoar output/UNIX/bin/OpenSoar-${PROGRAM_VERSION} 
-
-# ANDROID_ONLY:
-else
-echo "ANDROID_ONLY = $ANDROID_ONLY"
+if [ ! -e "$APK" ]; then
+  echo "'$APK' not available - stopping here." >&2
+  exit 1
 fi
 
-else
-echo "ANDROID_ARM64_ONLY = $ANDROID_ARM64_ONLY"
+cp -v "$APK" "output/ANDROID/bin/OpenSoar${VERSION_SUFFIX}-64.apk"
+
+if [ "$ANDROID_ARM64_ONLY" == "y" ]; then
+  echo "ANDROID_ARM64_ONLY = y - done."
+  exit 0
 fi
 
-else
-echo "'$BIN_NAME' not available!" 
+build ANDROID     "Android v7a (32 bit)" output/ANDROID/armeabi-v7a/opt/src
+build ANDROIDX64  "Android x86_64"       output/ANDROID/x86_64/opt/src
+build ANDROID86   "Android x86"          output/ANDROID/x86/opt/src
+
+cp -v "$APK" "output/ANDROID/bin/OpenSoar${VERSION_SUFFIX}.apk"
+
+if [ "$ANDROID_ONLY" == "y" ]; then
+  echo "ANDROID_ONLY = y - done."
+  exit 0
 fi
+
+build WIN64 "Win64" output/WIN64/opt/src
+cp -v output/WIN64/bin/OpenSoar.exe "output/WIN64/bin/OpenSoar${VERSION_SUFFIX}.exe"
+
+build UNIX "Linux" output/UNIX/opt/src
+cp -v output/UNIX/bin/OpenSoar "output/UNIX/bin/OpenSoar${VERSION_SUFFIX}"
