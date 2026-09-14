@@ -37,4 +37,12 @@
 #undef Below
 #endif
 
+/* Xlib.h turns "Status" into a macro for int, which breaks every
+   scoped enum of that name declared afterwards - for example
+   EDLWeatherUIState::Status when RunMapWindow includes the EGL display
+   before the UI state. */
+#ifdef Status
+#undef Status
+#endif
+
 #endif
