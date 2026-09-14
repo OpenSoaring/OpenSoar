@@ -400,11 +400,22 @@ $(eval $(call link-library,resources,RESOURCES))
 RESOURCE_BINARY = $(RESOURCES_BIN)
 
 # Windows SDL builds: embed the exe icon via a minimal .rc
+#
+# WINDRESFLAGS is expanded in targets.mk, before options.mk appends
+# -DXCSOAR_TESTING to TARGET_CPPFLAGS, so windres never sees the
+# testing flag on its own: XCSoarIcon.rc would then ask for logo.ico
+# while make has only produced logo_red.ico, and the build fails with
+# "can't open icon file".  Hand the flag over explicitly, derived from
+# the same TESTING variable that picks WIN_ICON_ICO.
 ifeq ($(HAVE_WIN32),y)
+ifeq ($(TESTING),y)
+WIN_ICON_WINDRESFLAGS = -DXCSOAR_TESTING
+endif
+
 $(TARGET_OUTPUT_DIR)/XCSoarIcon.rsc: Data/XCSoarIcon.rc $(WIN_ICON_ICO) \
 	| $(TARGET_OUTPUT_DIR)/dirstamp $(BUILD_TOOLCHAIN_TARGET)
 	@$(NQ)echo "  WINDRES $@"
-	$(Q)$(WINDRES) $(WINDRESFLAGS) --include-dir $(DATA) -o $@ $<
+	$(Q)$(WINDRES) $(WINDRESFLAGS) $(WIN_ICON_WINDRESFLAGS) --include-dir $(DATA) -o $@ $<
 
 RESOURCE_BINARY += $(TARGET_OUTPUT_DIR)/XCSoarIcon.rsc
 endif
