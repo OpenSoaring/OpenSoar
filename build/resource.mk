@@ -418,11 +418,21 @@ $(TARGET_OUTPUT_DIR)/XCSoar.manifest: Data/XCSoar.manifest.in \
 		$< >$@.$(RANDOM_NUMBER).tmp
 	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
 
+# WINDRESFLAGS is expanded in targets.mk, before options.mk appends
+# -DXCSOAR_TESTING to TARGET_CPPFLAGS, so windres never sees the
+# testing flag on its own: XCSoarIcon.rc would then ask for logo.ico
+# while make has only produced logo_red.ico, and the build fails with
+# "can't open icon file".  Hand the flag over explicitly, derived from
+# the same TESTING variable that picks WIN_ICON_ICO.
+ifeq ($(TESTING),y)
+WIN_ICON_WINDRESFLAGS = -DXCSOAR_TESTING
+endif
+
 $(TARGET_OUTPUT_DIR)/XCSoarIcon.rsc: Data/XCSoarIcon.rc $(WIN_ICON_ICO) \
 	$(topdir)/VERSION.txt $(TARGET_OUTPUT_DIR)/XCSoar.manifest \
 	| $(TARGET_OUTPUT_DIR)/dirstamp $(BUILD_TOOLCHAIN_TARGET)
 	@$(NQ)echo "  WINDRES $@"
-	$(Q)$(WINDRES) $(WINDRESFLAGS) $(WINDRES_VERSIONFLAGS) \
+	$(Q)$(WINDRES) $(WINDRESFLAGS) $(WIN_ICON_WINDRESFLAGS) $(WINDRES_VERSIONFLAGS) \
 		--include-dir $(DATA) \
 		--include-dir $(TARGET_OUTPUT_DIR) -o $@ $<
 
