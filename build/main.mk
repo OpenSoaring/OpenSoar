@@ -1,10 +1,17 @@
 # Product name (default: XCSoar, can be overridden via PRODUCT_NAME variable)
 PRODUCT_NAME ?= XCSoar
 
+# A branded tree spells the executable as brand.mk says; an unbranded one
+# follows the platform convention, which is lower case on POSIX.  Both are
+# recursively expanded on purpose: brand.mk is read from options.mk and may
+# come after this file.  The message catalogue is lower case either way,
+# which is what PROGRAM_NAME_LC is for.
+PROGRAM_NAME_LC = $(shell echo $(PRODUCT_NAME) | tr '[:upper:]' '[:lower:]')
+
 ifeq ($(HAVE_POSIX),y)
-PROGRAM_NAME = $(shell echo $(PRODUCT_NAME) | tr '[:upper:]' '[:lower:]')
+PROGRAM_NAME = $(or $(BRAND_PROGRAM_NAME),$(PROGRAM_NAME_LC))
 else
-PROGRAM_NAME = $(PRODUCT_NAME)
+PROGRAM_NAME = $(or $(BRAND_PROGRAM_NAME),$(PRODUCT_NAME))
 endif
 
 DIALOG_SOURCES = \
