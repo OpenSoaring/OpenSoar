@@ -24,7 +24,6 @@
 # include "system/Process.hpp"
 #include "ui/event/KeyCode.hpp"
 #include "ui/event/Timer.hpp"
-#include "ui/window/Init.hpp"
 #include "util/ScopeExit.hxx"
 
 #include "OpenVario/SystemSettingsWidget.hpp"
