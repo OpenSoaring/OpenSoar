@@ -35,6 +35,14 @@ include $(BRAND_CONFIG)
 # macOS app bundle did, and asked for "bin/OpenSoar" while the link
 # rule produced "bin/opensoar".
 PRODUCT_NAME := $(PROGRAM_NAME)
+
+# ... but the brand does decide how its executable is spelled, and that is
+# not always what the platform convention would pick: OpenSoar installs
+# /usr/bin/OpenSoar, which is the name the OpenVario menu and the Yocto
+# recipe call.  main.mk consults this variable and falls back to the
+# convention for an unbranded tree.
+BRAND_PROGRAM_NAME := $(PROGRAM_NAME)
+
 undefine PROGRAM_NAME
 
 # version override for version.mk (instead of VERSION.txt).  Format
