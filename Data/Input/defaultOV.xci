@@ -88,18 +88,11 @@ type=key
 data=ESCAPE
 event=Mode default
 
-# Shutdown
+# Power: the dialog offers quit, restart, reboot and shutdown
 mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
 type=key
 data=X
-event=Shutdown shutdown
-event=Mode default
-
-# Reboot
-mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
-type=key
-data=R
-event=Shutdown reboot
+event=Exit shutdown
 event=Mode default
 
 
@@ -1012,9 +1005,9 @@ location=8
 mode=Menu
 type=key
 data=0
-event=Shutdown shutdown
+event=Exit shutdown
 event=Mode default
-label=Shutdown
+label=Exit
 location=9
 
 # ----------------------------------
@@ -1352,22 +1345,15 @@ label=Quit
 location=61
 
 # OpenVario only:
+# Reboot and shutdown are two of the choices in the power dialog that
+# Restart and Quit above already open, so one button covers them.
 mode=RemoteStick
 type=key
 data=0
-event=Shutdown reboot
+event=Exit shutdown
 event=Mode default
-label=Reboot
+label=Exit
 location=62
-
-# OpenVario only:
-mode=RemoteStick
-type=key
-data=0
-event=Shutdown shutdown
-event=Mode default
-label=Shutdown
-location=63
 
 # -------------
 # Define VarioAudioMenu buttons for Audio app 
@@ -1402,13 +1388,6 @@ data=RETURN
 event=Mode default
 label=Volume:\n$(AudioVolume)
 location=4
-
-mode=VarioAudioMenu
-type=key
-data=0
-event=STFSwitch toggle
-label=$(CheckSTF)
-location=5
 
 mode=VarioAudioMenu
 type=key
@@ -1458,12 +1437,6 @@ type=key
 data=P
 event=Setup System
 
-### check using KeyPressed event with 'z'
-mode=default RemoteStick
-type=key
-data=Z
-event=KeyPressed P
-
 
 
 # -------------
@@ -1477,14 +1450,5 @@ data=ULDR
 event=QuickMenu
 
 
-mode=default
-type=key
-data=S
-event=STFSwitch STF
-
-mode=default
-type=key
-data=V
-event=STFSwitch Vario
 
 
