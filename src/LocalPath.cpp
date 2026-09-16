@@ -10,6 +10,7 @@
 #include "util/StringAPI.hxx"
 #include "Asset.hpp"
 #include "LogFile.hpp"
+#include "ProgramVersion.h"
 
 #ifdef __APPLE__
 #include "Apple/PathProvider.hpp"
@@ -368,13 +369,16 @@ InitialiseDataPath()
        * 'C:/Users/${USER}/AppData/Local/OpenSoar/.cache' ) */
       std::string str = buffer;
       std::replace(str.begin(), str.end(), '\\', '/');
-      cache_path = AllocatedPath::Build(str, "OpenSoar/.cache");
+      cache_path = AllocatedPath::Build(str, PROGRAM_NAME "/.cache");
+      // vs SystemPath -> AllocatedPath::Build(str, PROGRAM_NAME "/system") 
     } else {
       // cache path inside the data path
       cache_path = LocalPath(".cache");
     }
-#elif defined(HAVE_POSIX)
+#elif defined(IS_OPENVARIO)
     // OpenVario: own folder of 3rd partition '~/data/.cache'
+    cache_path = AllocatedPath::Build(home_path, "data/.cache/" PROGRAM_NAME);
+#elif defined(HAVE_POSIX)
     // Linux and others: ~/.cache
     cache_path = AllocatedPath::Build(home_path, ".cache");
 #endif
