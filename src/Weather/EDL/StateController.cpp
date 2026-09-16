@@ -264,7 +264,8 @@ ClearOverlay() noexcept
   if (map == nullptr)
     return;
 
-  if (dynamic_cast<const MbTilesOverlay *>(map->GetOverlay()) == nullptr)
+  auto ol = dynamic_cast<const MbTilesOverlay *>(map->GetOverlay());
+  if (ol == nullptr)
     return;
 
   map->SetOverlay(nullptr);
