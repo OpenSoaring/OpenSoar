@@ -309,7 +309,15 @@ TestRepositoryDownloadRelativePath()
 int
 main()
 {
-  plan_tests(80);
+  plan_tests(81);
+
+  /* the cache no longer lives inside the data directory but in the
+     user's cache directory; point it to a directory of this run, so
+     that the test never touches, and never deletes, real cache files */
+  char cache_template[] = "/tmp/xcsoar-cache-XXXXXX";
+  ok1(mkdtemp(cache_template) != nullptr);
+  setenv("XDG_CACHE_HOME", cache_template, 1);
+
   TestLayoutSubdirForFilename();
   TestResolveTypedDataFilePath();
   TestResolveRepositoryDataPath();
