@@ -86,10 +86,6 @@ SetPrimaryDataPath(Path path) noexcept
     data_paths.erase(i);
 
   data_paths.emplace_front(path);
-
-#ifndef ANDROID
-  cache_path = LocalPath("cache");
-#endif
 }
 
 void
@@ -100,10 +96,6 @@ SetSingleDataPath(Path path) noexcept
 
   data_paths.clear();
   data_paths.emplace_front(path);
-
-#ifndef ANDROID
-  cache_path = LocalPath("cache");
-#endif
 }
 
 AllocatedPath
@@ -411,6 +403,61 @@ FindSystemConfigPath() noexcept
   return nullptr;
 }
 
+/**
+ * Where do the cache files go?
+ *
+ * Not into the data directory: that one belongs to the user, who
+ * copies and backs it up, and temporary files have no business being
+ * carried along.  Each product gets its own directory, because the
+ * contents differ - the SkySight files of XCSoar and OpenSoar do not
+ * look alike.  On the OpenVario the place is fixed on the data
+ * partition and deliberately does not follow -datapath=: the root
+ * filesystem is small and must not fill up with cache files.
+ */
+static AllocatedPath
+FindCachePath() noexcept
+{
+#if defined(IS_OPENVARIO)
+  /* the data partition is mounted as 'data' in the home directory.  The
+     product directory below it is not needed today, since XCSoar still
+     keeps its cache in its data directory, but it is where the same rule
+     would put it once that changes - better here from the start than
+     moved later. */
+  if (const char *home = getenv("HOME"); home != nullptr && *home != '\0') {
+    const std::string dir = std::string{home}
+      + DIR_SEPARATOR_S "data" DIR_SEPARATOR_S ".cache" DIR_SEPARATOR_S PRODUCT_NAME;
+    return AllocatedPath{Path{dir.c_str()}};
+  }
+#elif defined(KOBO)
+  /* unchanged: the Kobo keeps its cache in the data directory */
+#elif defined(_WIN32)
+  {
+    wchar_t buffer[MAX_PATH];
+    if (SHGetSpecialFolderPathW(nullptr, buffer, CSIDL_LOCAL_APPDATA, true)) {
+      const std::string local_app_data = WideToUTF8(buffer);
+      if (!local_app_data.empty())
+        return AllocatedPath::Build(local_app_data.c_str(),
+                                    PRODUCT_NAME DIR_SEPARATOR_S ".cache");
+    }
+  }
+#elif defined(HAVE_POSIX)
+  if (const char *xdg = getenv("XDG_CACHE_HOME");
+      xdg != nullptr && *xdg != '\0') {
+    const std::string dir = std::string{xdg} + DIR_SEPARATOR_S PRODUCT_NAME;
+    return AllocatedPath{Path{dir.c_str()}};
+  }
+
+  if (const char *home = getenv("HOME"); home != nullptr && *home != '\0') {
+    const std::string dir = std::string{home}
+      + DIR_SEPARATOR_S ".cache" DIR_SEPARATOR_S PRODUCT_NAME;
+    return AllocatedPath{Path{dir.c_str()}};
+  }
+#endif
+
+  /* last resort: inside the data directory, where it used to live */
+  return LocalPath("cache");
+}
+
 Path
 GetCachePath() noexcept
 {
@@ -444,7 +491,7 @@ InitialiseDataPath()
 
   // TODO: delete the old cache directory in product data directory?
 #else
-  cache_path = LocalPath("cache");
+  cache_path = FindCachePath();
 #endif
 
   system_config_path = FindSystemConfigPath();
