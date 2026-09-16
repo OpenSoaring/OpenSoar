@@ -42,8 +42,11 @@ class TiffLoader {
 public:
   explicit TiffLoader(Path path)
     :tiff(TiffOpen(path, "r")) {
-    if (tiff == nullptr)
-      throw std::runtime_error("Failed to open TIFF file");
+    if (tiff == nullptr) {
+      std::string err = "Failed to open TIFF file: ";
+      err += path.c_str();
+      throw std::runtime_error(err);
+    }
   }
 
   ~TiffLoader() {
