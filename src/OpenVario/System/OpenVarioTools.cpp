@@ -8,6 +8,10 @@
 #include "Form/Form.hpp"
 
 #include "UIGlobals.hpp"
+#include "UIActions.hpp"
+#include "Interface.hpp"
+#include "MainWindow.hpp"
+#include "ui/window/ContainerWindow.hpp"
 #include "system/FileUtil.hpp"
 
 #include "Widget/RowFormWidget.hpp"
@@ -122,3 +126,19 @@ RunCapture([[maybe_unused]] Path output_file,
   return -1;
 }
 #endif
+
+void
+ExitToWrapper(unsigned exit_value) noexcept
+{
+  ContainerWindow::SetExitValue(exit_value);
+
+  /* no further "Quit?" question: the caller has asked already */
+  UIActions::SignalShutdown(true);
+
+  /* SignalShutdown() closes the main window, but SingleWindow turns
+     that into "cancel the top-most dialog" while dialogs are open.
+     Ending the event queue instead makes every modal loop return,
+     the configuration dialog included, and the main loop after them;
+     the regular shutdown then runs with the exit value set above. */
+  CommonInterface::main_window->PostQuit();
+}
