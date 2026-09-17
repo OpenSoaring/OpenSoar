@@ -24,6 +24,14 @@
 #include "UIActions.hpp"
 #include "Version.hpp"
 #include "system/FileUtil.hpp"
+#include "io/FileOutputStream.hxx"
+#include "io/BufferedOutputStream.hxx"
+#include "ExitValues.hpp"
+#include "ProductName.hpp"
+#include "Dialogs/Error.hpp"
+
+#include <filesystem>
+#include <string>
 
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/OpenVarioTools.hpp"
@@ -67,6 +75,14 @@ public:
 
 
 private:
+  /* the image the device is running, as the FIRMWARE row shows it;
+     a cancelled upgrade puts it back into the row */
+  StaticString<0x100> current_image;
+
+  void ShowCurrentImage() noexcept;
+  bool WriteUpgradeRequest(Path image) noexcept;
+  void StartUpgrade(Path image) noexcept;
+
   /* methods from DataFieldListener */
   void OnModified(DataField &df) noexcept override;
 };
@@ -92,6 +108,23 @@ private:
     nullptr
   };
 
+/**
+ * "OV-3.2.20.1-CB2-CH57.img.gz" -> "OV-3.2.20.1-CB2-CH57": the row
+ * shows the image without its file suffixes, and the comparison with
+ * a chosen file has to use the same form.
+ */
+static std::string
+StripImageSuffix(std::string name) noexcept
+{
+  for (const char *suffix : {".gz", ".img"}) {
+    const std::size_t suffix_length = strlen(suffix);
+    if (name.size() > suffix_length &&
+        name.compare(name.size() - suffix_length, suffix_length, suffix) == 0)
+      name.erase(name.size() - suffix_length);
+  }
+  return name;
+}
+
 void
 SystemSettingsWidget::SetEnabled([[maybe_unused]] bool enabled) noexcept
 {
@@ -108,10 +141,71 @@ SystemSettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
   if (IsDataField(ENABLED, df)) {
     // const DataFieldBoolean &dfb = ;
     SetEnabled(((const DataFieldBoolean &)df).GetValue());
-  }  else if (IsDataField(FIRMWARE, df)) {
-    // (DataFieldInteger*)df)
-    ShowMessageBox("FirmWare-Selection", "??File??", MB_OKCANCEL);
-  } 
+  } else if (IsDataField(FIRMWARE, df)) {
+    /* the row is not a setting: choosing an image means "upgrade to
+       this one now"; anything else leaves the running image on show */
+    const Path image = ((const FileDataField &)df).GetValue();
+    if (image == nullptr || image.empty() ||
+        StripImageSuffix(image.GetBase().c_str()) == current_image.c_str())
+      return;
+
+    StartUpgrade(image);
+  }
+}
+
+void
+SystemSettingsWidget::ShowCurrentImage() noexcept
+{
+  auto &df = (FileDataField &)GetDataField(FIRMWARE);
+  df.ForceModify(Path(current_image.c_str()));
+  GetControl(FIRMWARE).RefreshDisplay();
+}
+
+/**
+ * Tell the wrapper script which image to flash.  OpenSoar cannot run
+ * fw-upgrade.sh itself: the upgrade rewrites the root file system, so
+ * the program has to be gone first.  It therefore leaves the request
+ * in $HOME/fw-upgrade.request (a shell-sourceable "IMAGEFILE=..."
+ * line) and quits with START_UPGRADE; ovmenu-ng.sh picks the file up
+ * and calls fw-upgrade.sh with the image, which then skips its own
+ * selection menu.
+ */
+bool
+SystemSettingsWidget::WriteUpgradeRequest(Path image) noexcept
+try {
+  /* the script runs from $HOME, but a relative data path would still
+     be a guess; hand it an absolute one */
+  const auto absolute = std::filesystem::absolute(image.c_str()).string();
+
+  FileOutputStream file(AllocatedPath::Build(ovdevice.GetHomePath(),
+                                             Path("fw-upgrade.request")));
+  BufferedOutputStream out(file);
+  out.Fmt("IMAGEFILE={}\n", absolute);
+  out.Flush();
+  file.Commit();
+  return true;
+} catch (...) {
+  ShowError(std::current_exception(), _("Upgrade Firmware"));
+  return false;
+}
+
+void
+SystemSettingsWidget::StartUpgrade(Path image) noexcept
+{
+  StaticString<0x200> text;
+  text.Format(_("Upgrade the firmware to\n%s?\n\n%s quits and the upgrade starts; the device reboots afterwards."),
+              image.GetBase().c_str(), PRODUCT_NAME);
+  if (ShowMessageBox(text, _("Upgrade Firmware"),
+                     MB_OKCANCEL | MB_ICONQUESTION) != IDOK ||
+      !WriteUpgradeRequest(image)) {
+    ShowCurrentImage();
+    return;
+  }
+
+  /* the question above was the confirmation - no second one from
+     the power dialog */
+  ContainerWindow::SetExitValue(START_UPGRADE);
+  UIActions::SignalShutdown(true);
 }
 
 void
@@ -122,35 +216,25 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
 
   AddReadOnly(_("Current OpenSoar"), _("Current firmware version of OpenVario"),
               XCSoar_VersionString);
-  AddFile(_("OV-Firmware"), _("Current firmware file version of OpenVario"),
-          "OVImage", "*.img.gz\0", FileType::IMAGE);  // no callback... , this);
+  AddFile(_("OV-Firmware"),
+          _("The firmware image the OpenVario is running. Choose another image to upgrade to it: OpenSoar quits and the upgrade starts."),
+          "OVImage", "*.img.gz\0", FileType::IMAGE);
+  /* AddFile() takes no listener; the choice is what starts the upgrade */
+  GetDataField(FIRMWARE).SetListener(this);
 
-  /* no image chosen yet: show the one the device is running - the
-     first line of /boot/image-version-info names its file (reachable
-     on a development PC through OPENVARIO_ROOT) */
-  if (auto &df = (FileDataField &)GetDataField(FIRMWARE);
-      df.GetValue() == nullptr || df.GetValue().empty()) {
+  /* the row shows the image the device is running, whatever the
+     profile remembers from an earlier choice: the first line of
+     /boot/image-version-info names its file (reachable on a
+     development PC through OPENVARIO_ROOT) */
+  {
     char line[0x100];
     if (File::ReadString(ovdevice.MapSystemPath(Path("/boot/image-version-info")),
                          line, sizeof(line))) {
       /* the first line only, without trailing whitespace */
       line[strcspn(line, "\r\n")] = '\0';
-
-      /* drop the file suffixes: "....img.gz" -> "..." */
-      for (const char *suffix : {".gz", ".img"}) {
-        const std::size_t line_length = strlen(line),
-          suffix_length = strlen(suffix);
-        if (line_length > suffix_length &&
-            StringIsEqual(line + line_length - suffix_length, suffix))
-          line[line_length - suffix_length] = '\0';
-      }
-
-      if (line[0] != '\0') {
-        df.ForceModify(Path(line));
-        /* the row was rendered before: show the new value */
-        GetControl(FIRMWARE).RefreshDisplay();
-      }
+      current_image = StripImageSuffix(line).c_str();
     }
+    ShowCurrentImage();
   }
   
   AddBoolean(
@@ -181,14 +265,6 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
    AddInteger(_("IntegerTest"),
                _("IntegerTest."), "%d", "%d", 0,
                   99999, 1, ovdevice.iTest);
-#endif
-
-#if 1
-   AddButton(_("Upgrade Firmware (temp.)"), [this]() {
-     ContainerWindow::SetExitValue(START_UPGRADE);
-     UIActions::SignalShutdown(false);
-     return mrOK; // START_UPGRADE;
-   });
 #endif
 
    SetEnabled(ovdevice.enabled);
