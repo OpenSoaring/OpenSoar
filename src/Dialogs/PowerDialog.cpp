@@ -42,10 +42,20 @@ public:
   /* virtual methods from class Widget */
   void Prepare([[maybe_unused]] ContainerWindow &parent,
                [[maybe_unused]] const PixelRect &rc) noexcept override {
+#ifdef IS_OPENVARIO
+    /* the OpenVario is a fixed instrument: the pilot reaches for this
+       dialog to switch the device off after the flight, so that comes
+       first; quitting to the console is the rare case */
+    AddAction(PowerAction::SHUTDOWN, _("Shutdown"));
+    AddAction(PowerAction::REBOOT, _("Reboot"));
+    AddAction(PowerAction::QUIT, _("Quit"));
+    AddAction(PowerAction::RESTART, _("Restart"));
+#else
     AddAction(PowerAction::QUIT, _("Quit"));
     AddAction(PowerAction::RESTART, _("Restart"));
     AddAction(PowerAction::REBOOT, _("Reboot"));
     AddAction(PowerAction::SHUTDOWN, _("Shutdown"));
+#endif
   }
 };
 
