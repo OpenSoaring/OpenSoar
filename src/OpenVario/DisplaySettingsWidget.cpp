@@ -133,10 +133,9 @@ DisplaySettingsWidget::Prepare([[maybe_unused]] ContainerWindow &_parent,
   AddBoolean(_("Touch enabled"), _("Enabling the tTouch Screen"), ovdevice.touch, this);
 
   auto touchBtn = AddButton(_("Calibrate Touch"), [this]() {
-    ContainerWindow::SetExitValue(LAUNCH_TOUCH_CALIBRATE);
-    UIActions::SignalShutdown(true);
+    ExitToWrapper(LAUNCH_TOUCH_CALIBRATE);
     return mrOK;
-  });  
+  });
   touchBtn->SetEnabled(ovdevice.touch);
 }
 
