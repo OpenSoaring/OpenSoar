@@ -219,8 +219,6 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
   AddFile(_("OV-Firmware"),
           _("The firmware image the OpenVario is running. Choose another image to upgrade to it: OpenSoar quits and the upgrade starts."),
           "OVImage", "*.img.gz\0", FileType::IMAGE);
-  /* AddFile() takes no listener; the choice is what starts the upgrade */
-  GetDataField(FIRMWARE).SetListener(this);
 
   /* the row shows the image the device is running, whatever the
      profile remembers from an earlier choice: the first line of
@@ -268,6 +266,12 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
 #endif
 
    SetEnabled(ovdevice.enabled);
+
+  /* AddFile() takes no listener, and the listener must not be in
+     place before every row exists: OnModified() looks rows up by
+     index, and ShowCurrentImage() above fires the data field while
+     the widget is still being built */
+  GetDataField(FIRMWARE).SetListener(this);
 }
 
 bool 
