@@ -202,10 +202,7 @@ SystemSettingsWidget::StartUpgrade(Path image) noexcept
     return;
   }
 
-  /* the question above was the confirmation - no second one from
-     the power dialog */
-  ContainerWindow::SetExitValue(START_UPGRADE);
-  UIActions::SignalShutdown(true);
+  ExitToWrapper(START_UPGRADE);
 }
 
 void
