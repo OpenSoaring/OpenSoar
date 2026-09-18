@@ -35,6 +35,7 @@
 
 #include "OpenVario/System/OpenVarioDevice.hpp"
 #include "OpenVario/System/OpenVarioTools.hpp"
+#include "OpenVario/System/FirmwareImagePicker.hpp"
 #include "OpenVario/System/WifiDialogOV.hpp"
 
 
@@ -213,9 +214,14 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
 
   AddReadOnly(_("Current OpenSoar"), _("Current firmware version of OpenVario"),
               XCSoar_VersionString);
+  /* the file field shows the image; the picker behind it is our
+     own, because the images live outside the data directory (data/
+     images, the USB stick) and the user should see where each one
+     comes from */
   AddFile(_("OV-Firmware"),
           _("The firmware image the OpenVario is running. Choose another image to upgrade to it: OpenSoar quits and the upgrade starts."),
-          "OVImage", "*.img.gz\0", FileType::IMAGE);
+          "OVImage", "*.img.gz\0", FileType::IMAGE)
+    ->SetEditCallback(PickFirmwareImage);
 
   /* the row shows the image the device is running, whatever the
      profile remembers from an earlier choice: the first line of
