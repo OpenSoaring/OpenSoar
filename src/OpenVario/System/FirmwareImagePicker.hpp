@@ -17,17 +17,21 @@ class DataField;
 struct FirmwareImage {
   std::string name;
   AllocatedPath path;
+
+  /** the second row of the list: path, size and date */
+  std::string detail;
 };
 
 /**
  * Collect the *.img.gz files from every place an OpenVario looks for
- * them: the download directory (GetUserDownloadsPath(): the device's
- * data/download, or the OpenVario and XCSoar subdirectories of the
- * user's Downloads folder on a PC or a phone), the USB stick the device
- * mounts at /usb/usbstick/openvario/images, and any removable drive
- * that carries openvario/images, which is how a PC stands in for the
- * stick.  Each directory is read on its own level only.  Sorted by
- * name, without duplicates.
+ * them: the product's download directory (GetProductDownloadsPath():
+ * the device's data/download, or the OpenVario subdirectory of the
+ * user's Downloads folder on a PC or a phone - the same place the
+ * Download button puts them), the USB stick the device mounts at
+ * /usb/usbstick/openvario/images, and any removable drive that carries
+ * openvario/images, which is how a PC stands in for the stick.  Each
+ * directory is read on its own level only.  Sorted by name, without
+ * duplicates.
  */
 std::vector<FirmwareImage>
 FindFirmwareImages() noexcept;
