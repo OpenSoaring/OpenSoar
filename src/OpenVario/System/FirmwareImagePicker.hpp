@@ -27,6 +27,16 @@ struct FirmwareImage {
 };
 
 /**
+ * The hardware an image is built for, read from its name: the parts
+ * after the version, so "OV-3.2.20.1-CB2-CH57" gives "CB2-CH57" and
+ * "OV-3.0.1-19-CB2-XXXX-testing" gives "CB2-XXXX".  Empty if the name
+ * has no such part.
+ */
+[[gnu::pure]]
+std::string
+ImageDeviceType(const char *image_name) noexcept;
+
+/**
  * Collect the *.img.gz files from every place an OpenVario looks for
  * them: the product's download directory (GetProductDownloadsPath():
  * the device's data/download, or the OpenVario subdirectory of the
@@ -45,7 +55,10 @@ FindFirmwareImages() noexcept;
  * name in the first row and the full path in the second, with a
  * Download button where the repository offers images and a Delete
  * button that removes the highlighted image from the download
- * directory after a confirmation.  A choice is
+ * directory after a confirmation.  When the running image names the
+ * hardware (ImageDeviceType()), the list and the download list show
+ * only images for that hardware, and a button switches to all
+ * images and back.  A choice is
  * stored in the data field through ForceModify(), so the field's
  * listener sees it like any other change.
  *
