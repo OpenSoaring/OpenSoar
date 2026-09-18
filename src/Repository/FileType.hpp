@@ -26,7 +26,11 @@ enum class FileType : uint8_t {
   PLANE,
   XCI,
   LUA,
-  IMAGE,    // OpenVario firmware images (*.img.gz)
+#ifdef IS_OPENVARIO
+  OV_IMAGE,    // OpenVario firmware images (*.img.gz)
+  OV_UPGRADE,  // OpenVario firmware package (*.zip)
+  OV_IPK,      // OpenVario ipk-package (*.ipk)
+#endif  // IS_OPENVARIO
   COUNT,
 };
 
