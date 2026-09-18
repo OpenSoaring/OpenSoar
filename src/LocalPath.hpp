@@ -107,6 +107,20 @@ Path
 GetCachePath() noexcept;
 
 /**
+ * The directory where the user's downloads arrive: the platform's
+ * Downloads folder on a PC or a phone, the download directory on the
+ * data partition of an OpenVario.  Files this program looks for
+ * outside its own data directory - firmware images, for example - are
+ * expected directly in a product subdirectory of it, never in deeper
+ * levels, so that old files can be moved aside into a subdirectory
+ * without being picked up again.
+ *
+ * @return the directory, or nullptr if the platform has none
+ */
+AllocatedPath
+GetUserDownloadsPath() noexcept;
+
+/**
  * The directory for settings that belong to this device rather than
  * to a profile: outside the data directory and never below it, so
  * that copying or replacing the data directory leaves them alone.
