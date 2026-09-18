@@ -47,6 +47,7 @@
 enum ControlIndex {
   FW_VERSION,
   FIRMWARE,
+  MAIN_APP,
   ENABLED,
   SENSORD,
   VARIOD,
@@ -83,6 +84,7 @@ private:
   void ShowCurrentImage() noexcept;
   bool WriteUpgradeRequest(Path image) noexcept;
   void StartUpgrade(Path image) noexcept;
+  void SwitchMainApp(const DataFieldEnum &df) noexcept;
 
   /* methods from DataFieldListener */
   void OnModified(DataField &df) noexcept override;
@@ -101,6 +103,13 @@ private:
     nullptr
   };
 #endif
+
+  /* the values are what ovmenu-ng.sh compares main_app against */
+  static constexpr StaticEnumChoice main_app_list[] = {
+    { 0, "OpenSoar", },
+    { 1, "xcsoar", },
+    nullptr
+  };
 
   static constexpr StaticEnumChoice enable_list[] = {
     { SSHStatus::ENABLED,   "enabled", },
@@ -142,6 +151,8 @@ SystemSettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
   if (IsDataField(ENABLED, df)) {
     // const DataFieldBoolean &dfb = ;
     SetEnabled(((const DataFieldBoolean &)df).GetValue());
+  } else if (IsDataField(MAIN_APP, df)) {
+    SwitchMainApp((const DataFieldEnum &)df);
   } else if (IsDataField(FIRMWARE, df)) {
     /* the row is not a setting: choosing an image means "upgrade to
        this one now"; anything else leaves the running image on show */
@@ -152,6 +163,26 @@ SystemSettingsWidget::OnModified([[maybe_unused]] DataField &df) noexcept
 
     StartUpgrade(image);
   }
+}
+
+/**
+ * The choice takes effect on the next boot, when ovmenu-ng.sh reads
+ * config.uEnv again - so it is written right away and the reboot
+ * offered at once: a user who switches to the other program wants to
+ * be there, not in a settings page.
+ */
+void
+SystemSettingsWidget::SwitchMainApp(const DataFieldEnum &df) noexcept
+{
+  const char *name = df.GetAsString();
+  if (name == nullptr || !ovdevice.SetMainApp(name))
+    return;
+
+  StaticString<0x100> text;
+  text.Format(_("%s starts on the next boot.\n\nReboot now?"), name);
+  if (ShowMessageBox(text, _("Main app"),
+                     MB_YESNO | MB_ICONQUESTION) == IDYES)
+    ExitToWrapper(EXIT_REBOOT);
 }
 
 void
@@ -222,6 +253,23 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
           _("The firmware image the OpenVario is running. Choose another image to upgrade to it: OpenSoar quits and the upgrade starts."),
           "OVImage", "*.img.gz\0", FileType::OV_IMAGE)
     ->SetEditCallback(PickFirmwareImage);
+
+  {
+    /* below the firmware: which program the device boots into */
+    const std::string main_app = ovdevice.GetMainApp();
+    unsigned index = 0;
+    for (const auto &choice : main_app_list) {
+      if (choice.display_string == nullptr)
+        break;
+      if (main_app == choice.display_string) {
+        index = choice.id;
+        break;
+      }
+    }
+    AddEnum(_("Main app"),
+            _("The program the OpenVario starts after boot. A change is written to /boot/config.uEnv at once and takes effect on the next boot."),
+            main_app_list, index, this);
+  }
 
   /* the row shows the image the device is running, whatever the
      profile remembers from an earlier choice: the first line of
