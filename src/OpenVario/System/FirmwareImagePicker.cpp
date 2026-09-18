@@ -69,8 +69,7 @@ public:
 };
 
 static void
-CollectImages(std::vector<FirmwareImage> &images, Path directory,
-              bool recursive = false) noexcept
+CollectImages(std::vector<FirmwareImage> &images, Path directory) noexcept
 {
   if (directory == nullptr || directory.empty())
     return;
@@ -82,7 +81,7 @@ CollectImages(std::vector<FirmwareImage> &images, Path directory,
 
   const std::size_t before = images.size();
   ImageCollector collector(images);
-  Directory::VisitSpecificFiles(directory, IMAGE_PATTERN, collector, recursive);
+  Directory::VisitSpecificFiles(directory, IMAGE_PATTERN, collector, false);
   LogFormat("firmware images: %u in %s", unsigned(images.size() - before),
             directory.c_str());
 }
@@ -92,32 +91,35 @@ FindFirmwareImages() noexcept
 {
   std::vector<FirmwareImage> images;
 
-  /* the device keeps its images in data/images beside the program's
-     data directory; a relative data path is meant from $HOME, where
-     the wrapper script runs the program */
-  {
-    const Path data = ovdevice.GetDataPath();
-    if (data != nullptr) {
-      const AllocatedPath base = data.IsAbsolute()
-        ? AllocatedPath(data)
-        : AllocatedPath::Build(ovdevice.GetHomePath(), data);
-      CollectImages(images, AllocatedPath::Build(base, Path("images")));
-    }
+  /* the download directory: on the device /home/root/data/download
+     itself, on a PC or a phone the product subdirectories of the
+     user's Downloads folder.  Only the directory itself, never its
+     subdirectories - old images can be moved aside into one */
+  if (const auto downloads = GetUserDownloadsPath(); downloads != nullptr) {
+#ifdef IS_OPENVARIO_CB2
+    CollectImages(images, downloads);
+#else
+    CollectImages(images, AllocatedPath::Build(downloads, Path("OpenVario")));
+    CollectImages(images, AllocatedPath::Build(downloads, Path("XCSoar")));
+#endif
   }
 
-  /* the same directory as the device sees it, which on a development
-     machine with OPENVARIO_ROOT is a different place than $HOME */
-  CollectImages(images, ovdevice.MapSystemPath(Path("/home/root/data/images")));
+#ifndef IS_OPENVARIO_CB2
+  /* a development machine with OPENVARIO_ROOT sees the device's
+     download directory below that root */
+  if (ovdevice.HasSystemRoot())
+    CollectImages(images, ovdevice.MapSystemPath(Path("/home/root/data/download")));
+#endif
 
   /* the USB stick as the OpenVario mounts it (under OPENVARIO_ROOT on
      a development machine) */
-  CollectImages(images, ovdevice.MapSystemPath(Path("/usb/usbstick/opensoar/images")));
+  CollectImages(images, ovdevice.MapSystemPath(Path("/usb/usbstick/openvario/images")));
 
 #ifndef OPENVARIOBASEMENU
   /* removable drives the storage layer knows about - on a PC this is
-     the stick in a USB port, carrying opensoar/images like the real one
-     (the base menu has no storage manager and no need for one: on the
-     device the stick is the fixed mount above) */
+     the stick in a USB port, carrying openvario/images like the real
+     one (the base menu has no storage manager and no need for one: on
+     the device the stick is the fixed mount above) */
   if (backend_components != nullptr &&
       backend_components->storage_manager != nullptr) {
     for (const auto &device : backend_components->storage_manager->GetDevices()) {
@@ -130,15 +132,10 @@ FindFirmwareImages() noexcept
         continue;
 
       CollectImages(images, AllocatedPath::Build(Path(root.c_str()),
-                                                 Path("opensoar/images")));
+                                                 Path("openvario/images")));
     }
   }
 #endif
-
-  /* the data directory, with its subdirectories: the file manager
-     downloads images there, and the generic file picker used to find
-     images anywhere below it, which a development setup may rely on */
-  CollectImages(images, GetPrimaryDataPath(), true);
 
   std::sort(images.begin(), images.end(),
             [](const FirmwareImage &a, const FirmwareImage &b) {
