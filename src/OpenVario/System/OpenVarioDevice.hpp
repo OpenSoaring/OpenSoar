@@ -126,6 +126,21 @@ public:
   DisplayOrientation GetRotation();
   void SetRotation(DisplayOrientation orientation, int mode=0);
 
+  /**
+   * The program the wrapper script starts after boot: the value of
+   * "main_app" in /boot/config.uEnv ("OpenSoar" or "xcsoar"), as
+   * ovmenu-ng.sh reads it.  A missing key means OpenSoar, which is
+   * what the image writes there.
+   */
+  std::string GetMainApp() noexcept;
+
+  /**
+   * Store the main app in /boot/config.uEnv.
+   *
+   * @return true if the file was changed
+   */
+  bool SetMainApp(const char *name) noexcept;
+
   bool GetSystemStatus(std::string_view system) noexcept;
   void SetSystemStatus(std::string_view system, bool value) noexcept;
   SSHStatus GetSSHStatus() noexcept;
