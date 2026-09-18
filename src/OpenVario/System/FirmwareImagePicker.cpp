@@ -13,6 +13,7 @@
 #include "Form/DataField/File.hpp"
 #include "Language/Language.hpp"
 #include "LocalPath.hpp"
+#include "LogFile.hpp"
 #include "Look/DialogLook.hpp"
 #include "Renderer/TwoTextRowsRenderer.hpp"
 #include "UIGlobals.hpp"
@@ -68,13 +69,22 @@ public:
 };
 
 static void
-CollectImages(std::vector<FirmwareImage> &images, Path directory) noexcept
+CollectImages(std::vector<FirmwareImage> &images, Path directory,
+              bool recursive = false) noexcept
 {
-  if (directory == nullptr || !Directory::Exists(directory))
+  if (directory == nullptr || directory.empty())
     return;
 
+  if (!Directory::Exists(directory)) {
+    LogFormat("firmware images: no directory %s", directory.c_str());
+    return;
+  }
+
+  const std::size_t before = images.size();
   ImageCollector collector(images);
-  Directory::VisitSpecificFiles(directory, IMAGE_PATTERN, collector, false);
+  Directory::VisitSpecificFiles(directory, IMAGE_PATTERN, collector, recursive);
+  LogFormat("firmware images: %u in %s", unsigned(images.size() - before),
+            directory.c_str());
 }
 
 std::vector<FirmwareImage>
@@ -94,6 +104,10 @@ FindFirmwareImages() noexcept
       CollectImages(images, AllocatedPath::Build(base, Path("images")));
     }
   }
+
+  /* the same directory as the device sees it, which on a development
+     machine with OPENVARIO_ROOT is a different place than $HOME */
+  CollectImages(images, ovdevice.MapSystemPath(Path("/home/root/data/images")));
 
   /* the USB stick as the OpenVario mounts it (under OPENVARIO_ROOT on
      a development machine) */
@@ -121,8 +135,10 @@ FindFirmwareImages() noexcept
   }
 #endif
 
-  /* the data directory itself: the file manager downloads images there */
-  CollectImages(images, GetPrimaryDataPath());
+  /* the data directory, with its subdirectories: the file manager
+     downloads images there, and the generic file picker used to find
+     images anywhere below it, which a development setup may rely on */
+  CollectImages(images, GetPrimaryDataPath(), true);
 
   std::sort(images.begin(), images.end(),
             [](const FirmwareImage &a, const FirmwareImage &b) {
