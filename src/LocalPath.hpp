@@ -121,6 +121,24 @@ AllocatedPath
 GetUserDownloadsPath() noexcept;
 
 /**
+ * The directory this product's downloads go to and are looked for in:
+ * GetUserDownloadsPath() itself on the OpenVario, its "OpenVario"
+ * subdirectory elsewhere.  Created on demand when @p create is set.
+ *
+ * @return the directory, or nullptr if the platform has none
+ */
+AllocatedPath
+GetProductDownloadsPath(bool create = false) noexcept;
+
+/**
+ * Turn a download destination into an absolute path: an absolute
+ * destination is taken as it is, a relative one is placed below the
+ * data directory, as the download manager has always done.
+ */
+AllocatedPath
+ResolveDownloadPath(Path destination) noexcept;
+
+/**
  * The directory for settings that belong to this device rather than
  * to a profile: outside the data directory and never below it, so
  * that copying or replacing the data directory leaves them alone.

@@ -412,6 +412,20 @@ RelativeDownloadPath(FileType file_type, const AvailableFile &file)
   if (!file_path.IsValidFilename())
     throw std::runtime_error("Invalid download filename");
 
+#if defined(IS_OPENVARIO) && !defined(ANDROID)
+  /* firmware images do not belong in the data directory: they go to
+     the download directory, where the system settings look for them
+     (Android's download manager only writes below the data directory,
+     so it keeps the old place) */
+  if (file_type == FileType::IMAGE) {
+    const auto download_dir = GetProductDownloadsPath(true);
+    if (download_dir == nullptr || !Directory::Exists(download_dir))
+      throw std::runtime_error("The download directory does not exist and could not be created.");
+
+    return AllocatedPath::Build(download_dir, file_path);
+  }
+#endif
+
   AllocatedPath dest_dir = GetFileTypeDefaultDir(file_type);
   if (dest_dir == nullptr)
     return file_path;
