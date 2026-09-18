@@ -650,6 +650,9 @@ endif
 
 ifeq ($(HAVE_WIN32),y)
   TARGET_LDLIBS += -lwinmm
+  # CoTaskMemFree() releases the path SHGetKnownFolderPath() returns in
+  # LocalPath.cpp; MinGW does not link ole32 by itself
+  TARGET_LDLIBS += -lole32
 endif
 
 ifeq ($(TARGET),UNIX)
