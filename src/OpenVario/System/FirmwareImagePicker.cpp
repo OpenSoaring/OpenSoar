@@ -26,6 +26,7 @@
 #include "ui/canvas/Canvas.hpp"
 #include "util/StaticString.hxx"
 #include "util/StringCompare.hxx"
+#include "util/StringPart.hxx"
 
 #include <string.h>
 
@@ -36,6 +37,7 @@
 #endif
 
 #include <algorithm>
+#include <string_view>
 
 static constexpr const char *IMAGE_PATTERN = "*.img.gz";
 
@@ -53,6 +55,31 @@ ImageDisplayName(Path filename) noexcept
       name.erase(name.size() - suffix_length);
   }
   return name;
+}
+
+std::string
+ImageDeviceType(const char *image_name) noexcept
+{
+  std::string device;
+  std::string_view rest = image_name;
+
+  while (!rest.empty()) {
+    const auto dash = rest.find('-');
+    const auto part = rest.substr(0, dash);
+    rest = dash == rest.npos ? std::string_view{} : rest.substr(dash + 1);
+
+    if (part.empty() || (part[0] >= '0' && part[0] <= '9') ||
+        part == "OV" || part == "testing")
+      /* the product prefix, the version (one or more numeric parts)
+         and the testing marker are not the hardware */
+      continue;
+
+    if (!device.empty())
+      device += '-';
+    device += part;
+  }
+
+  return device;
 }
 
 /**
@@ -247,8 +274,30 @@ PickFirmwareImage(const char *caption, DataField &_df,
     extra_caption = _("Download");
 #endif
 
+  /* the hardware this device runs on, from the running image's name;
+     empty on a PC without OPENVARIO_ROOT, and then there is nothing to
+     filter by */
+  const std::string device = ImageDeviceType(ovdevice.GetRunningImage().c_str());
+
+  /* the filter state survives between two openings of the picker in
+     one session, and the download list shares it */
+  static bool device_only = true;
+
   while (true) {
-    const auto images = FindFirmwareImages();
+    auto images = FindFirmwareImages();
+
+    if (!device.empty() && device_only)
+      std::erase_if(images, [&device](const FirmwareImage &image) {
+        return !StringHasPart(image.name, device);
+      });
+
+    StaticString<32> filter_caption;
+    if (device.empty())
+      filter_caption.clear();
+    else if (device_only)
+      filter_caption = _("Show all");
+    else
+      filter_caption.Format(_("%s only"), device.c_str());
 
     /* preselect the image the row shows, if it is in the list */
     unsigned initial = 0;
@@ -267,7 +316,13 @@ PickFirmwareImage(const char *caption, DataField &_df,
                                   renderer, false, help_text, nullptr,
                                   extra_caption,
                                   images.empty() ? nullptr : _("Delete"),
-                                  &cursor);
+                                  &cursor,
+                                  filter_caption.empty() ? nullptr : filter_caption.c_str());
+
+    if (result == mrExtra3) {
+      device_only = !device_only;
+      continue;
+    }
 
     if (result == mrExtra2) {
       /* Delete the highlighted image, then show the list again - the
@@ -280,7 +335,12 @@ PickFirmwareImage(const char *caption, DataField &_df,
     if (result == mrExtra) {
       /* a download lands in the data directory, which the list covers:
          show the list again, now with the new file */
-      const auto downloaded = DownloadFilePicker(FileType::OV_IMAGE);
+      DownloadNameFilter filter{device.c_str(), device.c_str(), device_only};
+      const auto downloaded =
+        DownloadFilePicker(FileType::OV_IMAGE,
+                           device.empty() ? nullptr : &filter);
+      if (!device.empty())
+        device_only = filter.enabled;
       if (downloaded == nullptr)
         continue;
 
