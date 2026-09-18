@@ -46,7 +46,7 @@ void ExtraWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   std::string ImageFile = "";
   AddFile(_("Upgrade Firmware"),
           _("Upgrade Firmware (.img.gz) "),
-          ImageFile, "*.img.gz\0", FileType::IMAGE);
+          ImageFile, "*.img.gz\0", FileType::OV_IMAGE);
 
 #else
   AddButton(_("Upgrade Firmware"), [this]() {

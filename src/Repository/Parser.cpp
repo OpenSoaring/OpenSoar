@@ -101,6 +101,14 @@ ParseFileRepository(FileRepository &repository, NLineReader &reader)
         file.type = FileType::CHECKLIST;
       else if (StringIsEqual(value, "frequencies"))
         file.type = FileType::FREQUENCIES;
+#ifdef IS_OPENVARIO
+      else if (StringIsEqual(value, "ov-image"))
+        file.type = FileType::OV_IMAGE;
+      else if (StringIsEqual(value, "ov-upgrade"))
+        file.type = FileType::OV_UPGRADE;
+      else if (StringIsEqual(value, "ov-ipk"))
+        file.type = FileType::OV_IPK;
+#endif  // IS_OPENVARIO
     } else if (StringIsEqual(name, "update")) {
       unsigned year, month, day;
       if (sscanf(value, "%04u-%02u-%02u", &year, &month, &day) == 3)

@@ -64,7 +64,7 @@ GetFileTypePatterns(const FileType file_type) noexcept
   case FileType::PLANE:
     return "*.xcp\0";
 
-  case FileType::IMAGE:
+  case FileType::OV_IMAGE:
     return "*.img.gz\0";
 
   case FileType::UNKNOWN:
@@ -124,7 +124,7 @@ GetFileTypeDefaultDir(const FileType file_type)
   case FileType::PROFILE:
     return AllocatedPath("profiles");
 
-  case FileType::IMAGE:
+  case FileType::OV_IMAGE:
   case FileType::UNKNOWN:
   case FileType::COUNT:
     return nullptr;
