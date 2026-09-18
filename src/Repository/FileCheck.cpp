@@ -36,11 +36,18 @@ IsZip(Head head) noexcept
   return StartsWith(head, std::string_view{"PK\x03\x04", 4});
 }
 
+#ifdef IS_OPENVARIO
+
+/**
+ * A gzip stream, as the OpenVario images are delivered.
+ */
 static bool
 IsGzip(Head head) noexcept
 {
   return StartsWith(head, std::string_view{"\x1f\x8b", 2});
 }
+
+#endif  // IS_OPENVARIO
 
 /**
  * A web page instead of data - the classic result of a moved file or
@@ -224,11 +231,18 @@ CheckFileContent(Path path, FileType type) noexcept
       ? FileCheckResult::OK
       : FileCheckResult::MISMATCH;
 
-  case FileType::IMAGE:
+#ifdef IS_OPENVARIO
+  case FileType::OV_IMAGE:
     /* OpenVario firmware: *.img.gz */
     return IsGzip(head)
       ? FileCheckResult::OK
       : FileCheckResult::MISMATCH;
+
+  case FileType::OV_UPGRADE:
+  case FileType::OV_IPK:
+    /* not checked (yet): nothing here looks into these files */
+    break;
+#endif  // IS_OPENVARIO
 
   case FileType::FLARMNET:
   case FileType::RASP:

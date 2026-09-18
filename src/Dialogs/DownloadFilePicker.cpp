@@ -320,7 +320,7 @@ DownloadFilePickerWidget::Download()
        to the download directory, where the system settings look for
        them (Android's download manager only writes below the data
        directory, so it keeps the old place) */
-    if (file_type == FileType::IMAGE) {
+    if (file_type == FileType::OV_IMAGE) {
       const auto download_dir = GetProductDownloadsPath(true);
       if (download_dir == nullptr || !Directory::Exists(download_dir))
         throw std::runtime_error("The download directory does not exist and could not be created.");
