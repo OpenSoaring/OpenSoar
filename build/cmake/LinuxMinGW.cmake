@@ -81,6 +81,8 @@ include_directories(
         kernel32
         # ?? msvcrt32
         shell32
+        # CoTaskMemFree() for SHGetKnownFolderPath() in LocalPath.cpp
+        ole32
         gcc_s
       )
 
