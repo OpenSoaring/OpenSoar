@@ -16,6 +16,9 @@
 #include "LogFile.hpp"
 #include "Look/DialogLook.hpp"
 #include "Renderer/TwoTextRowsRenderer.hpp"
+#include "Formatter/ByteSizeFormatter.hpp"
+#include "Formatter/TimeFormatter.hpp"
+#include "time/BrokenDateTime.hpp"
 #include "UIGlobals.hpp"
 #include "net/http/Features.hpp"
 #include "system/FileUtil.hpp"
@@ -50,6 +53,36 @@ ImageDisplayName(Path filename) noexcept
   return name;
 }
 
+/**
+ * The second row: the path with forward slashes throughout (one
+ * convention for every platform, and no doubled separator where a
+ * drive root met the directory), then size and date.
+ */
+static std::string
+DescribeImage(Path path) noexcept
+{
+  std::string text = path.c_str();
+  for (auto &ch : text)
+    if (ch == '\\')
+      ch = '/';
+
+  for (std::size_t i; (i = text.find("//")) != std::string::npos;)
+    text.erase(i, 1);
+
+  if (File::Exists(path)) {
+    char size[32];
+    FormatByteSize(size, sizeof(size), File::GetSize(path));
+    char stamp[32];
+    FormatISO8601(stamp, BrokenDateTime{File::GetLastModification(path)});
+    text += ", ";
+    text += size;
+    text += ", ";
+    text += stamp;
+  }
+
+  return text;
+}
+
 class ImageCollector final : public File::Visitor {
   std::vector<FirmwareImage> &images;
 
@@ -64,7 +97,8 @@ public:
       if (i.path == path)
         return;
 
-    images.push_back({ImageDisplayName(filename), AllocatedPath(path)});
+    images.push_back({ImageDisplayName(filename), AllocatedPath(path),
+                      DescribeImage(path)});
   }
 };
 
@@ -92,17 +126,11 @@ FindFirmwareImages() noexcept
   std::vector<FirmwareImage> images;
 
   /* the download directory: on the device /home/root/data/download
-     itself, on a PC or a phone the product subdirectories of the
-     user's Downloads folder.  Only the directory itself, never its
-     subdirectories - old images can be moved aside into one */
-  if (const auto downloads = GetUserDownloadsPath(); downloads != nullptr) {
-#ifdef IS_OPENVARIO_CB2
-    CollectImages(images, downloads);
-#else
-    CollectImages(images, AllocatedPath::Build(downloads, Path("OpenVario")));
-    CollectImages(images, AllocatedPath::Build(downloads, Path("XCSoar")));
-#endif
-  }
+     itself, on a PC or a phone the OpenVario subdirectory of the
+     user's Downloads folder - where the Download button puts images
+     as well.  Only the directory itself, never its subdirectories:
+     old images can be moved aside into one */
+  CollectImages(images, GetProductDownloadsPath());
 
 #ifndef IS_OPENVARIO_CB2
   /* a development machine with OPENVARIO_ROOT sees the device's
@@ -159,7 +187,7 @@ public:
   void OnPaintItem(Canvas &canvas, const PixelRect rc,
                    unsigned i) noexcept override {
     row_renderer.DrawFirstRow(canvas, rc, images[i].name.c_str());
-    row_renderer.DrawSecondRow(canvas, rc, images[i].path.c_str());
+    row_renderer.DrawSecondRow(canvas, rc, images[i].detail.c_str());
   }
 };
 
