@@ -10,6 +10,7 @@
 #include "Storage/StorageManager.hpp"
 #endif
 #include "Dialogs/ListPicker.hpp"
+#include "Dialogs/Message.hpp"
 #include "Form/DataField/File.hpp"
 #include "Language/Language.hpp"
 #include "LocalPath.hpp"
@@ -23,6 +24,7 @@
 #include "net/http/Features.hpp"
 #include "system/FileUtil.hpp"
 #include "ui/canvas/Canvas.hpp"
+#include "util/StaticString.hxx"
 #include "util/StringCompare.hxx"
 
 #include <string.h>
@@ -85,10 +87,11 @@ DescribeImage(Path path) noexcept
 
 class ImageCollector final : public File::Visitor {
   std::vector<FirmwareImage> &images;
+  const bool deletable;
 
 public:
-  explicit ImageCollector(std::vector<FirmwareImage> &_images) noexcept
-    :images(_images) {}
+  ImageCollector(std::vector<FirmwareImage> &_images, bool _deletable) noexcept
+    :images(_images), deletable(_deletable) {}
 
   void Visit(Path path, Path filename) override {
     /* the same directory may be reached under two names (a symlink,
@@ -98,12 +101,17 @@ public:
         return;
 
     images.push_back({ImageDisplayName(filename), AllocatedPath(path),
-                      DescribeImage(path)});
+                      DescribeImage(path), deletable});
   }
 };
 
+/**
+ * @param deletable may the Delete button remove images from this
+ * directory?  True for the download directories, false for a stick
+ */
 static void
-CollectImages(std::vector<FirmwareImage> &images, Path directory) noexcept
+CollectImages(std::vector<FirmwareImage> &images, Path directory,
+              bool deletable) noexcept
 {
   if (directory == nullptr || directory.empty())
     return;
@@ -114,7 +122,7 @@ CollectImages(std::vector<FirmwareImage> &images, Path directory) noexcept
   }
 
   const std::size_t before = images.size();
-  ImageCollector collector(images);
+  ImageCollector collector(images, deletable);
   Directory::VisitSpecificFiles(directory, IMAGE_PATTERN, collector, false);
   LogFormat("firmware images: %u in %s", unsigned(images.size() - before),
             directory.c_str());
@@ -130,18 +138,20 @@ FindFirmwareImages() noexcept
      user's Downloads folder - where the Download button puts images
      as well.  Only the directory itself, never its subdirectories:
      old images can be moved aside into one */
-  CollectImages(images, GetProductDownloadsPath());
+  CollectImages(images, GetProductDownloadsPath(), true);
 
 #ifndef IS_OPENVARIO_CB2
   /* a development machine with OPENVARIO_ROOT sees the device's
      download directory below that root */
   if (ovdevice.HasSystemRoot())
-    CollectImages(images, ovdevice.MapSystemPath(Path("/home/root/data/download")));
+    CollectImages(images, ovdevice.MapSystemPath(Path("/home/root/data/download")),
+                  true);
 #endif
 
   /* the USB stick as the OpenVario mounts it (under OPENVARIO_ROOT on
      a development machine) */
-  CollectImages(images, ovdevice.MapSystemPath(Path("/usb/usbstick/openvario/images")));
+  CollectImages(images, ovdevice.MapSystemPath(Path("/usb/usbstick/openvario/images")),
+                false);
 
 #ifndef OPENVARIOBASEMENU
   /* removable drives the storage layer knows about - on a PC this is
@@ -160,7 +170,8 @@ FindFirmwareImages() noexcept
         continue;
 
       CollectImages(images, AllocatedPath::Build(Path(root.c_str()),
-                                                 Path("openvario/images")));
+                                                 Path("openvario/images")),
+                    false);
     }
   }
 #endif
@@ -191,6 +202,39 @@ public:
   }
 };
 
+/**
+ * The Delete button: remove the image from the download directory
+ * after a confirmation.  Images on a stick are left alone - the stick
+ * is the user's archive, and the button is for downloads that are no
+ * longer needed.
+ */
+static void
+DeleteImage(const FirmwareImage &image) noexcept
+{
+  StaticString<512> message;
+
+  if (!image.deletable) {
+    message.Format("%s\n%s\n\n%s", image.name.c_str(), image.path.c_str(),
+                   _("This image is not in the download directory; only downloaded images can be deleted here."));
+    ShowMessageBox(message, _("Delete"), MB_OK | MB_ICONINFORMATION);
+    return;
+  }
+
+  message.Format("%s\n%s\n\n%s", image.name.c_str(), image.path.c_str(),
+                 _("Delete this image?"));
+  if (ShowMessageBox(message, _("Delete"), MB_YESNO | MB_ICONQUESTION) != IDYES)
+    return;
+
+  if (!File::Delete(image.path)) {
+    message.Format("%s\n%s", _("Failed to delete the image."),
+                   image.path.c_str());
+    ShowMessageBox(message, _("Delete"), MB_OK | MB_ICONERROR);
+    return;
+  }
+
+  LogFormat("firmware images: deleted %s", image.path.c_str());
+}
+
 bool
 PickFirmwareImage(const char *caption, DataField &_df,
                   const char *help_text) noexcept
@@ -217,10 +261,20 @@ PickFirmwareImage(const char *caption, DataField &_df,
         }
 
     ImageRowRenderer renderer(images);
+    unsigned cursor = 0;
     const int result = ListPicker(caption, images.size(), initial,
                                   renderer.CalculateLayout(UIGlobals::GetDialogLook()),
                                   renderer, false, help_text, nullptr,
-                                  extra_caption);
+                                  extra_caption,
+                                  images.empty() ? nullptr : _("Delete"),
+                                  &cursor);
+
+    if (result == mrExtra2) {
+      /* Delete the highlighted image, then show the list again - the
+         user may want to clean out several old downloads in one go */
+      DeleteImage(images[cursor]);
+      continue;
+    }
 
 #ifdef HAVE_DOWNLOAD_MANAGER
     if (result == mrExtra) {
