@@ -34,6 +34,7 @@
 #include <fmt/format.h>
 
 #include <stdarg.h>
+#include <string.h>
 
 #include <map>
 #include <string>
@@ -284,6 +285,24 @@ OpenVario_Device::GetMainApp() noexcept
 
   const auto i = map.find("main_app");
   return i != map.end() && !i->second.empty() ? i->second : "OpenSoar";
+}
+
+std::string
+OpenVario_Device::GetRunningImage() noexcept
+{
+  char line[0x100];
+  if (!File::ReadString(MapSystemPath(Path("/boot/image-version-info")),
+                        line, sizeof(line)))
+    return {};
+
+  /* the first line only, without trailing whitespace */
+  line[strcspn(line, "\r\n")] = '\0';
+
+  std::string name = line;
+  for (const char *suffix : {".gz", ".img"})
+    if (name.ends_with(suffix))
+      name.erase(name.size() - strlen(suffix));
+  return name;
 }
 
 bool

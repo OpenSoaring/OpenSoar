@@ -272,19 +272,9 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
   }
 
   /* the row shows the image the device is running, whatever the
-     profile remembers from an earlier choice: the first line of
-     /boot/image-version-info names its file (reachable on a
-     development PC through OPENVARIO_ROOT) */
-  {
-    char line[0x100];
-    if (File::ReadString(ovdevice.MapSystemPath(Path("/boot/image-version-info")),
-                         line, sizeof(line))) {
-      /* the first line only, without trailing whitespace */
-      line[strcspn(line, "\r\n")] = '\0';
-      current_image = StripImageSuffix(line).c_str();
-    }
-    ShowCurrentImage();
-  }
+     profile remembers from an earlier choice */
+  current_image = ovdevice.GetRunningImage().c_str();
+  ShowCurrentImage();
   
   AddBoolean(
       _("Settings Enabled"),
