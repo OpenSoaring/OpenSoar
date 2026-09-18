@@ -140,12 +140,15 @@ public:
  * dialog (nullptr disables it)
  * @param extra_caption2 caption of a second extra button that closes the
  * dialog (nullptr disables it)
+ * @param extra_caption3 caption of a third extra button that closes the
+ * dialog with mrExtra3 (nullptr disables it)
  * @param cursor_index if not nullptr, receives the cursor row when the
  * dialog closes, whichever button closed it; an extra button that acts
  * on the highlighted row (Delete, for example) needs it, because the
  * return value only carries the row for Select
  * @return the list index, -1 if the user cancelled the dialog, mrExtra if
- * the user clicked the first extra button, mrExtra2 for the second
+ * the user clicked the first extra button, mrExtra2 and mrExtra3 for
+ * the second and third
  */
 int
 ListPicker(const char *caption,
@@ -156,4 +159,5 @@ ListPicker(const char *caption,
            ItemHelpCallback_t itemhelp_callback = nullptr,
            const char *extra_caption = nullptr,
            const char *extra_caption2 = nullptr,
-           unsigned *cursor_index = nullptr);
+           unsigned *cursor_index = nullptr,
+           const char *extra_caption3 = nullptr);
