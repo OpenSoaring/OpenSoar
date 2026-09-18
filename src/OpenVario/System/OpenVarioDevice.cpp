@@ -276,6 +276,35 @@ OpenVario_Device::SetBrightness(uint_least8_t value) noexcept
   }
 }
 
+std::string
+OpenVario_Device::GetMainApp() noexcept
+{
+  std::map<std::string, std::string, std::less<>> map;
+  LoadConfigFile(map, system_config);
+
+  const auto i = map.find("main_app");
+  return i != map.end() && !i->second.empty() ? i->second : "OpenSoar";
+}
+
+bool
+OpenVario_Device::SetMainApp(const char *name) noexcept
+try {
+  std::map<std::string, std::string, std::less<>> map;
+  LoadConfigFile(map, system_config);
+
+  if (const auto i = map.find("main_app");
+      i != map.end() && i->second == name)
+    return false;
+
+  map.insert_or_assign("main_app", name);
+  WriteConfigFile(map, system_config);
+  LogFormat("Set main_app '%s' in %s", name, system_config.c_str());
+  return true;
+} catch (...) {
+  LogError(std::current_exception());
+  return false;
+}
+
 DisplayOrientation
 OpenVario_Device::GetRotation()
 {
