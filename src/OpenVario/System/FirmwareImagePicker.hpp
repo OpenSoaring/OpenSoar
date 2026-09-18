@@ -20,6 +20,10 @@ struct FirmwareImage {
 
   /** the second row of the list: path, size and date */
   std::string detail;
+
+  /** found in a download directory, so the Delete button may remove
+      it; images on a USB stick stay where they are */
+  bool deletable;
 };
 
 /**
@@ -39,7 +43,9 @@ FindFirmwareImages() noexcept;
 /**
  * Let the user choose a firmware image from FindFirmwareImages(),
  * name in the first row and the full path in the second, with a
- * Download button where the repository offers images.  A choice is
+ * Download button where the repository offers images and a Delete
+ * button that removes the highlighted image from the download
+ * directory after a confirmation.  A choice is
  * stored in the data field through ForceModify(), so the field's
  * listener sees it like any other change.
  *
