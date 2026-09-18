@@ -247,7 +247,9 @@ DownloadManagerThread::Start() noexcept
   const Item &item = queue.front();
   current_position = 0;
 
-  auto destination = LocalPath(item.path_relative.c_str());
+  /* usually relative to the data directory; a few file types have
+     their place elsewhere and pass an absolute path */
+  auto destination = ResolveDownloadPath(item.path_relative);
   if (const auto parent = destination.GetParent(); parent != nullptr)
     Directory::CreateRecursive(parent);
 
