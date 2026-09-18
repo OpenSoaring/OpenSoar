@@ -466,6 +466,32 @@ GetCachePath() noexcept
 }
 
 AllocatedPath
+GetProductDownloadsPath(bool create) noexcept
+{
+  auto downloads = GetUserDownloadsPath();
+  if (downloads == nullptr)
+    return nullptr;
+
+#ifndef IS_OPENVARIO_CB2
+  downloads = AllocatedPath::Build(downloads, Path{"OpenVario"});
+#endif
+
+  if (create)
+    Directory::CreateRecursive(downloads);
+  return downloads;
+}
+
+AllocatedPath
+ResolveDownloadPath(Path destination) noexcept
+{
+  assert(destination != nullptr);
+
+  return destination.IsAbsolute()
+    ? AllocatedPath{destination}
+    : LocalPath(destination);
+}
+
+AllocatedPath
 GetUserDownloadsPath() noexcept
 {
 #if defined(IS_OPENVARIO_CB2)
