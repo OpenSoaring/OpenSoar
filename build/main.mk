@@ -208,6 +208,7 @@ DIALOG_SOURCES += \
 	$(SRC)/OpenVario/System/SystemMenuWidget.cpp \
 	$(SRC)/OpenVario/System/OpenVarioDevice.cpp \
 	$(SRC)/OpenVario/System/OpenVarioTools.cpp \
+	$(SRC)/OpenVario/System/FirmwareImagePicker.cpp \
 	\
 	$(SRC)/OpenVario/System/Setting/RotationWidget.cpp \
 	$(SRC)/OpenVario/System/Setting/WifiWidget.cpp \
