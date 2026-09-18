@@ -21,11 +21,13 @@ struct FirmwareImage {
 
 /**
  * Collect the *.img.gz files from every place an OpenVario looks for
- * them: the images directory next to the data directory, the USB stick
- * the device mounts, any removable drive that carries opensoar/images
- * (this is how a PC stands in for the stick), and the data directory
- * itself, where downloaded images land.  Sorted by name, without
- * duplicates.
+ * them: the download directory (GetUserDownloadsPath(): the device's
+ * data/download, or the OpenVario and XCSoar subdirectories of the
+ * user's Downloads folder on a PC or a phone), the USB stick the device
+ * mounts at /usb/usbstick/openvario/images, and any removable drive
+ * that carries openvario/images, which is how a PC stands in for the
+ * stick.  Each directory is read on its own level only.  Sorted by
+ * name, without duplicates.
  */
 std::vector<FirmwareImage>
 FindFirmwareImages() noexcept;
