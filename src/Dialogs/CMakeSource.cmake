@@ -195,6 +195,7 @@ if(TARGET_IS_OPENVARIO)
 
         ../OpenVario/System/OpenVarioDevice.cpp
         ../OpenVario/System/OpenVarioTools.cpp
+        ../OpenVario/System/FirmwareImagePicker.cpp
         ../OpenVario/System/SystemMenuWidget.cpp
         ../OpenVario/System/Setting/RotationWidget.cpp
         ../OpenVario/System/Setting/WifiWidget.cpp
