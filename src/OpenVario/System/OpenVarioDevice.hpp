@@ -57,6 +57,11 @@ public:
    */
   [[gnu::pure]]
   AllocatedPath MapSystemPath(Path path) const noexcept;
+
+  /** is OPENVARIO_ROOT set, so that MapSystemPath() maps anything? */
+  bool HasSystemRoot() const noexcept {
+    return system_root != nullptr;
+  }
   void Deinitialise() noexcept;
   void LoadSettings() noexcept;
   void ReadSettings() noexcept;
