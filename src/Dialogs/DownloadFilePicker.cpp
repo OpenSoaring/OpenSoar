@@ -14,6 +14,7 @@
 #include "Formatter/TimeFormatter.hpp"
 #include "Form/Button.hpp"
 #include "Form/Edit.hpp"
+#include "Form/DataField/Boolean.hpp"
 #include "Form/DataField/String.hpp"
 #include "Form/DataField/Listener.hpp"
 #include "Widget/RowFormWidget.hpp"
@@ -29,6 +30,8 @@
 #include "thread/Mutex.hxx"
 #include "LocalPath.hpp"
 #include "system/FileUtil.hpp"
+#include "util/StaticString.hxx"
+#include "util/StringPart.hxx"
 
 #include <string>
 #include <string_view>
@@ -150,8 +153,6 @@ class DownloadFilePickerWidget final
     DataFieldListener,
     Net::DownloadListener {
 
-  enum Controls { AREAS, SEARCH };
-
   WidgetDialog &dialog;
 
   UI::Notify download_complete_notify{[this]{ OnDownloadCompleteNotification(); }};
@@ -161,6 +162,13 @@ class DownloadFilePickerWidget final
   /** countries/search only where they make sense - not for firmware
       images and the like */
   const bool filtered;
+
+  /** the caller's name filter, nullptr for none */
+  DownloadNameFilter *const name_filter;
+
+  /* the rows are optional, so the listener tells them apart by the
+     data field, not by a row index */
+  DataField *search_field = nullptr, *name_filter_field = nullptr;
 
   Button *download_button = nullptr;
 
@@ -195,10 +203,12 @@ class DownloadFilePickerWidget final
   AllocatedPath path;
 
 public:
-  DownloadFilePickerWidget(WidgetDialog &_dialog, FileType _file_type)
+  DownloadFilePickerWidget(WidgetDialog &_dialog, FileType _file_type,
+                           DownloadNameFilter *_name_filter)
     :RowFormWidget(UIGlobals::GetDialogLook()),
      dialog(_dialog), file_type(_file_type),
-     filtered(DownloadFilter::AppliesTo(_file_type)) {}
+     filtered(DownloadFilter::AppliesTo(_file_type)),
+     name_filter(_name_filter) {}
 
   AllocatedPath &&GetPath() {
     return std::move(path);
@@ -242,8 +252,10 @@ public:
 
   /* virtual methods from class DataFieldListener */
   void OnModified(DataField &df) noexcept override {
-    if (IsDataField(SEARCH, df))
+    if (&df == search_field)
       DownloadFilter::SetSearchText(df.GetAsString());
+    else if (&df == name_filter_field)
+      name_filter->enabled = ((const DataFieldBoolean &)df).GetValue();
 
     RefreshList();
   }
@@ -270,12 +282,24 @@ DownloadFilePickerWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
         "for maps, waypoints and airspaces, kept in the profile.  "
         "Files that concern every country stay listed."),
       new DownloadAreasDataField(this));
-  GetControl(AREAS).SetEditCallback(EditDownloadAreas);
+  GetControl(0).SetEditCallback(EditDownloadAreas);
 
-  Add(_("Search"),
-      _("Show only the files whose name or description contains this "
-        "text."),
-      new DataFieldString(DownloadFilter::GetSearchText(), this));
+  search_field =
+    Add(_("Search"),
+        _("Show only the files whose name or description contains this "
+          "text."),
+        new DataFieldString(DownloadFilter::GetSearchText(), this))
+    ->GetDataField();
+  }
+
+  if (name_filter != nullptr) {
+    StaticString<64> label;
+    label.Format(_("Only %s"), name_filter->label);
+    name_filter_field =
+      AddBoolean(label,
+                 _("Show only the files made for this device, as their name says."),
+                 name_filter->enabled, this)
+      ->GetDataField();
   }
 
   const DialogLook &look = UIGlobals::GetDialogLook();
@@ -326,7 +350,9 @@ DownloadFilePickerWidget::RefreshList()
     if (i.type == file_type &&
         (!filtered ||
          (DownloadFilter::MatchesArea(i) &&
-          DownloadFilter::MatchesSearch(i))))
+          DownloadFilter::MatchesSearch(i))) &&
+        (name_filter == nullptr || !name_filter->enabled ||
+         StringHasPart(i.GetName(), name_filter->token)))
       items.emplace_back(std::move(i));
 
   list->SetLength(std::max(items.size(), size_t{1}));
@@ -522,7 +548,7 @@ DownloadFilePickerWidget::OnDownloadCompleteNotification() noexcept
 }
 
 AllocatedPath
-DownloadFilePicker(FileType file_type)
+DownloadFilePicker(FileType file_type, DownloadNameFilter *name_filter)
 {
   if (!Net::DownloadManager::IsAvailable()) {
     const char *message =
@@ -534,7 +560,7 @@ DownloadFilePicker(FileType file_type)
   TWidgetDialog<DownloadFilePickerWidget>
     dialog(WidgetDialog::Full{}, UIGlobals::GetMainWindow(),
            UIGlobals::GetDialogLook(), _("Download"));
-  dialog.SetWidget(dialog, file_type);
+  dialog.SetWidget(dialog, file_type, name_filter);
   dialog.GetWidget().CreateButtons();
   dialog.AddButton(_("Close"), mrCancel);
   /* No EnableCursorSelection: Left/Right page the list (ListControl).
