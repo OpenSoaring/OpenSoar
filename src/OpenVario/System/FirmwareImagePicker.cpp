@@ -199,7 +199,7 @@ PickFirmwareImage(const char *caption, DataField &_df,
 
   const char *extra_caption = nullptr;
 #ifdef HAVE_DOWNLOAD_MANAGER
-  if (FileTypeSupportsDownload(FileType::IMAGE))
+  if (FileTypeSupportsDownload(FileType::OV_IMAGE))
     extra_caption = _("Download");
 #endif
 
@@ -226,7 +226,7 @@ PickFirmwareImage(const char *caption, DataField &_df,
     if (result == mrExtra) {
       /* a download lands in the data directory, which the list covers:
          show the list again, now with the new file */
-      const auto downloaded = DownloadFilePicker(FileType::IMAGE);
+      const auto downloaded = DownloadFilePicker(FileType::OV_IMAGE);
       if (downloaded == nullptr)
         continue;
 
