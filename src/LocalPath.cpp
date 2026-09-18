@@ -34,6 +34,7 @@
 
 #include <cassert>
 #include <stdlib.h>
+#include <string.h>
 #ifdef _WIN32
 #include <shlobj.h>
 #include <windef.h> // for MAX_PATH
@@ -462,6 +463,75 @@ Path
 GetCachePath() noexcept
 {
   return cache_path;
+}
+
+AllocatedPath
+GetUserDownloadsPath() noexcept
+{
+#if defined(IS_OPENVARIO_CB2)
+  /* the device: a fixed directory on the data partition, which the
+     wrapper scripts and the USB transfer know as well */
+  if (const char *home = getenv("HOME"); home != nullptr && *home != '\0')
+    return AllocatedPath::Build(Path{home}, Path{"data" DIR_SEPARATOR_S "download"});
+  return nullptr;
+#elif defined(ANDROID)
+  const auto env = Java::GetEnv();
+  return Environment::GetExternalStoragePublicDirectory(env, "Download");
+#elif defined(_WIN32)
+  /* FOLDERID_Downloads, spelled out so that no uuid library has to be
+     linked for one GUID */
+  static constexpr GUID folderid_downloads =
+    {0x374DE290, 0x123F, 0x4565, {0x91, 0x64, 0x39, 0xC4, 0x92, 0x5E, 0x46, 0x7B}};
+
+  PWSTR wide = nullptr;
+  if (SUCCEEDED(SHGetKnownFolderPath(folderid_downloads, 0, nullptr, &wide)) &&
+      wide != nullptr) {
+    const std::string utf8 = WideToUTF8(wide);
+    CoTaskMemFree(wide);
+    if (!utf8.empty())
+      return AllocatedPath{Path{utf8.c_str()}};
+  }
+  return nullptr;
+#else
+  const char *home = getenv("HOME");
+  if (home == nullptr || *home == '\0')
+    return nullptr;
+
+  /* the XDG user directory, if the desktop configured one; the file
+     holds lines like XDG_DOWNLOAD_DIR="$HOME/Downloads" */
+  {
+    const auto config = AllocatedPath::Build(Path{home},
+                                             Path{".config" DIR_SEPARATOR_S "user-dirs.dirs"});
+    std::string dir;
+    if (FILE *file = fopen(config.c_str(), "r"); file != nullptr) {
+      char line[512];
+      while (fgets(line, sizeof(line), file) != nullptr) {
+        std::string_view v{line};
+        if (!v.starts_with("XDG_DOWNLOAD_DIR="))
+          continue;
+
+        v.remove_prefix(strlen("XDG_DOWNLOAD_DIR="));
+        while (!v.empty() && (v.back() == '\n' || v.back() == '\r' || v.back() == '"'))
+          v.remove_suffix(1);
+        if (v.starts_with('"'))
+          v.remove_prefix(1);
+
+        if (v.starts_with("$HOME")) {
+          dir = home;
+          v.remove_prefix(strlen("$HOME"));
+        }
+        dir.append(v);
+        break;
+      }
+      fclose(file);
+    }
+
+    if (!dir.empty())
+      return AllocatedPath{Path{dir.c_str()}};
+  }
+
+  return AllocatedPath::Build(Path{home}, Path{"Downloads"});
+#endif
 }
 
 AllocatedPath
