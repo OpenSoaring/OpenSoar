@@ -220,7 +220,7 @@ SystemSettingsWidget::Prepare(ContainerWindow &parent,
      comes from */
   AddFile(_("OV-Firmware"),
           _("The firmware image the OpenVario is running. Choose another image to upgrade to it: OpenSoar quits and the upgrade starts."),
-          "OVImage", "*.img.gz\0", FileType::IMAGE)
+          "OVImage", "*.img.gz\0", FileType::OV_IMAGE)
     ->SetEditCallback(PickFirmwareImage);
 
   /* the row shows the image the device is running, whatever the
