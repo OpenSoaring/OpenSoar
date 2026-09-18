@@ -11,6 +11,7 @@
 #include "Message.hpp"
 #include "UIGlobals.hpp"
 #include "Look/DialogLook.hpp"
+#include "Formatter/TimeFormatter.hpp"
 #include "Form/Button.hpp"
 #include "Form/CheckBox.hpp"
 #include "Asset.hpp"
@@ -34,6 +35,8 @@
 #include "system/FileUtil.hpp"
 #include <algorithm>
 #include <string>
+#include <string_view>
+#include <string.h>
 #include <vector>
 
 #include <cassert>
@@ -69,6 +72,81 @@ EditDownloadAreas([[maybe_unused]] const char *caption, DataField &df,
 
   static_cast<DownloadAreasDataField &>(df).Update();
   return true;
+}
+
+static constexpr bool
+IsOpenVarioFile([[maybe_unused]] FileType type) noexcept
+{
+#ifdef IS_OPENVARIO
+  return type == FileType::OV_IMAGE || type == FileType::OV_UPGRADE ||
+    type == FileType::OV_IPK;
+#else
+  return false;
+#endif
+}
+
+static constexpr bool
+IsFirmwareImage([[maybe_unused]] FileType type) noexcept
+{
+#ifdef IS_OPENVARIO
+  return type == FileType::OV_IMAGE;
+#else
+  return false;
+#endif
+}
+
+/**
+ * The last path component of the URI, without a query string.
+ */
+static std::string_view
+UriBaseName(std::string_view uri) noexcept
+{
+  if (const auto query = uri.find('?'); query != uri.npos)
+    uri = uri.substr(0, query);
+
+  if (const auto slash = uri.rfind('/'); slash != uri.npos)
+    uri = uri.substr(slash + 1);
+
+  return uri;
+}
+
+/**
+ * The name the downloaded file gets on disk.  That is the repository's
+ * "name", which is expected to carry the extension - but a repository
+ * that lists a firmware image as "OV-3.2.20.1-CB2-CH57" without the
+ * ".img.gz" would produce a file the image picker does not find.  So
+ * when the URI ends in the name plus something more, that longer
+ * form is taken, and a firmware image always ends in ".img.gz".
+ */
+static std::string
+DownloadFileName(const AvailableFile &file) noexcept
+{
+  std::string name = file.GetName();
+
+  const auto base = UriBaseName(file.GetURI());
+  if (base.size() > name.size() && base.starts_with(name) &&
+      base[name.size()] == '.')
+    name.assign(base);
+
+  if (IsFirmwareImage(file.type) && !name.ends_with(".img.gz"))
+    name += ".img.gz";
+
+  return name;
+}
+
+/**
+ * The first row of the list: the name, for a firmware image without
+ * the ".img.gz" the picker in the system settings drops as well.
+ */
+static std::string
+DisplayName(const AvailableFile &file) noexcept
+{
+  std::string name = file.GetName();
+  if (IsFirmwareImage(file.type))
+    for (const char *suffix : {".gz", ".img"})
+      if (name.ends_with(suffix))
+        name.erase(name.size() - strlen(suffix));
+  return name;
 }
 
 class DownloadFilePickerWidget final
@@ -395,10 +473,33 @@ DownloadFilePickerWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
                is_selected, focused, false, true);
   text_rc.left = box_rc.right + 2 * (int)padding;
 
-  row_renderer.DrawFirstRow(canvas, text_rc, file.GetName());
-  const char *description = file.GetDescription();
-  if (description != nullptr && description[0] != '\0')
-    row_renderer.DrawSecondRow(canvas, text_rc, description);
+  row_renderer.DrawFirstRow(canvas, text_rc, DisplayName(file).c_str());
+
+  char date[21];
+  const char *date_text = nullptr;
+  if (file.update_date.IsPlausible()) {
+    FormatISO8601(date, file.update_date);
+    date_text = date;
+  }
+
+  if (IsOpenVarioFile(file_type)) {
+    /* the same second row as the firmware image picker: where the
+       file comes from, then the date - the repository knows no size */
+    std::string detail = file.GetURI();
+    if (date_text != nullptr) {
+      detail += ", ";
+      detail += date_text;
+    }
+    row_renderer.DrawSecondRow(canvas, text_rc, detail.c_str());
+  } else {
+    /* like the file manager's Add dialog: the description, the date
+       at the right edge */
+    const char *description = file.GetDescription();
+    if (description != nullptr && description[0] != '\0')
+      row_renderer.DrawSecondRow(canvas, text_rc, description);
+    if (date_text != nullptr)
+      row_renderer.DrawRightSecondRow(canvas, text_rc, date_text);
+  }
 }
 
 /**
@@ -408,7 +509,8 @@ DownloadFilePickerWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
 static AllocatedPath
 RelativeDownloadPath(FileType file_type, const AvailableFile &file)
 {
-  const Path file_path(file.GetName());
+  const std::string file_name = DownloadFileName(file);
+  const Path file_path(file_name.c_str());
   if (!file_path.IsValidFilename())
     throw std::runtime_error("Invalid download filename");
 
