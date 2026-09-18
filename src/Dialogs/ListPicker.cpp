@@ -73,7 +73,8 @@ ListPicker(const char *caption,
            const char *help_text,
            ItemHelpCallback_t _itemhelp_callback,
            const char *extra_caption,
-           const char *extra_caption2)
+           const char *extra_caption2,
+           unsigned *cursor_index)
 {
   assert(num_items <= 0x7fffffff);
   assert((num_items == 0 && initial_value == 0) || initial_value < num_items);
@@ -135,6 +136,9 @@ ListPicker(const char *caption,
   dialog.FinishPreliminary(widget.release());
 
   int result = dialog.ShowModal();
+  if (cursor_index != nullptr)
+    *cursor_index = num_items > 0 ? list_widget->GetList().GetCursorIndex() : 0;
+
   if (result == mrOK)
     result = (int)list_widget->GetList().GetCursorIndex();
   else if (result != mrExtra && result != mrExtra2)
