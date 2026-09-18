@@ -135,6 +135,14 @@ public:
   std::string GetMainApp() noexcept;
 
   /**
+   * The firmware image the device is running: the first line of
+   * /boot/image-version-info (reachable on a development PC through
+   * OPENVARIO_ROOT), without its ".img.gz" - for example
+   * "OV-3.2.20.1-CB2-CH57".  Empty if the file is not there.
+   */
+  std::string GetRunningImage() noexcept;
+
+  /**
    * Store the main app in /boot/config.uEnv.
    *
    * @return true if the file was changed

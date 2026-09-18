@@ -19,6 +19,8 @@ enum ModalResult {
   mrExtra = -2,
   /** Second extra dialog button (e.g. ListPicker "Now" action). */
   mrExtra2 = -3,
+  /** Third extra dialog button (e.g. a filter toggle in ListPicker). */
+  mrExtra3 = -4,
 };
 
 /**
