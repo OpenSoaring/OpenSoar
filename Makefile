@@ -258,9 +258,12 @@ ifeq ($(FAT_BINARY),n)
 OUTPUTS := $(XCSOAR_BIN) $(VALI_XCS_BIN)
 endif
 
+# This has to come after the assignment above, which starts OUTPUTS
+# afresh for every non-fat build; added any earlier, the APK was dropped
+# again and "make all" stopped after libxcsoar.so.
 ifeq ($(TARGET),ANDROID)
-OUTPUTS += $(ANDROID_BIN)/$(PROGRAM_NAME)-debug.apk
-OUTPUTS += $(ANDROID_BIN)/$(PROGRAM_NAME)-debug.aab
+OUTPUTS += $(ANDROID_BIN)/$(ANDROID_APK_NAME)-debug.apk
+OUTPUTS += $(ANDROID_BIN)/$(ANDROID_APK_NAME)-debug.aab
 endif
 
 ifeq ($(TARGET_IS_KOBO),y)
