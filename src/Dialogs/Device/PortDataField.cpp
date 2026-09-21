@@ -12,6 +12,7 @@
 # include "SystemSettings.hpp"
 # include "Device/Features.hpp"  // REMOTE_PORT
 # include "util/StringAPI.hxx"
+# include "Device/Driver/SteFly/Discovery.hpp"
 #endif
 
 #ifdef HAVE_POSIX
@@ -67,8 +68,9 @@ static constexpr struct {
 static constexpr unsigned num_port_types = std::size(port_types) - 1;
 
 /**
- * Return the COM / tty path that has been claimed by the fixed
- * SteFly RemoteStick slot at REMOTE_PORT (see Startup.cpp), or
+ * Return the port path that has been claimed by the fixed SteFly
+ * RemoteStick slot at REMOTE_PORT (see Startup.cpp) - a COM port on
+ * Windows, a tty on Linux or a UsbSerialHelper id on Android - or
  * nullptr if no RemoteStick was auto-detected this session.
  *
  * The port-picker dropdown for the regular device slots skips this
@@ -122,6 +124,17 @@ DetectSerialPorts(DataFieldEnum &df) noexcept
   while ((path = enumerator.Next()) != nullptr) {
     if (reserved != nullptr && StringIsEqual(path, reserved))
       continue;
+
+#ifdef HAVE_REMOTE_STICK
+    // On Android the RemoteStick slot is opened through the
+    // UsbSerialHelper, so its path is a USB id and never equals a
+    // device node. Some Android devices still expose the stick as
+    // /dev/ttyUSB* or /dev/ttyACM*; hide that node too, otherwise a
+    // regular slot could open the same stick a second time.
+    if (reserved != nullptr &&
+        SteFly::IsUsbTty(path, SteFly::VID_STEFLY, SteFly::PID_REMOTE_STICK))
+      continue;
+#endif
 
     const char *display_string = StringAfterPrefix(path, "/dev/");
     if (display_string == nullptr)
@@ -316,6 +329,15 @@ void
 UpdatePortEntry(DataFieldEnum &df, DeviceConfig::PortType type,
                 const char *value, const char *name) noexcept
 {
+  // The Android port picker reports every USB serial device it sees,
+  // including the RemoteStick that the fixed REMOTE_PORT slot already
+  // owns. Offering it for a regular slot would let two descriptors
+  // fight over one device, so it is left out like on the serial list.
+  if (const char *const reserved = GetStePortReserved();
+      reserved != nullptr && type == DeviceConfig::PortType::ANDROID_USB_SERIAL &&
+      StringIsEqual(value, reserved))
+    return;
+
   for (std::size_t i = 0, n = df.Count(); i < n; ++i) {
     const auto &item = df[i];
     if (DeviceConfig::PortType(item.GetId() >> 16) == type &&
