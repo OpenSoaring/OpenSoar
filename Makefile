@@ -126,10 +126,6 @@ include $(topdir)/build/android_bundle.mk
 else
 include $(topdir)/build/android.mk
 endif
-ifeq ($(TARGET),ANDROID)
-OUTPUTS += $(ANDROID_BIN)/$(PROGRAM_NAME)-debug.apk
-endif
-
 include $(topdir)/build/llvm.mk
 include $(topdir)/build/tools.mk
 include $(topdir)/build/version.mk
@@ -265,6 +261,13 @@ ifeq ($(FUZZER),n)
 
 ifeq ($(FAT_BINARY),n)
 OUTPUTS := $(XCSOAR_BIN) $(VALI_XCS_BIN)
+endif
+
+# This has to come after the assignment above, which starts OUTPUTS
+# afresh for every non-fat build; added any earlier, the APK was dropped
+# again and "make all" stopped after libxcsoar.so.
+ifeq ($(TARGET),ANDROID)
+OUTPUTS += $(ANDROID_BIN)/$(ANDROID_APK_NAME)-debug.apk
 endif
 
 ifeq ($(TARGET_IS_KOBO),y)
