@@ -5,6 +5,9 @@
 
 #include "java/Object.hxx"
 
+#include <optional>
+#include <string>
+
 class Context;
 class PortBridge;
 class DetectDeviceListener;
@@ -37,4 +40,14 @@ public:
   void RemoveDetectDeviceListener(JNIEnv *env, jobject l) noexcept;
 
   PortBridge *Connect(JNIEnv *env, const char *name, unsigned baud);
+
+  /**
+   * Look up an attached USB serial interface by USB vendor and
+   * product id.
+   *
+   * @return the port id as accepted by Connect() (e.g.
+   * "1209:8500#1"), or std::nullopt if no such device is attached
+   */
+  std::optional<std::string> FindPortId(JNIEnv *env, unsigned vendor_id,
+                                        unsigned product_id) noexcept;
 };
