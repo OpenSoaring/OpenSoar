@@ -483,12 +483,15 @@ Startup(UI::Display &display)
         SteFly::DiscoverPortByUsbId(SteFly::VID_STEFLY,
                                     SteFly::PID_REMOTE_STICK)) {
     LogFmt("SteFly RemoteStick detected on {} — binding to REMOTE_PORT slot",
-           stefly_port->c_str());
+           stefly_port->path.c_str());
     DeviceConfig &cfg =
       CommonInterface::SetSystemSettings().devices[REMOTE_PORT];
     cfg.Clear();
-    cfg.port_type = DeviceConfig::PortType::SERIAL;
-    cfg.path = stefly_port->c_str();
+    /* the port type comes from the discovery, because Android opens
+       the stick through the UsbSerialHelper (USB_SERIAL) instead of a
+       device node (SERIAL) */
+    cfg.port_type = stefly_port->type;
+    cfg.path = stefly_port->path.c_str();
     cfg.driver_name = "RemoteStick";
     cfg.enabled = true;
   } else {

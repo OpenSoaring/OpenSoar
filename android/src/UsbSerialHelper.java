@@ -433,6 +433,28 @@ public final class UsbSerialHelper extends BroadcastReceiver {
   }
 
   /**
+   * Return the port id of the first attached interface whose device
+   * has the given USB vendor and product id, or null if there is none.
+   *
+   * This exists for the startup discovery of the SteFly RemoteStick
+   * (src/Device/Driver/SteFly/Discovery.cpp): the native code needs
+   * the exact id that connect() accepts, including the "#<iface>"
+   * suffix of a secondary interface, and only this class knows which
+   * interface of a composite device carries the serial data.  The
+   * list is filled by the constructor from UsbManager.getDeviceList(),
+   * so this answers correctly right after construction, without
+   * waiting for any broadcast.
+   */
+  public synchronized String findPortId(int vendorId, int productId) {
+    for (UsbDeviceInterface i : interfaces)
+      if (i.device.getVendorId() == vendorId &&
+          i.device.getProductId() == productId)
+        return i.id;
+
+    return null;
+  }
+
+  /**
    * Forward USB attach to the native MultipleDevices, so a device whose
    * port (VID:PID[serial]) is configured can be reopened automatically.
    * Mirrors the WM_DEVICECHANGE path on Windows and PortMonitorLinux on
