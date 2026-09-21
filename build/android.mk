@@ -12,6 +12,14 @@ ANDROID_OUTPUT_DIR = $(TARGET_OUTPUT_DIR)/android
 ANDROID_BUILD = $(TARGET_OUTPUT_DIR)/$(XCSOAR_ABI)/build
 ANDROID_BIN = $(TARGET_BIN_DIR)
 
+# The name of the APK files.  PROGRAM_NAME cannot be used here: main.mk
+# defines it only after this file has been read, and a rule target is
+# expanded right away, so the rule came out as "bin/-debug.apk" and no
+# rule for the branded name existed at all.  brand.mk has already run
+# (from options.mk), so its BRAND_PROGRAM_NAME is known; an unbranded
+# tree keeps the upstream name.
+ANDROID_APK_NAME := $(or $(BRAND_PROGRAM_NAME),XCSoar)
+
 ifeq ($(HOST_IS_DARWIN),y)
   ANDROID_SDK ?= $(HOME)/Library/Android/sdk
 else
@@ -552,11 +560,11 @@ $(HOME)/.android/debug.keystore:
 		-dname "CN=Android Debug" \
 		-keyalg RSA -keysize 2048 -validity 10000
 
-$(ANDROID_BIN)/$(PROGRAM_NAME)-debug.apk: $(ANDROID_BUILD)/aligned.apk $(HOME)/.android/debug.keystore | $(ANDROID_BIN)/dirstamp
+$(ANDROID_BIN)/$(ANDROID_APK_NAME)-debug.apk: $(ANDROID_BUILD)/aligned.apk $(HOME)/.android/debug.keystore | $(ANDROID_BIN)/dirstamp
 	@$(NQ)echo "  SIGN    $@"
 	$(Q)$(APKSIGN) --in $< --out $@ --debuggable-apk-permitted -ks $(HOME)/.android/debug.keystore --ks-key-alias androiddebugkey --ks-pass pass:android
 
-$(ANDROID_BIN)/$(PROGRAM_NAME).apk: $(ANDROID_BUILD)/aligned.apk | $(ANDROID_BIN)/dirstamp
+$(ANDROID_BIN)/$(ANDROID_APK_NAME).apk: $(ANDROID_BUILD)/aligned.apk | $(ANDROID_BIN)/dirstamp
 	@$(NQ)echo "  SIGN    $@"
 	$(Q)$(APKSIGN_RELEASE) --in $< --out $@ -ks $(ANDROID_KEYSTORE) --ks-key-alias $(ANDROID_KEY_ALIAS)
 
