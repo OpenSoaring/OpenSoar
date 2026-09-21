@@ -7,6 +7,8 @@
 #include "PortBridge.hpp"
 #include "java/Class.hxx"
 #include "java/Env.hxx"
+#include "java/Exception.hxx"
+#include "java/Ref.hxx"
 #include "java/String.hxx"
 
 static Java::TrivialClass cls;
@@ -15,6 +17,7 @@ static jmethodID close_method;
 static jmethodID connect_method;
 static jmethodID addDetectDeviceListener_method;
 static jmethodID removeDetectDeviceListener_method;
+static jmethodID findPortId_method;
 
 bool
 UsbSerialHelper::Initialise(JNIEnv *env) noexcept
@@ -46,6 +49,8 @@ UsbSerialHelper::Initialise(JNIEnv *env) noexcept
   removeDetectDeviceListener_method =
     env->GetMethodID(cls, "removeDetectDeviceListener",
                      "(Lorg/xcsoar/DetectDeviceListener;)V");
+  findPortId_method = env->GetMethodID(cls, "findPortId",
+                                       "(II)Ljava/lang/String;");
 
   return true;
 }
@@ -91,4 +96,21 @@ UsbSerialHelper::Connect(JNIEnv *env, const char *name, unsigned baud)
   assert(obj);
 
   return new PortBridge(env, obj);
+}
+
+std::optional<std::string>
+UsbSerialHelper::FindPortId(JNIEnv *env, unsigned vendor_id,
+                            unsigned product_id) noexcept
+{
+  jobject result = env->CallObjectMethod(Get(), findPortId_method,
+                                         (jint)vendor_id, (jint)product_id);
+
+  /* findPortId() does not throw by itself, but a pending exception
+     would poison every following JNI call of this thread, so it is
+     cleared and treated like "not found" */
+  if (Java::DiscardException(env) || result == nullptr)
+    return std::nullopt;
+
+  Java::LocalRef<jstring> id{env, (jstring)result};
+  return Java::String::ToString(env, id.Get());
 }
