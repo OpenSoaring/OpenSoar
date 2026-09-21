@@ -224,11 +224,13 @@ CheckFileContent(Path path, FileType type) noexcept
       ? FileCheckResult::OK
       : FileCheckResult::MISMATCH;
 
+#ifdef IS_OPENVARIO
   case FileType::OV_IMAGE:
     /* OpenVario firmware: *.img.gz */
     return IsGzip(head)
       ? FileCheckResult::OK
       : FileCheckResult::MISMATCH;
+#endif  // IS_OPENVARIO
 
   case FileType::FLARMNET:
   case FileType::RASP:
