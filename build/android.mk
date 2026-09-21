@@ -39,6 +39,14 @@ ANDROID_ABI_DIR = $(ANDROID_BUNDLE_BASE)/lib/$(ANDROID_APK_LIB_ABI)
 
 ANDROID_BIN = $(TARGET_BIN_DIR)
 
+# The name of the APK and AAB files.  PROGRAM_NAME cannot be used here:
+# main.mk defines it only after this file has been read, and a rule
+# target is expanded right away, so the rule came out as
+# "bin/-debug.apk" and no rule for the branded name existed at all.
+# brand.mk has already run (from options.mk), so its BRAND_PROGRAM_NAME
+# is known; an unbranded tree keeps the upstream name.
+ANDROID_APK_NAME := $(or $(BRAND_PROGRAM_NAME),XCSoar)
+
 
 ### Outputs
 
@@ -620,13 +628,13 @@ $(BUNDLE_BUILD_DIR)/unsigned.aab: $(BUNDLE_BUILD_DIR)/base.zip $(BUNDLE_CONFIG)
 		--modules $< --output $@
 
 # Debug targets
-.DELETE_ON_ERROR: $(ANDROID_BIN)/$(PROGRAM_NAME)-debug.aab
-$(ANDROID_BIN)/$(PROGRAM_NAME)-debug.aab: $(BUNDLE_BUILD_DIR)/unsigned.aab $(DEBUG_KEYSTORE) | $(ANDROID_BIN)/dirstamp
+.DELETE_ON_ERROR: $(ANDROID_BIN)/$(ANDROID_APK_NAME)-debug.aab
+$(ANDROID_BIN)/$(ANDROID_APK_NAME)-debug.aab: $(BUNDLE_BUILD_DIR)/unsigned.aab $(DEBUG_KEYSTORE) | $(ANDROID_BIN)/dirstamp
 	@$(NQ)echo "  SIGN    $@"
 	$(Q)cp $< $@
 	$(Q)$(JARSIGNER) -keystore $(DEBUG_KEYSTORE) -storepass $(DEBUG_KEY_PASSWORD) $@ $(DEBUG_KEY_ALIAS)
 
-$(ANDROID_BIN)/$(PROGRAM_NAME)-debug.apk: $(ANDROID_BIN)/$(PROGRAM_NAME)-debug.aab $(DEBUG_KEYSTORE)
+$(ANDROID_BIN)/$(ANDROID_APK_NAME)-debug.apk: $(ANDROID_BIN)/$(ANDROID_APK_NAME)-debug.aab $(DEBUG_KEYSTORE)
 	@$(NQ)echo "  APK     $@"
 	$(Q)$(BUNDLETOOL) build-apks --overwrite --mode=universal \
 		--ks=$(DEBUG_KEYSTORE) --ks-pass=pass:$(DEBUG_KEY_PASSWORD) --ks-key-alias=$(DEBUG_KEY_ALIAS) \
@@ -636,13 +644,13 @@ $(ANDROID_BIN)/$(PROGRAM_NAME)-debug.apk: $(ANDROID_BIN)/$(PROGRAM_NAME)-debug.a
 
 # Release-named targets.  Always depend on a keystore: the release
 # file when present, otherwise the generated debug key.
-.DELETE_ON_ERROR: $(ANDROID_BIN)/$(PROGRAM_NAME).aab
-$(ANDROID_BIN)/$(PROGRAM_NAME).aab: $(BUNDLE_BUILD_DIR)/unsigned.aab $(ANDROID_SIGN_KEYSTORE) | $(ANDROID_BIN)/dirstamp
+.DELETE_ON_ERROR: $(ANDROID_BIN)/$(ANDROID_APK_NAME).aab
+$(ANDROID_BIN)/$(ANDROID_APK_NAME).aab: $(BUNDLE_BUILD_DIR)/unsigned.aab $(ANDROID_SIGN_KEYSTORE) | $(ANDROID_BIN)/dirstamp
 	@$(NQ)echo "  SIGN    $@"
 	$(Q)cp $< $@
 	$(Q)$(JARSIGNER) -keystore $(ANDROID_SIGN_KEYSTORE) $(JARSIGNER_SIGN_PASSWD) $@ $(ANDROID_SIGN_ALIAS)
 
-$(ANDROID_BIN)/$(PROGRAM_NAME).apk: $(ANDROID_BIN)/$(PROGRAM_NAME).aab
+$(ANDROID_BIN)/$(ANDROID_APK_NAME).apk: $(ANDROID_BIN)/$(ANDROID_APK_NAME).aab
 	@$(NQ)echo "  APK     $@"
 	$(Q)set -e; \
 	if [ -n "$(BUNDLE_KS_PASS_FILE)" ]; then \
