@@ -64,8 +64,10 @@ GetFileTypePatterns(const FileType file_type) noexcept
   case FileType::PLANE:
     return "*.xcp\0";
 
+#ifdef IS_OPENVARIO
   case FileType::OV_IMAGE:
     return "*.img.gz\0";
+#endif  // IS_OPENVARIO
 
   case FileType::UNKNOWN:
   case FileType::COUNT:
@@ -124,7 +126,10 @@ GetFileTypeDefaultDir(const FileType file_type)
   case FileType::PROFILE:
     return AllocatedPath("profiles");
 
+#ifdef IS_OPENVARIO
   case FileType::OV_IMAGE:
+#endif  // IS_OPENVARIO
+
   case FileType::UNKNOWN:
   case FileType::COUNT:
     return nullptr;
