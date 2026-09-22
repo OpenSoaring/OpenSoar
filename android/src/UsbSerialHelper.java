@@ -61,6 +61,8 @@ public final class UsbSerialHelper extends BroadcastReceiver {
     createDevice(0x2886, 0x0057), // SoftRF Card
     createDevice(0x303a, 0x8343), // SoftRF Concorde
     createDevice(0x303a, 0x8366), // SoftRF Prime Mk4
+    createDevice(0x1209, 0x8500), // SteFly RemoteStick
+    createDevice(0x1209, 0x8502), // SteFly RotaryPanel
 
     createDevice(0x0403, 0x6001), // FT232AM, FT232BM, FT232R FT245R,
     createDevice(0x0403, 0x6010), // FT2232D, FT2232H

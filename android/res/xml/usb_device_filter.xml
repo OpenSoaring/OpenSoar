@@ -24,6 +24,8 @@
   <usb-device vendor-id="10374" product-id="87"/> <!-- SoftRF Card -->
   <usb-device vendor-id="12346" product-id="33603"/> <!-- SoftRF Concorde -->
   <usb-device vendor-id="12346" product-id="33638"/> <!-- SoftRF Prime Mk4 -->
+  <usb-device vendor-id="4617" product-id="34048"/> <!-- SteFly RemoteStick -->
+  <usb-device vendor-id="4617" product-id="34050"/> <!-- SteFly RotaryPanel -->
 
   <usb-device vendor-id="1027" product-id="24577"/> <!-- FT232AM, FT232BM, FT232R FT245R -->
   <usb-device vendor-id="1027" product-id="24592"/> <!-- FT2232D, FT2232H -->
