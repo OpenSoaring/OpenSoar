@@ -1,3 +1,17 @@
+ATTENTION: this branch closes the 7.44 line with merging XCSoar
+---------------------------------------------------------------
+
+OpenSoar Version 7.44.24.2 - released 2026/09/23
+---------------
+* RemoteStick
+  add automatic detection of RemoteStick to Android and Linux too (up to 
+  now available in Windows only 
+
+OpenSoar Version 7.44.24.1 - released 2026/09/19
+---------------
+* OpenVario
+  Fix OpenVario build w/ moved .cache folder from partition 2 to part 3
+
 OpenSoar Version 7.44.24 - released 2026/09/13
 ---------------
   This release closes the 7.44 line.  It is continued by OpenSoar 7.45.25,
