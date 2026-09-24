@@ -205,7 +205,9 @@ public:
 
   /**
    * The value the process should exit with (see enum ExitValues);
-   * used by the OpenVario base menu.
+   * used by the OpenVario base menu.  The main program returns it
+   * from Main() in XCSoar.cpp; a pending power action
+   * (PowerControl::Perform()) still takes precedence.
    */
   static void SetExitValue(unsigned value) noexcept {
     exit_value = value;
