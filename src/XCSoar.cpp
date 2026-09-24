@@ -17,6 +17,7 @@
 #endif
 #include "SystemConfig.hpp"
 #include "MainWindow.hpp"
+#include "ui/window/ContainerWindow.hpp"
 #include "Interface.hpp"
 #include "Look/GlobalFonts.hpp"
 #include "ui/window/Init.hpp"
@@ -100,6 +101,18 @@ Main()
     ShowPendingSystemToolResult();
 #endif
     ret = CommonInterface::main_window->RunEventLoop();
+
+    /* Code that hands the next step over to the script which started
+       the program (on the OpenVario: firmware upgrade, touch
+       calibration, reboot after switching the main app) announces it
+       with ContainerWindow::SetExitValue().  The event loop itself
+       always returns 0, so the value has to be picked up here, or the
+       script never learns what it was asked to do. */
+    if (const unsigned exit_value = ContainerWindow::GetExitValue();
+        exit_value != 0) {
+      LogFormat("Leaving with exit value %u", exit_value);
+      ret = exit_value;
+    }
   } else if (WasStartupCancelledByUser())
     /* quitting from the startup dialogs is a deliberate user action,
        not an error */
