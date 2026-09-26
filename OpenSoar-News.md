@@ -1,5 +1,9 @@
 # OpenSoar News
 
+A lot of (bug) fixes is improving the XCSoar 7.45 branch, now the 
+XCSoar 7.45.3 is available. OpenSoar v7.45.25 is built on top of XCSoar 
+7.45.3 w/ a some changes regarding OpenVario handling.
+
 OpenSoar is built ON TOP of XCSoar: every OpenSoar version is the
 current XCSoar master plus a small, well-defined stack of OpenSoar
 additions (see `OpenSoar-AddOn.md` for the complete list of
