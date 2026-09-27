@@ -14,6 +14,14 @@
  * This is a class that can be used for converting geographical into screen
  * coordinates and vice-versa.
  *
+ * The map is drawn in the spherical ("Web") Mercator projection, the
+ * same projection that slippy map tiles are rendered in.  Raster tile
+ * overlays can then be placed as undistorted rectangles, and at the
+ * matching zoom level (see SetZoomLevel()) one tile pixel lands on
+ * exactly one screen pixel.  The scale set with SetScale() is the true
+ * ground scale at the GeoLocation; away from it, the Mercator scale
+ * factor applies, which is negligible within the area of one screen.
+ *
  * For doing so one needs to at least set a scaling factor (m/px) by calling
  * the SetScale() function.
  *
@@ -58,6 +66,42 @@ class Projection
 
   /** This is the scaling factor in px/m */
   double scale;
+
+  /**
+   * The Mercator y coordinate of #geo_location, cached because every
+   * conversion needs it.
+   */
+  double mercator_y = 0;
+
+  /**
+   * Screen pixels per Mercator radian.  This is #draw_scale times the
+   * cosine of the latitude of #geo_location, because the Mercator
+   * projection stretches everything by 1/cos(latitude) and #scale is
+   * meant as the ground scale at #geo_location.
+   */
+  double mercator_scale = 1;
+
+  /**
+   * Coefficients of the Taylor series of the Mercator y around the
+   * latitude of #geo_location, already multiplied by
+   * #mercator_scale.  asinh(tan(latitude)) costs several times more
+   * than the whole rest of GeoToScreen(), and GeoToScreen() runs for
+   * every airspace vertex and trail point in every frame; near the
+   * location, four terms are exact to a small fraction of a pixel.
+   */
+  double mercator_series[4] = {};
+
+  /**
+   * The largest latitude difference (radians) from #geo_location for
+   * which #mercator_series is used; see UpdateMercatorSeries().
+   */
+  double mercator_series_limit = 0;
+
+  void UpdateMercator() noexcept;
+  void UpdateMercatorSeries() noexcept;
+
+  [[gnu::pure]]
+  double LatitudeToScreenY(Angle latitude) const noexcept;
 
 public:
   Projection() noexcept;
@@ -162,7 +206,32 @@ public:
   void SetGeoLocation(GeoPoint g) noexcept {
     geo_location = g;
     geo_location.Normalize();
+    UpdateMercator();
   }
+
+  /**
+   * Returns the number of screen pixels per Mercator radian.
+   */
+  [[gnu::pure]]
+  double GetMercatorScale() const noexcept {
+    return mercator_scale;
+  }
+
+  /**
+   * Returns the slippy map zoom level that matches the current scale
+   * at the current GeoLocation.  An integer value means that tiles of
+   * that level are shown with one tile pixel per screen pixel.
+   */
+  [[gnu::pure]]
+  double GetZoomLevel() const noexcept;
+
+  /**
+   * Sets the scale so that tiles of the given zoom level are shown
+   * with one tile pixel per screen pixel at the current GeoLocation.
+   * The GeoLocation must be set first, because the ground scale
+   * belonging to a zoom level depends on the latitude.
+   */
+  void SetZoomLevel(double zoom) noexcept;
 
   /**
    * Converts a geographical distance (m) to a screen distance (px)

@@ -11,6 +11,7 @@
 
 #ifdef ENABLE_OPENGL
 #include "Projection/Projection.hpp"
+#include "Geo/WebMercator.hpp"
 #include "ui/canvas/opengl/Triangulate.hpp"
 #endif
 
@@ -73,14 +74,17 @@ ImportShapePoint(const pointObj &src, [[maybe_unused]] const GeoPoint &file_cent
 {
 #ifdef ENABLE_OPENGL
   /* OpenGL: convert GeoPoints to ShapePoints, make them relative to
-     the map's boundary center */
+     the map's boundary center.  The y coordinate is stored in the
+     Mercator projection the map is drawn in, so that the GPU can place
+     the vertices with one linear transformation (see ToGLM()). */
 
   const GeoPoint vertex = ToGeoPoint(src);
   const GeoPoint relative = vertex - file_center;
 
   return ShapePoint{
     ShapeScalar(relative.longitude.Native()),
-    ShapeScalar(relative.latitude.Native()),
+    ShapeScalar(WebMercator::LatitudeToY(vertex.latitude) -
+                WebMercator::LatitudeToY(file_center.latitude)),
   };
 #else
   /* convert all points of all lines to GeoPoints */
