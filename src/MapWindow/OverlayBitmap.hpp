@@ -34,6 +34,13 @@ class MapOverlayBitmap final : public MapOverlay {
 
   bool use_bitmap_alpha = true;
 
+  /**
+   * Is this a slippy map tile, i.e. a rectangle in the Web Mercator
+   * projection that the map is drawn in?  Then its four corners are
+   * enough to place every pixel exactly; see SetWebMercatorTile().
+   */
+  bool web_mercator_tile = false;
+
   float alpha = 1;
 
   std::string label;
@@ -71,6 +78,17 @@ public:
   /**
    * Apply a constant alpha value.
    */
+  /**
+   * Declare that the bitmap is a Web Mercator tile whose bounds are
+   * its tile edges.  The generic path interpolates texture coordinates
+   * linearly in latitude, which bends the tile content by a few pixels
+   * because Mercator rows are not evenly spaced in latitude; a tile is
+   * instead drawn as one quad from its corners, which is exact.
+   */
+  void SetWebMercatorTile() noexcept {
+    web_mercator_tile = true;
+  }
+
   void SetAlpha(float _alpha) noexcept {
     alpha = _alpha;
   }
