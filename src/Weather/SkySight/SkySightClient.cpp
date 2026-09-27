@@ -1062,6 +1062,10 @@ SkySightClient::UpdateActiveLayer(unsigned index, Path path,
   }
 
   bitmap->SetAlpha(active_layer->alpha);
+  if (active_layer->SupportsLiveTiles())
+    /* live tiles are slippy map tiles; their bounds come from the
+       z/x/y in the file name */
+    bitmap->SetWebMercatorTile();
 
   StaticString<160> label;
   label.Format("SkySight: %s", active_layer->name.c_str());
