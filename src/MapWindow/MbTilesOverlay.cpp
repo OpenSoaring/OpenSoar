@@ -21,14 +21,13 @@ MbTilesOverlay::MbTilesOverlay(Path path, std::string _label)
 unsigned
 MbTilesOverlay::SelectZoom(const WindowProjection &projection) const noexcept
 {
-  const auto &screen_bounds = projection.GetScreenBounds();
-  const double longitude_width = std::max(screen_bounds.GetWidth().Degrees(), 0.01);
-  const double target = std::log2(double(projection.GetScreenSize().width) * 360. /
-                                  (256. * longitude_width));
-  const unsigned rounded = unsigned(std::clamp<int>(int(std::lround(target)),
-                                                    database.GetMetadata().min_zoom,
-                                                    database.GetMetadata().max_zoom));
-  return rounded;
+  /* the map is drawn in Web Mercator, so the tile level that matches
+     the screen pixels is the map's own zoom level; when the map is
+     locked to a level, the tiles are shown pixel for pixel */
+  const int zoom = int(std::lround(projection.GetZoomLevel()));
+  return unsigned(std::clamp<int>(zoom,
+                                  database.GetMetadata().min_zoom,
+                                  database.GetMetadata().max_zoom));
 }
 
 MapOverlayBitmap
@@ -45,6 +44,7 @@ MbTilesOverlay::LoadTile(TileKey key)
 
   MapOverlayBitmap overlay(std::move(bitmap), bounds, "");
   overlay.SetAlpha(1.0);
+  overlay.SetWebMercatorTile();
   return overlay;
 }
 

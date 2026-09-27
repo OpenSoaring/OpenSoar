@@ -67,11 +67,11 @@ TileData
 GeoBitmap::GetTile(const MapWindowProjection &projection,
                    uint16_t zoom_min, uint16_t zoom_max) noexcept
 {
-  constexpr double earth_circumference = 42e6;
-
-  const double diagonal = projection.GetScreenDistanceMeters();
-  const double ratio = earth_circumference / diagonal;
-  const auto zoom = (uint16_t)std::clamp((int)std::floor(std::log2(ratio)) + 1,
+  /* the map is drawn in Web Mercator; its zoom level is the tile level
+     whose pixels match the screen pixels.  The former estimate from
+     the screen diagonal chose a level one or two steps too coarse, so
+     every tile was magnified and looked blurred. */
+  const auto zoom = (uint16_t)std::clamp((int)std::lround(projection.GetZoomLevel()),
                                          (int)zoom_min, (int)zoom_max);
   return GetTile(projection.GetScreenBounds(), zoom);
 }
