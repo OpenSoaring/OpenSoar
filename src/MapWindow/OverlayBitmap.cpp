@@ -211,6 +211,31 @@ MapOverlayBitmap::Draw([[maybe_unused]] Canvas &canvas,
   glVertexAttribPointer(OpenGL::Attribute::TEXCOORD, 2, GL_FLOAT, GL_FALSE,
                         0, coord);
 
+  if (web_mercator_tile) {
+    const GeoPoint geo[4] = {
+      bounds.top_left,
+      bounds.top_right,
+      bounds.bottom_right,
+      bounds.bottom_left,
+    };
+    const double uv[4][2] = {
+      {0, 0},
+      {1, 0},
+      {1, 1},
+      {0, 1},
+    };
+
+    for (unsigned i = 0; i < 4; ++i) {
+      coord[i].x = uv[i][0] * x_factor;
+      coord[i].y = (bitmap.IsFlipped() ? 1 - uv[i][1] : uv[i][1]) * y_factor;
+      vertices[i] = projection.GeoToScreen(geo[i]);
+    }
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glDisableVertexAttribArray(OpenGL::Attribute::TEXCOORD);
+    return;
+  }
+
   if (texture.GetWidth() > 512 || texture.GetHeight() > 512) {
     const unsigned x_steps = std::clamp((texture.GetWidth() + 127u) / 128u,
                                         1u, 32u);
