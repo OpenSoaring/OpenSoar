@@ -14,6 +14,7 @@
 
 #ifdef ENABLE_OPENGL
 #include "XShapePoint.hpp"
+#include "Geo/WebMercator.hpp"
 #endif
 
 #include <cassert>
@@ -41,6 +42,14 @@ class TopographyFile {
    * The center of shapefileObj::bounds.
    */
   GeoPoint center;
+
+#ifdef ENABLE_OPENGL
+  /**
+   * The Mercator y coordinate of #center; ShapePoints store their y
+   * relative to it.
+   */
+  double center_mercator_y;
+#endif
 
   AllocatedArray<ShapeEnvelope> shapes;
 
@@ -232,8 +241,10 @@ public:
 #ifdef ENABLE_OPENGL
   [[gnu::pure]]
   GeoPoint ToGeoPoint(const ShapePoint &p) const noexcept {
+    /* the y coordinate of a ShapePoint is a Mercator y relative to
+       the center, see ImportShapePoint() */
     return GeoPoint(center.longitude + Angle::Native(p.x),
-                    center.latitude + Angle::Native(p.y));
+                    WebMercator::YToLatitude(center_mercator_y + p.y));
   }
 
   /**
