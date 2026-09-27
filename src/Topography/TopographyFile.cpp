@@ -45,6 +45,9 @@ TopographyFile::TopographyFile(zzip_dir *_dir, const char *filename,
     throw std::runtime_error{"Malformed shapefile bounds"};
 
   center = file_bounds.GetCenter();
+#ifdef ENABLE_OPENGL
+  center_mercator_y = WebMercator::LatitudeToY(center.latitude);
+#endif
 
   shapes.ResizeDiscard(n_shapes);
 
