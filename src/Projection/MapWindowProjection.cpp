@@ -4,6 +4,8 @@
 #include "MapWindowProjection.hpp"
 #include "Screen/Layout.hpp"
 #include "Waypoint/Waypoint.hpp"
+#include "Geo/FAISphere.hpp"
+#include "Geo/WebMercator.hpp"
 
 #ifdef ENABLE_OPENGL
 #include "ui/canvas/opengl/Globals.hpp"
@@ -11,27 +13,20 @@
 
 #include <algorithm> // for std::clamp()
 #include <cassert>
+#include <cmath>
 
+/**
+ * The zoom levels that the map snaps to, from the closest to the
+ * widest view.  They are slippy map zoom levels, one factor of two
+ * apart: at each of them, a raster tile of that level is shown with
+ * one tile pixel per screen pixel (see Projection::SetZoomLevel()),
+ * so tile overlays stay sharp.  Level 19 shows roughly 150 m, level
+ * 6 roughly 1250 km across an 800 pixel wide screen at 50 degrees
+ * latitude; the ground distance of a level depends on the latitude,
+ * which is why the list cannot be expressed in meters.
+ */
 static constexpr unsigned ScaleList[] = {
-  100,
-  200,
-  300,
-  500,
-  1000,
-  2000,
-  3000,
-  5000,
-  10000,
-  20000,
-  30000,
-  50000,
-  75000,
-  100000,
-  150000,
-  200000,
-  300000,
-  500000,
-  1000000,
+  19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6,
 };
 
 static constexpr unsigned ScaleListCount = std::size(ScaleList);
@@ -60,12 +55,47 @@ MapWindowProjection::WaypointInScaleFilter(const Waypoint &way_point) const noex
   return GetMapScale() <= WaypointDrawMaxScale(way_point);
 }
 
+/**
+ * A free scale closer than this (in zoom levels) to one of the
+ * #ScaleList levels snaps to it; 0.03 levels are about 2% of scale,
+ * which the eye does not notice, but it keeps pinch and animated zoom
+ * ending exactly on a level where the tiles are sharp.
+ */
+static constexpr double SNAP_ZOOM_TOLERANCE = 0.03;
+
+double
+MapWindowProjection::GetLatitudeCosine() const noexcept
+{
+  /* without a location, the equator is as good a guess as any; the
+     scale is recalculated when the location arrives */
+  return IsValid()
+    ? std::cos(GetGeoLocation().latitude.Radians())
+    : 1.;
+}
+
+double
+MapWindowProjection::ZoomToMapScale(double zoom) const noexcept
+{
+  /* map scale = meters per GetMapResolutionFactor() pixels */
+  const double pixels_per_meter = WebMercator::ZoomToPixelsPerRadian(zoom)
+    / (FAISphere::REARTH * GetLatitudeCosine());
+  return GetMapResolutionFactor() / pixels_per_meter;
+}
+
+double
+MapWindowProjection::MapScaleToZoom(double map_scale) const noexcept
+{
+  const double pixels_per_meter = GetMapResolutionFactor() / map_scale;
+  return WebMercator::PixelsPerRadianToZoom(pixels_per_meter *
+                                            FAISphere::REARTH *
+                                            GetLatitudeCosine());
+}
+
 double
 MapWindowProjection::CalculateMapScale(unsigned scale) const noexcept
 {
   assert(scale < ScaleListCount);
-  return double(ScaleList[scale]) *
-    GetMapResolutionFactor() / Layout::Scale(GetScreenSize().width);
+  return ZoomToMapScale(ScaleList[scale]);
 }
 
 /**
@@ -73,14 +103,14 @@ MapWindowProjection::CalculateMapScale(unsigned scale) const noexcept
  * May be reduced by OpenGL::max_map_scale to work around GPU driver
  * bugs.
  */
-static unsigned
-EffectiveScaleListCount() noexcept
+unsigned
+MapWindowProjection::EffectiveScaleListCount() const noexcept
 {
 #ifdef ENABLE_OPENGL
   if (OpenGL::max_map_scale > 0) {
     for (unsigned i = 0; i < ScaleListCount; i++)
-      if (ScaleList[i] > OpenGL::max_map_scale)
-        return i;
+      if (CalculateMapScale(i) > OpenGL::max_map_scale)
+        return std::max(i, 1u);
   }
 #endif
 
@@ -106,20 +136,60 @@ MapWindowProjection::FindMapScale(const double Value) const noexcept
 {
   const unsigned effective_count = EffectiveScaleListCount();
 
-  unsigned DesiredScale(Value * Layout::Scale(GetScreenSize().width)
-                        / GetMapResolutionFactor());
+  /* the levels are one factor of two apart, so the nearest one is
+     found by rounding the zoom level, which is logarithmic */
+  const double zoom = MapScaleToZoom(Value);
 
-  unsigned i;
-  for (i = 0; i < effective_count; i++) {
-    if (DesiredScale < ScaleList[i]) {
-      if (i == 0)
-        return 0;
+  unsigned best = 0;
+  for (unsigned i = 1; i < effective_count; i++)
+    if (std::fabs(ScaleList[i] - zoom) < std::fabs(ScaleList[best] - zoom))
+      best = i;
 
-      return i - (DesiredScale < (ScaleList[i] + ScaleList[i - 1]) / 2);
-    }
+  return best;
+}
+
+void
+MapWindowProjection::SnapToZoomLevel(unsigned zoom) noexcept
+{
+  snapped_zoom = zoom;
+
+  if (IsValid())
+    SetZoomLevel(zoom);
+  else
+    Projection::SetScale(GetMapResolutionFactor() / ZoomToMapScale(zoom));
+}
+
+void
+MapWindowProjection::ApplyScale(double pixels_per_meter) noexcept
+{
+  const double map_scale = GetMapResolutionFactor() / pixels_per_meter;
+  const unsigned i = FindMapScale(map_scale);
+  if (std::fabs(MapScaleToZoom(map_scale) - ScaleList[i]) <
+      SNAP_ZOOM_TOLERANCE) {
+    SnapToZoomLevel(ScaleList[i]);
+    return;
   }
 
-  return effective_count - 1;
+  snapped_zoom = 0;
+  Projection::SetScale(pixels_per_meter);
+}
+
+void
+MapWindowProjection::SetScale(double pixels_per_meter) noexcept
+{
+  ApplyScale(pixels_per_meter);
+}
+
+void
+MapWindowProjection::SetGeoLocation(GeoPoint g) noexcept
+{
+  WindowProjection::SetGeoLocation(g);
+
+  /* the ground scale of a zoom level changes with the latitude; keep
+     the zoom level, not the ground scale, so that tiles stay sharp
+     while the aircraft moves north or south */
+  if (snapped_zoom > 0 && IsValid())
+    SetZoomLevel(snapped_zoom);
 }
 
 void
@@ -130,11 +200,11 @@ MapWindowProjection::SetFreeMapScale(double x) noexcept
     x = std::min(x, double(OpenGL::max_map_scale));
 #endif
 
-  SetScale(double(GetMapResolutionFactor()) / x);
+  ApplyScale(double(GetMapResolutionFactor()) / x);
 }
 
 void
 MapWindowProjection::SetMapScale(const double x) noexcept
 {
-  SetScale(double(GetMapResolutionFactor()) / LimitMapScale(x));
+  SnapToZoomLevel(ScaleList[FindMapScale(x)]);
 }
