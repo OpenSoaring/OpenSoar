@@ -152,6 +152,7 @@ void
 MapWindowProjection::SnapToZoomLevel(unsigned zoom) noexcept
 {
   snapped_zoom = zoom;
+  snap_pending = false;
 
   if (IsValid())
     SetZoomLevel(zoom);
@@ -162,6 +163,15 @@ MapWindowProjection::SnapToZoomLevel(unsigned zoom) noexcept
 void
 MapWindowProjection::ApplyScale(double pixels_per_meter) noexcept
 {
+  if (!IsValid()) {
+    snapped_zoom = 0;
+    snap_pending = true;
+    Projection::SetScale(pixels_per_meter);
+    return;
+  }
+
+  snap_pending = false;
+
   const double map_scale = GetMapResolutionFactor() / pixels_per_meter;
   const unsigned i = FindMapScale(map_scale);
   if (std::fabs(MapScaleToZoom(map_scale) - ScaleList[i]) <
@@ -188,8 +198,13 @@ MapWindowProjection::SetGeoLocation(GeoPoint g) noexcept
   /* the ground scale of a zoom level changes with the latitude; keep
      the zoom level, not the ground scale, so that tiles stay sharp
      while the aircraft moves north or south */
-  if (snapped_zoom > 0 && IsValid())
+  if (!IsValid())
+    return;
+
+  if (snapped_zoom > 0)
     SetZoomLevel(snapped_zoom);
+  else if (snap_pending)
+    ApplyScale(GetScale());
 }
 
 void
