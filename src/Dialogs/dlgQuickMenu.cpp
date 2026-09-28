@@ -12,6 +12,7 @@
 #include "Menu/ButtonLabel.hpp"
 #include "Menu/MenuData.hpp"
 #include "Renderer/ButtonRenderer.hpp"
+#include "Renderer/TextButtonRenderer.hpp"
 #include "Renderer/TextRenderer.hpp"
 #include "Screen/Layout.hpp"
 #include "UIGlobals.hpp"
@@ -90,9 +91,68 @@ QuickMenuButtonRenderer::DrawButton(Canvas &canvas, const PixelRect &rc,
   text_renderer.Draw(canvas, rc, caption);
 }
 
+/**
+ * A button of the flight phase row; the phase that is shown looks
+ * pressed, like a switch that is on.
+ */
+class PhaseButtonRenderer final : public TextButtonRenderer {
+  const bool active;
+
+public:
+  PhaseButtonRenderer(const ButtonLook &_look, const char *_caption,
+                      bool _active) noexcept
+    :TextButtonRenderer(_look, _caption), active(_active) {}
+
+  void DrawButton(Canvas &canvas, const PixelRect &rc,
+                  ButtonState state) const noexcept override {
+    if (active &&
+        (state == ButtonState::ENABLED || state == ButtonState::SELECTED))
+      state = ButtonState::PRESSED;
+
+    TextButtonRenderer::DrawButton(canvas, rc, state);
+  }
+};
+
+/**
+ * The flight phases the quick menu can switch between, in the order
+ * of their buttons; see #MenuPhase.
+ */
+static constexpr struct {
+  uint8_t phase;
+  const char *label;
+} quick_menu_phases[] = {
+  { MenuPhase::GROUND, N_("Ground") },
+  { MenuPhase::FLIGHT, N_("Flight") },
+  { MenuPhase::AFTER, N_("After") },
+  { MenuPhase::ALL, N_("All") },
+};
+
+/**
+ * The modal result of the phase buttons: this plus the index in
+ * #quick_menu_phases.
+ */
+static constexpr int mrPhase = 1000;
+
+/**
+ * What ShowQuickMenu() returns for a phase button: this minus the
+ * index in #quick_menu_phases; an event number is never negative.
+ */
+static constexpr int PHASE_RESULT = -2;
+
 class QuickMenu final : public WindowWidget {
   WndForm &dialog;
   const Menu &menu;
+
+  /**
+   * Which items to show, see #MenuPhase.
+   */
+  const uint8_t phase;
+
+  /**
+   * The name of the shown phase for the caption; nullptr if the menu
+   * does not use phases.
+   */
+  const char *const phase_name;
 
   boost::container::static_vector<Button, GridView::MAX_ITEMS> buttons;
 
@@ -113,8 +173,10 @@ class QuickMenu final : public WindowWidget {
 public:
   unsigned clicked_event;
 
-  QuickMenu(WndForm &_dialog, const Menu &_menu) noexcept
-    :dialog(_dialog), menu(_menu) {}
+  QuickMenu(WndForm &_dialog, const Menu &_menu, uint8_t _phase,
+            const char *_phase_name) noexcept
+    :dialog(_dialog), menu(_menu),
+     phase(_phase), phase_name(_phase_name) {}
 
   auto &GetWindow() noexcept {
     return (GridView &)WindowWidget::GetWindow();
@@ -188,7 +250,8 @@ QuickMenu::Prepare(ContainerWindow &parent, [[maybe_unused]] const PixelRect &rc
       continue;
 
     const auto &menuItem = menu[i];
-    if (!menuItem.IsDefined())
+    if (!menuItem.IsDefined() ||
+        !MenuPhase::IsOffered(menuItem.phases, phase))
       continue;
 
     char buffer[100];
@@ -295,17 +358,16 @@ void
 QuickMenu::UpdateCaption() noexcept
 {
   auto &grid_view = GetWindow();
-  StaticString<32> buffer;
+  StaticString<64> buffer;
   unsigned pageSize = grid_view.GetNumColumns() * grid_view.GetNumRows();
   unsigned lastPage = std::max<unsigned>(1, DivideRoundUp(buttons.size(), pageSize));
   unsigned currentPage = std::min(grid_view.GetCurrentPage(), lastPage - 1u);
 
-  if (lastPage > 1) {
-    buffer.Format("Quick Menu  %d/%d",
-                  currentPage + 1, lastPage);
-  } else {
-    buffer = "Quick Menu";
-  }
+  buffer = "Quick Menu";
+  if (phase_name != nullptr)
+    buffer.AppendFormat(" - %s", phase_name);
+  if (lastPage > 1)
+    buffer.AppendFormat("  %d/%d", currentPage + 1, lastPage);
   dialog.SetCaption(buffer);
 
   if (previous_button != nullptr) {
@@ -432,6 +494,12 @@ QuickMenu::KeyPress(unsigned key_code) noexcept
 class QuickMenuDialog final : public WidgetDialog {
   QuickMenu *quick_menu_widget = nullptr;
 
+  /**
+   * The number of phase buttons, which come first in the button
+   * panel.
+   */
+  unsigned n_phase_buttons = 0;
+
 public:
   QuickMenuDialog(Full, UI::SingleWindow &parent, const DialogLook &look,
                   const char *caption) noexcept
@@ -442,6 +510,10 @@ public:
     auto widget = std::make_unique<QuickMenu>(std::forward<Args>(args)...);
     quick_menu_widget = widget.get();
     FinishPreliminary(std::move(widget));
+  }
+
+  void SetPhaseButtonCount(unsigned n) noexcept {
+    n_phase_buttons = n;
   }
 
   // Intentionally hides WidgetDialog::GetWidget() to return QuickMenu&
@@ -456,7 +528,7 @@ public:
     if (IsAutoSize())
       AutoSize();
     else
-      widget.Move(buttons.BottomLayout());
+      widget.Move(LayoutButtons());
 
     widget.Show();
     int result = WndForm::ShowModal();
@@ -471,24 +543,70 @@ protected:
     if (IsAutoSize())
       return;
 
-    widget.Move(buttons.BottomLayout());
+    widget.Move(LayoutButtons());
+  }
+
+private:
+  /**
+   * In landscape all buttons share the bottom row (as far as they
+   * fit); in portrait the phase buttons get a row of their own above
+   * the page and close buttons, so that none of them gets too narrow.
+   */
+  PixelRect LayoutButtons() noexcept {
+    const PixelRect rc = GetClientAreaWindow().GetClientRect();
+    if (n_phase_buttons > 0 && rc.GetWidth() < rc.GetHeight())
+      return buttons.TwoRowBottomLayout(rc, n_phase_buttons);
+
+    return buttons.BottomLayout(rc);
   }
 };
 
+/**
+ * @return the event of the chosen item, -1 if the dialog was closed,
+ * or #PHASE_RESULT minus the index of a phase button
+ */
 static int
 ShowQuickMenu(UI::SingleWindow &parent, const Menu &menu) noexcept
 {
   const auto &dialog_look = UIGlobals::GetDialogLook();
 
+  /* the phase buttons only appear once some item is limited to some
+     phases; until then the menu is the same as without phases */
+  const bool has_phases = menu.HasPhases();
+  const uint8_t phase = has_phases
+    ? InputEvents::GetQuickMenuPhase()
+    : MenuPhase::ALL;
+
+  const char *phase_name = nullptr;
+  if (has_phases)
+    for (const auto &i : quick_menu_phases)
+      if (i.phase == phase)
+        phase_name = gettext(i.label);
+
   QuickMenuDialog dialog(WidgetDialog::Full{},
                          parent,
                          dialog_look, nullptr);
 
-  dialog.SetWidget(dialog, menu);
+  dialog.SetWidget(dialog, menu, phase, phase_name);
 
   dialog.PrepareWidget();
 
   auto &quick_menu = dialog.GetWidget();
+
+  /* the phase buttons come first: where the bottom row is too narrow
+     (portrait), the button panel wraps them into a row of their own
+     above the page and close buttons */
+  if (has_phases) {
+    for (unsigned i = 0; i < std::size(quick_menu_phases); ++i) {
+      const auto &p = quick_menu_phases[i];
+      dialog.AddButton(std::make_unique<PhaseButtonRenderer>(dialog_look.button,
+                                                             gettext(p.label),
+                                                             p.phase == phase),
+                       dialog.MakeModalResultCallback(mrPhase + i));
+    }
+
+    dialog.SetPhaseButtonCount(std::size(quick_menu_phases));
+  }
   Button *prev_button = dialog.AddSymbolButton("<", [&quick_menu]() {
     quick_menu.NavigatePage(GridView::Direction::LEFT);
   });
@@ -502,8 +620,13 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &menu) noexcept
   quick_menu.SetNavigationButtons(prev_button, next_button);
 
   quick_menu.UpdateCaption();
-  
-  if (dialog.ShowModal() != mrOK)
+
+  const int result = dialog.ShowModal();
+  if (result >= mrPhase &&
+      result < mrPhase + (int)std::size(quick_menu_phases))
+    return PHASE_RESULT - (result - mrPhase);
+
+  if (result != mrOK)
     return -1;
 
   return dialog.GetWidget().clicked_event;
@@ -516,7 +639,12 @@ dlgQuickMenuShowModal(UI::SingleWindow &parent) noexcept
   if (menu == nullptr)
     return;
 
-  const int event = ShowQuickMenu(parent, *menu);
-  if (event >= 0)
-    InputEvents::ProcessEvent(event);
+  /* a phase button chooses the phase and opens the menu again with
+     its items */
+  int result;
+  while ((result = ShowQuickMenu(parent, *menu)) <= PHASE_RESULT)
+    InputEvents::SetQuickMenuPhase(quick_menu_phases[PHASE_RESULT - result].phase);
+
+  if (result >= 0)
+    InputEvents::ProcessEvent(result);
 }
