@@ -21,7 +21,7 @@ GETTEXT_SOURCES = $(XCSOAR_SOURCES) \
 	$(SRC)/Language/FormatText.hpp \
 	$(SRC)/Weather/Rasp/RaspStore.cpp
 ifeq ($(TARGET_IS_OPENVARIO),y)
-  GETTEXT_EVENTS = Data/Input/defaultOV.xci
+  GETTEXT_EVENTS = $(sort $(wildcard Data/Input/OpenVario/*.xci))
 else
   GETTEXT_EVENTS = Data/Input/default.xci
 endif
