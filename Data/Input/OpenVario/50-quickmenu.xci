@@ -1,0 +1,298 @@
+# OpenVario input configuration, part 5 of 6: the quick menu
+# (mode RemoteStick).
+
+# -------------
+# mode=RemoteStick
+# -------------
+
+mode=RemoteStick
+type=key
+data=0
+event=Calculator
+event=Mode default
+label=Task
+location=0
+
+mode=RemoteStick
+type=key
+data=0
+event=AdjustWaypoint previousarm
+label=$(WaypointPreviousArm)
+location=1
+
+mode=RemoteStick
+type=key
+data=0
+event=AdjustWaypoint nextarm
+label=$(WaypointNextArm)
+location=2
+
+mode=RemoteStick
+type=key
+data=0
+event=WaypointDetails select
+event=Mode default
+label=Waypoint List$(CheckWaypointFile)
+location=3
+
+mode=RemoteStick
+type=key
+data=0
+event=Setup Alternates
+event=Mode default
+label=Alternates$(CheckWaypointFile)
+location=4
+
+mode=RemoteStick
+type=key
+data=0
+event=Mode default
+event=AbortTask toggle
+label=Task\n$(TaskAbortToggleActionName)$(CheckWaypointFile)
+location=5
+
+mode=RemoteStick
+type=key
+data=0
+event=GotoLookup
+event=Mode default
+label=GoTo$(CheckWaypointFile)
+location=6
+
+mode=RemoteStick
+type=key
+data=0
+event=Setup Target
+event=Mode default
+label=Target Show$(CheckTask)$(CheckTaskResumed)
+location=7
+
+
+mode=RemoteStick
+type=key
+data=0
+event=Zoom auto show
+event=Zoom auto toggle
+label=Zoom\n$(ZoomAutoToggleActionName)
+location=9
+
+mode=RemoteStick
+type=key
+data=0
+event=Mode default
+event=StatusMessage Dropped marker
+event=Logger note Mark
+event=MarkLocation
+label=Marker Drop
+location=10
+
+mode=RemoteStick
+type=key
+data=0
+event=Pan on
+label=Pan Mode
+location=10
+
+mode=RemoteStick
+type=key
+data=0
+event=DeclutterLabels show
+event=DeclutterLabels toggle
+label=Labels\n$(MapLabelsToggleActionName)
+location=11
+
+mode=RemoteStick
+type=key
+data=0
+event=SnailTrail show
+event=SnailTrail toggle
+label=Trail\n$(SnailTrailToggleName)
+location=12
+
+mode=RemoteStick
+type=key
+data=0
+event=Page settings
+label=Page\nSettings
+location=14
+
+
+mode=RemoteStick
+type=key
+data=0
+event=MacCready auto show
+event=MacCready auto toggle
+label=$(CheckAutoMc)MC\n$(MacCreadyToggleActionName)
+location=15
+
+mode=RemoteStick
+type=key
+data=0
+event=Setup Basic
+event=Mode default
+label=Flight Setup
+location=16
+
+mode=RemoteStick
+type=key
+data=0
+event=Setup Wind
+event=Mode default
+label=Setup Wind
+location=17
+
+mode=RemoteStick
+type=key
+data=0
+event=Setup System
+event=Mode default
+label=Setup System
+location=18
+
+mode=RemoteStick
+type=key
+data=0
+event=Setup Airspace
+event=Mode default
+label=Settings Airspace$(CheckAirspace)
+location=19
+
+mode=RemoteStick
+type=key
+data=0
+event=Logger show
+event=Logger toggle ask
+label=Logger\n$(LoggerActive)$(CheckLogger)
+location=20
+
+mode=RemoteStick
+type=key
+data=0
+event=Logger nmea
+label=Raw Logger$(CheckLogger)
+location=21
+
+mode=RemoteStick
+type=key
+data=0
+event=Device list
+event=Mode default
+label=Devices
+location=22
+
+mode=RemoteStick
+type=key
+data=0
+event=Setup Plane
+event=Mode default
+label=Setup Plane
+location=23
+
+mode=RemoteStick
+type=key
+data=0
+event=FlarmTraffic
+label=FLARM Radar$(CheckFLARM)
+location=24
+
+mode=RemoteStick
+type=key
+data=0
+event=Weather
+event=Mode default
+label=Weather
+location=25
+
+mode=RemoteStick
+type=key
+data=0
+event=NearestAirspaceDetails
+event=Mode default
+label=Nearest Airspace$(CheckAirspace)
+location=26
+
+mode=RemoteStick
+type=key
+data=0
+event=Checklist
+event=Mode default
+label=Checklist
+location=27
+
+mode=RemoteStick
+type=key
+data=0
+event=Analysis
+event=Mode default
+label=Analysis
+location=28
+
+mode=RemoteStick
+type=key
+data=0
+event=Status all
+event=Mode default
+label=Status
+location=29
+
+mode=RemoteStick
+type=key
+data=0
+event=ThermalAssistant
+event=Mode default
+label=Thermal Assistant$(CheckCircling)
+location=30
+
+mode=RemoteStick
+type=key
+data=0
+event=FileManager
+event=Mode default
+label=File Manager
+location=31
+
+mode=RemoteStick
+type=key
+data=0
+event=Mode default
+event=StatusMessage Pilot event announced
+event=Logger note PEV
+event=PilotEvent
+label=Pilot Event Announce
+location=32
+
+mode=RemoteStick
+type=key
+data=0
+event=AirSpace toggle
+label=Airspace\n$(AirspaceToggleActionName)
+location=33
+
+
+mode=RemoteStick
+type=key
+data=0
+event=Exit restart
+event=Mode default
+label=Restart
+location=59
+
+mode=RemoteStick
+type=key
+data=0
+event=Exit system
+event=Mode default
+label=Quit
+location=60
+
+# OpenVario only:
+# Reboot and shutdown are two of the choices in the power dialog that
+# Restart and Quit above already open, so one button covers them.
+mode=RemoteStick
+type=key
+data=0
+event=Exit shutdown
+event=Mode default
+label=Exit
+location=61
+

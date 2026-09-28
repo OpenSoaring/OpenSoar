@@ -1,0 +1,87 @@
+# OpenVario input configuration, part 1 of 6: glide computer events.
+#
+# The built-in OpenVario configuration is split by use into the files
+# of this directory.  The build reads them in the order of their
+# names, so a later file can override an entry of an earlier one.
+
+# -------------------
+# GlideComputerEvents
+# -------------------
+### directly to SetupSystem after Switch On
+### mode=default
+### type=gce
+### data=STARTUP_REAL
+### # event=KeyPressed UP UP ENTER
+### event=Setup System
+
+mode=default
+type=gce
+data=TASK_START
+event=Beep 1
+event=TaskTransition start
+
+mode=default
+type=gce
+data=TASK_FINISH
+event=Beep 1
+event=TaskTransition finish
+
+mode=default
+type=gce
+data=TASK_NEXTWAYPOINT
+event=Beep 1
+event=TaskTransition next
+
+mode=default
+type=gce
+data=GPS_CONNECTION_WAIT
+
+mode=default
+type=gce
+data=COMMPORT_RESTART
+
+mode=default
+type=gce
+data=GPS_FIX_WAIT
+
+mode=default
+type=gce
+data=STARTUP_SIMULATOR
+
+mode=default
+type=gce
+data=STARTUP_REAL
+
+mode=default
+type=gce
+data=TAKEOFF
+event=AutoLogger start
+event=AddWaypoint takeoff
+event=StatusMessage Takeoff
+
+mode=default
+type=gce
+data=LANDING
+event=StatusMessage Landing
+event=AutoLogger stop
+
+mode=default
+type=gce
+data=FLIGHTMODE_FINALGLIDE_ABOVE
+event=StatusMessage Above final glide
+
+mode=default
+type=gce
+data=FLIGHTMODE_FINALGLIDE_BELOW
+event=StatusMessage Below final glide
+
+mode=default
+type=gce
+data=FLIGHTMODE_FINALGLIDE_TERRAIN
+event=StatusMessage Final glide through terrain
+
+mode=default
+type=gce
+data=LANDABLE_UNREACHABLE
+event=Beep 1
+
