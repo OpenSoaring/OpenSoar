@@ -11929,3 +11929,9 @@ msgstr "Nur die InfoBoxen dieser Gruppen in der Liste zeigen."
 
 msgid "Show only the InfoBoxes of these groups when choosing a content."
 msgstr "Nur die InfoBoxen dieser Gruppen bei der Auswahl eines Inhalts zeigen."
+
+msgid "Ground"
+msgstr "Boden"
+
+msgid "After"
+msgstr "Danach"

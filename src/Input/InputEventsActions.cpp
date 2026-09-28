@@ -83,6 +83,8 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "DataComponents.hpp"
 #include "Terrain/RasterTerrain.hpp"
 #include "system/Path.hpp"
+#include "Menu/MenuData.hpp"
+#include "util/StringAPI.hxx"
 
 #include <cassert>
 #include <algorithm>
@@ -814,6 +816,26 @@ void
 InputEvents::eventQuickMenu([[maybe_unused]] const char *misc)
 {
  dlgQuickMenuShowModal(*CommonInterface::main_window);
+}
+
+/**
+ * Choose the flight phase whose items the quick menu shows:
+ * "ground", "flight", "after" or "all".
+ */
+void
+InputEvents::eventQuickMenuPhase(const char *misc)
+{
+  if (misc == nullptr)
+    return;
+
+  if (StringIsEqual(misc, "ground"))
+    SetQuickMenuPhase(MenuPhase::GROUND);
+  else if (StringIsEqual(misc, "flight"))
+    SetQuickMenuPhase(MenuPhase::FLIGHT);
+  else if (StringIsEqual(misc, "after"))
+    SetQuickMenuPhase(MenuPhase::AFTER);
+  else if (StringIsEqual(misc, "all"))
+    SetQuickMenuPhase(MenuPhase::ALL);
 }
 
 void
