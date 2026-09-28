@@ -118,6 +118,12 @@ public:
   PixelRect BottomLayout(PixelRect rc) noexcept;
   PixelRect BottomLayout() noexcept;
 
+  /**
+   * Move buttons to two rows on the bottom: the buttons before
+   * @p split in the upper row, the others in the lower one.
+   */
+  PixelRect TwoRowBottomLayout(PixelRect rc, unsigned split) noexcept;
+
   void ShowAll() noexcept;
   void HideAll() noexcept;
 

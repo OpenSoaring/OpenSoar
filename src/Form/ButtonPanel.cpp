@@ -277,6 +277,17 @@ ButtonPanel::BottomLayout() noexcept
   return BottomLayout(parent.GetClientRect());
 }
 
+PixelRect
+ButtonPanel::TwoRowBottomLayout(PixelRect rc, unsigned split) noexcept
+{
+  const unsigned n_buttons = buttons.size();
+  if (split == 0 || split >= n_buttons)
+    return BottomLayout(rc);
+
+  rc = HorizontalRange(rc, split, n_buttons);
+  return HorizontalRange(rc, 0, split);
+}
+
 void
 ButtonPanel::ReselectToFirstEnabled() noexcept
 {

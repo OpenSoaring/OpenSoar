@@ -28,6 +28,11 @@ Version 7.45.4 - not yet released
     built-in configuration in the order of their names, so each file
     can hold one topic and a later one can override an earlier one;
     an existing single file is taken over
+  - the quick menu can show the buttons of one flight phase: a
+    "phase=ground flight after" line limits a button to some phases,
+    the phase follows takeoff and landing and can be switched with the
+    new buttons Ground, Flight, After and All or the QuickMenuPhase
+    event; without such lines the menu stays as it was
 * map
   - the flight setup starts with the MacCready setting
   - a tap on the final glide bar opens the flight setup

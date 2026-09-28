@@ -12121,3 +12121,8 @@ msgstr "Dreieck"
 
 msgid "Delete this flight from the log book?"
 msgstr "Diesen Flug aus dem Flugbuch löschen?"
+msgid "Ground"
+msgstr "Boden"
+
+msgid "After"
+msgstr "Danach"

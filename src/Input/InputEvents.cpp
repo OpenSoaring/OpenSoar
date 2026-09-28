@@ -104,6 +104,12 @@ processGo(unsigned event_id) noexcept;
 
 static InputConfig input_config;
 
+/**
+ * Before the flight the quick menu offers what is needed on the
+ * ground; see GetQuickMenuPhase().
+ */
+static uint8_t quick_menu_phase = MenuPhase::GROUND;
+
 // Read the data files
 void
 InputEvents::readFile()
@@ -494,6 +500,14 @@ InputEvents::processGlideComputer_real(unsigned gce_id) noexcept
   if (gce_id >= GCE_COUNT)
     return false;
 
+  /* the quick menu follows the flight on its own, so this does not
+     depend on the input configuration; an event bound below can
+     still choose another phase */
+  if (gce_id == GCE_TAKEOFF)
+    quick_menu_phase = MenuPhase::FLIGHT;
+  else if (gce_id == GCE_LANDING)
+    quick_menu_phase = MenuPhase::AFTER;
+
   event_id = input_config.GC2Event[gce_id];
   if (event_id > 0) {
     InputEvents::processGo(event_id);
@@ -540,6 +554,18 @@ InputEvents::GetMenu(const char *mode) noexcept
   int m = input_config.LookupMode(mode);
   if (m >= 0) return &input_config.menus[m];
   else return NULL;
+}
+
+uint8_t
+InputEvents::GetQuickMenuPhase() noexcept
+{
+  return quick_menu_phase;
+}
+
+void
+InputEvents::SetQuickMenuPhase(uint8_t phase) noexcept
+{
+  quick_menu_phase = phase;
 }
 
 void

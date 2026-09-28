@@ -5,6 +5,8 @@
 
 #include "util/Compiler.h"
 
+#include <cstdint>
+
 struct InputConfig;
 class Menu;
 class Path;
@@ -31,6 +33,19 @@ HideMenu() noexcept;
 
 Menu *
 GetMenu(const char *mode) noexcept;
+
+/**
+ * The flight phase whose items the quick menu shows: one of the
+ * #MenuPhase bits, or MenuPhase::ALL for every item.  It follows the
+ * takeoff and landing events and can be switched in the quick menu or
+ * with the QuickMenuPhase event.
+ */
+[[gnu::pure]]
+uint8_t
+GetQuickMenuPhase() noexcept;
+
+void
+SetQuickMenuPhase(uint8_t phase) noexcept;
 
 /**
  * Load the default input file (Data/Input/default.xci).
@@ -230,6 +245,7 @@ void eventCredits(const char *misc);
 void eventDarkMode(const char *misc);
 void eventWeather(const char *misc);
 void eventQuickMenu(const char *misc);
+void eventQuickMenuPhase(const char *misc);
 void eventFileManager(const char *misc);
 void eventDataManagement(const char *misc);
 void eventExportFlights(const char *misc);
