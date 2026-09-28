@@ -38,11 +38,16 @@ The source file :file:`Data/Input/default.xci` contains the built-in
 bindings. It is compiled into XCSoar and also serves as a template
 for custom files.
 
+OpenSoar keeps that file exactly as XCSoar has it and puts its own
+changes into :file:`Data/Input/OpenSoar/`.  The build reads those
+files after :file:`default.xci`, in the order of their names; an entry
+with the same mode and ``location`` (or key) replaces the XCSoar
+entry, just as a custom file does.
+
 The OpenVario build compiles the files in :file:`Data/Input/OpenVario/`
-instead.  They split one configuration by use (glide computer events,
-keys, gestures, menu bar, quick menu, audio menu) and are read in the
-order of their names, so a later file can override an entry of an
-earlier one, just as a custom file does.
+instead.  They are a complete configuration of their own, split by use
+(glide computer events, keys, gestures, menu bar, quick menu, audio
+menu), and are read in the order of their names as well.
 
 To use custom files, go to
 **Menu > Config > System > Look > Language, Input > Events**, tick

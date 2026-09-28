@@ -23,7 +23,8 @@ GETTEXT_SOURCES = $(XCSOAR_SOURCES) \
 ifeq ($(TARGET_IS_OPENVARIO),y)
   GETTEXT_EVENTS = $(sort $(wildcard Data/Input/OpenVario/*.xci))
 else
-  GETTEXT_EVENTS = Data/Input/default.xci
+  GETTEXT_EVENTS = Data/Input/default.xci \
+    $(sort $(wildcard Data/Input/OpenSoar/*.xci))
 endif
 
 $(OUT)/po/cpp.pot: $(GETTEXT_SOURCES) | $(OUT)/po/dirstamp

@@ -251,7 +251,8 @@ if (TARGET_IS_OPENVARIO)
     # split by use into several files, read in the order of their names
     set(DEFAULT_XCI_FILE   OpenVario/*.xci)
 else()
-    set(DEFAULT_XCI_FILE   default.xci)
+    # XCSoar's own file first, then the OpenSoar changes on top of it
+    set(DEFAULT_XCI_FILE   default.xci OpenSoar/*.xci)
 endif()
 
 if(UNIX)
