@@ -5,9 +5,51 @@
 #include "TestUtil.hpp"
 #include "ui/event/KeyCode.hpp"
 
+/**
+ * Quick menu items limited to flight phases: which view offers them,
+ * and whether a menu uses phases at all.
+ */
+static void
+TestMenuPhases()
+{
+  InputConfig config;
+  config.SetDefaults();
+  const int mode = config.MakeMode("RemoteStick");
+
+  /* without any phase, the menu does not use phases */
+  config.AppendMenu(mode, "Everywhere", 1, 10);
+  ok1(!config.menus[mode].HasPhases());
+  ok1(config.GetMenuItem(mode, 1).phases == MenuPhase::ALL);
+
+  config.AppendMenu(mode, "Ground", 2, 11, MenuPhase::GROUND);
+  config.AppendMenu(mode, "Ground and after", 3, 12,
+                    MenuPhase::GROUND | MenuPhase::AFTER);
+  ok1(config.menus[mode].HasPhases());
+
+  const auto &everywhere = config.GetMenuItem(mode, 1);
+  const auto &ground = config.GetMenuItem(mode, 2);
+  const auto &ground_after = config.GetMenuItem(mode, 3);
+
+  ok1(MenuPhase::IsOffered(everywhere.phases, MenuPhase::FLIGHT));
+  ok1(MenuPhase::IsOffered(ground.phases, MenuPhase::GROUND));
+  ok1(!MenuPhase::IsOffered(ground.phases, MenuPhase::FLIGHT));
+  ok1(!MenuPhase::IsOffered(ground.phases, MenuPhase::AFTER));
+  ok1(MenuPhase::IsOffered(ground_after.phases, MenuPhase::AFTER));
+  ok1(!MenuPhase::IsOffered(ground_after.phases, MenuPhase::FLIGHT));
+
+  /* the view "all" offers every item */
+  ok1(MenuPhase::IsOffered(ground.phases, MenuPhase::ALL));
+
+  /* replacing an item replaces its phases, too */
+  config.AppendMenu(mode, "Now everywhere", 2, 13);
+  ok1(config.GetMenuItem(mode, 2).phases == MenuPhase::ALL);
+}
+
 int main()
 {
-  plan_tests(37);
+  plan_tests(37 + 11);
+
+  TestMenuPhases();
 
   InputConfig config;
   config.SetDefaults();
