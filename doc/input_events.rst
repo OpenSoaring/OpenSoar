@@ -208,6 +208,10 @@ Recognised fields per record:
 - ``location`` -- softkey slot number; only values **greater than
   zero** create a menu button.  Omit or use ``0`` for a binding with
   no softkey (keys, gestures, GCEs, etc.).
+- ``phase`` -- quick menu only: the flight phases in which the button
+  is offered, any of ``ground``, ``flight`` and ``after``, separated by
+  spaces.  ``all``, an empty value or no ``phase`` at all mean every
+  phase.  See the ``RemoteStick`` mode below.
 
 Example::
 
@@ -470,6 +474,9 @@ Event list
    - Opens the Quick Guide dialog.
  * - ``QuickMenu``
    - Opens the quick menu dialog.
+ * - ``QuickMenuPhase P``
+   - Chooses the flight phase whose buttons the quick menu shows:
+     ``ground``, ``flight``, ``after`` or ``all``.
  * - ``RepeatStatusMessage``
    - Repeats the last status message. If pressed repeatedly, will
      repeat previous status messages.
@@ -654,6 +661,22 @@ Built-in modes
   ``mode=RemoteStick`` and a ``location`` appear in that grid.  Edit
   those records in a custom ``.xci`` to reorder or limit Quick Menu
   entries.
+
+  As soon as one of these records has a ``phase`` field, the Quick
+  Menu shows only the buttons of the current flight phase and offers
+  the buttons *Ground*, *Flight*, *After* and *All* to switch; *All*
+  shows every button.  The phase follows the flight on its own: it is
+  *Ground* after the start, *Flight* after the takeoff and *After*
+  after the landing.  The ``QuickMenuPhase`` event chooses a phase as
+  well, for example from a key or a glide computer event.  Example::
+
+   mode=RemoteStick
+   type=key
+   data=0
+   event=Mode mc
+   label=MacCready
+   location=19
+   phase=flight
 - ``mc`` -- MacCready adjustment mode. Entered from ``mode=default`` via
   the ``Mode mc`` event (default key ``3``). Stick UP/DOWN adjust MC;
   RETURN toggles auto/manual MC; ESCAPE returns to ``default``.
