@@ -24,6 +24,13 @@ Version 7.45.4 - not yet released
 * map
   - the flight setup starts with the MacCready setting
   - a tap on the final glide bar opens the flight setup
+  - draw the map in the Web Mercator projection, the projection of
+    slippy map tiles, so raster tiles are shown pixel for pixel
+    instead of being resampled; topography under OpenGL no longer
+    drifts away from waypoints and airspaces towards the screen edges
+  - the zoom steps of the scale list are the tile zoom levels, one
+    factor of two apart; the map title shows the level (for example
+    "Z12") while the map sits on one of them
 * airspace
   - new fill mode "Thin lines": no fill, outlines one pixel wide
 
