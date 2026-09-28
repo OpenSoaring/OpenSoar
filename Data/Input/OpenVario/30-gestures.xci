@@ -1,0 +1,80 @@
+# OpenVario input configuration, part 3 of 6: gestures.
+
+# Gestures
+
+mode=default
+type=gesture
+data=U
+event=Zoom in
+
+mode=default
+type=gesture
+data=D
+event=Zoom out
+
+mode=default
+type=gesture
+data=UD
+event=Zoom auto show
+event=Zoom auto on
+
+mode=default
+type=gesture
+data=R
+event=ScreenModes previous
+
+mode=default
+type=gesture
+data=L
+event=ScreenModes next
+
+mode=default
+type=gesture
+data=DR
+event=WaypointDetails select
+
+mode=default
+type=gesture
+data=DL
+event=Setup Alternates
+
+mode=default
+type=gesture
+data=DU
+event=Mode Menu
+
+mode=default
+type=gesture
+data=RD
+event=Calculator
+
+mode=default
+type=gesture
+data=URD
+event=Analysis
+
+mode=default
+type=gesture
+data=LDR
+event=Checklist
+
+mode=default
+type=gesture
+data=URDL
+event=Pan on
+
+mode=default
+type=gesture
+data=LDRDL
+event=Status all
+
+# -------------
+# Define gesture to open Quickmenu without keyboard or remote
+# ("Draw a button on the screen")
+# -------------
+
+mode=default
+type=gesture
+data=ULDR
+event=QuickMenu
+
