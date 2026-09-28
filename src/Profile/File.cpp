@@ -93,6 +93,13 @@ Profile::LoadFile(ProfileMap &map, Path path)
       continue;
     }
 
+    /* the single input events file became a list; take it over
+       unless the list is there already, but keep the old key, so
+       that an older version still finds its file */
+    if (StringIsEqual(pair.key, "InputFile") &&
+        map.Get(ProfileKeys::InputFileList) == nullptr)
+      map.Set(ProfileKeys::InputFileList, pair.value);
+
     // migrate old AirfieldFile field
     if (StringIsEqual(pair.key, "AirfieldFile")) {
       auto buffer = map.Get(ProfileKeys::AirfieldFileList);

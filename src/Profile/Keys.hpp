@@ -92,6 +92,7 @@ constexpr std::string_view WaypointFileList = "WPFileList";           // pL
 constexpr std::string_view WatchedWaypointFileList = "WatchedWPFileList"; // pL
 constexpr std::string_view LanguageFile = "LanguageFile"; // pL
 constexpr std::string_view InputFile = "InputFile"; // pL
+constexpr std::string_view InputFileList = "InputFileList"; // pL
 constexpr std::string_view ChecklistFile = "ChecklistFile"; // pL
 constexpr std::string_view UserRepositoriesList = "UserRepositoriesList";
 constexpr std::string_view PilotName = "PilotName";

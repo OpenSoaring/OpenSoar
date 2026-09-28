@@ -169,6 +169,31 @@ TestMigration()
     ok1(Profile::Get(ProfileKeys::HomeWaypoint, value));
     ok1(value == 500);
   }
+
+  /* the single input events file becomes the first entry of the
+     list, and the old key stays for older versions */
+  {
+    StaticString<256> value;
+    ok1(Profile::Get(ProfileKeys::InputFileList, value));
+    ok1(value == "/path/to/my.xci");
+    ok1(Profile::Exists(ProfileKeys::InputFile));
+  }
+}
+
+/**
+ * Once the list has been saved, it wins over the old key, even when
+ * the user has emptied it; the writer puts "InputFile" first, so the
+ * migration sees the old key before the list.
+ */
+static void
+TestInputFileListNotOverwritten()
+{
+  Profile::Clear();
+  Profile::LoadFile(Path("test/data/TestProfileInputFileList.prf"));
+
+  StaticString<256> value;
+  ok1(Profile::Get(ProfileKeys::InputFileList, value));
+  ok1(value.empty());
 }
 
 static void
@@ -468,6 +493,7 @@ try {
   plan_tests(50
              + 5 + 5 + 4 + 4
              + 15
+             + 3 + 2
 #ifdef HAVE_HTTP
              + 8
 #endif
@@ -477,6 +503,7 @@ try {
   TestWriter();
   TestReader();
   TestMigration();
+  TestInputFileListNotOverwritten();
   TestWeatherPageCursorRoundTrip();
   TestInfoBoxCustomText();
   TestBaseMapRoundTrip();
