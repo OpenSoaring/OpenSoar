@@ -22,6 +22,13 @@ Version 7.47 - not yet released
   - fix a long pause after the quick guide while a fine terrain
     file loads the tiles under the map
 * map
+  - draw the map in the Web Mercator projection, the projection of
+    slippy map tiles, so raster tiles are shown pixel for pixel
+    instead of being resampled; topography under OpenGL no longer
+    drifts away from waypoints and airspaces towards the screen edges
+  - the zoom steps of the scale list are the tile zoom levels, one
+    factor of two apart; the map title shows the level (for example
+    "Z12") while the map sits on one of them
   - draw the wind arrow light blue when the wind comes from an
     external sensor, grey when XCSoar estimated it
   - draw the instantaneous wind of an external sensor (Larus) as a
