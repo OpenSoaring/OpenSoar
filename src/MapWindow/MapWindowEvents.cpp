@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "MapWindow.hpp"
+#include "Overlay.hpp"
 
 #ifndef ENABLE_OPENGL
 #include "ui/canvas/WindowCanvas.hpp"
@@ -59,6 +60,12 @@ MapWindow::OnDestroy() noexcept
   SetTopography(nullptr);
   SetTerrain(nullptr);
   SetRasp(nullptr);
+
+#ifdef HAVE_BASE_MAP_TILES
+  /* cancels the tile downloads, whose completion would redraw this
+     window */
+  base_map_tiles.reset();
+#endif
 
 #ifndef ENABLE_OPENGL
   buffer_canvas.Destroy();
