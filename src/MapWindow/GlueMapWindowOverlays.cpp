@@ -36,6 +36,7 @@
 #endif
 
 #include <algorithm> // for std::clamp()
+#include <cmath>
 
 #if DEBUG_ALL_MAP_OVERLAYS
 #include "Engine/Task/Stats/ElementStat.hpp"
@@ -679,6 +680,12 @@ GlueMapWindow::DrawMapScale(Canvas &canvas, const MapHudLayout &layout,
     buffer.AppendFormat(
         "BALLAST %d LITERS ",
         (int)GetComputerSettings().polar.glide_polar_task.GetBallastLitres());
+
+  /* the zoom level, when the map sits on one of the levels of the
+     scale list: raster tiles are then shown pixel for pixel */
+  if (const double zoom = projection.GetZoomLevel();
+      std::fabs(zoom - std::round(zoom)) < 0.01)
+    buffer.AppendFormat("Z%d ", int(std::lround(zoom)));
 
   if (buffer.empty() && DEBUG_ALL_MAP_OVERLAYS)
     buffer = "Map title";
