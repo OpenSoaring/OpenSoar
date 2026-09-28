@@ -5,6 +5,11 @@ Version 7.47 - not yet released
 * dialogs
   - fix a crash opening Pages setup from a weather overlay on a
     landscape screen #3373
+* input
+  - load several input events files: they are read on top of the
+    built-in configuration in the order of their names, so each file
+    can hold one topic and a later one can override an earlier one;
+    an existing single file is taken over
 * map
   - draw the map in the Web Mercator projection, the projection of
     slippy map tiles, so raster tiles are shown pixel for pixel

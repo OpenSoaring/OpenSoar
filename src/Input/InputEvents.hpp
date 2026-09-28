@@ -7,6 +7,7 @@
 
 struct InputConfig;
 class Menu;
+class Path;
 
 typedef void (*pt2Event)(const char *);
 
@@ -37,9 +38,19 @@ GetMenu(const char *mode) noexcept;
 void LoadDefaults(InputConfig &input_config);
 
 /**
- * Throws on error.
+ * Load the defaults and then the user's files from the profile
+ * setting ProfileKeys::InputFileList.  A file that cannot be read is
+ * logged and skipped.
  */
 void readFile();
+
+/**
+ * The order in which readFile() reads the user's files: by file
+ * name, so that numbered names define which file overrides which.
+ */
+[[gnu::pure]]
+bool
+IsReadBefore(Path a, Path b) noexcept;
 
 void
 setMode(Mode mode) noexcept;

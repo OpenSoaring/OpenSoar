@@ -44,16 +44,22 @@ keys, gestures, menu bar, quick menu, audio menu) and are read in the
 order of their names, so a later file can override an entry of an
 earlier one, just as a custom file does.
 
-To use a custom file, go to
-**Menu > Config > System > Setup > Language, Input > Events**, select
-your ``.xci`` file, and restart XCSoar.
+To use custom files, go to
+**Menu > Config > System > Setup > Language, Input > Events**, tick
+your ``.xci`` files, and restart the program.
 
 Custom files are loaded **on top of** the built-in defaults: key and
 menu entries with the same mode and ``location`` (or key) overwrite the
-stock ones; everything else remains.  To replace the built-in map
-entirely instead of merging, put ``#CLEAR`` alone on the **first line**
-of the file (before any other records or comments).  That resets the
-in-memory defaults, then applies only the contents of your ``.xci``.
+stock ones; everything else remains.  Several files are read in the
+order of their names (not in the order they were ticked), so a file
+can override an entry of a file read before it; numbered names such
+as ``10-keys.xci`` and ``20-quickmenu.xci`` make that order visible.
+A file that cannot be read is skipped and logged, the others still
+apply.  To replace the built-in map entirely instead of merging, put
+``#CLEAR`` alone on the **first line** of a file (before any other
+records or comments).  That resets the in-memory configuration,
+including files read before it, then applies only the contents of
+this file and of the files after it.
 
 Default key bindings
 ~~~~~~~~~~~~~~~~~~~~
