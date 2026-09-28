@@ -1,0 +1,264 @@
+# OpenVario input configuration, part 2 of 6: keys that work on the
+# map and in pan mode, independent of the menu bars and the quick menu.
+
+# ------------
+# mode=default
+# ------------
+
+mode=Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
+type=key
+data=ESCAPE
+event=Mode default
+
+# Power: the dialog offers quit, restart, reboot and shutdown
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
+type=key
+data=X
+event=Exit shutdown
+event=Mode default
+
+
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
+type=key
+data=Y
+event=Exit restart
+event=Mode default
+
+# internal New Start
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
+type=key
+data=N
+event=Exit newstart
+event=Mode default
+
+# normal Quit = program end
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
+type=key
+data=Q
+event=Exit system
+event=Mode default
+
+mode=default pantype=key
+data=ESCAPE
+event=Page restore
+
+mode=default.Traffic
+type=key
+data=RETURN
+event=Traffic details
+
+###### pan mode
+
+mode=pan
+type=key
+data=DOWN
+event=Pan down
+
+mode=pan
+type=key
+data=UP
+event=Pan up
+
+mode=pan
+type=key
+data=LEFT
+event=Pan left
+
+mode=pan
+type=key
+data=RIGHT
+event=Pan right
+
+mode=pan
+type=key
+data=APP1
+event=Pan off
+label=Cancel
+location=1
+
+mode=pan
+type=key
+data=APP2
+event=Zoom in
+label=Zoom\n+
+location=2
+
+mode=pan
+type=key
+data=APP3
+event=Zoom out
+label=Zoom\n-
+location=3
+
+mode=pan
+type=key
+data=APP4
+event=NearestMapItems
+label=What's here?
+location=4
+
+mode=pan
+type=key
+data=F1
+event=Zoom in
+location=5
+
+mode=pan
+type=key
+data=F3
+event=Zoom out
+location=6
+
+mode=pan
+type=key
+data=RETURN
+event=NearestMapItems
+location=7
+
+###### main entry buttons
+
+mode=default
+type=key
+data=F1
+event=QuickMenu
+
+mode=default
+type=key
+data=F2
+event=Analysis
+event=Mode default
+
+mode=default
+type=key
+data=F3
+event=Checklist
+event=Mode default
+
+mode=default
+type=key
+data=F4
+event=FlarmTraffic
+event=Mode default
+
+mode=default
+type=key
+data=F5
+event=GotoLookup
+event=Mode default
+
+mode=default
+type=key
+data=F6
+event=Setup Alternates
+event=Mode default
+
+mode=default
+type=key
+data=F7
+event=Setup Task
+event=Mode default
+
+mode=default
+type=key
+data=F8
+event=Setup Basic
+event=Mode default
+
+mode=default
+type=key
+data=F9
+event=FrequencyCard
+event=Mode default
+
+mode=default
+type=key
+data=MENU
+event=Mode Menu
+
+mode=default
+type=key
+data=APP1
+event=Mode Nav1
+
+mode=default
+type=key
+data=APP2
+event=Mode Display1
+
+mode=default
+type=key
+data=APP3
+event=Mode Config1
+
+mode=default
+type=key
+data=APP4
+event=Mode Info1
+
+# Always active buttons. (unless over-written)
+
+mode=default
+type=key
+data=DOWN
+event=Zoom out
+
+mode=default
+type=key
+data=UP
+event=Zoom in
+
+mode=default
+type=key
+data=RETURN
+event=FLARMRadar toggle
+event=ClearAirspaceWarnings
+event=ClearStatusMessages
+
+mode=default
+type=key
+data=LEFT
+event=ScreenModes previous
+
+mode=default
+type=key
+data=RIGHT
+event=ScreenModes next
+
+###
+
+mode=default
+type=key
+data=6
+event=Setup Basic
+event=Mode default
+
+mode=default
+type=key
+data=7
+event=Calculator
+
+#mode=default
+#type=key
+#data=8
+#event=Setup Task
+#event=Mode default
+
+mode=default
+type=key
+data=9
+event=Setup Target
+
+#mode=default
+#type=key
+#data=0
+#event=ArmAdvance show
+#event=ArmAdvance toggle
+
+## Shutdown: see key X above
+
+### call SetupSystem with 'p'
+mode=default RemoteStick
+type=key
+data=P
+event=Setup System
+
