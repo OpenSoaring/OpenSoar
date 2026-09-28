@@ -1,0 +1,18 @@
+# OpenSoar keys on top of Data/Input/default.xci: they work on the
+# map, in pan mode and with a menu bar open, like the same keys of the
+# OpenVario configuration (Data/Input/OpenVario/20-keys.xci).
+
+# Q quits, X switches off: both open the power dialog, with the focus
+# on the button the key stands for, so RETURN confirms.  Where the
+# device cannot switch off (a desktop), X leaves the focus on Quit.
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Info3 Menu Vario1 Vario2
+type=key
+data=Q
+event=Exit system
+event=Mode default
+
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Info3 Menu Vario1 Vario2
+type=key
+data=X
+event=Exit shutdown
+event=Mode default

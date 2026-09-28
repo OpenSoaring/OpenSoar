@@ -1,0 +1,65 @@
+# OpenSoar additions to the XCSoar menu bar pages.
+#
+# The files of this directory are read after Data/Input/default.xci,
+# which stays exactly as XCSoar has it, so it can follow XCSoar
+# without conflicts.  They are read in the order of their names.  An
+# entry with the same mode and location (or the same mode and key)
+# replaces the XCSoar entry completely, including its key.
+
+# Config page 2: the vario display page has its own settings.
+mode=Config2
+type=key
+data=V
+event=Setup VarioDisplay
+event=Mode default
+label=Vario Display
+location=10
+
+# The Info pages get a fourth page for the frequency card, so the
+# page counters change and page 3 leads to page 4 instead of closing.
+mode=Info1
+type=key
+data=APP4
+event=Mode Info2
+label=Info\nPage 2/4
+location=4
+
+mode=Info2
+type=key
+data=APP4
+event=Mode Info3
+label=Info\nPage 3/4
+location=4
+
+mode=Info3
+type=key
+data=APP4
+event=Mode Info4
+label=Info\nPage 4/4
+location=4
+
+# -------------
+# mode=Info4
+# -------------
+mode=Info4
+type=key
+data=ESCAPE
+event=Mode default
+label=Cancel
+location=4
+
+mode=Info4
+type=key
+data=6
+event=FrequencyCard
+event=Mode default
+label=Frequency Card
+location=5
+
+mode=Info4
+type=key
+data=7
+event=Logbook
+event=Mode default
+label=Log book
+location=6
