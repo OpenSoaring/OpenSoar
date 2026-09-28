@@ -248,7 +248,8 @@ endif()
 add_subdirectory(build/cmake)
 
 if (TARGET_IS_OPENVARIO)
-    set(DEFAULT_XCI_FILE   defaultOV.xci)
+    # split by use into several files, read in the order of their names
+    set(DEFAULT_XCI_FILE   OpenVario/*.xci)
 else()
     set(DEFAULT_XCI_FILE   default.xci)
 endif()
