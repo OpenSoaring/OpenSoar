@@ -131,6 +131,9 @@ Version 7.46 - not yet released
   - the zoom steps of the scale list are the tile zoom levels, one
     factor of two apart; the map title shows the level (for example
     "Z12") while the map sits on one of them
+  - choose a base map per page: terrain and topography, topography
+    only, an empty background, or OpenStreetMap tiles, which are
+    downloaded while online and kept in the cache
   - use Vario #2 snail trail colours by default so climb and sink
     stand out on typical terrain #2988
   - leave Trail drift off by default so the displayed track matches

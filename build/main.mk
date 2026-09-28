@@ -689,6 +689,7 @@ $(call SRC_TO_OBJ,$(SRC)/Weather/OPERA/Radar.cpp): CPPFLAGS += $(ZLIB_CPPFLAGS)
 ifeq ($(OPENGL),y)
 ifeq ($(HAVE_HTTP),y)
 XCSOAR_SOURCES += \
+	$(SRC)/MapWindow/BaseMap/TileLayer.cpp \
 	$(SRC)/Dialogs/Weather/MapOverlayWidget.cpp \
 	$(SRC)/Dialogs/Weather/EdlSettingsWidget.cpp \
 	$(SRC)/Weather/OPERA/Radar.cpp \

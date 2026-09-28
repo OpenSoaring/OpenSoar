@@ -68,6 +68,11 @@ struct UIState {
    */
   PageLayout::Overlay page_overlay;
 
+  /**
+   * Base map of the current map page, see PageLayout::BaseMap.
+   */
+  PageLayout::BaseMap page_base_map;
+
   PagesState pages;
 
   /**

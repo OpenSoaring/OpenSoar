@@ -70,6 +70,11 @@ Load(const ProfileMap &map, PageLayout &_pl, const unsigned page)
       unsigned(pl.overlay) >= unsigned(PageLayout::Overlay::MAX))
     pl.overlay = PageLayout::Overlay::NONE;
 
+  strcpy(profileKey + prefixLen, "BaseMap");
+  if (!map.GetEnum(profileKey, pl.base_map) ||
+      unsigned(pl.base_map) >= unsigned(PageLayout::BaseMap::MAX))
+    pl.base_map = PageLayout::BaseMap::TERRAIN_TOPOGRAPHY;
+
   strcpy(profileKey + prefixLen, "RaspField");
   map.Get(profileKey, pl.rasp_field);
 
@@ -165,6 +170,9 @@ Profile::Save(ProfileMap &map, const PageLayout &page, const unsigned i)
 
   strcpy(profileKey + prefixLen, "Overlay");
   map.Set(profileKey, (unsigned)page.overlay);
+
+  strcpy(profileKey + prefixLen, "BaseMap");
+  map.Set(profileKey, (unsigned)page.base_map);
 
   strcpy(profileKey + prefixLen, "RaspField");
   map.Set(profileKey, page.rasp_field);
