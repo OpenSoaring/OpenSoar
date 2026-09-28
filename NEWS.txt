@@ -148,6 +148,11 @@ Version 7.47 - not yet released
   - cross-compile for Raspberry Pi 4 and 5 with TARGET=PI4
     (TARGET=PI5 is an alias). The arm64 sysroot defaults to
     /opt/pi64/root
+* input
+  - load several input events files: they are read on top of the
+    built-in configuration in the order of their names, so each file
+    can hold one topic and a later one can override an earlier one;
+    an existing single file is taken over
 
 Version 7.46.1 - 2026-10-30
 * ui

@@ -175,6 +175,9 @@ UpdateProfileReferences(ProfileMap &profile, Path old_path, Path new_path)
 
   key_changed = UpdateSingleProfilePath(profile, ProfileKeys::InputFile,
                                         old_path, new_path);
+  key_changed |= UpdateMultipleProfilePaths(profile,
+                                            ProfileKeys::InputFileList,
+                                            old_path, new_path);
   changed |= key_changed;
   InputFileChanged |= key_changed;
 
