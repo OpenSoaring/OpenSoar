@@ -65,6 +65,10 @@ Version 7.46 - not yet released
     can be changed in flight; default key N
   - add TextSize input events (up/down/show) so UI text size can be
     changed in flight; default keys T and S step by 5%
+  - load several input events files: they are read on top of the
+    built-in configuration in the order of their names, so each file
+    can hold one topic and a later one can override an earlier one;
+    an existing single file is taken over
 * weather
   - show the overlay name as XC Therm (with a space) in setup, weather
     dialogs, map titles, and download messages
