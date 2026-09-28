@@ -249,11 +249,23 @@ add_subdirectory(build/cmake)
 
 if (TARGET_IS_OPENVARIO)
     # split by use into several files, read in the order of their names
-    set(DEFAULT_XCI_FILE   OpenVario/*.xci)
+    set(_xci_patterns   OpenVario/*.xci)
 else()
     # XCSoar's own file first, then the OpenSoar changes on top of it
-    set(DEFAULT_XCI_FILE   default.xci OpenSoar/*.xci)
+    set(_xci_patterns   default.xci OpenSoar/*.xci)
 endif()
+# DEFAULT_XCI_FILES: the built-in input configuration as a list of
+# files, which Data (to generate the tables) and src/Input (to show
+# them in the IDE) use alike.  A later file can override an entry of
+# an earlier one, so the order matters: the patterns in their order,
+# the files of one pattern in the order of their names.
+set(DEFAULT_XCI_FILES)
+foreach(_pattern ${_xci_patterns})
+    file(GLOB _files CONFIGURE_DEPENDS
+         ${PROJECTGROUP_SOURCE_DIR}/Data/Input/${_pattern})
+    list(SORT _files)
+    list(APPEND DEFAULT_XCI_FILES ${_files})
+endforeach()
 
 if(UNIX)
  set(ENABLE_OPENGL ON)  # better outside????
