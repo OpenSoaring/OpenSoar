@@ -20,6 +20,12 @@
 #include "Hardware/Vibrator.hpp"
 #include "Repository/FileType.hpp"
 #include "Version.hpp"
+#include "Input/InputEvents.hpp"
+#include "util/IterableSplitString.hxx"
+
+#include <algorithm>
+#include <string>
+#include <vector>
 
 using namespace std::chrono;
 
@@ -75,12 +81,15 @@ InterfaceConfigPanel::Prepare(ContainerWindow &parent,
 
   RowFormWidget::Prepare(parent, rc);
 
-  AddFile(_("Events"),
-          _("The Input Events file defines the menu system and how XCSoar responds to "
-            "button presses and events from external devices."),
-          ProfileKeys::InputFile,
-          GetFileTypePatterns(FileType::XCI),
-          FileType::XCI);
+  AddMultipleFiles(_("Events"),
+                   _("The Input Events files define the menu system and how "
+                     "OpenSoar responds to button presses and events from "
+                     "external devices.  They are read on top of the "
+                     "built-in configuration in the order of their names, "
+                     "so a file can override an entry of a file before it."),
+                   ProfileKeys::InputFileList,
+                   GetFileTypePatterns(FileType::XCI),
+                   FileType::XCI);
   SetExpertRow(InputFile);
 
 #ifdef HAVE_NLS
@@ -205,14 +214,45 @@ InterfaceConfigPanel::Prepare(ContainerWindow &parent,
   SetExpertRow(DisclaimerAccepted);
 }
 
+/**
+ * Store the input events files in the order in which they are read,
+ * so that the row shows that order and not the order of ticking.
+ */
+static void
+SortInputFileList() noexcept
+{
+  std::vector<std::string> files;
+  for (const auto i : TIterableSplitString(
+         Profile::Get(ProfileKeys::InputFileList, ""), '|'))
+    if (!i.empty())
+      files.emplace_back(i);
+
+  std::stable_sort(files.begin(), files.end(),
+                   [](const std::string &a, const std::string &b){
+                     return InputEvents::IsReadBefore(Path(a.c_str()),
+                                                      Path(b.c_str()));
+                   });
+
+  std::string value;
+  for (const auto &i : files) {
+    if (!value.empty())
+      value += '|';
+    value += i;
+  }
+
+  Profile::Set(ProfileKeys::InputFileList, value.c_str());
+}
+
 bool
 InterfaceConfigPanel::Save(bool &_changed) noexcept
 {
   UISettings &settings = CommonInterface::SetUISettings();
   bool changed = false;
 
-  if (SaveValueFileReader(InputFile, ProfileKeys::InputFile))
+  if (SaveValueMultiFileReader(InputFile, ProfileKeys::InputFileList)) {
+    SortInputFileList();
     require_restart = changed = true;
+  }
 
 #ifdef HAVE_NLS
   WndProperty *wp = (WndProperty *)&GetControl(LanguageFile);
