@@ -629,6 +629,7 @@ GlueMapWindow::DrawMapScale(Canvas &canvas, const MapHudLayout &layout,
   unsigned contour_spacing_m = 0;
   const auto &terrain = GetMapSettings().terrain;
   if (projection.IsValid() &&
+      GetBaseMap() == PageLayout::BaseMap::TERRAIN_TOPOGRAPHY &&
       terrain.enable && terrain.contours != Contours::OFF &&
       background.AreContoursVisible())
     contour_spacing_m = background.GetContourSpacing();
@@ -686,6 +687,13 @@ GlueMapWindow::DrawMapScale(Canvas &canvas, const MapHudLayout &layout,
   if (const double zoom = projection.GetZoomLevel();
       std::fabs(zoom - std::round(zoom)) < 0.01)
     buffer.AppendFormat("Z%d ", int(std::lround(zoom)));
+
+#ifdef HAVE_BASE_MAP_TILES
+  /* the OpenStreetMap licence requires the attribution to be visible
+     wherever the tiles are */
+  if (GetBaseMap() == PageLayout::BaseMap::OSM)
+    buffer += "\xc2\xa9 OpenStreetMap ";
+#endif
 
   if (buffer.empty() && DEBUG_ALL_MAP_OVERLAYS)
     buffer = "Map title";
