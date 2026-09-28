@@ -16,6 +16,8 @@ Version 7.47 - not yet released
   - choose a base map per page: terrain and topography, topography
     only, an empty background, or OpenStreetMap tiles, which are
     downloaded while online and kept in the cache
+  - the quick menu offers "Page settings" for the current page in
+    place of the terrain and topography toggles
 
 Version 7.46 - 2026-10-19
 * highlights
