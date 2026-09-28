@@ -33,14 +33,45 @@ parse_assignment(char *buffer, const char *&key, const char *&value)
   return true;
 }
 
+/**
+ * Parse the value of "phase=": the flight phases in which the quick
+ * menu offers an item.  "all", an empty value or no "phase=" at all
+ * mean every phase.
+ */
+static uint8_t
+ParsePhases(std::string_view value, unsigned line) noexcept
+{
+  uint8_t phases = MenuPhase::ALL;
+
+  for (const auto word : IterableSplitString(value, ' ')) {
+    if (word.empty())
+      continue;
+
+    if (word == "all")
+      return MenuPhase::ALL;
+    else if (word == "ground")
+      phases |= MenuPhase::GROUND;
+    else if (word == "flight")
+      phases |= MenuPhase::FLIGHT;
+    else if (word == "after")
+      phases |= MenuPhase::AFTER;
+    else
+      LogFmt("Invalid phase at line {}: {}", line, word);
+  }
+
+  return phases;
+}
+
 struct EventBuilder {
   unsigned event_id, location;
+  uint8_t phases;
   StaticString<1024> mode;
   StaticString<256> type, data, label;
 
   void clear() {
     event_id = 0;
     location = 0;
+    phases = MenuPhase::ALL;
     mode.clear();
     type.clear();
     data.clear();
@@ -81,7 +112,7 @@ struct EventBuilder {
           new_label = UnescapeBackslash(label.c_str());
         }
 
-        config.AppendMenu(mode_id, new_label, location, event_id);
+        config.AppendMenu(mode_id, new_label, location, event_id, phases);
       }
 
       // Make key (Keyboard input)
@@ -221,6 +252,9 @@ ParseInputFile(InputConfig &config, BufferedReader &reader)
         current.label = string_converter.Convert(value);
       } else if (StringIsEqual(key, "location")) {
         current.location = ParseUnsigned(value);
+
+      } else if (StringIsEqual(key, "phase")) {
+        current.phases = ParsePhases(value, line);
 
       } else {
         LogFmt("Invalid key/value pair {}={} at {}", key, value, line);

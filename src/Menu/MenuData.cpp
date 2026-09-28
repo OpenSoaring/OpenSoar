@@ -11,7 +11,8 @@ Menu::Clear() noexcept
 }
 
 void
-Menu::Add(const char *label, unsigned location, unsigned event_id) noexcept
+Menu::Add(const char *label, unsigned location, unsigned event_id,
+          uint8_t phases) noexcept
 {
   if (location >= items.size())
     return;
@@ -20,6 +21,17 @@ Menu::Add(const char *label, unsigned location, unsigned event_id) noexcept
 
   item.label = label;
   item.event = event_id;
+  item.phases = phases;
+}
+
+bool
+Menu::HasPhases() const noexcept
+{
+  for (const auto &i : items)
+    if (i.IsDefined() && i.phases != MenuPhase::ALL)
+      return true;
+
+  return false;
 }
 
 int
