@@ -3567,6 +3567,9 @@ msgstr "Ereignisse"
 msgid "The Input Events file defines the menu system and how XCSoar responds to button presses and events from external devices."
 msgstr "Die Eingabeereignisdatei bestimmt das Menüsystem und wie XCSoar auf einen Knopfdruck oder einem Ereignis von einem externen Gerät reagiert."
 
+msgid "The Input Events files define the menu system and how OpenSoar responds to button presses and events from external devices.  They are read on top of the built-in configuration in the order of their names, so a file can override an entry of a file before it."
+msgstr "Die Eingabeereignisdateien bestimmen das Menüsystem und wie OpenSoar auf Tastendrücke und Ereignisse von externen Geräten reagiert.  Sie werden nach der eingebauten Konfiguration in der Reihenfolge ihrer Namen gelesen, sodass eine Datei einen Eintrag einer Datei davor überschreiben kann."
+
 msgid "Language"
 msgstr "Sprache"
 
