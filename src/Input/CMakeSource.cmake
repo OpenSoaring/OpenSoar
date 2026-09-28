@@ -21,6 +21,6 @@ set(_SOURCES
 )
 
 set(SCRIPT_FILES
-    ${PROJECTGROUP_SOURCE_DIR}/Data/Input/${DEFAULT_XCI_FILE}
+    ${DEFAULT_XCI_FILES}
     CMakeSource.cmake
 )
