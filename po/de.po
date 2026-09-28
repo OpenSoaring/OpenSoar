@@ -11905,3 +11905,38 @@ msgid ""
 "Don't fill the airspace area, and draw the outlines one pixel wide."
 msgstr ""
 "Die Lufträume nicht füllen und die Umrisse ein Pixel breit zeichnen."
+
+msgid "Terrain and topography"
+msgstr "Gelände und Topographie"
+
+msgid "Terrain and topography as configured in the map settings."
+msgstr "Gelände und Topographie wie in den Karteneinstellungen eingestellt."
+
+msgid "Topography only"
+msgstr "Nur Topographie"
+
+msgid "Topography on a plain background, without terrain."
+msgstr "Topographie auf einfarbigem Hintergrund, ohne Gelände."
+
+msgid "Empty"
+msgstr "Leer"
+
+msgid "A plain background without terrain and topography."
+msgstr "Ein einfarbiger Hintergrund ohne Gelände und Topographie."
+
+msgid ""
+"OpenStreetMap tiles instead of terrain and topography. The tiles are "
+"downloaded while online and kept in the cache."
+msgstr ""
+"OpenStreetMap-Kacheln statt Gelände und Topographie. Die Kacheln werden "
+"geladen, solange eine Verbindung besteht, und im Cache gehalten."
+
+msgid "Base map"
+msgstr "Grundkarte"
+
+msgid ""
+"What the map draws underneath airspaces, waypoints and the task on this "
+"page."
+msgstr ""
+"Was die Karte auf dieser Seite unter Lufträumen, Wegpunkten und der "
+"Aufgabe zeichnet."

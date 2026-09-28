@@ -70,6 +70,42 @@ struct PageLayout
   InfoBoxConfig infobox_config;
 
   /**
+   * What the map draws underneath everything else (only on map
+   * pages).  This used to be the global terrain and topography switch;
+   * making it a page setting allows one page with the familiar
+   * terrain map and another one with a street map, without toggling
+   * anything in flight.
+   */
+  enum class BaseMap : uint8_t {
+    /**
+     * Terrain and topography, as configured in the map settings.
+     */
+    TERRAIN_TOPOGRAPHY,
+
+    /**
+     * Topography on a plain background, no terrain.
+     */
+    TOPOGRAPHY,
+
+    /**
+     * A plain background: only airspaces, waypoints, the task and
+     * the other symbols.
+     */
+    EMPTY,
+
+    /**
+     * OpenStreetMap raster tiles instead of terrain and topography;
+     * the tiles have their own roads, towns and water.
+     */
+    OSM,
+
+    /**
+     * A dummy entry that is used for validating profile values.
+     */
+    MAX
+  } base_map;
+
+  /**
    * SkySight layer identifier for this page when overlay is SKYSIGHT.
    */
   StaticString<64> skysight_overlay;
@@ -167,6 +203,7 @@ struct PageLayout
   constexpr PageLayout(bool _valid, InfoBoxConfig _infobox_config)
     :valid(_valid), main(Main::MAP),
      infobox_config(_infobox_config),
+     base_map(BaseMap::TERRAIN_TOPOGRAPHY),
      skysight_overlay{},
      skysight_time(SKYSIGHT_TIME_AUTO),
      bottom(Bottom::NOTHING),
@@ -181,6 +218,7 @@ struct PageLayout
   constexpr PageLayout(InfoBoxConfig _infobox_config)
     :valid(true), main(Main::MAP),
      infobox_config(_infobox_config),
+     base_map(BaseMap::TERRAIN_TOPOGRAPHY),
      skysight_overlay{},
      skysight_time(SKYSIGHT_TIME_AUTO),
      bottom(Bottom::NOTHING),
@@ -293,6 +331,9 @@ struct PageLayout
 
     if (unsigned(overlay) >= unsigned(Overlay::MAX))
       overlay = Overlay::NONE;
+
+    if (unsigned(base_map) >= unsigned(BaseMap::MAX) || !IsMapMain())
+      base_map = BaseMap::TERRAIN_TOPOGRAPHY;
 
     if (!IsMapMain()) {
       skysight_overlay.clear();
