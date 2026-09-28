@@ -699,8 +699,13 @@ This page allows to customise the way the user controls and interacts with
 XCSoar.
 
 \begin{description}
-\item[Events*]  The Input Events file defines the menu system and how XCSoar
-  responds to button presses and events from external devices.
+\item[Events*]  The Input Events files define the menu system and how
+  OpenSoar responds to button presses and events from external devices.
+  Several files can be ticked.  They are read on top of the built-in
+  configuration in the order of their names, so a file can override an
+  entry of a file read before it; numbered names such as
+  \texttt{10-keys.xci} and \texttt{20-quickmenu.xci} make the order
+  visible.
 \item[Language]  The language options selects translations for English texts to
   other languages.  Select {\bf English} for a native interface, {\bf Automatic}
   to localise XCSoar according to the system settings; or you may select one of 
