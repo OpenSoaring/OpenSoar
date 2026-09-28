@@ -156,6 +156,13 @@ while (<>) {
         print STDERR "Error on $line - $_\n";
     }
 
+    # A record ends with its file, even without a trailing empty
+    # line; otherwise it would merge with the first record of the
+    # next file when several files are given.
+    if (eof) {
+        append(@all, %indices, %$current);
+        $current = { event => [] };
+    }
 }
 
 append(@all, %indices, %$current);

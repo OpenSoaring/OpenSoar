@@ -177,7 +177,11 @@ endif()
     ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_resource.py
   )
 
-    set(DEFAULT_XCI   ${_DATA_INPUT}/Input/${DEFAULT_XCI_FILE})
+    # DEFAULT_XCI_FILE may be a pattern for several files; a later file
+    # can override an entry of an earlier one, so the order matters
+    file(GLOB DEFAULT_XCI CONFIGURE_DEPENDS
+         ${_DATA_INPUT}/Input/${DEFAULT_XCI_FILE})
+    list(SORT DEFAULT_XCI)
     message(STATUS "### DEFAULT_XCI = ${DEFAULT_XCI}")
     add_custom_command(OUTPUT  ${INPUTEVENTS_CPP} ${_INCLUDE_OUTPUT}/InputCppFiles.txt
         COMMENT "Create InputEvents_*.hpp!"
