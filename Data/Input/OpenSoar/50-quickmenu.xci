@@ -1,0 +1,29 @@
+# OpenSoar changes to the XCSoar quick menu (mode RemoteStick).
+#
+# Read after Data/Input/default.xci; an entry replaces the XCSoar
+# entry at the same location.  Empty locations do not show, so an
+# entry without an event removes a button without moving the others.
+
+# The terrain and topography toggles give way to the settings of the
+# current page, where the base map (terrain, topography, OpenStreetMap
+# or empty) is chosen.
+mode=RemoteStick
+type=key
+data=0
+event=Page settings
+label=Page\nSettings
+location=9
+
+mode=RemoteStick
+type=key
+data=0
+label=
+location=10
+
+# The OpenSoar frequency list.
+mode=RemoteStick
+type=key
+data=0
+event=FrequencyCard
+label=Frequency\nCard
+location=47

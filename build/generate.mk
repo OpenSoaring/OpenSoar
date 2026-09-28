@@ -73,7 +73,10 @@ ifeq ($(TARGET_IS_OPENVARIO),y)
   # can override an entry of an earlier one.
   DEFAULT_XCI = $(sort $(wildcard $(topdir)/Data/Input/OpenVario/*.xci))
 else
-  DEFAULT_XCI = $(topdir)/Data/Input/default.xci
+  # XCSoar's own file first, unchanged, then the OpenSoar changes on
+  # top of it, again in the order of their names
+  DEFAULT_XCI = $(topdir)/Data/Input/default.xci \
+    $(sort $(wildcard $(topdir)/Data/Input/OpenSoar/*.xci))
 endif
 
 # $(OUT)/include is shared between the targets, but the chosen xci

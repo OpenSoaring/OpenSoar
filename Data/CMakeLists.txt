@@ -177,11 +177,15 @@ endif()
     ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_resource.py
   )
 
-    # DEFAULT_XCI_FILE may be a pattern for several files; a later file
-    # can override an entry of an earlier one, so the order matters
-    file(GLOB DEFAULT_XCI CONFIGURE_DEPENDS
-         ${_DATA_INPUT}/Input/${DEFAULT_XCI_FILE})
-    list(SORT DEFAULT_XCI)
+    # DEFAULT_XCI_FILE is a list of patterns; a later file can override
+    # an entry of an earlier one, so the order matters: the patterns in
+    # their order, the files of one pattern in the order of their names
+    set(DEFAULT_XCI)
+    foreach(_pattern ${DEFAULT_XCI_FILE})
+      file(GLOB _files CONFIGURE_DEPENDS ${_DATA_INPUT}/Input/${_pattern})
+      list(SORT _files)
+      list(APPEND DEFAULT_XCI ${_files})
+    endforeach()
     message(STATUS "### DEFAULT_XCI = ${DEFAULT_XCI}")
     add_custom_command(OUTPUT  ${INPUTEVENTS_CPP} ${_INCLUDE_OUTPUT}/InputCppFiles.txt
         COMMENT "Create InputEvents_*.hpp!"
