@@ -793,6 +793,16 @@ When editing a page, the following options are available for map pages:
 \begin{description}
 \item[Main area]  The primary content of the page, for example \emph{Map}
   or \emph{Map (north-up)}.
+\item[Base map]  What a map page draws underneath airspaces,
+  waypoints and the task: \emph{Terrain and topography} (as set up in
+  the map settings), \emph{Topography only}, \emph{Empty}, or
+  \emph{OpenStreetMap}.  OpenStreetMap tiles replace terrain and
+  topography; they are downloaded while the device is online and kept
+  in the cache directory, so the map also works offline where it was
+  shown before.  Until a tile has arrived, a coarser one from the cache
+  stands in.  The OpenStreetMap attribution is shown in the map title.
+  The OpenStreetMap option requires an OpenGL build with network
+  support.
 \item[InfoBoxes]  Which InfoBox set is shown alongside the main area.
 \item[Bottom area]  Optional panel below the main area.  Select
   \emph{Weather controls} to show in-flight RASP, EDL, or XC Therm forecast

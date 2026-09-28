@@ -210,6 +210,48 @@ TestWeatherPageCursorRoundTrip()
   ok1(loaded.pages[2].skysight_time == skysight.skysight_time);
 }
 
+/**
+ * The base map of a page survives a save/load round trip; a profile
+ * written before the setting existed gets the classic terrain and
+ * topography map, and a page without a map has no base map.
+ */
+static void
+TestBaseMapRoundTrip()
+{
+  PageSettings settings;
+  settings.SetDefaults();
+  settings.n_pages = 3;
+
+  settings.pages[0] = PageLayout::Default();
+  settings.pages[0].base_map = PageLayout::BaseMap::OSM;
+
+  settings.pages[1] = PageLayout::Default();
+  settings.pages[1].base_map = PageLayout::BaseMap::TOPOGRAPHY;
+
+  settings.pages[2] = PageLayout::Default();
+  settings.pages[2].main = PageLayout::Main::FLARM_RADAR;
+  settings.pages[2].base_map = PageLayout::BaseMap::OSM;
+  settings.pages[2].Normalise();
+  ok1(settings.pages[2].base_map ==
+      PageLayout::BaseMap::TERRAIN_TOPOGRAPHY);
+
+  Profile::Clear();
+  Profile::Save(Profile::map, settings);
+
+  /* pretend the second page comes from an older profile */
+  Profile::map.Remove("Page1BaseMap");
+
+  PageSettings loaded;
+  loaded.SetDefaults();
+  Profile::Load(Profile::map, loaded);
+
+  ok1(loaded.pages[0].base_map == PageLayout::BaseMap::OSM);
+  ok1(loaded.pages[1].base_map ==
+      PageLayout::BaseMap::TERRAIN_TOPOGRAPHY);
+  ok1(loaded.pages[2].base_map ==
+      PageLayout::BaseMap::TERRAIN_TOPOGRAPHY);
+}
+
 static constexpr Path kLifecyclePath{"output/TestProfileLifecycle.prf"};
 static constexpr Path kMissingPath{"output/TestProfileLifecycleMissing.prf"};
 
@@ -356,7 +398,7 @@ TestSkySightProfileCompatibility()
 int main()
 try {
   plan_tests(50
-             + 5 + 5 + 4
+             + 5 + 5 + 4 + 4
 #ifdef HAVE_HTTP
              + 8
 #endif
@@ -367,6 +409,7 @@ try {
   TestReader();
   TestMigration();
   TestWeatherPageCursorRoundTrip();
+  TestBaseMapRoundTrip();
   TestSaveBeforeLoad();
   TestLoadThenSave();
   TestFailedLoadThenSave();
