@@ -37,6 +37,8 @@ Version 7.45.4 - not yet released
   - choose a base map per page: terrain and topography, topography
     only, an empty background, or OpenStreetMap tiles, which are
     downloaded while online and kept in the cache
+  - the quick menu offers "Page settings" for the current page in
+    place of the terrain and topography toggles
 * airspace
   - new fill mode "Thin lines": no fill, outlines one pixel wide
 * logger

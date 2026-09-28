@@ -1471,16 +1471,9 @@ location=8
 mode=RemoteStick
 type=key
 data=0
-event=TerrainTopography terrain toggle
-label=Terrain\n$(TerrainToggleActionName)
+event=Page settings
+label=Page\nSettings
 location=9
-
-mode=RemoteStick
-type=key
-data=0
-event=TerrainTopography topography toggle
-label=Topo.\n$(TopographyToggleActionName)
-location=10
 
 mode=RemoteStick
 type=key
@@ -1488,7 +1481,7 @@ data=0
 event=AirspaceLabels show
 event=AirspaceLabels toggle
 label=Airspace Labels\n$(AirspaceLabelsToggleActionName)$(CheckAirspace)
-location=11
+location=10
 
 # Priority 2: Task management (inner ring)
 mode=RemoteStick
@@ -1496,14 +1489,14 @@ type=key
 data=0
 event=AdjustWaypoint previousarm
 label=$(WaypointPreviousArm)
-location=12
+location=11
 
 mode=RemoteStick
 type=key
 data=0
 event=AdjustWaypoint nextarm
 label=$(WaypointNextArm)
-location=13
+location=12
 
 mode=RemoteStick
 type=key
@@ -1511,7 +1504,7 @@ data=0
 event=Calculator
 event=Mode default
 label=Task Manager
-location=14
+location=13
 
 mode=RemoteStick
 type=key
@@ -1519,7 +1512,7 @@ data=0
 event=Mode default
 event=AbortTask toggle
 label=Task\n$(TaskAbortToggleActionName)$(CheckWaypointFile)
-location=15
+location=14
 
 mode=RemoteStick
 type=key
@@ -1529,7 +1522,7 @@ event=StatusMessage Pilot event announced
 event=Logger note PEV
 event=PilotEvent
 label=Pilot Event Announce
-location=16
+location=15
 
 # Priority 1: Most important in-flight buttons (CENTER AREA)
 mode=RemoteStick
@@ -1538,7 +1531,7 @@ data=0
 event=Checklist
 event=Mode default
 label=Checklist
-location=17
+location=16
 
 mode=RemoteStick
 type=key
@@ -1546,28 +1539,28 @@ data=0
 event=Setup Target
 event=Mode default
 label=Target$(CheckTask)$(CheckTaskResumed)
-location=18
+location=17
 
 mode=RemoteStick
 type=key
 data=0
 event=Mode mc
 label=MacCready
-location=19
+location=18
 
 mode=RemoteStick
 type=key
 data=0
 event=AirSpace toggle
 label=Airspace\n$(AirspaceToggleActionName)
-location=20
+location=19
 
 mode=RemoteStick
 type=key
 data=0
 event=Pan on
 label=Pan Mode
-location=21
+location=20
 
 mode=RemoteStick
 type=key
@@ -1575,7 +1568,7 @@ data=0
 event=WaypointDetails select
 event=Mode default
 label=Waypoint List$(CheckWaypointFile)
-location=22
+location=21
 
 mode=RemoteStick
 type=key
@@ -1583,7 +1576,7 @@ data=0
 event=Setup Alternates
 event=Mode default
 label=Alternates$(CheckWaypointFile)
-location=23
+location=22
 
 mode=RemoteStick
 type=key
@@ -1591,7 +1584,7 @@ data=0
 event=AirspaceWarnings
 event=Mode default
 label=Airspace Warnings
-location=24
+location=23
 
 mode=RemoteStick
 type=key
@@ -1599,7 +1592,7 @@ data=0
 event=NearestAirspaceDetails
 event=Mode default
 label=Nearest Airspace$(CheckAirspace)
-location=25
+location=24
 
 # Priority 2: Task management continued (inner ring)
 mode=RemoteStick
@@ -1608,7 +1601,7 @@ data=0
 event=Weather
 event=Mode default
 label=Weather
-location=26
+location=25
 
 mode=RemoteStick
 type=key
@@ -1616,14 +1609,14 @@ data=0
 event=GotoLookup
 event=Mode default
 label=GoTo$(CheckWaypointFile)
-location=27
+location=26
 
 mode=RemoteStick
 type=key
 data=0
 event=FlarmTraffic
 label=FLARM Radar
-location=28
+location=27
 
 mode=RemoteStick
 type=key
@@ -1633,7 +1626,7 @@ event=StatusMessage Dropped marker
 event=Logger note Mark
 event=MarkLocation
 label=Marker Drop
-location=29
+location=28
 
 mode=RemoteStick
 type=key
@@ -1641,7 +1634,7 @@ data=0
 event=Zoom auto show
 event=Zoom auto toggle
 label=Zoom\n$(ZoomAutoToggleActionName)
-location=30
+location=29
 
 # Analysis and info screens (outer ring)
 mode=RemoteStick
@@ -1650,7 +1643,7 @@ data=0
 event=Analysis
 event=Mode default
 label=Analysis
-location=31
+location=30
 
 mode=RemoteStick
 type=key
@@ -1658,7 +1651,7 @@ data=0
 event=Status all
 event=Mode default
 label=Status
-location=32
+location=31
 
 mode=RemoteStick
 type=key
@@ -1666,7 +1659,7 @@ data=0
 event=QuickGuide
 event=Mode default
 label=Quick Guide
-location=33
+location=32
 
 mode=RemoteStick
 type=key
@@ -1674,7 +1667,7 @@ data=0
 event=ThermalAssistant
 event=Mode default
 label=Thermal Assistant
-location=34
+location=33
 
 mode=RemoteStick
 type=key
@@ -1682,7 +1675,7 @@ data=0
 event=AirSpace list
 event=Mode default
 label=Airspaces
-location=35
+location=34
 
 # Low priority: System functions (far from center)
 mode=RemoteStick
@@ -1691,14 +1684,14 @@ data=0
 event=Logger show
 event=Logger toggle ask
 label=Logger\n$(LoggerActive)$(CheckLogger)
-location=36
+location=35
 
 mode=RemoteStick
 type=key
 data=0
 event=Logger nmea
 label=NMEA Logger$(CheckLogger)
-location=37
+location=36
 
 mode=RemoteStick
 type=key
@@ -1706,7 +1699,7 @@ data=0
 event=Setup Replay
 event=Mode default
 label=Replay$(CheckReplay)
-location=38
+location=37
 
 mode=RemoteStick
 type=key
@@ -1714,7 +1707,7 @@ data=0
 event=Device list
 event=Mode default
 label=Devices
-location=39
+location=38
 
 mode=RemoteStick
 type=key
@@ -1722,14 +1715,14 @@ data=0
 event=DataManagement
 event=Mode default
 label=Data Management
-location=40
+location=39
 
 mode=RemoteStick
 type=key
 data=0
 event=RepeatStatusMessage
 label=Message Repeat
-location=41
+location=40
 
 mode=RemoteStick
 type=key
@@ -1737,7 +1730,7 @@ data=0
 event=DistanceRings show
 event=DistanceRings toggle
 label=Distance Rings\n$(DistanceRingsToggleActionName)
-location=42
+location=41
 
 mode=RemoteStick
 type=key
@@ -1745,28 +1738,28 @@ data=0
 event=UploadIGCFile
 event=Mode default
 label=WeGlide Upload
-location=43
+location=42
 
 mode=RemoteStick
 type=key
 data=0
 event=Exit
 label=Quit
-location=44
+location=43
 
 mode=RemoteStick
 type=key
 data=0
 event=Mode weather
 label=Forecast\nControls
-location=45
+location=44
 
 mode=RemoteStick
 type=key
 data=0
 event=FrequencyCard
 label=Frequency\nCard
-location=46
+location=45
 
 # -------------
 # Define gesture to open Quickmenu without keyboard or remote

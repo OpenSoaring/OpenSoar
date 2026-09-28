@@ -9,3 +9,10 @@ class Widget;
 
 std::unique_ptr<Widget>
 CreatePagesConfigPanel();
+
+/**
+ * Edit the configured layout of the current page in a dialog of its
+ * own, without going through the configuration menu.
+ */
+void
+ShowPageSettingsDialog() noexcept;
