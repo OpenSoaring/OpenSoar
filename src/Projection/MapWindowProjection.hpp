@@ -17,6 +17,14 @@ class MapWindowProjection:
    */
   unsigned snapped_zoom = 0;
 
+  /**
+   * A scale was set before the location was known, so whether it is
+   * close to a zoom level could not be decided yet (the ground scale
+   * of a level depends on the latitude); SetGeoLocation() checks
+   * again.
+   */
+  bool snap_pending = false;
+
 public:
   /**
    * Sets the scale in px/m.  Hides Projection::SetScale(): a scale
