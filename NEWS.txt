@@ -36,6 +36,11 @@ Version 7.47 - not yet released
   - keys Q (quit) and X (switch off) also outside the OpenVario; the
     Exit event opens the power dialog with the focus on the button it
     names ("Exit system", "Exit shutdown", "Exit restart", ...)
+  - the quick menu can show the buttons of one flight phase: a
+    "phase=ground flight after" line limits a button to some phases,
+    the phase follows takeoff and landing and can be switched with the
+    new buttons Ground, Flight, After and All or the QuickMenuPhase
+    event; without such lines the menu stays as it was
 * map
   - draw the map in the Web Mercator projection, the projection of
     slippy map tiles, so raster tiles are shown pixel for pixel
