@@ -68,9 +68,12 @@ XCI_LIST = default
 XCI_HEADERS = $(patsubst %,$(OUT)/include/InputEvents_%.hpp,$(XCI_LIST))
 
 ifeq ($(TARGET_IS_OPENVARIO),y)
-  DEFAULT_XCI = Data/Input/defaultOV.xci
+  # The OpenVario configuration is split by use into several files.
+  # They are read in the order of their names, so that a later file
+  # can override an entry of an earlier one.
+  DEFAULT_XCI = $(sort $(wildcard $(topdir)/Data/Input/OpenVario/*.xci))
 else
-  DEFAULT_XCI = Data/Input/default.xci
+  DEFAULT_XCI = $(topdir)/Data/Input/default.xci
 endif
 
 # $(OUT)/include is shared between the targets, but the chosen xci
@@ -81,12 +84,12 @@ XCI_SELECTED = $(OUT)/include/InputEvents_default.selected
 $(XCI_SELECTED): update-xci-selected | $(OUT)/include/dirstamp
 	@echo $(DEFAULT_XCI) | cmp -s - $@ || echo $(DEFAULT_XCI) > $@
 
-$(OUT)/include/InputEvents_default.hpp: $(topdir)/$(DEFAULT_XCI) \
+$(OUT)/include/InputEvents_default.hpp: $(DEFAULT_XCI) \
 	$(XCI_SELECTED) \
 	$(topdir)/tools/xci2cpp.pl \
 	| $(OUT)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
-	$(Q)$(PERL) $(topdir)/tools/xci2cpp.pl $< >$@.$(RANDOM_NUMBER).tmp
+	$(Q)$(PERL) $(topdir)/tools/xci2cpp.pl $(DEFAULT_XCI) >$@.$(RANDOM_NUMBER).tmp
 	@mv $@.$(RANDOM_NUMBER).tmp $@
 
 $(call SRC_TO_OBJ,$(SRC)/Input/InputDefaults.cpp): $(XCI_HEADERS)
