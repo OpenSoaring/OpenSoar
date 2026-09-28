@@ -57,6 +57,14 @@ MapWindow::SetOverlay(std::unique_ptr<MapOverlay> &&_overlay) noexcept
 #endif
 }
 
+#ifdef HAVE_BASE_MAP_TILES
+void
+MapWindow::SetBaseMapTiles(std::unique_ptr<MapOverlay> &&_tiles) noexcept
+{
+  base_map_tiles = std::move(_tiles);
+}
+#endif
+
 #if defined(HAVE_HTTP)
 void
 MapWindow::SetOverlay(unsigned index, std::unique_ptr<MapOverlay> &&_overlay) noexcept

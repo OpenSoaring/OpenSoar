@@ -31,6 +31,9 @@ Version 7.45.4 - not yet released
   - the zoom steps of the scale list are the tile zoom levels, one
     factor of two apart; the map title shows the level (for example
     "Z12") while the map sits on one of them
+  - choose a base map per page: terrain and topography, topography
+    only, an empty background, or OpenStreetMap tiles, which are
+    downloaded while online and kept in the cache
 * airspace
   - new fill mode "Thin lines": no fill, outlines one pixel wide
 
