@@ -19,6 +19,7 @@
 #include "Renderer/TurnBackMarkerRenderer.hpp"
 #include "OverlayLimits.hpp"
 #include "Weather/Features.hpp"
+#include "MapWindow/BaseMap/Features.hpp"
 #include "Tracking/SkyLines/Features.hpp"
 
 #include <memory>
@@ -126,6 +127,15 @@ protected:
    * #DoubleBufferWindow::mutex.
    */
   std::unique_ptr<RaspRenderer> rasp_renderer;
+
+#ifdef HAVE_BASE_MAP_TILES
+  /**
+   * The raster tiles drawn instead of terrain and topography on pages
+   * whose base map is PageLayout::BaseMap::OSM; nullptr where the
+   * application does not provide them (e.g. test programs).
+   */
+  std::unique_ptr<MapOverlay> base_map_tiles;
+#endif
 
 #ifdef ENABLE_OPENGL
 #if defined(HAVE_HTTP)
@@ -280,6 +290,18 @@ public:
 
   void SetRasp(const std::shared_ptr<RaspStore> &_rasp_store) noexcept;
 
+  /**
+   * The base map that is actually drawn on the current page: the one
+   * the page asks for, or terrain and topography where tiles are not
+   * available.
+   */
+  [[gnu::pure]]
+  PageLayout::BaseMap GetBaseMap() const noexcept;
+
+#ifdef HAVE_BASE_MAP_TILES
+  void SetBaseMapTiles(std::unique_ptr<MapOverlay> &&_tiles) noexcept;
+#endif
+
 #ifdef ENABLE_OPENGL
   void SetOverlay(std::unique_ptr<MapOverlay> &&_overlay) noexcept;
 
@@ -427,7 +449,8 @@ private:
    * Renders the terrain background
    * @param canvas The drawing canvas
    */
-  void RenderTerrain(Canvas &canvas) noexcept;
+  void RenderTerrain(Canvas &canvas, bool enable) noexcept;
+
 
   void RenderRasp(Canvas &canvas) noexcept;
 
@@ -437,13 +460,13 @@ private:
    * Renders the topography
    * @param canvas The drawing canvas
    */
-  void RenderTopography(Canvas &canvas) noexcept;
+  void RenderTopography(Canvas &canvas, bool enable) noexcept;
 
   /**
    * Renders the topography labels
    * @param canvas The drawing canvas
    */
-  void RenderTopographyLabels(Canvas &canvas) noexcept;
+  void RenderTopographyLabels(Canvas &canvas, bool enable) noexcept;
 
   void RenderOverlays(Canvas &canvas) noexcept;
 

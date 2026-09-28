@@ -14,6 +14,7 @@ UIState::Clear()
   panel_name.clear();
   map_scale_page_title.clear();
   page_overlay = PageLayout::Overlay::NONE;
+  page_base_map = PageLayout::BaseMap::TERRAIN_TOPOGRAPHY;
   pages.Clear();
   page_indicator_time = {};
   page_indicator_count = 0;
