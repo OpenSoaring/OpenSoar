@@ -134,6 +134,8 @@ Version 7.46 - not yet released
   - choose a base map per page: terrain and topography, topography
     only, an empty background, or OpenStreetMap tiles, which are
     downloaded while online and kept in the cache
+  - the quick menu offers "Page settings" for the current page in
+    place of the terrain and topography toggles
   - use Vario #2 snail trail colours by default so climb and sink
     stand out on typical terrain #2988
   - leave Trail drift off by default so the displayed track matches

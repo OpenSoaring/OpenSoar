@@ -12,6 +12,9 @@
 #include "PageActions.hpp"
 #include "Language/Language.hpp"
 #include "Profile/PageProfile.hpp"
+#include "Profile/Profile.hpp"
+#include "Dialogs/WidgetDialog.hpp"
+#include "UIState.hpp"
 #include "Profile/Current.hpp"
 #include "Interface.hpp"
 #include "DataGlobals.hpp"
@@ -797,4 +800,61 @@ CreatePagesConfigPanel()
   list.SetButtonPanel(*buttons);
 
   return buttons;
+}
+
+namespace {
+
+/**
+ * Collects the edits of a single page for ShowPageSettingsDialog().
+ */
+class SinglePageListener final : public PageLayoutEditWidget::Listener {
+public:
+  PageLayout value;
+
+  explicit SinglePageListener(const PageLayout &_value) noexcept
+    :value(_value) {}
+
+  void OnModified(const PageLayout &new_value) noexcept override {
+    value = new_value;
+  }
+};
+
+} // anonymous namespace
+
+void
+ShowPageSettingsDialog() noexcept
+{
+  const unsigned index = CommonInterface::GetUIState().pages.current_index;
+  const PageSettings &settings = CommonInterface::GetUISettings().pages;
+  if (index >= settings.n_pages)
+    return;
+
+  SinglePageListener listener{settings.pages[index]};
+
+  StaticString<64> caption;
+  caption.Format("%s %u", _("Page"), index + 1);
+
+  const DialogLook &look = UIGlobals::GetDialogLook();
+  TWidgetDialog<PageLayoutEditWidget>
+    dialog(WidgetDialog::Auto{}, UIGlobals::GetMainWindow(), look,
+           caption);
+  dialog.AddButton(_("OK"), mrOK);
+  dialog.AddButton(_("Cancel"), mrCancel);
+  dialog.SetWidget(look, listener);
+  dialog.GetWidget().SetValue(listener.value);
+
+  if (dialog.ShowModal() != mrOK)
+    return;
+
+  PageLayout value = listener.value;
+  value.Normalise();
+
+  PageLayout &dest = CommonInterface::SetUISettings().pages.pages[index];
+  if (value == dest)
+    return;
+
+  dest = value;
+  Profile::Save(Profile::map, value, index);
+  Profile::Save();
+  PageActions::Update();
 }
