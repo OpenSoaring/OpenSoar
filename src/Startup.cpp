@@ -79,6 +79,7 @@
 #include "io/async/AsioThread.hpp"
 #include "io/async/GlobalAsioThread.hpp"
 #include "net/http/Init.hpp"
+#include "MapWindow/BaseMap/TileLayer.hpp"
 #include "net/http/DownloadManager.hpp"
 #include "net/client/tim/Glue.hpp"
 #include "Hardware/DisplayDPI.hpp"
@@ -771,6 +772,16 @@ Startup(UI::Display &display)
     map_window->SetTopography(data_components->topography.get());
     map_window->SetTerrain(data_components->terrain.get());
     map_window->SetRasp(rasp);
+
+#ifdef HAVE_BASE_MAP_TILES
+    if (Net::curl != nullptr)
+      map_window->SetBaseMapTiles(
+        std::make_unique<BaseMap::TileLayer>(BaseMap::osm_tile_source,
+                                             *Net::curl,
+                                             [map_window]{
+                                               map_window->DeferRedraw();
+                                             }));
+#endif
 
 #ifdef HAVE_NOAA
     map_window->SetNOAAStore(noaa_store);

@@ -39,6 +39,8 @@ if(ENABLE_OPENGL)
   list(APPEND _SOURCES
         MapWindow/MbTilesDatabase.cpp
         MapWindow/MbTilesOverlay.cpp
+        # compiles to nothing without HAVE_HTTP (BaseMap/Features.hpp)
+        MapWindow/BaseMap/TileLayer.cpp
   )
 endif()
 

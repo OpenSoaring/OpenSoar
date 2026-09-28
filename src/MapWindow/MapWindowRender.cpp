@@ -30,11 +30,33 @@ MapWindow::RenderTrackBearing(Canvas &canvas,
 }
 
 inline void
-MapWindow::RenderTerrain(Canvas &canvas) noexcept
+MapWindow::RenderTerrain(Canvas &canvas, bool enable) noexcept
 {
-  background.SetShadingAngle(render_projection, GetMapSettings().terrain,
+  auto terrain_settings = GetMapSettings().terrain;
+  /* without terrain, the background renderer only clears the canvas */
+  terrain_settings.enable = terrain_settings.enable && enable;
+
+  background.SetShadingAngle(render_projection, terrain_settings,
                              Calculated());
-  background.Draw(canvas, render_projection, GetMapSettings().terrain);
+  background.Draw(canvas, render_projection, terrain_settings);
+}
+
+PageLayout::BaseMap
+MapWindow::GetBaseMap() const noexcept
+{
+  const auto base_map = GetUIState().page_base_map;
+
+#ifdef HAVE_BASE_MAP_TILES
+  if (base_map == PageLayout::BaseMap::OSM && base_map_tiles != nullptr)
+    return base_map;
+#endif
+
+  /* a tile base map that this build or this window cannot draw falls
+     back to the classic map instead of leaving the pilot without any */
+  if (base_map == PageLayout::BaseMap::OSM)
+    return PageLayout::BaseMap::TERRAIN_TOPOGRAPHY;
+
+  return base_map;
 }
 
 inline void
@@ -95,16 +117,18 @@ MapWindow::RenderRasp(Canvas &canvas) noexcept
 }
 
 inline void
-MapWindow::RenderTopography(Canvas &canvas) noexcept
+MapWindow::RenderTopography(Canvas &canvas, bool enable) noexcept
 {
-  if (topography_renderer != nullptr && GetMapSettings().topography_enabled)
+  if (enable && topography_renderer != nullptr &&
+      GetMapSettings().topography_enabled)
     topography_renderer->Draw(canvas, render_projection);
 }
 
 inline void
-MapWindow::RenderTopographyLabels(Canvas &canvas) noexcept
+MapWindow::RenderTopographyLabels(Canvas &canvas, bool enable) noexcept
 {
-  if (topography_renderer != nullptr && GetMapSettings().topography_enabled)
+  if (enable && topography_renderer != nullptr &&
+      GetMapSettings().topography_enabled)
     topography_renderer->DrawLabels(canvas, render_projection, label_block);
 }
 
@@ -228,9 +252,21 @@ MapWindow::Render(Canvas &canvas, const PixelRect &rc) noexcept
 
   //////////////////////////////////////////////// items on ground
 
-  // Render terrain, groundline and topography
+  /* the base map of the page decides what is drawn underneath; tiles
+     replace terrain and topography, they have their own roads, towns
+     and water */
+  const auto base_map = GetBaseMap();
   draw_sw.Mark("RenderTerrain");
-  RenderTerrain(canvas);
+  RenderTerrain(canvas, base_map == PageLayout::BaseMap::TERRAIN_TOPOGRAPHY);
+
+#ifdef HAVE_BASE_MAP_TILES
+  if (base_map == PageLayout::BaseMap::OSM)
+    base_map_tiles->Draw(canvas, render_projection);
+#endif
+
+  const bool topography =
+    base_map == PageLayout::BaseMap::TERRAIN_TOPOGRAPHY ||
+    base_map == PageLayout::BaseMap::TOPOGRAPHY;
 
   draw_sw.Mark("RenderRasp");
   RenderRasp(canvas);
@@ -241,7 +277,7 @@ MapWindow::Render(Canvas &canvas, const PixelRect &rc) noexcept
 #endif
 
   draw_sw.Mark("RenderTopography");
-  RenderTopography(canvas);
+  RenderTopography(canvas, topography);
 
   draw_sw.Mark("RenderOverlays");
   RenderOverlays(canvas);
@@ -289,7 +325,7 @@ MapWindow::Render(Canvas &canvas, const PixelRect &rc) noexcept
   //////////////////////////////////////////////// text items
   // Render topography on top of airspace, to keep the text readable
   draw_sw.Mark("RenderTopographyLabels");
-  RenderTopographyLabels(canvas);
+  RenderTopographyLabels(canvas, topography);
 
   //////////////////////////////////////////////// navigation overlays
   // Render glide through terrain range
