@@ -24,6 +24,10 @@ Version 7.45.4 - not yet released
   - keys Q (quit) and X (switch off) also outside the OpenVario; the
     Exit event opens the power dialog with the focus on the button it
     names ("Exit system", "Exit shutdown", "Exit restart", ...)
+  - load several input events files: they are read on top of the
+    built-in configuration in the order of their names, so each file
+    can hold one topic and a later one can override an earlier one;
+    an existing single file is taken over
 * map
   - the flight setup starts with the MacCready setting
   - a tap on the final glide bar opens the flight setup

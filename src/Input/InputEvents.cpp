@@ -34,7 +34,9 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "Menu/ButtonLabel.hpp"
 #include "Profile/Keys.hpp"
 #include "Menu/MenuData.hpp"
-#include "io/ConfiguredFile.hpp"
+#include "Profile/Profile.hpp"
+#include "system/Path.hpp"
+#include "LogFile.hpp"
 #include "io/FileReader.hxx"
 #include "io/BufferedReader.hxx"
 #include "Pan.hpp"
@@ -50,6 +52,7 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 
 #include "lua/InputEvent.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <stdio.h>
 #include <memory>
@@ -110,12 +113,35 @@ InputEvents::readFile()
 
   LoadDefaults(input_config);
 
-  // Read in user defined configuration file
-  auto reader = OpenConfiguredFile(ProfileKeys::InputFile);
-  if (reader) {
-    BufferedReader buffered_reader{*reader};
-    ::ParseInputFile(input_config, buffered_reader);
+  /* Read the user's files on top of the defaults.  They are sorted
+     by name, like the built-in OpenVario files, so that numbered
+     names define which file overrides which, independent of the
+     order in which they were ticked. */
+  auto paths = Profile::GetMultiplePaths(ProfileKeys::InputFileList,
+                                         nullptr);
+  std::stable_sort(paths.begin(), paths.end(),
+                   [](const AllocatedPath &a, const AllocatedPath &b){
+                     return IsReadBefore(a, b);
+                   });
+
+  for (const auto &path : paths) {
+    /* a missing or broken file must not keep the others from
+       being read */
+    try {
+      FileReader reader{path};
+      BufferedReader buffered_reader{reader};
+      ::ParseInputFile(input_config, buffered_reader);
+      LogFmt("Input events file loaded: {}", path.c_str());
+    } catch (...) {
+      LogError(std::current_exception(), "Failed to load input events file");
+    }
   }
+}
+
+bool
+InputEvents::IsReadBefore(Path a, Path b) noexcept
+{
+  return StringCompare(a.GetBase().c_str(), b.GetBase().c_str()) < 0;
 }
 
 void
