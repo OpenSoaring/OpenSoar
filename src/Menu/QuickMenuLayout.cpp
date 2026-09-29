@@ -85,9 +85,18 @@ Arrange(std::span<const unsigned> locations, Grid grid) noexcept
   const auto free_cells = FreeCellsByDistance(grid);
   const unsigned page_size = grid.columns * grid.rows;
 
+  /* the block by location, the others in the order of their rank */
+  std::vector<std::size_t> order(locations.size());
+  for (std::size_t i = 0; i < order.size(); ++i)
+    order[i] = i;
+  std::stable_sort(order.begin(), order.end(),
+                   [&](std::size_t a, std::size_t b) noexcept {
+                     return locations[a] < locations[b];
+                   });
+
   unsigned next_free = 0, overflow = 0;
 
-  for (std::size_t i = 0; i < locations.size(); ++i) {
+  for (const std::size_t i : order) {
     const unsigned location = locations[i];
 
     if (location >= 1 && location <= BLOCK_SIZE) {
@@ -106,6 +115,110 @@ Arrange(std::span<const unsigned> locations, Grid grid) noexcept
       result[i] = {page, position % grid.columns, position / grid.columns};
       ++overflow;
     }
+  }
+
+  return result;
+}
+
+std::vector<unsigned>
+RanksFromColumns(std::span<const unsigned> locations,
+                 unsigned center) noexcept
+{
+  auto column_of = [](unsigned location) noexcept {
+    return (int)((location - 1) % BLOCK_COLUMNS);
+  };
+  auto row_of = [](unsigned location) noexcept {
+    return (int)((location - 1) / BLOCK_COLUMNS);
+  };
+
+  const int center_column = column_of(center);
+  const int center_row = row_of(center);
+  const int block_half_height = BLOCK_ROWS / 2;
+
+  std::vector<unsigned> ranks(locations.size(), 0);
+
+  /* the rows outside the block: nearer rows first, the upper one
+     before the lower one, the middle column before the sides */
+  struct Outside {
+    std::size_t index;
+    int distance, dy, dx;
+  };
+  std::vector<Outside> outside;
+
+  for (std::size_t i = 0; i < locations.size(); ++i) {
+    if (locations[i] == 0) {
+      outside.push_back({i, INT_MAX, 0, 0});
+      continue;
+    }
+
+    const int dx = column_of(locations[i]) - center_column;
+    const int dy = row_of(locations[i]) - center_row;
+
+    if (std::abs(dy) <= block_half_height) {
+      const unsigned column = dx + 1, row = dy + block_half_height;
+      for (unsigned rank = 0; rank < BLOCK_SIZE; ++rank)
+        if (BLOCK_CELLS[rank].column == column &&
+            BLOCK_CELLS[rank].row == row)
+          ranks[i] = rank + 1;
+    } else {
+      outside.push_back({i, std::abs(dy), dy, dx});
+    }
+  }
+
+  std::stable_sort(outside.begin(), outside.end(),
+                   [](const Outside &a, const Outside &b) noexcept {
+                     if (a.distance != b.distance)
+                       return a.distance < b.distance;
+                     if (a.dy != b.dy)
+                       return a.dy < b.dy;
+                     if (std::abs(a.dx) != std::abs(b.dx))
+                       return std::abs(a.dx) < std::abs(b.dx);
+                     return a.dx < b.dx;
+                   });
+
+  unsigned next = BLOCK_SIZE + 1;
+  for (const auto &o : outside)
+    ranks[o.index] = next++;
+
+  return ranks;
+}
+
+std::vector<Cell>
+ArrangeColumns(std::span<const unsigned> locations, unsigned center,
+               Grid grid) noexcept
+{
+  std::vector<Cell> result(locations.size());
+
+  const int center_row = (int)((center - 1) / BLOCK_COLUMNS);
+  const int top = (int)grid.GetBlockTop() + (int)BLOCK_ROWS / 2 - center_row;
+  const unsigned page_size = grid.columns * grid.rows;
+
+  /* those that do not fit, in the order of their location */
+  std::vector<std::size_t> overflow;
+
+  for (std::size_t i = 0; i < locations.size(); ++i) {
+    const unsigned location = locations[i];
+    const int row = location > 0
+      ? top + (int)((location - 1) / BLOCK_COLUMNS)
+      : -1;
+
+    if (row >= 0 && row < (int)grid.rows)
+      result[i] = {0, (location - 1) % BLOCK_COLUMNS, (unsigned)row};
+    else
+      overflow.push_back(i);
+  }
+
+  std::stable_sort(overflow.begin(), overflow.end(),
+                   [&](std::size_t a, std::size_t b) noexcept {
+                     return locations[a] < locations[b];
+                   });
+
+  unsigned n = 0;
+  for (const std::size_t i : overflow) {
+    const unsigned page = 1 + n / page_size;
+    const unsigned position = n % page_size;
+    result[i] = {page, position % grid.columns, position / grid.columns};
+    ++n;
   }
 
   return result;
