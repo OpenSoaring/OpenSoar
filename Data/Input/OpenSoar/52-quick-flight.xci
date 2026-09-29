@@ -12,7 +12,7 @@
 #   12   5  13
 #   14   7  15
 #
-# 10 to 13 stay empty on purpose, so the block keeps its shape.
+# 11 to 13 stay empty for now; the list can grow.
 
 mode=QuickFlight
 type=key
@@ -100,3 +100,10 @@ event=Logger note PEV
 event=PilotEvent
 label=Pilot Event Announce
 location=15
+
+mode=QuickFlight
+type=key
+data=0
+event=QuickMenu MapDisplay
+label=Map\nDisplay
+location=10

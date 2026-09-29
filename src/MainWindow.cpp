@@ -1215,7 +1215,8 @@ MainWindow::RunTimer() noexcept
 
   UpdateGaugeVisibility();
 
-  if (CommonInterface::GetUISettings().thermal_assistant_position == UISettings::ThermalAssistantPosition::OFF) {
+  if (CommonInterface::GetUISettings().thermal_assistant_position == UISettings::ThermalAssistantPosition::OFF ||
+      thermal_assistant_gauge_off) {
     thermal_assistant.Clear();
   } else if (!CommonInterface::Calculated().circling ||
              InputEvents::IsFlavour("TA")) {

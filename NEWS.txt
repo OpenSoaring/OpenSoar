@@ -48,6 +48,13 @@ Version 7.45.4 - not yet released
     turning the screen keeps the focus on its button
     turning the screen keeps the focus on its button; the complete
     quick menu keeps the XCSoar arrangement around location 20
+  - the quick menu is clearer: the switches of the map display
+    (airspace, labels, trail, auto zoom, page settings, distance rings)
+    moved into the new submenu "Map Display"; FLARM radar and thermal
+    assistant left the quick menu (menu bar and keys still have them),
+    the submenu switches their small gauges on the map off and on
+    instead ("FLARMRadar gauge", "ThermalAssistant toggle");
+    "QuickMenu MODE" opens such a submenu
 * map
   - the flight setup starts with the MacCready setting
   - a tap on the final glide bar opens the flight setup
