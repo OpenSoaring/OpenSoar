@@ -102,11 +102,13 @@ Version 7.46 - not yet released
     built-in configuration in the order of their names, so each file
     can hold one topic and a later one can override an earlier one;
     an existing single file is taken over
-  - the quick menu can have a list of its own before the flight, in
-    flight and after the landing (modes QuickGround, QuickFlight and
-    QuickAfter); it follows takeoff and landing and can be switched
-    with the new buttons Ground, Flight, After and All or the
-    QuickMenuPhase event; without such lists the menu stays as it was
+  - the quick menu style "Dynamic" has a list of its own before the
+    flight, in flight and after the landing (modes QuickGround,
+    QuickFlight and QuickAfter, built-in lists included); it follows
+    takeoff and landing and can be switched with the new buttons
+    Ground, Flight, After and All or the QuickMenuPhase event; All is
+    the complete quick menu as before, and the style "XCSoar" always
+    shows it
   - the quick menu mode is called QuickMenu now; files that still use
     the old name RemoteStick keep working
   - new quick menu style "Dynamic" (Look > Language, Input > Quick
