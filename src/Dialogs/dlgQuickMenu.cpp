@@ -26,7 +26,6 @@
 #include "ui/canvas/Canvas.hpp"
 #include "ui/event/KeyCode.hpp"
 #include "util/StaticString.hxx"
-#include "util/StringAPI.hxx"
 
 #include <boost/container/static_vector.hpp>
 #include <cstdlib>
@@ -130,17 +129,6 @@ static constexpr struct {
   { QuickMenuPhase::FLIGHT, N_("Flight") },
   { QuickMenuPhase::AFTER, N_("After") },
   { QuickMenuPhase::ALL, N_("All") },
-};
-
-/**
- * The captions of the submenus of the quick menu, see
- * dlgQuickMenuShowModal(); a mode not listed here shows its name.
- */
-static constexpr struct {
-  const char *mode;
-  const char *caption;
-} quick_submenus[] = {
-  { "MapDisplay", N_("Map Display") },
 };
 
 /**
@@ -1018,18 +1006,16 @@ GetPhaseMenu(QuickMenuPhase phase) noexcept
 
 template<class W>
 static int
-ShowQuickMenu(UI::SingleWindow &parent, const Menu &all_menu,
-              const char *submenu_caption=nullptr) noexcept
+ShowQuickMenu(UI::SingleWindow &parent, const Menu &all_menu) noexcept
 {
   const auto &dialog_look = UIGlobals::GetDialogLook();
 
   /* the phase lists belong to the style "Dynamic"; the XCSoar style
      always shows the complete list, as XCSoar does.  Only phases with
-     a list of their own get a button.  A submenu has no phases. */
+     a list of their own get a button. */
   bool has_phases = false;
   if constexpr (std::is_same_v<W, DynamicQuickMenu>)
-    if (submenu_caption == nullptr)
-      for (const auto &i : quick_menu_phases)
+    for (const auto &i : quick_menu_phases)
       if (i.phase != QuickMenuPhase::ALL &&
           GetPhaseMenu(i.phase) != nullptr)
         has_phases = true;
@@ -1042,7 +1028,7 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &all_menu,
     menu = &all_menu;
   }
 
-  const char *phase_name = submenu_caption;
+  const char *phase_name = nullptr;
   if (has_phases)
     for (const auto &i : quick_menu_phases)
       if (i.phase == phase)
@@ -1055,7 +1041,6 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &all_menu,
   /* the complete quick menu is the XCSoar list, written for three
      columns; the phase lists are written in ranks */
   dialog.SetWidget(dialog, *menu, phase_name,
-                   submenu_caption == nullptr &&
                    phase == QuickMenuPhase::ALL);
 
   dialog.PrepareWidget();
@@ -1107,32 +1092,8 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &all_menu,
 }
 
 void
-dlgQuickMenuShowModal(UI::SingleWindow &parent,
-                      const char *submenu) noexcept
+dlgQuickMenuShowModal(UI::SingleWindow &parent) noexcept
 {
-  const bool dynamic = CommonInterface::GetUISettings().quick_menu_style ==
-    UISettings::QuickMenuStyle::DYNAMIC;
-
-  if (submenu != nullptr && *submenu != '\0') {
-    /* a submenu of the quick menu, e.g. "MapDisplay": its own list in
-       ranks, without phases */
-    const auto *menu = InputEvents::GetMenu(submenu);
-    if (menu == nullptr || menu->IsEmpty())
-      return;
-
-    const char *caption = submenu;
-    for (const auto &i : quick_submenus)
-      if (StringIsEqual(submenu, i.mode))
-        caption = gettext(i.caption);
-
-    const int result = dynamic
-      ? ShowQuickMenu<DynamicQuickMenu>(parent, *menu, caption)
-      : ShowQuickMenu<QuickMenu>(parent, *menu, caption);
-    if (result >= 0)
-      InputEvents::ProcessEvent(result);
-    return;
-  }
-
   const auto *menu =
     InputEvents::GetMenu(InputEvents::GetQuickMenuMode(QuickMenuPhase::ALL));
   if (menu == nullptr)
@@ -1140,6 +1101,8 @@ dlgQuickMenuShowModal(UI::SingleWindow &parent,
 
   /* a phase button chooses the phase and opens the menu again with
      its list */
+  const bool dynamic = CommonInterface::GetUISettings().quick_menu_style ==
+    UISettings::QuickMenuStyle::DYNAMIC;
 
   int result;
   while ((result = dynamic

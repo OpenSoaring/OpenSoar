@@ -357,9 +357,8 @@ Event list
    - Opens the FLARM traffic list dialog.
  * - ``FLARMRadar``
    - Controls the FLARM radar gauge display. Use ``ForceToggle`` to
-     force the radar on/off; ``gauge`` switches the small gauge that
-     appears with traffic off and on for this session; without
-     arguments, toggles suppression of the automatic radar display.
+     force the radar on/off; without arguments, toggles suppression
+     of the automatic radar display.
  * - ``FlarmTraffic``
    - Opens the full-screen FLARM traffic radar page.
  * - ``GestureHelp``
@@ -426,6 +425,14 @@ Event list
      ``auto off``, ``auto show``, ``show`` (display current value).
  * - ``MainMenu``
    - Opens the main menu.
+ * - ``MapDisplay``
+   - Opens the dialog *Map Display* with the settings of the map that
+     are changed most often in flight: airspace and its labels,
+     waypoint labels, trail length, auto zoom, distance rings, the
+     small FLARM radar and thermal assistant on the map, and a button
+     for the page settings.  OK applies and saves them; only hiding
+     the airspace is not saved, so the airspace is back after a
+     restart.
  * - ``MarkLocation``
    - Marks the current location and creates a user waypoint marker.
      Use ``reset`` to erase all user markers.
@@ -473,10 +480,8 @@ Event list
    - Saves the current profile to the specified file.
  * - ``QuickGuide``
    - Opens the Quick Guide dialog.
- * - ``QuickMenu [MODE]``
-   - Opens the quick menu dialog.  With the name of a mode, e.g.
-     ``QuickMenu MapDisplay``, it opens that mode as a submenu of the
-     quick menu; its locations are ranks, as in the phase lists.
+ * - ``QuickMenu``
+   - Opens the quick menu dialog.
  * - ``QuickMenuPhase P``
    - Chooses the flight phase whose buttons the quick menu shows:
      ``ground``, ``flight``, ``after`` or ``all``.
@@ -553,9 +558,7 @@ Event list
      clamped between 75% and 200%. The setting is saved to the
      profile; look and layout are refreshed immediately.
  * - ``ThermalAssistant``
-   - Opens the thermal assistant page; ``toggle`` switches the small
-     gauge that appears on the map while circling off and on for this
-     session instead.
+   - Opens the thermal assistant page.
  * - ``Traffic``
    - Controls the FLARM traffic radar widget. Possible arguments:
      ``show`` (open radar page), ``zoom auto toggle``, ``zoom in``,
@@ -716,12 +719,6 @@ Built-in modes
   picture: the 3 x 5 buttons around location 20 form the block, and
   in portrait the list stays exactly as it is, while in landscape the
   rows above and below the block move to its sides.
-- ``MapDisplay`` -- the submenu *Map Display* of the Quick Menu with
-  the switches of the map display (airspace, labels, trail, auto zoom,
-  page settings, distance rings, the small FLARM and thermal assistant
-  gauges), opened by ``event=QuickMenu
-  MapDisplay``.  They are no longer in the Quick Menu itself, which
-  stays clearer that way.
 - ``mc`` -- MacCready adjustment mode. Entered from ``mode=default`` via
   the ``Mode mc`` event (default key ``3``). Stick UP/DOWN adjust MC;
   RETURN toggles auto/manual MC; ESCAPE returns to ``default``.

@@ -14,7 +14,7 @@ enum ControlIndex {
   TAPosition,
 };
 
-static constexpr StaticEnumChoice thermal_assistant_position_list[] = {
+constexpr StaticEnumChoice thermal_assistant_position_list[] = {
   { UISettings::ThermalAssistantPosition::OFF,
     N_("Off"),
     N_("Disable thermal assistant.") },

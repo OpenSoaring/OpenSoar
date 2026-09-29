@@ -42,6 +42,7 @@ set(_SOURCES
         Dialogs/dlgCredits.cpp
         Dialogs/dlgInfoBoxAccess.cpp
         Dialogs/dlgQuickMenu.cpp
+        Dialogs/MapDisplayDialog.cpp
         Dialogs/dlgSimulatorPrompt.cpp
         Dialogs/dlgStatus.cpp
 

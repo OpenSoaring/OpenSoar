@@ -71,7 +71,7 @@ static constexpr StaticEnumChoice ground_track_mode_list[] = {
   nullptr
 };
 
-static constexpr StaticEnumChoice trail_length_list[] = {
+constexpr StaticEnumChoice trail_length_list[] = {
   { TrailSettings::Length::OFF, N_("Off") },
   { TrailSettings::Length::LONG, N_("Long") },
   { TrailSettings::Length::SHORT, N_("Short") },
