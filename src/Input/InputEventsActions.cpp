@@ -83,7 +83,6 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "DataComponents.hpp"
 #include "Terrain/RasterTerrain.hpp"
 #include "system/Path.hpp"
-#include "Menu/MenuData.hpp"
 #include "util/StringAPI.hxx"
 
 #include <cassert>
@@ -829,13 +828,13 @@ InputEvents::eventQuickMenuPhase(const char *misc)
     return;
 
   if (StringIsEqual(misc, "ground"))
-    SetQuickMenuPhase(MenuPhase::GROUND);
+    SetQuickMenuPhase(QuickMenuPhase::GROUND);
   else if (StringIsEqual(misc, "flight"))
-    SetQuickMenuPhase(MenuPhase::FLIGHT);
+    SetQuickMenuPhase(QuickMenuPhase::FLIGHT);
   else if (StringIsEqual(misc, "after"))
-    SetQuickMenuPhase(MenuPhase::AFTER);
+    SetQuickMenuPhase(QuickMenuPhase::AFTER);
   else if (StringIsEqual(misc, "all"))
-    SetQuickMenuPhase(MenuPhase::ALL);
+    SetQuickMenuPhase(QuickMenuPhase::ALL);
 }
 
 void

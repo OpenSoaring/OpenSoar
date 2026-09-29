@@ -102,16 +102,18 @@ Version 7.46 - not yet released
     built-in configuration in the order of their names, so each file
     can hold one topic and a later one can override an earlier one;
     an existing single file is taken over
-  - the quick menu can show the buttons of one flight phase: a
-    "phase=ground flight after" line limits a button to some phases,
-    the phase follows takeoff and landing and can be switched with the
-    new buttons Ground, Flight, After and All or the QuickMenuPhase
-    event; without such lines the menu stays as it was
+  - the quick menu can have a list of its own before the flight, in
+    flight and after the landing (modes QuickGround, QuickFlight and
+    QuickAfter); it follows takeoff and landing and can be switched
+    with the new buttons Ground, Flight, After and All or the
+    QuickMenuPhase event; without such lists the menu stays as it was
+  - the quick menu mode is called QuickMenu now; files that still use
+    the old name RemoteStick keep working
   - new quick menu style "Dynamic" (Look > Language, Input > Quick
-    menu): a framed block of 3 x 5 buttons (locations 1 to 15) stays in
-    the middle of the screen in portrait and landscape, the other
-    buttons are ranked around it; turning the screen keeps the focus
-    on its button
+    menu): a framed block of 3 x 5 buttons (locations 1 to 15, ranked
+    from the centre outwards) stays in the middle of the screen in
+    portrait and landscape, the other buttons are ranked around it;
+    turning the screen keeps the focus on its button
 * weather
   - show the overlay name as XC Therm (with a space) in setup, weather
     dialogs, map titles, and download messages

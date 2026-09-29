@@ -114,11 +114,10 @@ struct InputConfig {
   }
 
   void AppendMenu(std::size_t mode_id, const char *label,
-                  unsigned location, unsigned event_id,
-                  uint8_t phases=MenuPhase::ALL) noexcept {
+                  unsigned location, unsigned event_id) noexcept {
     assert(mode_id < MAX_MODE);
 
-    menus[mode_id].Add(label, location, event_id, phases);
+    menus[mode_id].Add(label, location, event_id);
   }
 
   [[gnu::pure]]

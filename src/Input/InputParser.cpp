@@ -33,45 +33,20 @@ parse_assignment(char *buffer, const char *&key, const char *&value)
   return true;
 }
 
-/**
- * Parse the value of "phase=": the flight phases in which the quick
- * menu offers an item.  "all", an empty value or no "phase=" at all
- * mean every phase.
- */
-static uint8_t
-ParsePhases(std::string_view value, unsigned line) noexcept
-{
-  uint8_t phases = MenuPhase::ALL;
-
-  for (const auto word : IterableSplitString(value, ' ')) {
-    if (word.empty())
-      continue;
-
-    if (word == "all")
-      return MenuPhase::ALL;
-    else if (word == "ground")
-      phases |= MenuPhase::GROUND;
-    else if (word == "flight")
-      phases |= MenuPhase::FLIGHT;
-    else if (word == "after")
-      phases |= MenuPhase::AFTER;
-    else
-      LogFmt("Invalid phase at line {}: {}", line, word);
-  }
-
-  return phases;
-}
-
 struct EventBuilder {
   unsigned event_id, location;
-  uint8_t phases;
   StaticString<1024> mode;
   StaticString<256> type, data, label;
+
+  /**
+   * Was the old name of the quick menu mode logged already?  Once per
+   * file is enough.
+   */
+  bool remote_stick_logged = false;
 
   void clear() {
     event_id = 0;
     location = 0;
-    phases = MenuPhase::ALL;
     mode.clear();
     type.clear();
     data.clear();
@@ -96,8 +71,21 @@ struct EventBuilder {
       if (token.empty())
         continue;
 
+      /* the quick menu was mode "RemoteStick" once, from the time
+         when it was made for the SteFly RemoteStick; files written
+         for that name keep working */
+      std::string_view name = token;
+      if (name == "RemoteStick") {
+        if (!remote_stick_logged) {
+          LogFmt("Mode RemoteStick (line {}) is read as QuickMenu", line);
+          remote_stick_logged = true;
+        }
+
+        name = "QuickMenu";
+      }
+
       // All modes are valid at this point
-      int mode_id = config.MakeMode(token);
+      int mode_id = config.MakeMode(name);
       if (mode_id < 0) {
         LogFormat("Too many modes at line %u: %.*s",
                   line, int(token.size()), token.data());
@@ -112,7 +100,7 @@ struct EventBuilder {
           new_label = UnescapeBackslash(label.c_str());
         }
 
-        config.AppendMenu(mode_id, new_label, location, event_id, phases);
+        config.AppendMenu(mode_id, new_label, location, event_id);
       }
 
       // Make key (Keyboard input)
@@ -252,9 +240,6 @@ ParseInputFile(InputConfig &config, BufferedReader &reader)
         current.label = string_converter.Convert(value);
       } else if (StringIsEqual(key, "location")) {
         current.location = ParseUnsigned(value);
-
-      } else if (StringIsEqual(key, "phase")) {
-        current.phases = ParsePhases(value, line);
 
       } else {
         LogFmt("Invalid key/value pair {}={} at {}", key, value, line);
