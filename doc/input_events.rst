@@ -662,10 +662,15 @@ Built-in modes
 - ``QuickGround``, ``QuickFlight``, ``QuickAfter`` -- the Quick Menu
   before the flight, in flight and after the landing, each a list of
   its own with its own locations, so the same button can sit in
-  different places in each phase.  As soon as one of these lists has
-  an entry, the Quick Menu shows the list of the current phase and
-  offers a button for each phase that has a list, plus *All* for the
-  complete ``QuickMenu``.  A phase without a list shows *All*.  The
+  different places in each phase.  They belong to the quick menu style
+  *Dynamic*: there the Quick Menu shows the list of the current phase
+  and offers a button for each phase that has a list, plus *All* for
+  the complete ``QuickMenu``.  A phase without a list shows *All*.  The
+  style *XCSoar* always shows the complete ``QuickMenu``.  OpenSoar
+  brings lists for all three phases in
+  :file:`Data/Input/OpenSoar/51-quick-ground.xci` to
+  :file:`53-quick-after.xci` (and the same for OpenVario); a custom
+  file can replace any of their entries.  The
   phase follows the flight on its own: it is *Ground* after the
   start, *Flight* after the takeoff and *After* after the landing.
   The ``QuickMenuPhase`` event chooses a phase as well, for example
