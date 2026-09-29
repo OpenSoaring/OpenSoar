@@ -479,6 +479,9 @@ LookupMacro(std::string_view name, bool &invalid) noexcept
     return !GetMapSettings().airspace.enable ? "*" : "";
   } else if (name == "AirSpaceOnShortIndicator") {
     return GetMapSettings().airspace.enable ? "*" : "";
+  } else if (name == "ThermalAssistantToggleActionName") {
+    return CommonInterface::main_window->IsThermalAssistantGaugeOff()
+      ? _("On") : _("Off");
   } else if (name == "FlarmDispToggleActionName") {
     return CommonInterface::GetUISettings().traffic.enable_gauge
       ? _("Off") : _("On");

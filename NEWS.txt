@@ -119,6 +119,13 @@ Version 7.46 - not yet released
     quick menu keeps the XCSoar arrangement around location 20
   - the Analysis input event takes a page name, e.g. "Analysis
     barograph", to open that page directly
+  - the quick menu is clearer: the switches of the map display
+    (airspace, labels, trail, auto zoom, page settings, distance rings)
+    moved into the new submenu "Map Display"; FLARM radar and thermal
+    assistant left the quick menu (menu bar and keys still have them),
+    the submenu switches their small gauges on the map off and on
+    instead ("FLARMRadar gauge", "ThermalAssistant toggle");
+    "QuickMenu MODE" opens such a submenu
 * weather
   - show the overlay name as XC Therm (with a space) in setup, weather
     dialogs, map titles, and download messages

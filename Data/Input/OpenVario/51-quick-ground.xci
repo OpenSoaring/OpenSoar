@@ -12,7 +12,7 @@
 #   12   5  13
 #   14   7  15
 #
-# 4 and 8 to 10 stay empty for now; the list can grow.
+# 8 to 10 stay empty for now; the list can grow.
 
 mode=QuickGround
 type=key
@@ -94,3 +94,10 @@ event=DataManagement
 event=Mode default
 label=Data Management
 location=15
+
+mode=QuickGround
+type=key
+data=0
+event=QuickMenu MapDisplay
+label=Map\nDisplay
+location=4

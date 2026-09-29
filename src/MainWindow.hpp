@@ -100,6 +100,13 @@ class MainWindow : public UI::SingleWindow {
   ManagedWidget traffic_gauge{*this};
   bool suppress_traffic_gauge = false, force_traffic_gauge = false;
 
+  /**
+   * Was the thermal assistant gauge switched off by the user (quick
+   * menu)?  Only for this session; the setting in the configuration
+   * stays as it is.
+   */
+  bool thermal_assistant_gauge_off = false;
+
   ManagedWidget thermal_assistant{*this};
 
   bool dragging = false;
@@ -655,6 +662,14 @@ public:
 
   void ToggleSuppressFLARMRadar() noexcept;
   void ToggleForceFLARMRadar() noexcept;
+
+  void ToggleThermalAssistantGauge() noexcept {
+    thermal_assistant_gauge_off = !thermal_assistant_gauge_off;
+  }
+
+  bool IsThermalAssistantGaugeOff() const noexcept {
+    return thermal_assistant_gauge_off;
+  }
 
 private:
   void UpdateVarioGaugeVisibility() noexcept;
