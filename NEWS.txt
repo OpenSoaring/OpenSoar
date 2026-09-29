@@ -149,6 +149,13 @@ Version 7.47 - not yet released
     (TARGET=PI5 is an alias). The arm64 sysroot defaults to
     /opt/pi64/root
 * input
+  - the quick menu style "Dynamic" has a list of its own before the
+    flight, in flight and after the landing (modes QuickGround,
+    QuickFlight and QuickAfter, built-in lists included); it follows
+    takeoff and landing and can be switched with the new buttons
+    Ground, Flight, After and All or the QuickMenuPhase event; All is
+    the complete quick menu as before, and the style "XCSoar" always
+    shows it
     turning the screen keeps the focus on its button; the complete
     quick menu keeps the XCSoar arrangement around location 20
     menu): a framed block of 3 x 5 buttons (locations 1 to 15, ranked

@@ -1,4 +1,4 @@
-# OpenVario input configuration, part 1 of 6: glide computer events.
+# OpenVario input configuration: glide computer events.
 #
 # The built-in OpenVario configuration is split by use into the files
 # of this directory.  The build reads them in the order of their
