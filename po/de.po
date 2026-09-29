@@ -12163,5 +12163,21 @@ msgstr "Hochladen"
 msgid "Map\nDisplay"
 msgstr "Karten-\nanzeige"
 
-msgid "FLARM Gauge"
-msgstr "FLARM-Anzeige"
+msgid "Auto zoom"
+msgstr "Auto-Zoom"
+
+msgid "Page settings"
+msgstr "Seiteneinstellungen"
+
+msgid ""
+"Show the airspaces on the map.  This is not saved: after a restart the "
+"airspaces are shown again."
+msgstr ""
+"Lufträume auf der Karte anzeigen.  Das wird nicht gespeichert: nach einem "
+"Neustart sind die Lufträume wieder sichtbar."
+
+msgid "Show the names and limits of the airspaces on the map."
+msgstr "Namen und Grenzen der Lufträume auf der Karte anzeigen."
+
+msgid "Zoom the map automatically to show the next waypoint."
+msgstr "Die Karte automatisch so zoomen, dass der nächste Wegpunkt sichtbar ist."

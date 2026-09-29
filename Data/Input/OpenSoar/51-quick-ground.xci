@@ -102,6 +102,6 @@ location=15
 mode=QuickGround
 type=key
 data=0
-event=QuickMenu MapDisplay
+event=MapDisplay
 label=Map\nDisplay
 location=4
