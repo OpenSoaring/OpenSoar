@@ -11,6 +11,11 @@
 #include "Math/Util.hpp"
 #include "Menu/ButtonLabel.hpp"
 #include "Menu/MenuData.hpp"
+#include "Menu/QuickMenuLayout.hpp"
+#include "Form/Panel.hpp"
+#include "Interface.hpp"
+#include "UISettings.hpp"
+#include "ui/canvas/Color.hpp"
 #include "Renderer/ButtonRenderer.hpp"
 #include "Renderer/TextButtonRenderer.hpp"
 #include "Renderer/TextRenderer.hpp"
@@ -491,8 +496,404 @@ QuickMenu::KeyPress(unsigned key_code) noexcept
   return true;
 }
 
+/**
+ * The window of the dynamic quick menu: it holds the buttons and
+ * draws the frame around the fixed block.
+ */
+class DynamicQuickMenuWindow final : public PanelControl {
+  /** the outer edge of the frame; empty if there is none */
+  PixelRect frame{};
+  unsigned frame_width = 0;
+  Color frame_color = COLOR_GRAY;
+
+public:
+  void SetFrame(const PixelRect &_frame, unsigned width,
+                Color color) noexcept {
+    frame = _frame;
+    frame_width = width;
+    frame_color = color;
+    Invalidate();
+  }
+
+  void ClearFrame() noexcept {
+    frame_width = 0;
+    Invalidate();
+  }
+
+protected:
+  void OnPaint(Canvas &canvas) noexcept override {
+    ContainerWindow::OnPaint(canvas);
+
+    if (frame_width == 0)
+      return;
+
+    /* four bands; the layout keeps the room for them free, so they
+       never cover a button */
+    const int w = frame_width;
+    canvas.DrawFilledRectangle({frame.left, frame.top,
+                                frame.right, frame.top + w}, frame_color);
+    canvas.DrawFilledRectangle({frame.left, frame.bottom - w,
+                                frame.right, frame.bottom}, frame_color);
+    canvas.DrawFilledRectangle({frame.left, frame.top,
+                                frame.left + w, frame.bottom}, frame_color);
+    canvas.DrawFilledRectangle({frame.right - w, frame.top,
+                                frame.right, frame.bottom}, frame_color);
+  }
+};
+
+/**
+ * The quick menu in the style UISettings::QuickMenuStyle::DYNAMIC: a
+ * framed block of 3 x 5 buttons in the middle of the first page and
+ * the other buttons around it, see #QuickMenuLayout.
+ */
+class DynamicQuickMenu final : public WindowWidget {
+  WndForm &dialog;
+  const Menu &menu;
+  const uint8_t phase;
+  const char *const phase_name;
+
+  boost::container::static_vector<Button, Menu::MAX_ITEMS> buttons;
+
+  /** the location of each button, see #QuickMenuLayout::Arrange() */
+  std::vector<unsigned> locations;
+
+  QuickMenuLayout::Grid grid{QuickMenuLayout::BLOCK_COLUMNS,
+                             QuickMenuLayout::BLOCK_ROWS};
+  std::vector<QuickMenuLayout::Cell> cells;
+  unsigned current_page = 0, page_count = 1;
+
+  Button *previous_button = nullptr;
+  Button *next_button = nullptr;
+
+  /**
+   * The narrowest useful button in points; it decides how many
+   * columns fit side by side.
+   */
+  static constexpr unsigned MIN_COLUMN_WIDTH_PT = 110;
+
+  /**
+   * The width of the frame around the block, about 2 mm.
+   */
+  static int FrameWidth() noexcept {
+    return std::max(2u, Layout::PtScale(6));
+  }
+
+public:
+  unsigned clicked_event;
+
+  DynamicQuickMenu(WndForm &_dialog, const Menu &_menu, uint8_t _phase,
+                   const char *_phase_name) noexcept
+    :dialog(_dialog), menu(_menu),
+     phase(_phase), phase_name(_phase_name) {}
+
+  auto &GetWindow() noexcept {
+    return (DynamicQuickMenuWindow &)WindowWidget::GetWindow();
+  }
+
+  void SetNavigationButtons(Button *prev, Button *next) noexcept {
+    previous_button = prev;
+    next_button = next;
+  }
+
+  void NavigatePage(GridView::Direction direction) noexcept;
+  void UpdateCaption() noexcept;
+
+protected:
+  /* virtual methods from class Widget */
+  void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
+  void Show(const PixelRect &rc) noexcept override;
+  void Move(const PixelRect &rc) noexcept override;
+  bool SetFocus() noexcept override;
+  bool KeyPress(unsigned key_code) noexcept override;
+
+private:
+  [[gnu::pure]]
+  int GetFocusedIndex() const noexcept;
+
+  /**
+   * Arrange the buttons for the current size of the window.  The
+   * button that has the focus keeps it, even when it moves to
+   * another page (after turning the screen).
+   */
+  void Relayout() noexcept;
+
+  void ShowPage(unsigned page) noexcept;
+
+  /** Focus the block centre, or the button nearest to the page
+      centre. */
+  void FocusDefault() noexcept;
+};
+
+void
+DynamicQuickMenu::Prepare(ContainerWindow &parent,
+                          [[maybe_unused]] const PixelRect &rc) noexcept
+{
+  WindowStyle style;
+  style.ControlParent();
+  style.Hide();
+
+  const auto &dialog_look = UIGlobals::GetDialogLook();
+
+  auto window = std::make_unique<DynamicQuickMenuWindow>();
+  window->Create(parent, dialog_look, rc, style);
+
+  WindowStyle button_style;
+  button_style.TabStop();
+
+  for (unsigned i = 0; i < menu.MAX_ITEMS; ++i) {
+    const auto &item = menu[i];
+    if (!item.IsDefined() || !MenuPhase::IsOffered(item.phases, phase))
+      continue;
+
+    char buffer[100];
+    const auto expanded = ButtonLabel::Expand(item.label, std::span{buffer});
+    if (!expanded.visible)
+      continue;
+
+    auto &button =
+      buttons.emplace_back(*window, PixelRect{0, 0, 1, 1}, button_style,
+                           std::make_unique<QuickMenuButtonRenderer>(dialog_look,
+                                                                     expanded.text),
+                           [this, &item](){
+                             clicked_event = item.event;
+                             dialog.SetModalResult(mrOK);
+                           });
+    button.SetEnabled(expanded.enabled);
+    locations.push_back(i);
+  }
+
+  SetWindow(std::move(window));
+}
+
+void
+DynamicQuickMenu::Show(const PixelRect &rc) noexcept
+{
+  WindowWidget::Show(rc);
+  Relayout();
+  UpdateCaption();
+}
+
+void
+DynamicQuickMenu::Move(const PixelRect &rc) noexcept
+{
+  WindowWidget::Move(rc);
+  Relayout();
+  UpdateCaption();
+}
+
+int
+DynamicQuickMenu::GetFocusedIndex() const noexcept
+{
+  for (unsigned i = 0; i < buttons.size(); ++i)
+    if (buttons[i].HasFocus())
+      return i;
+
+  return -1;
+}
+
+void
+DynamicQuickMenu::Relayout() noexcept
+{
+  const int focused = GetFocusedIndex();
+
+  const PixelRect rc = GetWindow().GetClientRect();
+  const auto &font = *UIGlobals::GetDialogLook().button.font;
+  const unsigned min_row_height =
+    std::max(2 * (Layout::GetTextPadding() + font.GetHeight()),
+             Layout::GetMaximumControlHeight());
+
+  grid = QuickMenuLayout::ChooseGrid(rc.GetWidth(), rc.GetHeight(),
+                                     Layout::PtScale(MIN_COLUMN_WIDTH_PT),
+                                     min_row_height);
+  cells = QuickMenuLayout::Arrange(locations, grid);
+  page_count = QuickMenuLayout::CountPages(cells);
+
+  if (focused >= 0)
+    current_page = cells[focused].page;
+  else if (current_page >= page_count)
+    current_page = 0;
+
+  ShowPage(current_page);
+
+  if (focused >= 0)
+    buttons[focused].SetFocus();
+}
+
+void
+DynamicQuickMenu::ShowPage(unsigned page) noexcept
+{
+  current_page = page;
+
+  auto &window = GetWindow();
+  const PixelRect rc = window.GetClientRect();
+
+  /* the frame takes room of its own on both sides of the block, so
+     the cells around it are not covered */
+  const int f = FrameWidth();
+  const int w = (rc.GetWidth() - 2 * f) / grid.columns;
+  const int h = (rc.GetHeight() - 2 * f) / grid.rows;
+  const unsigned block_left = grid.GetBlockLeft();
+  const unsigned block_top = grid.GetBlockTop();
+  const unsigned block_right = block_left + QuickMenuLayout::BLOCK_COLUMNS;
+  const unsigned block_bottom = block_top + QuickMenuLayout::BLOCK_ROWS;
+
+  auto x = [&](unsigned column) noexcept {
+    return rc.left + (int)column * w +
+      (column >= block_left ? f : 0) + (column >= block_right ? f : 0);
+  };
+
+  auto y = [&](unsigned row) noexcept {
+    return rc.top + (int)row * h +
+      (row >= block_top ? f : 0) + (row >= block_bottom ? f : 0);
+  };
+
+  for (unsigned i = 0; i < buttons.size(); ++i) {
+    auto &button = buttons[i];
+    const auto &cell = cells[i];
+
+    if (cell.page != page) {
+      button.Hide();
+      continue;
+    }
+
+    button.Move({x(cell.column), y(cell.row),
+                 x(cell.column) + w, y(cell.row) + h});
+    button.Show();
+  }
+
+  if (page == 0)
+    window.SetFrame({x(block_left) - f, y(block_top) - f,
+                     x(block_right - 1) + w + f, y(block_bottom - 1) + h + f},
+                    f, COLOR_GRAY);
+  else
+    window.ClearFrame();
+}
+
+void
+DynamicQuickMenu::FocusDefault() noexcept
+{
+  /* the block centre on the first page */
+  if (current_page == 0)
+    for (unsigned i = 0; i < buttons.size(); ++i)
+      if (locations[i] == QuickMenuLayout::CENTER_LOCATION &&
+          buttons[i].IsEnabled()) {
+        buttons[i].SetFocus();
+        return;
+      }
+
+  /* otherwise the enabled button nearest to the page centre */
+  int best = -1;
+  unsigned best_distance = UINT_MAX;
+  for (unsigned i = 0; i < buttons.size(); ++i) {
+    if (cells[i].page != current_page || !buttons[i].IsEnabled())
+      continue;
+
+    const int dx = (int)cells[i].column - (int)grid.columns / 2;
+    const int dy = (int)cells[i].row - (int)grid.rows / 2;
+    const unsigned distance = dx * dx + dy * dy;
+    if (distance < best_distance) {
+      best_distance = distance;
+      best = i;
+    }
+  }
+
+  if (best >= 0)
+    buttons[best].SetFocus();
+}
+
+bool
+DynamicQuickMenu::SetFocus() noexcept
+{
+  if (GetFocusedIndex() < 0)
+    FocusDefault();
+  return true;
+}
+
+bool
+DynamicQuickMenu::KeyPress(unsigned key_code) noexcept
+{
+  QuickMenuLayout::Direction direction;
+
+  switch (key_code) {
+  case KEY_LEFT:
+    direction = QuickMenuLayout::Direction::LEFT;
+    break;
+
+  case KEY_RIGHT:
+    direction = QuickMenuLayout::Direction::RIGHT;
+    break;
+
+  case KEY_UP:
+    direction = QuickMenuLayout::Direction::UP;
+    break;
+
+  case KEY_DOWN:
+    direction = QuickMenuLayout::Direction::DOWN;
+    break;
+
+  case KEY_MENU:
+    NavigatePage(GridView::Direction::RIGHT);
+    return true;
+
+  default:
+    return false;
+  }
+
+  const int focused = GetFocusedIndex();
+  if (focused < 0) {
+    FocusDefault();
+    return true;
+  }
+
+  /* skip disabled buttons, like the grid of the XCSoar style */
+  int i = focused;
+  while ((i = QuickMenuLayout::Navigate(cells, i, direction)) >= 0)
+    if (buttons[i].IsEnabled()) {
+      buttons[i].SetFocus();
+      break;
+    }
+
+  return true;
+}
+
+void
+DynamicQuickMenu::NavigatePage(GridView::Direction direction) noexcept
+{
+  if (page_count < 2)
+    return;
+
+  const unsigned page = direction == GridView::Direction::LEFT
+    ? (current_page + page_count - 1) % page_count
+    : (current_page + 1) % page_count;
+
+  ShowPage(page);
+  FocusDefault();
+  UpdateCaption();
+}
+
+void
+DynamicQuickMenu::UpdateCaption() noexcept
+{
+  StaticString<64> buffer;
+  buffer = "Quick Menu";
+  if (phase_name != nullptr)
+    buffer.AppendFormat(" - %s", phase_name);
+  if (page_count > 1)
+    buffer.AppendFormat("  %u/%u", current_page + 1, page_count);
+  dialog.SetCaption(buffer);
+
+  if (previous_button != nullptr)
+    previous_button->SetEnabled(page_count > 1);
+  if (next_button != nullptr)
+    next_button->SetEnabled(page_count > 1);
+}
+
+/**
+ * @param W the widget class of the quick menu style
+ */
+template<class W>
 class QuickMenuDialog final : public WidgetDialog {
-  QuickMenu *quick_menu_widget = nullptr;
+  W *quick_menu_widget = nullptr;
 
   /**
    * The number of phase buttons, which come first in the button
@@ -507,7 +908,7 @@ public:
 
   template<typename... Args>
   void SetWidget(Args&&... args) {
-    auto widget = std::make_unique<QuickMenu>(std::forward<Args>(args)...);
+    auto widget = std::make_unique<W>(std::forward<Args>(args)...);
     quick_menu_widget = widget.get();
     FinishPreliminary(std::move(widget));
   }
@@ -516,9 +917,9 @@ public:
     n_phase_buttons = n;
   }
 
-  // Intentionally hides WidgetDialog::GetWidget() to return QuickMenu&
-  // instead of Widget& for type-specific behavior
-  QuickMenu &GetWidget() noexcept {
+  // Intentionally hides WidgetDialog::GetWidget() to return the quick
+  // menu widget instead of Widget& for type-specific behavior
+  W &GetWidget() noexcept {
     return *quick_menu_widget;
   }
 
@@ -562,9 +963,11 @@ private:
 };
 
 /**
+ * @param W the widget class of the quick menu style
  * @return the event of the chosen item, -1 if the dialog was closed,
  * or #PHASE_RESULT minus the index of a phase button
  */
+template<class W>
 static int
 ShowQuickMenu(UI::SingleWindow &parent, const Menu &menu) noexcept
 {
@@ -583,7 +986,7 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &menu) noexcept
       if (i.phase == phase)
         phase_name = gettext(i.label);
 
-  QuickMenuDialog dialog(WidgetDialog::Full{},
+  QuickMenuDialog<W> dialog(WidgetDialog::Full{},
                          parent,
                          dialog_look, nullptr);
 
@@ -641,8 +1044,13 @@ dlgQuickMenuShowModal(UI::SingleWindow &parent) noexcept
 
   /* a phase button chooses the phase and opens the menu again with
      its items */
+  const bool dynamic = CommonInterface::GetUISettings().quick_menu_style ==
+    UISettings::QuickMenuStyle::DYNAMIC;
+
   int result;
-  while ((result = ShowQuickMenu(parent, *menu)) <= PHASE_RESULT)
+  while ((result = dynamic
+          ? ShowQuickMenu<DynamicQuickMenu>(parent, *menu)
+          : ShowQuickMenu<QuickMenu>(parent, *menu)) <= PHASE_RESULT)
     InputEvents::SetQuickMenuPhase(quick_menu_phases[PHASE_RESULT - result].phase);
 
   if (result >= 0)
