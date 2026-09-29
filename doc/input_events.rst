@@ -677,6 +677,14 @@ Built-in modes
    label=MacCready
    location=19
    phase=flight
+
+  With the quick menu style *Dynamic* (**Menu > Config > System >
+  Look > Language, Input > Quick menu**), the locations 1 to 15 form a
+  framed block of 3 x 5 buttons, row by row from the top left, which
+  stays in the middle of the screen in portrait and landscape alike;
+  location 8 is its centre, where the focus starts.  Locations from 16
+  on are ranked: the lower the number, the closer the button is placed
+  to the block.  What does not fit goes to the next pages.
 - ``mc`` -- MacCready adjustment mode. Entered from ``mode=default`` via
   the ``Mode mc`` event (default key ``3``). Stick UP/DOWN adjust MC;
   RETURN toggles auto/manual MC; ESCAPE returns to ``default``.
