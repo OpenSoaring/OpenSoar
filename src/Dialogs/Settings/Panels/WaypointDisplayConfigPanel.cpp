@@ -23,6 +23,23 @@ enum ControlIndex {
   AppScaleRunwayLength
 };
 
+constexpr StaticEnumChoice wp_selection_list[] = {
+  { WaypointRendererSettings::LabelSelection::ALL,
+    N_("All"), N_("All labels will be displayed.") },
+  { WaypointRendererSettings::LabelSelection::TASK_AND_AIRFIELD,
+    N_("Task waypoints & airfields"),
+    N_("All waypoints part of a task and all airfields will be displayed.") },
+  { WaypointRendererSettings::LabelSelection::TASK_AND_LANDABLE,
+    N_("Task waypoints & landables"),
+    N_("All waypoints part of a task and all landables will be displayed.") },
+  { WaypointRendererSettings::LabelSelection::TASK,
+    N_("Task waypoints"),
+    N_("All waypoints part of a task will be displayed.") },
+  { WaypointRendererSettings::LabelSelection::NONE,
+    N_("None"), N_("No labels will be displayed.") },
+  nullptr
+};
+
 class WaypointDisplayConfigPanel final
   : public RowFormWidget, DataFieldListener {
 public:
@@ -86,23 +103,6 @@ WaypointDisplayConfigPanel::Prepare(ContainerWindow &parent,
   };
   AddEnum(_("Label format"), _("Determines how labels are displayed with each waypoint"),
           wp_labels_list, (unsigned)settings.display_text_type);
-
-  static constexpr StaticEnumChoice wp_selection_list[] = {
-    { WaypointRendererSettings::LabelSelection::ALL,
-      N_("All"), N_("All labels will be displayed.") },
-    { WaypointRendererSettings::LabelSelection::TASK_AND_AIRFIELD,
-      N_("Task waypoints & airfields"),
-      N_("All waypoints part of a task and all airfields will be displayed.") },
-    { WaypointRendererSettings::LabelSelection::TASK_AND_LANDABLE,
-      N_("Task waypoints & landables"),
-      N_("All waypoints part of a task and all landables will be displayed.") },
-    { WaypointRendererSettings::LabelSelection::TASK,
-      N_("Task waypoints"),
-      N_("All waypoints part of a task will be displayed.") },
-    { WaypointRendererSettings::LabelSelection::NONE,
-      N_("None"), N_("No labels will be displayed.") },
-    nullptr
-  };
 
   AddEnum(_("Label visibility"),
           _("Determines what labels are displayed."),
