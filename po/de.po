@@ -12144,3 +12144,18 @@ msgstr "Dynamisch"
 
 msgid "A framed block of 3 x 5 buttons (locations 1 to 15, location 1 in the centre) stays in the middle of the screen, in portrait and landscape alike; the other buttons fill the space around it, the lower locations closer to it."
 msgstr "Ein umrahmter Block aus 3 x 5 Knöpfen (Plätze 1 bis 15, Platz 1 in der Mitte) bleibt in der Bildschirmmitte, hochkant wie quer; die übrigen Knöpfe füllen den Platz darum herum, die niedrigeren Plätze näher am Block."
+
+msgid "Audio / MC"
+msgstr "Audio / MC"
+
+msgid "Flight\nOverview"
+msgstr "Flug-\nübersicht"
+
+msgid "Task restarted"
+msgstr "Aufgabe neu gestartet"
+
+msgid "Task\nRestart"
+msgstr "Aufgabe\nneu starten"
+
+msgid "Upload"
+msgstr "Hochladen"
