@@ -129,15 +129,71 @@ TestNavigate()
   ok1(Navigate(gap_cells, 0, Direction::RIGHT) == 1);
 }
 
+/**
+ * A list for the three columns of the XCSoar style keeps the picture
+ * around its centre.
+ */
+static void
+TestRanksFromColumns()
+{
+  /* the rows 5 to 9 of three columns around location 20 */
+  const std::vector<unsigned> locations{
+    13, 14, 15,
+    16, 17, 18,
+    19, 20, 21,
+    22, 23, 24,
+    25, 26, 27,
+    10, 11, 12, 28, 29, 30, 1,
+  };
+  const auto ranks = RanksFromColumns(locations, 20);
+
+  const std::vector<unsigned> expected{
+    8, 6, 9,
+    10, 2, 11,
+    3, 1, 4,
+    12, 5, 13,
+    14, 7, 15,
+    /* the row above first (middle column first), then the one
+       below, then the far rows */
+    17, 16, 18, 20, 19, 21, 22,
+  };
+  ok1(ranks == expected);
+
+  /* so the cells around the centre are the same as in three columns */
+  const auto cells = Arrange(ranks, Grid{3, 5});
+  ok1(cells[0] == (Cell{0, 0, 0}));
+  ok1(cells[7] == (Cell{0, 1, 2}));
+  ok1(cells[14] == (Cell{0, 2, 4}));
+}
+
+static void
+TestArrangeColumns()
+{
+  /* 3 x 7 cells: the centre 20 (row 6 of three columns) comes into
+     row 3, so rows 4 to 10 fit (locations 10 to 30) */
+  const std::vector<unsigned> locations{1, 10, 20, 21, 30, 31};
+  const auto cells = ArrangeColumns(locations, 20, Grid{3, 7});
+  ok1(cells[2] == (Cell{0, 1, 3}));
+  ok1(cells[3] == (Cell{0, 2, 3}));
+  ok1(cells[1] == (Cell{0, 0, 0}));
+  ok1(cells[4] == (Cell{0, 2, 6}));
+
+  /* above and below the page: the next page, by location */
+  ok1(cells[0] == (Cell{1, 0, 0}));
+  ok1(cells[5] == (Cell{1, 1, 0}));
+}
+
 int
 main()
 {
-  plan_tests(8 + 8 + 4 + 6);
+  plan_tests(8 + 8 + 4 + 6 + 4 + 6);
 
   TestChooseGrid();
   TestBlockStaysTheSame();
   TestGapsAndPages();
   TestNavigate();
+  TestRanksFromColumns();
+  TestArrangeColumns();
 
   return exit_status();
 }
