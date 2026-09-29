@@ -96,13 +96,34 @@ ChooseGrid(unsigned width, unsigned height,
 /**
  * Place the items.
  *
- * @param locations the location of each item in the order in which
- * they are ranked (ascending locations); items missing from the menu
- * (other flight phase) are simply not in the list
+ * @param locations the location (rank) of each item; items missing
+ * from the menu are simply not in the list
  * @return one cell per item, in the same order
  */
 std::vector<Cell>
 Arrange(std::span<const unsigned> locations, Grid grid) noexcept;
+
+/**
+ * Convert the locations of a list that was written for the three
+ * columns of the XCSoar style into ranks for Arrange(): the 3 x 5
+ * cells around the location @p center keep their places and form the
+ * block, @p center its centre; the other rows follow outwards, nearer
+ * rows first.  So the picture the author of such a list had in mind
+ * stays the same in the middle of the screen.
+ */
+std::vector<unsigned>
+RanksFromColumns(std::span<const unsigned> locations,
+                 unsigned center) noexcept;
+
+/**
+ * Place the items of a list for the three columns of the XCSoar style
+ * on a grid of three columns (portrait) exactly as they were, just
+ * shifted so that @p center is the centre of the block.  What does
+ * not fit above or below goes to the following pages.
+ */
+std::vector<Cell>
+ArrangeColumns(std::span<const unsigned> locations, unsigned center,
+               Grid grid) noexcept;
 
 [[gnu::pure]]
 unsigned

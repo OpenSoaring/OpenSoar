@@ -113,7 +113,8 @@ Version 7.46 - not yet released
     menu): a framed block of 3 x 5 buttons (locations 1 to 15, ranked
     from the centre outwards) stays in the middle of the screen in
     portrait and landscape, the other buttons are ranked around it;
-    turning the screen keeps the focus on its button
+    turning the screen keeps the focus on its button; the complete
+    quick menu keeps the XCSoar arrangement around location 20
 * weather
   - show the overlay name as XC Therm (with a space) in setup, weather
     dialogs, map titles, and download messages
