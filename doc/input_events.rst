@@ -695,6 +695,13 @@ Built-in modes
   Locations from 16 on are ranked as well: the lower the number, the
   closer the button is placed to the block.  What does not fit goes
   to the next pages.
+
+  This applies to the phase lists.  The complete ``QuickMenu`` is
+  XCSoar's list, which is written for three columns with its most
+  important buttons around location 20; the style *Dynamic* keeps that
+  picture: the 3 x 5 buttons around location 20 form the block, and
+  in portrait the list stays exactly as it is, while in landscape the
+  rows above and below the block move to its sides.
 - ``mc`` -- MacCready adjustment mode. Entered from ``mode=default`` via
   the ``Mode mc`` event (default key ``3``). Stick UP/DOWN adjust MC;
   RETURN toggles auto/manual MC; ESCAPE returns to ``default``.
