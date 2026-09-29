@@ -170,10 +170,10 @@ InterfaceConfigPanel::Prepare(ContainerWindow &parent,
       N_("Three columns, the buttons in the order of their locations, "
          "page by page.") },
     { UISettings::QuickMenuStyle::DYNAMIC, N_("Dynamic"),
-      N_("A framed block of 3 x 5 buttons (locations 1 to 15) stays in "
-         "the middle of the screen, in portrait and landscape alike; "
-         "the other buttons fill the space around it, the lower "
-         "locations closer to it.") },
+      N_("A framed block of 3 x 5 buttons (locations 1 to 15, "
+         "location 1 in the centre) stays in the middle of the screen, "
+         "in portrait and landscape alike; the other buttons fill the "
+         "space around it, the lower locations closer to it.") },
     nullptr
   };
 
