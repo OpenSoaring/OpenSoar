@@ -84,11 +84,11 @@ event=Pan on
 label=Pan Mode
 location=10
 
-# the switches of the map display, in a submenu
+# the switches of the map display, in a dialog of their own
 mode=QuickMenu
 type=key
 data=0
-event=QuickMenu MapDisplay
+event=MapDisplay
 label=Map\nDisplay
 location=14
 

@@ -122,6 +122,13 @@ Version 7.47 - not yet released
     (TARGET=PI5 is an alias). The arm64 sysroot defaults to
     /opt/pi64/root
 * input
+    (airspace, labels, trail, auto zoom, distance rings) moved into the
+    new dialog "Map Display" (input event "MapDisplay"), which also
+    sets the small FLARM radar and thermal assistant on the map and
+    opens the page settings; OK saves the settings, only hiding the
+    airspace lasts just until the next start; FLARM radar and thermal
+    assistant pages left the quick menu (menu bar and keys still have
+    them)
   - the quick menu is clearer: the switches of the map display
     (airspace, labels, trail, auto zoom, page settings, distance rings)
     moved into the new submenu "Map Display"; FLARM radar and thermal
