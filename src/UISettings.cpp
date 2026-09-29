@@ -39,6 +39,7 @@ UISettings::SetDefaults() noexcept
   show_zoom_button = show_menu_button;
   show_quickmenu_button = HasTouchScreen();
   maccready_stf_ias = false;
+  quick_menu_style = QuickMenuStyle::XCSOAR;
 
 #ifdef KOBO
   dark_mode = DarkMode::OFF;
