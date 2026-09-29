@@ -30,6 +30,7 @@
 #include <boost/container/static_vector.hpp>
 #include <cstdlib>
 #include <memory>
+#include <type_traits>
 
 class QuickMenuButtonRenderer final : public ButtonRenderer {
   const DialogLook &look;
@@ -1013,12 +1014,15 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &all_menu) noexcept
 {
   const auto &dialog_look = UIGlobals::GetDialogLook();
 
-  /* only phases with a list of their own get a button; without any
-     phase list the menu is the same as before there were phases */
+  /* the phase lists belong to the style "Dynamic"; the XCSoar style
+     always shows the complete list, as XCSoar does.  Only phases with
+     a list of their own get a button. */
   bool has_phases = false;
-  for (const auto &i : quick_menu_phases)
-    if (i.phase != QuickMenuPhase::ALL && GetPhaseMenu(i.phase) != nullptr)
-      has_phases = true;
+  if constexpr (std::is_same_v<W, DynamicQuickMenu>)
+    for (const auto &i : quick_menu_phases)
+      if (i.phase != QuickMenuPhase::ALL &&
+          GetPhaseMenu(i.phase) != nullptr)
+        has_phases = true;
 
   QuickMenuPhase phase = InputEvents::GetQuickMenuPhase();
   const Menu *menu = GetPhaseMenu(phase);
