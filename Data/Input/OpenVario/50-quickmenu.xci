@@ -67,15 +67,6 @@ event=Mode default
 label=Target Show$(CheckTask)$(CheckTaskResumed)
 location=7
 
-
-mode=QuickMenu
-type=key
-data=0
-event=Zoom auto show
-event=Zoom auto toggle
-label=Zoom\n$(ZoomAutoToggleActionName)
-location=9
-
 mode=QuickMenu
 type=key
 data=0
@@ -93,27 +84,12 @@ event=Pan on
 label=Pan Mode
 location=10
 
+# the switches of the map display, in a submenu
 mode=QuickMenu
 type=key
 data=0
-event=DeclutterLabels show
-event=DeclutterLabels toggle
-label=Labels\n$(MapLabelsToggleActionName)
-location=11
-
-mode=QuickMenu
-type=key
-data=0
-event=SnailTrail show
-event=SnailTrail toggle
-label=Trail\n$(SnailTrailToggleName)
-location=12
-
-mode=QuickMenu
-type=key
-data=0
-event=Page settings
-label=Page\nSettings
+event=QuickMenu MapDisplay
+label=Map\nDisplay
 location=14
 
 
@@ -191,13 +167,6 @@ location=23
 mode=QuickMenu
 type=key
 data=0
-event=FlarmTraffic
-label=FLARM Radar$(CheckFLARM)
-location=24
-
-mode=QuickMenu
-type=key
-data=0
 event=Weather
 event=Mode default
 label=Weather
@@ -238,14 +207,6 @@ location=29
 mode=QuickMenu
 type=key
 data=0
-event=ThermalAssistant
-event=Mode default
-label=Thermal Assistant$(CheckCircling)
-location=30
-
-mode=QuickMenu
-type=key
-data=0
 event=FileManager
 event=Mode default
 label=File Manager
@@ -260,13 +221,6 @@ event=Logger note PEV
 event=PilotEvent
 label=Pilot Event Announce
 location=32
-
-mode=QuickMenu
-type=key
-data=0
-event=AirSpace toggle
-label=Airspace\n$(AirspaceToggleActionName)
-location=33
 
 
 mode=QuickMenu
