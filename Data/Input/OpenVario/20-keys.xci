@@ -257,7 +257,7 @@ event=Setup Target
 ## Shutdown: see key X above
 
 ### call SetupSystem with 'p'
-mode=default RemoteStick
+mode=default QuickMenu
 type=key
 data=P
 event=Setup System
