@@ -37,6 +37,7 @@ enum ControlIndex {
   MenuTimeout,
   StartupTimeout,
   TextInput,
+  QuickMenuStyle,
 #ifdef HAVE_VIBRATOR
   HapticFeedback,
 #endif
@@ -163,6 +164,22 @@ InterfaceConfigPanel::Prepare(ContainerWindow &parent,
   /* on-screen keyboard doesn't work without a pointing device
      (mouse or touch screen) */
   SetRowVisible(TextInput, HasPointer());
+
+  static constexpr StaticEnumChoice quick_menu_style_list[] = {
+    { UISettings::QuickMenuStyle::XCSOAR, N_("XCSoar"),
+      N_("Three columns, the buttons in the order of their locations, "
+         "page by page.") },
+    { UISettings::QuickMenuStyle::DYNAMIC, N_("Dynamic"),
+      N_("A framed block of 3 x 5 buttons (locations 1 to 15) stays in "
+         "the middle of the screen, in portrait and landscape alike; "
+         "the other buttons fill the space around it, the lower "
+         "locations closer to it.") },
+    nullptr
+  };
+
+  AddEnum(_("Quick menu"),
+          _("How the quick menu arranges its buttons."),
+          quick_menu_style_list, (unsigned)settings.quick_menu_style);
 
 #ifdef HAVE_VIBRATOR
   static constexpr StaticEnumChoice haptic_feedback_list[] = {
@@ -320,6 +337,9 @@ InterfaceConfigPanel::Save(bool &_changed) noexcept
 
   if (HasPointer())
     changed |= SaveValueEnum(TextInput, ProfileKeys::AppTextInputStyle, settings.dialog.text_input_style);
+
+  changed |= SaveValueEnum(QuickMenuStyle, ProfileKeys::QuickMenuStyle,
+                           settings.quick_menu_style);
 
 #ifdef HAVE_VIBRATOR
   changed |= SaveValueEnum(HapticFeedback, ProfileKeys::HapticFeedback, settings.haptic_feedback);

@@ -3,6 +3,7 @@ set(_SOURCES
         Menu/ExpandMacros.cpp
         Menu/MenuBar.cpp
         Menu/MenuData.cpp
+        Menu/QuickMenuLayout.cpp
         Menu/ShowButton.cpp
         Menu/Glue.cpp
 )
