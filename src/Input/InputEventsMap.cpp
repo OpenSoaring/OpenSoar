@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "InputEvents.hpp"
+#include "Dialogs/MapDisplayDialog.hpp"
 #include "Language/Language.hpp"
 #include "Message.hpp"
 #include "Interface.hpp"
@@ -257,4 +258,13 @@ InputEvents::sub_ScaleZoom(int vswitch)
   }
 
   sub_SetZoom(value);
+}
+
+/**
+ * Open the dialog with the switches of the map display.
+ */
+void
+InputEvents::eventMapDisplay([[maybe_unused]] const char *misc)
+{
+  ShowMapDisplayDialog();
 }

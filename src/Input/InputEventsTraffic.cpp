@@ -14,11 +14,6 @@ InputEvents::eventFLARMRadar([[maybe_unused]] const char *misc)
 {
   if (StringIsEqual(misc, "ForceToggle")) {
     CommonInterface::main_window->ToggleForceFLARMRadar();
-  } else if (StringIsEqual(misc, "gauge")) {
-    /* the small gauge on the map, which appears with traffic: off or
-       on for this session */
-    auto &traffic = CommonInterface::SetUISettings().traffic;
-    traffic.enable_gauge = !traffic.enable_gauge;
   } else
     CommonInterface::main_window->ToggleSuppressFLARMRadar();
 }

@@ -55,6 +55,13 @@ Version 7.45.4 - not yet released
     the submenu switches their small gauges on the map off and on
     instead ("FLARMRadar gauge", "ThermalAssistant toggle");
     "QuickMenu MODE" opens such a submenu
+    (airspace, labels, trail, auto zoom, distance rings) moved into the
+    new dialog "Map Display" (input event "MapDisplay"), which also
+    sets the small FLARM radar and thermal assistant on the map and
+    opens the page settings; OK saves the settings, only hiding the
+    airspace lasts just until the next start; FLARM radar and thermal
+    assistant pages left the quick menu (menu bar and keys still have
+    them)
 * map
   - the flight setup starts with the MacCready setting
   - a tap on the final glide bar opens the flight setup

@@ -63,7 +63,7 @@ static constexpr StaticEnumChoice flarm_display_location_list[] = {
   nullptr
 };
 
-static constexpr StaticEnumChoice thermal_assistant_position_list[] = {
+constexpr StaticEnumChoice thermal_assistant_position_list[] = {
   { UISettings::ThermalAssistantPosition::OFF,
     N_("Off"),
     N_("Disable thermal assistant.") },
