@@ -847,14 +847,10 @@ InputEvents::eventWeather(const char *misc)
   ShowWeatherDialog(misc);
 }
 
-/**
- * Show the quick menu; with an argument, the submenu with that mode,
- * e.g. "QuickMenu MapDisplay".
- */
 void
-InputEvents::eventQuickMenu(const char *misc)
+InputEvents::eventQuickMenu([[maybe_unused]] const char *misc)
 {
-  dlgQuickMenuShowModal(*CommonInterface::main_window, misc);
+ dlgQuickMenuShowModal(*CommonInterface::main_window);
 }
 
 /**

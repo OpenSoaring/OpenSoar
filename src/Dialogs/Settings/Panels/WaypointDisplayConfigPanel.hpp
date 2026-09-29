@@ -5,7 +5,13 @@
 
 #include <memory>
 
+struct StaticEnumChoice;
+
 class Widget;
 
 std::unique_ptr<Widget>
 CreateWaypointDisplayConfigPanel();
+
+/** The choices of the waypoint label visibility, shared with the map
+    display dialog. */
+extern const StaticEnumChoice wp_selection_list[];
