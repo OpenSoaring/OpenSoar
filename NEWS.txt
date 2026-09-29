@@ -107,6 +107,11 @@ Version 7.46 - not yet released
     the phase follows takeoff and landing and can be switched with the
     new buttons Ground, Flight, After and All or the QuickMenuPhase
     event; without such lines the menu stays as it was
+  - new quick menu style "Dynamic" (Look > Language, Input > Quick
+    menu): a framed block of 3 x 5 buttons (locations 1 to 15) stays in
+    the middle of the screen in portrait and landscape, the other
+    buttons are ranked around it; turning the screen keeps the focus
+    on its button
 * weather
   - show the overlay name as XC Therm (with a space) in setup, weather
     dialogs, map titles, and download messages

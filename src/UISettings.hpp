@@ -72,6 +72,24 @@ struct UISettings {
   bool show_zoom_button;
   bool show_quickmenu_button;
 
+  /**
+   * How the quick menu arranges its buttons.
+   */
+  enum class QuickMenuStyle : uint8_t {
+    /**
+     * XCSoar: three columns, the buttons in the order of their
+     * locations, page by page.
+     */
+    XCSOAR,
+
+    /**
+     * A fixed block of 3 x 5 buttons (locations 1 to 15) in the
+     * middle of the screen, which stays the same in portrait and
+     * landscape; the other buttons fill the space around it.
+     */
+    DYNAMIC,
+  } quick_menu_style;
+
   enum class PopupMessagePosition : uint8_t {
     CENTER,
     TOP_LEFT,

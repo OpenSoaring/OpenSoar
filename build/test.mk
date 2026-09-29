@@ -121,7 +121,7 @@ TEST_NAMES = \
 	TestIGCParser TestIGCFlightTimes \
 	TestTraceBounds \
 	TestStrings TestUnescapeCString TestUTF8 TestWrapText TestLayout \
-	TestInputConfig \
+	TestInputConfig TestQuickMenuLayout \
 	TestCRC16 TestCRC8 \
 	TestUnitsFormatter \
 	TestGeoPointFormatter \
@@ -922,6 +922,13 @@ TEST_INPUT_CONFIG_SOURCES = \
 TEST_INPUT_CONFIG_CPPFLAGS = $(SCREEN_CPPFLAGS)
 TEST_INPUT_CONFIG_DEPENDS = IO OS UTIL
 $(eval $(call link-program,TestInputConfig,TEST_INPUT_CONFIG))
+
+TEST_QUICK_MENU_LAYOUT_SOURCES = \
+	$(TEST_SRC_DIR)/tap.c \
+	$(SRC)/Menu/QuickMenuLayout.cpp \
+	$(TEST_SRC_DIR)/TestQuickMenuLayout.cpp
+TEST_QUICK_MENU_LAYOUT_DEPENDS = UTIL
+$(eval $(call link-program,TestQuickMenuLayout,TEST_QUICK_MENU_LAYOUT))
 
 TEST_INPUT_TRANSFORM_MODE_SOURCES = \
 	$(TEST_SRC_DIR)/tap.c \
