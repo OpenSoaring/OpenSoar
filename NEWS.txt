@@ -122,6 +122,11 @@ Version 7.47 - not yet released
     (TARGET=PI5 is an alias). The arm64 sysroot defaults to
     /opt/pi64/root
 * input
+  - new quick menu style "Dynamic" (Look > Language, Input > Quick
+    menu): a framed block of 3 x 5 buttons (locations 1 to 15) stays in
+    the middle of the screen in portrait and landscape, the other
+    buttons are ranked around it; turning the screen keeps the focus
+    on its button
   - the quick menu can show the buttons of one flight phase: a
     "phase=ground flight after" line limits a button to some phases,
     the phase follows takeoff and landing and can be switched with the
