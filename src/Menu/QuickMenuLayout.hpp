@@ -11,11 +11,20 @@
  * 3 x 5 buttons in the middle of the first page, which looks the same
  * in portrait and landscape, and the other buttons around it.
  *
- * The block holds the items with the locations 1 to 15, row by row
- * from the top left; location 8 is its centre.  The other items are
- * ranked by their location: the first page fills the cells around the
- * block with them, nearest to the centre first, and further pages hold
- * the rest in rows.
+ * The block holds the items with the locations 1 to 15.  They are
+ * ranks, not cells: location 1 is the centre, where the focus starts,
+ * and the next ones follow around it by importance (see
+ * #BLOCK_CELLS):
+ *
+ *    8   6   9
+ *   10   2  11
+ *    3   1   4
+ *   12   5  13
+ *   14   7  15
+ *
+ * The other items are ranked by their location as well: the first page
+ * fills the cells around the block with them, nearest to the centre
+ * first, and further pages hold the rest in rows.
  *
  * This is plain geometry without any window, so the rules can be
  * tested on their own.
@@ -27,7 +36,23 @@ static constexpr unsigned BLOCK_ROWS = 5;
 static constexpr unsigned BLOCK_SIZE = BLOCK_COLUMNS * BLOCK_ROWS;
 
 /** The location of the centre of the block. */
-static constexpr unsigned CENTER_LOCATION = BLOCK_SIZE / 2 + 1;
+static constexpr unsigned CENTER_LOCATION = 1;
+
+/**
+ * The cell in the block (column, row) of the locations 1 to 15: the
+ * centre, then above, left, right and below it, then two above and
+ * two below, the upper corners, the neighbours of the row above, those
+ * of the row below and last the lower corners.
+ */
+static constexpr struct { unsigned column, row; } BLOCK_CELLS[BLOCK_SIZE] = {
+  {1, 2},
+  {1, 1}, {0, 2}, {2, 2}, {1, 3},
+  {1, 0}, {1, 4},
+  {0, 0}, {2, 0},
+  {0, 1}, {2, 1},
+  {0, 3}, {2, 3},
+  {0, 4}, {2, 4},
+};
 
 /**
  * The number of columns and rows of a page; both are odd, so the

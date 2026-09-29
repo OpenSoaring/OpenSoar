@@ -54,33 +54,17 @@ sub append(\@\%\%) {
     push @$all, $record;
 }
 
+# Old mode names that are still accepted; see src/Input/InputParser.cpp
+my %mode_aliases = (RemoteStick => 'QuickMenu');
+
 sub get_mode($) {
     my $name = shift;
+    $name = $mode_aliases{$name} if exists $mode_aliases{$name};
     return $mode_map{$name} if exists $mode_map{$name};
     push @modes, $name;
     my $i = $#modes;
     $mode_map{$name} = $i;
     return $i;
-}
-
-# The flight phases of a quick menu item as a bit mask, see
-# MenuPhase in src/Menu/MenuData.hpp; 0 means all of them.
-my %phase_bits = (ground => 1, flight => 2, after => 4);
-
-sub parse_phases($$) {
-    my ($value, $line) = @_;
-    return 0 unless defined $value;
-
-    my $phases = 0;
-    foreach my $p (split(/\s+/, $value)) {
-        next if $p eq '';
-        return 0 if $p eq 'all';
-        die "Invalid phase '$p' near $line\n"
-          unless exists $phase_bits{$p};
-        $phases |= $phase_bits{$p};
-    }
-
-    return $phases;
 }
 
 sub commit(\%) {
@@ -112,8 +96,7 @@ sub commit(\%) {
         $label =~ s|\\([^rn\\])|\\\\$1|g if ($label);
         $label = '' unless defined $label;
         my $location = $rec->{location};
-        push @labels, [ $mode_id, $label, $location, $event_id,
-                        parse_phases($rec->{phase}, $line) ]
+        push @labels, [ $mode_id, $label, $location, $event_id ]
           if defined $location;
 
         next unless $event_id > 0;
@@ -242,10 +225,10 @@ print "};\n";
 
 print "static constexpr struct flat_label default_labels[] = {\n";
 foreach my $l (@labels) {
-    my ($mode, $label, $location, $event, $phases) = @$l;
-    print qq|  { $mode, $location, $event, "$label", $phases },\n|;
+    my ($mode, $label, $location, $event) = @$l;
+    print qq|  { $mode, $location, $event, "$label" },\n|;
 }
-print "  { 0, 0, 0, NULL, 0 },\n";
+print "  { 0, 0, 0, NULL },\n";
 print "};\n";
 
 print "static constexpr struct flat_gesture_map default_gesture2event[] = {\n";
