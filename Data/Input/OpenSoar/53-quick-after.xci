@@ -1,0 +1,56 @@
+# The quick menu after the landing (mode QuickAfter).
+#
+# Locations 1 to 15 are ranks in the framed block of the style
+# "Dynamic": 1 is the centre, where the focus starts, 2 above, 3 left,
+# 4 right, 5 below, 6 two above, 7 two below, 8 and 9 the upper
+# corners, 10 and 11 beside 2, 12 and 13 beside 5, 14 and 15 the lower
+# corners:
+#
+#    8   6   9
+#   10   2  11
+#    3   1   4
+#   12   5  13
+#   14   7  15
+#
+# Still to come: 2 and 6 download the flights of logger 1 and 2.
+# 5, 7 and 10 to 15 stay empty for now.
+
+mode=QuickAfter
+type=key
+data=0
+event=Analysis
+event=Mode default
+label=Analysis
+location=1
+
+mode=QuickAfter
+type=key
+data=0
+event=Analysis barograph
+event=Mode default
+label=Barograph
+location=3
+
+mode=QuickAfter
+type=key
+data=0
+event=Analysis contest
+event=Mode default
+label=Flight\nOverview
+location=4
+
+mode=QuickAfter
+type=key
+data=0
+event=UploadIGCFile
+event=Mode default
+label=Upload
+location=8
+
+mode=QuickAfter
+type=key
+data=0
+event=Setup System
+event=Mode default
+label=Configuration
+location=9
