@@ -63,6 +63,17 @@ TestBlockStaysTheSame()
   }
   ok1(same);
 
+  /* the 15 locations of the block cover its 15 cells, each once */
+  bool used[BLOCK_COLUMNS][BLOCK_ROWS] = {};
+  unsigned distinct = 0;
+  for (const auto &c : BLOCK_CELLS)
+    if (c.column < BLOCK_COLUMNS && c.row < BLOCK_ROWS &&
+        !used[c.column][c.row]) {
+      used[c.column][c.row] = true;
+      ++distinct;
+    }
+  ok1(distinct == BLOCK_SIZE);
+
   /* the centre location is in the middle of the page */
   ok1(l[CENTER_LOCATION - 1] == (Cell{0, 2, 3}));
   ok1(p[CENTER_LOCATION - 1] == (Cell{0, 1, 4}));
@@ -80,9 +91,9 @@ TestBlockStaysTheSame()
 static void
 TestGapsAndPages()
 {
-  /* location 8 is missing (other flight phase): its cell stays
-     empty, the others keep their places */
-  const std::vector<unsigned> locations{1, 7, 9, 15, 30};
+  /* the centre (location 1) is missing: its cell stays empty, the
+     others keep their places left and right of it */
+  const std::vector<unsigned> locations{2, 3, 4, 15, 30};
   const Grid grid{3, 5};
   const auto cells = Arrange(locations, grid);
   ok1(cells[1] == (Cell{0, 0, 2}));
@@ -99,20 +110,21 @@ TestNavigate()
   std::vector<unsigned> locations;
   for (unsigned i = 1; i <= 15; ++i)
     locations.push_back(i);
-  /* 7 and 9 are left and right of the centre, 5 and 11 above and
+  /* around the centre (location 1): 2 above, 3 left, 4 right, 5
      below; index = location - 1 */
   const auto cells = Arrange(locations, Grid{5, 7});
-  ok1(Navigate(cells, 7, Direction::LEFT) == 6);
-  ok1(Navigate(cells, 7, Direction::RIGHT) == 8);
-  ok1(Navigate(cells, 7, Direction::UP) == 4);
-  ok1(Navigate(cells, 7, Direction::DOWN) == 10);
+  ok1(Navigate(cells, 0, Direction::LEFT) == 2);
+  ok1(Navigate(cells, 0, Direction::RIGHT) == 3);
+  ok1(Navigate(cells, 0, Direction::UP) == 1);
+  ok1(Navigate(cells, 0, Direction::DOWN) == 4);
 
-  /* at the edge there is nowhere to go */
-  ok1(Navigate(cells, 0, Direction::UP) == -1);
+  /* at the edge there is nowhere to go: location 8 is the upper left
+     corner */
+  ok1(Navigate(cells, 7, Direction::UP) == -1);
 
-  /* a gap is jumped over: without location 8, going right from 7
-     reaches 9 */
-  const std::vector<unsigned> gap{7, 9};
+  /* a gap is jumped over: without the centre, going right from 3
+     reaches 4 */
+  const std::vector<unsigned> gap{3, 4};
   const auto gap_cells = Arrange(gap, Grid{5, 7});
   ok1(Navigate(gap_cells, 0, Direction::RIGHT) == 1);
 }
@@ -120,7 +132,7 @@ TestNavigate()
 int
 main()
 {
-  plan_tests(8 + 7 + 4 + 6);
+  plan_tests(8 + 8 + 4 + 6);
 
   TestChooseGrid();
   TestBlockStaysTheSame();
