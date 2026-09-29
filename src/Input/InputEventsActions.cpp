@@ -351,14 +351,17 @@ InputEvents::eventStatus(const char *misc)
 //  See the analysis dialog section of the reference manual
 // for more info.
 void
-InputEvents::eventAnalysis([[maybe_unused]] const char *misc)
+InputEvents::eventAnalysis(const char *misc)
 {
+  /* an optional page name, e.g. "Analysis barograph", opens that page;
+     without one the dialog shows the page seen last */
   dlgAnalysisShowModal(*CommonInterface::main_window,
                        CommonInterface::main_window->GetLook(),
                        CommonInterface::Full(),
                        *backend_components->glide_computer,
                        data_components->airspaces.get(),
-                       data_components->terrain.get());
+                       data_components->terrain.get(),
+                       ParseAnalysisPage(misc));
 }
 
 // WaypointDetails
