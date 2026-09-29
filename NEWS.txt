@@ -149,6 +149,13 @@ Version 7.47 - not yet released
     (TARGET=PI5 is an alias). The arm64 sysroot defaults to
     /opt/pi64/root
 * input
+  - the quick menu is clearer: the switches of the map display
+    (airspace, labels, trail, auto zoom, page settings, distance rings)
+    moved into the new submenu "Map Display"; FLARM radar and thermal
+    assistant left the quick menu (menu bar and keys still have them),
+    the submenu switches their small gauges on the map off and on
+    instead ("FLARMRadar gauge", "ThermalAssistant toggle");
+    "QuickMenu MODE" opens such a submenu
   - the quick menu style "Dynamic" has a list of its own before the
     flight, in flight and after the landing (modes QuickGround,
     QuickFlight and QuickAfter, built-in lists included); it follows

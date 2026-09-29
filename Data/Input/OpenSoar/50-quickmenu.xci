@@ -5,14 +5,30 @@
 # entry at the same location.  Empty locations do not show, so an
 # entry without an event removes a button without moving the others.
 
-# The terrain and topography toggles give way to the settings of the
-# current page, where the base map (terrain, topography, OpenStreetMap
-# or empty) is chosen.
+# The switches of the map display move into the submenu "Map
+# Display" (55-map-display.xci), so the quick menu stays clear: the
+# terrain and topography toggles (the page settings with the base map
+# take their place there), labels, trail, airspace labels, auto zoom
+# and distance rings.  The airspace toggle goes there as well, and the
+# submenu takes its place in the centre.  The FLARM radar and the
+# thermal assistant leave the quick menu; they stay in the menu bar
+# and on their keys.
 mode=QuickMenu
 type=key
 data=0
-event=Page settings
-label=Page\nSettings
+label=
+location=7
+
+mode=QuickMenu
+type=key
+data=0
+label=
+location=8
+
+mode=QuickMenu
+type=key
+data=0
+label=
 location=9
 
 mode=QuickMenu
@@ -20,6 +36,43 @@ type=key
 data=0
 label=
 location=10
+
+mode=QuickMenu
+type=key
+data=0
+label=
+location=11
+
+mode=QuickMenu
+type=key
+data=0
+label=
+location=28
+
+mode=QuickMenu
+type=key
+data=0
+label=
+location=30
+
+mode=QuickMenu
+type=key
+data=0
+label=
+location=34
+
+mode=QuickMenu
+type=key
+data=0
+label=
+location=42
+
+mode=QuickMenu
+type=key
+data=0
+event=QuickMenu MapDisplay
+label=Map\nDisplay
+location=20
 
 # The OpenSoar frequency list.
 mode=QuickMenu
