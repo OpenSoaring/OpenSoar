@@ -176,7 +176,8 @@ public:
   unsigned clicked_event;
 
   QuickMenu(WndForm &_dialog, const Menu &_menu,
-            const char *_phase_name) noexcept
+            const char *_phase_name,
+            [[maybe_unused]] bool _columns_of_three) noexcept
     :dialog(_dialog), menu(_menu), phase_name(_phase_name) {}
 
   auto &GetWindow() noexcept {
@@ -546,10 +547,23 @@ class DynamicQuickMenu final : public WindowWidget {
   const Menu &menu;
   const char *const phase_name;
 
+  /**
+   * Was the list written for the three columns of the XCSoar style?
+   * Then its locations are cells, not ranks; see
+   * QuickMenuLayout::RanksFromColumns().
+   */
+  const bool columns_of_three;
+
   boost::container::static_vector<Button, Menu::MAX_ITEMS> buttons;
 
   /** the location of each button, see #QuickMenuLayout::Arrange() */
   std::vector<unsigned> locations;
+
+  /**
+   * The locations as written in a list for three columns, see
+   * #columns_of_three; #locations holds the ranks made from them.
+   */
+  std::vector<unsigned> column_locations;
 
   QuickMenuLayout::Grid grid{QuickMenuLayout::BLOCK_COLUMNS,
                              QuickMenuLayout::BLOCK_ROWS};
@@ -558,6 +572,13 @@ class DynamicQuickMenu final : public WindowWidget {
 
   Button *previous_button = nullptr;
   Button *next_button = nullptr;
+
+  /**
+   * The centre of the XCSoar quick menu: its buttons are arranged
+   * around this location, see XCSoar commit cde1b51040 "Input:
+   * Reorganize quick menu for in-flight priority access".
+   */
+  static constexpr unsigned XCSOAR_CENTER_LOCATION = 20;
 
   /**
    * The narrowest useful button in points; it decides how many
@@ -576,8 +597,10 @@ public:
   unsigned clicked_event;
 
   DynamicQuickMenu(WndForm &_dialog, const Menu &_menu,
-                   const char *_phase_name) noexcept
-    :dialog(_dialog), menu(_menu), phase_name(_phase_name) {}
+                   const char *_phase_name,
+                   bool _columns_of_three) noexcept
+    :dialog(_dialog), menu(_menu), phase_name(_phase_name),
+     columns_of_three(_columns_of_three) {}
 
   auto &GetWindow() noexcept {
     return (DynamicQuickMenuWindow &)WindowWidget::GetWindow();
@@ -655,6 +678,12 @@ DynamicQuickMenu::Prepare(ContainerWindow &parent,
     locations.push_back(i);
   }
 
+  if (columns_of_three) {
+    column_locations = locations;
+    locations = QuickMenuLayout::RanksFromColumns(column_locations,
+                                                  XCSOAR_CENTER_LOCATION);
+  }
+
   SetWindow(std::move(window));
 }
 
@@ -698,7 +727,12 @@ DynamicQuickMenu::Relayout() noexcept
   grid = QuickMenuLayout::ChooseGrid(rc.GetWidth(), rc.GetHeight(),
                                      Layout::PtScale(MIN_COLUMN_WIDTH_PT),
                                      min_row_height);
-  cells = QuickMenuLayout::Arrange(locations, grid);
+  /* in three columns, a list for three columns keeps its picture
+     completely; wider, the rows around the block go to the sides */
+  cells = columns_of_three && grid.columns == QuickMenuLayout::BLOCK_COLUMNS
+    ? QuickMenuLayout::ArrangeColumns(column_locations,
+                                      XCSOAR_CENTER_LOCATION, grid)
+    : QuickMenuLayout::Arrange(locations, grid);
   page_count = QuickMenuLayout::CountPages(cells);
 
   if (focused >= 0)
@@ -1004,7 +1038,10 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &all_menu) noexcept
                          parent,
                          dialog_look, nullptr);
 
-  dialog.SetWidget(dialog, *menu, phase_name);
+  /* the complete quick menu is the XCSoar list, written for three
+     columns; the phase lists are written in ranks */
+  dialog.SetWidget(dialog, *menu, phase_name,
+                   phase == QuickMenuPhase::ALL);
 
   dialog.PrepareWidget();
 
