@@ -104,6 +104,6 @@ location=15
 mode=QuickFlight
 type=key
 data=0
-event=QuickMenu MapDisplay
+event=MapDisplay
 label=Map\nDisplay
 location=10
