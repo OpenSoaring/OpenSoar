@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "Dialogs/dlgAnalysis.hpp"
+#include "util/StringAPI.hxx"
 #include "Dialogs/Dialogs.h"
 #include "Dialogs/Airspace/AirspaceWarningDialog.hpp"
 #include "Dialogs/WidgetDialog.hpp"
@@ -46,6 +47,35 @@
 using namespace UI;
 
 static AnalysisPage page = AnalysisPage::BAROGRAPH;
+
+AnalysisPage
+ParseAnalysisPage(const char *name) noexcept
+{
+  static constexpr struct {
+    const char *name;
+    AnalysisPage page;
+  } pages[] = {
+    { "barograph", AnalysisPage::BAROGRAPH },
+    { "climb", AnalysisPage::CLIMB },
+    { "thermal_band", AnalysisPage::THERMAL_BAND },
+    { "vario_histogram", AnalysisPage::VARIO_HISTOGRAM },
+    { "task_speed", AnalysisPage::TASK_SPEED },
+    { "wind", AnalysisPage::WIND },
+    { "polar", AnalysisPage::POLAR },
+    { "maccready", AnalysisPage::MACCREADY },
+    { "temptrace", AnalysisPage::TEMPTRACE },
+    { "task", AnalysisPage::TASK },
+    { "contest", AnalysisPage::CONTEST },
+    { "airspace", AnalysisPage::AIRSPACE },
+  };
+
+  if (name != nullptr)
+    for (const auto &i : pages)
+      if (StringIsEqual(name, i.name))
+        return i.page;
+
+  return AnalysisPage::COUNT;
+}
 
 class AnalysisWidget;
 
