@@ -122,6 +122,8 @@ Version 7.47 - not yet released
     (TARGET=PI5 is an alias). The arm64 sysroot defaults to
     /opt/pi64/root
 * input
+  - the Analysis input event takes a page name, e.g. "Analysis
+    barograph", to open that page directly
   - load several input events files: they are read on top of the
     built-in configuration in the order of their names, so each file
     can hold one topic and a later one can override an earlier one;
