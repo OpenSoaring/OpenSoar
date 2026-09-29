@@ -114,18 +114,20 @@ public:
   }
 };
 
+using QuickMenuPhase = InputEvents::QuickMenuPhase;
+
 /**
  * The flight phases the quick menu can switch between, in the order
- * of their buttons; see #MenuPhase.
+ * of their buttons.
  */
 static constexpr struct {
-  uint8_t phase;
+  QuickMenuPhase phase;
   const char *label;
 } quick_menu_phases[] = {
-  { MenuPhase::GROUND, N_("Ground") },
-  { MenuPhase::FLIGHT, N_("Flight") },
-  { MenuPhase::AFTER, N_("After") },
-  { MenuPhase::ALL, N_("All") },
+  { QuickMenuPhase::GROUND, N_("Ground") },
+  { QuickMenuPhase::FLIGHT, N_("Flight") },
+  { QuickMenuPhase::AFTER, N_("After") },
+  { QuickMenuPhase::ALL, N_("All") },
 };
 
 /**
@@ -145,13 +147,8 @@ class QuickMenu final : public WindowWidget {
   const Menu &menu;
 
   /**
-   * Which items to show, see #MenuPhase.
-   */
-  const uint8_t phase;
-
-  /**
-   * The name of the shown phase for the caption; nullptr if the menu
-   * does not use phases.
+   * The name of the shown phase for the caption; nullptr if there are
+   * no phase lists.
    */
   const char *const phase_name;
 
@@ -174,10 +171,9 @@ class QuickMenu final : public WindowWidget {
 public:
   unsigned clicked_event;
 
-  QuickMenu(WndForm &_dialog, const Menu &_menu, uint8_t _phase,
+  QuickMenu(WndForm &_dialog, const Menu &_menu,
             const char *_phase_name) noexcept
-    :dialog(_dialog), menu(_menu),
-     phase(_phase), phase_name(_phase_name) {}
+    :dialog(_dialog), menu(_menu), phase_name(_phase_name) {}
 
   auto &GetWindow() noexcept {
     return (GridView &)WindowWidget::GetWindow();
@@ -251,8 +247,7 @@ QuickMenu::Prepare(ContainerWindow &parent, [[maybe_unused]] const PixelRect &rc
       continue;
 
     const auto &menuItem = menu[i];
-    if (!menuItem.IsDefined() ||
-        !MenuPhase::IsOffered(menuItem.phases, phase))
+    if (!menuItem.IsDefined())
       continue;
 
     char buffer[100];
@@ -545,7 +540,6 @@ protected:
 class DynamicQuickMenu final : public WindowWidget {
   WndForm &dialog;
   const Menu &menu;
-  const uint8_t phase;
   const char *const phase_name;
 
   boost::container::static_vector<Button, Menu::MAX_ITEMS> buttons;
@@ -577,10 +571,9 @@ class DynamicQuickMenu final : public WindowWidget {
 public:
   unsigned clicked_event;
 
-  DynamicQuickMenu(WndForm &_dialog, const Menu &_menu, uint8_t _phase,
+  DynamicQuickMenu(WndForm &_dialog, const Menu &_menu,
                    const char *_phase_name) noexcept
-    :dialog(_dialog), menu(_menu),
-     phase(_phase), phase_name(_phase_name) {}
+    :dialog(_dialog), menu(_menu), phase_name(_phase_name) {}
 
   auto &GetWindow() noexcept {
     return (DynamicQuickMenuWindow &)WindowWidget::GetWindow();
@@ -638,7 +631,7 @@ DynamicQuickMenu::Prepare(ContainerWindow &parent,
 
   for (unsigned i = 0; i < menu.MAX_ITEMS; ++i) {
     const auto &item = menu[i];
-    if (!item.IsDefined() || !MenuPhase::IsOffered(item.phases, phase))
+    if (!item.IsDefined())
       continue;
 
     char buffer[100];
@@ -963,18 +956,39 @@ private:
  * @return the event of the chosen item, -1 if the dialog was closed,
  * or #PHASE_RESULT minus the index of a phase button
  */
+/**
+ * The quick menu of a flight phase, or nullptr if there is no list
+ * for it.
+ */
+[[gnu::pure]]
+static const Menu *
+GetPhaseMenu(QuickMenuPhase phase) noexcept
+{
+  const Menu *menu =
+    InputEvents::GetMenu(InputEvents::GetQuickMenuMode(phase));
+  return menu != nullptr && !menu->IsEmpty() ? menu : nullptr;
+}
+
 template<class W>
 static int
-ShowQuickMenu(UI::SingleWindow &parent, const Menu &menu) noexcept
+ShowQuickMenu(UI::SingleWindow &parent, const Menu &all_menu) noexcept
 {
   const auto &dialog_look = UIGlobals::GetDialogLook();
 
-  /* the phase buttons only appear once some item is limited to some
-     phases; until then the menu is the same as without phases */
-  const bool has_phases = menu.HasPhases();
-  const uint8_t phase = has_phases
-    ? InputEvents::GetQuickMenuPhase()
-    : MenuPhase::ALL;
+  /* only phases with a list of their own get a button; without any
+     phase list the menu is the same as before there were phases */
+  bool has_phases = false;
+  for (const auto &i : quick_menu_phases)
+    if (i.phase != QuickMenuPhase::ALL && GetPhaseMenu(i.phase) != nullptr)
+      has_phases = true;
+
+  QuickMenuPhase phase = InputEvents::GetQuickMenuPhase();
+  const Menu *menu = GetPhaseMenu(phase);
+  if (!has_phases || phase == QuickMenuPhase::ALL || menu == nullptr) {
+    /* no list for this phase: show all buttons */
+    phase = QuickMenuPhase::ALL;
+    menu = &all_menu;
+  }
 
   const char *phase_name = nullptr;
   if (has_phases)
@@ -986,7 +1000,7 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &menu) noexcept
                          parent,
                          dialog_look, nullptr);
 
-  dialog.SetWidget(dialog, menu, phase, phase_name);
+  dialog.SetWidget(dialog, *menu, phase_name);
 
   dialog.PrepareWidget();
 
@@ -996,15 +1010,20 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &menu) noexcept
      (portrait), the button panel wraps them into a row of their own
      above the page and close buttons */
   if (has_phases) {
+    unsigned n = 0;
     for (unsigned i = 0; i < std::size(quick_menu_phases); ++i) {
       const auto &p = quick_menu_phases[i];
+      if (p.phase != QuickMenuPhase::ALL && GetPhaseMenu(p.phase) == nullptr)
+        continue;
+
       dialog.AddButton(std::make_unique<PhaseButtonRenderer>(dialog_look.button,
                                                              gettext(p.label),
                                                              p.phase == phase),
                        dialog.MakeModalResultCallback(mrPhase + i));
+      ++n;
     }
 
-    dialog.SetPhaseButtonCount(std::size(quick_menu_phases));
+    dialog.SetPhaseButtonCount(n);
   }
   Button *prev_button = dialog.AddSymbolButton("<", [&quick_menu]() {
     quick_menu.NavigatePage(GridView::Direction::LEFT);
@@ -1034,12 +1053,13 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &menu) noexcept
 void
 dlgQuickMenuShowModal(UI::SingleWindow &parent) noexcept
 {
-  const auto *menu = InputEvents::GetMenu("RemoteStick");
+  const auto *menu =
+    InputEvents::GetMenu(InputEvents::GetQuickMenuMode(QuickMenuPhase::ALL));
   if (menu == nullptr)
     return;
 
   /* a phase button chooses the phase and opens the menu again with
-     its items */
+     its list */
   const bool dynamic = CommonInterface::GetUISettings().quick_menu_style ==
     UISettings::QuickMenuStyle::DYNAMIC;
 

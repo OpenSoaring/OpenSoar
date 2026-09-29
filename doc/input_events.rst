@@ -208,10 +208,6 @@ Recognised fields per record:
 - ``location`` -- softkey slot number; only values **greater than
   zero** create a menu button.  Omit or use ``0`` for a binding with
   no softkey (keys, gestures, GCEs, etc.).
-- ``phase`` -- quick menu only: the flight phases in which the button
-  is offered, any of ``ground``, ``flight`` and ``after``, separated by
-  spaces.  ``all``, an empty value or no ``phase`` at all mean every
-  phase.  See the ``RemoteStick`` mode below.
 
 Example::
 
@@ -656,40 +652,54 @@ Built-in modes
 - ``infobox`` -- an InfoBox has been selected.
 - ``pan`` -- pan mode is active.
 - ``Menu`` -- a menu level is open.
-- ``RemoteStick`` -- contents of the **Quick Menu** (lightning / bolt
+- ``QuickMenu`` -- contents of the **Quick Menu** (lightning / bolt
   button, default ``F1``, or the ``ULDR`` gesture).  Softkeys with
-  ``mode=RemoteStick`` and a ``location`` appear in that grid.  Edit
+  ``mode=QuickMenu`` and a ``location`` appear in that grid.  Edit
   those records in a custom ``.xci`` to reorder or limit Quick Menu
-  entries.
+  entries.  XCSoar calls this mode ``RemoteStick``, after the SteFly
+  RemoteStick it was made for; that name is still read as
+  ``QuickMenu``.
+- ``QuickGround``, ``QuickFlight``, ``QuickAfter`` -- the Quick Menu
+  before the flight, in flight and after the landing, each a list of
+  its own with its own locations, so the same button can sit in
+  different places in each phase.  As soon as one of these lists has
+  an entry, the Quick Menu shows the list of the current phase and
+  offers a button for each phase that has a list, plus *All* for the
+  complete ``QuickMenu``.  A phase without a list shows *All*.  The
+  phase follows the flight on its own: it is *Ground* after the
+  start, *Flight* after the takeoff and *After* after the landing.
+  The ``QuickMenuPhase`` event chooses a phase as well, for example
+  from a key or a glide computer event.  Example::
 
-  As soon as one of these records has a ``phase`` field, the Quick
-  Menu shows only the buttons of the current flight phase and offers
-  the buttons *Ground*, *Flight*, *After* and *All* to switch; *All*
-  shows every button.  The phase follows the flight on its own: it is
-  *Ground* after the start, *Flight* after the takeoff and *After*
-  after the landing.  The ``QuickMenuPhase`` event chooses a phase as
-  well, for example from a key or a glide computer event.  Example::
-
-   mode=RemoteStick
+   mode=QuickFlight
    type=key
    data=0
    event=Mode mc
    label=MacCready
-   location=19
-   phase=flight
+   location=1
 
   With the quick menu style *Dynamic* (**Menu > Config > System >
   Look > Language, Input > Quick menu**), the locations 1 to 15 form a
-  framed block of 3 x 5 buttons, row by row from the top left, which
-  stays in the middle of the screen in portrait and landscape alike;
-  location 8 is its centre, where the focus starts.  Locations from 16
-  on are ranked: the lower the number, the closer the button is placed
-  to the block.  What does not fit goes to the next pages.
+  framed block of 3 x 5 buttons, which stays in the middle of the
+  screen in portrait and landscape alike.  The locations are ranks:
+  1 is the centre, where the focus starts, and the others follow
+  around it by importance, so that the cursor keys reach the first
+  ones with the fewest steps::
+
+    8   6   9
+   10   2  11
+    3   1   4
+   12   5  13
+   14   7  15
+
+  Locations from 16 on are ranked as well: the lower the number, the
+  closer the button is placed to the block.  What does not fit goes
+  to the next pages.
 - ``mc`` -- MacCready adjustment mode. Entered from ``mode=default`` via
   the ``Mode mc`` event (default key ``3``). Stick UP/DOWN adjust MC;
   RETURN toggles auto/manual MC; ESCAPE returns to ``default``.
 - ``weather`` -- weather overlay cursor bar mode. Enter from the quick
-  menu (**Forecast Controls** on RemoteStick) or via the ``Mode weather``
+  menu (**Forecast Controls** on QuickMenu) or via the ``Mode weather``
   event. Stick UP/DOWN step the secondary axis (layer, level, or
   altitude), LEFT/RIGHT step time, RETURN opens the time picker, ESCAPE
   returns to ``default``. In ``mode=weather``, F2 opens the secondary
@@ -711,7 +721,7 @@ Weather overlay mode (``mode=weather``)
 
 When a map page displays EDL, RASP, XC Therm, or SkySight overlay controls in the
 bottom cursor bar, open the quick menu (F1 or the ULDR gesture) and choose
-**Forecast Controls** (RemoteStick), or bind ``Mode weather`` elsewhere,
+**Forecast Controls** (QuickMenu), or bind ``Mode weather`` elsewhere,
 to enter ``mode=weather`` so stick and button bindings can adjust forecast
 time and the secondary axis without leaving the map. Pressing ESCAPE
 returns to ``default``.
