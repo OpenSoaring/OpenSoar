@@ -108,7 +108,8 @@ static InputConfig input_config;
  * Before the flight the quick menu offers what is needed on the
  * ground; see GetQuickMenuPhase().
  */
-static uint8_t quick_menu_phase = MenuPhase::GROUND;
+static InputEvents::QuickMenuPhase quick_menu_phase =
+  InputEvents::QuickMenuPhase::GROUND;
 
 // Read the data files
 void
@@ -504,9 +505,9 @@ InputEvents::processGlideComputer_real(unsigned gce_id) noexcept
      depend on the input configuration; an event bound below can
      still choose another phase */
   if (gce_id == GCE_TAKEOFF)
-    quick_menu_phase = MenuPhase::FLIGHT;
+    quick_menu_phase = QuickMenuPhase::FLIGHT;
   else if (gce_id == GCE_LANDING)
-    quick_menu_phase = MenuPhase::AFTER;
+    quick_menu_phase = QuickMenuPhase::AFTER;
 
   event_id = input_config.GC2Event[gce_id];
   if (event_id > 0) {
@@ -556,16 +557,36 @@ InputEvents::GetMenu(const char *mode) noexcept
   else return NULL;
 }
 
-uint8_t
+InputEvents::QuickMenuPhase
 InputEvents::GetQuickMenuPhase() noexcept
 {
   return quick_menu_phase;
 }
 
 void
-InputEvents::SetQuickMenuPhase(uint8_t phase) noexcept
+InputEvents::SetQuickMenuPhase(QuickMenuPhase phase) noexcept
 {
   quick_menu_phase = phase;
+}
+
+const char *
+InputEvents::GetQuickMenuMode(QuickMenuPhase phase) noexcept
+{
+  switch (phase) {
+  case QuickMenuPhase::ALL:
+    break;
+
+  case QuickMenuPhase::GROUND:
+    return "QuickGround";
+
+  case QuickMenuPhase::FLIGHT:
+    return "QuickFlight";
+
+  case QuickMenuPhase::AFTER:
+    return "QuickAfter";
+  }
+
+  return "QuickMenu";
 }
 
 void
