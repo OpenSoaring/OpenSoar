@@ -284,8 +284,12 @@ Event list
      (display current state).
  * - ``AirspaceWarnings``
    - Opens the airspace warnings dialog.
- * - ``Analysis``
-   - Displays the analysis/statistics dialog.
+ * - ``Analysis [PAGE]``
+   - Displays the analysis/statistics dialog.  Without an argument it
+     shows the page seen last; ``barograph``, ``climb``,
+     ``thermal_band``, ``vario_histogram``, ``task_speed``, ``wind``,
+     ``polar``, ``maccready``, ``temptrace``, ``task``, ``contest`` or
+     ``airspace`` open that page.
  * - ``ArmAdvance``
    - Controls waypoint advance trigger arming. Possible arguments:
      ``on`` (arm), ``off`` (disarm), ``toggle``, ``show``
