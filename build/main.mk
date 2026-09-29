@@ -194,7 +194,8 @@ DIALOG_SOURCES = \
 	$(SRC)/Dialogs/dlgCredits.cpp \
 	$(SRC)/Dialogs/dlgQuickGuide.cpp \
 	$(SRC)/Dialogs/dlgGestureHelp.cpp \
-	$(SRC)/Dialogs/dlgQuickMenu.cpp
+	$(SRC)/Dialogs/dlgQuickMenu.cpp \
+	$(SRC)/Dialogs/MapDisplayDialog.cpp
 
 ifeq ($(TARGET_IS_OPENVARIO),y)
 # the OpenVario pages of the configuration dialog (dlgConfiguration)
