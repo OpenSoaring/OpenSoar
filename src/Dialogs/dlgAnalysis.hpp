@@ -26,6 +26,18 @@ enum class AnalysisPage {
   COUNT
 };
 
+/**
+ * The page with the given name ("barograph", "climb", "thermal_band",
+ * "vario_histogram", "task_speed", "wind", "polar", "maccready",
+ * "temptrace", "task", "contest", "airspace"), for input events and
+ * links.
+ *
+ * @return AnalysisPage::COUNT if the name is unknown or nullptr
+ */
+[[gnu::pure]]
+AnalysisPage
+ParseAnalysisPage(const char *name) noexcept;
+
 void
 dlgAnalysisShowModal(UI::SingleWindow &parent, const Look &look,
                      const FullBlackboard &blackboard,

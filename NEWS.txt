@@ -115,6 +115,8 @@ Version 7.46 - not yet released
     portrait and landscape, the other buttons are ranked around it;
     turning the screen keeps the focus on its button; the complete
     quick menu keeps the XCSoar arrangement around location 20
+  - the Analysis input event takes a page name, e.g. "Analysis
+    barograph", to open that page directly
 * weather
   - show the overlay name as XC Therm (with a space) in setup, weather
     dialogs, map titles, and download messages
