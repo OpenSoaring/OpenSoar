@@ -63,12 +63,12 @@ event=Mode default
 label=BACK (ESC)
 location=9
 
-mode=default RemoteStick
+mode=default QuickMenu
 type=key
 data=M
 event=Mode VarioAudioMenu 
 
-mode=RemoteStick
+mode=QuickMenu
 type=key
 data=0
 event=Mode VarioAudioMenu 
