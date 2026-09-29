@@ -35,17 +35,36 @@ Menu *
 GetMenu(const char *mode) noexcept;
 
 /**
- * The flight phase whose items the quick menu shows: one of the
- * #MenuPhase bits, or MenuPhase::ALL for every item.  It follows the
- * takeoff and landing events and can be switched in the quick menu or
- * with the QuickMenuPhase event.
+ * The flight phases with a quick menu of their own.
+ */
+enum class QuickMenuPhase : uint8_t {
+  /** the complete quick menu, independent of the flight */
+  ALL,
+  GROUND,
+  FLIGHT,
+  AFTER,
+};
+
+/**
+ * The flight phase whose quick menu is shown.  It follows the takeoff
+ * and landing events and can be switched in the quick menu or with
+ * the QuickMenuPhase event.
  */
 [[gnu::pure]]
-uint8_t
+QuickMenuPhase
 GetQuickMenuPhase() noexcept;
 
 void
-SetQuickMenuPhase(uint8_t phase) noexcept;
+SetQuickMenuPhase(QuickMenuPhase phase) noexcept;
+
+/**
+ * The name of the mode that holds the quick menu of a phase in the
+ * xci files: "QuickMenu" for all of them, "QuickGround",
+ * "QuickFlight" and "QuickAfter".
+ */
+[[gnu::const]]
+const char *
+GetQuickMenuMode(QuickMenuPhase phase) noexcept;
 
 /**
  * Load the default input file (Data/Input/default.xci).
