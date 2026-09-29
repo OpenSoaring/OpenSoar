@@ -12159,3 +12159,9 @@ msgstr "Aufgabe\nneu starten"
 
 msgid "Upload"
 msgstr "Hochladen"
+
+msgid "Map\nDisplay"
+msgstr "Karten-\nanzeige"
+
+msgid "FLARM Gauge"
+msgstr "FLARM-Anzeige"

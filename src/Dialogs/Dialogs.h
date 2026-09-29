@@ -28,5 +28,10 @@ void dlgStatusShowModal(int page);
 
 void dlgCreditsShowModal(UI::SingleWindow &parent);
 
+/**
+ * Show the quick menu, or with @p submenu (the name of a mode such as
+ * "MapDisplay") that submenu of it.
+ */
 void
-dlgQuickMenuShowModal(UI::SingleWindow &parent) noexcept;
+dlgQuickMenuShowModal(UI::SingleWindow &parent,
+                      const char *submenu=nullptr) noexcept;
