@@ -91,11 +91,11 @@ Arrange(std::span<const unsigned> locations, Grid grid) noexcept
     const unsigned location = locations[i];
 
     if (location >= 1 && location <= BLOCK_SIZE) {
-      const unsigned slot = location - 1;
+      const auto &cell = BLOCK_CELLS[location - 1];
       result[i] = {
         0,
-        grid.GetBlockLeft() + slot % BLOCK_COLUMNS,
-        grid.GetBlockTop() + slot / BLOCK_COLUMNS,
+        grid.GetBlockLeft() + cell.column,
+        grid.GetBlockTop() + cell.row,
       };
     } else if (next_free < free_cells.size()) {
       result[i] = free_cells[next_free++];
