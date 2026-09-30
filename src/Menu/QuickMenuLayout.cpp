@@ -9,57 +9,72 @@
 
 namespace QuickMenuLayout {
 
-/**
- * The largest odd number not above @p n, but at least @p minimum.
- */
-static constexpr unsigned
-OddAtLeast(unsigned n, unsigned minimum) noexcept
+unsigned
+ChooseColumns(unsigned width, unsigned min_column_width) noexcept
 {
-  if (n <= minimum)
-    return minimum;
+  unsigned n = min_column_width > 0
+    ? std::min(width / min_column_width, MAX_COLUMNS)
+    : MIN_COLUMNS;
 
+  if (n <= MIN_COLUMNS)
+    return MIN_COLUMNS;
+
+  /* odd, so there is a middle column */
   return n % 2 == 0 ? n - 1 : n;
 }
 
-Grid
-ChooseGrid(unsigned width, unsigned height,
-           unsigned min_column_width, unsigned min_row_height) noexcept
+unsigned
+CountShownRows(unsigned rows, unsigned height,
+               unsigned min_row_height) noexcept
 {
-  const unsigned columns = min_column_width > 0
-    ? width / min_column_width
-    : MIN_COLUMNS;
-  const unsigned rows = min_row_height > 0
-    ? height / min_row_height
+  const unsigned fit = min_row_height > 0
+    ? std::max(height / min_row_height, 1u)
     : MIN_SHOWN_ROWS;
 
-  return {
-    OddAtLeast(std::min(columns, MAX_COLUMNS), MIN_COLUMNS),
-    std::max(rows, 1u),
-  };
+  return std::min(std::max(rows, MIN_SHOWN_ROWS), fit);
 }
 
 std::vector<Cell>
-Arrange(std::span<const unsigned> locations, Grid grid) noexcept
+Arrange(std::span<const Place> places, unsigned columns) noexcept
 {
-  std::vector<Cell> result(locations.size());
+  std::vector<Cell> result(places.size());
 
-  const unsigned page_size = grid.GetPageSize();
+  struct Wanted {
+    std::size_t item;
 
-  /* the lower locations first; for the same location the item listed
-     first wins */
-  std::vector<std::size_t> order(locations.size());
-  for (std::size_t i = 0; i < order.size(); ++i)
-    order[i] = i;
-  std::stable_sort(order.begin(), order.end(),
-                   [&](std::size_t a, std::size_t b) noexcept {
-                     return locations[a] < locations[b];
-                   });
+    /** the cell index (row * columns + column) */
+    unsigned index;
+  };
+
+  std::vector<Wanted> fitting, outside;
+  unsigned lowest_row = 0;
+
+  for (std::size_t i = 0; i < places.size(); ++i) {
+    const unsigned c = places[i].columns > 0 ? places[i].columns : columns;
+    /* a location counts from 1; 0 would be before the first cell */
+    const unsigned n = std::max(places[i].location, 1u) - 1;
+    const unsigned row = n / c;
+
+    /* centre the picture of c columns on the screen; the difference
+       is rounded down, so an even one puts the extra column right */
+    const int column = (int)(n % c) + ((int)columns - (int)c) / 2;
+
+    if (column >= 0 && column < (int)columns) {
+      fitting.push_back({i, row * columns + column});
+      lowest_row = std::max(lowest_row, row);
+    } else
+      outside.push_back({i, row * columns});
+  }
+
+  /* the one listed first keeps a cell that two claim */
+  auto by_index = [](const Wanted &a, const Wanted &b) noexcept {
+    return a.index < b.index;
+  };
+  std::stable_sort(fitting.begin(), fitting.end(), by_index);
+  std::stable_sort(outside.begin(), outside.end(), by_index);
 
   std::vector<bool> taken;
-
-  for (const std::size_t i : order) {
-    /* a location counts from 1; 0 would be before the first cell */
-    unsigned index = std::max(locations[i], 1u) - 1;
+  auto take = [&](const Wanted &w, unsigned index) noexcept {
     while (index < taken.size() && taken[index])
       ++index;
 
@@ -67,36 +82,56 @@ Arrange(std::span<const unsigned> locations, Grid grid) noexcept
       taken.resize(index + 1, false);
     taken[index] = true;
 
-    const unsigned position = index % page_size;
-    result[i] = {
-      index / page_size,
-      position % grid.columns,
-      position / grid.columns,
-    };
-  }
+    result[w.item] = {index % columns, index / columns};
+  };
+
+  for (const auto &w : fitting)
+    take(w, w.index);
+
+  /* the columns that do not fit: below the picture, in the order of
+     their locations */
+  const unsigned below = fitting.empty() ? 0 : (lowest_row + 1) * columns;
+  for (const auto &w : outside)
+    take(w, below);
 
   return result;
 }
 
 unsigned
-CountPages(std::span<const Cell> cells) noexcept
+CountRows(std::span<const Cell> cells) noexcept
 {
-  unsigned n = 1;
+  unsigned n = 0;
   for (const auto &c : cells)
-    n = std::max(n, c.page + 1);
+    n = std::max(n, c.row + 1);
   return n;
 }
 
 unsigned
-CountShownRows(std::span<const Cell> cells, unsigned page,
-               Grid grid) noexcept
+ScrollToShow(unsigned top, unsigned shown, unsigned rows,
+             unsigned row) noexcept
 {
-  unsigned used = 0;
-  for (const auto &c : cells)
-    if (c.page == page)
-      used = std::max(used, c.row + 1);
+  if (rows <= shown)
+    return 0;
 
-  return std::max(used, std::min(MIN_SHOWN_ROWS, grid.rows));
+  /* one row of look-ahead, if the field is tall enough for it */
+  const unsigned margin = shown >= 3 ? 1 : 0;
+
+  if (row < top + margin)
+    top = row >= margin ? row - margin : 0;
+  else if (row + margin >= top + shown)
+    top = row + margin + 1 - shown;
+
+  return std::min(top, rows - shown);
+}
+
+unsigned
+ScrollToCenter(unsigned shown, unsigned rows, unsigned row) noexcept
+{
+  if (rows <= shown)
+    return 0;
+
+  const unsigned top = row >= shown / 2 ? row - shown / 2 : 0;
+  return std::min(top, rows - shown);
 }
 
 int
@@ -113,7 +148,7 @@ Navigate(std::span<const Cell> cells, unsigned from,
 
   for (std::size_t i = 0; i < cells.size(); ++i) {
     const Cell &c = cells[i];
-    if (i == from || c.page != origin.page)
+    if (i == from)
       continue;
 
     const int dx = (int)c.column - (int)origin.column;
