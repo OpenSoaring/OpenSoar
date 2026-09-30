@@ -43,6 +43,11 @@ struct flat_event_map {
  */
 struct flat_label {
   unsigned char mode, location;
+
+  /** see Menu::Placement */
+  unsigned char portrait, landscape;
+  bool center;
+
   unsigned short event;
   const char *label;
 };
@@ -59,9 +64,10 @@ struct flat_gesture_map {
 static void
 makeLabel(InputConfig &input_config,
           InputEvents::Mode mode_id, const char* label,
-          unsigned location, unsigned event_id)
+          unsigned location, unsigned event_id,
+          Menu::Placement placement)
 {
-  input_config.AppendMenu(mode_id, label, location, event_id);
+  input_config.AppendMenu(mode_id, label, location, event_id, placement);
 }
 
 static void
@@ -114,7 +120,9 @@ apply_defaults(InputConfig &input_config,
     makeLabel(input_config,
               (InputEvents::Mode)default_labels->mode,
               default_labels->label,
-              default_labels->location, default_labels->event);
+              default_labels->location, default_labels->event,
+              {default_labels->portrait, default_labels->landscape,
+               default_labels->center});
     ++default_labels;
   }
 }
