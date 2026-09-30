@@ -1,43 +1,29 @@
-# The quick menu after the landing (mode QuickAfter).
+# The quick menu after the landing (mode QuickAfter), used by the
+# quick menu style "OpenSoar".
 #
-# Locations 1 to 15 are ranks in the framed block of the style
-# "Dynamic": 1 is the centre, where the focus starts, 2 above, 3 left,
-# 4 right, 5 below, 6 two above, 7 two below, 8 and 9 the upper
-# corners, 10 and 11 beside 2, 12 and 13 beside 5, 14 and 15 the lower
-# corners:
+# "location" is the place in three columns (portrait), counted row by
+# row from the top left.  "landscape" is the place in five columns; it
+# keeps the same picture in the middle of the wider screen.  An empty
+# place stays an empty cell, so the other buttons keep their places.
+# The focus starts on the button with "center=yes".
 #
-#    8   6   9
-#   10   2  11
-#    3   1   4
-#   12   5  13
-#   14   7  15
+#   location (portrait)     landscape
+#    1   2   3               2   3   4
+#    4   5   6               7   8   9
+#    7   8   9              12  13  14
+#   10  11  12              17  18  19
+#   13  14  15              22  23  24
 #
-# Still to come: 2 and 6 download the flights of logger 1 and 2.
-# 5, 7 and 10 to 15 stay empty for now.
-
-mode=QuickAfter
-type=key
-data=0
-event=Analysis
-event=Mode default
-label=Analysis
-location=1
-
-mode=QuickAfter
-type=key
-data=0
-event=Analysis barograph
-event=Mode default
-label=Barograph
-location=3
-
-mode=QuickAfter
-type=key
-data=0
-event=Analysis contest
-event=Mode default
-label=Flight\nOverview
-location=4
+# The buttons of this list in portrait:
+#
+#    1 Upload           2 -                3 Configuration
+#    4 -                5 -                6 -
+#    7 Barograph        8 Analysis         9 Flight Overview
+#   10 -               11 -               12 -
+#   13 -               14 -               15 -
+#
+# Still to come: 5 and 2 download the flights of logger 1 and 2.
+# The other empty places stay empty for now.
 
 mode=QuickAfter
 type=key
@@ -45,7 +31,8 @@ data=0
 event=UploadIGCFile
 event=Mode default
 label=Upload
-location=8
+location=1
+landscape=2
 
 mode=QuickAfter
 type=key
@@ -53,4 +40,34 @@ data=0
 event=Setup System
 event=Mode default
 label=Configuration
+location=3
+landscape=4
+
+
+mode=QuickAfter
+type=key
+data=0
+event=Analysis barograph
+event=Mode default
+label=Barograph
+location=7
+landscape=12
+
+mode=QuickAfter
+type=key
+data=0
+event=Analysis
+event=Mode default
+label=Analysis
+location=8
+landscape=13
+center=yes
+
+mode=QuickAfter
+type=key
+data=0
+event=Analysis contest
+event=Mode default
+label=Flight\nOverview
 location=9
+landscape=14
