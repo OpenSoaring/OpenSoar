@@ -1,20 +1,12 @@
 # The quick menu before the flight (mode QuickGround), used by the
 # quick menu style "OpenSoar".
 #
-# "location" is the place in three columns (portrait), counted row by
-# row from the top left.  "landscape" is the place in five columns; it
-# keeps the same picture in the middle of the wider screen.  An empty
-# place stays an empty cell, so the other buttons keep their places.
-# The focus starts on the button with "center=yes".
-#
-#   location (portrait)     landscape
-#    1   2   3               2   3   4
-#    4   5   6               7   8   9
-#    7   8   9              12  13  14
-#   10  11  12              17  18  19
-#   13  14  15              22  23  24
-#
-# The buttons of this list in portrait:
+# "location" is the place in three columns, counted row by row from
+# the top left.  A wider screen (landscape) shows the same picture in
+# its middle.  An empty place stays an empty cell, so the other
+# buttons keep their places.  The focus starts on the button with
+# "center=yes".  A button can get a place of its own for a wider
+# screen with "landscape=C:N": place N counted in C columns.
 #
 #    1 -                2 Audio / MC       3 -
 #    4 -                5 Flight Setup     6 -
@@ -32,7 +24,6 @@ data=0
 event=Mode VarioAudioMenu
 label=Audio / MC
 location=2
-landscape=3
 
 mode=QuickGround
 type=key
@@ -41,7 +32,6 @@ event=Setup Basic
 event=Mode default
 label=Flight Setup
 location=5
-landscape=8
 
 mode=QuickGround
 type=key
@@ -50,7 +40,6 @@ event=Weather
 event=Mode default
 label=Weather
 location=7
-landscape=12
 
 mode=QuickGround
 type=key
@@ -59,7 +48,6 @@ event=Setup System
 event=Mode default
 label=Configuration
 location=8
-landscape=13
 center=yes
 
 mode=QuickGround
@@ -68,7 +56,6 @@ data=0
 event=MapDisplay
 label=Map\nDisplay
 location=9
-landscape=14
 
 
 mode=QuickGround
@@ -77,7 +64,6 @@ data=0
 event=Pan on
 label=Pan Mode
 location=10
-landscape=17
 
 mode=QuickGround
 type=key
@@ -86,7 +72,6 @@ event=Calculator
 event=Mode default
 label=Task Manager
 location=11
-landscape=18
 
 mode=QuickGround
 type=key
@@ -95,7 +80,6 @@ event=QuickGuide
 event=Mode default
 label=Quick Guide
 location=12
-landscape=19
 
 mode=QuickGround
 type=key
@@ -104,7 +88,6 @@ event=Setup Replay
 event=Mode default
 label=Replay$(CheckReplay)
 location=13
-landscape=22
 
 mode=QuickGround
 type=key
@@ -113,7 +96,6 @@ event=Device list
 event=Mode default
 label=Devices
 location=14
-landscape=23
 
 mode=QuickGround
 type=key
@@ -122,4 +104,3 @@ event=DataManagement
 event=Mode default
 label=Data Management
 location=15
-landscape=24
