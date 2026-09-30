@@ -18,13 +18,14 @@ public:
 
   /**
    * Where the quick menu places this item in portrait and in
-   * landscape: a location counted row by row over all pages, like
-   * the location of the item itself.  0 means the location of the
-   * item.  The location stays what identifies the item, so a later
-   * input file can still replace it; these only move it on the
-   * screen, which differs with the number of columns.
+   * landscape: a location counted row by row in the given number of
+   * columns (0 = the default of the list).  A location of 0 means the
+   * location of the item.  The location stays what identifies the
+   * item, so a later input file can still replace it; these only move
+   * it on the screen, which has more columns in landscape.
    */
   uint8_t portrait, landscape;
+  uint8_t portrait_columns, landscape_columns;
 
   /**
    * Does the quick menu start with the focus on this item (and on
@@ -36,6 +37,7 @@ public:
     label = nullptr;
     event = 0;
     portrait = landscape = 0;
+    portrait_columns = landscape_columns = 0;
     center = false;
   }
 
@@ -62,7 +64,11 @@ public:
  * the enclosing class yet.
  */
 struct MenuPlacement {
+  /** the most columns a place may be counted in */
+  static constexpr unsigned MAX_PLACE_COLUMNS = 16;
+
   unsigned portrait = 0, landscape = 0;
+  unsigned portrait_columns = 0, landscape_columns = 0;
   bool center = false;
 };
 

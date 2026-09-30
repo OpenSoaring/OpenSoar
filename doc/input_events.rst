@@ -690,33 +690,43 @@ Built-in modes
    event=Mode mc
    label=MacCready
    location=2
-   landscape=3
+   landscape=5:3
 
   With the quick menu style *OpenSoar* (**Menu > Config > System >
   Look > Language, Input > Quick menu**), as many columns fit side by
-  side as the screen allows (three in portrait, more in landscape),
-  and every button sits at its location, counted row by row from the
-  top left and page by page.  A location without a button stays an
-  empty cell, so the other buttons keep their places; this also holds
-  for a button that its label hides for the moment.  The style
-  *XCSoar* instead always shows three columns and closes the gaps.
+  side as the screen allows (three in portrait, up to seven in
+  landscape), and every button sits at its location, counted row by
+  row from the top left.  A location without a button stays an empty
+  cell, so the other buttons keep their places; this also holds for a
+  button that its label hides for the moment.  The style *XCSoar*
+  instead always shows three columns and closes the gaps.
 
-  Because the number of columns differs, a button can have a place of
-  its own in each orientation: ``portrait=N`` and ``landscape=N`` are
-  locations like ``location``, used instead of it in portrait or
-  landscape.  ``location`` stays what identifies the button, so a later
-  file can still replace it.  ``center=yes`` marks the button the
-  focus starts on; the Quick Menu then opens on its page.  Without it,
-  the focus starts on the button nearest to the middle of the first
-  page.  If two buttons claim the same place, the one with the lower
-  location keeps it and the other takes the next free place.
+  The phase lists count their locations in three columns.  A wider
+  screen shows that picture in its middle, so every button keeps its
+  neighbours left, right, above and below.  The complete
+  ``QuickMenu`` fills the whole width instead.
 
-  The built-in phase lists give ``location`` for three columns and
-  ``landscape`` for five, so that their block of 3 x 5 buttons looks
-  the same in the middle of a landscape screen.  On a screen with
-  seven columns the landscape places are counted in seven columns and
-  the picture changes.  XCSoar reads such files too and ignores the
-  new keys (with a line in the log).
+  A button can have a place of its own in each orientation:
+  ``portrait=N`` and ``landscape=N`` are used instead of ``location``
+  there, and ``landscape=C:N`` counts place N in C columns.  Such a
+  picture is centred on a wider screen as well; on a narrower one its
+  outer columns do not fit, and their buttons go to the first free
+  cells below it.  ``location`` stays what identifies the button, so a
+  later file can still replace it.  ``center=yes`` marks the button the
+  focus starts on; without it, the focus starts on the button nearest
+  to the middle.  If two buttons claim the same place, the one with
+  the lower location keeps it and the other takes the next free place.
+
+  There are no pages: the field grows downwards and scrolls.  Moving
+  down with the cursor keys, the focus stays on the last but one row
+  shown and the field moves on by one row, so the next row is always
+  in sight; a scroll bar at the right edge shows where one is.  A
+  button that does nothing at the moment (shown in grey) still takes
+  the focus, in dark grey, and a click on it only beeps; so the focus
+  always moves straight in the direction of the key.
+
+  XCSoar reads such files too and ignores the new keys (with a line in
+  the log).
 - ``mc`` -- MacCready adjustment mode. Entered from ``mode=default`` via
   the ``Mode mc`` event (default key ``3``). Stick UP/DOWN adjust MC;
   RETURN toggles auto/manual MC; ESCAPE returns to ``default``.

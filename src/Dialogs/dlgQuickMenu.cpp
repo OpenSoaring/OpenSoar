@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "Asset.hpp"
+#include "Audio/Sound.hpp"
 #include "Dialogs/Dialogs.h"
 #include "Form/Button.hpp"
 #include "Form/GridView.hpp"
@@ -16,11 +17,13 @@
 #include "Interface.hpp"
 #include "UISettings.hpp"
 #include "Renderer/ButtonRenderer.hpp"
+#include "ui/canvas/Color.hpp"
 #include "Renderer/TextButtonRenderer.hpp"
 #include "Renderer/TextRenderer.hpp"
 #include "Screen/Layout.hpp"
 #include "UIGlobals.hpp"
 #include "Widget/WindowWidget.hpp"
+#include "ui/control/ScrollBar.hpp"
 #include "WidgetDialog.hpp"
 #include "ui/canvas/Canvas.hpp"
 #include "ui/event/KeyCode.hpp"
@@ -28,6 +31,7 @@
 
 #include <boost/container/static_vector.hpp>
 #include <cstdlib>
+#include <functional>
 #include <memory>
 #include <type_traits>
 
@@ -38,10 +42,19 @@ class QuickMenuButtonRenderer final : public ButtonRenderer {
 
   const StaticString<64> caption;
 
+  /**
+   * Is this button of the style "OpenSoar" unusable at the moment?
+   * Unlike a disabled window it can still take the focus, so the
+   * cursor keys move straight across the field instead of jumping
+   * over it; see OpenSoarQuickMenu.
+   */
+  const bool inactive;
+
 public:
   explicit QuickMenuButtonRenderer(const DialogLook &_look,
-                                   const char *_caption) noexcept
-    :look(_look), caption(_caption) {
+                                   const char *_caption,
+                                   bool _inactive=false) noexcept
+    :look(_look), caption(_caption), inactive(_inactive) {
     text_renderer.SetCenter();
     text_renderer.SetVCenter();
     text_renderer.SetControl();
@@ -72,6 +85,14 @@ QuickMenuButtonRenderer::DrawButton(Canvas &canvas, const PixelRect &rc,
     break;
 
   case ButtonState::FOCUSED:
+    if (inactive) {
+      /* a focus of its own colour: the pilot sees at once that this
+         one does nothing now */
+      canvas.DrawFilledRectangle(rc, COLOR_DARK_GRAY);
+      canvas.SetTextColor(COLOR_WHITE);
+      break;
+    }
+
     canvas.DrawFilledRectangle(rc, look.focused.background_color);
     canvas.SetTextColor(look.focused.text_color);
     break;
@@ -80,7 +101,8 @@ QuickMenuButtonRenderer::DrawButton(Canvas &canvas, const PixelRect &rc,
   case ButtonState::ENABLED:
     if (HaveClipping())
       canvas.DrawFilledRectangle(rc, look.background_brush);
-    canvas.SetTextColor(look.text_color);
+    canvas.SetTextColor(inactive ? look.button.disabled.color
+                                 : look.text_color);
     break;
 
   case ButtonState::DISABLED:
@@ -492,15 +514,129 @@ QuickMenu::KeyPress(unsigned key_code) noexcept
 }
 
 /**
+ * The window of the quick menu in the style "OpenSoar": it holds the
+ * buttons and a scroll bar at the right edge while the field is
+ * taller than the screen.
+ */
+class QuickMenuField final : public PanelControl {
+  ScrollBar scroll_bar{UIGlobals::GetDialogLook().button};
+
+  /** the rows of the field, the rows shown and the first one shown */
+  unsigned rows = 0, shown = 0, top = 0;
+
+  /** called with the new first row when the scroll bar moves */
+  std::function<void(unsigned)> on_scroll;
+
+public:
+  void SetScrollHandler(std::function<void(unsigned)> handler) noexcept {
+    on_scroll = std::move(handler);
+  }
+
+  /**
+   * @return the width the scroll bar takes (0 if there is none)
+   */
+  unsigned SetScroll(unsigned _rows, unsigned _shown,
+                     unsigned _top) noexcept {
+    rows = _rows;
+    shown = _shown;
+    top = _top;
+
+    if (rows > shown) {
+      scroll_bar.SetSize(GetSize());
+      scroll_bar.SetSlider(rows, shown, top);
+    } else
+      scroll_bar.Reset();
+
+    Invalidate();
+    return scroll_bar.IsDefined() ? scroll_bar.GetWidth() : 0;
+  }
+
+protected:
+  void OnPaint(Canvas &canvas) noexcept override {
+    ContainerWindow::OnPaint(canvas);
+
+    if (scroll_bar.IsDefined())
+      scroll_bar.Paint(canvas);
+  }
+
+  bool OnMouseDown(PixelPoint p) noexcept override {
+    if (!scroll_bar.IsInside(p))
+      return ContainerWindow::OnMouseDown(p);
+
+    /* like the lists: grab the slider, or move it to the pointer */
+    if (scroll_bar.IsInsideSlider(p))
+      scroll_bar.DragBegin(this, p.y);
+    else {
+      scroll_bar.DragBeginCentred(this);
+      DragTo(p.y);
+    }
+
+    return true;
+  }
+
+  bool OnMouseMove(PixelPoint p, unsigned keys) noexcept override {
+    if (scroll_bar.IsDragging()) {
+      DragTo(p.y);
+      return true;
+    }
+
+    return ContainerWindow::OnMouseMove(p, keys);
+  }
+
+  bool OnMouseUp(PixelPoint p) noexcept override {
+    if (scroll_bar.IsDragging()) {
+      scroll_bar.DragEnd(this);
+      return true;
+    }
+
+    return ContainerWindow::OnMouseUp(p);
+  }
+
+  bool OnMouseWheel(PixelPoint p, int delta) noexcept override {
+    if (rows <= shown)
+      return ContainerWindow::OnMouseWheel(p, delta);
+
+    if (delta > 0 && top > 0)
+      Scroll(top - 1);
+    else if (delta < 0 && top + shown < rows)
+      Scroll(top + 1);
+    return true;
+  }
+
+  void OnCancelMode() noexcept override {
+    scroll_bar.DragEnd(this);
+    ContainerWindow::OnCancelMode();
+  }
+
+private:
+  void DragTo(int y) noexcept {
+    Scroll(scroll_bar.DragMove(rows, shown, y));
+  }
+
+  void Scroll(unsigned new_top) noexcept {
+    if (new_top != top && on_scroll)
+      on_scroll(new_top);
+  }
+};
+
+/**
  * The quick menu in the style UISettings::QuickMenuStyle::OPENSOAR:
- * as many columns as fit, every button at its location (see
- * #QuickMenuLayout), with a location of its own in portrait and in
+ * one field of buttons that grows downwards and scrolls, as many
+ * columns as fit, every button at its location (see
+ * #QuickMenuLayout), with a place of its own in portrait and in
  * landscape if the list gives one.
  */
 class OpenSoarQuickMenu final : public WindowWidget {
   WndForm &dialog;
   const Menu &menu;
   const char *const phase_name;
+
+  /**
+   * The number of columns a bare location is counted in: 3 for the
+   * phase lists, 0 (those of the screen) for the complete list, which
+   * then fills the whole width.
+   */
+  const unsigned default_columns;
 
   boost::container::static_vector<Button, Menu::MAX_ITEMS> buttons;
 
@@ -510,16 +646,11 @@ class OpenSoarQuickMenu final : public WindowWidget {
   /** the index of the button to focus first, or -1 */
   int center = -1;
 
-  QuickMenuLayout::Grid grid{QuickMenuLayout::MIN_COLUMNS,
-                             QuickMenuLayout::MIN_SHOWN_ROWS};
+  unsigned columns = QuickMenuLayout::MIN_COLUMNS;
   std::vector<QuickMenuLayout::Cell> cells;
-  unsigned current_page = 0, page_count = 1;
 
-  /** the number of rows the current page shows */
-  unsigned shown_rows = QuickMenuLayout::MIN_SHOWN_ROWS;
-
-  Button *previous_button = nullptr;
-  Button *next_button = nullptr;
+  /** the rows of the field, the rows shown and the first one shown */
+  unsigned rows = 0, shown = 0, top = 0;
 
   /**
    * The narrowest useful button in points; it decides how many
@@ -531,15 +662,15 @@ public:
   unsigned clicked_event;
 
   OpenSoarQuickMenu(WndForm &_dialog, const Menu &_menu,
-                    const char *_phase_name) noexcept
-    :dialog(_dialog), menu(_menu), phase_name(_phase_name) {}
+                    const char *_phase_name,
+                    unsigned _default_columns) noexcept
+    :dialog(_dialog), menu(_menu), phase_name(_phase_name),
+     default_columns(_default_columns) {}
 
-  void SetNavigationButtons(Button *prev, Button *next) noexcept {
-    previous_button = prev;
-    next_button = next;
+  auto &GetWindow() noexcept {
+    return (QuickMenuField &)WindowWidget::GetWindow();
   }
 
-  void NavigatePage(GridView::Direction direction) noexcept;
   void UpdateCaption() noexcept;
 
 protected:
@@ -557,17 +688,24 @@ private:
   /**
    * Arrange the buttons for the current size of the window.  The
    * button that has the focus keeps it, even when it moves to
-   * another place or page (after turning the screen).
+   * another place (after turning the screen).
    */
   void Relayout() noexcept;
 
-  void ShowPage(unsigned page) noexcept;
+  /** Show the rows from @p new_top on. */
+  void ScrollTo(unsigned new_top) noexcept;
+
+  /** Focus button @p i and scroll so that it and one more row show. */
+  void FocusButton(unsigned i) noexcept;
 
   /**
-   * Focus the button marked as the centre if it is on the current
-   * page, otherwise the button nearest to the middle of the page.
+   * Focus the button marked as the centre, otherwise the button
+   * nearest to the middle of the rows shown.
    */
   void FocusDefault() noexcept;
+
+  /** Focus the button nearest to the middle of the rows shown. */
+  void FocusNearestShown() noexcept;
 };
 
 void
@@ -580,8 +718,9 @@ OpenSoarQuickMenu::Prepare(ContainerWindow &parent,
 
   const auto &dialog_look = UIGlobals::GetDialogLook();
 
-  auto window = std::make_unique<PanelControl>();
+  auto window = std::make_unique<QuickMenuField>();
   window->Create(parent, dialog_look, rc, style);
+  window->SetScrollHandler([this](unsigned new_top){ ScrollTo(new_top); });
 
   WindowStyle button_style;
   button_style.TabStop();
@@ -598,18 +737,26 @@ OpenSoarQuickMenu::Prepare(ContainerWindow &parent,
     if (!expanded.visible)
       continue;
 
-    auto &button =
-      buttons.emplace_back(*window, PixelRect{0, 0, 1, 1}, button_style,
-                           std::make_unique<QuickMenuButtonRenderer>(dialog_look,
-                                                                     expanded.text),
-                           [this, &item](){
-                             clicked_event = item.event;
-                             dialog.SetModalResult(mrOK);
-                           });
-    button.SetEnabled(expanded.enabled);
+    /* a button that is unusable at the moment stays focusable (see
+       QuickMenuButtonRenderer::inactive); a click only beeps */
+    const bool inactive = !expanded.enabled;
+    auto renderer =
+      std::make_unique<QuickMenuButtonRenderer>(dialog_look, expanded.text,
+                                                inactive);
+    buttons.emplace_back(*window, PixelRect{0, 0, 1, 1}, button_style,
+                         std::move(renderer),
+                         [this, &item, inactive](){
+                           if (inactive) {
+                             PlayResource("IDR_WAV_DRIP");
+                             return;
+                           }
+
+                           clicked_event = item.event;
+                           dialog.SetModalResult(mrOK);
+                         });
     items.push_back(i);
 
-    if (item.center && expanded.enabled)
+    if (item.center)
       center = buttons.size() - 1;
   }
 
@@ -620,11 +767,12 @@ void
 OpenSoarQuickMenu::Show(const PixelRect &rc) noexcept
 {
   WindowWidget::Show(rc);
-
-  /* open on the page of the centre */
   Relayout();
-  if (center >= 0 && cells[center].page != current_page)
-    ShowPage(cells[center].page);
+
+  /* open with the centre in the middle of the rows shown */
+  if (center >= 0)
+    ScrollTo(QuickMenuLayout::ScrollToCenter(shown, rows,
+                                             cells[center].row));
 
   UpdateCaption();
 }
@@ -658,78 +806,102 @@ OpenSoarQuickMenu::Relayout() noexcept
     std::max(2 * (Layout::GetTextPadding() + font.GetHeight()),
              Layout::GetMaximumControlHeight());
 
-  grid = QuickMenuLayout::ChooseGrid(rc.GetWidth(), rc.GetHeight(),
-                                     Layout::PtScale(MIN_COLUMN_WIDTH_PT),
-                                     min_row_height);
+  columns =
+    QuickMenuLayout::ChooseColumns(rc.GetWidth(),
+                                   Layout::PtScale(MIN_COLUMN_WIDTH_PT));
 
   /* the list may place an item elsewhere in portrait or landscape,
      because the number of columns differs */
   const bool portrait = rc.GetHeight() > rc.GetWidth();
-  std::vector<unsigned> locations;
-  locations.reserve(items.size());
+  std::vector<QuickMenuLayout::Place> places;
+  places.reserve(items.size());
   for (const unsigned i : items) {
     const auto &item = menu[i];
     const unsigned placed = portrait ? item.portrait : item.landscape;
-    locations.push_back(placed > 0 ? placed : i);
+    const unsigned placed_columns = portrait
+      ? item.portrait_columns
+      : item.landscape_columns;
+
+    if (placed > 0)
+      places.push_back({placed_columns > 0 ? placed_columns : default_columns,
+                        placed});
+    else
+      places.push_back({default_columns, i});
   }
 
-  cells = QuickMenuLayout::Arrange(locations, grid);
-  page_count = QuickMenuLayout::CountPages(cells);
+  cells = QuickMenuLayout::Arrange(places, columns);
+  rows = QuickMenuLayout::CountRows(cells);
+  shown = QuickMenuLayout::CountShownRows(rows, rc.GetHeight(),
+                                          min_row_height);
 
-  if (focused >= 0)
-    current_page = cells[focused].page;
-  else if (current_page >= page_count)
-    current_page = 0;
-
-  ShowPage(current_page);
+  const unsigned row = focused >= 0 ? cells[focused].row : 0;
+  ScrollTo(QuickMenuLayout::ScrollToShow(std::min(top, rows), shown, rows,
+                                         row));
 
   if (focused >= 0)
     buttons[focused].SetFocus();
 }
 
 void
-OpenSoarQuickMenu::ShowPage(unsigned page) noexcept
+OpenSoarQuickMenu::ScrollTo(unsigned new_top) noexcept
 {
-  current_page = page;
-  shown_rows = QuickMenuLayout::CountShownRows(cells, page, grid);
+  top = new_top;
 
-  const PixelRect rc = GetWindow().GetClientRect();
-  const int w = rc.GetWidth() / grid.columns;
-  const int h = rc.GetHeight() / shown_rows;
+  auto &window = GetWindow();
+  const PixelRect rc = window.GetClientRect();
+  const unsigned bar = window.SetScroll(rows, shown, top);
+
+  const int w = (rc.GetWidth() - (int)bar) / (int)columns;
+  const int h = rc.GetHeight() / (int)shown;
 
   for (unsigned i = 0; i < buttons.size(); ++i) {
     auto &button = buttons[i];
     const auto &cell = cells[i];
 
-    if (cell.page != page) {
+    if (cell.row < top || cell.row >= top + shown) {
       button.Hide();
       continue;
     }
 
     const int x = rc.left + (int)cell.column * w;
-    const int y = rc.top + (int)cell.row * h;
+    const int y = rc.top + (int)(cell.row - top) * h;
     button.Move({x, y, x + w, y + h});
     button.Show();
   }
 }
 
 void
+OpenSoarQuickMenu::FocusButton(unsigned i) noexcept
+{
+  const unsigned new_top =
+    QuickMenuLayout::ScrollToShow(top, shown, rows, cells[i].row);
+  if (new_top != top)
+    ScrollTo(new_top);
+
+  buttons[i].SetFocus();
+}
+
+void
 OpenSoarQuickMenu::FocusDefault() noexcept
 {
-  if (center >= 0 && cells[center].page == current_page) {
-    buttons[center].SetFocus();
-    return;
-  }
+  if (center >= 0)
+    FocusButton(center);
+  else
+    FocusNearestShown();
+}
 
-  /* the enabled button nearest to the middle of the page */
+void
+OpenSoarQuickMenu::FocusNearestShown() noexcept
+{
+  /* the button nearest to the middle of the rows shown */
   int best = -1;
   unsigned best_distance = UINT_MAX;
   for (unsigned i = 0; i < buttons.size(); ++i) {
-    if (cells[i].page != current_page || !buttons[i].IsEnabled())
+    if (cells[i].row < top || cells[i].row >= top + shown)
       continue;
 
-    const int dx = 2 * (int)cells[i].column - ((int)grid.columns - 1);
-    const int dy = 2 * (int)cells[i].row - ((int)shown_rows - 1);
+    const int dx = 2 * (int)cells[i].column - ((int)columns - 1);
+    const int dy = 2 * (int)(cells[i].row - top) - ((int)shown - 1);
     const unsigned distance = dx * dx + dy * dy;
     if (distance < best_distance) {
       best_distance = distance;
@@ -738,7 +910,7 @@ OpenSoarQuickMenu::FocusDefault() noexcept
   }
 
   if (best >= 0)
-    buttons[best].SetFocus();
+    FocusButton(best);
 }
 
 bool
@@ -772,7 +944,16 @@ OpenSoarQuickMenu::KeyPress(unsigned key_code) noexcept
     break;
 
   case KEY_MENU:
-    NavigatePage(GridView::Direction::RIGHT);
+    /* one screen further down, and from the end back to the top */
+    if (rows > shown) {
+      ScrollTo(top + shown < rows ? std::min(top + shown, rows - shown) : 0);
+
+      /* the focus follows into the rows shown */
+      const int focused = GetFocusedIndex();
+      if (focused < 0 || cells[focused].row < top ||
+          cells[focused].row >= top + shown)
+        FocusNearestShown();
+    }
     return true;
 
   default:
@@ -785,30 +966,14 @@ OpenSoarQuickMenu::KeyPress(unsigned key_code) noexcept
     return true;
   }
 
-  /* skip disabled buttons, like the grid of the XCSoar style */
-  int i = focused;
-  while ((i = QuickMenuLayout::Navigate(cells, i, direction)) >= 0)
-    if (buttons[i].IsEnabled()) {
-      buttons[i].SetFocus();
-      break;
-    }
+  /* unusable buttons take the focus as well, so the focus moves
+     straight in the direction of the key; XCSoar jumps over them,
+     which can lead it off to the side */
+  const int i = QuickMenuLayout::Navigate(cells, focused, direction);
+  if (i >= 0)
+    FocusButton(i);
 
   return true;
-}
-
-void
-OpenSoarQuickMenu::NavigatePage(GridView::Direction direction) noexcept
-{
-  if (page_count < 2)
-    return;
-
-  const unsigned page = direction == GridView::Direction::LEFT
-    ? (current_page + page_count - 1) % page_count
-    : (current_page + 1) % page_count;
-
-  ShowPage(page);
-  FocusDefault();
-  UpdateCaption();
 }
 
 void
@@ -818,14 +983,7 @@ OpenSoarQuickMenu::UpdateCaption() noexcept
   buffer = "Quick Menu";
   if (phase_name != nullptr)
     buffer.AppendFormat(" - %s", phase_name);
-  if (page_count > 1)
-    buffer.AppendFormat("  %u/%u", current_page + 1, page_count);
   dialog.SetCaption(buffer);
-
-  if (previous_button != nullptr)
-    previous_button->SetEnabled(page_count > 1);
-  if (next_button != nullptr)
-    next_button->SetEnabled(page_count > 1);
 }
 
 /**
@@ -954,7 +1112,15 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &all_menu) noexcept
                          parent,
                          dialog_look, nullptr);
 
-  dialog.SetWidget(dialog, *menu, phase_name);
+  if constexpr (std::is_same_v<W, OpenSoarQuickMenu>)
+    /* the phase lists are written for three columns and keep that
+       picture in the middle of a wider screen; the complete list
+       fills the whole width */
+    dialog.SetWidget(dialog, *menu, phase_name,
+                     phase == QuickMenuPhase::ALL
+                     ? 0u : QuickMenuLayout::MIN_COLUMNS);
+  else
+    dialog.SetWidget(dialog, *menu, phase_name);
 
   dialog.PrepareWidget();
 
@@ -979,17 +1145,20 @@ ShowQuickMenu(UI::SingleWindow &parent, const Menu &all_menu) noexcept
 
     dialog.SetPhaseButtonCount(n);
   }
-  Button *prev_button = dialog.AddSymbolButton("<", [&quick_menu]() {
-    quick_menu.NavigatePage(GridView::Direction::LEFT);
-  });
+  /* the style "OpenSoar" scrolls instead of turning pages */
+  if constexpr (!std::is_same_v<W, OpenSoarQuickMenu>) {
+    Button *prev_button = dialog.AddSymbolButton("<", [&quick_menu]() {
+      quick_menu.NavigatePage(GridView::Direction::LEFT);
+    });
 
-  Button *next_button = dialog.AddSymbolButton(">", [&quick_menu]() {
-    quick_menu.NavigatePage(GridView::Direction::RIGHT);
-  });
+    Button *next_button = dialog.AddSymbolButton(">", [&quick_menu]() {
+      quick_menu.NavigatePage(GridView::Direction::RIGHT);
+    });
+
+    quick_menu.SetNavigationButtons(prev_button, next_button);
+  }
 
   dialog.AddButton(_("Close"), mrCancel);
-
-  quick_menu.SetNavigationButtons(prev_button, next_button);
 
   quick_menu.UpdateCaption();
 
