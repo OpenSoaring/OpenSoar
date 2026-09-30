@@ -50,11 +50,18 @@ class QuickMenuButtonRenderer final : public ButtonRenderer {
    */
   const bool inactive;
 
+  /**
+   * A small text in the upper left corner, e.g. the location in a
+   * debug build; empty for none.
+   */
+  const StaticString<24> tag;
+
 public:
   explicit QuickMenuButtonRenderer(const DialogLook &_look,
                                    const char *_caption,
-                                   bool _inactive=false) noexcept
-    :look(_look), caption(_caption), inactive(_inactive) {
+                                   bool _inactive=false,
+                                   const char *_tag="") noexcept
+    :look(_look), caption(_caption), inactive(_inactive), tag(_tag) {
     text_renderer.SetCenter();
     text_renderer.SetVCenter();
     text_renderer.SetControl();
@@ -112,6 +119,12 @@ QuickMenuButtonRenderer::DrawButton(Canvas &canvas, const PixelRect &rc,
   canvas.SetBackgroundTransparent();
 
   text_renderer.Draw(canvas, rc, caption);
+
+  if (!tag.empty()) {
+    canvas.Select(look.small_font);
+    canvas.DrawText(rc.GetTopLeft() + PixelSize{(int)Layout::GetTextPadding(), 0},
+                    tag);
+  }
 }
 
 /**
@@ -524,6 +537,21 @@ class QuickMenuField final : public PanelControl {
   std::function<void(unsigned)> on_scroll;
 
 public:
+  /** a small text in the corner of an empty cell (debug builds) */
+  struct Tag {
+    PixelRect rc;
+    StaticString<24> text;
+  };
+
+private:
+  std::vector<Tag> empty_tags;
+
+public:
+  void SetEmptyTags(std::vector<Tag> &&tags) noexcept {
+    empty_tags = std::move(tags);
+    Invalidate();
+  }
+
   void SetScrollHandler(std::function<void(unsigned)> handler) noexcept {
     on_scroll = std::move(handler);
   }
@@ -550,6 +578,17 @@ public:
 protected:
   void OnPaint(Canvas &canvas) noexcept override {
     ContainerWindow::OnPaint(canvas);
+
+    if (!empty_tags.empty()) {
+      const auto &look = UIGlobals::GetDialogLook();
+      canvas.Select(look.small_font);
+      canvas.SetTextColor(look.button.disabled.color);
+      canvas.SetBackgroundTransparent();
+      for (const auto &t : empty_tags)
+        canvas.DrawText(t.rc.GetTopLeft() +
+                        PixelSize{(int)Layout::GetTextPadding(), 0},
+                        t.text);
+    }
 
     if (scroll_bar.IsDefined())
       scroll_bar.Paint(canvas);
@@ -614,6 +653,20 @@ private:
       on_scroll(new_top);
   }
 };
+
+/**
+ * Append a place like " l5:12" (landscape, place 12 in five columns)
+ * to the debug tag of a button.
+ */
+static void
+AppendPlace(StaticString<24> &tag, char orientation,
+            unsigned columns, unsigned location) noexcept
+{
+  if (columns > 0)
+    tag.AppendFormat(" %c%u:%u", orientation, columns, location);
+  else
+    tag.AppendFormat(" %c%u", orientation, location);
+}
 
 /**
  * The quick menu in the style UISettings::QuickMenuStyle::OPENSOAR:
@@ -691,6 +744,14 @@ private:
   /** Show the rows from @p new_top on. */
   void ScrollTo(unsigned new_top) noexcept;
 
+  /**
+   * The location tags of the empty cells shown (debug builds only),
+   * see QuickMenuField::SetEmptyTags().
+   */
+  [[gnu::pure]]
+  std::vector<QuickMenuField::Tag> MakeEmptyTags(const PixelRect &rc,
+                                                 int w, int h) const noexcept;
+
   /** Focus button @p i and scroll so that it and one more row show. */
   void FocusButton(unsigned i) noexcept;
 
@@ -736,9 +797,21 @@ OpenSoarQuickMenu::Prepare(ContainerWindow &parent,
     /* a button that is unusable at the moment stays focusable (see
        QuickMenuButtonRenderer::inactive); a click only beeps */
     const bool inactive = !expanded.enabled;
+
+    /* in a debug build, each button shows its location (and its own
+       places, if it has any), to check a list against the screen */
+    StaticString<24> tag;
+    if (IsDebug()) {
+      tag.Format("#%u", i);
+      if (item.portrait > 0)
+        AppendPlace(tag, 'p', item.portrait_columns, item.portrait);
+      if (item.landscape > 0)
+        AppendPlace(tag, 'l', item.landscape_columns, item.landscape);
+    }
+
     auto renderer =
       std::make_unique<QuickMenuButtonRenderer>(dialog_look, expanded.text,
-                                                inactive);
+                                                inactive, tag);
     buttons.emplace_back(*window, PixelRect{0, 0, 1, 1}, button_style,
                          std::move(renderer),
                          [this, &item, inactive](){
@@ -864,6 +937,44 @@ OpenSoarQuickMenu::ScrollTo(unsigned new_top) noexcept
     button.Move({x, y, x + w, y + h});
     button.Show();
   }
+
+  if (IsDebug())
+    window.SetEmptyTags(MakeEmptyTags(rc, w, h));
+
+  UpdateCaption();
+}
+
+std::vector<QuickMenuField::Tag>
+OpenSoarQuickMenu::MakeEmptyTags(const PixelRect &rc,
+                                 int w, int h) const noexcept
+{
+  /* the location an empty cell would have, counted like a bare
+     location of this list; none outside its columns */
+  const unsigned c = default_columns > 0 ? default_columns : columns;
+  const int offset = ((int)columns - (int)c) / 2;
+
+  std::vector<bool> used(shown * columns, false);
+  for (const auto &cell : cells)
+    if (cell.row >= top && cell.row < top + shown)
+      used[(cell.row - top) * columns + cell.column] = true;
+
+  std::vector<QuickMenuField::Tag> tags;
+  for (unsigned r = 0; r < shown; ++r) {
+    for (unsigned column = 0; column < columns; ++column) {
+      const int n = (int)column - offset;
+      if (used[r * columns + column] || n < 0 || n >= (int)c)
+        continue;
+
+      QuickMenuField::Tag tag;
+      const int x = rc.left + (int)column * w;
+      const int y = rc.top + (int)r * h;
+      tag.rc = {x, y, x + w, y + h};
+      tag.text.Format("#%u", (top + r) * c + n + 1);
+      tags.push_back(tag);
+    }
+  }
+
+  return tags;
 }
 
 void
@@ -979,6 +1090,12 @@ OpenSoarQuickMenu::UpdateCaption() noexcept
   buffer = "Quick Menu";
   if (phase_name != nullptr)
     buffer.AppendFormat(" - %s", phase_name);
+
+  /* where the pilot is in a field that scrolls: the first and last
+     row shown and the number of rows */
+  if (rows > shown)
+    buffer.AppendFormat("  %u-%u/%u", top + 1, top + shown, rows);
+
   dialog.SetCaption(buffer);
 }
 

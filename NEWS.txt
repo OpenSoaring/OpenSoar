@@ -119,7 +119,9 @@ Version 7.46 - not yet released
     portrait and landscape, with the columns it is counted in
     ("landscape=5:12"), and mark where the focus starts
     ("center=yes"); one field that scrolls row by row with a scroll
-    bar instead of pages; buttons that do nothing at the moment keep
+    bar instead of pages, the title then shows the rows in sight
+    ("3-8/12"); a debug build shows the location in the corner of
+    every cell, empty ones included; buttons that do nothing at the moment keep
     the focus (dark grey) and only beep, so the cursor keys move
     straight across the field; turning the screen keeps the focus on
     its button
