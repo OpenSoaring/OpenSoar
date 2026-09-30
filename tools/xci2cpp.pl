@@ -96,7 +96,12 @@ sub commit(\%) {
         $label =~ s|\\([^rn\\])|\\\\$1|g if ($label);
         $label = '' unless defined $label;
         my $location = $rec->{location};
-        push @labels, [ $mode_id, $label, $location, $event_id ]
+        # the placement in the quick menu, see Menu::Placement
+        my $portrait = $rec->{portrait} || 0;
+        my $landscape = $rec->{landscape} || 0;
+        my $center = ($rec->{center} || '') =~ /^(yes|1)$/ ? 'true' : 'false';
+        push @labels, [ $mode_id, $label, $location, $portrait, $landscape,
+                        $center, $event_id ]
           if defined $location;
 
         next unless $event_id > 0;
@@ -225,10 +230,10 @@ print "};\n";
 
 print "static constexpr struct flat_label default_labels[] = {\n";
 foreach my $l (@labels) {
-    my ($mode, $label, $location, $event) = @$l;
-    print qq|  { $mode, $location, $event, "$label" },\n|;
+    my ($mode, $label, $location, $portrait, $landscape, $center, $event) = @$l;
+    print qq|  { $mode, $location, $portrait, $landscape, $center, $event, "$label" },\n|;
 }
-print "  { 0, 0, 0, NULL },\n";
+print "  { 0, 0, 0, 0, false, 0, NULL },\n";
 print "};\n";
 
 print "static constexpr struct flat_gesture_map default_gesture2event[] = {\n";
