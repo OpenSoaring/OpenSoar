@@ -86,8 +86,10 @@ struct UISettings {
     /**
      * Dynamic: as many columns as fit, every button at its location
      * (an empty location stays an empty cell), a location of its own
-     * in portrait and landscape where the list gives one, and a list
-     * for each flight phase.  The value 1 was the style "Dynamic"
+     * in portrait and landscape where the list gives one, one field
+     * that scrolls instead of pages, and a list for each flight
+     * phase.  It is not tied to OpenSoar, so XCSoar can offer it as
+     * well.  The value 1 was the earlier "Dynamic" with a framed block
      * (tag quickmenu-dynamic-v269), which this one replaces.
      */
     DYNAMIC,

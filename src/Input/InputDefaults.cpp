@@ -46,6 +46,7 @@ struct flat_label {
 
   /** see Menu::Placement */
   unsigned char portrait, landscape;
+  unsigned char portrait_columns, landscape_columns;
   bool center;
 
   unsigned short event;
@@ -122,6 +123,8 @@ apply_defaults(InputConfig &input_config,
               default_labels->label,
               default_labels->location, default_labels->event,
               {default_labels->portrait, default_labels->landscape,
+               default_labels->portrait_columns,
+               default_labels->landscape_columns,
                default_labels->center});
     ++default_labels;
   }

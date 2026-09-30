@@ -17,6 +17,25 @@
 #include "LogFile.hpp"
 
 #include <stdio.h>
+#include <string>
+
+/**
+ * Parse the place of a quick menu button: "N" is location N, "C:N"
+ * is location N counted in C columns (C stays 0 without it).
+ */
+static void
+ParsePlace(const char *value, unsigned &columns, unsigned &location) noexcept
+{
+  const std::string_view v{value};
+  const auto [first, second] = Split(v, ':');
+  if (second.data() == nullptr) {
+    columns = 0;
+    location = ParseUnsigned(value);
+  } else {
+    columns = ParseUnsigned(std::string{first}.c_str());
+    location = ParseUnsigned(std::string{second}.c_str());
+  }
+}
 
 static bool
 parse_assignment(char *buffer, const char *&key, const char *&value)
@@ -250,9 +269,11 @@ ParseInputFile(InputConfig &config, BufferedReader &reader)
            landscape, and start with the focus on it; the location
            stays what identifies the item */
       } else if (StringIsEqual(key, "portrait")) {
-        current.placement.portrait = ParseUnsigned(value);
+        ParsePlace(value, current.placement.portrait_columns,
+                   current.placement.portrait);
       } else if (StringIsEqual(key, "landscape")) {
-        current.placement.landscape = ParseUnsigned(value);
+        ParsePlace(value, current.placement.landscape_columns,
+                   current.placement.landscape);
       } else if (StringIsEqual(key, "center")) {
         current.placement.center = StringIsEqual(value, "yes") ||
           StringIsEqual(value, "1");
