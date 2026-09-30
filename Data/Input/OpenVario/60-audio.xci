@@ -73,5 +73,5 @@ type=key
 data=0
 event=Mode VarioAudioMenu 
 label=Audio Menu
-location=58
+location=47
 
