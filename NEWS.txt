@@ -28,7 +28,7 @@ Version 7.45.4 - not yet released
     built-in configuration in the order of their names, so each file
     can hold one topic and a later one can override an earlier one;
     an existing single file is taken over
-  - the quick menu style "Dynamic" has a list of its own before the
+  - the quick menu style "OpenSoar" has a list of its own before the
     flight, in flight and after the landing (modes QuickGround,
     QuickFlight and QuickAfter, built-in lists included); it follows
     takeoff and landing and can be switched with the new buttons
@@ -48,6 +48,12 @@ Version 7.45.4 - not yet released
     turning the screen keeps the focus on its button
     turning the screen keeps the focus on its button; the complete
     quick menu keeps the XCSoar arrangement around location 20
+  - new quick menu style "OpenSoar" (Look > Language, Input > Quick
+    menu): as many columns as fit (more in landscape), every button at
+    its location, an empty location stays an empty cell; a button can
+    have a place of its own in portrait and landscape ("portrait=",
+    "landscape=") and mark where the focus starts ("center=yes");
+    turning the screen keeps the focus on its button
   - the quick menu is clearer: the switches of the map display
     (airspace, labels, trail, auto zoom, page settings, distance rings)
     moved into the new submenu "Map Display"; FLARM radar and thermal

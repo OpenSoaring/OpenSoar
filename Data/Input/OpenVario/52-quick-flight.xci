@@ -1,71 +1,28 @@
-# The quick menu in flight (mode QuickFlight).
+# The quick menu in flight (mode QuickFlight), used by the
+# quick menu style "OpenSoar".
 #
-# Locations 1 to 15 are ranks in the framed block of the style
-# "Dynamic": 1 is the centre, where the focus starts, 2 above, 3 left,
-# 4 right, 5 below, 6 two above, 7 two below, 8 and 9 the upper
-# corners, 10 and 11 beside 2, 12 and 13 beside 5, 14 and 15 the lower
-# corners:
+# "location" is the place in three columns (portrait), counted row by
+# row from the top left.  "landscape" is the place in five columns; it
+# keeps the same picture in the middle of the wider screen.  An empty
+# place stays an empty cell, so the other buttons keep their places.
+# The focus starts on the button with "center=yes".
 #
-#    8   6   9
-#   10   2  11
-#    3   1   4
-#   12   5  13
-#   14   7  15
+#   location (portrait)     landscape
+#    1   2   3               2   3   4
+#    4   5   6               7   8   9
+#    7   8   9              12  13  14
+#   10  11  12              17  18  19
+#   13  14  15              22  23  24
 #
-# 11 to 13 stay empty for now; the list can grow.
-
-mode=QuickFlight
-type=key
-data=0
-event=Setup Alternates
-event=Mode default
-label=Alternates$(CheckWaypointFile)
-location=1
-
-mode=QuickFlight
-type=key
-data=0
-event=Setup Basic
-event=Mode default
-label=Flight Setup
-location=2
-
-mode=QuickFlight
-type=key
-data=0
-event=AdjustWaypoint previousarm
-label=$(WaypointPreviousArm)
-location=3
-
-mode=QuickFlight
-type=key
-data=0
-event=AdjustWaypoint nextarm
-label=$(WaypointNextArm)
-location=4
-
-mode=QuickFlight
-type=key
-data=0
-event=WaypointDetails select
-event=Mode default
-label=Waypoint List$(CheckWaypointFile)
-location=5
-
-mode=QuickFlight
-type=key
-data=0
-event=Mode VarioAudioMenu
-label=Audio / MC
-location=6
-
-mode=QuickFlight
-type=key
-data=0
-event=Calculator
-event=Mode default
-label=Task Manager
-location=7
+# The buttons of this list in portrait:
+#
+#    1 Analysis         2 Audio / MC       3 Configuration
+#    4 Map Display      5 Flight Setup     6 -
+#    7 Previous WP      8 Alternates       9 Next WP
+#   10 -               11 Waypoint List   12 -
+#   13 Task Restart    14 Task Manager    15 Pilot Event An.
+#
+# 6, 10 and 12 stay empty for now; the list can grow.
 
 mode=QuickFlight
 type=key
@@ -73,7 +30,16 @@ data=0
 event=Analysis
 event=Mode default
 label=Analysis
-location=8
+location=1
+landscape=2
+
+mode=QuickFlight
+type=key
+data=0
+event=Mode VarioAudioMenu
+label=Audio / MC
+location=2
+landscape=3
 
 mode=QuickFlight
 type=key
@@ -81,7 +47,61 @@ data=0
 event=Setup System
 event=Mode default
 label=Configuration
+location=3
+landscape=4
+
+mode=QuickFlight
+type=key
+data=0
+event=MapDisplay
+label=Map\nDisplay
+location=4
+landscape=7
+
+
+mode=QuickFlight
+type=key
+data=0
+event=Setup Basic
+event=Mode default
+label=Flight Setup
+location=5
+landscape=8
+
+mode=QuickFlight
+type=key
+data=0
+event=AdjustWaypoint previousarm
+label=$(WaypointPreviousArm)
+location=7
+landscape=12
+
+mode=QuickFlight
+type=key
+data=0
+event=Setup Alternates
+event=Mode default
+label=Alternates$(CheckWaypointFile)
+location=8
+landscape=13
+center=yes
+
+mode=QuickFlight
+type=key
+data=0
+event=AdjustWaypoint nextarm
+label=$(WaypointNextArm)
 location=9
+landscape=14
+
+mode=QuickFlight
+type=key
+data=0
+event=WaypointDetails select
+event=Mode default
+label=Waypoint List$(CheckWaypointFile)
+location=11
+landscape=18
 
 mode=QuickFlight
 type=key
@@ -89,7 +109,17 @@ data=0
 event=ResetTask
 event=StatusMessage Task restarted
 label=Task\nRestart
+location=13
+landscape=22
+
+mode=QuickFlight
+type=key
+data=0
+event=Calculator
+event=Mode default
+label=Task Manager
 location=14
+landscape=23
 
 mode=QuickFlight
 type=key
@@ -100,10 +130,4 @@ event=Logger note PEV
 event=PilotEvent
 label=Pilot Event Announce
 location=15
-
-mode=QuickFlight
-type=key
-data=0
-event=MapDisplay
-label=Map\nDisplay
-location=10
+landscape=24

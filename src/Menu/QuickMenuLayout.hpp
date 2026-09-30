@@ -7,72 +7,38 @@
 #include <vector>
 
 /**
- * The arrangement of the "dynamic" quick menu: a fixed block of
- * 3 x 5 buttons in the middle of the first page, which looks the same
- * in portrait and landscape, and the other buttons around it.
+ * The arrangement of the quick menu in the style "OpenSoar": as many
+ * columns as fit (more in landscape than in portrait), and every
+ * button at its location, counted row by row and page by page.
  *
- * The block holds the items with the locations 1 to 15.  They are
- * ranks, not cells: location 1 is the centre, where the focus starts,
- * and the next ones follow around it by importance (see
- * #BLOCK_CELLS):
- *
- *    8   6   9
- *   10   2  11
- *    3   1   4
- *   12   5  13
- *   14   7  15
- *
- * The other items are ranked by their location as well: the first page
- * fills the cells around the block with them, nearest to the centre
- * first, and further pages hold the rest in rows.
+ * A location without a button stays an empty cell, so the other
+ * buttons keep their places; that is what a pilot finds them by.
+ * Because the number of columns differs between portrait and
+ * landscape, an item can have a location of its own for each (see
+ * MenuItem::portrait and MenuItem::landscape).
  *
  * This is plain geometry without any window, so the rules can be
  * tested on their own.
  */
 namespace QuickMenuLayout {
 
-static constexpr unsigned BLOCK_COLUMNS = 3;
-static constexpr unsigned BLOCK_ROWS = 5;
-static constexpr unsigned BLOCK_SIZE = BLOCK_COLUMNS * BLOCK_ROWS;
-
-/** The location of the centre of the block. */
-static constexpr unsigned CENTER_LOCATION = 1;
+static constexpr unsigned MIN_COLUMNS = 3;
+static constexpr unsigned MAX_COLUMNS = 7;
 
 /**
- * The cell in the block (column, row) of the locations 1 to 15: the
- * centre, then above, left, right and below it, then two above and
- * two below, the upper corners, the neighbours of the row above, those
- * of the row below and last the lower corners.
+ * A page shows at least this many rows (if they fit), so that a
+ * short list does not get huge buttons.
  */
-static constexpr struct { unsigned column, row; } BLOCK_CELLS[BLOCK_SIZE] = {
-  {1, 2},
-  {1, 1}, {0, 2}, {2, 2}, {1, 3},
-  {1, 0}, {1, 4},
-  {0, 0}, {2, 0},
-  {0, 1}, {2, 1},
-  {0, 3}, {2, 3},
-  {0, 4}, {2, 4},
-};
+static constexpr unsigned MIN_SHOWN_ROWS = 5;
 
 /**
- * The number of columns and rows of a page; both are odd, so the
- * block can sit exactly in the middle.
+ * The number of columns and the number of rows that fit on a page.
  */
 struct Grid {
   unsigned columns, rows;
 
-  constexpr unsigned GetBlockLeft() const noexcept {
-    return (columns - BLOCK_COLUMNS) / 2;
-  }
-
-  constexpr unsigned GetBlockTop() const noexcept {
-    return (rows - BLOCK_ROWS) / 2;
-  }
-
-  constexpr bool IsInBlock(unsigned column, unsigned row) const noexcept {
-    return column >= GetBlockLeft() &&
-      column < GetBlockLeft() + BLOCK_COLUMNS &&
-      row >= GetBlockTop() && row < GetBlockTop() + BLOCK_ROWS;
+  constexpr unsigned GetPageSize() const noexcept {
+    return columns * rows;
   }
 };
 
@@ -84,9 +50,10 @@ struct Cell {
 
 /**
  * How many columns and rows fit into an area, given the smallest
- * useful button size.  At least the block fits: if the area is too
- * small, the buttons get smaller instead.  At most seven columns, so
- * the buttons do not get too narrow on wide screens.
+ * useful button size.  The number of columns is odd, so there is a
+ * middle column; it is at least #MIN_COLUMNS (the buttons get
+ * narrower if the area is too small) and at most #MAX_COLUMNS, so the
+ * buttons do not get too narrow on wide screens.
  */
 [[gnu::const]]
 Grid
@@ -94,40 +61,32 @@ ChooseGrid(unsigned width, unsigned height,
            unsigned min_column_width, unsigned min_row_height) noexcept;
 
 /**
- * Place the items.
+ * Place the items at their locations.
  *
- * @param locations the location (rank) of each item; items missing
- * from the menu are simply not in the list
+ * @param locations the location (1 or more) of each item; items
+ * missing from the menu are simply not in the list
  * @return one cell per item, in the same order
+ *
+ * If two items claim the same location, the one listed first keeps
+ * it and the other goes to the next free location, so no button ever
+ * covers another.
  */
 std::vector<Cell>
 Arrange(std::span<const unsigned> locations, Grid grid) noexcept;
 
-/**
- * Convert the locations of a list that was written for the three
- * columns of the XCSoar style into ranks for Arrange(): the 3 x 5
- * cells around the location @p center keep their places and form the
- * block, @p center its centre; the other rows follow outwards, nearer
- * rows first.  So the picture the author of such a list had in mind
- * stays the same in the middle of the screen.
- */
-std::vector<unsigned>
-RanksFromColumns(std::span<const unsigned> locations,
-                 unsigned center) noexcept;
-
-/**
- * Place the items of a list for the three columns of the XCSoar style
- * on a grid of three columns (portrait) exactly as they were, just
- * shifted so that @p center is the centre of the block.  What does
- * not fit above or below goes to the following pages.
- */
-std::vector<Cell>
-ArrangeColumns(std::span<const unsigned> locations, unsigned center,
-               Grid grid) noexcept;
-
 [[gnu::pure]]
 unsigned
 CountPages(std::span<const Cell> cells) noexcept;
+
+/**
+ * How many rows the page @p page shows: the rows up to its lowest
+ * button, but at least #MIN_SHOWN_ROWS and at most as many as fit.
+ * The buttons get taller when a page shows fewer rows.
+ */
+[[gnu::pure]]
+unsigned
+CountShownRows(std::span<const Cell> cells, unsigned page,
+               Grid grid) noexcept;
 
 enum class Direction { LEFT, RIGHT, UP, DOWN };
 
