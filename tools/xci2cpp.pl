@@ -67,6 +67,16 @@ sub get_mode($) {
     return $i;
 }
 
+# The place of a quick menu button, see ParsePlace() in
+# src/Input/InputParser.cpp: returns (columns, location)
+sub parse_place($) {
+    my $value = shift;
+    return (0, 0) unless defined $value;
+    return ($1, $2) if $value =~ /^(\d+):(\d+)$/;
+    return (0, $1) if $value =~ /^(\d+)$/;
+    die "Invalid place: $value\n";
+}
+
 sub commit(\%) {
     my ($rec) = @_;
 
@@ -97,10 +107,12 @@ sub commit(\%) {
         $label = '' unless defined $label;
         my $location = $rec->{location};
         # the placement in the quick menu, see Menu::Placement
-        my $portrait = $rec->{portrait} || 0;
-        my $landscape = $rec->{landscape} || 0;
+        # "C:N" is location N counted in C columns
+        my ($portrait_columns, $portrait) = parse_place($rec->{portrait});
+        my ($landscape_columns, $landscape) = parse_place($rec->{landscape});
         my $center = ($rec->{center} || '') =~ /^(yes|1)$/ ? 'true' : 'false';
         push @labels, [ $mode_id, $label, $location, $portrait, $landscape,
+                        $portrait_columns, $landscape_columns,
                         $center, $event_id ]
           if defined $location;
 
@@ -230,10 +242,11 @@ print "};\n";
 
 print "static constexpr struct flat_label default_labels[] = {\n";
 foreach my $l (@labels) {
-    my ($mode, $label, $location, $portrait, $landscape, $center, $event) = @$l;
-    print qq|  { $mode, $location, $portrait, $landscape, $center, $event, "$label" },\n|;
+    my ($mode, $label, $location, $portrait, $landscape,
+        $portrait_columns, $landscape_columns, $center, $event) = @$l;
+    print qq|  { $mode, $location, $portrait, $landscape, $portrait_columns, $landscape_columns, $center, $event, "$label" },\n|;
 }
-print "  { 0, 0, 0, 0, false, 0, NULL },\n";
+print "  { 0, 0, 0, 0, 0, 0, false, 0, NULL },\n";
 print "};\n";
 
 print "static constexpr struct flat_gesture_map default_gesture2event[] = {\n";
