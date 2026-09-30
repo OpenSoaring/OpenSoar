@@ -113,10 +113,16 @@ Version 7.46 - not yet released
     the old name RemoteStick keep working
   - new quick menu style "OpenSoar" (Look > Language, Input > Quick
     menu): as many columns as fit (more in landscape), every button at
-    its location, an empty location stays an empty cell; a button can
-    have a place of its own in portrait and landscape ("portrait=",
-    "landscape=") and mark where the focus starts ("center=yes");
-    turning the screen keeps the focus on its button
+    its location, an empty location stays an empty cell; the phase
+    lists count in three columns and keep that picture in the middle
+    of a wider screen; a button can have a place of its own in
+    portrait and landscape, with the columns it is counted in
+    ("landscape=5:12"), and mark where the focus starts
+    ("center=yes"); one field that scrolls row by row with a scroll
+    bar instead of pages; buttons that do nothing at the moment keep
+    the focus (dark grey) and only beep, so the cursor keys move
+    straight across the field; turning the screen keeps the focus on
+    its button
   - the Analysis input event takes a page name, e.g. "Analysis
     barograph", to open that page directly
   - the quick menu is clearer: the switches of the map display
