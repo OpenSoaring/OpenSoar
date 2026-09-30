@@ -925,6 +925,7 @@ $(eval $(call link-program,TestInputConfig,TEST_INPUT_CONFIG))
 
 TEST_QUICK_MENU_LAYOUT_SOURCES = \
 	$(TEST_SRC_DIR)/tap.c \
+	$(SRC)/Menu/MenuData.cpp \
 	$(SRC)/Menu/QuickMenuLayout.cpp \
 	$(TEST_SRC_DIR)/TestQuickMenuLayout.cpp
 TEST_QUICK_MENU_LAYOUT_DEPENDS = UTIL

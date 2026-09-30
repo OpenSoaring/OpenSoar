@@ -229,7 +229,7 @@ data=0
 event=Exit restart
 event=Mode default
 label=Restart
-location=59
+location=48
 
 mode=QuickMenu
 type=key
@@ -237,7 +237,7 @@ data=0
 event=Exit system
 event=Mode default
 label=Quit
-location=60
+location=49
 
 # OpenVario only:
 # Reboot and shutdown are two of the choices in the power dialog that
@@ -248,5 +248,5 @@ data=0
 event=Exit shutdown
 event=Mode default
 label=Exit
-location=61
+location=50
 

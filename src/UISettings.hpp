@@ -83,11 +83,13 @@ struct UISettings {
     XCSOAR,
 
     /**
-     * A fixed block of 3 x 5 buttons (locations 1 to 15) in the
-     * middle of the screen, which stays the same in portrait and
-     * landscape; the other buttons fill the space around it.
+     * OpenSoar: as many columns as fit, every button at its location
+     * (an empty location stays an empty cell), a location of its own
+     * in portrait and landscape where the list gives one, and a list
+     * for each flight phase.  The value 1 was the style "Dynamic"
+     * (tag quickmenu-dynamic-v269), which this one replaces.
      */
-    DYNAMIC,
+    OPENSOAR,
   } quick_menu_style;
 
   enum class PopupMessagePosition : uint8_t {

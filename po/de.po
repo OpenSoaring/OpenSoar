@@ -11990,3 +11990,10 @@ msgstr "Namen und Grenzen der Lufträume auf der Karte anzeigen."
 
 msgid "Zoom the map automatically to show the next waypoint."
 msgstr "Die Karte automatisch so zoomen, dass der nächste Wegpunkt sichtbar ist."
+
+msgid ""
+"As many columns as fit, every button at its location, and a list of its "
+"own for ground, flight and after landing."
+msgstr ""
+"So viele Spalten wie Platz haben, jeder Knopf an seinem Platz, und eine "
+"eigene Liste für Boden, Flug und nach der Landung."
