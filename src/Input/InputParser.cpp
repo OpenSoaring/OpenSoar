@@ -35,6 +35,9 @@ parse_assignment(char *buffer, const char *&key, const char *&value)
 
 struct EventBuilder {
   unsigned event_id, location;
+
+  /** see Menu::Placement */
+  Menu::Placement placement;
   StaticString<1024> mode;
   StaticString<256> type, data, label;
 
@@ -47,6 +50,7 @@ struct EventBuilder {
   void clear() {
     event_id = 0;
     location = 0;
+    placement = {};
     mode.clear();
     type.clear();
     data.clear();
@@ -100,7 +104,8 @@ struct EventBuilder {
           new_label = UnescapeBackslash(label.c_str());
         }
 
-        config.AppendMenu(mode_id, new_label, location, event_id);
+        config.AppendMenu(mode_id, new_label, location, event_id,
+                          placement);
       }
 
       // Make key (Keyboard input)
@@ -240,6 +245,17 @@ ParseInputFile(InputConfig &config, BufferedReader &reader)
         current.label = string_converter.Convert(value);
       } else if (StringIsEqual(key, "location")) {
         current.location = ParseUnsigned(value);
+
+        /* the quick menu can place an item elsewhere in portrait and
+           landscape, and start with the focus on it; the location
+           stays what identifies the item */
+      } else if (StringIsEqual(key, "portrait")) {
+        current.placement.portrait = ParseUnsigned(value);
+      } else if (StringIsEqual(key, "landscape")) {
+        current.placement.landscape = ParseUnsigned(value);
+      } else if (StringIsEqual(key, "center")) {
+        current.placement.center = StringIsEqual(value, "yes") ||
+          StringIsEqual(value, "1");
 
       } else {
         LogFmt("Invalid key/value pair {}={} at {}", key, value, line);
