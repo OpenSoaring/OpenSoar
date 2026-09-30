@@ -11,7 +11,8 @@ Menu::Clear() noexcept
 }
 
 void
-Menu::Add(const char *label, unsigned location, unsigned event_id) noexcept
+Menu::Add(const char *label, unsigned location, unsigned event_id,
+          Placement placement) noexcept
 {
   if (location >= items.size())
     return;
@@ -20,6 +21,13 @@ Menu::Add(const char *label, unsigned location, unsigned event_id) noexcept
 
   item.label = label;
   item.event = event_id;
+
+  /* a placement out of range is ignored, the item then stays at its
+     location */
+  item.portrait = placement.portrait < items.size() ? placement.portrait : 0;
+  item.landscape = placement.landscape < items.size()
+    ? placement.landscape : 0;
+  item.center = placement.center;
 }
 
 bool
