@@ -671,7 +671,7 @@ Built-in modes
   before the flight, in flight and after the landing, each a list of
   its own with its own locations, so the same button can sit in
   different places in each phase.  They belong to the quick menu style
-  *Dynamic*: there the Quick Menu shows the list of the current phase
+  *OpenSoar*: there the Quick Menu shows the list of the current phase
   and offers a button for each phase that has a list, plus *All* for
   the complete ``QuickMenu``.  A phase without a list shows *All*.  The
   style *XCSoar* always shows the complete ``QuickMenu``.  OpenSoar
@@ -689,32 +689,34 @@ Built-in modes
    data=0
    event=Mode mc
    label=MacCready
-   location=1
+   location=2
+   landscape=3
 
-  With the quick menu style *Dynamic* (**Menu > Config > System >
-  Look > Language, Input > Quick menu**), the locations 1 to 15 form a
-  framed block of 3 x 5 buttons, which stays in the middle of the
-  screen in portrait and landscape alike.  The locations are ranks:
-  1 is the centre, where the focus starts, and the others follow
-  around it by importance, so that the cursor keys reach the first
-  ones with the fewest steps::
+  With the quick menu style *OpenSoar* (**Menu > Config > System >
+  Look > Language, Input > Quick menu**), as many columns fit side by
+  side as the screen allows (three in portrait, more in landscape),
+  and every button sits at its location, counted row by row from the
+  top left and page by page.  A location without a button stays an
+  empty cell, so the other buttons keep their places; this also holds
+  for a button that its label hides for the moment.  The style
+  *XCSoar* instead always shows three columns and closes the gaps.
 
-    8   6   9
-   10   2  11
-    3   1   4
-   12   5  13
-   14   7  15
+  Because the number of columns differs, a button can have a place of
+  its own in each orientation: ``portrait=N`` and ``landscape=N`` are
+  locations like ``location``, used instead of it in portrait or
+  landscape.  ``location`` stays what identifies the button, so a later
+  file can still replace it.  ``center=yes`` marks the button the
+  focus starts on; the Quick Menu then opens on its page.  Without it,
+  the focus starts on the button nearest to the middle of the first
+  page.  If two buttons claim the same place, the one with the lower
+  location keeps it and the other takes the next free place.
 
-  Locations from 16 on are ranked as well: the lower the number, the
-  closer the button is placed to the block.  What does not fit goes
-  to the next pages.
-
-  This applies to the phase lists.  The complete ``QuickMenu`` is
-  XCSoar's list, which is written for three columns with its most
-  important buttons around location 20; the style *Dynamic* keeps that
-  picture: the 3 x 5 buttons around location 20 form the block, and
-  in portrait the list stays exactly as it is, while in landscape the
-  rows above and below the block move to its sides.
+  The built-in phase lists give ``location`` for three columns and
+  ``landscape`` for five, so that their block of 3 x 5 buttons looks
+  the same in the middle of a landscape screen.  On a screen with
+  seven columns the landscape places are counted in seven columns and
+  the picture changes.  XCSoar reads such files too and ignores the
+  new keys (with a line in the log).
 - ``mc`` -- MacCready adjustment mode. Entered from ``mode=default`` via
   the ``Mode mc`` event (default key ``3``). Stick UP/DOWN adjust MC;
   RETURN toggles auto/manual MC; ESCAPE returns to ``default``.
