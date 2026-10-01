@@ -14,6 +14,7 @@
 #include "Formatter/UserUnits.hpp"
 #include "Formatter/UserGeoPointFormatter.hpp"
 #include "UIState.hpp"
+#include "Interface.hpp"
 #include "Renderer/FinalGlideBarRenderer.hpp"
 #include "Terrain/RasterTerrain.hpp"
 #include "util/Macros.hpp"
@@ -505,14 +506,16 @@ GlueMapWindow::DrawFlightMode(Canvas &canvas,
 }
 
 bool
-GlueMapWindow::IsFinalGlideBarShown() const noexcept
+GlueMapWindow::IsFinalGlideBarShown(const MapSettings &settings,
+                                    const ComputerSettings &computer,
+                                    const DerivedInfo &calculated) noexcept
 {
-  if (GetMapSettings().final_glide_bar_display_mode ==
+  if (settings.final_glide_bar_display_mode ==
       FinalGlideBarDisplayMode::OFF)
     return false;
 
   /* the bar needs a valid task solution (see FinalGlideBarRenderer) */
-  const TaskStats &task_stats = Calculated().task_stats;
+  const TaskStats &task_stats = calculated.task_stats;
   const ElementStat &total = task_stats.total;
   const GlideResult &solution = total.solution_remaining;
   const GlideResult &solution_mc0 = total.solution_mc0;
@@ -520,9 +523,9 @@ GlueMapWindow::IsFinalGlideBarShown() const noexcept
   if (!task_stats.task_valid || !solution.IsOk() || !solution_mc0.IsDefined())
     return false;
 
-  if (GetMapSettings().final_glide_bar_display_mode ==
+  if (settings.final_glide_bar_display_mode ==
       FinalGlideBarDisplayMode::AUTO) {
-    const GlideSettings &glide_settings = GetComputerSettings().task.glide;
+    const GlideSettings &glide_settings = computer.task.glide;
     if (solution_mc0.SelectAltitudeDifference(glide_settings) < -1000 &&
         solution.SelectAltitudeDifference(glide_settings) < -1000)
       return false;
@@ -535,7 +538,10 @@ bool
 GlueMapWindow::IsOnFinalGlideBar(PixelPoint p) const noexcept
 {
   /* drawn only near the own position, see Render() */
-  if (!IsNearSelf() || !IsFinalGlideBarShown())
+  if (!IsNearSelf() ||
+      !IsFinalGlideBarShown(CommonInterface::GetMapSettings(),
+                            CommonInterface::GetComputerSettings(),
+                            CommonInterface::Calculated()))
     return false;
 
   /* DrawFinalGlide() hands the renderer the bottom slot of the HUD
@@ -568,7 +574,8 @@ GlueMapWindow::DrawFinalGlide(Canvas &canvas,
                                 glide_settings, true);
   return;
 #else
-  if (!IsFinalGlideBarShown())
+  if (!IsFinalGlideBarShown(GetMapSettings(), GetComputerSettings(),
+                            Calculated()))
     return;
 
   final_glide_bar_renderer.Draw(canvas, area, Calculated(),
