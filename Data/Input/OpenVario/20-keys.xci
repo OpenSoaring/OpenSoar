@@ -31,16 +31,13 @@ data=N
 event=Exit newstart
 event=Mode default
 
-# normal Quit = program end
+# normal Quit = program end; like X, Y and N it opens the power
+# dialog, with the focus on the button the key stands for
 mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
 type=key
 data=Q
 event=Exit system
 event=Mode default
-
-mode=default pantype=key
-data=ESCAPE
-event=Page restore
 
 mode=default.Traffic
 type=key

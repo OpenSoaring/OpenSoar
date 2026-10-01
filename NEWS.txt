@@ -33,6 +33,9 @@ Version 7.47 - not yet released
     an existing single file is taken over
   - the Analysis input event takes a page name, e.g. "Analysis
     barograph", to open that page directly
+  - keys Q (quit) and X (switch off) also outside the OpenVario; the
+    Exit event opens the power dialog with the focus on the button it
+    names ("Exit system", "Exit shutdown", "Exit restart", ...)
 * map
   - draw the map in the Web Mercator projection, the projection of
     slippy map tiles, so raster tiles are shown pixel for pixel
