@@ -213,7 +213,7 @@ RunFile(const fs::path &path, const Waypoints &waypoints,
   const bool cut_short = recorder.IsInFlight();
   if (cut_short) {
     DerivedInfo &calculated = replay->SetCalculated();
-    logbook.Solve(options.handicap, true, calculated.logbook_stats);
+    logbook.SolveFinal(options.handicap, calculated.logbook_stats);
     recorder.FinishAtEnd(replay->Basic(), calculated,
                          "landing not confirmed, end of file");
   }
