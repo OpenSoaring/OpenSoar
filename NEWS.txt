@@ -1,5 +1,7 @@
 Version 7.47 - not yet released
 * glide computer
+  - a takeoff starts a new trace and contest: the second flight of a
+    session (e.g. the next winch launch) no longer counts the one before
   - remember water ballast, crew weight, and bugs when XCSoar is
     restarted during a flight. Startup asks before restoring and
     restores after 5 seconds; No keeps the logger crew template and
