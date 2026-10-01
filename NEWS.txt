@@ -79,6 +79,7 @@ Version 7.47 - not yet released
   - the quick menu offers "Page settings" for the current page in
     place of the terrain and topography toggles
   - the flight setup starts with the MacCready setting
+  - a tap on the final glide bar opens the flight setup
 * airspace
   - new fill mode "Thin lines": no fill, outlines one pixel wide
 
