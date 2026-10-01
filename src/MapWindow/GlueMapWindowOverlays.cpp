@@ -504,6 +504,57 @@ GlueMapWindow::DrawFlightMode(Canvas &canvas,
                        area.bottom - int(bmp->GetSize().height)));
 }
 
+bool
+GlueMapWindow::IsFinalGlideBarShown() const noexcept
+{
+  if (GetMapSettings().final_glide_bar_display_mode ==
+      FinalGlideBarDisplayMode::OFF)
+    return false;
+
+  /* the bar needs a valid task solution (see FinalGlideBarRenderer) */
+  const TaskStats &task_stats = Calculated().task_stats;
+  const ElementStat &total = task_stats.total;
+  const GlideResult &solution = total.solution_remaining;
+  const GlideResult &solution_mc0 = total.solution_mc0;
+
+  if (!task_stats.task_valid || !solution.IsOk() || !solution_mc0.IsDefined())
+    return false;
+
+  if (GetMapSettings().final_glide_bar_display_mode ==
+      FinalGlideBarDisplayMode::AUTO) {
+    const GlideSettings &glide_settings = GetComputerSettings().task.glide;
+    if (solution_mc0.SelectAltitudeDifference(glide_settings) < -1000 &&
+        solution.SelectAltitudeDifference(glide_settings) < -1000)
+      return false;
+  }
+
+  return true;
+}
+
+bool
+GlueMapWindow::IsOnFinalGlideBar(PixelPoint p) const noexcept
+{
+  /* drawn only near the own position, see Render() */
+  if (!IsNearSelf() || !IsFinalGlideBarShown())
+    return false;
+
+  /* DrawFinalGlide() hands the renderer the bottom slot of the HUD
+     layout, not the whole window: the HUD leaves out what lies under
+     stretched InfoBoxes, and the slot keeps a padding from its edges.
+     The bar is 18 (scaled) pixels wide at the right edge of that slot
+     and moves up and down around its middle; the strip is at least a
+     finger wide */
+  const PixelRect rc = GetHudLayout().bottom;
+  const int width = std::max<int>(Layout::Scale(18) * 2,
+                                  Layout::GetHitRadius());
+  const int quarter = rc.GetHeight() / 4;
+
+  /* to the right, the padding up to the window edge counts as well:
+     a finger at the very edge means the bar */
+  return p.x >= rc.right - width && p.x < GetClientRect().right &&
+    p.y >= rc.top + quarter && p.y < rc.bottom - quarter;
+}
+
 void
 GlueMapWindow::DrawFinalGlide(Canvas &canvas,
                               const MapHudLayout &layout) const noexcept
@@ -517,23 +568,8 @@ GlueMapWindow::DrawFinalGlide(Canvas &canvas,
                                 glide_settings, true);
   return;
 #else
-
-  if (GetMapSettings().final_glide_bar_display_mode==FinalGlideBarDisplayMode::OFF)
+  if (!IsFinalGlideBarShown())
     return;
-
-  if (GetMapSettings().final_glide_bar_display_mode==FinalGlideBarDisplayMode::AUTO) {
-    const TaskStats &task_stats = Calculated().task_stats;
-    const ElementStat &total = task_stats.total;
-    const GlideResult &solution = total.solution_remaining;
-    const GlideResult &solution_mc0 = total.solution_mc0;
-
-    if (!task_stats.task_valid || !solution.IsOk() || !solution_mc0.IsDefined())
-      return;
-
-    if (solution_mc0.SelectAltitudeDifference(glide_settings) < -1000 &&
-        solution.SelectAltitudeDifference(glide_settings) < -1000)
-      return;
-  }
 
   final_glide_bar_renderer.Draw(canvas, area, Calculated(),
                                 glide_settings,
