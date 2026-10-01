@@ -139,6 +139,9 @@ Version 7.46 - not yet released
     its button
   - the Analysis input event takes a page name, e.g. "Analysis
     barograph", to open that page directly
+  - keys Q (quit) and X (switch off) also outside the OpenVario; the
+    Exit event opens the power dialog with the focus on the button it
+    names ("Exit system", "Exit shutdown", "Exit restart", ...)
   - the quick menu is clearer: the switches of the map display
     (airspace, labels, trail, auto zoom, distance rings) moved into the
     new dialog "Map Display" (input event "MapDisplay"), which also
