@@ -226,9 +226,10 @@ FillDpiChoices(DataFieldEnum &df, unsigned value) noexcept
     { 120, nullptr },
 
     /* 5.7" panel with 640 x 480 pixels and a visible area of
-       115 x 87 mm (SteFlyNav, Android); the system reports 213 dpi
-       for it, which makes everything half as large again */
-    { 141, "5.7\", 640x480 px" },
+       115 x 87 mm (SteFlyNav, Android), measured 141 dpi; 140 is the
+       density the device itself is set to, and the difference does
+       not show */
+    { 140, "5.7\", 640x480 px" },
 
     { 160, nullptr },
     { 240, nullptr },
