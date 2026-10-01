@@ -6,6 +6,7 @@
 #include "RouteComputer.hpp"
 #include "TraceComputer.hpp"
 #include "ContestComputer.hpp"
+#include "LogbookComputer.hpp"
 #include "Engine/Navigation/Aircraft.hpp"
 #include "NMEA/Validity.hpp"
 
@@ -23,6 +24,8 @@ class TaskComputer
   TraceComputer trace;
 
   ContestComputer contest;
+
+  LogbookComputer logbook;
 
   AircraftState last_state;
   bool valid_last_state;
@@ -77,8 +80,8 @@ public:
 
   /**
    * Forget the trace and the contest results of the previous flight:
-   * at a takeoff, a new flight begins, and its contest values must
-   * not include the one before.
+   * at a takeoff, a new flight begins, and its contest and log book
+   * values must not include the one before.
    */
   void ResetTrace() noexcept;
 
@@ -86,6 +89,7 @@ public:
 
   void SetContestIncremental(bool incremental) {
     contest.SetIncremental(incremental);
+    logbook.SetIncremental(incremental);
   }
 
   /**
