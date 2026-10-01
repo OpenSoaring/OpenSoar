@@ -149,6 +149,8 @@ Version 7.47 - not yet released
     (TARGET=PI5 is an alias). The arm64 sysroot defaults to
     /opt/pi64/root
 * input
+  - Quit is the last button of the complete quick menu and also in the
+    lists before the flight and after the landing
     its location, an empty location stays an empty cell; the phase
     lists count in three columns and keep that picture in the middle
     of a wider screen; a button can have a place of its own in
