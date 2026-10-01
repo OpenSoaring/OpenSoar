@@ -333,6 +333,8 @@ XCSOAR_SOURCES := \
 	$(SRC)/Logger/ExternalLogger.cpp \
 	$(SRC)/Logger/FlightLogger.cpp \
 	$(SRC)/Logger/GlueFlightLogger.cpp \
+	$(SRC)/Logger/GlueLogbook.cpp \
+	$(SRC)/Logger/Logbook.cpp \
 	$(SRC)/Replay/Replay.cpp \
 	$(SRC)/Replay/IgcReplay.cpp \
 	$(SRC)/Replay/NmeaReplay.cpp \
