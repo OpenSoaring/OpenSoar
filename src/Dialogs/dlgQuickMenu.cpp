@@ -8,6 +8,7 @@
 #include "Form/GridView.hpp"
 #include "Input/InputEvents.hpp"
 #include "Language/Language.hpp"
+#include "LogFile.hpp"
 #include "Look/DialogLook.hpp"
 #include "Math/Util.hpp"
 #include "Menu/ButtonLabel.hpp"
@@ -56,6 +57,12 @@ class QuickMenuButtonRenderer final : public ButtonRenderer {
    */
   const StaticString<24> tag;
 
+  /**
+   * The button this renderer draws, if its focus is to be shown
+   * always; see SetAlwaysShowFocus().
+   */
+  const Window *focus_window = nullptr;
+
 public:
   explicit QuickMenuButtonRenderer(const DialogLook &_look,
                                    const char *_caption,
@@ -65,6 +72,19 @@ public:
     text_renderer.SetCenter();
     text_renderer.SetVCenter();
     text_renderer.SetControl();
+  }
+
+  /**
+   * Show the focus of @p button even when Button::GetState() hides
+   * it.  That happens while HasCursorKeys() is false: on Android until
+   * the first cursor key is pressed, so on a device with a stick
+   * (SteFlyNav) the first quick menu after the start showed no focus
+   * although the cursor keys already moved it, and every later one
+   * did.  The style "Dynamic" always has a button to start on, and
+   * showing it helps on a touch screen as well.
+   */
+  void SetAlwaysShowFocus(const Window &button) noexcept {
+    focus_window = &button;
   }
 
   [[gnu::pure]]
@@ -84,6 +104,10 @@ void
 QuickMenuButtonRenderer::DrawButton(Canvas &canvas, const PixelRect &rc,
                                     ButtonState state) const noexcept
 {
+  if (state == ButtonState::ENABLED && focus_window != nullptr &&
+      focus_window->HasFocus())
+    state = ButtonState::FOCUSED;
+
   // Draw focus rectangle
   switch (state) {
   case ButtonState::PRESSED:
@@ -125,7 +149,7 @@ QuickMenuButtonRenderer::DrawButton(Canvas &canvas, const PixelRect &rc,
   text_renderer.Draw(canvas, rc, caption);
 
   if (!tag.empty()) {
-    canvas.Select(look.small_font);
+    canvas.Select(look.text_font);
     canvas.DrawText(rc.GetTopLeft() + PixelSize{(int)Layout::GetTextPadding(), 0},
                     tag);
   }
@@ -585,7 +609,7 @@ protected:
 
     if (!empty_tags.empty()) {
       const auto &look = UIGlobals::GetDialogLook();
-      canvas.Select(look.small_font);
+      canvas.Select(look.text_font);
       canvas.SetTextColor(look.button.disabled.color);
       canvas.SetBackgroundTransparent();
       for (const auto &t : empty_tags)
@@ -602,8 +626,16 @@ protected:
     if (!scroll_bar.IsInside(p))
       return ContainerWindow::OnMouseDown(p);
 
-    /* like the lists: grab the slider, or move it to the pointer */
-    if (scroll_bar.IsInsideSlider(p))
+    /* the arrows move by one row, which is easier to hit exactly
+       with a finger than a position on the bar; otherwise like the
+       lists: grab the slider, or move it to the pointer */
+    if (scroll_bar.IsInsideUpArrow(p.y)) {
+      if (top > 0)
+        Scroll(top - 1);
+    } else if (scroll_bar.IsInsideDownArrow(p.y)) {
+      if (top + shown < rows)
+        Scroll(top + 1);
+    } else if (scroll_bar.IsInsideSlider(p))
       scroll_bar.DragBegin(this, p.y);
     else {
       scroll_bar.DragBeginCentred(this);
@@ -804,7 +836,10 @@ DynamicQuickMenu::Prepare(ContainerWindow &parent,
 
     /* in a debug build, each button shows its location (and its own
        places, if it has any), to check a list against the screen */
+    /* StaticString leaves its buffer uninitialised, so without this a
+       release build drew whatever was on the stack as a tag */
     StaticString<24> tag;
+    tag.clear();
     if (IsDebug()) {
       tag.Format("#%u", i);
       if (item.portrait > 0)
@@ -827,6 +862,8 @@ DynamicQuickMenu::Prepare(ContainerWindow &parent,
                            clicked_event = item.event;
                            dialog.SetModalResult(mrOK);
                          });
+    ((QuickMenuButtonRenderer &)buttons.back().GetRenderer())
+      .SetAlwaysShowFocus(buttons.back());
     items.push_back(i);
 
     if (item.center)
@@ -1029,6 +1066,14 @@ DynamicQuickMenu::SetFocus() noexcept
 {
   if (GetFocusedIndex() < 0)
     FocusDefault();
+
+  /* the focus is sometimes not visible when the menu opens (seen on
+     the device, not reproduced under X11); log what happened to find
+     out why */
+  if (IsDebug())
+    LogFmt("QuickMenu: initial focus on button {} of {}",
+           GetFocusedIndex(), buttons.size());
+
   return true;
 }
 
@@ -1073,6 +1118,8 @@ DynamicQuickMenu::KeyPress(unsigned key_code) noexcept
 
   const int focused = GetFocusedIndex();
   if (focused < 0) {
+    if (IsDebug())
+      LogFmt("QuickMenu: no button had the focus at a cursor key");
     FocusDefault();
     return true;
   }
