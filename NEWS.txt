@@ -80,6 +80,9 @@ Version 7.46 - not yet released
   - show --help and --version in the Command Prompt window #3194
   - remove the legacy single-file Windows executable; use the OpenGL
     version (installer or zip) #2132
+  - keep the mouse cursor visible with -touchscreen; the switch sizes
+    the controls for fingers, it does not take the mouse away (Linux
+    and macOS with SDL as well)
 * Linux
   - add a desktop menu entry and icon for the Unix package #1496
   - add restart and power-off controls to the Quit dialog

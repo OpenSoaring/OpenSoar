@@ -45,7 +45,11 @@ Display::Display()
   // Keep screen on (works on iOS, and maybe for other platforms)
   SDL_SetHint(SDL_HINT_IDLE_TIMER_DISABLED, "1");
 
-  if (HasTouchScreen())
+  /* hide the mouse cursor only on devices that are touch-only by
+     nature; the -touchscreen switch sizes the controls for fingers
+     (e.g. to try a touch device's layout on a desktop), it does not
+     take the mouse away on a machine that has one */
+  if (IsEmbedded())
     SDL_ShowCursor (SDL_FALSE);
 
 #if defined(ENABLE_OPENGL)
