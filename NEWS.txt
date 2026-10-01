@@ -21,6 +21,8 @@ Version 7.45.4 - not yet released
     changed in flight; default keys T and S step by 5%
   - the Analysis input event takes a page name, e.g. "Analysis
     barograph", to open that page directly
+* map
+  - the flight setup starts with the MacCready setting
 
 Version 7.45.3 - 2026-09-22
 * android
