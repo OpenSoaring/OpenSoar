@@ -544,6 +544,11 @@ event=InfoBoxGeometry next
 
 mode=default
 type=key
+data=K
+event=InfoBoxGeometry previous
+
+mode=default
+type=key
 data=T
 event=TextSize up
 
