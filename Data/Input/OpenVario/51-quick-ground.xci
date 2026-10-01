@@ -17,6 +17,9 @@
 # 1, 3 and 4 stay empty for now; the list can grow.  6 (Forecast
 # Controls in the OpenSoar list) is left out here: the OpenVario
 # configuration has no key bindings for the weather mode yet.
+#
+# 18 Quit, in a row of its own below the block, on the right: the
+# last button, as in the complete quick menu.
 
 mode=QuickGround
 type=key
@@ -104,3 +107,11 @@ event=DataManagement
 event=Mode default
 label=Data Management
 location=15
+
+mode=QuickGround
+type=key
+data=0
+event=Exit system
+event=Mode default
+label=Quit
+location=18
