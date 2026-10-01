@@ -1239,6 +1239,7 @@ DEBUG_PROGRAM_NAMES += \
 	RunTrailRendererStress \
 	RunTrace \
 	RunContestAnalysis \
+	RunLogbook \
 	RunWaveComputer \
 	FlightPath \
 	ReadProfileString ReadProfileInt \
@@ -2113,6 +2114,28 @@ RUN_CONTEST_SOURCES = \
 	$(TEST_SRC_DIR)/RunContestAnalysis.cpp
 RUN_CONTEST_DEPENDS = $(DEBUG_REPLAY_DEPENDS) CONTEST UTIL GEO MATH TIME
 $(eval $(call link-program,RunContestAnalysis,RUN_CONTEST))
+
+RUN_LOGBOOK_SOURCES = \
+	$(DEBUG_REPLAY_SOURCES) \
+	$(SRC)/IGC/IGCParser.cpp \
+	$(SRC)/TransponderCode.cpp \
+	$(SRC)/Formatter/NMEAFormatter.cpp \
+	$(SRC)/Formatter/GeoPointFormatter.cpp \
+	$(SRC)/FLARM/Error.cpp \
+	$(SRC)/Computer/TraceComputer.cpp \
+	$(SRC)/Computer/LogbookComputer.cpp \
+	$(SRC)/Logger/Logbook.cpp \
+	$(SRC)/Logger/LogbookPlace.cpp \
+	$(SRC)/Logger/LogbookRecorder.cpp \
+	$(SRC)/Waypoint/Factory.cpp \
+	$(SRC)/RadioFrequency.cpp \
+	$(ENGINE_SRC_DIR)/Trace/Point.cpp \
+	$(ENGINE_SRC_DIR)/Trace/Trace.cpp \
+	$(TEST_SRC_DIR)/FakeTerrain.cpp \
+	$(TEST_SRC_DIR)/RunLogbook.cpp
+RUN_LOGBOOK_LDADD = $(FAKE_LIBS)
+RUN_LOGBOOK_DEPENDS = $(DEBUG_REPLAY_DEPENDS) WAYPOINTFILE OPERATION CONTEST WAYPOINT ZZIP UTIL GEO MATH TIME FMT
+$(eval $(call link-program,RunLogbook,RUN_LOGBOOK))
 
 RUN_WAVE_COMPUTER_SOURCES = \
 	$(DEBUG_REPLAY_SOURCES) \
