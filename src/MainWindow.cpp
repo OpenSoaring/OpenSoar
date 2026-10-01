@@ -33,6 +33,7 @@
 #include "DrawThread.hpp"
 #include "UIReceiveBlackboard.hpp"
 #include "UISettings.hpp"
+#include "SystemConfig.hpp"
 #include "Interface.hpp"
 #ifdef HAVE_TEXT_CACHE
 #include "ui/canvas/custom/Cache.hpp"
@@ -712,12 +713,26 @@ MainWindow::Create(PixelSize size, UI::TopWindowStyle style)
   SingleWindow::Create(title, size, style);
 }
 
+/**
+ * The display resolution to use: the one of the profile, otherwise the
+ * one of the device (system settings), otherwise 0 for the one the
+ * system reports.  Before a profile is loaded (start screen) only the
+ * device setting can apply.
+ */
+[[gnu::pure]]
+static unsigned
+GetCustomDPI() noexcept
+{
+  const unsigned profile_dpi = CommonInterface::GetUISettings().custom_dpi;
+  return profile_dpi != 0 ? profile_dpi : SystemConfig::Get().custom_dpi;
+}
+
 void
 MainWindow::Initialise()
 {
   Layout::Initialise(GetDisplay(), GetSize(),
                      CommonInterface::GetUISettings().GetPercentScale(),
-                     CommonInterface::GetUISettings().custom_dpi,
+                     GetCustomDPI(),
                      CommonInterface::GetUISettings().viewing_distance);
 #ifdef DRAW_MOUSE_CURSOR
   SetCursorSize(CommonInterface::GetDisplaySettings().cursor_size);
@@ -1387,7 +1402,7 @@ MainWindow::OnResize(PixelSize new_size) noexcept
 {
   Layout::Initialise(GetDisplay(), new_size,
                      CommonInterface::GetUISettings().GetPercentScale(),
-                     CommonInterface::GetUISettings().custom_dpi,
+                     GetCustomDPI(),
                      CommonInterface::GetUISettings().viewing_distance);
 
   SingleWindow::OnResize(new_size);

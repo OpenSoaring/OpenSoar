@@ -6,6 +6,11 @@ Version 7.47 - not yet released
   - display resolution "140 dpi (5.7", 640x480 px)" for 5.7" devices
     such as the SteFlyNav, which report 213 dpi and so get fonts and
     buttons half as large again
+  - a display that reports exactly 213 dpi (the placeholder of Android
+    for an unknown size) gets the density the device is set to instead
+  - the display resolution can be set for the device as well (System
+    settings, file system.prf); it applies from the start screen on,
+    while the one of a profile overrides it once the profile is loaded
 * dialogs
   - fix a crash opening Pages setup from a weather overlay on a
     landscape screen #3373
