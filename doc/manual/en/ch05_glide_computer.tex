@@ -789,6 +789,43 @@ smoothly with wings level.
 \end{center}
 
 
+\section{Log book}\label{sec:logbook}
+\menulabel{\bmenug{Info 4}\blink\bmenug{Log book}}
+
+XCSoar records each flight in the log book, one row per flight, newest
+first.  An entry is written after the landing and holds:
+\begin{description}
+\item[Takeoff, landing]  Time (shown in local time) and place.  The
+  place is the nearest airfield within 3\,km, otherwise the nearest
+  waypoint within 1\,km, otherwise the coordinates.
+\item[Flight time]  From takeoff to landing.
+\item[Launch]  Winch, aerotow or self-launch, estimated from the
+  flight: a release from the tow within two minutes of the takeoff is
+  taken as a winch launch, a later one as an aerotow, an engine
+  running at the launch as a self-launch.  Correct it if it is wrong.
+\item[Pilot, co-pilot]  From the logger settings, editable.
+\item[Aircraft]  Type, registration and competition ID of the plane.
+\item[Free distance]  The distance over up to five turn points (six
+  legs), as the OLC classic rules score it.
+\item[DMSt]  Distance and points by the rules of the German
+  Streckenflug championship (DMSt): the best of free distance,
+  triangle (+40\,\%) and out and return (+30\,\%), divided by the index
+  of the plane; below 50 points a flight does not count.
+\item[Max. altitude, IGC file, remark]
+\end{description}
+
+Both distances are calculated during the whole flight, independently of
+the contest chosen in the settings, and once more exhaustively after
+the landing.  They include the launch (aerotow or winch climb), so
+they can be a little longer than the score of an online contest,
+which starts at the release.
+
+Selecting a flight shows all details; launch, pilot, co-pilot and
+remark can be changed there.  The log book is the file
+\verb|logbook.csv| in the `logs' subdirectory, a table separated by
+semicolons that a spreadsheet opens directly.  Times in the file are
+UTC.  Replays and the simulator are not recorded.
+
 \section{Flight notifications}
 
  Notifications, appearing as status messages, appear when the
