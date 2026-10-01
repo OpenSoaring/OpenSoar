@@ -12,10 +12,13 @@ using std::chrono::seconds;
 using std::chrono::minutes;
 
 /**
- * A tow shorter than this was a winch launch; an aerotow takes
- * several minutes.
+ * A winch launch climbs this much within #WINCH_CLIMB_TIME of the
+ * takeoff; an aerotow or a self-launch climbs 2 to 4 m/s and reaches
+ * about half of it.  Measured on 15 flights recorded by two or three
+ * loggers each: winch launches 317 to 450 m, aerotows 93 to 205 m.
  */
-static constexpr seconds MAX_WINCH_LAUNCH{120};
+static constexpr double WINCH_CLIMB = 250;
+static constexpr seconds WINCH_CLIMB_TIME{60};
 
 /**
  * An engine that runs this soon after the takeoff was the launch.
@@ -55,7 +58,10 @@ LogbookRecorder::OnTakeoff(const MoreData &basic,
   handler.OnLogbookTakeoff(entry);
 
   takeoff_time = flight.takeoff_time;
+  takeoff_altitude = flight.takeoff_altitude;
   engine_at_launch = false;
+  launch_checked = false;
+  winch_climb = false;
   in_flight = true;
   landed = false;
 }
@@ -77,17 +83,27 @@ LogbookRecorder::OnFlying(const MoreData &basic,
   if (flight.power_on_time.IsDefined() && takeoff_time.IsDefined() &&
       flight.power_on_time - takeoff_time < MAX_SELF_LAUNCH_DELAY)
     engine_at_launch = true;
+
+  if (!launch_checked && takeoff_time.IsDefined() &&
+      basic.NavAltitudeAvailable() &&
+      basic.time - takeoff_time >= WINCH_CLIMB_TIME) {
+    winch_climb = basic.nav_altitude - takeoff_altitude >= WINCH_CLIMB;
+    launch_checked = true;
+  }
 }
 
 void
 LogbookRecorder::SetLaunch(const FlyingState &flight) noexcept
 {
-  if (engine_at_launch)
+  /* the climb tells a winch launch; the noise a winch launch makes
+     in an engine noise sensor must not make it a self-launch, so it
+     is checked first */
+  if (winch_climb)
+    entry.launch = LogbookEntry::Launch::WINCH;
+  else if (engine_at_launch)
     entry.launch = LogbookEntry::Launch::SELF;
-  else if (flight.release_time.IsDefined() && takeoff_time.IsDefined())
-    entry.launch = flight.release_time - takeoff_time <= MAX_WINCH_LAUNCH
-      ? LogbookEntry::Launch::WINCH
-      : LogbookEntry::Launch::AEROTOW;
+  else if (flight.release_time.IsDefined())
+    entry.launch = LogbookEntry::Launch::AEROTOW;
 }
 
 void
