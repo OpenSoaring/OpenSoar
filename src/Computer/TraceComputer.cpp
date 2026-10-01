@@ -348,8 +348,10 @@ TraceComputer::Update(const ComputerSettings &settings_computer,
       ArchiveMergeVarioForLegUnlocked(leg_start, point.GetTime());
   }
 
-  // only contest requires trace_sprint
-  if (settings_computer.contest.enable) {
+  /* only the contest and the log book (DMSt triangle) need these
+     traces */
+  if (settings_computer.contest.enable ||
+      settings_computer.logger.enable_flight_logger) {
     sprint.push_back(point);
     contest.push_back(point);
   }
