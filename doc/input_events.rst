@@ -724,7 +724,8 @@ Built-in modes
   There are no pages: the field grows downwards and scrolls.  Moving
   down with the cursor keys, the focus stays on the last but one row
   shown and the field moves on by one row, so the next row is always
-  in sight; a scroll bar at the right edge and the rows in the title
+  in sight; a scroll bar at the right edge (its arrows move by one
+  row) and the rows in the title
   (e.g. ``3-8/12``: rows 3 to 8 of 12) show where one is.  A debug
   build shows the location in the corner of every cell, empty cells
   included, followed by the button's own places (``p`` portrait,
