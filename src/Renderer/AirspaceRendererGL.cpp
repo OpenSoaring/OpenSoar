@@ -329,7 +329,7 @@ public:
       glClear(GL_STENCIL_BUFFER_BIT);
     }
 
-    if (settings.fill_mode != AirspaceRendererSettings::FillMode::NONE)
+    if (settings.HasFill())
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   }
 
@@ -519,7 +519,8 @@ private:
       // Don't draw outlines if border_width == 0
       return false;
     else
-      canvas.Select(look.classes[as_type_or_class].border_pen);
+      canvas.Select(look.classes[as_type_or_class].GetBorderPen(
+        settings.fill_mode == AirspaceRendererSettings::FillMode::THIN_LINE));
 
     canvas.SelectHollowBrush();
 
@@ -606,7 +607,7 @@ public:
       glClear(GL_STENCIL_BUFFER_BIT);
     }
 
-    if (settings.fill_mode != AirspaceRendererSettings::FillMode::NONE)
+    if (settings.HasFill())
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   }
 
@@ -705,7 +706,8 @@ private:
       // Don't draw outlines if border_width == 0
       return false;
     else
-      canvas.Select(look.classes[as_type_or_class].border_pen);
+      canvas.Select(look.classes[as_type_or_class].GetBorderPen(
+        settings.fill_mode == AirspaceRendererSettings::FillMode::THIN_LINE));
 
     canvas.SelectHollowBrush();
 
@@ -723,7 +725,7 @@ private:
     const auto type_or_class = airspace.GetTypeOrClass();
     AirspaceClass as_type_or_class = settings.classes[type_or_class].display
       ? type_or_class : airspace.GetClass();
-    if (settings.fill_mode == AirspaceRendererSettings::FillMode::NONE)
+    if (!settings.HasFill())
       return false;
 
     const AirspaceClassLook &class_look = look.classes[as_type_or_class];
@@ -752,7 +754,7 @@ AirspaceRenderer::DrawInternal(Canvas &canvas,
     airspaces->QueryWithinRange(projection.GetGeoScreenCenter(),
                                 projection.GetScreenDistanceMeters());
 
-  if (settings.fill_mode == AirspaceRendererSettings::FillMode::NONE) {
+  if (!settings.HasFill()) {
     AirspaceFillRenderer renderer(canvas, projection, look, awc, settings,
                                   false, false);
     for (const auto &i : range) {

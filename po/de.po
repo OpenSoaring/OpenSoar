@@ -12009,3 +12009,11 @@ msgstr ""
 "Die Auflösung dieses Bildschirms, für Bildschirme, die eine falsche Größe "
 "melden.  Sie gilt schon ab dem Startbildschirm; ein Profil mit eigener "
 "Auflösung überschreibt sie.  Wirkt ab dem nächsten Start."
+
+msgid "Thin lines"
+msgstr "Dünne Linien"
+
+msgid ""
+"Don't fill the airspace area, and draw the outlines one pixel wide."
+msgstr ""
+"Die Lufträume nicht füllen und die Umrisse ein Pixel breit zeichnen."

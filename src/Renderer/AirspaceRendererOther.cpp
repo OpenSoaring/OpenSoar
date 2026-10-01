@@ -46,6 +46,7 @@ public:
 
     case AirspaceRendererSettings::FillMode::ALL:
     case AirspaceRendererSettings::FillMode::NONE:
+    case AirspaceRendererSettings::FillMode::THIN_LINE:
       use_stencil = false;
       break;
     }
@@ -68,7 +69,7 @@ public:
       return;
 
     AirspaceClass as_type_or_class = settings.classes[airspace.GetTypeOrClass()].display ? airspace.GetTypeOrClass() : airspace.GetClass();
-    if (settings.fill_mode == AirspaceRendererSettings::FillMode::NONE ||
+    if (!settings.HasFill() ||
         settings.classes[as_type_or_class].fill_mode ==
         AirspaceClassRendererSettings::FillMode::NONE)
       return;
@@ -138,7 +139,8 @@ protected:
       // Don't draw outlines if border_width == 0
       return false;
 
-    canvas.Select(look.classes[as_type_or_class].border_pen);
+    canvas.Select(look.classes[as_type_or_class].GetBorderPen(
+      settings.fill_mode == AirspaceRendererSettings::FillMode::THIN_LINE));
 
     return true;
   }
@@ -245,7 +247,7 @@ AirspaceRenderer::DrawInternal(Canvas &canvas, Canvas &stencil_canvas,
                                const AirspaceWarningCopy &awc,
                                const AirspacePredicate &visible)
 {
-  if (settings.fill_mode != AirspaceRendererSettings::FillMode::NONE)
+  if (settings.HasFill())
     DrawFillCached(canvas, stencil_canvas, projection, settings, awc, visible);
 
   DrawOutline(canvas, projection, settings, visible);

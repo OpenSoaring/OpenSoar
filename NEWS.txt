@@ -224,6 +224,7 @@ Version 7.46 - not yet released
   - inset the map overlays by the same margin as the menu, QuickMenu
     and zoom buttons
 * airspace
+  - new fill mode "Thin lines": no fill, outlines one pixel wide
   - keep airspace altitude labels readable when they would overlap #771
   - fill airspaces with a transparent colour; hatch patterns and the
     Airspace transparency setting are gone
