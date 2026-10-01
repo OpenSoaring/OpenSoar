@@ -215,15 +215,40 @@ static constexpr StaticEnumChoice display_orientation_list[] = {
 static void
 FillDpiChoices(DataFieldEnum &df, unsigned value) noexcept
 {
-  static constexpr unsigned dpi_choices[] = {
-    120, 160, 240, 260, 280, 300, 340, 360, 400, 420, 520,
+  /* some displays report a wrong physical size, so the automatic
+     resolution is off; a value with a display named after it is the
+     measured resolution of that display, so the pilot does not have
+     to measure it again */
+  static constexpr struct {
+    unsigned dpi;
+    const char *display;
+  } dpi_choices[] = {
+    { 120, nullptr },
+
+    /* 5.7" panel with 640 x 480 pixels and a visible area of
+       115 x 87 mm (SteFlyNav, Android); the system reports 213 dpi
+       for it, which makes everything half as large again */
+    { 141, "5.7\", 640x480 px" },
+
+    { 160, nullptr },
+    { 240, nullptr },
+    { 260, nullptr },
+    { 280, nullptr },
+    { 300, nullptr },
+    { 340, nullptr },
+    { 360, nullptr },
+    { 400, nullptr },
+    { 420, nullptr },
+    { 520, nullptr },
   };
 
   df.AddChoice(0, _("Automatic"));
-  for (unsigned dpi : dpi_choices) {
-    StaticString<20> buffer;
-    buffer.Format(_("%u dpi"), dpi);
-    df.AddChoice(dpi, buffer);
+  for (const auto &c : dpi_choices) {
+    StaticString<48> buffer;
+    buffer.Format(_("%u dpi"), c.dpi);
+    if (c.display != nullptr)
+      buffer.AppendFormat(" (%s)", c.display);
+    df.AddChoice(c.dpi, buffer);
   }
   df.SetValue(value);
 }
