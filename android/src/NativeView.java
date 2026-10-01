@@ -270,6 +270,22 @@ class NativeView extends SurfaceView
     ((Activity)context).getWindowManager().getDefaultDisplay()
       .getRealMetrics(metrics);
 
+    /* Android reports exactly 213 dpi (DENSITY_TV) when the display
+       does not tell its physical size, e.g. on the SteFlyNav (5.7",
+       640x480, really 141 dpi, set to a density of 140).  The density the system is set to
+       ("wm density") is then much closer to the truth than this
+       placeholder. */
+    int xdpi = (int)metrics.xdpi, ydpi = (int)metrics.ydpi;
+    if (Math.round(metrics.xdpi) == DisplayMetrics.DENSITY_TV &&
+        Math.round(metrics.ydpi) == DisplayMetrics.DENSITY_TV &&
+        metrics.densityDpi > 0 &&
+        metrics.densityDpi != DisplayMetrics.DENSITY_TV) {
+      Log.i(TAG, "Display reports the placeholder " +
+            DisplayMetrics.DENSITY_TV + " dpi, using the density " +
+            metrics.densityDpi + " dpi instead");
+      xdpi = ydpi = metrics.densityDpi;
+    }
+
     try {
       /* Clear the shutdown flag from any previous session so the
          service starts normally */
@@ -285,7 +301,7 @@ class NativeView extends SurfaceView
       try {
         runNative(context, permissionManager,
                   r.width(), r.height(),
-                  (int)metrics.xdpi, (int)metrics.ydpi,
+                  xdpi, ydpi,
                   Build.PRODUCT);
       } finally {
         /* Set shutdown flag before stopping service so it does not
