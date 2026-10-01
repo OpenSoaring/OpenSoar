@@ -20,6 +20,7 @@ DIALOG_SOURCES = \
 	$(SRC)/Dialogs/VhfLink.cpp \
 	$(SRC)/Dialogs/Message.cpp \
 	$(SRC)/Dialogs/LockScreen.cpp \
+	$(SRC)/Dialogs/LogbookDialog.cpp \
 	$(SRC)/Dialogs/Error.cpp \
 	$(SRC)/Dialogs/ListPicker.cpp \
 	$(SRC)/Dialogs/ProgressDialog.cpp \
