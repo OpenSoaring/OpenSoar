@@ -28,7 +28,7 @@ Version 7.45.4 - not yet released
     built-in configuration in the order of their names, so each file
     can hold one topic and a later one can override an earlier one;
     an existing single file is taken over
-  - the quick menu style "OpenSoar" has a list of its own before the
+  - the quick menu style "Dynamic" has a list of its own before the
     flight, in flight and after the landing (modes QuickGround,
     QuickFlight and QuickAfter, built-in lists included); it follows
     takeoff and landing and can be switched with the new buttons
