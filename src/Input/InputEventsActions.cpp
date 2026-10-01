@@ -49,6 +49,7 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "Profile/Profile.hpp"
 #include "SystemConfig.hpp"
 #include "Dialogs/dlgAnalysis.hpp"
+#include "Dialogs/LogbookDialog.hpp"
 #include "Dialogs/FileManager.hpp"
 #include "Dialogs/ReplayDialog.hpp"
 #include "Dialogs/dlgQuickGuide.hpp"
@@ -363,6 +364,15 @@ InputEvents::eventAnalysis(const char *misc)
                        data_components->airspaces.get(),
                        data_components->terrain.get(),
                        ParseAnalysisPage(misc));
+}
+
+// Logbook
+// Displays the log book: one row per flight with times, places,
+// distances and the crew
+void
+InputEvents::eventLogbook([[maybe_unused]] const char *misc)
+{
+  ShowLogbookDialog();
 }
 
 // WaypointDetails

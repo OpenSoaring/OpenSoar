@@ -11943,7 +11943,72 @@ msgstr ""
 
 msgid ""
 "Records each flight in the log book: takeoff and landing with time and "
-"place, launch, crew, aircraft, free and DMSt distance (file logbook.csv)."
+"place, launch, crew, aircraft, free and DMSt distance (Info menu, file "
+"logbook.csv)."
 msgstr ""
 "Trägt jeden Flug ins Flugbuch ein: Start und Landung mit Zeit und Ort, "
-"Startart, Besatzung, Flugzeug, freie und DMSt-Strecke (Datei logbook.csv)."
+"Startart, Besatzung, Flugzeug, freie und DMSt-Strecke (Info-Menü, Datei "
+"logbook.csv)."
+
+msgctxt "Logbook"
+msgid "Takeoff"
+msgstr "Start"
+
+msgctxt "Logbook"
+msgid "Landing"
+msgstr "Landung"
+
+msgid "Aircraft"
+msgstr "Flugzeug"
+
+msgid "Free distance"
+msgstr "Freie Strecke"
+
+msgid ""
+"The free distance over up to five turn points (six legs), as the OLC "
+"classic rules score it."
+msgstr ""
+"Die freie Strecke über bis zu fünf Wendepunkte (sechs Schenkel), wie sie "
+"die OLC-Classic-Regeln werten."
+
+msgid ""
+"Distance and points by the DMSt rules, with the index of the plane and the "
+"bonus of the shape."
+msgstr ""
+"Strecke und Punkte nach den DMSt-Regeln, mit dem Index des Flugzeugs und "
+"dem Bonus der Streckenform."
+
+msgid "Max. altitude"
+msgstr "Max. Höhe"
+
+msgid "IGC file"
+msgstr "IGC-Datei"
+
+msgid "Launch"
+msgstr "Startart"
+
+msgid "Winch"
+msgstr "Winde"
+
+msgid "Aerotow"
+msgstr "F-Schlepp"
+
+msgid "Self-launch"
+msgstr "Eigenstart"
+
+msgid "Estimated from the climb after the takeoff; correct it if it is wrong."
+msgstr ""
+"Aus dem Steigen nach dem Start geschätzt; bitte korrigieren, wenn sie nicht "
+"stimmt."
+
+msgid "Co-pilot"
+msgstr "Begleiter"
+
+msgid "Remark"
+msgstr "Bemerkung"
+
+msgid "Triangle"
+msgstr "Dreieck"
+
+msgid "Delete this flight from the log book?"
+msgstr "Diesen Flug aus dem Flugbuch löschen?"

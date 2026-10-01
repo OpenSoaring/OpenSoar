@@ -955,6 +955,14 @@ event=RepeatStatusMessage
 label=Message Repeat
 location=7
 
+mode=Info3
+type=key
+data=9
+event=Logbook
+event=Mode default
+label=Log book
+location=8
+
 # -------------
 # mode=Menu
 # -------------

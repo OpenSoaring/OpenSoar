@@ -306,6 +306,11 @@ document {\em Technical Specification for IGC-Approved GNSS Flight Recorders}.
 Log-files are stored in the `logs' subdirectory of the XCSoarData directory.
 These files can be imported into other programs for analysis after flight.
 
+The log book (section~\ref{sec:logbook}) is the file \verb|logbook.csv|
+in the same directory: one line per flight, columns separated by
+semicolons, times in UTC, distances in kilometres.  The older file
+\verb|flights.log| lists only takeoff and landing times.
+
 \section{FLARM Identification}\label{sec:flarm-ident-file}
 
 The FLARM identification file \verb|xcsoar-flarm.txt| defines a table
