@@ -47,10 +47,20 @@ struct Settings {
    */
   std::string last_profile;
 
+  /**
+   * The display resolution of this device in dpi, 0 for the one the
+   * system reports.  It applies from the start screen on, before any
+   * profile is loaded; a profile with a resolution of its own
+   * overrides it once it is loaded.  For displays that report a wrong
+   * size - the resolution belongs to the device, not to the pilot.
+   */
+  unsigned custom_dpi;
+
   void SetDefaults() noexcept {
     xcsoar_behaviour = false;
     devices_in_profile = false;
     last_profile.clear();
+    custom_dpi = 0;
   }
 };
 

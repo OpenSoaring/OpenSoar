@@ -19,10 +19,15 @@ static constexpr char KEY_XCSOAR_BEHAVIOUR[] = "XCSoarBehaviour";
 static constexpr char KEY_DEVICES_IN_PROFILE[] = "DevicesInProfile";
 static constexpr char KEY_LAST_PROFILE[] = "LastProfile";
 
+/* the same name as in a profile, so the line can be copied between
+   the two files */
+static constexpr char KEY_CUSTOM_DPI[] = "CustomDPI";
+
 static SystemConfig::Settings the_config = {
   .xcsoar_behaviour = false,
   .devices_in_profile = false,
   .last_profile = {},
+  .custom_dpi = 0,
 };
 
 [[gnu::pure]]
@@ -57,6 +62,11 @@ SystemConfig::Load() noexcept
   map.Get(KEY_XCSOAR_BEHAVIOUR, the_config.xcsoar_behaviour);
   map.Get(KEY_DEVICES_IN_PROFILE, the_config.devices_in_profile);
   map.Get(KEY_LAST_PROFILE, the_config.last_profile);
+
+  /* the same range as in a profile (see Profile::Load(UISettings)) */
+  map.Get(KEY_CUSTOM_DPI, the_config.custom_dpi);
+  if (the_config.custom_dpi < 120 || the_config.custom_dpi > 520)
+    the_config.custom_dpi = 0;
 }
 
 void
@@ -75,6 +85,7 @@ SystemConfig::Save() noexcept
   map.Set(KEY_XCSOAR_BEHAVIOUR, the_config.xcsoar_behaviour);
   map.Set(KEY_DEVICES_IN_PROFILE, the_config.devices_in_profile);
   map.Set(KEY_LAST_PROFILE, the_config.last_profile.c_str());
+  map.Set(KEY_CUSTOM_DPI, the_config.custom_dpi);
 
   try {
     Profile::SaveFile(map, path);
