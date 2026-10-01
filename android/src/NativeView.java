@@ -444,6 +444,9 @@ class NativeView extends SurfaceView
     ((Activity)context).getWindowManager().getDefaultDisplay()
       .getRealMetrics(metrics);
 
+    /* before the first dialog, so it shows its focus already */
+    EventBridge.detectCursorKeys();
+
     try {
       /* Clear the shutdown flag from any previous session so the
          service starts normally */
