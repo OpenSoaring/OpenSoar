@@ -42,6 +42,8 @@ Version 7.46 - not yet released
   - display resolution "140 dpi (5.7", 640x480 px)" for 5.7" devices
     such as the SteFlyNav, which report 213 dpi and so get fonts and
     buttons half as large again
+  - a display that reports exactly 213 dpi (the placeholder of Android
+    for an unknown size) gets the density the device is set to instead
 * iOS
   - add haptic feedback for button presses; the Haptic feedback
     setting controls it
