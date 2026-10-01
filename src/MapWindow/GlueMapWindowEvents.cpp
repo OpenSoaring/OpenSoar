@@ -387,6 +387,13 @@ GlueMapWindow::OnMouseUp(PixelPoint p) noexcept
       return true;
     }
 
+    /* a tap on the final glide bar opens the flight setup with the
+       MacCready setting, the values the bar depends on */
+    if (!IsPanning() && IsOnFinalGlideBar(p)) {
+      InputEvents::eventSetup("Basic");
+      return true;
+    }
+
     break;
   }
 

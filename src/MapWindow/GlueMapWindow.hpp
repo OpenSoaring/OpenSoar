@@ -452,6 +452,20 @@ private:
                        const MapHudLayout &layout) const noexcept;
   void DrawFinalGlide(Canvas &canvas,
                       const MapHudLayout &layout) const noexcept;
+
+  /**
+   * Is the final glide bar on the map at the moment?
+   */
+  [[gnu::pure]]
+  bool IsFinalGlideBarShown() const noexcept;
+
+  /**
+   * Does a tap at @p p hit the final glide bar?  The area is a strip
+   * along its edge of the map, at least a finger wide, in the middle
+   * half of the height, where the bar moves up and down.
+   */
+  [[gnu::pure]]
+  bool IsOnFinalGlideBar(PixelPoint p) const noexcept;
   void DrawVario(Canvas &canvas,
                  const MapHudLayout &layout) const noexcept;
   void DrawStallRatio(Canvas &canvas,
