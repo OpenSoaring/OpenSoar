@@ -34,9 +34,11 @@ AirspaceClassLook::Initialise(const AirspaceClassRendererSettings &settings)
 
   solid_brush.Create(fill_color);
 
-  if (settings.border_width != 0)
+  if (settings.border_width != 0) {
     border_pen.Create(Layout::ScalePenWidth(settings.border_width),
                       Color(settings.border_color));
+    thin_border_pen.Create(1, Color(settings.border_color));
+  }
 }
 
 void
