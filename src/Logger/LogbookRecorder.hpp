@@ -71,6 +71,15 @@ private:
   /** The engine was running at the launch: a self-launch */
   bool engine_at_launch = false;
 
+  /** The altitude at the takeoff, to tell a winch launch by its climb */
+  double takeoff_altitude;
+
+  /** The climb in the first minute has been checked */
+  bool launch_checked = false;
+
+  /** That climb was a winch launch */
+  bool winch_climb = false;
+
 public:
   explicit LogbookRecorder(Handler &_handler) noexcept
     :handler(_handler) {}
