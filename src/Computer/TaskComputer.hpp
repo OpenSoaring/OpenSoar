@@ -75,6 +75,13 @@ public:
 
   void ResetFlight(const bool full=true);
 
+  /**
+   * Forget the trace and the contest results of the previous flight:
+   * at a takeoff, a new flight begins, and its contest values must
+   * not include the one before.
+   */
+  void ResetTrace() noexcept;
+
   void SetTerrain(const RasterTerrain* _terrain);
 
   void SetContestIncremental(bool incremental) {
