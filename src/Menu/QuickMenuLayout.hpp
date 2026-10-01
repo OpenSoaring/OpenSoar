@@ -7,7 +7,7 @@
 #include <vector>
 
 /**
- * The arrangement of the quick menu in the style "OpenSoar": one
+ * The arrangement of the quick menu in the style "Dynamic": one
  * field of buttons that grows downwards and scrolls, as many columns
  * as fit, and every button at its location.
  *

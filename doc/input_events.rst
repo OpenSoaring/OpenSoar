@@ -675,7 +675,7 @@ Built-in modes
   before the flight, in flight and after the landing, each a list of
   its own with its own locations, so the same button can sit in
   different places in each phase.  They belong to the quick menu style
-  *OpenSoar*: there the Quick Menu shows the list of the current phase
+  *Dynamic*: there the Quick Menu shows the list of the current phase
   and offers a button for each phase that has a list, plus *All* for
   the complete ``QuickMenu``.  A phase without a list shows *All*.  The
   style *XCSoar* always shows the complete ``QuickMenu``.  OpenSoar
@@ -696,7 +696,7 @@ Built-in modes
    location=2
    landscape=5:3
 
-  With the quick menu style *OpenSoar* (**Menu > Config > System >
+  With the quick menu style *Dynamic* (**Menu > Config > System >
   Look > Language, Input > Quick menu**), as many columns fit side by
   side as the screen allows (three in portrait, up to seven in
   landscape), and every button sits at its location, counted row by
