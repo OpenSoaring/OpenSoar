@@ -28,6 +28,7 @@ LIBCOMPUTER_SOURCES = \
 	$(SRC)/Computer/ThermalLocator.cpp \
 	$(SRC)/Computer/ThermalBase.cpp \
 	$(SRC)/Computer/LiftDatabaseComputer.cpp \
+	$(SRC)/Computer/LogbookComputer.cpp \
 	$(SRC)/Computer/LogComputer.cpp \
 	$(SRC)/Computer/FlarmRangeComputer.cpp \
 	$(SRC)/FLARM/RangeEstimate.cpp \

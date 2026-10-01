@@ -26,6 +26,7 @@ set(_SOURCES
         Computer/GlideRatioComputer.cpp
         Computer/GroundSpeedComputer.cpp
         Computer/LiftDatabaseComputer.cpp
+        Computer/LogbookComputer.cpp
         Computer/LogComputer.cpp
         Computer/RouteComputer.cpp
         Computer/Settings.cpp
