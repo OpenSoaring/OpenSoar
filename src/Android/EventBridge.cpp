@@ -26,6 +26,8 @@ enum {
 
 static constexpr unsigned KEYCODE_DPAD_UP = 0x13;
 static constexpr unsigned KEYCODE_DPAD_DOWN = 0x14;
+static constexpr unsigned KEYCODE_DPAD_LEFT = 0x15;
+static constexpr unsigned KEYCODE_DPAD_RIGHT = 0x16;
 
 static unsigned
 TranslateKeyCode(unsigned key_code)
@@ -51,7 +53,20 @@ constexpr
 static bool
 IsCursorKey(unsigned key_code)
 {
-  return key_code == KEYCODE_DPAD_UP || key_code == KEYCODE_DPAD_DOWN;
+  /* left and right count as well: a stick moved sideways first is
+     just as much a cursor key */
+  return key_code == KEYCODE_DPAD_UP || key_code == KEYCODE_DPAD_DOWN ||
+    key_code == KEYCODE_DPAD_LEFT || key_code == KEYCODE_DPAD_RIGHT;
+}
+
+gcc_visibility_default
+void
+Java_org_xcsoar_EventBridge_onCursorKeysPresent([[maybe_unused]] JNIEnv *env,
+                                                [[maybe_unused]] jclass cls)
+{
+  /* reported at startup by EventBridge.detectCursorKeys(), before the
+     first dialog, so that one shows its focus as well */
+  has_cursor_keys.store(true, std::memory_order_relaxed);
 }
 
 gcc_visibility_default
