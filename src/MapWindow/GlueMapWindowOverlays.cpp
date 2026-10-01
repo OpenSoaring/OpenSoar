@@ -14,6 +14,7 @@
 #include "Formatter/UserUnits.hpp"
 #include "Formatter/UserGeoPointFormatter.hpp"
 #include "UIState.hpp"
+#include "Interface.hpp"
 #include "Renderer/FinalGlideBarRenderer.hpp"
 #include "Terrain/RasterTerrain.hpp"
 #include "util/Macros.hpp"
@@ -277,28 +278,63 @@ GlueMapWindow::DrawFlightMode(Canvas &canvas,
                        rc.bottom - bottom_margin - bmp->GetSize().height - Layout::Scale(2)));
 }
 
+bool
+GlueMapWindow::IsFinalGlideBarShown(const MapSettings &settings,
+                                    const ComputerSettings &computer,
+                                    const DerivedInfo &calculated) noexcept
+{
+  if (settings.final_glide_bar_display_mode ==
+      FinalGlideBarDisplayMode::OFF)
+    return false;
+
+  /* the bar needs a valid task solution (see FinalGlideBarRenderer) */
+  const TaskStats &task_stats = calculated.task_stats;
+  const ElementStat &total = task_stats.total;
+  const GlideResult &solution = total.solution_remaining;
+  const GlideResult &solution_mc0 = total.solution_mc0;
+
+  if (!task_stats.task_valid || !solution.IsOk() || !solution_mc0.IsDefined())
+    return false;
+
+  if (settings.final_glide_bar_display_mode ==
+      FinalGlideBarDisplayMode::AUTO) {
+    const GlideSettings &glide_settings = computer.task.glide;
+    if (solution_mc0.SelectAltitudeDifference(glide_settings) < -1000 &&
+        solution.SelectAltitudeDifference(glide_settings) < -1000)
+      return false;
+  }
+
+  return true;
+}
+
+bool
+GlueMapWindow::IsOnFinalGlideBar(PixelPoint p) const noexcept
+{
+  /* drawn only near the own position, see Render() */
+  if (!IsNearSelf() ||
+      !IsFinalGlideBarShown(CommonInterface::GetMapSettings(),
+                            CommonInterface::GetComputerSettings(),
+                            CommonInterface::Calculated()))
+    return false;
+
+  /* the bar is 18 (scaled) pixels wide at the right edge of the map
+     (FinalGlideBarRenderer); the strip is at least a finger wide */
+  const PixelRect rc = GetClientRect();
+  const int width = std::max<int>(Layout::Scale(18) * 2,
+                                  Layout::GetHitRadius());
+  const int quarter = rc.GetHeight() / 4;
+
+  return p.x >= rc.right - width && p.x < rc.right &&
+    p.y >= rc.top + quarter && p.y < rc.bottom - quarter;
+}
+
 void
 GlueMapWindow::DrawFinalGlide(Canvas &canvas,
                               const PixelRect &rc) const noexcept
 {
-
-  if (GetMapSettings().final_glide_bar_display_mode==FinalGlideBarDisplayMode::OFF)
+  if (!IsFinalGlideBarShown(GetMapSettings(), GetComputerSettings(),
+                            Calculated()))
     return;
-
-  if (GetMapSettings().final_glide_bar_display_mode==FinalGlideBarDisplayMode::AUTO) {
-    const TaskStats &task_stats = Calculated().task_stats;
-    const ElementStat &total = task_stats.total;
-    const GlideResult &solution = total.solution_remaining;
-    const GlideResult &solution_mc0 = total.solution_mc0;
-    const GlideSettings &glide_settings= GetComputerSettings().task.glide;
-
-    if (!task_stats.task_valid || !solution.IsOk() || !solution_mc0.IsDefined())
-      return;
-
-    if (solution_mc0.SelectAltitudeDifference(glide_settings) < -1000 &&
-        solution.SelectAltitudeDifference(glide_settings) < -1000)
-      return;
-  }
 
   final_glide_bar_renderer.Draw(canvas, rc, Calculated(),
                                 GetComputerSettings().task.glide,
