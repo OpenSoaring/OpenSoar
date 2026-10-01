@@ -56,6 +56,9 @@ Version 7.47 - not yet released
   - Larus: pass on the instantaneous wind of ``$PLARW`` (``I``) next
     to the average wind (``A``)
 * android
+  - display resolutions "140 dpi (5.7", 640x480 px)" and "180 dpi
+    (7.0", 1024x600 px)" for devices such as the SteFlyNav, which
+    report 213 dpi and so get fonts and buttons too large
   - a display that reports exactly 213 dpi (the placeholder of Android
     for an unknown size) gets the density the device is set to instead
   - the display resolution can be set for the device as well (System
