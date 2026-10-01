@@ -14,9 +14,9 @@ LoggerSettings::SetDefaults()
   copilot_name.clear();
   crew_mass_template = 90;
 
-  /* XXX disabled by default for now, until the FlightLogger
-     implementation is finished */
-  enable_flight_logger = false;
+  /* the log book records the flights with all details now
+     (logbook.csv); a pilot expects that without searching for it */
+  enable_flight_logger = true;
 
   enable_nmea_logger = false;
 }

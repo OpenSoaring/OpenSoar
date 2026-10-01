@@ -91,7 +91,7 @@ TEST_NAMES = \
 	TestValidity TestUTM \
 	TestAllocatedGrid \
 	TestRadixTree TestGeoBounds TestGeoClip \
-	TestLogger TestGRecord TestClimbAvCalc TestCirclingWind \
+	TestLogger TestLogbook TestGRecord TestClimbAvCalc TestCirclingWind \
 	TestFilteredVarioComputer \
 	TestVarioSynthesiser TestAudioVario \
 	TestWaypointReader TestThermalBase \
@@ -957,6 +957,13 @@ TEST_LOCAL_PATH_RESOLVE_SOURCES = \
 	$(TEST_SRC_DIR)/TestLocalPathResolve.cpp
 TEST_LOCAL_PATH_RESOLVE_DEPENDS = IO OS UTIL
 $(eval $(call link-program,TestLocalPathResolve,TEST_LOCAL_PATH_RESOLVE))
+
+TEST_LOGBOOK_SOURCES = \
+	$(SRC)/Logger/Logbook.cpp \
+	$(TEST_SRC_DIR)/tap.c \
+	$(TEST_SRC_DIR)/TestLogbook.cpp
+TEST_LOGBOOK_DEPENDS = IO OS TIME UTIL FMT
+$(eval $(call link-program,TestLogbook,TEST_LOGBOOK))
 
 TEST_TAR_ARCHIVE_SOURCES = \
 	$(SRC)/io/MemoryReader.cxx \

@@ -41,6 +41,7 @@
 #include "Logger/Logger.hpp"
 #include "Logger/NMEALogger.hpp"
 #include "Logger/GlueFlightLogger.hpp"
+#include "Logger/GlueLogbook.hpp"
 #include "Waypoint/WaypointDetailsReader.hpp"
 #include "Blackboard/DeviceBlackboard.hpp"
 #include "MapWindow/GlueMapWindow.hpp"
@@ -805,6 +806,13 @@ Startup(UI::Display &display)
     backend_components->flight_logger = std::make_unique<GlueFlightLogger>(live_blackboard);
     backend_components->flight_logger->SetPath(
       LogsDataSavePath("flights.log"));
+
+    /* the log book with all details of each flight, beside the
+       plain list of flights.log */
+    backend_components->logbook = std::make_unique<GlueLogbook>(
+      live_blackboard, LogsDataSavePath("logbook.csv"),
+      data_components->waypoints.get(),
+      backend_components->igc_logger.get());
   }
 
   if (computer_settings.logger.enable_nmea_logger)

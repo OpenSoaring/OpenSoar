@@ -9,6 +9,7 @@ struct PolarSettings;
 class Logger;
 class NMEALogger;
 class GlueFlightLogger;
+class GlueLogbook;
 class MultipleDevices;
 class DeviceBlackboard;
 class MergeThread;
@@ -28,6 +29,7 @@ struct BackendComponents {
   std::unique_ptr<Logger> igc_logger;
   std::unique_ptr<NMEALogger> nmea_logger;
   std::unique_ptr<GlueFlightLogger> flight_logger;
+  std::unique_ptr<GlueLogbook> logbook;
 
   const std::unique_ptr<DeviceBlackboard> device_blackboard;
   std::unique_ptr<MultipleDevices> devices;

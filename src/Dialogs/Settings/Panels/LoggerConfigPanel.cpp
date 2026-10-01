@@ -91,9 +91,11 @@ LoggerConfigPanel::Prepare(ContainerWindow &parent,
              logger.enable_nmea_logger);
   SetExpertRow(EnableNMEALogger);
 
-  AddBoolean(_("Log book"), _("Logs each start and landing."),
+  AddBoolean(_("Log book"),
+             _("Records each flight in the log book: takeoff and landing "
+               "with time and place, launch, crew, aircraft, free and DMSt "
+               "distance (file logbook.csv)."),
              logger.enable_flight_logger);
-  SetExpertRow(EnableFlightLogger);
 
   AddText(_("Logger ID"),
           _("The three-letter logger ID used in the IGC filename."),
