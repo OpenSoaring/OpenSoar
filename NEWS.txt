@@ -39,6 +39,9 @@ Version 7.45.4 - not yet released
     downloaded while online and kept in the cache
 * airspace
   - new fill mode "Thin lines": no fill, outlines one pixel wide
+* glide computer
+  - a takeoff starts a new trace and contest: the second flight of a
+    session (e.g. the next winch launch) no longer counts the one before
 
 Version 7.45.3 - 2026-09-22
 * android
