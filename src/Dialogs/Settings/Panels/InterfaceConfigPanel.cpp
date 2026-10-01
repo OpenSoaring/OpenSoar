@@ -169,7 +169,7 @@ InterfaceConfigPanel::Prepare(ContainerWindow &parent,
     { UISettings::QuickMenuStyle::XCSOAR, N_("XCSoar"),
       N_("Three columns, the buttons in the order of their locations, "
          "page by page.") },
-    { UISettings::QuickMenuStyle::OPENSOAR, "OpenSoar",
+    { UISettings::QuickMenuStyle::DYNAMIC, N_("Dynamic"),
       N_("As many columns as fit, every button at its location, and a "
          "list of its own for ground, flight and after landing.") },
     nullptr
