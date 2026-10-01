@@ -78,6 +78,8 @@ Version 7.47 - not yet released
     downloaded while online and kept in the cache
   - the quick menu offers "Page settings" for the current page in
     place of the terrain and topography toggles
+* airspace
+  - new fill mode "Thin lines": no fill, outlines one pixel wide
 
 Version 7.46 - 2026-10-19
 * highlights

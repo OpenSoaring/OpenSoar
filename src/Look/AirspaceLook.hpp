@@ -25,6 +25,19 @@ struct AirspaceClassLook {
 
   Pen border_pen;
 
+  /**
+   * The outline one pixel wide, for the fill mode
+   * AirspaceRendererSettings::FillMode::THIN_LINE.
+   */
+  Pen thin_border_pen;
+
+  /**
+   * The pen for the outline in the given fill mode.
+   */
+  const Pen &GetBorderPen(bool thin) const noexcept {
+    return thin ? thin_border_pen : border_pen;
+  }
+
   void Initialise(const AirspaceClassRendererSettings &settings);
 };
 
