@@ -5,14 +5,24 @@
 #include "Engine/Contest/LogbookStatistics.hpp"
 #include "NMEA/FlyingState.hpp"
 
-LogbookComputer::LogbookComputer(const Trace &trace_full,
+/**
+ * The size of the dense trace for the final triangle; the size of the
+ * triangle trace of the contest analysis tool, whose results the
+ * final values match.
+ */
+static constexpr unsigned FINAL_TRACE_SIZE = 1024;
+
+LogbookComputer::LogbookComputer(const Trace &_trace_full,
                                  const Trace &trace_triangle) noexcept
-  :free(trace_full),
-   dmst_quad(trace_full),
+  :trace_full(_trace_full),
+   free(_trace_full),
+   dmst_quad(_trace_full),
    /* the log book records what was flown, so the triangle is not
       assumed to be closed */
    dmst_triangle(trace_triangle, false),
-   dmst_or(trace_full)
+   dmst_or(_trace_full),
+   final_trace({}, Trace::null_time, FINAL_TRACE_SIZE),
+   final_triangle(final_trace, false)
 {
   Reset();
 }
@@ -38,6 +48,9 @@ LogbookComputer::Reset() noexcept
   result_quad.Reset();
   result_triangle.Reset();
   result_or.Reset();
+
+  final_trace.clear();
+  final_triangle.Reset();
 }
 
 /**
@@ -70,6 +83,12 @@ LogbookComputer::Solve(unsigned handicap, bool exhaustive,
   Run(dmst_triangle, result_triangle, exhaustive);
   Run(dmst_or, result_or, exhaustive);
 
+  CopyResults(stats);
+}
+
+void
+LogbookComputer::CopyResults(LogbookStatistics &stats) const noexcept
+{
   stats.free = result_free;
 
   /* each shape has its own bonus, which is part of its score; the
@@ -100,10 +119,29 @@ LogbookComputer::Process(const FlyingState &flight, unsigned handicap,
   const bool landed = !flight.flying && flight.landing_time.IsDefined();
 
   if (landed && !stats.final) {
-    Solve(handicap, true, stats);
+    SolveFinal(handicap, stats);
     stats.final = true;
   } else if (flight.flying) {
     Solve(handicap, exhaustive, stats);
     stats.final = false;
   }
+}
+
+void
+LogbookComputer::SolveFinal(unsigned handicap,
+                            LogbookStatistics &stats) noexcept
+{
+  Solve(handicap, true, stats);
+
+  final_trace.clear();
+  for (const auto &point : trace_full)
+    final_trace.push_back(point);
+
+  final_triangle.Reset();
+  final_triangle.SetHandicap(handicap == 0 ? 100 : handicap);
+  if (final_triangle.Solve(true) == SolverResult::VALID &&
+      final_triangle.GetBestResult().score > result_triangle.score)
+    result_triangle = final_triangle.GetBestResult();
+
+  CopyResults(stats);
 }
