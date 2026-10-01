@@ -5,6 +5,9 @@ Version 7.45.4 - not yet released
     report 213 dpi and so get fonts and buttons too large
   - a display that reports exactly 213 dpi (the placeholder of Android
     for an unknown size) gets the density the device is set to instead
+  - the display resolution can be set for the device as well (System
+    settings, file system.prf); it applies from the start screen on,
+    while the one of a profile overrides it once the profile is loaded
 * input
   - add InfoBoxGeometry input events (next/previous/toggle/show) so
     layout can be changed in flight; default key L

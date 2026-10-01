@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "DisplayConfigPanel.hpp"
+#include "SystemConfig.hpp"
 #include "ui/canvas/Features.hpp" // for DRAW_MOUSE_CURSOR
 #include "Profile/Keys.hpp"
 #include "Form/DataField/Enum.hpp"
@@ -10,6 +11,9 @@
 #include "Interface.hpp"
 #include "MainWindow.hpp"
 #include "LogFile.hpp"
+
+#include <algorithm>
+#include <iterator>
 #include "Language/Language.hpp"
 #include "Widget/RowFormWidget.hpp"
 #include "UIGlobals.hpp"
@@ -92,8 +96,9 @@ static constexpr StaticEnumChoice dark_mode_list[] = {
   nullptr
 };
 
-static void
-FillDpiChoices(DataFieldEnum &df, unsigned value) noexcept
+void
+FillDpiChoices(DataFieldEnum &df, unsigned value,
+               unsigned device_dpi) noexcept
 {
   /* some displays report a wrong physical size, so the automatic
      resolution is off; a value with a display named after it is the
@@ -130,14 +135,41 @@ FillDpiChoices(DataFieldEnum &df, unsigned value) noexcept
     { 520, nullptr },
   };
 
-  df.AddChoice(0, _("Automatic"));
-  for (const auto &c : dpi_choices) {
+  if (device_dpi > 0) {
     StaticString<48> buffer;
-    buffer.Format(_("%u dpi"), c.dpi);
-    if (c.display != nullptr)
-      buffer.AppendFormat(" (%s)", c.display);
-    df.AddChoice(c.dpi, buffer);
+    buffer.Format("%s (%u dpi)", _("Device setting"), device_dpi);
+    df.AddChoice(0, buffer);
+  } else
+    df.AddChoice(0, _("Automatic"));
+
+  /* a value written into the file by hand (e.g. 145) is not in the
+     list; it is offered at its place in the order, so the dialog
+     shows it and keeps it */
+  const bool listed = value == 0 ||
+    std::any_of(std::begin(dpi_choices), std::end(dpi_choices),
+                [value](const auto &c){ return c.dpi == value; });
+  bool added = listed;
+
+  auto add = [&df](unsigned dpi, const char *display) {
+    StaticString<48> buffer;
+    buffer.Format(_("%u dpi"), dpi);
+    if (display != nullptr)
+      buffer.AppendFormat(" (%s)", display);
+    df.AddChoice(dpi, buffer);
+  };
+
+  for (const auto &c : dpi_choices) {
+    if (!added && value < c.dpi) {
+      add(value, nullptr);
+      added = true;
+    }
+
+    add(c.dpi, c.display);
   }
+
+  if (!added)
+    add(value, nullptr);
+
   df.SetValue(value);
 }
 
@@ -172,7 +204,7 @@ DisplayConfigPanel::Prepare(ContainerWindow &parent,
                                 _("The display resolution is used to adapt line widths, "
                                   "font size, landable size and more."));
   FillDpiChoices(*(DataFieldEnum *)wp_dpi->GetDataField(),
-                 ui_settings.custom_dpi);
+                 ui_settings.custom_dpi, SystemConfig::Get().custom_dpi);
   wp_dpi->RefreshDisplay();
   SetExpertRow(CustomDPI);
 
