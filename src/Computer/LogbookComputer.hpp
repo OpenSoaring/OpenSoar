@@ -8,6 +8,7 @@
 #include "Engine/Contest/Solvers/DMStTriangle.hpp"
 #include "Engine/Contest/Solvers/DMStOR.hpp"
 #include "Engine/Contest/ContestResult.hpp"
+#include "Engine/Trace/Trace.hpp"
 
 struct LogbookStatistics;
 struct FlyingState;
@@ -21,6 +22,8 @@ class Trace;
  * to date in flight, as the contest page does.
  */
 class LogbookComputer {
+  const Trace &trace_full;
+
   OLCClassic free;
   DMStQuad dmst_quad;
   DMStTriangle dmst_triangle;
@@ -28,6 +31,18 @@ class LogbookComputer {
 
   ContestResult result_free;
   ContestResult result_quad, result_triangle, result_or;
+
+  /**
+   * For the final result after the landing: the triangle searched
+   * once more on a denser copy of the full trace.  The contest trace
+   * of the flight keeps only 256 points to save time in flight; over
+   * a long flight that is one point every one or two minutes, and the
+   * triangle found on it was up to 8% shorter than the one actually
+   * flown, depending on which points the thinning kept (measured on
+   * flights recorded by two loggers each).
+   */
+  Trace final_trace;
+  DMStTriangle final_triangle;
 
 public:
   LogbookComputer(const Trace &trace_full,
@@ -54,4 +69,13 @@ public:
    */
   void Process(const FlyingState &flight, unsigned handicap,
                bool exhaustive, LogbookStatistics &stats) noexcept;
+
+  /**
+   * The final calculation after the landing: everything exhaustively,
+   * the triangle on the dense copy of the full trace.
+   */
+  void SolveFinal(unsigned handicap, LogbookStatistics &stats) noexcept;
+
+private:
+  void CopyResults(LogbookStatistics &stats) const noexcept;
 };
