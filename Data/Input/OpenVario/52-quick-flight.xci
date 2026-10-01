@@ -1,5 +1,5 @@
 # The quick menu in flight (mode QuickFlight), used by the
-# quick menu style "OpenSoar".
+# quick menu style "Dynamic".
 #
 # "location" is the place in three columns, counted row by row from
 # the top left.  A wider screen (landscape) shows the same picture in
