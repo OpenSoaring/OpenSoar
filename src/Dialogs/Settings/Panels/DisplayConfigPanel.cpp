@@ -237,6 +237,13 @@ FillDpiChoices(DataFieldEnum &df, unsigned value,
     { 140, "5.7\", 640x480 px" },
 
     { 160, nullptr },
+
+    /* 7.0" panel with 1024 x 600 pixels (SteFlyNav 7.0", Android): the
+       device is set to a density of 180 (ro.sf.lcd_density) and
+       reports the placeholder 213 dpi; from the diagonal it has about
+       170 dpi */
+    { 180, "7.0\", 1024x600 px" },
+
     { 240, nullptr },
     { 260, nullptr },
     { 280, nullptr },
