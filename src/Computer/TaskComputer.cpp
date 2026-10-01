@@ -35,13 +35,19 @@ TaskComputer::ResetFlight([[maybe_unused]] const bool full)
 {
   task.Reset();
   route.ResetFlight();
-  trace.Reset();
-  contest.Reset();
+  ResetTrace();
 
   valid_last_state = false;
   last_flying = false;
 
   last_location_available.Clear();
+}
+
+void
+TaskComputer::ResetTrace() noexcept
+{
+  trace.Reset();
+  contest.Reset();
 }
 
 void
