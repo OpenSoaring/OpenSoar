@@ -22,15 +22,29 @@ class PowerWidget final : public RowFormWidget {
   WndForm &dialog;
   PowerAction &action;
 
+  /**
+   * The button that has the focus when the dialog opens, e.g. the one
+   * a key stands for ("Q" quit, "X" shutdown).
+   */
+  const PowerAction preselect;
+
+  unsigned n_buttons = 0;
+  int preselect_row = -1;
+
 public:
   PowerWidget(const DialogLook &look, WndForm &_dialog,
-              PowerAction &_action) noexcept
-    :RowFormWidget(look), dialog(_dialog), action(_action) {}
+              PowerAction &_action, PowerAction _preselect) noexcept
+    :RowFormWidget(look), dialog(_dialog), action(_action),
+     preselect(_preselect) {}
 
 private:
   void AddAction(PowerAction _action, const char *label) noexcept {
     if (!PowerControl::IsAvailable(_action))
       return;
+
+    if (_action == preselect)
+      preselect_row = n_buttons;
+    ++n_buttons;
 
     AddButton(label, [this, _action]{
       action = _action;
@@ -39,6 +53,16 @@ private:
   }
 
 public:
+  bool SetFocus() noexcept override {
+    /* an action this target does not offer (shutdown on a desktop)
+       leaves the focus on the first button */
+    if (preselect_row < 0)
+      return RowFormWidget::SetFocus();
+
+    GetRow(preselect_row).SetFocus();
+    return true;
+  }
+
   /* virtual methods from class Widget */
   void Prepare([[maybe_unused]] ContainerWindow &parent,
                [[maybe_unused]] const PixelRect &rc) noexcept override {
@@ -94,7 +118,7 @@ BeginShutdownFeedback(PowerAction action) noexcept
 }
 
 bool
-AskPowerAction() noexcept
+AskPowerAction(PowerAction preselect) noexcept
 {
   PowerAction action = PowerAction::NONE;
 
@@ -102,7 +126,7 @@ AskPowerAction() noexcept
                                     UIGlobals::GetMainWindow(),
                                     UIGlobals::GetDialogLook(),
                                     _("Exit"));
-  dialog.SetWidget(UIGlobals::GetDialogLook(), dialog, action);
+  dialog.SetWidget(UIGlobals::GetDialogLook(), dialog, action, preselect);
   dialog.AddButton(_("Cancel"), mrCancel);
 
   if (dialog.ShowModal() != mrOK || action == PowerAction::NONE)
@@ -116,9 +140,9 @@ AskPowerAction() noexcept
 }
 
 void
-ShowPowerDialog() noexcept
+ShowPowerDialog(PowerAction preselect) noexcept
 {
-  if (AskPowerAction())
+  if (AskPowerAction(preselect))
     UIActions::SignalShutdown(true);
 }
 
