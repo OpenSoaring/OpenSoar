@@ -10,6 +10,7 @@
 #include "Engine/Contest/ContestResult.hpp"
 
 struct LogbookStatistics;
+struct FlyingState;
 class Trace;
 
 /**
@@ -45,4 +46,12 @@ public:
    */
   void Solve(unsigned handicap, bool exhaustive,
              LogbookStatistics &stats) noexcept;
+
+  /**
+   * The calculation for one idle pass: incremental in flight, once
+   * exhaustive after the landing (then #LogbookStatistics::final is
+   * set), nothing on the ground before or after.
+   */
+  void Process(const FlyingState &flight, unsigned handicap,
+               bool exhaustive, LogbookStatistics &stats) noexcept;
 };

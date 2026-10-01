@@ -1,0 +1,114 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright The XCSoar Project
+
+#pragma once
+
+#include "Logbook.hpp"
+#include "time/Stamp.hpp"
+
+#include <string>
+
+struct MoreData;
+struct DerivedInfo;
+struct GeoPoint;
+struct FlyingState;
+
+/**
+ * Follows the flight state and assembles one #LogbookEntry per
+ * flight: times and places of takeoff and landing, the launch, the
+ * maximum altitude and the final distances.
+ *
+ * It knows nothing about threads, files or settings; the program
+ * (#GlueLogbook) and the test tool RunLogbook feed it the same data
+ * and decide where the entry goes, so a test of the tool with real
+ * flights tests what the program does.
+ */
+class LogbookRecorder {
+public:
+  class Handler {
+  public:
+    /**
+     * The takeoff was confirmed: fill in what the computer cannot
+     * see in the flight (crew, aircraft).
+     */
+    virtual void OnLogbookTakeoff(LogbookEntry &entry) noexcept = 0;
+
+    /**
+     * A name for this place (airfield, waypoint or coordinates).
+     */
+    virtual std::string FindLogbookPlace(const GeoPoint &location) noexcept = 0;
+
+    /**
+     * The name of the IGC file being written, or an empty string.
+     */
+    virtual std::string GetLogbookIgcFile() noexcept {
+      return {};
+    }
+
+    /**
+     * The flight is complete; this is the place to store it.
+     */
+    virtual void OnLogbookFlight(const LogbookEntry &entry) noexcept = 0;
+  };
+
+private:
+  Handler &handler;
+
+  /** The flight being recorded; valid while #in_flight */
+  LogbookEntry entry;
+
+  bool in_flight = false;
+
+  /** The landing was confirmed, waiting for the final distances */
+  bool landed = false;
+
+  /** When the landing was confirmed (to stop waiting at some point) */
+  TimeStamp landed_at;
+
+  /** When the flight began (calculation thread's clock) */
+  TimeStamp takeoff_time;
+
+  /** The engine was running at the launch: a self-launch */
+  bool engine_at_launch = false;
+
+public:
+  explicit LogbookRecorder(Handler &_handler) noexcept
+    :handler(_handler) {}
+
+  /**
+   * Call with each new calculation result.
+   */
+  void Update(const MoreData &basic, const DerivedInfo &calculated) noexcept;
+
+  /**
+   * The data end while a flight is being recorded (the end of a file,
+   * or the program stops in the air): complete the entry at the last
+   * fix, with the given remark, and hand it to the handler.
+   *
+   * @param calculated the final distances should be in
+   * #DerivedInfo::logbook_stats (LogbookComputer::SolveFinal())
+   */
+  void FinishAtEnd(const MoreData &basic, const DerivedInfo &calculated,
+                   const char *remark) noexcept;
+
+  /**
+   * Is a flight being recorded (taken off, not yet written)?
+   */
+  bool IsInFlight() const noexcept {
+    return in_flight;
+  }
+
+  /**
+   * The flight being recorded so far.
+   */
+  const LogbookEntry &GetEntry() const noexcept {
+    return entry;
+  }
+
+private:
+  void OnTakeoff(const MoreData &basic, const DerivedInfo &calculated) noexcept;
+  void OnFlying(const MoreData &basic, const DerivedInfo &calculated) noexcept;
+  void OnLanding(const MoreData &basic, const DerivedInfo &calculated) noexcept;
+  void SetLaunch(const FlyingState &flight) noexcept;
+  void Finish(const DerivedInfo &calculated) noexcept;
+};
