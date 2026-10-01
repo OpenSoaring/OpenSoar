@@ -14,6 +14,10 @@ Version 7.47 - not yet released
 * dialogs
   - fix a crash opening Pages setup from a weather overlay on a
     landscape screen #3373
+* Windows
+  - keep the mouse cursor visible with -touchscreen; the switch sizes
+    the controls for fingers, it does not take the mouse away (Linux
+    and macOS with SDL as well)
 * input
   - load several input events files: they are read on top of the
     built-in configuration in the order of their names, so each file
