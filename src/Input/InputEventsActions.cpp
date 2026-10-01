@@ -704,7 +704,7 @@ InputEvents::eventBrightness([[maybe_unused]] const char *misc)
 }
 
 void
-InputEvents::eventExit([[maybe_unused]] const char *misc)
+InputEvents::eventExit(const char *misc)
 {
   if (SystemConfig::IsXCSoarBehaviour()) {
     /* upstream asks "Quit program?" (UIActions::CheckShutdown) */
@@ -713,8 +713,20 @@ InputEvents::eventExit([[maybe_unused]] const char *misc)
   }
 
   /* one button, one dialog: quit, restart, and - where the device
-     allows it - reboot or switch off */
-  ShowPowerDialog();
+     allows it - reboot or switch off.  The argument chooses the
+     button with the focus, so a key like "Q" or "X" needs just one
+     more press of RETURN */
+  PowerAction preselect = PowerAction::NONE;
+  if (StringIsEqual(misc, "system") || StringIsEqual(misc, "quit"))
+    preselect = PowerAction::QUIT;
+  else if (StringIsEqual(misc, "restart"))
+    preselect = PowerAction::RESTART;
+  else if (StringIsEqual(misc, "reboot"))
+    preselect = PowerAction::REBOOT;
+  else if (StringIsEqual(misc, "shutdown"))
+    preselect = PowerAction::SHUTDOWN;
+
+  ShowPowerDialog(preselect);
 }
 
 void
