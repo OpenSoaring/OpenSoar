@@ -3,6 +3,7 @@
 
 #include "LogbookComputer.hpp"
 #include "Engine/Contest/LogbookStatistics.hpp"
+#include "NMEA/FlyingState.hpp"
 
 LogbookComputer::LogbookComputer(const Trace &trace_full,
                                  const Trace &trace_triangle) noexcept
@@ -87,5 +88,22 @@ LogbookComputer::Solve(unsigned handicap, bool exhaustive,
   if (result_or.IsDefined() && result_or.score > stats.dmst.score) {
     stats.dmst = result_or;
     stats.dmst_shape = Shape::OUT_AND_RETURN;
+  }
+}
+
+void
+LogbookComputer::Process(const FlyingState &flight, unsigned handicap,
+                         bool exhaustive, LogbookStatistics &stats) noexcept
+{
+  /* after the landing, search once exhaustively: that result is
+     final, and the log book waits for it */
+  const bool landed = !flight.flying && flight.landing_time.IsDefined();
+
+  if (landed && !stats.final) {
+    Solve(handicap, true, stats);
+    stats.final = true;
+  } else if (flight.flying) {
+    Solve(handicap, exhaustive, stats);
+    stats.final = false;
   }
 }
