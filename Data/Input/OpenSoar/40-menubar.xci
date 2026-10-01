@@ -55,3 +55,11 @@ event=FrequencyCard
 event=Mode default
 label=Frequency Card
 location=5
+
+mode=Info4
+type=key
+data=7
+event=Logbook
+event=Mode default
+label=Log book
+location=6
