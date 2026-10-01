@@ -8,6 +8,7 @@
 #include "Form/GridView.hpp"
 #include "Input/InputEvents.hpp"
 #include "Language/Language.hpp"
+#include "LogFile.hpp"
 #include "Look/DialogLook.hpp"
 #include "Math/Util.hpp"
 #include "Menu/ButtonLabel.hpp"
@@ -125,7 +126,7 @@ QuickMenuButtonRenderer::DrawButton(Canvas &canvas, const PixelRect &rc,
   text_renderer.Draw(canvas, rc, caption);
 
   if (!tag.empty()) {
-    canvas.Select(look.small_font);
+    canvas.Select(look.text_font);
     canvas.DrawText(rc.GetTopLeft() + PixelSize{(int)Layout::GetTextPadding(), 0},
                     tag);
   }
@@ -585,7 +586,7 @@ protected:
 
     if (!empty_tags.empty()) {
       const auto &look = UIGlobals::GetDialogLook();
-      canvas.Select(look.small_font);
+      canvas.Select(look.text_font);
       canvas.SetTextColor(look.button.disabled.color);
       canvas.SetBackgroundTransparent();
       for (const auto &t : empty_tags)
@@ -602,8 +603,16 @@ protected:
     if (!scroll_bar.IsInside(p))
       return ContainerWindow::OnMouseDown(p);
 
-    /* like the lists: grab the slider, or move it to the pointer */
-    if (scroll_bar.IsInsideSlider(p))
+    /* the arrows move by one row, which is easier to hit exactly
+       with a finger than a position on the bar; otherwise like the
+       lists: grab the slider, or move it to the pointer */
+    if (scroll_bar.IsInsideUpArrow(p.y)) {
+      if (top > 0)
+        Scroll(top - 1);
+    } else if (scroll_bar.IsInsideDownArrow(p.y)) {
+      if (top + shown < rows)
+        Scroll(top + 1);
+    } else if (scroll_bar.IsInsideSlider(p))
       scroll_bar.DragBegin(this, p.y);
     else {
       scroll_bar.DragBeginCentred(this);
@@ -1029,6 +1038,14 @@ OpenSoarQuickMenu::SetFocus() noexcept
 {
   if (GetFocusedIndex() < 0)
     FocusDefault();
+
+  /* the focus is sometimes not visible when the menu opens (seen on
+     the device, not reproduced under X11); log what happened to find
+     out why */
+  if (IsDebug())
+    LogFmt("QuickMenu: initial focus on button {} of {}",
+           GetFocusedIndex(), buttons.size());
+
   return true;
 }
 
@@ -1073,6 +1090,8 @@ OpenSoarQuickMenu::KeyPress(unsigned key_code) noexcept
 
   const int focused = GetFocusedIndex();
   if (focused < 0) {
+    if (IsDebug())
+      LogFmt("QuickMenu: no button had the focus at a cursor key");
     FocusDefault();
     return true;
   }
