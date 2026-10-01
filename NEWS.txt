@@ -3,6 +3,8 @@ Version 7.45.4 - not yet released
   - display resolutions "140 dpi (5.7", 640x480 px)" and "180 dpi
     (7.0", 1024x600 px)" for devices such as the SteFlyNav, which
     report 213 dpi and so get fonts and buttons too large
+  - a display that reports exactly 213 dpi (the placeholder of Android
+    for an unknown size) gets the density the device is set to instead
 * input
   - add InfoBoxGeometry input events (next/previous/toggle/show) so
     layout can be changed in flight; default key L
