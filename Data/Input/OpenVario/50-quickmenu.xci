@@ -223,12 +223,33 @@ label=Pilot Event Announce
 location=32
 
 
+# The end of the list: XCSoar's buttons after its Quit (44) move up by
+# one, the audio menu follows (60-audio.xci, 46), then the power
+# buttons, and Quit is always the last one, so it is found in the
+# same corner of the list everywhere.  All of them open the power
+# dialog; the event names the button that has the focus there.
+mode=QuickMenu
+type=key
+data=0
+event=Mode weather
+label=Forecast\nControls
+location=44
+
 mode=QuickMenu
 type=key
 data=0
 event=Exit restart
 event=Mode default
 label=Restart
+location=47
+
+# OpenVario only: the button for switching off after the flight.
+mode=QuickMenu
+type=key
+data=0
+event=Exit shutdown
+event=Mode default
+label=Exit
 location=48
 
 mode=QuickMenu
@@ -238,15 +259,4 @@ event=Exit system
 event=Mode default
 label=Quit
 location=49
-
-# OpenVario only:
-# Reboot and shutdown are two of the choices in the power dialog that
-# Restart and Quit above already open, so one button covers them.
-mode=QuickMenu
-type=key
-data=0
-event=Exit shutdown
-event=Mode default
-label=Exit
-location=50
 
