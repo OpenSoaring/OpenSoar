@@ -148,7 +148,8 @@ private:
       // Don't draw outlines if border_width == 0
       return false;
     else
-      canvas.Select(look.classes[as_type_or_class].border_pen);
+      canvas.Select(look.classes[as_type_or_class].GetBorderPen(
+        settings.fill_mode == AirspaceRendererSettings::FillMode::THIN_LINE));
 
     canvas.SelectHollowBrush();
 
@@ -269,7 +270,8 @@ private:
       // Don't draw outlines if border_width == 0
       return false;
     else
-      canvas.Select(look.classes[as_type_or_class].border_pen);
+      canvas.Select(look.classes[as_type_or_class].GetBorderPen(
+        settings.fill_mode == AirspaceRendererSettings::FillMode::THIN_LINE));
 
     canvas.SelectHollowBrush();
 
@@ -278,7 +280,7 @@ private:
 
   bool SetupInterior(const AbstractAirspace &airspace) {
 	AirspaceClass as_type_or_class = settings.classes[airspace.GetTypeOrClass()].display ? airspace.GetTypeOrClass() : airspace.GetClass();
-    if (settings.fill_mode == AirspaceRendererSettings::FillMode::NONE)
+    if (!settings.HasFill())
       return false;
 
     const AirspaceClassLook &class_look = look.classes[as_type_or_class];
@@ -302,7 +304,7 @@ AirspaceRenderer::DrawInternal(Canvas &canvas,
                                 projection.GetScreenDistanceMeters());
 
   if (settings.fill_mode == AirspaceRendererSettings::FillMode::ALL ||
-      settings.fill_mode == AirspaceRendererSettings::FillMode::NONE) {
+      !settings.HasFill()) {
     AirspaceFillRenderer renderer(canvas, projection, look, awc, settings);
     for (const auto &i : range) {
       const AbstractAirspace &airspace = i.GetAirspace();

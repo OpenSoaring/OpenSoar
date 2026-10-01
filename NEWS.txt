@@ -23,6 +23,8 @@ Version 7.45.4 - not yet released
     barograph", to open that page directly
 * map
   - the flight setup starts with the MacCready setting
+* airspace
+  - new fill mode "Thin lines": no fill, outlines one pixel wide
 
 Version 7.45.3 - 2026-09-22
 * android

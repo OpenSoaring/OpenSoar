@@ -11897,3 +11897,11 @@ msgid ""
 msgstr ""
 "Der MacCready-Wert: das im nächsten Bart erwartete Steigen.  Eine Eingabe "
 "hier schaltet den automatischen MacCready aus."
+
+msgid "Thin lines"
+msgstr "Dünne Linien"
+
+msgid ""
+"Don't fill the airspace area, and draw the outlines one pixel wide."
+msgstr ""
+"Die Lufträume nicht füllen und die Umrisse ein Pixel breit zeichnen."
