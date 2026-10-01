@@ -128,6 +128,10 @@ Version 7.47 - not yet released
     built-in configuration in the order of their names, so each file
     can hold one topic and a later one can override an earlier one;
     an existing single file is taken over
+* Windows
+  - keep the mouse cursor visible with -touchscreen; the switch sizes
+    the controls for fingers, it does not take the mouse away (Linux
+    and macOS with SDL as well)
 
 Version 7.46.1 - 2026-10-30
 * ui
