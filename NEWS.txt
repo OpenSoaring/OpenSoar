@@ -67,6 +67,8 @@ Version 7.45.4 - not yet released
     the focus (dark grey) and only beep, so the cursor keys move
     straight across the field; turning the screen keeps the focus on
     its button
+  - Quit is the last button of the complete quick menu and also in the
+    lists before the flight and after the landing
   - the quick menu is clearer: the switches of the map display
     (airspace, labels, trail, auto zoom, page settings, distance rings)
     moved into the new submenu "Map Display"; FLARM radar and thermal
