@@ -8,6 +8,10 @@ Version 7.45.4 - not yet released
   - the display resolution can be set for the device as well (System
     settings, file system.prf); it applies from the start screen on,
     while the one of a profile overrides it once the profile is loaded
+* Windows
+  - keep the mouse cursor visible with -touchscreen; the switch sizes
+    the controls for fingers, it does not take the mouse away (Linux
+    and macOS with SDL as well)
 * input
   - add InfoBoxGeometry input events (next/previous/toggle/show) so
     layout can be changed in flight; default key L
