@@ -399,6 +399,25 @@ private:
   void DrawPanInfo(Canvas &canvas) const noexcept;
   void DrawThermalBand(Canvas &canvas, const PixelRect &rc) const noexcept;
   void DrawFinalGlide(Canvas &canvas, const PixelRect &rc) const noexcept;
+
+  /**
+   * Is the final glide bar on the map with these data?  They are
+   * parameters because the map's own copies of the blackboard may be
+   * read only in the draw thread, while a tap on the map is handled
+   * in the main thread, which passes the ones of #CommonInterface.
+   */
+  [[gnu::pure]]
+  static bool IsFinalGlideBarShown(const MapSettings &settings,
+                                   const ComputerSettings &computer,
+                                   const DerivedInfo &calculated) noexcept;
+
+  /**
+   * Does a tap at @p p hit the final glide bar?  The area is a strip
+   * along its edge of the map, at least a finger wide, in the middle
+   * half of the height, where the bar moves up and down.
+   */
+  [[gnu::pure]]
+  bool IsOnFinalGlideBar(PixelPoint p) const noexcept;
   void DrawVario(Canvas &canvas, const PixelRect &rc) const noexcept;
   void DrawStallRatio(Canvas &canvas, const PixelRect &rc) const noexcept;
 
