@@ -24,6 +24,7 @@
 #include <math.h>
 
 enum ControlIndex {
+  MacCready,
   Crew,
   Ballast,
   WingLoading,
@@ -74,6 +75,9 @@ public:
   void ShowAltitude(double altitude);
   void RefreshAltitudeControl();
   void SetBugs(double bugs);
+
+  /** Show the MacCready setting, unless the pilot is editing it. */
+  void RefreshMacCready();
   void SetQNH(AtmosphericPressure qnh);
 
   /* virtual methods from Widget */
@@ -196,6 +200,19 @@ FlightSetupPanel::RefreshAltitudeControl()
 }
 
 void
+FlightSetupPanel::RefreshMacCready()
+{
+  /* auto MacCready, a vario or a key may change it while the dialog is
+     open; the row the pilot is editing stays as it is */
+  if (GetControl(MacCready).HasFocus())
+    return;
+
+  LoadValue(MacCready,
+            CommonInterface::GetComputerSettings().polar.glide_polar_task.GetMC(),
+            UnitGroup::VERTICAL_SPEED);
+}
+
+void
 FlightSetupPanel::SetBugs(double bugs) {
   ActionInterface::SetBugs(bugs);
 }
@@ -221,12 +238,18 @@ FlightSetupPanel::OnTimer()
   }
 
   RefreshAltitudeControl();
+  RefreshMacCready();
 }
 
 void
 FlightSetupPanel::OnModified(DataField &df) noexcept
 {
-  if (IsDataField(Crew, df)) {
+  if (IsDataField(MacCready, df)) {
+    /* like the MacCready InfoBox: setting it by hand switches auto
+       MacCready off */
+    const DataFieldFloat &dff = (const DataFieldFloat &)df;
+    ActionInterface::SetManualMacCready(Units::ToSysVSpeed(dff.GetValue()));
+  } else if (IsDataField(Crew, df)) {
     const DataFieldFloat &dff = (const DataFieldFloat &)df;
     SetCrewMass(Units::ToSysMass(dff.GetValue()));
   } else if (IsDataField(Ballast, df)) {
@@ -249,6 +272,16 @@ FlightSetupPanel::Prepare(ContainerWindow &parent,
 
   const ComputerSettings &settings = CommonInterface::GetComputerSettings();
   const Plane &plane = CommonInterface::GetComputerSettings().plane;
+
+  /* the setting changed most often in flight, so it comes first */
+  AddFloat(_("MacCready"),
+           _("The MacCready setting: the climb rate expected in the next "
+             "thermal.  Setting it here switches auto MacCready off."),
+           "%.1f %s", "%.1f",
+           0, Units::ToUserVSpeed(5), GetUserVerticalSpeedStep(), false,
+           UnitGroup::VERTICAL_SPEED,
+           polar_settings.glide_polar_task.GetMC(),
+           this);
 
   AddFloat(_("Crew"),
            _("All masses loaded to the glider beyond the empty weight including pilot and copilot, but not water ballast."),

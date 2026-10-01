@@ -223,6 +223,7 @@ Version 7.46 - not yet released
     the map scale, in the HUD
   - inset the map overlays by the same margin as the menu, QuickMenu
     and zoom buttons
+  - the flight setup starts with the MacCready setting
 * airspace
   - new fill mode "Thin lines": no fill, outlines one pixel wide
   - keep airspace altitude labels readable when they would overlap #771
