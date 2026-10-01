@@ -61,6 +61,7 @@ set(_SOURCES
         Dialogs/KnobTextEntry.cpp
         Dialogs/ListPicker.cpp
         Dialogs/LockScreen.cpp
+        Dialogs/LogbookDialog.cpp
         Dialogs/MapItemListDialog.cpp
         Dialogs/MapItemListSettingsDialog.cpp
         Dialogs/MapItemListSettingsPanel.cpp
