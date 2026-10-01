@@ -3,6 +3,7 @@ Version 7.47 - not yet released
   - fix a map crash on PowerVR Rogue tablets while panning with
     topography enabled #1235
   - display resolution "141 dpi (5.7", 640x480 px)" for 5.7" devices
+  - display resolution "140 dpi (5.7", 640x480 px)" for 5.7" devices
     such as the SteFlyNav, which report 213 dpi and so get fonts and
     buttons half as large again
 * dialogs
