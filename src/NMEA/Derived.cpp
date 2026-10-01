@@ -63,6 +63,7 @@ DerivedInfo::Reset()
   ordered_task_stats.reset();
   common_stats.Reset();
   contest_stats.Reset();
+  logbook_stats.Reset();
 
   flight.Reset();
 

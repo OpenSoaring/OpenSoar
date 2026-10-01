@@ -25,7 +25,8 @@ TaskComputer::TaskComputer(ProtectedTaskManager &_task,
                            const ProtectedAirspaceWarningManager *warnings)
   :task(_task),
    route(airspace_database, warnings),
-   contest(trace.GetFull(), trace.GetContest(), trace.GetSprint())
+   contest(trace.GetFull(), trace.GetContest(), trace.GetSprint()),
+   logbook(trace.GetFull(), trace.GetContest())
 {
   task.SetRoutePlanner(&route.GetProtectedRoutePlanner());
 }
@@ -48,6 +49,7 @@ TaskComputer::ResetTrace() noexcept
 {
   trace.Reset();
   contest.Reset();
+  logbook.Reset();
 }
 
 void
@@ -158,6 +160,22 @@ TaskComputer::ProcessIdle(const MoreData &basic, DerivedInfo &calculated,
                             calculated.contest_stats);
   else
     contest.Solve(settings_computer.contest, calculated.contest_stats);
+
+  if (settings_computer.logger.enable_flight_logger) {
+    /* after the landing, search once exhaustively: that result is
+       final, and the log book waits for it */
+    const FlyingState &flight = calculated.flight;
+    const bool landed = !flight.flying && flight.landing_time.IsDefined();
+    LogbookStatistics &stats = calculated.logbook_stats;
+
+    if (landed && !stats.final) {
+      logbook.Solve(settings_computer.contest.handicap, true, stats);
+      stats.final = true;
+    } else if (flight.flying) {
+      logbook.Solve(settings_computer.contest.handicap, exhaustive, stats);
+      stats.final = false;
+    }
+  }
 
   const AircraftState as = ToAircraftState(basic, calculated);
 

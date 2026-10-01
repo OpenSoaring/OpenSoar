@@ -280,10 +280,12 @@ GlideComputer::OnTakeoff()
   // reset stats on takeoff
   air_data_computer.ResetFlight(SetCalculated(), false);
 
-  /* a new flight: its trace and contest start from here, not from
-     the flight before (e.g. the second winch launch of the day) */
+  /* a new flight: its trace, contest and log book values start from
+     here, not from the flight before (e.g. the second winch launch
+     of the day) */
   task_computer.ResetTrace();
   SetCalculated().contest_stats.Reset();
+  SetCalculated().logbook_stats.Reset();
 
   // save stats in case we never finish
   SaveFinish();
