@@ -12,7 +12,8 @@
  */
 struct LoggerSettings {
   /**
-   * Enable the #FlightLogger?
+   * Enable the log book (#GlueLogbook, and #FlightLogger for the plain
+   * list flights.log)?
    */
   bool enable_flight_logger;
 
