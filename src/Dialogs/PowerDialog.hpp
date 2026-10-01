@@ -3,23 +3,27 @@
 
 #pragma once
 
+#include "PowerControl.hpp"
+
 /**
  * Ask the user how to leave the program: quit, restart, and - where
  * the target supports it - reboot or switch off the machine.  The
  * chosen action is remembered (PowerControl), and the shutdown
  * message appears right away, but the caller closes the program.
  *
+ * @param preselect the button that has the focus when the dialog
+ * opens; NONE (or one the target does not offer) for the first one
  * @return true if the user chose an action, false on cancel
  */
 bool
-AskPowerAction() noexcept;
+AskPowerAction(PowerAction preselect=PowerAction::NONE) noexcept;
 
 /**
  * Like AskPowerAction(), and closes the program when the user chose
  * an action.
  */
 void
-ShowPowerDialog() noexcept;
+ShowPowerDialog(PowerAction preselect=PowerAction::NONE) noexcept;
 
 /**
  * Offer a restart after a setting that only takes effect on the next
