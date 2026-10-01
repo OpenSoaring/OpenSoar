@@ -13314,3 +13314,10 @@ msgstr ""
 "Die Umrisse ein Pixel breit zeichnen und nur die Lufträume füllen, die eine "
 "Warnung auslösen oder in denen sich das Segelflugzeug befindet."
 
+
+msgid ""
+"The MacCready setting: the climb rate expected in the next thermal.  Setting "
+"it here switches auto MacCready off."
+msgstr ""
+"Der MacCready-Wert: das im nächsten Bart erwartete Steigen.  Eine Eingabe "
+"hier schaltet den automatischen MacCready aus."
