@@ -8,6 +8,7 @@
 #include "Task/Stats/TaskStats.hpp"
 #include "Task/Stats/CommonStats.hpp"
 #include "Contest/ContestStatistics.hpp"
+#include "Contest/LogbookStatistics.hpp"
 #include "FlyingState.hpp"
 #include "NMEA/VarioInfo.hpp"
 #include "NMEA/ClimbInfo.hpp"
@@ -214,6 +215,9 @@ struct DerivedInfo:
   CommonStats common_stats;
   /** Copy of contest statistics data */
   ContestStatistics contest_stats;
+
+  /** The distances and points of this flight for the log book */
+  LogbookStatistics logbook_stats;
 
   FlyingState flight;
 
