@@ -94,7 +94,7 @@ LoggerConfigPanel::Prepare(ContainerWindow &parent,
   AddBoolean(_("Log book"),
              _("Records each flight in the log book: takeoff and landing "
                "with time and place, launch, crew, aircraft, free and DMSt "
-               "distance (file logbook.csv)."),
+               "distance (Info menu, file logbook.csv)."),
              logger.enable_flight_logger);
 
   AddText(_("Logger ID"),

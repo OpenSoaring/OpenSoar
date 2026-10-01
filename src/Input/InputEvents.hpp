@@ -155,6 +155,7 @@ void eventFrequencyCard(const char *misc);
 void eventClearAirspaceWarnings(const char *misc);
 void eventAirspaceWarnings(const char *misc);
 void eventClearStatusMessages(const char *misc);
+void eventLogbook(const char *misc);
 void eventLogger(const char *misc);
 void eventMacCready(const char *misc);
 void eventMainMenu(const char *misc);
