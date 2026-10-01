@@ -98,7 +98,21 @@ struct AirspaceRendererSettings {
 
     /** don't fill anything */
     NONE,
+
+    /**
+     * Don't fill anything and draw the outlines one pixel wide,
+     * whatever the border width of the class: the map stays as clear
+     * as possible, and the airspaces still show where they are.
+     */
+    THIN_LINE,
   } fill_mode;
+
+  /**
+   * Does the fill mode fill the airspace area at all?
+   */
+  constexpr bool HasFill() const noexcept {
+    return fill_mode != FillMode::NONE && fill_mode != FillMode::THIN_LINE;
+  }
 
   /** What type of airspace labels to render */
   enum class LabelSelection : uint8_t {

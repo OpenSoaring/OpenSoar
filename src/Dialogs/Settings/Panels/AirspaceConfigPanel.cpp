@@ -61,6 +61,9 @@ static constexpr StaticEnumChoice as_fill_mode_list[] = {
     N_("Draws a solid outline with a half transparent border around the airspace.") },
   { AirspaceRendererSettings::FillMode::NONE, N_("No fill"),
     N_("Don't fill the airspace area.") },
+  { AirspaceRendererSettings::FillMode::THIN_LINE, N_("Thin lines"),
+    N_("Don't fill the airspace area, and draw the outlines one pixel "
+       "wide.") },
   nullptr
 };
 
