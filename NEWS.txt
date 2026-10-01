@@ -36,7 +36,7 @@ Version 7.47 - not yet released
   - keys Q (quit) and X (switch off) also outside the OpenVario; the
     Exit event opens the power dialog with the focus on the button it
     names ("Exit system", "Exit shutdown", "Exit restart", ...)
-  - the quick menu style "OpenSoar" has a list of its own before the
+  - the quick menu style "Dynamic" has a list of its own before the
     flight, in flight and after the landing (modes QuickGround,
     QuickFlight and QuickAfter, built-in lists included); it follows
     takeoff and landing and can be switched with the new buttons
@@ -45,7 +45,7 @@ Version 7.47 - not yet released
     shows it
   - the quick menu mode is called QuickMenu now; files that still use
     the old name RemoteStick keep working
-  - new quick menu style "OpenSoar" (Look > Language, Input > Quick
+  - new quick menu style "Dynamic" (Look > Language, Input > Quick
     menu): as many columns as fit (more in landscape), every button at
     its location, an empty location stays an empty cell; the phase
     lists count in three columns and keep that picture in the middle
