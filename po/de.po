@@ -11878,3 +11878,15 @@ msgstr "Nur die InfoBoxen dieser Gruppen in der Liste zeigen."
 
 msgid "Show only the InfoBoxes of these groups when choosing a content."
 msgstr "Nur die InfoBoxen dieser Gruppen bei der Auswahl eines Inhalts zeigen."
+
+msgid "Device setting"
+msgstr "Geräteeinstellung"
+
+msgid ""
+"The resolution of this display, for displays that report a wrong size.  It "
+"applies from the start screen on; a profile with a resolution of its own "
+"overrides it.  Takes effect on the next start."
+msgstr ""
+"Die Auflösung dieses Bildschirms, für Bildschirme, die eine falsche Größe "
+"melden.  Sie gilt schon ab dem Startbildschirm; ein Profil mit eigener "
+"Auflösung überschreibt sie.  Wirkt ab dem nächsten Start."

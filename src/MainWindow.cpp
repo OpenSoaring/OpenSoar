@@ -33,6 +33,7 @@
 #include "DrawThread.hpp"
 #include "UIReceiveBlackboard.hpp"
 #include "UISettings.hpp"
+#include "SystemConfig.hpp"
 #include "Interface.hpp"
 #include "Profile/Profile.hpp"
 
@@ -451,12 +452,26 @@ MainWindow::Create(PixelSize size, UI::TopWindowStyle style)
   SingleWindow::Create(title, size, style);
 }
 
+/**
+ * The display resolution to use: the one of the profile, otherwise the
+ * one of the device (system settings), otherwise 0 for the one the
+ * system reports.  Before a profile is loaded (start screen) only the
+ * device setting can apply.
+ */
+[[gnu::pure]]
+static unsigned
+GetCustomDPI() noexcept
+{
+  const unsigned profile_dpi = CommonInterface::GetUISettings().custom_dpi;
+  return profile_dpi != 0 ? profile_dpi : SystemConfig::Get().custom_dpi;
+}
+
 void
 MainWindow::Initialise()
 {
   Layout::Initialise(GetDisplay(), GetSize(),
                      CommonInterface::GetUISettings().GetPercentScale(),
-                     CommonInterface::GetUISettings().custom_dpi);
+                     GetCustomDPI());
 #ifdef DRAW_MOUSE_CURSOR
   SetCursorSize(CommonInterface::GetDisplaySettings().cursor_size);
   SetCursorColorsInverted(CommonInterface::GetDisplaySettings().invert_cursor_colors);
@@ -475,7 +490,7 @@ MainWindow::InitialiseConfigured()
 {
   const UISettings &ui_settings = CommonInterface::GetUISettings();
 
-  if ((ui_settings.scale != 100) || (ui_settings.info_boxes.scale_title_font != 100) || (ui_settings.custom_dpi != 0))
+  if ((ui_settings.scale != 100) || (ui_settings.info_boxes.scale_title_font != 100) || (GetCustomDPI() != 0))
     /* call Initialise() again to reload fonts with the new scale */
     Initialise();
 
@@ -1039,7 +1054,7 @@ MainWindow::OnResize(PixelSize new_size) noexcept
 {
   Layout::Initialise(GetDisplay(), new_size,
                      CommonInterface::GetUISettings().GetPercentScale(),
-                     CommonInterface::GetUISettings().custom_dpi);
+                     GetCustomDPI());
 
   SingleWindow::OnResize(new_size);
 
