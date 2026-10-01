@@ -218,6 +218,12 @@ Version 7.47 - not yet released
   - keep the mouse cursor visible with -touchscreen; the switch sizes
     the controls for fingers, it does not take the mouse away (Linux
     and macOS with SDL as well)
+* logger
+  - a log book of all flights (file logbook.csv, a table for a
+    spreadsheet): takeoff and landing with time and place, flight time,
+    launch (estimated), pilot and co-pilot, aircraft, free distance (OLC
+    classic, six legs), DMSt distance and points, maximum altitude and
+    IGC file; on by default (Logger settings: Log book)
 
 Version 7.46.1 - 2026-10-30
 * ui
