@@ -74,10 +74,37 @@ event=MapDisplay
 label=Map\nDisplay
 location=20
 
-# The OpenSoar frequency list.
+# Quit is always the last button, so it is found in the same corner
+# of the list everywhere; the buttons after it in XCSoar's list move
+# up by one, and the OpenSoar frequency list joins them.  The quit
+# event names its button, which then has the focus in the power
+# dialog.
+mode=QuickMenu
+type=key
+data=0
+event=Mode weather
+label=Forecast\nControls
+location=44
+
+mode=QuickMenu
+type=key
+data=0
+event=ArrangeInfoBoxes
+event=Mode default
+label=Arrange\nInfoBoxes
+location=45
+
 mode=QuickMenu
 type=key
 data=0
 event=FrequencyCard
 label=Frequency\nCard
+location=46
+
+mode=QuickMenu
+type=key
+data=0
+event=Exit system
+event=Mode default
+label=Quit
 location=47

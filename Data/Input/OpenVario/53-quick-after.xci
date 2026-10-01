@@ -16,6 +16,9 @@
 #
 # Still to come: 5 and 2 download the flights of logger 1 and 2.
 # The other empty places stay empty for now.
+#
+# 18 Quit, in a row of its own below the block, on the right: the
+# last button, as in the complete quick menu.
 
 mode=QuickAfter
 type=key
@@ -58,3 +61,11 @@ event=Analysis contest
 event=Mode default
 label=Flight\nOverview
 location=9
+
+mode=QuickAfter
+type=key
+data=0
+event=Exit system
+event=Mode default
+label=Quit
+location=18

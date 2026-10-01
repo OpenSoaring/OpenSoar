@@ -142,6 +142,8 @@ Version 7.46 - not yet released
   - keys Q (quit) and X (switch off) also outside the OpenVario; the
     Exit event opens the power dialog with the focus on the button it
     names ("Exit system", "Exit shutdown", "Exit restart", ...)
+  - Quit is the last button of the complete quick menu and also in the
+    lists before the flight and after the landing
   - the quick menu is clearer: the switches of the map display
     (airspace, labels, trail, auto zoom, distance rings) moved into the
     new dialog "Map Display" (input event "MapDisplay"), which also
