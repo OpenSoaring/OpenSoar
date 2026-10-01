@@ -286,6 +286,9 @@ class NativeView extends SurfaceView
       xdpi = ydpi = metrics.densityDpi;
     }
 
+    /* before the first dialog, so it shows its focus already */
+    EventBridge.detectCursorKeys();
+
     try {
       /* Clear the shutdown flag from any previous session so the
          service starts normally */
