@@ -161,21 +161,9 @@ TaskComputer::ProcessIdle(const MoreData &basic, DerivedInfo &calculated,
   else
     contest.Solve(settings_computer.contest, calculated.contest_stats);
 
-  if (settings_computer.logger.enable_flight_logger) {
-    /* after the landing, search once exhaustively: that result is
-       final, and the log book waits for it */
-    const FlyingState &flight = calculated.flight;
-    const bool landed = !flight.flying && flight.landing_time.IsDefined();
-    LogbookStatistics &stats = calculated.logbook_stats;
-
-    if (landed && !stats.final) {
-      logbook.Solve(settings_computer.contest.handicap, true, stats);
-      stats.final = true;
-    } else if (flight.flying) {
-      logbook.Solve(settings_computer.contest.handicap, exhaustive, stats);
-      stats.final = false;
-    }
-  }
+  if (settings_computer.logger.enable_flight_logger)
+    logbook.Process(calculated.flight, settings_computer.contest.handicap,
+                    exhaustive, calculated.logbook_stats);
 
   const AircraftState as = ToAircraftState(basic, calculated);
 
