@@ -22,6 +22,7 @@ Version 7.47 - not yet released
   - fix a long pause after the quick guide while a fine terrain
     file loads the tiles under the map
 * map
+  - a tap on the final glide bar opens the flight setup
   - the flight setup starts with the MacCready setting
   - the quick menu offers "Page settings" for the current page in
     place of the terrain and topography toggles
