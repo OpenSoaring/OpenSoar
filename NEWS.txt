@@ -39,6 +39,12 @@ Version 7.45.4 - not yet released
     downloaded while online and kept in the cache
 * airspace
   - new fill mode "Thin lines": no fill, outlines one pixel wide
+* logger
+  - a log book of all flights (file logbook.csv, a table for a
+    spreadsheet): takeoff and landing with time and place, flight time,
+    launch (estimated), pilot and co-pilot, aircraft, free distance (OLC
+    classic, six legs), DMSt distance and points, maximum altitude and
+    IGC file; on by default (Logger settings: Log book)
 * glide computer
   - a takeoff starts a new trace and contest: the second flight of a
     session (e.g. the next winch launch) no longer counts the one before
