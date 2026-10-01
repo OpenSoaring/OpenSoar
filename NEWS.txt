@@ -44,6 +44,9 @@ Version 7.46 - not yet released
     buttons half as large again
   - a display that reports exactly 213 dpi (the placeholder of Android
     for an unknown size) gets the density the device is set to instead
+  - the display resolution can be set for the device as well (System
+    settings, file system.prf); it applies from the start screen on,
+    while the one of a profile overrides it once the profile is loaded
 * iOS
   - add haptic feedback for button presses; the Haptic feedback
     setting controls it

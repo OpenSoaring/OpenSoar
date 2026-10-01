@@ -5,6 +5,9 @@
 #include "BackendComponents.hpp"
 #include "Components.hpp"
 #include "Dialogs/Device/DeviceListDialog.hpp"
+#include "DisplayConfigPanel.hpp"
+#include "Form/DataField/Enum.hpp"
+#include "Form/Edit.hpp"
 #include "Language/Language.hpp"
 #include "LocalPath.hpp"
 #include "SystemConfig.hpp"
@@ -21,6 +24,7 @@ class SystemConfigPanel final : public RowFormWidget {
   enum ControlIndex {
     XCSOAR_BEHAVIOUR,
     DEVICES_IN_PROFILE,
+    CUSTOM_DPI,
     DEVICES,
     LOCATION,
   };
@@ -54,6 +58,18 @@ SystemConfigPanel::Prepare(ContainerWindow &parent,
                "For a machine that flies with more than one set of "
                "instruments.  Takes effect on the next start."),
              SystemConfig::Get().devices_in_profile);
+
+  /* the resolution belongs to the display, so it is set here; it
+     applies from the start screen on, before any profile */
+  WndProperty *wp_dpi =
+    AddEnum(_("Display resolution"),
+            _("The resolution of this display, for displays that report "
+              "a wrong size.  It applies from the start screen on; a "
+              "profile with a resolution of its own overrides it.  Takes "
+              "effect on the next start."));
+  FillDpiChoices(*(DataFieldEnum *)wp_dpi->GetDataField(),
+                 SystemConfig::Get().custom_dpi);
+  wp_dpi->RefreshDisplay();
 
   /* second way to the NMEA devices and their ports: they belong to
      the device just as much as the settings above */
@@ -89,6 +105,12 @@ SystemConfigPanel::Save([[maybe_unused]] bool &changed) noexcept
   if (const bool devices_in_profile = GetValueBoolean(DEVICES_IN_PROFILE);
       devices_in_profile != SystemConfig::Get().devices_in_profile) {
     SystemConfig::Get().devices_in_profile = devices_in_profile;
+    modified = true;
+  }
+
+  if (const unsigned custom_dpi = GetValueEnum(CUSTOM_DPI);
+      custom_dpi != SystemConfig::Get().custom_dpi) {
+    SystemConfig::Get().custom_dpi = custom_dpi;
     modified = true;
   }
 
