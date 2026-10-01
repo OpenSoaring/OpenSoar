@@ -79,6 +79,10 @@ Version 7.47 - not yet released
   - Larus: pass on the instantaneous wind of ``$PLARW`` (``I``) next
     to the average wind (``A``)
 * android
+  - display resolution "141 dpi (5.7", 640x480 px)" for 5.7" devices
+  - display resolution "140 dpi (5.7", 640x480 px)" for 5.7" devices
+    such as the SteFlyNav, which report 213 dpi and so get fonts and
+    buttons half as large again
   - add Share to Export flights so selected IGC/NMEA files can be
     sent via the system share sheet (Nearby Share, Drive, mail, …)
   - show the Export flights Share button as the Android share mark
