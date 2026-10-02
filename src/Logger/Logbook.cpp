@@ -115,7 +115,7 @@ SplitLine(std::string_view line) noexcept
  * Quote a text column if it contains the separator, a quote or a
  * line break, so the spreadsheet keeps it in one cell.
  */
-static std::string
+std::string
 Quote(std::string_view s) noexcept
 {
   if (s.find_first_of(";\"\r\n") == s.npos)
@@ -199,44 +199,117 @@ enum Column : unsigned {
   REGISTRATION,
   COMPETITION_ID,
   FREE_DISTANCE,
+  FREE_SPEED,
   DMST_DISTANCE,
   DMST_POINTS,
   DMST_SHAPE,
   MAX_ALTITUDE,
-  IGC_FILE,
+  LOG_FILE,
+  FILE_TYPE,
   REMARK,
   N_COLUMNS,
+};
+
+/**
+ * The names of the columns in the header.  A file is read by these
+ * names, so a column added later, or one a spreadsheet moved, does not
+ * shift the others.
+ */
+static constexpr const char *column_names[N_COLUMNS] = {
+  "Date",
+  "Takeoff (UTC)",
+  "Landing (UTC)",
+  "Duration",
+  "Takeoff place",
+  "Landing place",
+  "Launch",
+  "Pilot",
+  "Copilot",
+  "Aircraft",
+  "Registration",
+  "Competition ID",
+  "Free distance (km)",
+  "Free speed (km/h)",
+  "DMSt distance (km)",
+  "DMSt points",
+  "DMSt shape",
+  "Max. altitude (m)",
+  "Log file",
+  "File type",
+  "Remark",
 };
 
 const char *
 GetHeader() noexcept
 {
-  return "Date;Takeoff (UTC);Landing (UTC);Duration;"
-    "Takeoff place;Landing place;Launch;Pilot;Copilot;"
-    "Aircraft;Registration;Competition ID;"
-    "Free distance (km);DMSt distance (km);DMSt points;DMSt shape;"
-    "Max. altitude (m);IGC file;Remark";
+  static const std::string header = []{
+    std::string h;
+    for (const char *name : column_names) {
+      if (!h.empty())
+        h += SEPARATOR;
+      h += name;
+    }
+    return h;
+  }();
+
+  return header.c_str();
+}
+
+ColumnMap::ColumnMap() noexcept
+{
+  static_assert(N_COLUMNS <= MAX_VALUES);
+
+  for (unsigned i = 0; i < N_COLUMNS; ++i)
+    index[i] = i;
 }
 
 bool
-ParseLine(std::string_view line, LogbookEntry &entry) noexcept
+ColumnMap::ParseHeader(std::string_view line) noexcept
+{
+  const auto names = SplitLine(line);
+  if (names.empty() || Strip(std::string_view{names.front()}) != "Date")
+    return false;
+
+  for (auto &i : index)
+    i = -1;
+
+  for (unsigned c = 0; c < names.size(); ++c) {
+    std::string_view name = Strip(std::string_view{names[c]});
+    /* the file of the first version called it "IGC file" */
+    if (name == "IGC file")
+      name = "Log file";
+
+    for (unsigned i = 0; i < N_COLUMNS; ++i)
+      if (name == column_names[i])
+        index[i] = c;
+  }
+
+  return true;
+}
+
+bool
+ParseLine(std::string_view line, LogbookEntry &entry,
+          const ColumnMap &map) noexcept
 {
   auto columns = SplitLine(line);
-  /* older files or a spreadsheet may have dropped empty columns at
-     the end */
-  columns.resize(N_COLUMNS);
+
+  /* a column the file does not have reads as empty */
+  const std::string empty;
+  const auto get = [&](Column c) -> const std::string & {
+    const int i = map.index[c];
+    return i >= 0 && unsigned(i) < columns.size() ? columns[i] : empty;
+  };
 
   BrokenDate date;
   BrokenTime takeoff;
-  if (!ParseDate(columns[DATE], date) ||
-      !ParseTime(columns[TAKEOFF], takeoff))
+  if (!ParseDate(get(DATE), date) || !ParseTime(get(TAKEOFF), takeoff))
     /* the header, or not a flight */
     return false;
 
   entry = {};
   entry.takeoff = BrokenDateTime(date, takeoff);
 
-  if (BrokenTime landing; ParseTime(columns[LANDING], landing)) {
+  if (BrokenTime landing; ParseTime(get(LANDING), landing)) {
     entry.landing = BrokenDateTime(date, landing);
 
     /* a flight across midnight UTC */
@@ -244,36 +317,67 @@ ParseLine(std::string_view line, LogbookEntry &entry) noexcept
       entry.landing = entry.landing + std::chrono::hours{24};
   }
 
-  entry.takeoff_place = Strip(std::string_view{columns[TAKEOFF_PLACE]});
-  entry.landing_place = Strip(std::string_view{columns[LANDING_PLACE]});
-  entry.launch = ParseLaunch(Strip(std::string_view{columns[LAUNCH]}));
-  entry.pilot = std::move(columns[PILOT]);
-  entry.copilot = std::move(columns[COPILOT]);
-  entry.aircraft = std::move(columns[AIRCRAFT]);
-  entry.registration = std::move(columns[REGISTRATION]);
-  entry.competition_id = std::move(columns[COMPETITION_ID]);
-  entry.free_distance = ParseKilometres(columns[FREE_DISTANCE]);
-  entry.dmst_distance = ParseKilometres(columns[DMST_DISTANCE]);
-  entry.dmst_points = ParseNumber(columns[DMST_POINTS]);
-  entry.dmst_shape =
-    ParseDMStShape(Strip(std::string_view{columns[DMST_SHAPE]}));
+  entry.takeoff_place = Strip(std::string_view{get(TAKEOFF_PLACE)});
+  entry.landing_place = Strip(std::string_view{get(LANDING_PLACE)});
+  entry.launch = ParseLaunch(Strip(std::string_view{get(LAUNCH)}));
+  entry.pilot = get(PILOT);
+  entry.copilot = get(COPILOT);
+  entry.aircraft = get(AIRCRAFT);
+  entry.registration = get(REGISTRATION);
+  entry.competition_id = get(COMPETITION_ID);
+  entry.free_distance = ParseKilometres(get(FREE_DISTANCE));
+  entry.free_speed = ParseNumber(get(FREE_SPEED));
+  entry.dmst_distance = ParseKilometres(get(DMST_DISTANCE));
+  entry.dmst_points = ParseNumber(get(DMST_POINTS));
+  entry.dmst_shape = ParseDMStShape(Strip(std::string_view{get(DMST_SHAPE)}));
 
-  if (char *end; !columns[MAX_ALTITUDE].empty()) {
-    const long value = ParseInt(columns[MAX_ALTITUDE].c_str(), &end);
-    if (end != columns[MAX_ALTITUDE].c_str())
+  if (const std::string &alt = get(MAX_ALTITUDE); !alt.empty()) {
+    char *end;
+    const long value = ParseInt(alt.c_str(), &end);
+    if (end != alt.c_str())
       entry.max_altitude = value;
   }
 
-  entry.igc_file = std::move(columns[IGC_FILE]);
-  entry.remark = std::move(columns[REMARK]);
+  entry.log_file = get(LOG_FILE);
+  entry.file_type = get(FILE_TYPE);
+  entry.remark = get(REMARK);
   return true;
+}
+
+/**
+ * A number with one decimal and a decimal comma, as a spreadsheet in a
+ * German (and most European) locale reads and writes it; the
+ * separator of the columns is the semicolon for the same reason.
+ */
+std::string
+FileTypeOf(std::string_view filename) noexcept
+{
+  const auto dot = filename.rfind('.');
+  if (dot == filename.npos)
+    return {};
+
+  std::string type{filename.substr(dot + 1)};
+  for (char &ch : type)
+    if (ch >= 'a' && ch <= 'z')
+      ch -= 'a' - 'A';
+  return type;
+}
+
+static std::string
+FormatDecimal(double value) noexcept
+{
+  std::string s = fmt::format("{:.1f}", value);
+  for (char &ch : s)
+    if (ch == '.')
+      ch = ',';
+  return s;
 }
 
 static std::string
 FormatKilometres(double metres) noexcept
 {
   return metres > 0
-    ? fmt::format("{:.1f}", metres / 1000)
+    ? FormatDecimal(metres / 1000)
     : std::string{};
 }
 
@@ -313,17 +417,22 @@ FormatLine(const LogbookEntry &e) noexcept
 
   line += FormatKilometres(e.free_distance);
   line += SEPARATOR;
+  if (e.free_speed > 0)
+    line += FormatDecimal(e.free_speed);
+  line += SEPARATOR;
   line += FormatKilometres(e.dmst_distance);
   line += SEPARATOR;
   if (e.dmst_points > 0)
-    line += fmt::format("{:.1f}", e.dmst_points);
+    line += FormatDecimal(e.dmst_points);
   line += SEPARATOR;
   line += ToString(e.dmst_shape);
   line += SEPARATOR;
   if (e.max_altitude >= 0)
     line += fmt::format("{}", e.max_altitude);
   line += SEPARATOR;
-  line += Quote(e.igc_file);
+  line += Quote(e.log_file);
+  line += SEPARATOR;
+  line += Quote(e.file_type);
   line += SEPARATOR;
   line += Quote(e.remark);
   return line;
@@ -338,10 +447,20 @@ Read(Path path)
     return entries;
 
   FileLineReaderA reader(path);
+  ColumnMap map;
+  bool first = true;
   char *line;
   while ((line = reader.ReadLine()) != nullptr) {
+    /* the header names the columns; a file without one is read in
+       the order of this version */
+    if (first) {
+      first = false;
+      if (map.ParseHeader(line))
+        continue;
+    }
+
     LogbookEntry entry;
-    if (ParseLine(line, entry))
+    if (ParseLine(line, entry, map))
       entries.push_back(std::move(entry));
   }
 
@@ -356,10 +475,32 @@ WriteLine(BufferedOutputStream &writer, std::string_view line)
   writer.Write("\r\n");
 }
 
+/**
+ * Does the file begin with the header of this version?
+ */
+static bool
+HasCurrentHeader(Path path)
+{
+  FileLineReaderA reader(path);
+  const char *line = reader.ReadLine();
+  return line != nullptr && std::string_view{line} == GetHeader();
+}
+
 void
 Append(Path path, const LogbookEntry &entry)
 {
   const bool is_new = !File::Exists(path);
+
+  if (!is_new && !HasCurrentHeader(path)) {
+    /* a file of an older version, or one rearranged in a spreadsheet:
+       a line in the current order would not match its header, so the
+       whole file is converted to the current columns, read by the
+       names in its header */
+    auto entries = Read(path);
+    entries.push_back(entry);
+    Write(path, entries);
+    return;
+  }
 
   FileOutputStream file(path, FileOutputStream::Mode::APPEND_OR_CREATE);
   BufferedOutputStream writer(file);
