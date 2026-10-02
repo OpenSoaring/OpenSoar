@@ -227,6 +227,7 @@ set(TEST_LIST
 )
 
 set(TEST_LIST
+  ${SRC_DIR}/RunLogbook.cpp
   ${SRC_DIR}/UploadFile.cpp
   ${SRC_DIR}/RunWeGlideClient.cpp
   ${SRC_DIR}/RunDownloadFlight.cpp
@@ -306,6 +307,20 @@ set(TEST_LIST
   # ${SRC_DIR}/RunSkysightCredential.cpp  # [topic/skysight-delta] not in upstream XCSoar yet
 
   ${SRC_DIR}/LogPort.cpp
+)
+
+# Sources of the test directory a program needs besides its own file;
+# everything from src/ comes with the libraries of the program.
+# FakeMessage.cpp prints status messages instead of showing them: the
+# real Message::AddMessage() (src/Message.cpp), which the FLARM parser
+# of the NMEA replay calls, needs the main window and with it the whole
+# user interface and OpenGL, so a console program would need the GL
+# DLLs.  An object file given here wins over the libraries.
+set(RunLogbook_SOURCES
+  ${SRC_DIR}/DebugReplay.cpp
+  ${SRC_DIR}/DebugReplayIGC.cpp
+  ${SRC_DIR}/DebugReplayNMEA.cpp
+  ${SRC_DIR}/FakeMessage.cpp
 )
 
 set(GUI_TEST_LIST 
