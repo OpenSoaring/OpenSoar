@@ -78,6 +78,11 @@ FlyingComputer::Check(FlyingState &state, TimeStamp time) noexcept
 
       /* when a new flight starts, forget the old release and power-on/off time */
       state.release_time = TimeStamp::Undefined();
+
+      /* and the sinking that the release detection followed at the
+         end of the last flight: CheckRelease() would take its start,
+         before this takeoff, as the release of the new flight */
+      sinking_since = TimeStamp::Undefined();
       state.power_on_time = TimeStamp::Undefined();
       state.power_off_time = TimeStamp::Undefined();
       state.landing_time = TimeStamp::Undefined();
