@@ -18,6 +18,9 @@ foreach(source_file ${TEST_LIST})
 
     list(APPEND source_file ${SRC_DIR}/DebugPort.cpp)
     list(APPEND source_file ${PROJECTGROUP_SOURCE_DIR}/src/Operation/ConsoleOperationEnvironment.cpp)
+    if (DEFINED ${test}_SOURCES)
+      list(APPEND source_file ${${test}_SOURCES})
+    endif()
     add_executable(${test}  ${source_file} 
       ${test_path}/tap.c 
       # ${test_path}/test_debug.cpp  needs getopt
