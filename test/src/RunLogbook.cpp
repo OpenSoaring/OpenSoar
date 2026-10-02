@@ -11,10 +11,16 @@
  * so a pilot can check the log book against years of his own flights
  * without replaying each of them on the device.
  *
- * Usage: RunLogbook [--waypoints=FILE]... [--handicap=N]
- *                   [--driver=NAME] FILE_OR_DIRECTORY...
+ * Usage: RunLogbook [--datapath=DIR] [--waypoints=FILE]... [--handicap=N]
+ *                   [--driver=NAME] [FILE_OR_DIRECTORY...]
  *
  * Directories are searched recursively for *.igc and *.nmea files.
+ * Without files, the data directory of the program is searched (most
+ * flights are in its "logs" folder): the one given by --datapath, or
+ * the one the program itself would use (OpenSoarData).  Without
+ * --waypoints, the waypoint files at the top of that data directory
+ * name the places.
+ *
  * The table goes to standard output, a line per file with the number
  * of flights (and what was odd about it) to standard error.
  *
@@ -33,6 +39,7 @@
 #include "Logger/Logbook.hpp"
 #include "Logger/LogbookPlace.hpp"
 #include "Logger/LogbookRecorder.hpp"
+#include "LocalPath.hpp"
 #include "Engine/Waypoint/Waypoints.hpp"
 #include "Waypoint/WaypointReader.hpp"
 #include "Waypoint/Factory.hpp"
@@ -55,6 +62,23 @@
 #include <vector>
 
 namespace fs = std::filesystem;
+
+/**
+ * The UTF-8 name of a file, as #Path expects it on all platforms
+ * (path::string() would use the ANSI code page on Windows).
+ */
+static std::string
+ToUtf8(const fs::path &path)
+{
+  const auto u8 = path.u8string();
+  return {reinterpret_cast<const char *>(u8.data()), u8.size()};
+}
+
+static fs::path
+FromUtf8(const char *s)
+{
+  return fs::path{std::u8string{reinterpret_cast<const char8_t *>(s)}};
+}
 
 /**
  * The pilot and the glider from the header of an IGC file, so the
@@ -322,13 +346,13 @@ struct Options {
 static bool
 IsIgc(const fs::path &path)
 {
-  return StringEndsWithIgnoreCase(path.string().c_str(), ".igc");
+  return StringEndsWithIgnoreCase(ToUtf8(path).c_str(), ".igc");
 }
 
 static bool
 IsNmea(const fs::path &path)
 {
-  return StringEndsWithIgnoreCase(path.string().c_str(), ".nmea");
+  return StringEndsWithIgnoreCase(ToUtf8(path).c_str(), ".nmea");
 }
 
 /**
@@ -342,10 +366,10 @@ RunFile(const fs::path &path, const Waypoints &waypoints,
   const bool igc = IsIgc(path);
   std::unique_ptr<DebugReplay> replay{
     igc
-    ? DebugReplayIGC::Create(Path(path.string().c_str()))
-    : DebugReplayNMEA::Create(Path(path.string().c_str()), options.driver)};
+    ? DebugReplayIGC::Create(Path(ToUtf8(path).c_str()))
+    : DebugReplayNMEA::Create(Path(ToUtf8(path).c_str()), options.driver)};
   if (!replay) {
-    fprintf(stderr, "%s\tcannot be read\n", path.string().c_str());
+    fprintf(stderr, "%s\tcannot be read\n", ToUtf8(path).c_str());
     return 0;
   }
 
@@ -408,7 +432,7 @@ RunFile(const fs::path &path, const Waypoints &waypoints,
   }
 
   for (const auto &flight : handler.flights) {
-    Row row{flight, path.string(), {}, {}};
+    Row row{flight, ToUtf8(path), {}, {}};
     for (const auto &sample : track)
       if (sample.minute >= row.Begin() && sample.minute <= row.End())
         row.track.push_back(sample);
@@ -416,7 +440,7 @@ RunFile(const fs::path &path, const Waypoints &waypoints,
   }
 
   fprintf(stderr, "%s\t%zu flight(s)\t%u fixes%s%s\n",
-          path.string().c_str(), handler.flights.size(), fixes,
+          ToUtf8(path).c_str(), handler.flights.size(), fixes,
           cut_short ? "\tlast one ends with the file" : "",
           !handler.flights.empty() && handler.flights.front().remark.starts_with("recording began")
           ? "\tbegins in flight" : "");
@@ -424,11 +448,46 @@ RunFile(const fs::path &path, const Waypoints &waypoints,
   return handler.flights.size();
 }
 
+static bool
+IsWaypointFile(const fs::path &path)
+{
+  const std::string name = ToUtf8(path);
+  return StringEndsWithIgnoreCase(name.c_str(), ".cup") ||
+    StringEndsWithIgnoreCase(name.c_str(), ".dat") ||
+    StringEndsWithIgnoreCase(name.c_str(), ".wpt");
+}
+
+/**
+ * Read the waypoint files at the top of the data directory, as a
+ * replacement for the files the profile names.
+ */
+static void
+ReadDataWaypoints(const fs::path &data_path, Waypoints &waypoints,
+                  OperationEnvironment &operation)
+{
+  std::vector<fs::path> files;
+  for (const auto &i : fs::directory_iterator(data_path))
+    if (i.is_regular_file() && IsWaypointFile(i.path()))
+      files.push_back(i.path());
+  std::sort(files.begin(), files.end());
+
+  for (const auto &file : files) {
+    fprintf(stderr, "waypoints from %s\n", ToUtf8(file).c_str());
+    try {
+      ReadWaypointFile(Path(ToUtf8(file).c_str()), waypoints,
+                       WaypointFactory(WaypointOrigin::PRIMARY), operation);
+    } catch (...) {
+      PrintException(std::current_exception());
+    }
+  }
+}
+
 static void
 CollectFiles(const fs::path &path, std::vector<fs::path> &files)
 {
   if (fs::is_directory(path)) {
-    for (const auto &i : fs::recursive_directory_iterator(path))
+    for (const auto &i : fs::recursive_directory_iterator(path,
+                                     fs::directory_options::skip_permission_denied))
       if (i.is_regular_file() && (IsIgc(i.path()) || IsNmea(i.path())))
         files.push_back(i.path());
   } else
@@ -440,6 +499,8 @@ main(int argc, char **argv)
 try {
   Options options;
   Waypoints waypoints;
+  bool have_waypoints = false;
+  const char *data_path = nullptr;
   std::vector<fs::path> files;
   /* quiet: standard output is the table */
   NullOperationEnvironment operation;
@@ -449,20 +510,46 @@ try {
     if (arg.starts_with("--waypoints=")) {
       /* waypoints from a file name places; temporary ones do not
          (see Logbook::FindPlace()) */
-      ReadWaypointFile(Path(argv[i] + 12), waypoints,
+      ReadWaypointFile(Path(ToUtf8(argv[i] + 12).c_str()), waypoints,
                        WaypointFactory(WaypointOrigin::PRIMARY),
                        operation);
+      have_waypoints = true;
+    } else if (arg.starts_with("--datapath=")) {
+      data_path = argv[i] + 11;
     } else if (arg.starts_with("--handicap=")) {
       options.handicap = std::strtoul(argv[i] + 11, nullptr, 10);
     } else if (arg.starts_with("--driver=")) {
       options.driver = std::string{arg.substr(9)};
     } else if (arg.starts_with("-")) {
       fprintf(stderr,
-              "Usage: %s [--waypoints=FILE]... [--handicap=N] "
-              "[--driver=NAME] FILE_OR_DIRECTORY...\n", argv[0]);
+              "Usage: %s [--datapath=DIR] [--waypoints=FILE]... "
+              "[--handicap=N] [--driver=NAME] [FILE_OR_DIRECTORY...]\n",
+              argv[0]);
       return EXIT_FAILURE;
     } else
       CollectFiles(argv[i], files);
+  }
+
+  if (files.empty()) {
+    /* the flights of the program's own data directory */
+    fs::path data;
+    if (data_path != nullptr)
+      data = data_path;
+    else {
+      InitialiseDataPath();
+      data = FromUtf8(GetPrimaryDataPath().c_str());
+    }
+
+    if (!fs::is_directory(data)) {
+      fprintf(stderr, "No data directory %s; give one with --datapath= "
+              "or name the files\n", ToUtf8(data).c_str());
+      return EXIT_FAILURE;
+    }
+
+    fprintf(stderr, "data directory %s\n", ToUtf8(data).c_str());
+    CollectFiles(data, files);
+    if (!have_waypoints)
+      ReadDataWaypoints(data, waypoints, operation);
   }
 
   waypoints.Optimise();
