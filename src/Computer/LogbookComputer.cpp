@@ -12,28 +12,28 @@
  */
 static constexpr unsigned FINAL_TRACE_SIZE = 1024;
 
+/**
+ * How often the contest trace is searched in flight.  A complete
+ * search of its 256 points takes a few milliseconds on a PC.
+ */
+static constexpr FloatDuration IN_FLIGHT_INTERVAL = std::chrono::minutes{1};
+
 LogbookComputer::LogbookComputer(const Trace &_trace_full,
-                                 const Trace &trace_triangle) noexcept
-  :trace_full(_trace_full),
-   free(_trace_full),
-   dmst_quad(_trace_full),
+                                 const Trace &trace_contest) noexcept
+  :free(trace_contest),
+   dmst_quad(trace_contest),
    /* the log book records what was flown, so the triangle is not
       assumed to be closed */
-   dmst_triangle(trace_triangle, false),
-   dmst_or(_trace_full),
+   dmst_triangle(trace_contest, false),
+   dmst_or(trace_contest),
+   final_free(_trace_full),
+   final_quad(_trace_full),
+   final_or(_trace_full),
+   trace_full(_trace_full),
    final_trace({}, Trace::null_time, FINAL_TRACE_SIZE),
    final_triangle(final_trace, false)
 {
   Reset();
-}
-
-void
-LogbookComputer::SetIncremental(bool incremental) noexcept
-{
-  free.SetIncremental(incremental);
-  dmst_quad.SetIncremental(incremental);
-  dmst_triangle.SetIncremental(incremental);
-  dmst_or.SetIncremental(incremental);
 }
 
 void
@@ -44,44 +44,61 @@ LogbookComputer::Reset() noexcept
   dmst_triangle.Reset();
   dmst_or.Reset();
 
+  final_free.Reset();
+  final_quad.Reset();
+  final_or.Reset();
+  final_trace.clear();
+  final_triangle.Reset();
+
   result_free.Reset();
   result_quad.Reset();
   result_triangle.Reset();
   result_or.Reset();
 
-  final_trace.clear();
-  final_triangle.Reset();
+  last_solve = FloatDuration{-1};
 }
 
 /**
- * Run one solver; keep its previous result unless it found a new
- * one, so an incremental search does not lose the value shown.
+ * Search completely with one solver.  Without a new result (the solver
+ * reports none if the trace has not changed) the old one stays.
+ *
+ * @param replace true to take the new result even if it is not better
  */
 static void
-Run(AbstractContest &solver, ContestResult &result, bool exhaustive) noexcept
+Run(AbstractContest &solver, unsigned handicap, ContestResult &result,
+    bool replace) noexcept
 {
-  if (solver.Solve(exhaustive) == SolverResult::VALID)
-    result = solver.GetBestResult();
+  solver.SetHandicap(handicap);
+  if (solver.Solve(true) != SolverResult::VALID)
+    return;
+
+  const ContestResult &found = solver.GetBestResult();
+  if (replace || !result.IsDefined() || found.score > result.score)
+    result = found;
+}
+
+/**
+ * The solvers divide by the index; a plane without one counts as 100,
+ * as the plane file does.
+ */
+static constexpr unsigned
+ValidHandicap(unsigned handicap) noexcept
+{
+  return handicap > 0 ? handicap : 100;
 }
 
 void
-LogbookComputer::Solve(unsigned handicap, bool exhaustive,
-                       LogbookStatistics &stats) noexcept
+LogbookComputer::SolveInFlight(unsigned handicap,
+                               LogbookStatistics &stats) noexcept
 {
-  /* the solvers divide by the index; a plane without one counts as
-     100, as the plane file does */
-  if (handicap == 0)
-    handicap = 100;
+  handicap = ValidHandicap(handicap);
 
-  free.SetHandicap(handicap);
-  dmst_quad.SetHandicap(handicap);
-  dmst_triangle.SetHandicap(handicap);
-  dmst_or.SetHandicap(handicap);
-
-  Run(free, result_free, exhaustive);
-  Run(dmst_quad, result_quad, exhaustive);
-  Run(dmst_triangle, result_triangle, exhaustive);
-  Run(dmst_or, result_or, exhaustive);
+  /* a new result replaces the old one even if the thinning of the
+     trace makes it a little shorter, so the values follow the trace */
+  Run(free, handicap, result_free, true);
+  Run(dmst_quad, handicap, result_quad, true);
+  Run(dmst_triangle, handicap, result_triangle, true);
+  Run(dmst_or, handicap, result_or, true);
 
   CopyResults(stats);
 }
@@ -114,7 +131,7 @@ void
 LogbookComputer::Process(const FlyingState &flight, unsigned handicap,
                          bool exhaustive, LogbookStatistics &stats) noexcept
 {
-  /* after the landing, search once exhaustively: that result is
+  /* after the landing, search once on the full trace: that result is
      final, and the log book waits for it */
   const bool landed = !flight.flying && flight.landing_time.IsDefined();
 
@@ -122,8 +139,14 @@ LogbookComputer::Process(const FlyingState &flight, unsigned handicap,
     SolveFinal(handicap, stats);
     stats.final = true;
   } else if (flight.flying) {
-    Solve(handicap, exhaustive, stats);
     stats.final = false;
+
+    if (exhaustive || last_solve < FloatDuration{} ||
+        flight.flight_time < last_solve ||
+        flight.flight_time - last_solve >= IN_FLIGHT_INTERVAL) {
+      last_solve = flight.flight_time;
+      SolveInFlight(handicap, stats);
+    }
   }
 }
 
@@ -131,17 +154,26 @@ void
 LogbookComputer::SolveFinal(unsigned handicap,
                             LogbookStatistics &stats) noexcept
 {
-  Solve(handicap, true, stats);
+  handicap = ValidHandicap(handicap);
+
+  /* the last search in flight may be up to a minute old */
+  SolveInFlight(handicap, stats);
+
+  Run(final_free, handicap, result_free, false);
+  Run(final_quad, handicap, result_quad, false);
+  Run(final_or, handicap, result_or, false);
 
   final_trace.clear();
   for (const auto &point : trace_full)
     final_trace.push_back(point);
 
+  /* only the triangle of the dense trace counts: the one found in
+     flight on the contest trace was up to 14% longer than the triangle
+     the contest analysis finds on the same flight (seen on 2025-05-12,
+     619 instead of 545 km); the cause is not known yet */
   final_triangle.Reset();
-  final_triangle.SetHandicap(handicap == 0 ? 100 : handicap);
-  if (final_triangle.Solve(true) == SolverResult::VALID &&
-      final_triangle.GetBestResult().score > result_triangle.score)
-    result_triangle = final_triangle.GetBestResult();
+  result_triangle.Reset();
+  Run(final_triangle, handicap, result_triangle, true);
 
   CopyResults(stats);
 }
