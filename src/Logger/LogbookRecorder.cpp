@@ -66,6 +66,36 @@ ToDateTime(const MoreData &basic, TimeStamp t) noexcept
   return basic.date_time_utc - ago;
 }
 
+/**
+ * The takeoff was this close above the ground: it was one.
+ */
+static constexpr double MAX_GROUND_START_HEIGHT = 150;
+
+bool
+LogbookRecorder::IsGroundStart(const MoreData &basic,
+                               const DerivedInfo &calculated) noexcept
+{
+  /* many IGC loggers begin to record only when the aircraft moves, a
+     few seconds before or at the takeoff, so the aircraft is not seen
+     standing on the ground; but it is low near an airfield, which a
+     restart in the air hardly ever is */
+  const FlyingState &flight = calculated.flight;
+
+  if (calculated.altitude_agl_valid)
+    return calculated.altitude_agl < MAX_GROUND_START_HEIGHT;
+
+  const auto elevation =
+    handler.GetLogbookAirfieldElevation(flight.takeoff_location);
+  if (!elevation)
+    return false;
+
+  if (!basic.GetAnyAltitude())
+    /* FlyingComputer had no altitude for the takeoff either */
+    return false;
+
+  return flight.takeoff_altitude - *elevation < MAX_GROUND_START_HEIGHT;
+}
+
 void
 LogbookRecorder::OnTakeoff(const MoreData &basic,
                            const DerivedInfo &calculated) noexcept
@@ -75,7 +105,7 @@ LogbookRecorder::OnTakeoff(const MoreData &basic,
   entry = {};
   entry.takeoff = ToDateTime(basic, flight.takeoff_time);
 
-  began_in_air = !seen_ground;
+  began_in_air = !seen_ground && !IsGroundStart(basic, calculated);
   if (began_in_air)
     /* the first fixes in the air are no takeoff place, and the time
        is when the recording began */

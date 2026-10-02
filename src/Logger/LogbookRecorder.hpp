@@ -6,6 +6,7 @@
 #include "Logbook.hpp"
 #include "time/Stamp.hpp"
 
+#include <optional>
 #include <string>
 
 struct MoreData;
@@ -37,6 +38,15 @@ public:
      * A name for this place (airfield, waypoint or coordinates).
      */
     virtual std::string FindLogbookPlace(const GeoPoint &location) noexcept = 0;
+
+    /**
+     * The elevation of an airfield near this place, if there is one
+     * (see Logbook::FindAirfieldElevation()).
+     */
+    virtual std::optional<double>
+    GetLogbookAirfieldElevation([[maybe_unused]] const GeoPoint &location) noexcept {
+      return std::nullopt;
+    }
 
     /**
      * The name of the flight log file being written (IGC, or NMEA in
@@ -155,5 +165,7 @@ private:
   void OnFlying(const MoreData &basic, const DerivedInfo &calculated) noexcept;
   void OnLanding(const MoreData &basic, const DerivedInfo &calculated) noexcept;
   void SetLaunch(const FlyingState &flight) noexcept;
+  bool IsGroundStart(const MoreData &basic,
+                     const DerivedInfo &calculated) noexcept;
   void Finish(const DerivedInfo &calculated) noexcept;
 };

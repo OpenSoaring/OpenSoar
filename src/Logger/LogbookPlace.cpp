@@ -54,4 +54,22 @@ FindPlace(const Waypoints *waypoints, const GeoPoint &location,
   return FormatGeoPoint(location, format).c_str();
 }
 
+std::optional<double>
+FindAirfieldElevation(const Waypoints *waypoints,
+                      const GeoPoint &location) noexcept
+{
+  if (waypoints == nullptr || !location.IsValid())
+    return std::nullopt;
+
+  const auto wp = waypoints->GetNearestIf(location, LANDABLE_RANGE,
+                                          [](const Waypoint &w){
+                                            return IsLandablePlace(w) &&
+                                              w.has_elevation;
+                                          });
+  if (wp == nullptr)
+    return std::nullopt;
+
+  return wp->elevation;
+}
+
 } // namespace Logbook
