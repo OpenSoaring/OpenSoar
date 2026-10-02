@@ -801,8 +801,10 @@ first.  An entry is written after the landing and holds:
 \item[Flight time]  From takeoff to landing.
 \item[Launch]  Winch, aerotow or self-launch, estimated from the
   flight: a climb of 250\,m or more within the first minute is a winch
-  launch, an engine running within three minutes of the takeoff a
-  self-launch, a release from the tow otherwise an aerotow.  Correct
+  launch, an engine that starts within three minutes of the takeoff
+  and then runs for at least three minutes a self-launch, a release
+  from the tow otherwise an aerotow.  Without an engine noise sensor a
+  self-launch cannot be told from an aerotow.  Correct
   it if it is wrong.
 \item[Pilot, co-pilot]  From the logger settings, editable.
 \item[Aircraft]  Type, registration and competition ID of the plane.
