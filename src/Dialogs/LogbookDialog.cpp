@@ -148,12 +148,18 @@ LogbookEntryWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
               entry.registration.c_str(), entry.competition_id.c_str());
   AddReadOnly(_("Aircraft"), nullptr, text);
 
+  if (entry.free_distance > 0) {
+    text = FormatUserDistance(entry.free_distance, true, 1).c_str();
+    if (entry.free_speed > 0)
+      text.AppendFormat("  %s",
+                        FormatUserSpeed(entry.free_speed / 3.6).c_str());
+  } else
+    text.clear();
   AddReadOnly(_("Free distance"),
               _("The free distance over up to five turn points (six legs), "
-                "as the OLC classic rules score it."),
-              entry.free_distance > 0
-              ? FormatUserDistance(entry.free_distance, true, 1).c_str()
-              : "");
+                "as the OLC classic rules score it, and the speed from its "
+                "first to its last point."),
+              text);
 
   if (entry.dmst_distance > 0)
     text.Format("%s  %.1f %s  %s",
@@ -173,7 +179,7 @@ LogbookEntryWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   else
     AddReadOnly(_("Max. altitude"), nullptr, "");
 
-  AddReadOnly(_("IGC file"), nullptr, entry.igc_file.c_str());
+  AddReadOnly(_("Log file"), nullptr, entry.log_file.c_str());
 
   static constexpr StaticEnumChoice launch_list[] = {
     { LogbookEntry::Launch::UNKNOWN, N_("Unknown") },
