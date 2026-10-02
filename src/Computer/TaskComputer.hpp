@@ -89,7 +89,6 @@ public:
 
   void SetContestIncremental(bool incremental) {
     contest.SetIncremental(incremental);
-    logbook.SetIncremental(incremental);
   }
 
   /**
