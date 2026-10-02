@@ -45,6 +45,12 @@ GlueLogbook::FindLogbookPlace(const GeoPoint &location) noexcept
                             blackboard.GetUISettings().format.coordinate_format);
 }
 
+std::optional<double>
+GlueLogbook::GetLogbookAirfieldElevation(const GeoPoint &location) noexcept
+{
+  return Logbook::FindAirfieldElevation(waypoints, location);
+}
+
 std::string
 GlueLogbook::GetLogbookFile() noexcept
 {
