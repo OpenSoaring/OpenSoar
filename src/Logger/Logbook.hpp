@@ -69,6 +69,15 @@ struct LogbookEntry {
    */
   std::string file_type;
 
+  /**
+   * The flight recorder that wrote #log_file: the three letter code
+   * of its manufacturer from the A record of the IGC file (e.g. "LXV",
+   * "FLA", "XCS" for this program), and the type from the header
+   * record HFFTYFRTYPE (e.g. "LXNAVIGATION,LX9000"); empty if
+   * unknown, e.g. for an NMEA log
+   */
+  std::string recorder_code, recorder_type;
+
   std::string remark;
 
   [[gnu::pure]]
