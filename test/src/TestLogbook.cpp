@@ -3,6 +3,10 @@
 
 #include "Logger/Logbook.hpp"
 #include "TestUtil.hpp"
+#include "system/FileUtil.hpp"
+#include "system/Path.hpp"
+#include "io/FileOutputStream.hxx"
+#include "io/BufferedOutputStream.hxx"
 
 #include <cmath>
 #include <string>
@@ -26,7 +30,9 @@ MakeEntry()
   e.dmst_points = 553.3;
   e.dmst_shape = LogbookStatistics::DMStShape::TRIANGLE;
   e.max_altitude = 2310;
-  e.igc_file = "2026-07-14-XCS-AAA-01.igc";
+  e.free_speed = 93.47;
+  e.log_file = "2026-07-14-XCS-AAA-01.igc";
+  e.file_type = Logbook::FileTypeOf(e.log_file);
   e.remark = "first line\nsecond line";
   return e;
 }
@@ -52,6 +58,9 @@ TestRoundTrip()
   /* one flight is one line, whatever the remark contains */
   ok1(line.find('\n') == line.npos);
   ok1(line.starts_with("2026-07-14;10:03:15;15:47:02;5:43;"));
+  /* decimal comma, as a German or most European spreadsheets expect */
+  ok1(line.find(";512,3;93,5;498,7;553,3;") != line.npos);
+  ok1(line.find(";2026-07-14-XCS-AAA-01.igc;IGC;") != line.npos);
 
   LogbookEntry p;
   ok1(Logbook::ParseLine(line, p));
@@ -70,7 +79,9 @@ TestRoundTrip()
   ok1(std::fabs(p.dmst_points - 553.3) < 0.01);
   ok1(p.dmst_shape == e.dmst_shape);
   ok1(p.max_altitude == 2310);
-  ok1(p.igc_file == e.igc_file);
+  ok1(std::fabs(p.free_speed - 93.5) < 0.01);
+  ok1(p.log_file == e.log_file);
+  ok1(p.file_type == "IGC");
   ok1(p.remark == "first line second line");
 }
 
@@ -86,9 +97,10 @@ TestParse()
   /* saved by a spreadsheet in a German locale: decimal comma, the
      empty columns at the end dropped; across midnight UTC */
   ok1(Logbook::ParseLine("2026-07-14;23:10:00;01:20:00;;A;B;winch;;;"
-                         "Ka 8;D-5678;;123,4;110,5;95,2", e));
+                         "Ka 8;D-5678;;123,4;61,2;110,5;95,2", e));
   ok1(e.launch == LogbookEntry::Launch::WINCH);
   ok1(std::fabs(e.free_distance - 123400) < 1);
+  ok1(std::fabs(e.free_speed - 61.2) < 0.01);
   ok1(std::fabs(e.dmst_points - 95.2) < 0.01);
   ok1(e.max_altitude < 0);
   ok1(e.HasFlightTime());
@@ -100,14 +112,85 @@ TestParse()
   ok1(!e.HasFlightTime());
 }
 
+static void
+TestHeader()
+{
+  /* the header of the first version had no speed and called the log
+     file "IGC file"; such a file is read by its header */
+  Logbook::ColumnMap map;
+  ok1(map.ParseHeader("Date;Takeoff (UTC);Landing (UTC);Duration;"
+                      "Takeoff place;Landing place;Launch;Pilot;Copilot;"
+                      "Aircraft;Registration;Competition ID;"
+                      "Free distance (km);DMSt distance (km);DMSt points;"
+                      "DMSt shape;Max. altitude (m);IGC file;Remark"));
+  LogbookEntry e;
+  ok1(Logbook::ParseLine("2026-07-14;10:00:00;14:00:00;4:00;A;A;aerotow;"
+                         "Uwe;;LS 4;D-1234;U2;300.5;290.0;310.2;triangle;"
+                         "2100;a.igc;old", e, map));
+  ok1(std::fabs(e.free_distance - 300500) < 1);
+  ok1(e.free_speed == 0);
+  ok1(std::fabs(e.dmst_points - 310.2) < 0.01);
+  ok1(e.max_altitude == 2100);
+  ok1(e.log_file == "a.igc");
+  ok1(e.remark == "old");
+
+  /* columns moved in a spreadsheet */
+  ok1(map.ParseHeader("Date;Takeoff (UTC);Remark;Log file"));
+  ok1(Logbook::ParseLine("2026-07-14;10:00:00;moved;b.nmea", e, map));
+  ok1(e.remark == "moved");
+  ok1(e.log_file == "b.nmea");
+
+  /* the current header maps to the default order */
+  ok1(map.ParseHeader(Logbook::GetHeader()));
+  ok1(!map.ParseHeader("2026-07-14;10:00:00"));
+
+  ok1(Logbook::FileTypeOf("x.nmea") == "NMEA");
+  ok1(Logbook::FileTypeOf("noext").empty());
+}
+
+/**
+ * A flight appended to the file of an older version converts the
+ * file, so its lines match the header again.
+ */
+static void
+TestAppendToOldFile()
+{
+  const Path path("TestLogbook.tmp.csv");
+  {
+    FileOutputStream file(path);
+    BufferedOutputStream writer(file);
+    writer.Write("Date;Takeoff (UTC);Landing (UTC);Duration;Takeoff place;"
+               "Landing place;Launch;Pilot;Copilot;Aircraft;Registration;"
+               "Competition ID;Free distance (km);DMSt distance (km);"
+               "DMSt points;DMSt shape;Max. altitude (m);IGC file;Remark\r\n"
+               "2026-07-13;10:00:00;14:00:00;4:00;A;A;winch;Uwe;;LS 4;"
+               "D-1234;U2;300.5;290.0;310.2;triangle;2100;a.igc;old\r\n");
+    writer.Flush();
+    file.Commit();
+  }
+
+  Logbook::Append(path, MakeEntry());
+
+  const auto entries = Logbook::Read(path);
+  ok1(entries.size() == 2);
+  ok1(entries.size() == 2 && entries[0].log_file == "a.igc" &&
+      std::fabs(entries[0].dmst_points - 310.2) < 0.01);
+  ok1(entries.size() == 2 && entries[1].log_file == MakeEntry().log_file &&
+      std::fabs(entries[1].free_speed - 93.5) < 0.01);
+
+  File::Delete(path);
+}
+
 int
 main()
 {
-  plan_tests(37);
+  plan_tests(61);
 
   TestSplit();
   TestRoundTrip();
   TestParse();
+  TestHeader();
+  TestAppendToOldFile();
 
   return exit_status();
 }
