@@ -162,7 +162,7 @@ TaskComputer::ProcessIdle(const MoreData &basic, DerivedInfo &calculated,
     contest.Solve(settings_computer.contest, calculated.contest_stats);
 
   if (settings_computer.logger.enable_flight_logger)
-    logbook.Process(calculated.flight, settings_computer.contest.handicap,
+    logbook.Process(basic, calculated.flight, settings_computer.contest.handicap,
                     exhaustive, calculated.logbook_stats);
 
   const AircraftState as = ToAircraftState(basic, calculated);

@@ -193,6 +193,7 @@ enum Column : unsigned {
   TAKEOFF_PLACE,
   LANDING_PLACE,
   LAUNCH,
+  RELEASE,
   PILOT,
   COPILOT,
   AIRCRAFT,
@@ -225,6 +226,7 @@ static constexpr const char *column_names[N_COLUMNS] = {
   "Takeoff place",
   "Landing place",
   "Launch",
+  "Release (UTC)",
   "Pilot",
   "Copilot",
   "Aircraft",
@@ -324,6 +326,12 @@ ParseLine(std::string_view line, LogbookEntry &entry,
   entry.takeoff_place = Strip(std::string_view{get(TAKEOFF_PLACE)});
   entry.landing_place = Strip(std::string_view{get(LANDING_PLACE)});
   entry.launch = ParseLaunch(Strip(std::string_view{get(LAUNCH)}));
+
+  if (BrokenTime release; ParseTime(get(RELEASE), release)) {
+    entry.release = BrokenDateTime(date, release);
+    if (entry.release < entry.takeoff)
+      entry.release = entry.release + std::chrono::hours{24};
+  }
   entry.pilot = get(PILOT);
   entry.copilot = get(COPILOT);
   entry.aircraft = get(AIRCRAFT);
@@ -411,8 +419,18 @@ FormatLine(const LogbookEntry &e) noexcept
 
   for (std::string_view s : {std::string_view{e.takeoff_place},
                              std::string_view{e.landing_place},
-                             std::string_view{ToString(e.launch)},
-                             std::string_view{e.pilot},
+                             std::string_view{ToString(e.launch)}}) {
+    line += Quote(s);
+    line += SEPARATOR;
+  }
+
+  if (e.release.IsPlausible())
+    line += fmt::format("{:02}:{:02}:{:02}",
+                        e.release.hour, e.release.minute,
+                        e.release.second);
+  line += SEPARATOR;
+
+  for (std::string_view s : {std::string_view{e.pilot},
                              std::string_view{e.copilot},
                              std::string_view{e.aircraft},
                              std::string_view{e.registration},

@@ -165,6 +165,7 @@ private:
   void OnFlying(const MoreData &basic, const DerivedInfo &calculated) noexcept;
   void OnLanding(const MoreData &basic, const DerivedInfo &calculated) noexcept;
   void SetLaunch(const FlyingState &flight) noexcept;
+  void AddRemark(std::string_view remark) noexcept;
   bool IsGroundStart(const MoreData &basic,
                      const DerivedInfo &calculated) noexcept;
   void Finish(const DerivedInfo &calculated) noexcept;

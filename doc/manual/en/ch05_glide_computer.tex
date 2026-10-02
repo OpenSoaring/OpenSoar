@@ -806,6 +806,8 @@ first.  An entry is written after the landing and holds:
   from the tow otherwise an aerotow.  Without an engine noise sensor a
   self-launch cannot be told from an aerotow.  Correct
   it if it is wrong.
+\item[Release]  The release from the tow or winch, or the end of the
+  engine run of a self-launch.  The scored flight begins here.
 \item[Pilot, co-pilot]  From the logger settings, editable.
 \item[Aircraft]  Type, registration and competition ID of the plane.
 \item[Free distance]  The distance over up to five turn points (six
@@ -828,11 +830,13 @@ flight is recorded from that moment with the remark ``recording began
 in flight'', without takeoff place and launch, because the real
 takeoff was not seen.
 
-Both distances are calculated during the whole flight, independently of
-the contest chosen in the settings, and once more exhaustively after
-the landing.  They include the launch (aerotow or winch climb), so
-they can be a little longer than the score of an online contest,
-which starts at the release.
+Both distances are calculated during the flight, independently of the
+contest chosen in the settings, and once more exhaustively after the
+landing.  As in the contest rules, they count from the release (or the
+end of the engine run of a self-launch).  An engine run in flight ends
+the scored part; the next part begins when the engine is off again,
+only the best part counts, and the remark says how many there were.
+An engine run is engine noise above 900 of 999 for at least a minute.
 
 Selecting a flight shows all details; launch, pilot, co-pilot and
 remark can be changed there.  The log book is the file
