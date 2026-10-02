@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
 
 class Waypoints;
@@ -24,5 +25,17 @@ namespace Logbook {
 std::string
 FindPlace(const Waypoints *waypoints, const GeoPoint &location,
           CoordinateFormat format) noexcept;
+
+/**
+ * The elevation of the nearest airfield within 3 km that has one, to
+ * tell a takeoff from the ground from a recording that began in the
+ * air near the airfield.
+ *
+ * @param waypoints the waypoint database, may be nullptr
+ */
+[[gnu::pure]]
+std::optional<double>
+FindAirfieldElevation(const Waypoints *waypoints,
+                      const GeoPoint &location) noexcept;
 
 } // namespace Logbook
