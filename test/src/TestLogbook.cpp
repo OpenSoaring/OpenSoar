@@ -20,6 +20,7 @@ MakeEntry()
   e.takeoff_place = "Aalen-Elchingen";
   e.landing_place = "Field; near \"the\" river";
   e.launch = LogbookEntry::Launch::AEROTOW;
+  e.release = BrokenDateTime(2026, 7, 14, 10, 11, 40);
   e.pilot = "Uwe";
   e.copilot = "";
   e.aircraft = "ASW 28";
@@ -71,6 +72,7 @@ TestRoundTrip()
   ok1(p.takeoff_place == e.takeoff_place);
   ok1(p.landing_place == e.landing_place);
   ok1(p.launch == e.launch);
+  ok1(p.release == e.release);
   ok1(p.pilot == e.pilot);
   ok1(p.aircraft == e.aircraft);
   ok1(p.registration == e.registration);
@@ -100,9 +102,11 @@ TestParse()
 
   /* saved by a spreadsheet in a German locale: decimal comma, the
      empty columns at the end dropped; across midnight UTC */
-  ok1(Logbook::ParseLine("2026-07-14;23:10:00;01:20:00;;A;B;winch;;;"
+  ok1(Logbook::ParseLine("2026-07-14;23:10:00;01:20:00;;A;B;winch;00:01:30;;;"
                          "Ka 8;D-5678;;123,4;61,2;110,5;95,2", e));
   ok1(e.launch == LogbookEntry::Launch::WINCH);
+  /* the release after midnight UTC is on the next day */
+  ok1(e.release == BrokenDateTime(2026, 7, 15, 0, 1, 30));
   ok1(std::fabs(e.free_distance - 123400) < 1);
   ok1(std::fabs(e.free_speed - 61.2) < 0.01);
   ok1(std::fabs(e.dmst_points - 95.2) < 0.01);
@@ -188,7 +192,7 @@ TestAppendToOldFile()
 int
 main()
 {
-  plan_tests(63);
+  plan_tests(65);
 
   TestSplit();
   TestRoundTrip();
