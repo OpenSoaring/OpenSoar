@@ -2127,6 +2127,8 @@ RUN_LOGBOOK_SOURCES = \
 	$(SRC)/Logger/Logbook.cpp \
 	$(SRC)/Logger/LogbookPlace.cpp \
 	$(SRC)/Logger/LogbookRecorder.cpp \
+	$(SRC)/LocalPath.cpp \
+	$(SRC)/Version.cpp \
 	$(SRC)/Waypoint/Factory.cpp \
 	$(SRC)/RadioFrequency.cpp \
 	$(ENGINE_SRC_DIR)/Trace/Point.cpp \
