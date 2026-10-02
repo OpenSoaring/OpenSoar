@@ -165,6 +165,11 @@ public:
                               CoordinateFormat::DDMM_MMM);
   }
 
+  std::optional<double>
+  GetLogbookAirfieldElevation(const GeoPoint &location) noexcept override {
+    return Logbook::FindAirfieldElevation(&waypoints, location);
+  }
+
   std::string GetLogbookFile() noexcept override {
     return log_file;
   }
