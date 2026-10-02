@@ -26,6 +26,12 @@ static constexpr seconds WINCH_CLIMB_TIME{60};
 static constexpr minutes MAX_SELF_LAUNCH_DELAY{3};
 
 /**
+ * A ground speed above this (m/s) at the end of the data means the
+ * aircraft was still in the air.
+ */
+static constexpr double MIN_AIR_SPEED = 15;
+
+/**
  * Wait this long after the landing for the final distances before
  * writing the entry without them.
  */
@@ -54,8 +60,17 @@ LogbookRecorder::OnTakeoff(const MoreData &basic,
 
   entry = {};
   entry.takeoff = ToDateTime(basic, flight.takeoff_time);
-  entry.takeoff_place = handler.FindLogbookPlace(flight.takeoff_location);
+
+  began_in_air = !seen_ground;
+  if (began_in_air)
+    /* the first fixes in the air are no takeoff place, and the time
+       is when the recording began */
+    entry.remark = "recording began in flight";
+  else
+    entry.takeoff_place = handler.FindLogbookPlace(flight.takeoff_location);
+
   handler.OnLogbookTakeoff(entry);
+  seen_ground = false;
 
   takeoff_time = flight.takeoff_time;
   takeoff_altitude = flight.takeoff_altitude;
@@ -97,6 +112,11 @@ LogbookRecorder::OnFlying(const MoreData &basic,
 void
 LogbookRecorder::SetLaunch(const FlyingState &flight) noexcept
 {
+  if (began_in_air)
+    /* the climb, the engine and the release of the real launch
+       were not seen */
+    return;
+
   /* the climb tells a winch launch; the noise a winch launch makes
      in an engine noise sensor must not make it a self-launch, so it
      is checked first */
@@ -145,10 +165,13 @@ void
 LogbookRecorder::Update(const MoreData &basic,
                         const DerivedInfo &calculated) noexcept
 {
+  const FlyingState &flight = calculated.flight;
+
+  if (flight.on_ground)
+    seen_ground = true;
+
   if (!basic.time_available || !basic.date_time_utc.IsDatePlausible())
     return;
-
-  const FlyingState &flight = calculated.flight;
 
   if (!in_flight) {
     /* a flight begins once it is confirmed (in the air, not just
@@ -189,10 +212,23 @@ LogbookRecorder::FinishAtEnd(const MoreData &basic,
 
   if (!landed) {
     entry.landing = basic.date_time_utc;
-    entry.landing_place = handler.FindLogbookPlace(basic.location);
+
+    /* faster than any landing roll: the recording stopped in the air
+       (an app or logger restart), and the last fix is no landing
+       place */
+    const bool in_air = basic.ground_speed_available &&
+      basic.ground_speed > MIN_AIR_SPEED;
+    if (in_air)
+      remark = "recording ended in flight";
+    else
+      entry.landing_place = handler.FindLogbookPlace(basic.location);
+
     SetLaunch(calculated.flight);
   }
 
-  entry.remark = remark;
+  if (entry.remark.empty())
+    entry.remark = remark;
+  else
+    entry.remark = entry.remark + ", " + remark;
   Finish(calculated);
 }
