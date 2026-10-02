@@ -181,6 +181,13 @@ LogbookEntryWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
   AddReadOnly(_("Log file"), nullptr, entry.log_file.c_str());
 
+  text.Format("%s  %s", entry.recorder_code.c_str(),
+              entry.recorder_type.c_str());
+  AddReadOnly(_("Flight recorder"),
+              _("The manufacturer code and the type from the header of the "
+                "IGC file."),
+              text);
+
   static constexpr StaticEnumChoice launch_list[] = {
     { LogbookEntry::Launch::UNKNOWN, N_("Unknown") },
     { LogbookEntry::Launch::WINCH, N_("Winch") },
