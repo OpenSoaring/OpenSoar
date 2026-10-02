@@ -104,12 +104,16 @@ struct LogbookEntry {
 namespace Logbook {
 
 /**
- * The token of a launch type in the file; empty for UNKNOWN.
+ * The letter of a launch type in the file: W, E, F or U (unknown).
  */
 [[gnu::const]]
 const char *
 ToString(LogbookEntry::Launch launch) noexcept;
 
+/**
+ * Parse a launch type: the letters ToString() writes, S and A as their
+ * English counterparts, and the words of the first version.
+ */
 [[gnu::pure]]
 LogbookEntry::Launch
 ParseLaunch(std::string_view s) noexcept;
