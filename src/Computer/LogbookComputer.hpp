@@ -9,6 +9,7 @@
 #include "Engine/Contest/Solvers/DMStOR.hpp"
 #include "Engine/Contest/ContestResult.hpp"
 #include "Engine/Trace/Trace.hpp"
+#include "time/FloatDuration.hxx"
 
 struct LogbookStatistics;
 struct FlyingState;
@@ -17,65 +18,72 @@ class Trace;
 /**
  * Calculates the free distance and the DMSt result of the current
  * flight for the log book.  It runs beside the contest of the
- * settings (#ContestComputer), on the same traces, so the values are
- * there whatever contest the pilot has chosen, and it keeps them up
- * to date in flight, as the contest page does.
+ * settings (#ContestComputer), so the values are there whatever
+ * contest the pilot has chosen, and it keeps them up to date in
+ * flight.
+ *
+ * In flight the solvers work on the contest trace (256 points) and
+ * search it completely once a minute.  On the full trace (up to 25200
+ * points) a search per fix costs too much, and a search that is
+ * continued over several fixes is restarted by every new fix and
+ * never finishes: the values stayed at the first few hundred metres
+ * for the whole flight (seen in RunLogbook, which calls this once per
+ * fix as the calculation thread does).  After the landing everything
+ * is searched once on the full trace, which gives the values the
+ * contest analysis gives.
  */
 class LogbookComputer {
-  const Trace &trace_full;
-
+  /* in flight, on the contest trace */
   OLCClassic free;
   DMStQuad dmst_quad;
   DMStTriangle dmst_triangle;
   DMStOR dmst_or;
 
-  ContestResult result_free;
-  ContestResult result_quad, result_triangle, result_or;
+  /* after the landing, on the full trace */
+  OLCClassic final_free;
+  DMStQuad final_quad;
+  DMStOR final_or;
 
   /**
-   * For the final result after the landing: the triangle searched
-   * once more on a denser copy of the full trace.  The contest trace
-   * of the flight keeps only 256 points to save time in flight; over
-   * a long flight that is one point every one or two minutes, and the
-   * triangle found on it was up to 8% shorter than the one actually
-   * flown, depending on which points the thinning kept (measured on
-   * flights recorded by two loggers each).
+   * The triangle after the landing, on a copy of the full trace with
+   * 1024 points: on the contest trace it was up to 8% shorter than the
+   * one actually flown, depending on which points the thinning kept,
+   * and the full trace is too large for the triangle search (measured
+   * on flights recorded by two loggers each).
    */
+  const Trace &trace_full;
   Trace final_trace;
   DMStTriangle final_triangle;
 
+  ContestResult result_free;
+  ContestResult result_quad, result_triangle, result_or;
+
+  /** The flight time of the last search in flight */
+  FloatDuration last_solve;
+
 public:
   LogbookComputer(const Trace &trace_full,
-                  const Trace &trace_triangle) noexcept;
-
-  void SetIncremental(bool incremental) noexcept;
+                  const Trace &trace_contest) noexcept;
 
   void Reset() noexcept;
 
   /**
-   * Continue the calculation and copy the results.
-   *
-   * @param handicap the index of the plane (100 if unknown)
-   * @param exhaustive true to find the final solution, false to stop
-   * after a number of iterations and continue in the next call
-   */
-  void Solve(unsigned handicap, bool exhaustive,
-             LogbookStatistics &stats) noexcept;
-
-  /**
-   * The calculation for one idle pass: incremental in flight, once
-   * exhaustive after the landing (then #LogbookStatistics::final is
-   * set), nothing on the ground before or after.
+   * The calculation for one idle pass: in flight once a minute (or
+   * when @p exhaustive is set), once after the landing (then
+   * #LogbookStatistics::final is set), nothing on the ground before
+   * or after.
    */
   void Process(const FlyingState &flight, unsigned handicap,
                bool exhaustive, LogbookStatistics &stats) noexcept;
 
   /**
-   * The final calculation after the landing: everything exhaustively,
-   * the triangle on the dense copy of the full trace.
+   * The final calculation after the landing, on the full trace.
    */
   void SolveFinal(unsigned handicap, LogbookStatistics &stats) noexcept;
 
 private:
+  /** Search the contest trace completely */
+  void SolveInFlight(unsigned handicap, LogbookStatistics &stats) noexcept;
+
   void CopyResults(LogbookStatistics &stats) const noexcept;
 };
