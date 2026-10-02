@@ -47,6 +47,12 @@ public:
     }
 
     /**
+     * The log file was found: fill in the flight recorder that
+     * writes it (#LogbookEntry::recorder_code and recorder_type).
+     */
+    virtual void FillLogbookRecorder([[maybe_unused]] LogbookEntry &entry) noexcept {}
+
+    /**
      * The flight is complete; this is the place to store it.
      */
     virtual void OnLogbookFlight(const LogbookEntry &entry) noexcept = 0;
