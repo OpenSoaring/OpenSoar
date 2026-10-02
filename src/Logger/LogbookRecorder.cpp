@@ -76,8 +76,10 @@ LogbookRecorder::OnFlying(const MoreData &basic,
 
   /* the logger may start a little after the takeoff; remember the
      file it writes */
-  if (entry.igc_file.empty())
-    entry.igc_file = handler.GetLogbookIgcFile();
+  if (entry.log_file.empty()) {
+    entry.log_file = handler.GetLogbookFile();
+    entry.file_type = Logbook::FileTypeOf(entry.log_file);
+  }
 
   const FlyingState &flight = calculated.flight;
   if (flight.power_on_time.IsDefined() && takeoff_time.IsDefined() &&
@@ -125,6 +127,10 @@ LogbookRecorder::Finish(const DerivedInfo &calculated) noexcept
 {
   const LogbookStatistics &stats = calculated.logbook_stats;
   entry.free_distance = stats.free.distance;
+  /* the time of the free distance runs from its first to its last
+     point, not from takeoff to landing, so a long local soaring at
+     the end does not lower it */
+  entry.free_speed = stats.free.GetSpeed() * 3.6;
   entry.dmst_distance = stats.dmst.distance;
   entry.dmst_points = stats.dmst.score;
   entry.dmst_shape = stats.dmst_shape;
