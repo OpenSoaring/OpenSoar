@@ -45,6 +45,12 @@ struct LogbookEntry {
   /** Free distance (OLC classic, six legs) in metres; 0 if none */
   double free_distance = 0;
 
+  /**
+   * The speed on the free distance in km/h: the distance divided by
+   * the time from its first to its last point; 0 if none
+   */
+  double free_speed = 0;
+
   /** DMSt distance in metres and points; 0 if none */
   double dmst_distance = 0, dmst_points = 0;
 
@@ -54,8 +60,14 @@ struct LogbookEntry {
   /** Maximum altitude in metres, negative if unknown */
   int max_altitude = -1;
 
-  /** Name of the IGC file (without directory), empty if none */
-  std::string igc_file;
+  /** Name of the flight log file (without directory), empty if none */
+  std::string log_file;
+
+  /**
+   * The kind of #log_file in capitals ("IGC", "NMEA"), for filtering
+   * in a spreadsheet
+   */
+  std::string file_type;
 
   std::string remark;
 
@@ -102,11 +114,46 @@ std::vector<std::string>
 SplitLine(std::string_view line) noexcept;
 
 /**
+ * Which column of the file holds which value.  The default is the
+ * order this version writes; ParseHeader() takes it from the header,
+ * so files of older versions and files rearranged in a spreadsheet are
+ * read as well.
+ */
+struct ColumnMap {
+  static constexpr unsigned MAX_VALUES = 32;
+
+  /** column of each value of #LogbookEntry, -1 if missing */
+  int index[MAX_VALUES];
+
+  ColumnMap() noexcept;
+
+  /**
+   * @return false if this is not a header line (map unchanged)
+   */
+  bool ParseHeader(std::string_view line) noexcept;
+};
+
+/**
  * Parse one line; returns false for the header and for lines that
  * have no plausible takeoff time.
  */
 bool
-ParseLine(std::string_view line, LogbookEntry &entry) noexcept;
+ParseLine(std::string_view line, LogbookEntry &entry,
+          const ColumnMap &map = {}) noexcept;
+
+/**
+ * Quote a text column for the file if it needs it.
+ */
+std::string
+Quote(std::string_view s) noexcept;
+
+/**
+ * The kind of a flight log file for #LogbookEntry::file_type: its
+ * extension in capitals ("IGC", "NMEA"), empty without one.
+ */
+[[gnu::pure]]
+std::string
+FileTypeOf(std::string_view filename) noexcept;
 
 /**
  * Format one entry as a line of the file, without the line end.

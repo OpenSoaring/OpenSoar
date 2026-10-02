@@ -103,15 +103,15 @@ ReadIgcHeader(const fs::path &path)
 class FileHandler final : public LogbookRecorder::Handler {
   const Waypoints &waypoints;
   const IgcHeader header;
-  const std::string igc_file;
+  const std::string log_file;
 
 public:
   std::vector<LogbookEntry> flights;
 
   FileHandler(const Waypoints &_waypoints, IgcHeader _header,
-              std::string _igc_file) noexcept
+              std::string _log_file) noexcept
     :waypoints(_waypoints), header(std::move(_header)),
-     igc_file(std::move(_igc_file)) {}
+     log_file(std::move(_log_file)) {}
 
   void OnLogbookTakeoff(LogbookEntry &entry) noexcept override {
     entry.pilot = header.pilot;
@@ -126,8 +126,8 @@ public:
                               CoordinateFormat::DDMM_MMM);
   }
 
-  std::string GetLogbookIgcFile() noexcept override {
-    return igc_file;
+  std::string GetLogbookFile() noexcept override {
+    return log_file;
   }
 
   void OnLogbookFlight(const LogbookEntry &entry) noexcept override {
@@ -172,7 +172,7 @@ RunFile(const fs::path &path, const Waypoints &waypoints,
 
   FileHandler handler(waypoints,
                       igc ? ReadIgcHeader(path) : IgcHeader{},
-                      igc ? path.filename().string() : std::string{});
+                      path.filename().string());
   LogbookRecorder recorder(handler);
 
   /* only the switches TraceComputer asks for */
