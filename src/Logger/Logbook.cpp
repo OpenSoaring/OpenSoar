@@ -206,6 +206,8 @@ enum Column : unsigned {
   MAX_ALTITUDE,
   LOG_FILE,
   FILE_TYPE,
+  RECORDER_CODE,
+  RECORDER_TYPE,
   REMARK,
   N_COLUMNS,
 };
@@ -236,6 +238,8 @@ static constexpr const char *column_names[N_COLUMNS] = {
   "Max. altitude (m)",
   "Log file",
   "File type",
+  "Recorder code",
+  "Recorder type",
   "Remark",
 };
 
@@ -340,6 +344,8 @@ ParseLine(std::string_view line, LogbookEntry &entry,
 
   entry.log_file = get(LOG_FILE);
   entry.file_type = get(FILE_TYPE);
+  entry.recorder_code = get(RECORDER_CODE);
+  entry.recorder_type = get(RECORDER_TYPE);
   entry.remark = get(REMARK);
   return true;
 }
@@ -433,6 +439,10 @@ FormatLine(const LogbookEntry &e) noexcept
   line += Quote(e.log_file);
   line += SEPARATOR;
   line += Quote(e.file_type);
+  line += SEPARATOR;
+  line += Quote(e.recorder_code);
+  line += SEPARATOR;
+  line += Quote(e.recorder_type);
   line += SEPARATOR;
   line += Quote(e.remark);
   return line;

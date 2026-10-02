@@ -94,6 +94,8 @@ LogbookRecorder::OnFlying(const MoreData &basic,
   if (entry.log_file.empty()) {
     entry.log_file = handler.GetLogbookFile();
     entry.file_type = Logbook::FileTypeOf(entry.log_file);
+    if (!entry.log_file.empty())
+      handler.FillLogbookRecorder(entry);
   }
 
   const FlyingState &flight = calculated.flight;
