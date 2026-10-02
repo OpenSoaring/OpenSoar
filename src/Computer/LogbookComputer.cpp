@@ -43,6 +43,20 @@ static constexpr FloatDuration MIN_ENGINE_RUN = std::chrono::minutes{1};
  */
 static constexpr FloatDuration MIN_PART = std::chrono::minutes{3};
 
+/**
+ * Noise between these is neither a quiet glider nor an engine.  If
+ * more than a tenth of the samples of a flight are in this range, the
+ * sensor does not tell the engine reliably, and an engine run does not
+ * end a part: "in doubt, do not cut the flight" (the pilot).  In the
+ * pilot's collection the LX loggers of his Ventus 2CXM read below 100
+ * while gliding and 990 and more with the engine running; FLARM
+ * loggers in a JS1b TJ read 300 to 900 for most of the flight, and
+ * whether their runs above 900 were the jet sustainer cannot be told
+ * (a jet is detected by a MOP sensor, not by the noise).
+ */
+static constexpr unsigned UNCLEAR_NOISE_LOW = 300;
+static constexpr unsigned MIN_CLEAR_SAMPLES = 60;
+
 LogbookComputer::LogbookComputer(const Trace &_trace_full,
                                  const Trace &_trace_contest) noexcept
   :trace_full(_trace_full), trace_contest(_trace_contest),
@@ -92,6 +106,7 @@ LogbookComputer::Reset() noexcept
   release = TimeStamp::Undefined();
   finished_parts = 0;
   last_solve = FloatDuration{-1};
+  noise_samples = unclear_noise_samples = 0;
 }
 
 /**
@@ -234,11 +249,26 @@ Now(const FlyingState &flight) noexcept
   return flight.takeoff_time + flight.flight_time;
 }
 
+bool
+LogbookComputer::IsEngineNoiseClear() const noexcept
+{
+  /* too few samples to judge: an early run is the launch anyway */
+  return noise_samples < MIN_CLEAR_SAMPLES ||
+    unclear_noise_samples * 10 <= noise_samples;
+}
+
 void
-LogbookComputer::UpdateEngine(const MoreData &basic) noexcept
+LogbookComputer::UpdateEngine(const MoreData &basic, bool flying) noexcept
 {
   if (!basic.engine_noise_level_available || !basic.time_available)
     return;
+
+  if (flying) {
+    ++noise_samples;
+    if (basic.engine_noise_level > UNCLEAR_NOISE_LOW &&
+        basic.engine_noise_level <= ENGINE_NOISE)
+      ++unclear_noise_samples;
+  }
 
   if (basic.engine_noise_level > ENGINE_NOISE) {
     if (!loud_since.IsDefined() || basic.time < loud_since)
@@ -274,7 +304,7 @@ LogbookComputer::UpdateParts(const FlyingState &flight,
         engine_off >= flight.takeoff_time)
       start = engine_off;
     BeginPart(start);
-  } else if (in_part && engine_running) {
+  } else if (in_part && engine_running && IsEngineNoiseClear()) {
     /* an engine run ends the part, from its beginning */
     TimeStamp end = loud_since;
     if (!end.IsDefined() || end < part_start)
@@ -335,7 +365,7 @@ LogbookComputer::Process(const MoreData &basic, const FlyingState &flight,
                          unsigned handicap, bool exhaustive,
                          LogbookStatistics &stats) noexcept
 {
-  UpdateEngine(basic);
+  UpdateEngine(basic, flight.flying);
 
   /* after the landing, search once on the full trace: that result is
      final, and the log book waits for it */
