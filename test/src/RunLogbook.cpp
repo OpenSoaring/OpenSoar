@@ -243,7 +243,7 @@ IsSameFlight(const Row &a, const Row &b) noexcept
   if (a.End() < b.Begin() || b.End() < a.Begin())
     return false;
 
-  unsigned common = 0, near = 0;
+  unsigned common = 0, close_by = 0;
   auto i = a.track.begin(), j = b.track.begin();
   while (i != a.track.end() && j != b.track.end()) {
     if (i->minute < j->minute)
@@ -253,13 +253,13 @@ IsSameFlight(const Row &a, const Row &b) noexcept
     else {
       ++common;
       if (i->location.DistanceS(j->location) < 1000)
-        ++near;
+        ++close_by;
       ++i;
       ++j;
     }
   }
 
-  return common >= 5 && near * 10 >= common * 9;
+  return common >= 5 && close_by * 10 >= common * 9;
 }
 
 /**
