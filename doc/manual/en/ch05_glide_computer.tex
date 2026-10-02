@@ -807,12 +807,15 @@ first.  An entry is written after the landing and holds:
 \item[Pilot, co-pilot]  From the logger settings, editable.
 \item[Aircraft]  Type, registration and competition ID of the plane.
 \item[Free distance]  The distance over up to five turn points (six
-  legs), as the OLC classic rules score it.
+  legs), as the OLC classic rules score it, and the speed on it: the
+  distance divided by the time from its first to its last point.
 \item[DMSt]  Distance and points by the rules of the German
   Streckenflug championship (DMSt): the best of free distance,
   triangle (+40\,\%) and out and return (+30\,\%), divided by the index
   of the plane; below 50 points a flight does not count.
-\item[Max. altitude, IGC file, remark]
+\item[Max. altitude, log file, remark]  The log file is the IGC file
+  written during the flight; its type (IGC) has a column of its own,
+  for filtering in a spreadsheet.
 \end{description}
 
 Both distances are calculated during the whole flight, independently of
@@ -824,8 +827,11 @@ which starts at the release.
 Selecting a flight shows all details; launch, pilot, co-pilot and
 remark can be changed there.  The log book is the file
 \verb|logbook.csv| in the `logs' subdirectory, a table separated by
-semicolons that a spreadsheet opens directly.  Times in the file are
-UTC.  Replays and the simulator are not recorded.
+semicolons that a spreadsheet opens directly.  Numbers have a decimal
+comma, as spreadsheets in most European languages expect.  Times in the
+file are UTC.  The file is read by the names in its header, so columns
+moved in a spreadsheet stay where they are; a file of an older version
+is converted to the current columns when the next flight is added.  Replays and the simulator are not recorded.
 
 \section{Flight notifications}
 
