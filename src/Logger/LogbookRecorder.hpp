@@ -78,6 +78,12 @@ private:
   /** The engine was running at the launch: a self-launch */
   bool engine_at_launch = false;
 
+  /**
+   * Since when the engine noise has been above the threshold without
+   * a pause; undefined while it is quiet or there is no sensor
+   */
+  TimeStamp loud_since = TimeStamp::Undefined();
+
   /** The altitude at the takeoff, to tell a winch launch by its climb */
   double takeoff_altitude;
 

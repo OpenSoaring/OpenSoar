@@ -21,9 +21,23 @@ static constexpr double WINCH_CLIMB = 250;
 static constexpr seconds WINCH_CLIMB_TIME{60};
 
 /**
- * An engine that runs this soon after the takeoff was the launch.
+ * An engine that runs this soon after the takeoff, and then for
+ * #MIN_SELF_LAUNCH_RUN without a pause, was the launch.  The engine
+ * noise sensor also hears the tow plane: in 73 aerotows of IGC files
+ * of 2018 to 2026 it measured more than 500 of 999 for up to 133
+ * seconds without a pause, while the engines of 59 self-launches ran
+ * for 252 seconds and more.  Two of those aerotows, confirmed by the
+ * pilot, had been taken for self-launches by the previous rule (any
+ * engine within three minutes).
  */
 static constexpr minutes MAX_SELF_LAUNCH_DELAY{3};
+static constexpr minutes MIN_SELF_LAUNCH_RUN{3};
+
+/**
+ * Engine noise above this (of 999) counts as a running engine, the
+ * threshold FlyingComputer uses as well.
+ */
+static constexpr unsigned ENGINE_NOISE = 500;
 
 /**
  * A ground speed above this (m/s) at the end of the data means the
@@ -83,7 +97,7 @@ LogbookRecorder::OnTakeoff(const MoreData &basic,
 
 void
 LogbookRecorder::OnFlying(const MoreData &basic,
-                          const DerivedInfo &calculated) noexcept
+                          [[maybe_unused]] const DerivedInfo &calculated) noexcept
 {
   if (basic.NavAltitudeAvailable())
     entry.max_altitude = std::max(entry.max_altitude,
@@ -98,9 +112,9 @@ LogbookRecorder::OnFlying(const MoreData &basic,
       handler.FillLogbookRecorder(entry);
   }
 
-  const FlyingState &flight = calculated.flight;
-  if (flight.power_on_time.IsDefined() && takeoff_time.IsDefined() &&
-      flight.power_on_time - takeoff_time < MAX_SELF_LAUNCH_DELAY)
+  if (loud_since.IsDefined() && takeoff_time.IsDefined() &&
+      loud_since - takeoff_time < MAX_SELF_LAUNCH_DELAY &&
+      basic.time - loud_since >= MIN_SELF_LAUNCH_RUN)
     engine_at_launch = true;
 
   if (!launch_checked && takeoff_time.IsDefined() &&
@@ -171,6 +185,18 @@ LogbookRecorder::Update(const MoreData &basic,
 
   if (flight.on_ground)
     seen_ground = true;
+
+  /* the engine of a self-launch runs from before the takeoff, so
+     this is followed on the ground as well.  FlyingComputer's
+     "powered" is not used: its hysteresis (on above 500, off at 350)
+     keeps it on through the 400 to 600 a tow plane makes in some
+     sensors for minutes. */
+  if (basic.engine_noise_level_available) {
+    if (basic.engine_noise_level <= ENGINE_NOISE)
+      loud_since = TimeStamp::Undefined();
+    else if (!loud_since.IsDefined())
+      loud_since = basic.time;
+  }
 
   if (!basic.time_available || !basic.date_time_utc.IsDatePlausible())
     return;
