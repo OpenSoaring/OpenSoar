@@ -63,6 +63,8 @@ TestRoundTrip()
   ok1(line.starts_with("2026-07-14;10:03:15;15:47:02;5:43;"));
   /* decimal comma, as a German or most European spreadsheets expect */
   ok1(line.find(";512,3;93,5;498,7;553,3;") != line.npos);
+  /* the launch as one letter, F for an aerotow */
+  ok1(line.find(";F;10:11:40;") != line.npos);
   ok1(line.find(";2026-07-14-XCS-AAA-01.igc;IGC;XCS;XCSOAR,XCSOAR 7.45;") != line.npos);
 
   LogbookEntry p;
@@ -118,6 +120,21 @@ TestParse()
   ok1(Logbook::ParseLine("2026-07-15;09:00:00;;;A", e));
   ok1(!e.landing.IsPlausible());
   ok1(!e.HasFlightTime());
+}
+
+static void
+TestLaunch()
+{
+  using Launch = LogbookEntry::Launch;
+  ok1(Logbook::ParseLaunch("W") == Launch::WINCH);
+  ok1(Logbook::ParseLaunch("E") == Launch::SELF);
+  ok1(Logbook::ParseLaunch("S") == Launch::SELF);
+  ok1(Logbook::ParseLaunch("F") == Launch::AEROTOW);
+  ok1(Logbook::ParseLaunch("a") == Launch::AEROTOW);
+  ok1(Logbook::ParseLaunch("U") == Launch::UNKNOWN);
+  ok1(Logbook::ParseLaunch("self") == Launch::SELF);
+  ok1(std::string_view{Logbook::ToString(Launch::UNKNOWN)} == "U");
+  ok1(std::string_view{Logbook::ToString(Launch::SELF)} == "E");
 }
 
 static void
@@ -192,11 +209,12 @@ TestAppendToOldFile()
 int
 main()
 {
-  plan_tests(65);
+  plan_tests(75);
 
   TestSplit();
   TestRoundTrip();
   TestParse();
+  TestLaunch();
   TestHeader();
   TestAppendToOldFile();
 
