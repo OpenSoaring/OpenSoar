@@ -46,6 +46,7 @@ private:
   void OnLogbookTakeoff(LogbookEntry &entry) noexcept override;
   std::string FindLogbookPlace(const GeoPoint &location) noexcept override;
   std::string GetLogbookFile() noexcept override;
+  void FillLogbookRecorder(LogbookEntry &entry) noexcept override;
   void OnLogbookFlight(const LogbookEntry &entry) noexcept override;
 
   /* virtual methods from class BlackboardListener */

@@ -33,6 +33,8 @@ MakeEntry()
   e.free_speed = 93.47;
   e.log_file = "2026-07-14-XCS-AAA-01.igc";
   e.file_type = Logbook::FileTypeOf(e.log_file);
+  e.recorder_code = "XCS";
+  e.recorder_type = "XCSOAR,XCSOAR 7.45";
   e.remark = "first line\nsecond line";
   return e;
 }
@@ -60,7 +62,7 @@ TestRoundTrip()
   ok1(line.starts_with("2026-07-14;10:03:15;15:47:02;5:43;"));
   /* decimal comma, as a German or most European spreadsheets expect */
   ok1(line.find(";512,3;93,5;498,7;553,3;") != line.npos);
-  ok1(line.find(";2026-07-14-XCS-AAA-01.igc;IGC;") != line.npos);
+  ok1(line.find(";2026-07-14-XCS-AAA-01.igc;IGC;XCS;XCSOAR,XCSOAR 7.45;") != line.npos);
 
   LogbookEntry p;
   ok1(Logbook::ParseLine(line, p));
@@ -82,6 +84,8 @@ TestRoundTrip()
   ok1(std::fabs(p.free_speed - 93.5) < 0.01);
   ok1(p.log_file == e.log_file);
   ok1(p.file_type == "IGC");
+  ok1(p.recorder_code == "XCS");
+  ok1(p.recorder_type == e.recorder_type);
   ok1(p.remark == "first line second line");
 }
 
@@ -184,7 +188,7 @@ TestAppendToOldFile()
 int
 main()
 {
-  plan_tests(61);
+  plan_tests(63);
 
   TestSplit();
   TestRoundTrip();
