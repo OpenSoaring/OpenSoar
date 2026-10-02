@@ -412,7 +412,7 @@ RunFile(const fs::path &path, const Waypoints &waypoints,
     }
     last_flying = calculated.flight.flying;
 
-    logbook.Process(calculated.flight, options.handicap, false,
+    logbook.Process(basic, calculated.flight, options.handicap, false,
                     calculated.logbook_stats);
     recorder.Update(basic, calculated);
 
@@ -431,7 +431,8 @@ RunFile(const fs::path &path, const Waypoints &waypoints,
   const bool cut_short = recorder.IsInFlight();
   if (cut_short) {
     DerivedInfo &calculated = replay->SetCalculated();
-    logbook.SolveFinal(options.handicap, calculated.logbook_stats);
+    logbook.SolveFinal(calculated.flight, options.handicap,
+                       calculated.logbook_stats);
     recorder.FinishAtEnd(replay->Basic(), calculated,
                          "landing not confirmed, end of file");
   }

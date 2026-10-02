@@ -11988,6 +11988,16 @@ msgstr "Logdatei"
 msgid "Flight recorder"
 msgstr "Logger"
 
+msgid "Release"
+msgstr "Ausklinken"
+
+msgid ""
+"The release from the tow or winch, or the end of the engine run of a self-"
+"launch: the scored flight begins here."
+msgstr ""
+"Das Ausklinken aus Schlepp oder Winde oder das Ende des Motorlaufs beim "
+"Eigenstart: hier beginnt der gewertete Flug."
+
 msgid "The manufacturer code and the type from the header of the IGC file."
 msgstr "Herstellerkennung und Typ aus dem Kopf der IGC-Datei."
 

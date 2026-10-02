@@ -5,6 +5,8 @@
 #include "NMEA/MoreData.hpp"
 #include "NMEA/Derived.hpp"
 
+#include <fmt/format.h>
+
 #include <algorithm>
 #include <cmath>
 
@@ -127,7 +129,7 @@ LogbookRecorder::OnTakeoff(const MoreData &basic,
 
 void
 LogbookRecorder::OnFlying(const MoreData &basic,
-                          [[maybe_unused]] const DerivedInfo &calculated) noexcept
+                          const DerivedInfo &calculated) noexcept
 {
   if (basic.NavAltitudeAvailable())
     entry.max_altitude = std::max(entry.max_altitude,
@@ -142,6 +144,12 @@ LogbookRecorder::OnFlying(const MoreData &basic,
       handler.FillLogbookRecorder(entry);
   }
 
+  /* the scoring begins at the release (LogbookComputer); followed
+     during the flight, as a release seen too early may be dropped */
+  entry.release = calculated.logbook_stats.release.IsDefined()
+    ? ToDateTime(basic, calculated.logbook_stats.release)
+    : BrokenDateTime::Invalid();
+
   if (loud_since.IsDefined() && takeoff_time.IsDefined() &&
       loud_since - takeoff_time < MAX_SELF_LAUNCH_DELAY &&
       basic.time - loud_since >= MIN_SELF_LAUNCH_RUN)
@@ -153,6 +161,14 @@ LogbookRecorder::OnFlying(const MoreData &basic,
     winch_climb = basic.nav_altitude - takeoff_altitude >= WINCH_CLIMB;
     launch_checked = true;
   }
+}
+
+void
+LogbookRecorder::AddRemark(std::string_view remark) noexcept
+{
+  if (!entry.remark.empty())
+    entry.remark += ", ";
+  entry.remark += remark;
 }
 
 void
@@ -200,6 +216,11 @@ LogbookRecorder::Finish(const DerivedInfo &calculated) noexcept
   entry.dmst_distance = stats.dmst.distance;
   entry.dmst_points = stats.dmst.score;
   entry.dmst_shape = stats.dmst_shape;
+
+  if (stats.scored_parts > 1)
+    /* engine runs in flight: only the best part is scored */
+    AddRemark(fmt::format("{} engine runs in flight, best of {} parts scored",
+                          stats.scored_parts - 1, stats.scored_parts));
 
   in_flight = false;
   landed = false;
@@ -284,9 +305,6 @@ LogbookRecorder::FinishAtEnd(const MoreData &basic,
     SetLaunch(calculated.flight);
   }
 
-  if (entry.remark.empty())
-    entry.remark = remark;
-  else
-    entry.remark = entry.remark + ", " + remark;
+  AddRemark(remark);
   Finish(calculated);
 }

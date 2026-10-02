@@ -34,6 +34,13 @@ struct LogbookEntry {
   BrokenDateTime takeoff = BrokenDateTime::Invalid();
   BrokenDateTime landing = BrokenDateTime::Invalid();
 
+  /**
+   * When the scored flight began: the release from the tow or winch,
+   * or the end of the engine run of a self-launch; invalid if not
+   * seen
+   */
+  BrokenDateTime release = BrokenDateTime::Invalid();
+
   std::string takeoff_place, landing_place;
 
   Launch launch = Launch::UNKNOWN;

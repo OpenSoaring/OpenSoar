@@ -104,6 +104,7 @@ class LogbookEntryWidget final : public RowFormWidget {
     DATE,
     TAKEOFF,
     LANDING,
+    RELEASE,
     DURATION,
     AIRCRAFT,
     FREE,
@@ -142,6 +143,14 @@ LogbookEntryWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   text.Format("%s  %s", FormatHHMM(entry.landing).c_str(),
               entry.landing_place.c_str());
   AddReadOnly(C_("Logbook", "Landing"), nullptr, text);
+
+  AddReadOnly(_("Release"),
+              _("The release from the tow or winch, or the end of the "
+                "engine run of a self-launch: the scored flight begins "
+                "here."),
+              entry.release.IsPlausible()
+              ? FormatHHMM(entry.release).c_str()
+              : "");
 
   AddReadOnly(_("Flight time"), nullptr, FormatFlightTime(entry));
 
