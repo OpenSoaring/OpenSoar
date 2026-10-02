@@ -11985,6 +11985,12 @@ msgstr "Max. Höhe"
 msgid "Log file"
 msgstr "Logdatei"
 
+msgid "Flight recorder"
+msgstr "Logger"
+
+msgid "The manufacturer code and the type from the header of the IGC file."
+msgstr "Herstellerkennung und Typ aus dem Kopf der IGC-Datei."
+
 msgid "Launch"
 msgstr "Startart"
 

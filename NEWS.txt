@@ -44,9 +44,10 @@ Version 7.45.4 - not yet released
     a spreadsheet): takeoff and landing with time and place, flight
     time, launch (estimated), pilot and co-pilot, aircraft, free
     distance (OLC classic, six legs) and its speed, DMSt distance and
-    points, maximum altitude, log file and its type; numbers with a
-    decimal comma; launch, crew and a remark can be completed in the
-    dialog; on by default (Logger settings: Log book)
+    points, maximum altitude, log file and its type, flight recorder
+    (manufacturer code and type); numbers with a decimal comma; launch,
+    crew and a remark can be completed in the dialog; on by default
+    (Logger settings: Log book)
 * glide computer
   - a takeoff starts a new trace and contest: the second flight of a
     session (e.g. the next winch launch) no longer counts the one before
