@@ -245,8 +245,15 @@ FlyingComputer::Compute(double takeoff_speed,
   if (!basic.time_available || !basic.location_available)
     return;
 
+  /* a time warp of less than three minutes is skipped instead of
+     ending the flight: some loggers write a few fixes with times up
+     to a minute in the past, and a reset here made the rest of the
+     flight a new one, whose takeoff discarded the trace and the
+     contest of the first part.  The glide computer resets the flight
+     only after three minutes as well (GlideComputerAirData), and so
+     does the trace (Trace::push_back()). */
   const auto dt = delta_time.Update(basic.time, std::chrono::milliseconds{500},
-                                    std::chrono::seconds{20});
+                                    std::chrono::minutes{3});
   if (dt.count() < 0) {
     Reset();
     flying.Reset();
