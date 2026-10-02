@@ -81,6 +81,18 @@ private:
   /** That climb was a winch launch */
   bool winch_climb = false;
 
+  /**
+   * The aircraft was seen standing on the ground since the last
+   * flight (or since the start).  A takeoff without it means the
+   * recording began in the air, after a restart of the program or
+   * of the logger: the takeoff is not the real one and the launch
+   * cannot be told.
+   */
+  bool seen_ground = false;
+
+  /** This flight was first seen in the air */
+  bool began_in_air = false;
+
 public:
   explicit LogbookRecorder(Handler &_handler) noexcept
     :handler(_handler) {}
@@ -93,13 +105,24 @@ public:
   /**
    * The data end while a flight is being recorded (the end of a file,
    * or the program stops in the air): complete the entry at the last
-   * fix, with the given remark, and hand it to the handler.
+   * fix and hand it to the handler.  If the aircraft was still moving
+   * fast, the recording ended in the air: the landing place stays
+   * empty and the remark says so; otherwise it had just landed, and
+   * the given remark is added.
    *
    * @param calculated the final distances should be in
    * #DerivedInfo::logbook_stats (LogbookComputer::SolveFinal())
    */
   void FinishAtEnd(const MoreData &basic, const DerivedInfo &calculated,
                    const char *remark) noexcept;
+
+  /**
+   * Did the flight being recorded begin in the air (see
+   * #seen_ground)?
+   */
+  bool BeganInAir() const noexcept {
+    return began_in_air;
+  }
 
   /**
    * Is a flight being recorded (taken off, not yet written)?
