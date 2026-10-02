@@ -39,9 +39,10 @@ public:
     virtual std::string FindLogbookPlace(const GeoPoint &location) noexcept = 0;
 
     /**
-     * The name of the IGC file being written, or an empty string.
+     * The name of the flight log file being written (IGC, or NMEA in
+     * the test tool), or an empty string.
      */
-    virtual std::string GetLogbookIgcFile() noexcept {
+    virtual std::string GetLogbookFile() noexcept {
       return {};
     }
 

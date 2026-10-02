@@ -44,7 +44,7 @@ GlueLogbook::FindLogbookPlace(const GeoPoint &location) noexcept
 }
 
 std::string
-GlueLogbook::GetLogbookIgcFile() noexcept
+GlueLogbook::GetLogbookFile() noexcept
 {
   if (igc_logger != nullptr)
     if (const auto igc = igc_logger->GetActivePath(); igc != nullptr)
