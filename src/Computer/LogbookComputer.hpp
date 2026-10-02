@@ -95,6 +95,12 @@ class LogbookComputer {
   /** When the last engine run ended */
   TimeStamp engine_off = TimeStamp::Undefined();
 
+  /**
+   * Noise samples in flight, and those between quiet and an engine
+   * (see IsEngineNoiseClear())
+   */
+  unsigned noise_samples, unclear_noise_samples;
+
 public:
   LogbookComputer(const Trace &trace_full,
                   const Trace &trace_contest) noexcept;
@@ -119,7 +125,8 @@ public:
                   LogbookStatistics &stats) noexcept;
 
 private:
-  void UpdateEngine(const MoreData &basic) noexcept;
+  void UpdateEngine(const MoreData &basic, bool flying) noexcept;
+  bool IsEngineNoiseClear() const noexcept;
   void UpdateParts(const FlyingState &flight, unsigned handicap) noexcept;
   void BeginPart(TimeStamp start) noexcept;
   void EndPart(TimeStamp end, unsigned handicap) noexcept;
