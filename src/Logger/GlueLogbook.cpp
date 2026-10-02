@@ -4,6 +4,8 @@
 #include "GlueLogbook.hpp"
 #include "LogbookPlace.hpp"
 #include "Logger.hpp"
+#include "GRecord.hpp"
+#include "Version.hpp"
 #include "Blackboard/LiveBlackboard.hpp"
 #include "NMEA/MoreData.hpp"
 #include "Computer/Settings.hpp"
@@ -51,6 +53,15 @@ GlueLogbook::GetLogbookFile() noexcept
       return igc.GetBase().c_str();
 
   return {};
+}
+
+void
+GlueLogbook::FillLogbookRecorder(LogbookEntry &entry) noexcept
+{
+  /* the log file is the one this program's IGC logger writes; these
+     are the values IGCWriter::WriteHeader() puts into it */
+  entry.recorder_code = XCSOAR_IGC_CODE;
+  entry.recorder_type = std::string{"XCSOAR,XCSOAR "} + XCSoar_VersionStringOld;
 }
 
 void

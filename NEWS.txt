@@ -90,9 +90,10 @@ Version 7.47 - not yet released
     a spreadsheet): takeoff and landing with time and place, flight
     time, launch (estimated), pilot and co-pilot, aircraft, free
     distance (OLC classic, six legs) and its speed, DMSt distance and
-    points, maximum altitude, log file and its type; numbers with a
-    decimal comma; launch, crew and a remark can be completed in the
-    dialog; on by default (Logger settings: Log book)
+    points, maximum altitude, log file and its type, flight recorder
+    (manufacturer code and type); numbers with a decimal comma; launch,
+    crew and a remark can be completed in the dialog; on by default
+    (Logger settings: Log book)
 
 Version 7.46 - 2026-10-19
 * highlights

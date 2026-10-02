@@ -62,6 +62,9 @@ namespace fs = std::filesystem;
  */
 struct IgcHeader {
   std::string pilot, copilot, aircraft, registration, competition_id;
+
+  /** manufacturer code from the A record, and the recorder type */
+  std::string recorder_code, recorder_type;
 };
 
 static std::string
@@ -92,7 +95,12 @@ ReadIgcHeader(const fs::path &path)
       /* the header ends where the fixes begin */
       break;
 
-    if (line.starts_with("HFPLT"))
+    if (line.starts_with("A") && line.size() >= 4)
+      /* "ALXV..." - the first three letters name the manufacturer */
+      header.recorder_code = line.substr(1, 3);
+    else if (line.starts_with("HFFTY"))
+      header.recorder_type = HeaderValue(line);
+    else if (line.starts_with("HFPLT"))
       header.pilot = HeaderValue(line);
     else if (line.starts_with("HFCM2"))
       header.copilot = HeaderValue(line);
@@ -135,6 +143,11 @@ public:
 
   std::string GetLogbookFile() noexcept override {
     return log_file;
+  }
+
+  void FillLogbookRecorder(LogbookEntry &entry) noexcept override {
+    entry.recorder_code = header.recorder_code;
+    entry.recorder_type = header.recorder_type;
   }
 
   void OnLogbookFlight(const LogbookEntry &entry) noexcept override {
