@@ -12,9 +12,15 @@
  * without replaying each of them on the device.
  *
  * Usage: RunLogbook [--datapath=DIR] [--waypoints=FILE]... [--handicap=N]
- *                   [--driver=NAME] [FILE_OR_DIRECTORY...]
+ *                   [--driver=NAME] [--move-no-flight]
+ *                   [FILE_OR_DIRECTORY...]
  *
- * Directories are searched recursively for *.igc and *.nmea files.
+ * Directories are searched recursively for *.igc and *.nmea files,
+ * except in folders named "no-flight".  With --move-no-flight, a file
+ * that was read without finding a flight in it (a recording on the
+ * ground) is moved into a folder "no-flight" beside it, so the next
+ * run skips it; nothing is deleted, and a file can simply be moved
+ * back.
  * Without files, the data directory of the program is searched (most
  * flights are in its "logs" folder): the one given by --datapath, or
  * the one the program itself would use (OpenSoarData).  Without
@@ -55,6 +61,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <system_error>
 #include <fstream>
 #include <chrono>
 #include <memory>
@@ -346,7 +353,41 @@ MarkDuplicates(std::vector<Row> &rows) noexcept
 struct Options {
   unsigned handicap = 100;
   std::string driver = "Generic";
+
+  /** move files without a flight into "no-flight" */
+  bool move_no_flight = false;
 };
+
+/**
+ * The folder for files without a flight; directories of this name are
+ * not searched.
+ */
+static constexpr const char *NO_FLIGHT_DIR = "no-flight";
+
+/**
+ * Move a file without a flight into the folder "no-flight" beside it.
+ * An existing file of the same name there is not replaced.
+ */
+static void
+MoveToNoFlight(const fs::path &path)
+{
+  const fs::path dir = path.parent_path() / NO_FLIGHT_DIR;
+  const fs::path dest = dir / path.filename();
+
+  std::error_code error;
+  fs::create_directories(dir, error);
+  if (!error && fs::exists(dest, error))
+    error = std::make_error_code(std::errc::file_exists);
+  if (!error)
+    fs::rename(path, dest, error);
+
+  if (error)
+    fprintf(stderr, "%s\tnot moved to %s: %s\n", ToUtf8(path).c_str(),
+            NO_FLIGHT_DIR, error.message().c_str());
+  else
+    fprintf(stderr, "%s\tmoved to %s\n", ToUtf8(path).c_str(),
+            NO_FLIGHT_DIR);
+}
 
 static bool
 IsIgc(const fs::path &path)
@@ -451,6 +492,11 @@ RunFile(const fs::path &path, const Waypoints &waypoints,
           !handler.flights.empty() && handler.flights.front().remark.starts_with("recording began")
           ? "\tbegins in flight" : "");
 
+  /* only a file that could be read and replayed to its end has
+     really no flight; an unreadable one returned above */
+  if (handler.flights.empty() && options.move_no_flight)
+    MoveToNoFlight(path);
+
   return handler.flights.size();
 }
 
@@ -492,10 +538,16 @@ static void
 CollectFiles(const fs::path &path, std::vector<fs::path> &files)
 {
   if (fs::is_directory(path)) {
-    for (const auto &i : fs::recursive_directory_iterator(path,
-                                     fs::directory_options::skip_permission_denied))
-      if (i.is_regular_file() && (IsIgc(i.path()) || IsNmea(i.path())))
-        files.push_back(i.path());
+    for (auto i = fs::recursive_directory_iterator(path,
+                                                   fs::directory_options::skip_permission_denied);
+         i != fs::recursive_directory_iterator(); ++i) {
+      if (i->is_directory() && i->path().filename() == NO_FLIGHT_DIR)
+        /* the files sorted out by an earlier --move-no-flight */
+        i.disable_recursion_pending();
+      else if (i->is_regular_file() &&
+               (IsIgc(i->path()) || IsNmea(i->path())))
+        files.push_back(i->path());
+    }
   } else
     files.push_back(path);
 }
@@ -526,10 +578,13 @@ try {
       options.handicap = std::strtoul(argv[i] + 11, nullptr, 10);
     } else if (arg.starts_with("--driver=")) {
       options.driver = std::string{arg.substr(9)};
+    } else if (arg == "--move-no-flight") {
+      options.move_no_flight = true;
     } else if (arg.starts_with("-")) {
       fprintf(stderr,
               "Usage: %s [--datapath=DIR] [--waypoints=FILE]... "
-              "[--handicap=N] [--driver=NAME] [FILE_OR_DIRECTORY...]\n",
+              "[--handicap=N] [--driver=NAME] [--move-no-flight] "
+              "[FILE_OR_DIRECTORY...]\n",
               argv[0]);
       return EXIT_FAILURE;
     } else
