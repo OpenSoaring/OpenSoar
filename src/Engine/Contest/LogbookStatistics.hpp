@@ -4,6 +4,7 @@
 #pragma once
 
 #include "ContestResult.hpp"
+#include "time/Stamp.hpp"
 
 #include <cstdint>
 #include <type_traits>
@@ -42,6 +43,19 @@ struct LogbookStatistics {
   DMStShape dmst_shape;
 
   /**
+   * When the scoring began: the release from the tow or winch, or the
+   * end of the engine run of a self-launch.  Undefined before.
+   */
+  TimeStamp release;
+
+  /**
+   * The number of scored parts of the flight.  An engine run in
+   * flight ends a part; only the best part counts, as in the contest
+   * rules.
+   */
+  uint8_t scored_parts;
+
+  /**
    * Has the result been calculated exhaustively after the landing?
    * Only then is it final and the log book writes it.
    */
@@ -51,6 +65,8 @@ struct LogbookStatistics {
     free.Reset();
     dmst.Reset();
     dmst_shape = DMStShape::NONE;
+    release = TimeStamp::Undefined();
+    scored_parts = 0;
     final = false;
   }
 };
