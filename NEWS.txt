@@ -88,12 +88,13 @@ Version 7.47 - not yet released
 * logger
   - a log book of all flights (Info menu; file logbook.csv, a table for
     a spreadsheet): takeoff and landing with time and place, flight
-    time, launch (estimated), pilot and co-pilot, aircraft, free
-    distance (OLC classic, six legs) and its speed, DMSt distance and
-    points, maximum altitude, log file and its type, flight recorder
-    (manufacturer code and type); numbers with a decimal comma; launch,
-    crew and a remark can be completed in the dialog; on by default
-    (Logger settings: Log book)
+    time, launch (estimated) and release, pilot and co-pilot, aircraft,
+    free distance (OLC classic, six legs) and its speed, DMSt distance
+    and points (both from the release; with engine runs in flight the
+    best part), maximum altitude, log file and its type, flight
+    recorder (manufacturer code and type); numbers with a decimal
+    comma; launch, crew and a remark can be completed in the dialog;
+    on by default (Logger settings: Log book)
 
 Version 7.46 - 2026-10-19
 * highlights
