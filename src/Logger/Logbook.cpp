@@ -19,6 +19,10 @@ namespace Logbook {
 
 static constexpr char SEPARATOR = ';';
 
+/* the launch is one letter in the file, short enough to keep the
+   column narrow and to type by hand in a spreadsheet: Winde/winch,
+   Eigenstart (self-launch), F-Schlepp (aerotow), U for unknown, which
+   includes a recording that began in flight */
 const char *
 ToString(LogbookEntry::Launch launch) noexcept
 {
@@ -26,24 +30,27 @@ ToString(LogbookEntry::Launch launch) noexcept
   case LogbookEntry::Launch::UNKNOWN:
     break;
   case LogbookEntry::Launch::WINCH:
-    return "winch";
+    return "W";
   case LogbookEntry::Launch::AEROTOW:
-    return "aerotow";
+    return "F";
   case LogbookEntry::Launch::SELF:
-    return "self";
+    return "E";
   }
 
-  return "";
+  return "U";
 }
 
 LogbookEntry::Launch
 ParseLaunch(std::string_view s) noexcept
 {
-  if (s == "winch")
+  /* the letters of this version and their English counterparts (S
+     for self-launch, A for aerotow), and the words of the first
+     version */
+  if (s == "W" || s == "w" || s == "winch")
     return LogbookEntry::Launch::WINCH;
-  if (s == "aerotow")
+  if (s == "F" || s == "f" || s == "A" || s == "a" || s == "aerotow")
     return LogbookEntry::Launch::AEROTOW;
-  if (s == "self")
+  if (s == "E" || s == "e" || s == "S" || s == "s" || s == "self")
     return LogbookEntry::Launch::SELF;
   return LogbookEntry::Launch::UNKNOWN;
 }
