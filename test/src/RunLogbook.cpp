@@ -12,7 +12,7 @@
  * without replaying each of them on the device.
  *
  * Usage: RunLogbook [--datapath=DIR] [--waypoints=FILE]... [--handicap=N]
- *                   [--driver=NAME] [--move-no-flight]
+ *                   [--driver=NAME] [--move-no-flight] [--move-igc]
  *                   [FILE_OR_DIRECTORY...]
  *
  * Directories are searched recursively for *.igc and *.nmea files,
@@ -21,6 +21,12 @@
  * ground) is moved into a folder "no-flight" beside it, so the next
  * run skips it; nothing is deleted, and a file can simply be moved
  * back.
+ *
+ * The program writes its IGC files (and those downloaded from a
+ * logger) into the folder "igc" of the data directory, the NMEA logs
+ * into "logs"; older versions wrote both into "logs".  Both folders
+ * are always searched.  With --move-igc, an IGC file in a folder
+ * "logs" is first moved into the folder "igc" beside it.
  * Without files, the data directory of the program is searched (most
  * flights are in its "logs" folder): the one given by --datapath, or
  * the one the program itself would use (OpenSoarData).  Without
@@ -356,6 +362,9 @@ struct Options {
 
   /** move files without a flight into "no-flight" */
   bool move_no_flight = false;
+
+  /** move IGC files from "logs" into "igc" */
+  bool move_igc = false;
 };
 
 /**
@@ -365,13 +374,14 @@ struct Options {
 static constexpr const char *NO_FLIGHT_DIR = "no-flight";
 
 /**
- * Move a file without a flight into the folder "no-flight" beside it.
- * An existing file of the same name there is not replaced.
+ * Move a file into the folder @p dir (created if needed).  An existing
+ * file of the same name there is not replaced.
+ *
+ * @return the new path, or the old one if the file was not moved
  */
-static void
-MoveToNoFlight(const fs::path &path)
+static fs::path
+MoveIntoFolder(const fs::path &path, const fs::path &dir)
 {
-  const fs::path dir = path.parent_path() / NO_FLIGHT_DIR;
   const fs::path dest = dir / path.filename();
 
   std::error_code error;
@@ -381,13 +391,26 @@ MoveToNoFlight(const fs::path &path)
   if (!error)
     fs::rename(path, dest, error);
 
-  if (error)
+  if (error) {
     fprintf(stderr, "%s\tnot moved to %s: %s\n", ToUtf8(path).c_str(),
-            NO_FLIGHT_DIR, error.message().c_str());
-  else
-    fprintf(stderr, "%s\tmoved to %s\n", ToUtf8(path).c_str(),
-            NO_FLIGHT_DIR);
+            ToUtf8(dir).c_str(), error.message().c_str());
+    return path;
+  }
+
+  fprintf(stderr, "%s\tmoved to %s\n", ToUtf8(path).c_str(),
+          ToUtf8(dir).c_str());
+  return dest;
 }
+
+/**
+ * Move a file without a flight into the folder "no-flight" beside it.
+ */
+static void
+MoveToNoFlight(const fs::path &path)
+{
+  MoveIntoFolder(path, path.parent_path() / NO_FLIGHT_DIR);
+}
+
 
 static bool
 IsIgc(const fs::path &path)
@@ -399,6 +422,26 @@ static bool
 IsNmea(const fs::path &path)
 {
   return StringEndsWithIgnoreCase(ToUtf8(path).c_str(), ".nmea");
+}
+
+/**
+ * The folders of the data directory: IGC files, and the NMEA logs (and
+ * the IGC files of older versions).
+ */
+static constexpr const char *IGC_DIR = "igc", *LOGS_DIR = "logs";
+
+/**
+ * An IGC file in a folder "logs" goes into the folder "igc" beside it.
+ *
+ * @return the path of the file after that
+ */
+static fs::path
+MoveIgcFromLogs(const fs::path &path)
+{
+  if (!IsIgc(path) || path.parent_path().filename() != LOGS_DIR)
+    return path;
+
+  return MoveIntoFolder(path, path.parent_path().parent_path() / IGC_DIR);
 }
 
 /**
@@ -580,11 +623,13 @@ try {
       options.driver = std::string{arg.substr(9)};
     } else if (arg == "--move-no-flight") {
       options.move_no_flight = true;
+    } else if (arg == "--move-igc") {
+      options.move_igc = true;
     } else if (arg.starts_with("-")) {
       fprintf(stderr,
               "Usage: %s [--datapath=DIR] [--waypoints=FILE]... "
               "[--handicap=N] [--driver=NAME] [--move-no-flight] "
-              "[FILE_OR_DIRECTORY...]\n",
+              "[--move-igc] [FILE_OR_DIRECTORY...]\n",
               argv[0]);
       return EXIT_FAILURE;
     } else
@@ -615,6 +660,10 @@ try {
 
   waypoints.Optimise();
   std::sort(files.begin(), files.end());
+
+  if (options.move_igc)
+    for (auto &path : files)
+      path = MoveIgcFromLogs(path);
 
   std::vector<Row> rows;
   for (const auto &path : files)
