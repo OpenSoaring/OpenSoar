@@ -12,8 +12,12 @@
  * without replaying each of them on the device.
  *
  * Usage: RunLogbook [--datapath=DIR] [--waypoints=FILE]... [--handicap=N]
- *                   [--driver=NAME] [--move-no-flight] [--move-igc]
- *                   [FILE_OR_DIRECTORY...]
+ *                   [--driver=NAME] [--recorder=ID]... [--move-no-flight]
+ *                   [--move-igc] [FILE_OR_DIRECTORY...]
+ *
+ * --recorder names Recorder 1 and 2 of the logger settings, as in the A
+ * record of their IGC files (e.g. --recorder=LXVJNI); their files give
+ * the entry of a flight first.
  *
  * Directories are searched recursively for *.igc and *.nmea files,
  * except in folders named "no-flight".  With --move-no-flight, a file
@@ -268,6 +272,7 @@ try {
   bool have_waypoints = false;
   const char *data_path = nullptr;
   std::vector<fs::path> files;
+  Logbook::RecorderList recorders;
   /* quiet: standard output is the table */
   NullOperationEnvironment operation;
 
@@ -286,6 +291,9 @@ try {
       options.handicap = std::strtoul(argv[i] + 11, nullptr, 10);
     } else if (arg.starts_with("--driver=")) {
       options.driver = std::string{arg.substr(9)};
+    } else if (arg.starts_with("--recorder=")) {
+      /* Recorder 1, then Recorder 2 of the logger settings */
+      recorders.push_back(Logbook::NormalizeRecorder(arg.substr(11)));
     } else if (arg == "--move-no-flight") {
       options.move_no_flight = true;
     } else if (arg == "--move-igc") {
@@ -293,7 +301,8 @@ try {
     } else if (arg.starts_with("-")) {
       fprintf(stderr,
               "Usage: %s [--datapath=DIR] [--waypoints=FILE]... "
-              "[--handicap=N] [--driver=NAME] [--move-no-flight] "
+              "[--handicap=N] [--driver=NAME] [--recorder=ID]... "
+              "[--move-no-flight] "
               "[--move-igc] [FILE_OR_DIRECTORY...]\n",
               argv[0]);
       return EXIT_FAILURE;
@@ -333,6 +342,7 @@ try {
   Logbook::ReadSettings settings;
   settings.waypoints = &waypoints;
   settings.handicap = options.handicap;
+  settings.recorders = recorders;
   if (options.driver != "Generic") {
     settings.driver = FindDriverByName(options.driver.c_str());
     if (settings.driver == nullptr) {
@@ -346,7 +356,8 @@ try {
     RunFile(path, settings, options, recordings);
 
   const std::size_t entries = recordings.size();
-  const auto flights = Logbook::JoinRecordings(std::move(recordings));
+  const auto flights = Logbook::JoinRecordings(std::move(recordings),
+                                               settings.recorders);
 
   printf("%s;Also recorded in;Source file\n", Logbook::GetHeader());
   for (const auto &flight : flights) {
