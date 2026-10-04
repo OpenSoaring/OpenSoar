@@ -11,6 +11,16 @@
 #include "Form/DataField/Enum.hpp"
 #include "Renderer/TwoTextRowsRenderer.hpp"
 #include "Logger/Logbook.hpp"
+#include "Logger/LogbookBuilder.hpp"
+#include "Dialogs/JobDialog.hpp"
+#include "Job/Job.hpp"
+#include "Operation/Operation.hpp"
+#include "Repository/FileType.hpp"
+#include "LocalPath.hpp"
+#include "Components.hpp"
+#include "DataComponents.hpp"
+#include <Message.hpp>
+#include "LogFile.hpp"
 #include "DataFilePath.hpp"
 #include "system/Path.hpp"
 #include "Formatter/UserUnits.hpp"
@@ -24,6 +34,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <exception>
 #include <vector>
 
 /* this macro exists in the WIN32 API */
@@ -230,6 +241,118 @@ LogbookEntryWidget::Save(bool &_changed) noexcept
 }
 
 /**
+ * The index of the files read for the log book, beside it.
+ */
+static AllocatedPath
+GetIndexPath() noexcept
+{
+  return LogsDataSavePath("logbook-files.txt");
+}
+
+/**
+ * Reads the recorded files in the background while the dialog shows
+ * the progress.
+ */
+class LogbookUpdateJob final : public Job {
+  const std::vector<Logbook::NewFile> &files;
+  const Logbook::ReadSettings &settings;
+
+public:
+  Logbook::UpdateResult result;
+  std::exception_ptr error;
+
+  LogbookUpdateJob(const std::vector<Logbook::NewFile> &_files,
+                   const Logbook::ReadSettings &_settings) noexcept
+    :files(_files), settings(_settings) {}
+
+  void Run(OperationEnvironment &env) override {
+    try {
+      result = Logbook::Update(LogsDataSavePath("logbook.csv"),
+                               GetIndexPath(), files, settings, env);
+    } catch (...) {
+      error = std::current_exception();
+    }
+  }
+};
+
+/**
+ * Read the files not yet in the log book.
+ *
+ * @return true if the log book may have changed
+ */
+static bool
+RunLogbookUpdate() noexcept
+{
+  std::vector<Logbook::NewFile> files;
+  try {
+    /* this program writes IGC files into "igc" and the NMEA logs into
+       "logs", older versions both into "logs" */
+    std::vector<AllocatedPath> folders;
+    folders.push_back(LocalPath(GetFileTypeDefaultDir(FileType::IGC)));
+    folders.push_back(LocalPath(GetFileTypeDefaultDir(FileType::NMEA)));
+    files = Logbook::FindNewFiles(GetIndexPath(), folders);
+  } catch (...) {
+    LogError(std::current_exception(), "Log book: failed to list the files");
+    return false;
+  }
+
+  if (files.empty())
+    return false;
+
+  Logbook::ReadSettings settings;
+  if (data_components != nullptr)
+    settings.waypoints = data_components->waypoints.get();
+  settings.handicap = CommonInterface::GetComputerSettings().contest.handicap;
+  settings.coordinate_format =
+    CommonInterface::GetUISettings().format.coordinate_format;
+
+  LogbookUpdateJob job(files, settings);
+  JobDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
+            _("Log book"), job, true);
+
+  if (job.error) {
+    ShowError(job.error, _("Log book"));
+    return true;
+  }
+
+  const auto &r = job.result;
+  StaticString<256> text;
+  text.Format(_("Log book: %u flight(s) from %u of %u file(s)"),
+              r.flights, r.files_read, (unsigned)files.size());
+  if (r.cancelled)
+    text.AppendFormat(" (%s)", _("the rest follows at the next start"));
+  Message::AddMessage(text);
+  return true;
+}
+
+void
+UpdateLogbook() noexcept
+{
+  RunLogbookUpdate();
+}
+
+bool
+RebuildLogbook() noexcept
+{
+  if (ShowMessageBox(_("Build the log book again from all recorded files? "
+                       "The current one is kept as logbook-DATE.csv "
+                       "in the folder logs, including all changes made "
+                       "by hand."),
+                     _("Log book"), MB_YESNO | MB_ICONQUESTION) != IDYES)
+    return false;
+
+  try {
+    Logbook::Retire(LogsDataSavePath("logbook.csv"), GetIndexPath());
+  } catch (...) {
+    ShowError(std::current_exception(), _("Log book"));
+    return false;
+  }
+
+  RunLogbookUpdate();
+  return true;
+}
+
+/**
  * The list of all flights, newest first.
  */
 class LogbookListWidget final : public ListWidget {
@@ -337,6 +460,10 @@ LogbookListWidget::CreateButtons(WidgetDialog &dialog) noexcept
   });
   delete_button = dialog.AddButton(C_("Button", "Delete"),
                                    [this](){ DeleteClicked(); });
+  dialog.AddButton(_("Rebuild"), [this](){
+    if (RebuildLogbook())
+      Load();
+  });
   UpdateButtons();
 }
 

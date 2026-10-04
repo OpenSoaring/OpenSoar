@@ -32,6 +32,7 @@
 #include "Dialogs/StartupDialog.hpp"
 #include "Dialogs/dlgSimulatorPrompt.hpp"
 #include "Dialogs/dlgQuickGuide.hpp"
+#include "Dialogs/LogbookDialog.hpp"
 #include "Language/LanguageGlue.hpp"
 #include "Language/Language.hpp"
 #include "Protection.hpp"
@@ -854,6 +855,12 @@ Startup(UI::Display &display)
 
   main_window->FinishStartup();
   main_window->SchedulePageActionsUpdate();
+
+  /* the files recorded since the last start (or all of them, the first
+     time) go into the log book; a pilot finds it complete without
+     building it himself */
+  if (computer_settings.logger.enable_flight_logger)
+    UpdateLogbook();
 
   return true;
 }
