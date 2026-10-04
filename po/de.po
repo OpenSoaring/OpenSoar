@@ -3934,6 +3934,35 @@ msgstr "Flugbuch"
 msgid "Rebuild"
 msgstr "Neu aufbauen"
 
+msgid "Recorder 1"
+msgstr "Recorder 1"
+
+msgid "Recorder 2"
+msgstr "Recorder 2"
+
+msgid "Recorder 1 from IGC file"
+msgstr "Recorder 1 aus IGC-Datei"
+
+msgid "Recorder 2 from IGC file"
+msgstr "Recorder 2 aus IGC-Datei"
+
+msgid ""
+"An external flight recorder of this glider, as in the A record of its IGC "
+"files: the three letter manufacturer code and the serial number, e.g. "
+"LXVJNI. When a flight is recorded several times, the log book takes it from "
+"the file of Recorder 1, then Recorder 2, then the IGC file of this program."
+msgstr ""
+"Ein externer Logger dieses Flugzeugs, wie in der A-Zeile seiner IGC-Dateien: "
+"der dreistellige Herstellercode und die Seriennummer, z. B. LXVJNI. Ist ein "
+"Flug mehrfach aufgezeichnet, nimmt das Flugbuch ihn aus der Datei von "
+"Recorder 1, dann Recorder 2, dann aus der IGC-Datei dieses Programms."
+
+msgid "This file has no A record with the recorder."
+msgstr "Diese Datei hat keine A-Zeile mit dem Logger."
+
+msgid "IGC file"
+msgstr "IGC-Datei"
+
 msgid "Logs each start and landing."
 msgstr "Notiert alle Starts und Landungen."
 
@@ -12017,8 +12046,10 @@ msgstr ""
 "Das Ausklinken aus Schlepp oder Winde oder das Ende des Motorlaufs beim "
 "Eigenstart: hier beginnt der gewertete Flug."
 
-msgid "The manufacturer code and the type from the header of the IGC file."
-msgstr "Herstellerkennung und Typ aus dem Kopf der IGC-Datei."
+msgid ""
+"The manufacturer code, the serial number and the type from the header of "
+"the IGC file."
+msgstr "Herstellerkennung, Seriennummer und Typ aus dem Kopf der IGC-Datei."
 
 msgid "Launch"
 msgstr "Startart"
