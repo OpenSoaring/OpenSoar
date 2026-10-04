@@ -98,6 +98,12 @@ Version 7.47 - not yet released
   - IGC files (of the own logger and downloaded from a logger) are stored
     in the folder "igc" instead of "logs", apart from the NMEA logs; the
     replay lists both folders, the WeGlide upload only "igc"
+  - the log book is built from the recorded IGC files and NMEA logs: at
+    startup the files not yet read are added (the first time all of
+    them), with progress and cancel; one entry per flight, taken from
+    the most complete recording (own IGC file before other loggers
+    before NMEA), empty fields filled from the others; "Rebuild" keeps
+    the old one as logbook-YYYY-MM-DD.csv and reads all files again
 
 Version 7.46 - 2026-10-19
 * highlights
