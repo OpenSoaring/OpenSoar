@@ -91,7 +91,7 @@ TEST_NAMES = \
 	TestValidity TestUTM \
 	TestAllocatedGrid \
 	TestRadixTree TestGeoBounds TestGeoClip \
-	TestLogger TestLogbook TestGRecord TestClimbAvCalc TestCirclingWind \
+	TestLogger TestLogbook TestLogbookBuilder TestGRecord TestClimbAvCalc TestCirclingWind \
 	TestFilteredVarioComputer \
 	TestVarioSynthesiser TestAudioVario \
 	TestWaypointReader TestThermalBase \
@@ -2117,6 +2117,8 @@ $(eval $(call link-program,RunContestAnalysis,RUN_CONTEST))
 
 RUN_LOGBOOK_SOURCES = \
 	$(DEBUG_REPLAY_SOURCES) \
+	$(SRC)/Logger/LogbookBuilder.cpp \
+	$(SRC)/Logger/LogbookReplay.cpp \
 	$(SRC)/IGC/IGCParser.cpp \
 	$(SRC)/TransponderCode.cpp \
 	$(SRC)/Formatter/NMEAFormatter.cpp \
@@ -2138,6 +2140,16 @@ RUN_LOGBOOK_SOURCES = \
 RUN_LOGBOOK_LDADD = $(FAKE_LIBS)
 RUN_LOGBOOK_DEPENDS = $(DEBUG_REPLAY_DEPENDS) WAYPOINTFILE OPERATION CONTEST WAYPOINT ZZIP UTIL GEO MATH TIME FMT
 $(eval $(call link-program,RunLogbook,RUN_LOGBOOK))
+
+# the builder reads files with the code of the program, so the test
+# links what RunLogbook links, without its main()
+TEST_LOGBOOK_BUILDER_SOURCES = \
+	$(filter-out $(TEST_SRC_DIR)/RunLogbook.cpp,$(RUN_LOGBOOK_SOURCES)) \
+	$(TEST_SRC_DIR)/tap.c \
+	$(TEST_SRC_DIR)/TestLogbookBuilder.cpp
+TEST_LOGBOOK_BUILDER_LDADD = $(RUN_LOGBOOK_LDADD)
+TEST_LOGBOOK_BUILDER_DEPENDS = $(RUN_LOGBOOK_DEPENDS)
+$(eval $(call link-program,TestLogbookBuilder,TEST_LOGBOOK_BUILDER))
 
 RUN_WAVE_COMPUTER_SOURCES = \
 	$(DEBUG_REPLAY_SOURCES) \

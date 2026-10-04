@@ -326,8 +326,10 @@ XCSOAR_SOURCES := \
 	$(SRC)/Logger/GlueFlightLogger.cpp \
 	$(SRC)/Logger/GlueLogbook.cpp \
 	$(SRC)/Logger/Logbook.cpp \
+	$(SRC)/Logger/LogbookBuilder.cpp \
 	$(SRC)/Logger/LogbookPlace.cpp \
 	$(SRC)/Logger/LogbookRecorder.cpp \
+	$(SRC)/Logger/LogbookReplay.cpp \
 	$(SRC)/Replay/Replay.cpp \
 	$(SRC)/IGC/IGCParser.cpp \
 	$(SRC)/Replay/IgcReplay.cpp \
