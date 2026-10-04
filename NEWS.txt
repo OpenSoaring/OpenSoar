@@ -95,6 +95,9 @@ Version 7.47 - not yet released
     recorder (manufacturer code and type); numbers with a decimal
     comma; launch, crew and a remark can be completed in the dialog;
     on by default (Logger settings: Log book)
+  - IGC files (of the own logger and downloaded from a logger) are stored
+    in the folder "igc" instead of "logs", apart from the NMEA logs; the
+    replay lists both folders, the WeGlide upload only "igc"
 
 Version 7.46 - 2026-10-19
 * highlights
