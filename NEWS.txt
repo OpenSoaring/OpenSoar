@@ -52,6 +52,12 @@ Version 7.45.4 - not yet released
     recorder (manufacturer code and type); numbers with a decimal
     comma; launch, crew and a remark can be completed in the dialog;
     on by default (Logger settings: Log book)
+  - the log book is built from the recorded IGC files and NMEA logs: at
+    startup the files not yet read are added (the first time all of
+    them), with progress and cancel; one entry per flight, taken from
+    the most complete recording (own IGC file before other loggers
+    before NMEA), empty fields filled from the others; "Rebuild" keeps
+    the old one as logbook-YYYY-MM-DD.csv and reads all files again
 * glide computer
   - a takeoff starts a new trace and contest: the second flight of a
     session (e.g. the next winch launch) no longer counts the one before

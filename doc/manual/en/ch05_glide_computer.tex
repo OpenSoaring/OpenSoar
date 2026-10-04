@@ -849,6 +849,40 @@ file are UTC.  The file is read by the names in its header, so columns
 moved in a spreadsheet stay where they are; a file of an older version
 is converted to the current columns when the next flight is added.  Replays and the simulator are not recorded.
 
+\subsection*{Building the log book from the recorded files}
+
+At startup, XCSoar reads the IGC files (`igc' subdirectory) and NMEA
+logs (`logs' subdirectory) that are not in the log book yet and adds
+their flights; the first time, this builds the whole log book from all
+flights recorded so far.  A dialog shows the progress and can be
+cancelled: the flights of the files read so far are kept, the rest
+follows at the next start.  The file \verb|logbook-files.txt| beside
+the log book lists the files already read, also those without a
+flight, so they are not read again; a file that has grown since is.
+
+A flight is often recorded more than once: by XCSoar itself, by an
+external logger whose file is downloaded later, and in the NMEA log.
+The log book keeps one entry per flight.  Two recordings are of the
+same flight if the glider was at the same place at the same time.  The
+entry comes from the recording that covers (nearly) the whole flight
+and did not begin or end in flight; among those, XCSoar's own IGC file
+comes first, then the files of other loggers, then the NMEA log, and
+then the longer one.  Empty fields (crew, aircraft, launch, release)
+are filled from the other recordings, so the engine noise of an
+external logger can tell the launch.  When a better recording replaces
+an entry, the crew and the aircraft of the entry stay, as they may have
+been corrected by hand.  The DMSt points use the handicap of the
+current glider, also for older flights.
+
+The button \bmenu{Rebuild} in the log book (or the event
+\verb|Logbook rebuild|) builds the log book again from all recorded
+files.  The current one is kept as \verb|logbook-YYYY-MM-DD.csv|,
+named after its last flight, with all changes made by hand.
+
+The setting ``Log book'' on the Logger page of the system settings
+switches the log book off completely: nothing is recorded, and nothing
+is read at startup.
+
 \section{Flight notifications}
 
  Notifications, appearing as status messages, appear when the
