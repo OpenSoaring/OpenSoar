@@ -865,9 +865,12 @@ external logger whose file is downloaded later, and in the NMEA log.
 The log book keeps one entry per flight.  Two recordings are of the
 same flight if the glider was at the same place at the same time.  The
 entry comes from the recording that covers (nearly) the whole flight
-and did not begin or end in flight; among those, XCSoar's own IGC file
-comes first, then the files of other loggers, then the NMEA log, and
-then the longer one.  Empty fields (crew, aircraft, launch, release)
+and did not begin or end in flight; among those, the files of the
+external loggers named as Recorder 1 and Recorder 2 in the logger
+settings come first (in this order), then XCSoar's own IGC file, then
+the files of other loggers, then the NMEA log, and then the longer
+one.  A logger is recognised by the A record of its IGC file: the
+manufacturer code and the serial number.  Empty fields (crew, aircraft, launch, release)
 are filled from the other recordings, so the engine noise of an
 external logger can tell the launch.  When a better recording replaces
 an entry, the crew and the aircraft of the entry stay, as they may have

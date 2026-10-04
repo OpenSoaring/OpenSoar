@@ -35,6 +35,7 @@ MakeEntry()
   e.log_file = "2026-07-14-XCS-AAA-01.igc";
   e.file_type = Logbook::FileTypeOf(e.log_file);
   e.recorder_code = "XCS";
+  e.recorder_serial = "AAA";
   e.recorder_type = "XCSOAR,XCSOAR 7.45";
   e.remark = "first line\nsecond line";
   return e;
@@ -65,7 +66,7 @@ TestRoundTrip()
   ok1(line.find(";512,3;93,5;498,7;553,3;") != line.npos);
   /* the launch as one letter, F for an aerotow */
   ok1(line.find(";F;10:11:40;") != line.npos);
-  ok1(line.find(";2026-07-14-XCS-AAA-01.igc;IGC;XCS;XCSOAR,XCSOAR 7.45;") != line.npos);
+  ok1(line.find(";2026-07-14-XCS-AAA-01.igc;IGC;XCS;AAA;XCSOAR,XCSOAR 7.45;") != line.npos);
 
   LogbookEntry p;
   ok1(Logbook::ParseLine(line, p));
@@ -89,6 +90,7 @@ TestRoundTrip()
   ok1(p.log_file == e.log_file);
   ok1(p.file_type == "IGC");
   ok1(p.recorder_code == "XCS");
+  ok1(p.recorder_serial == "AAA");
   ok1(p.recorder_type == e.recorder_type);
   ok1(p.remark == "first line second line");
 }
@@ -209,7 +211,7 @@ TestAppendToOldFile()
 int
 main()
 {
-  plan_tests(75);
+  plan_tests(76);
 
   TestSplit();
   TestRoundTrip();

@@ -908,6 +908,14 @@ purposes.
 \item[Log book]  Records each flight in the log book (see
   section~\ref{sec:logbook}).  On by default; a change takes effect on
   the next start.
+\item[Recorder 1, Recorder 2]  The external flight recorders of this
+  glider, written as in the A record of their IGC files: the three
+  letter manufacturer code and the serial number, e.g.\ \verb|LXVJNI|.
+  When a flight is recorded several times, the log book takes it from
+  the file of Recorder 1, then Recorder 2, then XCSoar's own IGC file.
+  The buttons below take both values from an IGC file of the recorder.
+  A change counts for the flights read from then on; \bmenu{Rebuild}
+  in the log book applies it to all of them.
 \item[Logger ID]  This is the logger registration.
 \end{description}
 

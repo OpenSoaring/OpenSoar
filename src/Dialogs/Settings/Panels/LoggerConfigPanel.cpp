@@ -14,6 +14,11 @@
 #include "BackendComponents.hpp"
 #include "Units/Group.hpp"
 #include "Units/Units.hpp"
+#include "Logger/LogbookBuilder.hpp"
+#include "Form/DataField/File.hpp"
+#include "Dialogs/FilePicker.hpp"
+#include "Dialogs/Message.hpp"
+#include "Repository/FileType.hpp"
 
 using namespace std::chrono;
 
@@ -26,6 +31,10 @@ enum ControlIndex {
   DisableAutoLogger,
   EnableNMEALogger,
   EnableFlightLogger,
+  Recorder1,
+  Recorder1FromFile,
+  Recorder2,
+  Recorder2FromFile,
   LoggerID,
 };
 
@@ -37,6 +46,9 @@ public:
 public:
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
+
+private:
+  void ReadRecorderFromFile(unsigned row) noexcept;
 };
 
 static constexpr StaticEnumChoice auto_logger_list[] = {
@@ -99,6 +111,20 @@ LoggerConfigPanel::Prepare(ContainerWindow &parent,
                "added, the first time all of them."),
              logger.enable_flight_logger);
 
+  const char *const recorder_help =
+    _("An external flight recorder of this glider, as in the A record of "
+      "its IGC files: the three letter manufacturer code and the serial "
+      "number, e.g. LXVJNI. When a flight is recorded several times, the "
+      "log book takes it from the file of Recorder 1, then Recorder 2, "
+      "then the IGC file of this program.");
+
+  AddText(_("Recorder 1"), recorder_help, logger.recorders[0]);
+  AddButton(_("Recorder 1 from IGC file"),
+            [this](){ ReadRecorderFromFile(Recorder1); });
+  AddText(_("Recorder 2"), recorder_help, logger.recorders[1]);
+  AddButton(_("Recorder 2 from IGC file"),
+            [this](){ ReadRecorderFromFile(Recorder2); });
+
   AddText(_("Logger ID"),
           _("The three-letter logger ID used in the IGC filename."),
           logger.logger_id);
@@ -146,9 +172,44 @@ LoggerConfigPanel::Save(bool &changed) noexcept
     require_restart = true;
   }
 
+  /* stored as in the A record, so "lxv jni" works as well */
+  for (unsigned i = 0; i < 2; ++i) {
+    const auto id =
+      Logbook::NormalizeRecorder(GetValueString(i == 0 ? Recorder1 : Recorder2));
+    if (id != logger.recorders[i].c_str()) {
+      logger.recorders[i] = id.c_str();
+      Profile::Set(i == 0 ? ProfileKeys::Recorder1 : ProfileKeys::Recorder2,
+                   logger.recorders[i]);
+      changed = true;
+    }
+  }
+
   changed |= SaveValue(LoggerID, ProfileKeys::LoggerID, logger.logger_id);
 
   return true;
+}
+
+void
+LoggerConfigPanel::ReadRecorderFromFile(unsigned row) noexcept
+{
+  FileDataField df;
+  df.SetFileType(FileType::IGC);
+  df.ScanMultiplePatterns("*.igc\0*.IGC\0");
+  if (!FilePicker(_("IGC file"), df, nullptr, false))
+    return;
+
+  const auto path = df.GetValue();
+  if (path == nullptr)
+    return;
+
+  const auto header = Logbook::ReadIgcHeader(path);
+  if (header.recorder_code.empty()) {
+    ShowMessageBox(_("This file has no A record with the recorder."),
+                   _("IGC file"), MB_OK | MB_ICONERROR);
+    return;
+  }
+
+  LoadValue(row, (header.recorder_code + header.recorder_serial).c_str());
 }
 
 std::unique_ptr<Widget>

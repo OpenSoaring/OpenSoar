@@ -50,8 +50,24 @@ TestRank()
   const auto other = MakeEntry(10, 15, "y.igc", "LXV");
   const auto nmea = MakeEntry(10, 15, "z.nmea");
 
-  ok1(Logbook::GetRank(own, "AAA") > Logbook::GetRank(other, "JNI"));
-  ok1(Logbook::GetRank(other, "JNI") > Logbook::GetRank(nmea, {}));
+  const Logbook::RecorderList none;
+  ok1(Logbook::GetRank(own, none) > Logbook::GetRank(other, none));
+  ok1(Logbook::GetRank(other, none) > Logbook::GetRank(nmea, none));
+
+  /* Recorder 1 before Recorder 2 before the own IGC file */
+  auto nano = MakeEntry(10, 15, "n.igc", "LXV");
+  nano.recorder_serial = "3MN";
+  auto flarm = MakeEntry(10, 15, "f.igc", "FLA");
+  flarm.recorder_serial = "85H";
+  const Logbook::RecorderList recorders{
+    Logbook::NormalizeRecorder("flA 85h"),
+    Logbook::NormalizeRecorder("LXV3MN"),
+  };
+  ok1(recorders[0] == "FLA85H");
+  ok1(Logbook::GetRank(flarm, recorders) > Logbook::GetRank(nano, recorders));
+  ok1(Logbook::GetRank(nano, recorders) > Logbook::GetRank(own, recorders));
+  /* the same manufacturer with another serial number is another logger */
+  ok1(Logbook::GetRank(other, recorders) < Logbook::GetRank(own, recorders));
 }
 
 static void
@@ -62,11 +78,11 @@ TestMergeEntry()
   /* an NMEA log first; the pilot corrected the crew by hand */
   auto nmea = MakeEntry(10, 15, "z.nmea");
   nmea.pilot = "Hand";
-  ok1(Logbook::MergeEntry(entries, nmea));
+  ok1(Logbook::MergeEntry(entries, nmea, {}));
   ok1(entries.size() == 1);
 
   /* another flight of the same day */
-  ok1(Logbook::MergeEntry(entries, MakeEntry(16, 17, "b.igc", "LXV")));
+  ok1(Logbook::MergeEntry(entries, MakeEntry(16, 17, "b.igc", "LXV"), {}));
   ok1(entries.size() == 2);
 
   /* the IGC file of the first flight replaces the NMEA log, the
@@ -74,7 +90,7 @@ TestMergeEntry()
   auto igc = MakeEntry(10, 15, "a.igc", "LXV");
   igc.pilot = "Header";
   igc.aircraft = "JS 1";
-  ok1(Logbook::MergeEntry(entries, igc));
+  ok1(Logbook::MergeEntry(entries, igc, {}));
   ok1(entries.size() == 2);
   ok1(entries[0].log_file == "a.igc");
   ok1(entries[0].pilot == "Hand");
@@ -85,14 +101,21 @@ TestMergeEntry()
   auto fragment = MakeEntry(12, 15, "c.igc", "XCS");
   fragment.remark = "recording began in flight";
   fragment.registration = "ZS-GCG";
-  ok1(!Logbook::MergeEntry(entries, fragment));
+  ok1(!Logbook::MergeEntry(entries, fragment, {}));
   ok1(entries.size() == 2);
   ok1(entries[0].log_file == "a.igc");
   ok1(entries[0].registration == "ZS-GCG");
 
   /* this program's own IGC file of the same length wins */
-  ok1(Logbook::MergeEntry(entries, MakeEntry(10, 15, "d.igc", "XCS")));
+  ok1(Logbook::MergeEntry(entries, MakeEntry(10, 15, "d.igc", "XCS"), {}));
   ok1(entries[0].log_file == "d.igc");
+
+  /* but Recorder 1 wins over it */
+  auto nano = MakeEntry(10, 15, "e.igc", "LXV");
+  nano.recorder_serial = "3MN";
+  ok1(!Logbook::MergeEntry(entries, nano, {}));
+  ok1(Logbook::MergeEntry(entries, nano, {"LXV3MN"}));
+  ok1(entries[0].log_file == "e.igc");
 }
 
 static Logbook::Recording
@@ -119,7 +142,7 @@ TestJoin()
   /* a club mate in the air at the same time, 50 km away */
   recordings.push_back(MakeRecording(10, 14, "mate.igc", "FLA", 10.7));
 
-  const auto flights = Logbook::JoinRecordings(std::move(recordings));
+  const auto flights = Logbook::JoinRecordings(std::move(recordings), {});
   ok1(flights.size() == 2);
   ok1(flights.size() == 2 && flights[0].kept.entry.log_file == "own.igc");
   ok1(flights.size() == 2 && flights[0].others.size() == 1 &&
@@ -190,7 +213,7 @@ TestRetire()
 int
 main()
 {
-  plan_tests(37);
+  plan_tests(44);
 
   TestIsComplete();
   TestRank();
