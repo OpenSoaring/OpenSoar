@@ -537,8 +537,13 @@ RunFile(const fs::path &path, const Waypoints &waypoints,
 
   /* only a file that could be read and replayed to its end has
      really no flight; an unreadable one returned above */
-  if (handler.flights.empty() && options.move_no_flight)
+  if (handler.flights.empty() && options.move_no_flight) {
+    /* the replay keeps the file open until it is destroyed, and
+       Windows refuses to rename an open file ("being used by another
+       process"), so it has to be closed before the move */
+    replay.reset();
     MoveToNoFlight(path);
+  }
 
   return handler.flights.size();
 }
