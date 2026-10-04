@@ -215,6 +215,7 @@ enum Column : unsigned {
   LOG_FILE,
   FILE_TYPE,
   RECORDER_CODE,
+  RECORDER_SERIAL,
   RECORDER_TYPE,
   REMARK,
   N_COLUMNS,
@@ -248,6 +249,7 @@ static constexpr const char *column_names[N_COLUMNS] = {
   "Log file",
   "File type",
   "Recorder code",
+  "Recorder serial",
   "Recorder type",
   "Remark",
 };
@@ -360,6 +362,7 @@ ParseLine(std::string_view line, LogbookEntry &entry,
   entry.log_file = get(LOG_FILE);
   entry.file_type = get(FILE_TYPE);
   entry.recorder_code = get(RECORDER_CODE);
+  entry.recorder_serial = get(RECORDER_SERIAL);
   entry.recorder_type = get(RECORDER_TYPE);
   entry.remark = get(REMARK);
   return true;
@@ -466,6 +469,8 @@ FormatLine(const LogbookEntry &e) noexcept
   line += Quote(e.file_type);
   line += SEPARATOR;
   line += Quote(e.recorder_code);
+  line += SEPARATOR;
+  line += Quote(e.recorder_serial);
   line += SEPARATOR;
   line += Quote(e.recorder_type);
   line += SEPARATOR;
