@@ -201,8 +201,10 @@ ResolveCacheDataPath(const char *filename) noexcept
 AllocatedPath
 LogsDataSavePath(const char *filename) noexcept
 {
-  /* IGC and NMEA share logs/ */
-  return TypedDataSavePath(FileType::IGC, filename);
+  /* "logs" is the folder of the NMEA logs; the IGC files have a
+     folder of their own, so FileType::IGC would put flights.log and
+     the log book into "igc", where older versions do not look */
+  return TypedDataSavePath(FileType::NMEA, filename);
 }
 
 AllocatedPath
