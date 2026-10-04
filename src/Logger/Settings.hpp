@@ -43,5 +43,14 @@ struct LoggerSettings {
   /** Crew mass template in kg */
   unsigned crew_mass_template;
 
+  /**
+   * The external flight recorders of this glider, Recorder 1 and 2,
+   * written as in the A record of their IGC files: the three letter
+   * manufacturer code followed by the serial number ("LXVJNI"); empty
+   * if not set.  Their files give the log book entry of a flight
+   * before the program's own IGC file.
+   */
+  StaticString<16> recorders[2];
+
   void SetDefaults();
 };
