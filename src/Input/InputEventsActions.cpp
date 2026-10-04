@@ -369,10 +369,15 @@ InputEvents::eventAnalysis(const char *misc)
 // Logbook
 // Displays the log book: one row per flight with times, places,
 // distances and the crew
+//     rebuild: keep the current log book under another name and build
+//              it again from all recorded files
 void
-InputEvents::eventLogbook([[maybe_unused]] const char *misc)
+InputEvents::eventLogbook(const char *misc)
 {
-  ShowLogbookDialog();
+  if (misc != nullptr && StringIsEqual(misc, "rebuild"))
+    RebuildLogbook();
+  else
+    ShowLogbookDialog();
 }
 
 // WaypointDetails
