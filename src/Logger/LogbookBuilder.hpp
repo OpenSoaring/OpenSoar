@@ -15,6 +15,7 @@
 #include <vector>
 
 class Waypoints;
+struct LoggerSettings;
 class OperationEnvironment;
 struct DeviceRegister;
 
@@ -76,9 +77,6 @@ struct Recording {
   /** The file (UTF-8), for messages */
   std::string source;
 
-  /** The serial number of the logger (IGC only), see #IgcHeader */
-  std::string recorder_serial;
-
   /** The positions of this flight, by time */
   std::vector<TrackSample> track;
 
@@ -97,6 +95,26 @@ struct Recording {
   }
 };
 
+/**
+ * The flight recorders named in the settings (Recorder 1 and 2), best
+ * first, each as in the A record of its IGC files ("LXVJNI").
+ */
+using RecorderList = std::vector<std::string>;
+
+/**
+ * Bring a recorder as the pilot typed it into the form of the A
+ * record: capitals, without spaces ("lxv jni" becomes "LXVJNI").
+ */
+[[gnu::pure]]
+std::string
+NormalizeRecorder(std::string_view s) noexcept;
+
+/**
+ * The recorders named in the logger settings.
+ */
+RecorderList
+GetRecorders(const LoggerSettings &settings) noexcept;
+
 struct ReadSettings {
   /** The waypoints that name the places, nullptr for coordinates */
   const Waypoints *waypoints = nullptr;
@@ -110,6 +128,9 @@ struct ReadSettings {
   /** The driver for the device sentences of NMEA logs, nullptr for
       the generic NMEA parser */
   const DeviceRegister *driver = nullptr;
+
+  /** The recorders whose files are preferred, see GetRank() */
+  RecorderList recorders;
 };
 
 struct FileResult {
@@ -146,15 +167,14 @@ IsComplete(const LogbookEntry &entry) noexcept;
 
 /**
  * How much a recording is preferred over the others of the same flight
- * of (nearly) the same length; higher is better.  This program's own
- * IGC file comes before the files of other loggers, an IGC file before
- * an NMEA log.
- *
- * @param serial the serial number of the logger, empty if unknown
+ * of (nearly) the same length; higher is better.  The files of the
+ * recorders named in the settings come first, Recorder 1 before
+ * Recorder 2, then this program's own IGC file, then the files of
+ * other loggers, an IGC file before an NMEA log.
  */
 [[gnu::pure]]
 unsigned
-GetRank(const LogbookEntry &entry, std::string_view serial) noexcept;
+GetRank(const LogbookEntry &entry, const RecorderList &recorders) noexcept;
 
 /**
  * One flight with the recordings joined.
@@ -174,7 +194,8 @@ struct Flight {
  * @return the flights, by takeoff
  */
 std::vector<Flight>
-JoinRecordings(std::vector<Recording> recordings) noexcept;
+JoinRecordings(std::vector<Recording> recordings,
+               const RecorderList &recorders) noexcept;
 
 /**
  * Add an entry to the log book, or let it replace the entry of the
@@ -188,7 +209,8 @@ JoinRecordings(std::vector<Recording> recordings) noexcept;
  */
 bool
 MergeEntry(std::vector<LogbookEntry> &entries,
-           const LogbookEntry &entry) noexcept;
+           const LogbookEntry &entry,
+           const RecorderList &recorders) noexcept;
 
 /**
  * Merge entries into the log book file (created if it does not exist)
@@ -199,7 +221,8 @@ MergeEntry(std::vector<LogbookEntry> &entries,
  * Throws on error.
  */
 void
-MergeIntoFile(Path path, const std::vector<LogbookEntry> &entries);
+MergeIntoFile(Path path, const std::vector<LogbookEntry> &entries,
+              const RecorderList &recorders);
 
 /**
  * A recorded file that is not in the log book yet.

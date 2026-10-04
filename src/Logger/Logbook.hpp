@@ -85,6 +85,13 @@ struct LogbookEntry {
    */
   std::string recorder_code, recorder_type;
 
+  /**
+   * The serial number of the flight recorder from the A record of the
+   * IGC file ("ALXVJNI" is code "LXV", serial "JNI"); with the code,
+   * it identifies the logger (see LoggerSettings::recorders)
+   */
+  std::string recorder_serial;
+
   std::string remark;
 
   [[gnu::pure]]
