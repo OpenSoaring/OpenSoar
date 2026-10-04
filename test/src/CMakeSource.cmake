@@ -317,9 +317,6 @@ set(TEST_LIST
 # user interface and OpenGL, so a console program would need the GL
 # DLLs.  An object file given here wins over the libraries.
 set(RunLogbook_SOURCES
-  ${SRC_DIR}/DebugReplay.cpp
-  ${SRC_DIR}/DebugReplayIGC.cpp
-  ${SRC_DIR}/DebugReplayNMEA.cpp
   ${SRC_DIR}/FakeMessage.cpp
 )
 
