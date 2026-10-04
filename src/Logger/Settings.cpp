@@ -13,6 +13,8 @@ LoggerSettings::SetDefaults()
   pilot_name.clear();
   copilot_name.clear();
   crew_mass_template = 90;
+  for (auto &recorder : recorders)
+    recorder.clear();
 
   /* the log book records the flights with all details now
      (logbook.csv); a pilot expects that without searching for it */
