@@ -202,11 +202,11 @@ LogbookEntryWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
   AddReadOnly(_("Log file"), nullptr, entry.log_file.c_str());
 
-  text.Format("%s  %s", entry.recorder_code.c_str(),
-              entry.recorder_type.c_str());
+  text.Format("%s %s  %s", entry.recorder_code.c_str(),
+              entry.recorder_serial.c_str(), entry.recorder_type.c_str());
   AddReadOnly(_("Flight recorder"),
-              _("The manufacturer code and the type from the header of the "
-                "IGC file."),
+              _("The manufacturer code, the serial number and the type from "
+                "the header of the IGC file."),
               text);
 
   static constexpr StaticEnumChoice launch_list[] = {
@@ -303,6 +303,8 @@ RunLogbookUpdate() noexcept
   if (data_components != nullptr)
     settings.waypoints = data_components->waypoints.get();
   settings.handicap = CommonInterface::GetComputerSettings().contest.handicap;
+  settings.recorders =
+    Logbook::GetRecorders(CommonInterface::GetComputerSettings().logger);
   settings.coordinate_format =
     CommonInterface::GetUISettings().format.coordinate_format;
 
