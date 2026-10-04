@@ -69,6 +69,12 @@ GlueLogbook::FillLogbookRecorder(LogbookEntry &entry) noexcept
      are the values IGCWriter::WriteHeader() puts into it */
   entry.recorder_code = XCSOAR_IGC_CODE;
   entry.recorder_type = std::string{"XCSOAR,XCSOAR "} + XCSoar_VersionStringOld;
+
+  /* the serial number is the logger ID the IGC logger chose when it
+     started the file; its A record has it */
+  if (igc_logger != nullptr)
+    if (const auto igc = igc_logger->GetActivePath(); igc != nullptr)
+      entry.recorder_serial = Logbook::ReadIgcHeader(igc).recorder_serial;
 }
 
 void
@@ -78,7 +84,8 @@ GlueLogbook::OnLogbookFlight(const LogbookEntry &entry) noexcept
     /* the flight may be in the log book already, read at startup from
        the file of a recording that was interrupted (a restart in
        flight); then the better entry stays */
-    Logbook::MergeIntoFile(path, {entry});
+    Logbook::MergeIntoFile(path, {entry},
+                           Logbook::GetRecorders(blackboard.GetComputerSettings().logger));
   } catch (...) {
     LogError(std::current_exception(), "Failed to write the log book");
   }

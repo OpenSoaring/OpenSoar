@@ -104,6 +104,10 @@ Version 7.47 - not yet released
     the most complete recording (own IGC file before other loggers
     before NMEA), empty fields filled from the others; "Rebuild" keeps
     the old one as logbook-YYYY-MM-DD.csv and reads all files again
+  - Recorder 1 and Recorder 2 in the logger settings (manufacturer code
+    and serial number, also taken from an IGC file): their files give
+    the log book entry of a flight before the own IGC file; new column
+    "Recorder serial"
 
 Version 7.46 - 2026-10-19
 * highlights
