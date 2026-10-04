@@ -110,6 +110,13 @@ GetFileTypeDefaultDir(const FileType file_type)
     return AllocatedPath("frequencies");
 
   case FileType::IGC:
+    /* the IGC files of the program's own logger and those downloaded
+       from an external logger, apart from the NMEA logs, so a picker
+       for the IGC files (WeGlide upload) lists only flights; older
+       IGC files in "logs" are still found where NMEA and IGC files
+       are listed together (replay) */
+    return AllocatedPath("igc");
+
   case FileType::NMEA:
   case FileType::SENSORLOG:
     return AllocatedPath("logs");
