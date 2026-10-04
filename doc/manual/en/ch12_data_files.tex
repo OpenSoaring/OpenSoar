@@ -303,11 +303,16 @@ The software flight logger generates IGC files (extension \verb|.igc|)
 according to the long naming convention described in the FAI 
 document {\em Technical Specification for IGC-Approved GNSS Flight Recorders}.  
 
-Log-files are stored in the `logs' subdirectory of the XCSoarData directory.
-These files can be imported into other programs for analysis after flight.
+IGC files are stored in the `igc' subdirectory of the XCSoarData
+directory, those of the software flight logger as well as those
+downloaded from an external logger.  The NMEA logs are stored in the
+`logs' subdirectory.  Older versions stored the IGC files in `logs' as
+well; they are still found there for a replay, but the WeGlide upload
+lists only the files in `igc'.  These files can be imported into other
+programs for analysis after flight.
 
 The log book (section~\ref{sec:logbook}) is the file \verb|logbook.csv|
-in the same directory: one line per flight, columns separated by
+in the `logs' subdirectory: one line per flight, columns separated by
 semicolons, times in UTC, distances in kilometres with a decimal
 comma.  The older file
 \verb|flights.log| lists only takeoff and landing times.

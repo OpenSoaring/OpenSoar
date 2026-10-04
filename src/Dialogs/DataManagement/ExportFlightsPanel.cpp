@@ -15,6 +15,7 @@
 #include "UIGlobals.hpp"
 #include "Look/DialogLook.hpp"
 #include "LocalPath.hpp"
+#include "Repository/FileType.hpp"
 #include "Storage/StorageDevice.hpp"
 #include "system/FileUtil.hpp"
 #include "Language/Language.hpp"
@@ -364,14 +365,15 @@ ShowExportFlightsDialog()
                       look, C_("Menu", "Export flights"));
 
   /**
-   * Prepare MultiFileDataField with available log files from the XCSoar
-   * logs folder only (collect, sort externally, then populate)
+   * Prepare MultiFileDataField with the flight logs: the NMEA logs (and
+   * IGC files of older versions) in "logs", the IGC files in "igc"
    */
   auto df = std::make_unique<MultiFileDataField>();
-  auto logs_path = MakeLocalPath("logs");
-  if (logs_path != nullptr && Directory::Exists(logs_path)) {
-    ScanFilesIntoDataField(logs_path, *df,
-                           {FileType::IGC, FileType::NMEA}, true);
+  for (const auto type : {FileType::NMEA, FileType::IGC}) {
+    const auto path = LocalPath(GetFileTypeDefaultDir(type));
+    if (path != nullptr && Directory::Exists(path))
+      ScanFilesIntoDataField(path, *df,
+                             {FileType::IGC, FileType::NMEA}, true);
   }
 
   auto container = std::make_unique<FlightContainer>(*df);

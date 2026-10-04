@@ -124,7 +124,7 @@ TestLayoutClassification()
   ok1(GetLayoutSubdirForFilename("zone.openair") == Path("airspace"));
   ok1(GetLayoutSubdirForFilename("task.tsk") == Path("tasks"));
   ok1(GetLayoutSubdirForFilename("gfs-rasp-forecast.dat") == Path("weather/rasp"));
-  ok1(GetLayoutSubdirForFilename("track.igc") == Path("logs"));
+  ok1(GetLayoutSubdirForFilename("track.igc") == Path("igc"));
   ok1(GetLayoutSubdirForFilename("readme.md") == nullptr);
   ok1(GetLayoutSubdirForFilename("profile.prf") == Path("profiles"));
   ok1(GetLayoutSubdirForFilename("plane.xcp") == Path("profiles/planes"));

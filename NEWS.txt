@@ -40,6 +40,9 @@ Version 7.45.4 - not yet released
 * airspace
   - new fill mode "Thin lines": no fill, outlines one pixel wide
 * logger
+  - IGC files (of the own logger and downloaded from a logger) are stored
+    in the folder "igc" instead of "logs", apart from the NMEA logs; the
+    replay lists both folders, the WeGlide upload only "igc"
   - a log book of all flights (Info menu; file logbook.csv, a table for
     a spreadsheet): takeoff and landing with time and place, flight
     time, launch (estimated) and release, pilot and co-pilot, aircraft,
