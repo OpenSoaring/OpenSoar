@@ -3,6 +3,7 @@
 
 #include "GlueLogbook.hpp"
 #include "LogbookPlace.hpp"
+#include "LogbookBuilder.hpp"
 #include "Logger.hpp"
 #include "GRecord.hpp"
 #include "Version.hpp"
@@ -74,7 +75,10 @@ void
 GlueLogbook::OnLogbookFlight(const LogbookEntry &entry) noexcept
 {
   try {
-    Logbook::Append(path, entry);
+    /* the flight may be in the log book already, read at startup from
+       the file of a recording that was interrupted (a restart in
+       flight); then the better entry stays */
+    Logbook::MergeIntoFile(path, {entry});
   } catch (...) {
     LogError(std::current_exception(), "Failed to write the log book");
   }
