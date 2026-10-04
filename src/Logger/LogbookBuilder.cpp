@@ -8,6 +8,8 @@
 #include "Computer/TraceComputer.hpp"
 #include "Computer/LogbookComputer.hpp"
 #include "Computer/Settings.hpp"
+#include "Logger/Settings.hpp"
+#include "util/CharUtil.hxx"
 #include "Operation/Operation.hpp"
 #include "io/FileLineReader.hpp"
 #include "io/FileOutputStream.hxx"
@@ -132,6 +134,7 @@ public:
 
   void FillLogbookRecorder(LogbookEntry &entry) noexcept override {
     entry.recorder_code = header.recorder_code;
+    entry.recorder_serial = header.recorder_serial;
     entry.recorder_type = header.recorder_type;
   }
 
@@ -220,7 +223,7 @@ ReadFile(Path path, const ReadSettings &settings,
   }
 
   for (auto &entry : handler.flights) {
-    Recording r{std::move(entry), path.c_str(), header.recorder_serial, {}};
+    Recording r{std::move(entry), path.c_str(), {}};
     for (const auto &sample : track)
       if (sample.minute >= r.Begin() && sample.minute <= r.End())
         r.track.push_back(sample);
@@ -242,12 +245,36 @@ IsComplete(const LogbookEntry &entry) noexcept
     remark.find("ended in flight") == remark.npos;
 }
 
-unsigned
-GetRank(const LogbookEntry &entry,
-        [[maybe_unused]] std::string_view serial) noexcept
+std::string
+NormalizeRecorder(std::string_view s) noexcept
 {
-  /* the loggers named in the settings (Recorder 1 and 2) will come
-     first, identified by code and serial */
+  std::string result;
+  for (char ch : s)
+    if (IsAlphaNumericASCII(ch))
+      result.push_back(ToUpperASCII(ch));
+  return result;
+}
+
+RecorderList
+GetRecorders(const LoggerSettings &settings) noexcept
+{
+  RecorderList recorders;
+  for (const auto &recorder : settings.recorders)
+    if (auto id = NormalizeRecorder(recorder.c_str()); !id.empty())
+      recorders.push_back(std::move(id));
+  return recorders;
+}
+
+unsigned
+GetRank(const LogbookEntry &entry, const RecorderList &recorders) noexcept
+{
+  if (entry.file_type == "IGC" && !entry.recorder_code.empty()) {
+    const auto id = NormalizeRecorder(entry.recorder_code + entry.recorder_serial);
+    for (std::size_t i = 0; i < recorders.size(); ++i)
+      if (id == recorders[i])
+        return 3 + recorders.size() - i;
+  }
+
   if (entry.file_type == "IGC")
     return entry.recorder_code == "XCS" ? 2 : 1;
 
@@ -262,9 +289,8 @@ GetRank(const LogbookEntry &entry,
  */
 [[gnu::pure]]
 static bool
-IsBetter(const LogbookEntry &a, std::string_view a_serial,
-         const LogbookEntry &b, std::string_view b_serial,
-         Clock::duration longest) noexcept
+IsBetter(const LogbookEntry &a, const LogbookEntry &b,
+         Clock::duration longest, const RecorderList &recorders) noexcept
 {
   const auto a_duration = a.GetFlightTime(), b_duration = b.GetFlightTime();
 
@@ -276,7 +302,7 @@ IsBetter(const LogbookEntry &a, std::string_view a_serial,
   if (IsComplete(a) != IsComplete(b))
     return IsComplete(a);
 
-  const unsigned a_rank = GetRank(a, a_serial), b_rank = GetRank(b, b_serial);
+  const unsigned a_rank = GetRank(a, recorders), b_rank = GetRank(b, recorders);
   if (a_rank != b_rank)
     return a_rank > b_rank;
 
@@ -349,7 +375,8 @@ IsSameFlight(const Recording &a, const Recording &b) noexcept
 }
 
 std::vector<Flight>
-JoinRecordings(std::vector<Recording> recordings) noexcept
+JoinRecordings(std::vector<Recording> recordings,
+               const RecorderList &recorders) noexcept
 {
   std::stable_sort(recordings.begin(), recordings.end(),
                    [](const Recording &a, const Recording &b){
@@ -388,9 +415,8 @@ JoinRecordings(std::vector<Recording> recordings) noexcept
     std::size_t best = g;
     for (std::size_t i = 0; i < n; ++i)
       if (find(i) == g &&
-          IsBetter(recordings[i].entry, recordings[i].recorder_serial,
-                   recordings[best].entry, recordings[best].recorder_serial,
-                   longest))
+          IsBetter(recordings[i].entry, recordings[best].entry, longest,
+                   recorders))
         best = i;
 
     Flight flight{recordings[best], {}};
@@ -447,14 +473,15 @@ IsSameFlight(const LogbookEntry &a, const LogbookEntry &b) noexcept
 
 bool
 MergeEntry(std::vector<LogbookEntry> &entries,
-           const LogbookEntry &entry) noexcept
+           const LogbookEntry &entry,
+           const RecorderList &recorders) noexcept
 {
   for (auto &old : entries) {
     if (!IsSameFlight(old, entry))
       continue;
 
     const auto longest = std::max(old.GetFlightTime(), entry.GetFlightTime());
-    if (!IsBetter(entry, {}, old, {}, longest)) {
+    if (!IsBetter(entry, old, longest, recorders)) {
       FillEmpty(old, entry);
       return false;
     }
@@ -483,13 +510,14 @@ MergeEntry(std::vector<LogbookEntry> &entries,
 }
 
 void
-MergeIntoFile(Path path, const std::vector<LogbookEntry> &new_entries)
+MergeIntoFile(Path path, const std::vector<LogbookEntry> &new_entries,
+              const RecorderList &recorders)
 {
   auto entries = Read(path);
 
   bool changed = !File::Exists(path);
   for (const auto &entry : new_entries)
-    changed |= MergeEntry(entries, entry);
+    changed |= MergeEntry(entries, entry, recorders);
 
   if (!changed)
     return;
@@ -627,7 +655,8 @@ Update(Path logbook_path, Path index_path,
     ++result.files_read;
   }
 
-  const auto flights = JoinRecordings(std::move(recordings));
+  const auto flights = JoinRecordings(std::move(recordings),
+                                      settings.recorders);
   result.flights = flights.size();
 
   std::vector<LogbookEntry> entries;
@@ -637,7 +666,7 @@ Update(Path logbook_path, Path index_path,
 
   /* the log book first: if writing it fails, the files are read
      again next time */
-  MergeIntoFile(logbook_path, entries);
+  MergeIntoFile(logbook_path, entries, settings.recorders);
   AddToIndex(index_path, keys);
 
   return result;
