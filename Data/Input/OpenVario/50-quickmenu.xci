@@ -235,6 +235,16 @@ event=Mode weather
 label=Forecast\nControls
 location=44
 
+# The log book, at the place of the InfoBox arrange mode of XCSoar,
+# which this version does not have.
+mode=QuickMenu
+type=key
+data=0
+event=Logbook
+event=Mode default
+label=Log book
+location=45
+
 mode=QuickMenu
 type=key
 data=0
