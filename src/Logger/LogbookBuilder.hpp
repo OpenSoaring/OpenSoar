@@ -232,8 +232,9 @@ struct NewFile {
 };
 
 /**
- * Find the IGC files and NMEA logs in the given folders which are not
- * listed in the index file.  The index lists every file read for the
+ * Find the IGC files and NMEA logs in the given folders and their
+ * subfolders (except #NO_FLIGHT_FOLDER) which are not listed in the
+ * index file.  The index lists every file read for the
  * log book with its size, including the files without a flight, so
  * they are not read at every start; a file that has grown since (a
  * recording continued after a restart) is read again.
@@ -251,8 +252,38 @@ FindNewFiles(Path index_path, const std::vector<AllocatedPath> &folders);
 void
 AddToIndex(Path index_path, const std::vector<std::string> &keys);
 
+/**
+ * The folder files without a flight are moved into, beside them;
+ * folders of this name are not searched.
+ */
+constexpr const char *NO_FLIGHT_FOLDER = "no-flight";
+
+/**
+ * Move a file into a folder (created if needed).  A file of the same
+ * name there is not replaced.
+ *
+ * @return the new path, nullptr if the file was not moved
+ */
+AllocatedPath
+MoveIntoFolder(Path file, Path folder) noexcept;
+
+/**
+ * Tidying up the data directory while reading: nothing is deleted,
+ * and a file can simply be moved back.
+ */
+struct MoveSettings {
+  /** Move IGC files found in "logs" (older versions wrote them
+      there) into this folder before reading; nullptr: do not */
+  AllocatedPath igc_folder;
+
+  /** Move a file in which no flight was found into a folder
+      #NO_FLIGHT_FOLDER beside it; the search skips it from then on */
+  bool no_flight = false;
+};
+
 struct UpdateResult {
   unsigned files_read = 0, flights = 0;
+  unsigned moved_igc = 0, moved_no_flight = 0;
   bool cancelled = false;
 };
 
@@ -266,7 +297,8 @@ struct UpdateResult {
 UpdateResult
 Update(Path logbook_path, Path index_path,
        const std::vector<NewFile> &files,
-       const ReadSettings &settings, OperationEnvironment &env);
+       const ReadSettings &settings, OperationEnvironment &env,
+       const MoveSettings &move = {});
 
 /**
  * Before rebuilding: rename the log book to logbook-YYYY-MM-DD.csv,
