@@ -235,6 +235,23 @@ event=Mode weather
 label=Forecast\nControls
 location=44
 
+# The download from Recorder 1 and 2 of the logger settings.
+mode=QuickMenu
+type=key
+data=0
+event=RecorderDownload 1
+event=Mode default
+label=Recorder 1\nDownload$(CheckRecorder1)
+location=33
+
+mode=QuickMenu
+type=key
+data=0
+event=RecorderDownload 2
+event=Mode default
+label=Recorder 2\nDownload$(CheckRecorder2)
+location=34
+
 # The log book, at the place of the InfoBox arrange mode of XCSoar,
 # which this version does not have.
 mode=QuickMenu
