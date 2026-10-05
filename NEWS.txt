@@ -117,6 +117,9 @@ Version 7.47 - not yet released
     with a header (pilot, DMSt distance with shape letter F/T/R and
     points among the columns); "Export" copies logbook.csv to a USB
     stick or SD card
+  - log book: columns "Other files" (the other recordings of the flight,
+    best first) and "WeGlide flight ID" (noted after the upload, with
+    the link in the details of the flight)
 
 Version 7.46 - 2026-10-19
 * highlights
