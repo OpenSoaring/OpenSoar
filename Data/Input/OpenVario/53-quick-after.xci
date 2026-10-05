@@ -8,14 +8,15 @@
 # "center=yes".  A button can get a place of its own for a wider
 # screen with "landscape=C:N": place N counted in C columns.
 #
-#    1 Upload           2 -                3 Configuration
-#    4 -                5 -                6 Log book
+#    1 Upload           2 Recorder 2       3 Configuration
+#    4 -                5 Recorder 1       6 Log book
 #    7 Barograph        8 Analysis         9 Flight Overview
 #   10 -               11 -               12 -
 #   13 -               14 -               15 -
 #
-# Still to come: 5 and 2 download the flights of logger 1 and 2.
-# The other empty places stay empty for now.
+# 5 and 2 download from Recorder 1 and 2 of the logger settings; they
+# are inactive while no device is set or it is not connected.  The
+# other empty places stay empty for now.
 #
 # 18 Quit, in a row of its own below the block, on the right: the
 # last button, as in the complete quick menu.
@@ -36,6 +37,22 @@ event=Mode default
 label=Configuration
 location=3
 
+
+mode=QuickAfter
+type=key
+data=0
+event=RecorderDownload 2
+event=Mode default
+label=Recorder 2\nDownload$(CheckRecorder2)
+location=2
+
+mode=QuickAfter
+type=key
+data=0
+event=RecorderDownload 1
+event=Mode default
+label=Recorder 1\nDownload$(CheckRecorder1)
+location=5
 
 # The log book, to look at the flight just recorded (and the ones
 # read from the downloaded files).
