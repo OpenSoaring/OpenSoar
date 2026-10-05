@@ -265,6 +265,7 @@ void eventDarkMode(const char *misc);
 void eventWeather(const char *misc);
 void eventQuickMenu(const char *misc);
 void eventQuickMenuPhase(const char *misc);
+void eventRecorderDownload(const char *misc);
 void eventFileManager(const char *misc);
 void eventDataManagement(const char *misc);
 void eventExportFlights(const char *misc);
