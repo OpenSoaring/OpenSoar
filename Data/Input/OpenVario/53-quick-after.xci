@@ -9,7 +9,7 @@
 # screen with "landscape=C:N": place N counted in C columns.
 #
 #    1 Upload           2 -                3 Configuration
-#    4 -                5 -                6 -
+#    4 -                5 -                6 Log book
 #    7 Barograph        8 Analysis         9 Flight Overview
 #   10 -               11 -               12 -
 #   13 -               14 -               15 -
@@ -36,6 +36,16 @@ event=Mode default
 label=Configuration
 location=3
 
+
+# The log book, to look at the flight just recorded (and the ones
+# read from the downloaded files).
+mode=QuickAfter
+type=key
+data=0
+event=Logbook
+event=Mode default
+label=Log book
+location=6
 
 mode=QuickAfter
 type=key
