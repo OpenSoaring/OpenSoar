@@ -846,7 +846,9 @@ only the best part counts, and the remark says how many there were.
 An engine run is engine noise above 900 of 999 for at least a minute.
 
 Selecting a flight shows all details; launch, pilot, co-pilot and
-remark can be changed there.  The button \bmenu{Export} copies the log
+remark can be changed there.  After a flight is uploaded to WeGlide, its WeGlide flight id is noted
+in the log book, and the details show the link to the flight; flights
+read from older files have none.  The button \bmenu{Export} copies the log
 book to a USB stick or SD card, into the folder
 \verb|xcsoar_flights| beside the exported flights; an older copy there
 is replaced.  The log book is the file
@@ -891,7 +893,9 @@ the files of other loggers, then the NMEA log, and then the longer
 one.  A logger is recognised by the A record of its IGC file: the
 manufacturer code and the serial number.  Empty fields (crew, aircraft, launch, release)
 are filled from the other recordings, so the engine noise of an
-external logger can tell the launch.  When a better recording replaces
+external logger can tell the launch.  The column ``Other files'' lists
+the files of the other recordings, best first, separated by commas;
+the details of a flight show them as well.  When a better recording replaces
 an entry, the crew and the aircraft of the entry stay, as they may have
 been corrected by hand.  The DMSt points use the handicap of the
 current glider, also for older flights.
