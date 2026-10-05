@@ -3,6 +3,7 @@
 
 #include "Logger/LogbookBuilder.hpp"
 #include "TestUtil.hpp"
+#include "Operation/Operation.hpp"
 #include "system/FileUtil.hpp"
 #include "system/Path.hpp"
 #include "io/FileOutputStream.hxx"
@@ -288,10 +289,84 @@ TestRetire()
   File::Delete(old2);
 }
 
+static void
+WriteText(Path path, const char *text)
+{
+  FileOutputStream file(path);
+  BufferedOutputStream writer(file);
+  writer.Write(text);
+  writer.Flush();
+  file.Commit();
+}
+
+/**
+ * A data directory as the program finds it: an IGC file of an older
+ * version in "logs", a flight sorted into a subfolder of "igc", and an
+ * NMEA log without a flight.
+ */
+static void
+TestUpdateAndMove()
+{
+  const Path root("TestLogbookBuilder.tmp.dir");
+  const auto igc = AllocatedPath::Build(root, "igc");
+  const auto logs = AllocatedPath::Build(root, "logs");
+  const auto sub = AllocatedPath::Build(igc, "2026");
+  Directory::CreateRecursive(sub);
+  Directory::CreateRecursive(logs);
+
+  WriteShortFlight(AllocatedPath::Build(logs, "old.igc"));
+  WriteShortFlight(AllocatedPath::Build(sub, "sorted.igc"));
+  WriteText(AllocatedPath::Build(logs, "ground.nmea"),
+            "$GPRMC,100000,A,5000.000,N,01000.000,E,0.0,0.0,140726,,*00\r\n");
+
+  const auto book = AllocatedPath::Build(logs, "logbook.csv");
+  const auto index = AllocatedPath::Build(logs, "logbook-files.txt");
+
+  std::vector<AllocatedPath> folders;
+  folders.push_back(AllocatedPath{Path{igc}});
+  folders.push_back(AllocatedPath{Path{logs}});
+
+  const auto files = Logbook::FindNewFiles(index, folders);
+  /* the subfolder is searched as well */
+  ok1(files.size() == 3);
+
+  Logbook::MoveSettings move;
+  move.igc_folder = AllocatedPath{Path{igc}};
+  move.no_flight = true;
+
+  NullOperationEnvironment env;
+  const auto result = Logbook::Update(book, index, files, {}, env, move);
+  ok1(result.files_read == 3);
+  /* the two files record the same flight */
+  ok1(result.flights == 1);
+  ok1(result.moved_igc == 1);
+  ok1(result.moved_no_flight == 1);
+  ok1(File::Exists(AllocatedPath::Build(igc, "old.igc")));
+  ok1(File::Exists(AllocatedPath::Build(AllocatedPath::Build(logs, "no-flight"),
+                                        "ground.nmea")));
+  ok1(Logbook::Read(book).size() == 1);
+
+  /* nothing new: the moved files are known by name and size, and the
+     folder "no-flight" is not searched */
+  ok1(Logbook::FindNewFiles(index, folders).empty());
+
+  File::Delete(AllocatedPath::Build(igc, "old.igc"));
+  File::Delete(AllocatedPath::Build(sub, "sorted.igc"));
+  File::Delete(AllocatedPath::Build(AllocatedPath::Build(logs, "no-flight"),
+                                    "ground.nmea"));
+  File::Delete(book);
+  File::Delete(index);
+  Directory::Remove(AllocatedPath::Build(logs, "no-flight"));
+  Directory::Remove(sub);
+  Directory::Remove(igc);
+  Directory::Remove(logs);
+  Directory::Remove(root);
+}
+
 int
 main()
 {
-  plan_tests(48);
+  plan_tests(57);
 
   TestIsComplete();
   TestRank();
@@ -300,6 +375,7 @@ main()
   TestIgcHeader();
   TestRetire();
   TestLandingAtRest();
+  TestUpdateAndMove();
 
   return exit_status();
 }
