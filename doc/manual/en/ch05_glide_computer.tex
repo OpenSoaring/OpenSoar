@@ -860,6 +860,12 @@ follows at the next start.  The file \verb|logbook-files.txt| beside
 the log book lists the files already read, also those without a
 flight, so they are not read again; a file that has grown since is.
 
+Many loggers stop recording a few seconds after the landing, before
+XCSoar would confirm it (30 seconds at rest).  The landing of such a
+file is the first fix at rest at its end: slower than 10\,km/h and
+within 10\,m of the last altitude.  So all recordings of a flight give
+the same landing time, whenever their logger stopped.
+
 A flight is often recorded more than once: by XCSoar itself, by an
 external logger whose file is downloaded later, and in the NMEA log.
 The log book keeps one entry per flight.  Two recordings are of the

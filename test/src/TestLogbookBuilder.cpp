@@ -8,6 +8,7 @@
 #include "io/FileOutputStream.hxx"
 #include "io/BufferedOutputStream.hxx"
 
+#include <cstdio>
 #include <string>
 
 static LogbookEntry
@@ -179,6 +180,83 @@ TestIgcHeader()
   File::Delete(path);
 }
 
+/**
+ * Write an IGC file of a short flight that ends 20 seconds after the
+ * landing, before the program would confirm it: one fix per second,
+ * 60 seconds on the ground, 10 minutes eastwards at 30 m/s, 20 seconds
+ * rolling out, 20 seconds at rest.
+ */
+static void
+WriteShortFlight(Path path)
+{
+  FileOutputStream file(path);
+  BufferedOutputStream writer(file);
+  writer.Write("AFLA85H\r\nHFDTEDATE:140726\r\n");
+
+  double lon_m = 0, speed = 0;
+  int alt = 300;
+  const unsigned ground = 60, air = 600, roll = 20, rest = 20;
+  for (unsigned t = 0; t < ground + air + roll + rest; ++t) {
+    if (t < ground)
+      speed = 0;
+    else if (t < ground + air)
+      speed = 30;
+    else if (t < ground + air + roll)
+      speed = 30.0 * (ground + air + roll - t) / roll;
+    else
+      speed = 0;
+
+    if (t >= ground && t < ground + air)
+      alt = 300 + (t - ground < air / 2 ? (int)(t - ground) : (int)(ground + air - t));
+    else
+      alt = 300;
+
+    lon_m += speed;
+    /* 1 minute of longitude at 50 degrees is about 1192 m */
+    const double minutes = lon_m / 1192.;
+    const unsigned whole = (unsigned)minutes;
+    const unsigned thousandths = (unsigned)((minutes - whole) * 1000);
+    const unsigned secs = 10 * 3600 + t;
+    char line[64];
+    snprintf(line, sizeof(line),
+             "B%02u%02u%02u5000000N010%02u%03uEA%05d%05d\r\n",
+             secs / 3600, secs / 60 % 60, secs % 60,
+             whole, thousandths, alt, alt);
+    writer.Write(line);
+  }
+
+  writer.Flush();
+  file.Commit();
+}
+
+static void
+TestLandingAtRest()
+{
+  const Path path("TestLogbookBuilder.tmp.igc");
+  WriteShortFlight(path);
+
+  const auto result = Logbook::ReadFile(path, {});
+  ok1(result.flights.size() == 1);
+  if (result.flights.size() == 1) {
+    const auto &e = result.flights.front().entry;
+    /* the first fix slower than 10 km/h at the end of the roll
+       (10:11:18 to 10:11:20, the positions are rounded to about a
+       metre), not the last fix of the file at 10:11:39 */
+    ok1(!(e.landing < BrokenDateTime(2026, 7, 14, 10, 11, 17)) &&
+        !(BrokenDateTime(2026, 7, 14, 10, 11, 20) < e.landing));
+    /* the logger stopped recording before the landing was confirmed;
+       that is no gap */
+    ok1(e.remark.empty());
+    ok1(Logbook::IsComplete(e));
+  } else {
+    ok1(false);
+    ok1(false);
+    ok1(false);
+  }
+
+  File::Delete(path);
+}
+
 static void
 TestRetire()
 {
@@ -213,7 +291,7 @@ TestRetire()
 int
 main()
 {
-  plan_tests(44);
+  plan_tests(48);
 
   TestIsComplete();
   TestRank();
@@ -221,6 +299,7 @@ main()
   TestJoin();
   TestIgcHeader();
   TestRetire();
+  TestLandingAtRest();
 
   return exit_status();
 }
