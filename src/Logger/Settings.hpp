@@ -52,5 +52,12 @@ struct LoggerSettings {
    */
   StaticString<16> recorders[2];
 
+  /**
+   * The device of Recorder 1 and 2: 1 for device A, 2 for B and so
+   * on, 0 for none.  After the landing, the newest flight is read from
+   * it (GlueRecorderDownload); its driver is the type of the recorder.
+   */
+  uint8_t recorder_devices[2];
+
   void SetDefaults();
 };

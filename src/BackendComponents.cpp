@@ -10,6 +10,7 @@
 #include "Logger/NMEALogger.hpp"
 #include "Logger/GlueFlightLogger.hpp"
 #include "Logger/GlueLogbook.hpp"
+#include "Logger/GlueRecorderDownload.hpp"
 #include "Replay/Replay.hpp"
 #include "MergeThread.hpp"
 #include "CalculationThread.hpp"

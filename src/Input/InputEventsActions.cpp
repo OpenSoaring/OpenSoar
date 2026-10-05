@@ -50,6 +50,7 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "SystemConfig.hpp"
 #include "Dialogs/dlgAnalysis.hpp"
 #include "Dialogs/LogbookDialog.hpp"
+#include "Logger/ExternalLogger.hpp"
 #include "Dialogs/FileManager.hpp"
 #include "Dialogs/ReplayDialog.hpp"
 #include "Dialogs/dlgQuickGuide.hpp"
@@ -379,6 +380,18 @@ InputEvents::eventLogbook(const char *misc)
     RebuildLogbook();
   else
     ShowLogbookDialog();
+}
+
+// RecorderDownload
+// Downloads a flight from Recorder 1 or 2 of the logger settings, from
+// the device set there: the list of flights, the newest one chosen.
+//     1: Recorder 1
+//     2: Recorder 2
+void
+InputEvents::eventRecorderDownload(const char *misc)
+{
+  const unsigned index = misc != nullptr && StringIsEqual(misc, "2") ? 1 : 0;
+  ExternalLogger::DownloadFromRecorder(index, false);
 }
 
 // WaypointDetails

@@ -935,6 +935,17 @@ purposes.
   The buttons below take both values from an IGC file of the recorder.
   A change counts for the flights read from then on; \bmenu{Rebuild}
   in the log book applies it to all of them.
+\item[Recorder 1 device, Recorder 2 device]  The device (A, B, \ldots\ in the device
+  list) the recorder is connected to;
+  its driver is the type of the recorder.  Two minutes after the
+  landing, XCSoar downloads the newest flight from it into the
+  \texttt{igc} directory and adds it to the log book, without a
+  question, if it is not there yet.  If the WeGlide upload after a
+  download is enabled, XCSoar asks whether to upload the flight.  The
+  buttons \bmenu{Recorder 1 Download} and \bmenu{Recorder 2 Download}
+  of the quick menu (pages \emph{After} and \emph{All}) open the list
+  of flights of the recorder, with the newest one selected.  They are
+  available while the device is connected.
 \item[Logger ID]  This is the logger registration.
 \end{description}
 
