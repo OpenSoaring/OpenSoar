@@ -7,6 +7,9 @@
 #ifdef HAVE_HTTP
 
 #include "UploadFlight.hpp"
+#include "Logger/Logbook.hpp"
+#include "DataFilePath.hpp"
+#include "LogFile.hpp"
 #include "AircraftList.hpp"
 #include "Settings.hpp"
 #include "Interface.hpp"
@@ -152,6 +155,16 @@ try {
   if (flight_data.flight_id == 0)
     /* cancelled by the user */
     return false;
+
+  /* the log book links the flight to WeGlide from now on; a failure
+     there does not make the upload fail */
+  try {
+    Logbook::SetWeGlideFlightId(LogsDataSavePath("logbook.csv"),
+                                igc_path.GetBase().c_str(),
+                                flight_data.flight_id);
+  } catch (...) {
+    LogError(std::current_exception(), "Failed to note the WeGlide flight in the log book");
+  }
 
   UploadSuccessDialog(flight_data);
   return true;
