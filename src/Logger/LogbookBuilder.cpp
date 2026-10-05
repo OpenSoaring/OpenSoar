@@ -418,6 +418,39 @@ FillEmpty(LogbookEntry &dest, const LogbookEntry &src) noexcept
     dest.release = src.release;
   if (dest.max_altitude < 0)
     dest.max_altitude = src.max_altitude;
+  if (dest.weglide_id == 0)
+    dest.weglide_id = src.weglide_id;
+}
+
+/**
+ * Add a file to the other recordings of an entry, at the end, unless
+ * it is there already or is the entry's own file.
+ */
+static void
+AddOtherFile(LogbookEntry &entry, std::string_view name) noexcept
+{
+  if (name.empty() || name == entry.log_file || ContainsFile(entry, name))
+    return;
+
+  if (!entry.other_files.empty())
+    entry.other_files += OTHER_FILES_SEPARATOR;
+  entry.other_files += name;
+}
+
+/**
+ * Add all other files of @p src to those of @p dest.
+ */
+static void
+AddOtherFiles(LogbookEntry &dest, const LogbookEntry &src) noexcept
+{
+  std::string_view rest{src.other_files};
+  while (!rest.empty()) {
+    const auto separator = rest.find(OTHER_FILES_SEPARATOR);
+    AddOtherFile(dest, rest.substr(0, separator));
+    if (separator == rest.npos)
+      break;
+    rest.remove_prefix(separator + OTHER_FILES_SEPARATOR.size());
+  }
 }
 
 /**
@@ -500,12 +533,22 @@ JoinRecordings(std::vector<Recording> recordings,
                    recorders))
         best = i;
 
-    Flight flight{recordings[best], {}};
-    for (std::size_t i = 0; i < n; ++i) {
-      if (find(i) != g || i == best)
-        continue;
+    /* the others of the flight, best first */
+    std::vector<std::size_t> others;
+    for (std::size_t i = 0; i < n; ++i)
+      if (find(i) == g && i != best)
+        others.push_back(i);
+    std::stable_sort(others.begin(), others.end(),
+                     [&](std::size_t a, std::size_t b){
+                       return IsBetter(recordings[a].entry,
+                                       recordings[b].entry, longest,
+                                       recorders);
+                     });
 
+    Flight flight{recordings[best], {}};
+    for (const std::size_t i : others) {
       FillEmpty(flight.kept.entry, recordings[i].entry);
+      AddOtherFile(flight.kept.entry, recordings[i].entry.log_file);
       flight.others.push_back(recordings[i].source);
     }
 
@@ -563,11 +606,22 @@ MergeEntry(std::vector<LogbookEntry> &entries,
 
     const auto longest = std::max(old.GetFlightTime(), entry.GetFlightTime());
     if (!IsBetter(entry, old, longest, recorders)) {
+      /* the entry stays; the new recording joins its other files */
+      const std::string before = FormatLine(old);
       FillEmpty(old, entry);
-      return false;
+      AddOtherFile(old, entry.log_file);
+      AddOtherFiles(old, entry);
+      return FormatLine(old) != before;
     }
 
     LogbookEntry merged = entry;
+
+    /* the replaced recording is the best of the others now (in the
+       order known so far), followed by the rest */
+    merged.other_files.clear();
+    AddOtherFile(merged, old.log_file);
+    AddOtherFiles(merged, old);
+    AddOtherFiles(merged, entry);
 
     /* the crew and the aircraft of the entry in the log book stay: the
        pilot may have corrected them */

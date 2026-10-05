@@ -68,6 +68,9 @@ Version 7.45.4 - not yet released
     with a header (pilot, DMSt distance with shape letter F/T/R and
     points among the columns); "Export" copies logbook.csv to a USB
     stick or SD card
+  - log book: columns "Other files" (the other recordings of the flight,
+    best first) and "WeGlide flight ID" (noted after the upload, with
+    the link in the details of the flight)
   - a log file that ends shortly after the landing lands at its first
     fix at rest (below 10 km/h, within 10 m of the last altitude)
     instead of its last fix, without a remark
