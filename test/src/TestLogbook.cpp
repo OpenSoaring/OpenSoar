@@ -36,6 +36,8 @@ MakeEntry()
   e.file_type = Logbook::FileTypeOf(e.log_file);
   e.recorder_code = "XCS";
   e.recorder_serial = "AAA";
+  e.other_files = "55CV3MN1 (Nano).igc, 2026-07-14_09-58.nmea";
+  e.weglide_id = 987654321;
   e.recorder_type = "XCSOAR,XCSOAR 7.45";
   e.remark = "first line\nsecond line";
   return e;
@@ -91,6 +93,10 @@ TestRoundTrip()
   ok1(p.file_type == "IGC");
   ok1(p.recorder_code == "XCS");
   ok1(p.recorder_serial == "AAA");
+  ok1(p.other_files == e.other_files);
+  ok1(p.weglide_id == 987654321);
+  ok1(Logbook::ContainsFile(p, "2026-07-14_09-58.nmea"));
+  ok1(!Logbook::ContainsFile(p, "2026-07-14_09-58"));
   ok1(p.recorder_type == e.recorder_type);
   ok1(p.remark == "first line second line");
 }
@@ -180,6 +186,27 @@ TestHeader()
  * file, so its lines match the header again.
  */
 static void
+TestWeGlideId()
+{
+  const Path path("TestLogbook.tmp.csv");
+  LogbookEntry a = MakeEntry(), b = MakeEntry();
+  b.log_file = "other.igc";
+  b.other_files = "second.igc, third.nmea";
+  b.weglide_id = 0;
+  Logbook::Write(path, {a, b});
+
+  /* found by one of the other files of the entry */
+  ok1(Logbook::SetWeGlideFlightId(path, "third.nmea", 4711));
+  ok1(!Logbook::SetWeGlideFlightId(path, "unknown.igc", 1));
+
+  const auto entries = Logbook::Read(path);
+  ok1(entries.size() == 2 && entries[1].weglide_id == 4711 &&
+      entries[0].weglide_id == a.weglide_id);
+
+  File::Delete(path);
+}
+
+static void
 TestAppendToOldFile()
 {
   const Path path("TestLogbook.tmp.csv");
@@ -211,7 +238,7 @@ TestAppendToOldFile()
 int
 main()
 {
-  plan_tests(76);
+  plan_tests(83);
 
   TestSplit();
   TestRoundTrip();
@@ -219,6 +246,7 @@ main()
   TestLaunch();
   TestHeader();
   TestAppendToOldFile();
+  TestWeGlideId();
 
   return exit_status();
 }
