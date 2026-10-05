@@ -406,8 +406,10 @@ enum class LogbookColumn : uint8_t {
   DURATION,
   LAUNCH,
   PLACE,
+  PILOT,
   REGISTRATION,
   FREE_DISTANCE,
+  DMST_DISTANCE,
   DMST_POINTS,
 };
 
@@ -567,15 +569,42 @@ GetColumnTitle(LogbookColumn column) noexcept
     return C_("Logbook", "L");
   case LogbookColumn::PLACE:
     return _("Place");
+  case LogbookColumn::PILOT:
+    return _("Pilot");
   case LogbookColumn::REGISTRATION:
     return _("Registration");
   case LogbookColumn::FREE_DISTANCE:
     return _("Free");
-  case LogbookColumn::DMST_POINTS:
+  case LogbookColumn::DMST_DISTANCE:
     return _("DMSt");
+  case LogbookColumn::DMST_POINTS:
+    return _("pts");
   }
 
   return "";
+}
+
+/**
+ * The shape of the DMSt distance as one letter: F free distance (up to
+ * three turn points), T triangle, R out and return.  The solvers do
+ * not find closed quadrilaterals (Q), polygons (M) or out-only flights
+ * (O).
+ */
+static char
+GetShapeLetter(LogbookStatistics::DMStShape shape) noexcept
+{
+  switch (shape) {
+  case LogbookStatistics::DMStShape::NONE:
+    break;
+  case LogbookStatistics::DMStShape::QUADRILATERAL:
+    return 'F';
+  case LogbookStatistics::DMStShape::TRIANGLE:
+    return 'T';
+  case LogbookStatistics::DMStShape::OUT_AND_RETURN:
+    return 'R';
+  }
+
+  return ' ';
 }
 
 static StaticString<64>
@@ -602,12 +631,20 @@ FormatCell(const LogbookEntry &e, LogbookColumn column) noexcept
   case LogbookColumn::PLACE:
     text = e.takeoff_place.c_str();
     break;
+  case LogbookColumn::PILOT:
+    text = e.pilot.c_str();
+    break;
   case LogbookColumn::REGISTRATION:
     text = e.registration.c_str();
     break;
   case LogbookColumn::FREE_DISTANCE:
     if (e.free_distance > 0)
       text = FormatUserDistance(e.free_distance).c_str();
+    break;
+  case LogbookColumn::DMST_DISTANCE:
+    if (e.dmst_distance > 0)
+      text.Format("%s %c", FormatUserDistance(e.dmst_distance).c_str(),
+                  GetShapeLetter(e.dmst_shape));
     break;
   case LogbookColumn::DMST_POINTS:
     if (e.dmst_points > 0)
@@ -644,11 +681,17 @@ GetColumnWidth(const Font &font, const Font &bold, LogbookColumn column,
   case LogbookColumn::PLACE:
     sample = "Aalen-Elchingen";
     break;
+  case LogbookColumn::PILOT:
+    sample = "Max Mustermann";
+    break;
   case LogbookColumn::REGISTRATION:
     sample = "D-KAAA";
     break;
   case LogbookColumn::FREE_DISTANCE:
     sample = "1000 km";
+    break;
+  case LogbookColumn::DMST_DISTANCE:
+    sample = "1000 km T";
     break;
   case LogbookColumn::DMST_POINTS:
     sample = "1000";
@@ -675,8 +718,10 @@ LogbookListWidget::UpdateColumns(unsigned width) noexcept
     LogbookColumn::DURATION,
     LogbookColumn::FREE_DISTANCE,
     LogbookColumn::PLACE,
-    LogbookColumn::LANDING,
     LogbookColumn::DMST_POINTS,
+    LogbookColumn::LANDING,
+    LogbookColumn::DMST_DISTANCE,
+    LogbookColumn::PILOT,
     LogbookColumn::LAUNCH,
     LogbookColumn::REGISTRATION,
   };
@@ -702,6 +747,7 @@ LogbookListWidget::UpdateColumns(unsigned width) noexcept
         const auto column = by_importance[i];
         columns.push_back({column, x, widths[i],
                            column == LogbookColumn::FREE_DISTANCE ||
+                           column == LogbookColumn::DMST_DISTANCE ||
                            column == LogbookColumn::DMST_POINTS});
         x += widths[i];
       }
@@ -766,7 +812,10 @@ LogbookListWidget::Prepare(ContainerWindow &parent,
                            const PixelRect &rc) noexcept
 {
   const DialogLook &look = UIGlobals::GetDialogLook();
-  padding = Layout::GetTextPadding();
+  /* a visible gap between the columns, also where a long place name
+     is cut off */
+  padding = std::max(Layout::GetTextPadding(),
+                     look.list.font->GetHeight() / 4);
   row_height = std::max(look.list.font->GetHeight(),
                         look.list.font_bold->GetHeight()) + 4 * padding;
   UpdateColumns(rc.GetWidth());
