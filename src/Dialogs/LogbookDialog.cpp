@@ -133,6 +133,8 @@ class LogbookEntryWidget final : public RowFormWidget {
     MAX_ALTITUDE,
     LOG_FILE,
     RECORDER,
+    OTHER_FILES,
+    WEGLIDE,
     LAUNCH,
     PILOT,
     COPILOT,
@@ -217,6 +219,20 @@ LogbookEntryWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   AddReadOnly(_("Flight recorder"),
               _("The manufacturer code, the serial number and the type from "
                 "the header of the IGC file."),
+              text);
+
+  AddReadOnly(_("Other files"),
+              _("The other recordings of this flight (another logger, the "
+                "NMEA log), best first; the log file above is the best one."),
+              entry.other_files.c_str());
+
+  if (entry.weglide_id > 0)
+    text.Format("https://www.weglide.com/flight/%llu",
+                (unsigned long long)entry.weglide_id);
+  else
+    text.clear();
+  AddReadOnly(_("WeGlide"),
+              _("The flight on WeGlide, noted after the upload."),
               text);
 
   static constexpr StaticEnumChoice launch_list[] = {
