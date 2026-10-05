@@ -792,8 +792,11 @@ smoothly with wings level.
 \section{Log book}\label{sec:logbook}
 \menulabel{\bmenug{Info 4}\blink\bmenug{Log book}}
 
-XCSoar records each flight in the log book, one row per flight, newest
-first.  An entry is written after the landing and holds:
+XCSoar records each flight in the log book.  The dialog shows it as a
+table, one row per flight, newest first: date, takeoff and landing
+time, flight time, launch, takeoff place, registration, free distance
+and DMSt points; on a narrow screen the less important columns are left
+out.  An entry is written after the landing and holds:
 \begin{description}
 \item[Takeoff, landing]  Time (shown in local time) and place.  The
   place is the nearest airfield within 3\,km, otherwise the nearest
@@ -841,7 +844,10 @@ only the best part counts, and the remark says how many there were.
 An engine run is engine noise above 900 of 999 for at least a minute.
 
 Selecting a flight shows all details; launch, pilot, co-pilot and
-remark can be changed there.  The log book is the file
+remark can be changed there.  The button \bmenu{Export} copies the log
+book to a USB stick or SD card, into the folder
+\verb|xcsoar_flights| beside the exported flights; an older copy there
+is replaced.  The log book is the file
 \verb|logbook.csv| in the `logs' subdirectory, a table separated by
 semicolons that a spreadsheet opens directly.  Numbers have a decimal
 comma, as spreadsheets in most European languages expect.  Times in the
@@ -852,9 +858,14 @@ is converted to the current columns when the next flight is added.  Replays and 
 \subsection*{Building the log book from the recorded files}
 
 At startup, XCSoar reads the IGC files (`igc' subdirectory) and NMEA
-logs (`logs' subdirectory) that are not in the log book yet and adds
-their flights; the first time, this builds the whole log book from all
-flights recorded so far.  A dialog shows the progress and can be
+logs (`logs' subdirectory), including their subfolders, that are not in
+the log book yet and adds their flights; the first time, this builds
+the whole log book from all flights recorded so far.  The files being
+written at that moment are read later.  While reading, the data
+directory is tidied up, without deleting anything: an IGC file of an
+older version in `logs' is moved into `igc', and a file without a
+flight (a recording on the ground) into a folder `no-flight' beside
+it, which is not searched; a file can simply be moved back.  A dialog shows the progress and can be
 cancelled: the flights of the files read so far are kept, the rest
 follows at the next start.  The file \verb|logbook-files.txt| beside
 the log book lists the files already read, also those without a

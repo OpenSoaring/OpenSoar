@@ -3934,6 +3934,32 @@ msgstr "Flugbuch"
 msgid "Rebuild"
 msgstr "Neu aufbauen"
 
+msgctxt "Logbook"
+msgid "L"
+msgstr "S"
+
+msgid "Place"
+msgstr "Ort"
+
+msgid "Free"
+msgstr "Frei"
+
+msgid "DMSt"
+msgstr "DMSt"
+
+msgid "moved to igc"
+msgstr "nach igc verschoben"
+
+msgid "moved to no-flight"
+msgstr "nach no-flight verschoben"
+
+msgid "The log book is empty."
+msgstr "Das Flugbuch ist leer."
+
+#, c-format
+msgid "The log book was copied to %s."
+msgstr "Das Flugbuch wurde nach %s kopiert."
+
 msgid "Recorder 1"
 msgstr "Recorder 1"
 

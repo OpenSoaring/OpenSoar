@@ -62,6 +62,10 @@ Version 7.45.4 - not yet released
     and serial number, also taken from an IGC file): their files give
     the log book entry of a flight before the own IGC file; new column
     "Recorder serial"
+  - log book: subfolders of "igc" and "logs" are read as well; IGC
+    files of older versions are moved from "logs" into "igc", files
+    without a flight into "no-flight" beside them; the list is a table
+    with a header; "Export" copies logbook.csv to a USB stick or SD card
   - a log file that ends shortly after the landing lands at its first
     fix at rest (below 10 km/h, within 10 m of the last altitude)
     instead of its last fix, without a remark
