@@ -12,6 +12,8 @@
 #include "Device/Driver/FLARM/Device.hpp"
 #include "Device/MultipleDevices.hpp"
 #include "Device/RecordedFlight.hpp"
+#include "Device/Features.hpp"
+#include "Device/Port/State.hpp"
 #include "Components.hpp"
 #include "BackendComponents.hpp"
 #include "LocalPath.hpp"
@@ -33,6 +35,7 @@
 #include "FLARM/Hardware.hpp"
 #include "LogFile.hpp"
 #include "net/client/WeGlide/UploadIGCFile.hpp"
+#include "Dialogs/LogbookDialog.hpp"
 #include "util/Exception.hxx"
 
 #ifdef HAVE_HTTP
@@ -45,6 +48,8 @@
 #endif
 
 #include <optional>
+
+#include <cstring>
 
 
 class DeclareJob {
@@ -389,6 +394,23 @@ ShowFlarmWifiMessage() noexcept
                  _("Download flight"), MB_OK | MB_ICONINFORMATION);
 }
 
+/**
+ * The newest flight of the list: the one just landed.
+ */
+[[gnu::pure]]
+static unsigned
+FindNewestFlight(const RecordedFlightList &flight_list) noexcept
+{
+  unsigned newest = 0;
+  for (unsigned i = 1; i < flight_list.size(); ++i) {
+    const auto &a = flight_list[i], &b = flight_list[newest];
+    if (b.date < a.date ||
+        (a.date == b.date && b.start_time < a.start_time))
+      newest = i;
+  }
+  return newest;
+}
+
 static const RecordedFlightInfo *
 ShowFlightList(const RecordedFlightList &flight_list)
 {
@@ -414,6 +436,10 @@ ShowFlightList(const RecordedFlightList &flight_list)
     combo.Append(i, buffer);
   }
 
+  /* the flight just landed is the one the pilot wants most of the
+     time */
+  combo.current_index = FindNewestFlight(flight_list);
+
   // Show list of the flights
   int i = ComboPicker(_("Download flight"),
                       combo, nullptr, false);
@@ -421,23 +447,43 @@ ShowFlightList(const RecordedFlightList &flight_list)
   return i < 0 ? nullptr : &flight_list[i];
 }
 
+class ScopeEnableSecondDeviceNMEA {
+  DeviceDescriptor &device;
+  OperationEnvironment &env;
+
+public:
+  ScopeEnableSecondDeviceNMEA(DeviceDescriptor &_device,
+                              OperationEnvironment &_env) noexcept
+    :device(_device), env(_env) {}
+
+  ~ScopeEnableSecondDeviceNMEA() noexcept {
+    (void)device.EnableSecondDeviceNMEA(env);
+  }
+};
+
+/**
+ * After a download (and after the log book update, which the upload
+ * needs to note the flight id): offer the upload to WeGlide, if the
+ * pilot wants to be asked.
+ */
+static void
+AfterDownload(Path igc_path)
+{
+  WeGlideSettings weglide_settings =
+    CommonInterface::GetComputerSettings().weglide;
+  if (weglide_settings.enabled && weglide_settings.automatic_upload &&
+    weglide_settings.pilot_id > 0) {
+    // ask whether this IGC should be uploaded to WeGlide
+    if (ShowMessageBox(_("Do you want to upload this flight to WeGlide?"),
+      _("Upload Flight"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
+      WeGlide::UploadIGCFile(igc_path);
+    }
+  }
+}
+
 void
 ExternalLogger::DownloadFlightFrom(DeviceDescriptor &device)
 {
-  class ScopeEnableSecondDeviceNMEA {
-    DeviceDescriptor &device;
-    OperationEnvironment &env;
-
-  public:
-    ScopeEnableSecondDeviceNMEA(DeviceDescriptor &_device,
-                                OperationEnvironment &_env) noexcept
-      :device(_device), env(_env) {}
-
-    ~ScopeEnableSecondDeviceNMEA() noexcept {
-      (void)device.EnableSecondDeviceNMEA(env);
-    }
-  };
-
   MessageOperationEnvironment env;
   std::optional<ScopeEnableSecondDeviceNMEA> enable_second_device_nmea;
   enable_second_device_nmea.emplace(device, env);
@@ -579,19 +625,154 @@ ExternalLogger::DownloadFlightFrom(DeviceDescriptor &device)
       ShowError(std::current_exception(), _("Download flight"));
     }
 
-    WeGlideSettings weglide_settings =
-      CommonInterface::GetComputerSettings().weglide;
-    if (weglide_settings.enabled && weglide_settings.automatic_upload &&
-      weglide_settings.pilot_id > 0) {
-      // ask whether this IGC should be uploaded to WeGlide
-      if (ShowMessageBox(_("Do you want to upload this flight to WeGlide?"),
-        _("Upload Flight"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
-        WeGlide::UploadIGCFile(igc_path);
-      }
-    }
+    /* the log book first, so the WeGlide upload finds the entry for
+       its flight id */
+    UpdateLogbook();
+    AfterDownload(igc_path);
 
     if (ShowMessageBox(_("Do you want to download another flight?"),
                     _("Download flight"), MB_YESNO | MB_ICONQUESTION) != IDYES)
       break;
   }
+}
+
+bool
+ExternalLogger::DownloadNewestFlight(DeviceDescriptor &device,
+                                     const char *recorder)
+{
+  MessageOperationEnvironment env;
+  const ScopeEnableSecondDeviceNMEA enable_second_device_nmea{device, env};
+
+  /* the FLARM binary protocol only: a FLARM that gives out its flights
+     over Wi-Fi alone (Flex, Fusion) needs the pilot on its access point,
+     which is nothing to do on its own after the landing */
+  RecordedFlightList flight_list;
+  try {
+    if (DoReadFlightList(device, flight_list) != TriStateJobResult::SUCCESS)
+      return false;
+  } catch (...) {
+    LogError(std::current_exception(), "Automatic flight list download failed");
+    return false;
+  }
+
+  if (flight_list.empty())
+    return false;
+
+  const auto &flight = flight_list[FindNewestFlight(flight_list)];
+
+  const auto igc_dir = LocalPath(GetFileTypeDefaultDir(FileType::IGC));
+
+  /* the file name follows from the recorder and the flight: if it is
+     there, this flight was downloaded before */
+  if (recorder != nullptr && strlen(recorder) >= 6 && flight.date.IsPlausible()) {
+    char manufacturer[4] = {recorder[0], recorder[1], recorder[2], 0};
+    char id[4] = {recorder[3], recorder[4], recorder[5], 0};
+    char name[64];
+    FormatIGCFilenameLong(name, flight.date, manufacturer, id,
+                          GetFlightNumber(flight_list, flight));
+    if (File::Exists(AllocatedPath::Build(igc_dir, name)))
+      return false;
+  }
+
+  Directory::CreateRecursive(igc_dir);
+  FileTransaction transaction(AllocatedPath::Build(igc_dir, "temp.igc"));
+
+  try {
+    if (DoDownloadFlight(device, flight, transaction.GetTemporaryPath()) !=
+        TriStateJobResult::SUCCESS)
+      return false;
+  } catch (...) {
+    LogError(std::current_exception(), "Automatic flight download failed");
+    return false;
+  }
+
+  /* read the IGC header and build the final IGC file name with it */
+  IGCHeader header;
+  BrokenDate date;
+  ReadIGCMetaData(transaction.GetTemporaryPath(), header, date);
+  if (header.flight == 0)
+    header.flight = GetFlightNumber(flight_list, flight);
+
+  char name[64];
+  FormatIGCFilenameLong(name, date, header.manufacturer, header.id,
+                        header.flight);
+
+  const auto igc_path = AllocatedPath::Build(igc_dir, name);
+  transaction.SetPath((Path)igc_path);
+
+  try {
+    transaction.Commit();
+  } catch (...) {
+    LogError(std::current_exception(), "Automatic flight download failed");
+    return false;
+  }
+
+  UpdateLogbook();
+  AfterDownload(igc_path);
+  return true;
+}
+
+/**
+ * The device of Recorder 1 or 2, nullptr if none is set or there is no
+ * such device.
+ */
+static DeviceDescriptor *
+GetRecorderDevice(unsigned index) noexcept
+{
+  if (index >= 2 || backend_components == nullptr ||
+      backend_components->devices == nullptr)
+    return nullptr;
+
+  const unsigned slot =
+    CommonInterface::GetComputerSettings().logger.recorder_devices[index];
+  if (slot == 0 || slot > NUMDEV)
+    return nullptr;
+
+  return &(*backend_components->devices)[slot - 1];
+}
+
+bool
+ExternalLogger::IsRecorderReady(unsigned index) noexcept
+{
+  const DeviceDescriptor *device = GetRecorderDevice(index);
+  return device != nullptr && device->IsLogger() &&
+    device->GetState() == PortState::READY;
+}
+
+bool
+ExternalLogger::DownloadFromRecorder(unsigned index, bool automatic)
+{
+  DeviceDescriptor *device = GetRecorderDevice(index);
+  if (device == nullptr) {
+    if (!automatic)
+      ShowMessageBox(_("No device is set for this recorder in the logger "
+                       "settings."),
+                     _("Download flight"), MB_OK | MB_ICONINFORMATION);
+    return false;
+  }
+
+  if (!device->IsLogger() || device->GetState() != PortState::READY) {
+    if (!automatic)
+      ShowMessageBox(_("Device is not connected"), _("Download flight"),
+                     MB_OK | MB_ICONERROR);
+    return false;
+  }
+
+  if (!device->Borrow()) {
+    if (!automatic)
+      ShowMessageBox(_("Device is occupied"), _("Download flight"),
+                     MB_OK | MB_ICONERROR);
+    return false;
+  }
+
+  MessageOperationEnvironment env;
+  const ScopeReturnDevice return_device{*device, env};
+
+  if (!automatic) {
+    DownloadFlightFrom(*device);
+    return false;
+  }
+
+  return DownloadNewestFlight(*device,
+                              CommonInterface::GetComputerSettings().logger.recorders[index].c_str());
 }
