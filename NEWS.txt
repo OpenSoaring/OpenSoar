@@ -108,6 +108,9 @@ Version 7.47 - not yet released
     and serial number, also taken from an IGC file): their files give
     the log book entry of a flight before the own IGC file; new column
     "Recorder serial"
+  - a log file that ends shortly after the landing lands at its first
+    fix at rest (below 10 km/h, within 10 m of the last altitude)
+    instead of its last fix, without a remark
 
 Version 7.46 - 2026-10-19
 * highlights

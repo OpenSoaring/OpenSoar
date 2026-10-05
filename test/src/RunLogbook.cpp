@@ -194,9 +194,8 @@ RunFile(const fs::path &path, const Logbook::ReadSettings &settings,
   }
 
   const std::size_t n = result.flights.size();
-  fprintf(stderr, "%s\t%zu flight(s)\t%u fixes%s%s\n",
+  fprintf(stderr, "%s\t%zu flight(s)\t%u fixes%s\n",
           ToUtf8(path).c_str(), n, result.fixes,
-          result.cut_short ? "\tlast one ends with the file" : "",
           n > 0 && result.flights.front().entry.remark.starts_with("recording began")
           ? "\tbegins in flight" : "");
 
