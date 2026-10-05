@@ -3,6 +3,7 @@ set(_SOURCES
         Logger/FlightLogger.cpp
         Logger/GlueFlightLogger.cpp
         Logger/GlueLogbook.cpp
+        Logger/GlueRecorderDownload.cpp
         Logger/Logbook.cpp
         Logger/LogbookBuilder.cpp
         Logger/LogbookPlace.cpp

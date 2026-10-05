@@ -58,18 +58,6 @@ location=30
 mode=QuickMenu
 type=key
 data=0
-label=
-location=34
-
-mode=QuickMenu
-type=key
-data=0
-label=
-location=42
-
-mode=QuickMenu
-type=key
-data=0
 event=MapDisplay
 label=Map\nDisplay
 location=20
@@ -85,6 +73,25 @@ data=0
 event=Mode weather
 label=Forecast\nControls
 location=44
+
+# The download from Recorder 1 and 2 of the logger settings, at the
+# places of the thermal assistant and the distance rings, which left
+# the quick menu (see above).
+mode=QuickMenu
+type=key
+data=0
+event=RecorderDownload 1
+event=Mode default
+label=Recorder 1\nDownload$(CheckRecorder1)
+location=34
+
+mode=QuickMenu
+type=key
+data=0
+event=RecorderDownload 2
+event=Mode default
+label=Recorder 2\nDownload$(CheckRecorder2)
+location=42
 
 # The log book, at the place of the InfoBox arrange mode of XCSoar,
 # which this version does not have.
