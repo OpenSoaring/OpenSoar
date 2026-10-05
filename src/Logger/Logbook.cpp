@@ -217,6 +217,8 @@ enum Column : unsigned {
   RECORDER_CODE,
   RECORDER_SERIAL,
   RECORDER_TYPE,
+  OTHER_FILES,
+  WEGLIDE_ID,
   REMARK,
   N_COLUMNS,
 };
@@ -251,6 +253,8 @@ static constexpr const char *column_names[N_COLUMNS] = {
   "Recorder code",
   "Recorder serial",
   "Recorder type",
+  "Other files",
+  "WeGlide flight ID",
   "Remark",
 };
 
@@ -364,6 +368,9 @@ ParseLine(std::string_view line, LogbookEntry &entry,
   entry.recorder_code = get(RECORDER_CODE);
   entry.recorder_serial = get(RECORDER_SERIAL);
   entry.recorder_type = get(RECORDER_TYPE);
+  entry.other_files = get(OTHER_FILES);
+  if (const std::string &id = get(WEGLIDE_ID); !id.empty())
+    entry.weglide_id = ParseUint64(id.c_str());
   entry.remark = get(REMARK);
   return true;
 }
@@ -474,6 +481,11 @@ FormatLine(const LogbookEntry &e) noexcept
   line += SEPARATOR;
   line += Quote(e.recorder_type);
   line += SEPARATOR;
+  line += Quote(e.other_files);
+  line += SEPARATOR;
+  if (e.weglide_id > 0)
+    line += fmt::format("{}", e.weglide_id);
+  line += SEPARATOR;
   line += Quote(e.remark);
   return line;
 }
@@ -568,6 +580,44 @@ Write(Path path, const std::vector<LogbookEntry> &entries)
 
   writer.Flush();
   file.Commit();
+}
+
+} // namespace Logbook
+
+namespace Logbook {
+
+bool
+SetWeGlideFlightId(Path path, std::string_view log_file, uint64_t id)
+{
+  auto entries = Read(path);
+
+  for (auto &entry : entries) {
+    if (entry.log_file != log_file && !ContainsFile(entry, log_file))
+      continue;
+
+    entry.weglide_id = id;
+    Write(path, entries);
+    return true;
+  }
+
+  return false;
+}
+
+bool
+ContainsFile(const LogbookEntry &entry, std::string_view name) noexcept
+{
+  std::string_view rest{entry.other_files};
+  while (!rest.empty()) {
+    const auto comma = rest.find(OTHER_FILES_SEPARATOR);
+    const auto item = rest.substr(0, comma);
+    if (item == name)
+      return true;
+    if (comma == rest.npos)
+      break;
+    rest.remove_prefix(comma + OTHER_FILES_SEPARATOR.size());
+  }
+
+  return false;
 }
 
 } // namespace Logbook

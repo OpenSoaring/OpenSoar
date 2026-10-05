@@ -3934,6 +3934,19 @@ msgstr "Flugbuch"
 msgid "Rebuild"
 msgstr "Neu aufbauen"
 
+msgid "Other files"
+msgstr "Weitere Dateien"
+
+msgid ""
+"The other recordings of this flight (another logger, the NMEA log), best "
+"first; the log file above is the best one."
+msgstr ""
+"Die anderen Aufzeichnungen dieses Flugs (weiterer Logger, NMEA-Log), die "
+"beste zuerst; die Logdatei oben ist die beste."
+
+msgid "The flight on WeGlide, noted after the upload."
+msgstr "Der Flug bei WeGlide, eingetragen nach dem Hochladen."
+
 msgctxt "Logbook"
 msgid "L"
 msgstr "S"

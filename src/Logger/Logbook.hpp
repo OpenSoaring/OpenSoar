@@ -92,6 +92,16 @@ struct LogbookEntry {
    */
   std::string recorder_serial;
 
+  /**
+   * The files of the other recordings of this flight (another logger,
+   * the NMEA log, a restart), best first, separated by
+   * Logbook::OTHER_FILES_SEPARATOR; #log_file is the best one
+   */
+  std::string other_files;
+
+  /** The id of the flight on WeGlide after the upload, 0 if none */
+  uint64_t weglide_id = 0;
+
   std::string remark;
 
   [[gnu::pure]]
@@ -219,5 +229,30 @@ Append(Path path, const LogbookEntry &entry);
  */
 void
 Write(Path path, const std::vector<LogbookEntry> &entries);
+
+/**
+ * Separates the names in LogbookEntry::other_files.  A comma is rare in
+ * the name of a log file, and a spreadsheet keeps the column together
+ * because the log book separates its columns with semicolons.
+ */
+constexpr std::string_view OTHER_FILES_SEPARATOR = ", ";
+
+/**
+ * Is the file one of the other recordings of the entry?
+ */
+[[gnu::pure]]
+bool
+ContainsFile(const LogbookEntry &entry, std::string_view name) noexcept;
+
+/**
+ * Note the WeGlide flight id at the entry recorded by this log file
+ * (as #log_file or among the other files), after the upload.
+ *
+ * @return false if no entry has this file
+ *
+ * Throws on I/O error.
+ */
+bool
+SetWeGlideFlightId(Path path, std::string_view log_file, uint64_t id);
 
 } // namespace Logbook

@@ -99,11 +99,11 @@ TestMergeEntry()
   ok1(entries[0].aircraft == "JS 1");
 
   /* a fragment after a restart in flight does not replace the whole
-     flight, but fills an empty field */
+     flight, but fills an empty field and is noted as another file */
   auto fragment = MakeEntry(12, 15, "c.igc", "XCS");
   fragment.remark = "recording began in flight";
   fragment.registration = "ZS-GCG";
-  ok1(!Logbook::MergeEntry(entries, fragment, {}));
+  ok1(Logbook::MergeEntry(entries, fragment, {}));
   ok1(entries.size() == 2);
   ok1(entries[0].log_file == "a.igc");
   ok1(entries[0].registration == "ZS-GCG");
@@ -112,12 +112,19 @@ TestMergeEntry()
   ok1(Logbook::MergeEntry(entries, MakeEntry(10, 15, "d.igc", "XCS"), {}));
   ok1(entries[0].log_file == "d.igc");
 
+  /* the replaced recordings stay as other files, the replacing one
+     first */
+  ok1(entries[0].other_files == "a.igc, z.nmea, c.igc");
+
   /* but Recorder 1 wins over it */
   auto nano = MakeEntry(10, 15, "e.igc", "LXV");
   nano.recorder_serial = "3MN";
-  ok1(!Logbook::MergeEntry(entries, nano, {}));
+  /* without the recorders it is only noted as another file */
+  ok1(Logbook::MergeEntry(entries, nano, {}));
+  ok1(entries[0].log_file == "d.igc");
   ok1(Logbook::MergeEntry(entries, nano, {"LXV3MN"}));
   ok1(entries[0].log_file == "e.igc");
+  ok1(entries[0].other_files == "d.igc, a.igc, z.nmea, c.igc");
 }
 
 static Logbook::Recording
@@ -149,6 +156,17 @@ TestJoin()
   ok1(flights.size() == 2 && flights[0].kept.entry.log_file == "own.igc");
   ok1(flights.size() == 2 && flights[0].others.size() == 1 &&
       flights[0].others[0] == "nano.igc");
+  ok1(flights.size() == 2 && flights[0].kept.entry.other_files == "nano.igc");
+
+  /* the other files best first: the IGC file of another logger before
+     the NMEA log */
+  std::vector<Logbook::Recording> three;
+  three.push_back(MakeRecording(10, 15, "log.nmea", "", 10));
+  three.push_back(MakeRecording(10, 15, "own.igc", "XCS", 10));
+  three.push_back(MakeRecording(10, 15, "nano.igc", "LXV", 10));
+  const auto joined = Logbook::JoinRecordings(std::move(three), {});
+  ok1(joined.size() == 1 && joined[0].kept.entry.log_file == "own.igc" &&
+      joined[0].kept.entry.other_files == "nano.igc, log.nmea");
 }
 
 static void
@@ -366,7 +384,7 @@ TestUpdateAndMove()
 int
 main()
 {
-  plan_tests(57);
+  plan_tests(62);
 
   TestIsComplete();
   TestRank();
