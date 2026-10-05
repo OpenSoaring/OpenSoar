@@ -284,27 +284,30 @@ LogbookRecorder::Update(const MoreData &basic,
 void
 LogbookRecorder::FinishAtEnd(const MoreData &basic,
                              const DerivedInfo &calculated,
-                             const char *remark) noexcept
+                             const RestFix *rest) noexcept
 {
   if (!in_flight)
     return;
 
   if (!landed) {
-    entry.landing = basic.date_time_utc;
-
     /* faster than any landing roll: the recording stopped in the air
        (an app or logger restart), and the last fix is no landing
        place */
     const bool in_air = basic.ground_speed_available &&
       basic.ground_speed > MIN_AIR_SPEED;
-    if (in_air)
-      remark = "recording ended in flight";
-    else
+    if (in_air) {
+      entry.landing = basic.date_time_utc;
+      AddRemark("recording ended in flight");
+    } else if (rest != nullptr) {
+      entry.landing = rest->time;
+      entry.landing_place = handler.FindLogbookPlace(rest->location);
+    } else {
+      entry.landing = basic.date_time_utc;
       entry.landing_place = handler.FindLogbookPlace(basic.location);
+    }
 
     SetLaunch(calculated.flight);
   }
 
-  AddRemark(remark);
   Finish(calculated);
 }

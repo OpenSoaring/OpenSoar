@@ -5,6 +5,7 @@
 
 #include "Logbook.hpp"
 #include "time/Stamp.hpp"
+#include "Geo/GeoPoint.hpp"
 
 #include <optional>
 #include <string>
@@ -125,18 +126,30 @@ public:
   void Update(const MoreData &basic, const DerivedInfo &calculated) noexcept;
 
   /**
+   * The first fix at rest at the end of the data, see FinishAtEnd().
+   */
+  struct RestFix {
+    BrokenDateTime time;
+    GeoPoint location;
+  };
+
+  /**
    * The data end while a flight is being recorded (the end of a file,
-   * or the program stops in the air): complete the entry at the last
-   * fix and hand it to the handler.  If the aircraft was still moving
-   * fast, the recording ended in the air: the landing place stays
-   * empty and the remark says so; otherwise it had just landed, and
-   * the given remark is added.
+   * or the program stops in the air): complete the entry and hand it
+   * to the handler.  If the aircraft was still moving fast at the last
+   * fix, the recording ended in the air: the landing place stays empty
+   * and the remark says so.  Otherwise it had just landed: a logger
+   * often stops recording before the landing would be confirmed, which
+   * is no gap; the landing is the first fix at rest, if given, else the
+   * last fix.
    *
    * @param calculated the final distances should be in
    * #DerivedInfo::logbook_stats (LogbookComputer::SolveFinal())
+   * @param rest the first fix of the aircraft at rest at the end of the
+   * data, nullptr if none was found
    */
   void FinishAtEnd(const MoreData &basic, const DerivedInfo &calculated,
-                   const char *remark) noexcept;
+                   const RestFix *rest = nullptr) noexcept;
 
   /**
    * Did the flight being recorded begin in the air (see
