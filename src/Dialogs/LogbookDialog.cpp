@@ -19,6 +19,9 @@
 #include "LocalPath.hpp"
 #include "Components.hpp"
 #include "DataComponents.hpp"
+#include "BackendComponents.hpp"
+#include "Logger/Logger.hpp"
+#include "Logger/NMEALogger.hpp"
 #include <Message.hpp>
 #include "LogFile.hpp"
 #include "DataFilePath.hpp"
@@ -256,19 +259,21 @@ GetIndexPath() noexcept
 class LogbookUpdateJob final : public Job {
   const std::vector<Logbook::NewFile> &files;
   const Logbook::ReadSettings &settings;
+  const Logbook::MoveSettings &move;
 
 public:
   Logbook::UpdateResult result;
   std::exception_ptr error;
 
   LogbookUpdateJob(const std::vector<Logbook::NewFile> &_files,
-                   const Logbook::ReadSettings &_settings) noexcept
-    :files(_files), settings(_settings) {}
+                   const Logbook::ReadSettings &_settings,
+                   const Logbook::MoveSettings &_move) noexcept
+    :files(_files), settings(_settings), move(_move) {}
 
   void Run(OperationEnvironment &env) override {
     try {
       result = Logbook::Update(LogsDataSavePath("logbook.csv"),
-                               GetIndexPath(), files, settings, env);
+                               GetIndexPath(), files, settings, env, move);
     } catch (...) {
       error = std::current_exception();
     }
@@ -296,8 +301,31 @@ RunLogbookUpdate() noexcept
     return false;
   }
 
+  /* the files being written right now are read when they are
+     complete, and must not be moved */
+  if (backend_components != nullptr) {
+    AllocatedPath busy[2];
+    if (backend_components->nmea_logger != nullptr)
+      busy[0] = backend_components->nmea_logger->GetPath();
+    if (backend_components->igc_logger != nullptr)
+      busy[1] = backend_components->igc_logger->GetActivePath();
+
+    std::erase_if(files, [&busy](const Logbook::NewFile &file){
+      for (const auto &path : busy)
+        if (path != nullptr && path == file.path)
+          return true;
+      return false;
+    });
+  }
+
   if (files.empty())
     return false;
+
+  /* this is the program's own data directory: older IGC files go into
+     "igc", files without a flight into "no-flight" beside them */
+  Logbook::MoveSettings move;
+  move.igc_folder = LocalPath(GetFileTypeDefaultDir(FileType::IGC));
+  move.no_flight = true;
 
   Logbook::ReadSettings settings;
   if (data_components != nullptr)
@@ -308,7 +336,7 @@ RunLogbookUpdate() noexcept
   settings.coordinate_format =
     CommonInterface::GetUISettings().format.coordinate_format;
 
-  LogbookUpdateJob job(files, settings);
+  LogbookUpdateJob job(files, settings, move);
   JobDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
             _("Log book"), job, true);
 
@@ -321,6 +349,10 @@ RunLogbookUpdate() noexcept
   StaticString<256> text;
   text.Format(_("Log book: %u flight(s) from %u of %u file(s)"),
               r.flights, r.files_read, (unsigned)files.size());
+  if (r.moved_igc > 0)
+    text.AppendFormat(", %s: %u", _("moved to igc"), r.moved_igc);
+  if (r.moved_no_flight > 0)
+    text.AppendFormat(", %s: %u", _("moved to no-flight"), r.moved_no_flight);
   if (r.cancelled)
     text.AppendFormat(" (%s)", _("the rest follows at the next start"));
   Message::AddMessage(text);

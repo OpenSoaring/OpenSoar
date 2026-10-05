@@ -17,6 +17,7 @@
 #include "system/FileUtil.hpp"
 #include "util/StringCompare.hxx"
 #include "util/StringStrip.hxx"
+#include "util/StringAPI.hxx"
 #include "LogFile.hpp"
 
 #include <fmt/format.h>
@@ -645,6 +646,33 @@ try {
   return {};
 }
 
+/**
+ * Is the file in a folder "no-flight", where files without a flight
+ * were moved (see MoveSettings)?
+ */
+[[gnu::pure]]
+static bool
+IsInNoFlightFolder(Path path) noexcept
+{
+  const auto parent = path.GetParent();
+  return parent != nullptr &&
+    StringIsEqual(parent.GetBase().c_str(), NO_FLIGHT_FOLDER);
+}
+
+AllocatedPath
+MoveIntoFolder(Path file, Path folder) noexcept
+{
+  Directory::CreateRecursive(folder);
+  auto dest = AllocatedPath::Build(folder, file.GetBase());
+  if (File::ExistsAny(dest) || !File::Rename(file, dest)) {
+    LogFmt("Log book: {} not moved to {}", file.c_str(), folder.c_str());
+    return nullptr;
+  }
+
+  LogFmt("Log book: {} moved to {}", file.c_str(), folder.c_str());
+  return dest;
+}
+
 std::vector<NewFile>
 FindNewFiles(Path index_path, const std::vector<AllocatedPath> &folders)
 {
@@ -658,7 +686,7 @@ FindNewFiles(Path index_path, const std::vector<AllocatedPath> &folders)
       :known(_known) {}
 
     void Visit(Path path, Path filename) override {
-      if (!IsRecordedFile(filename))
+      if (!IsRecordedFile(filename) || IsInNoFlightFolder(path))
         return;
 
       std::string key = MakeKey(path);
@@ -669,7 +697,8 @@ FindNewFiles(Path index_path, const std::vector<AllocatedPath> &folders)
 
   for (const auto &folder : folders)
     if (Directory::Exists(folder))
-      Directory::VisitFiles(folder, visitor);
+      /* with subfolders, e.g. flights the pilot sorted by year */
+      Directory::VisitFiles(folder, visitor, true);
 
   std::sort(visitor.files.begin(), visitor.files.end(),
             [](const NewFile &a, const NewFile &b){
@@ -694,10 +723,24 @@ AddToIndex(Path index_path, const std::vector<std::string> &keys)
   file.Commit();
 }
 
+/**
+ * Is the file an IGC file directly in a folder "logs" (where older
+ * versions wrote them)?
+ */
+[[gnu::pure]]
+static bool
+IsIgcInLogs(Path path) noexcept
+{
+  const auto parent = path.GetParent();
+  return LogbookReplay::IsIgc(path) && parent != nullptr &&
+    StringIsEqual(parent.GetBase().c_str(), "logs");
+}
+
 UpdateResult
 Update(Path logbook_path, Path index_path,
        const std::vector<NewFile> &files,
-       const ReadSettings &settings, OperationEnvironment &env)
+       const ReadSettings &settings, OperationEnvironment &env,
+       const MoveSettings &move)
 {
   UpdateResult result;
   std::vector<Recording> recordings;
@@ -715,11 +758,28 @@ Update(Path logbook_path, Path index_path,
     env.SetText(file.path.GetBase().c_str());
     env.SetProgressPosition(i);
 
+    AllocatedPath path{Path{file.path}};
+    if (move.igc_folder != nullptr && IsIgcInLogs(path))
+      if (auto moved = MoveIntoFolder(path, move.igc_folder);
+          moved != nullptr) {
+        path = std::move(moved);
+        ++result.moved_igc;
+      }
+
     try {
-      auto r = ReadFile(file.path, settings, &env);
+      auto r = ReadFile(path, settings, &env);
       if (r.cancelled) {
         result.cancelled = true;
         break;
+      }
+
+      /* only a file read to its end has really no flight; the replay
+         has closed it by now (Windows does not rename an open file) */
+      if (r.flights.empty() && move.no_flight) {
+        const auto folder = AllocatedPath::Build(path.GetParent(),
+                                                 NO_FLIGHT_FOLDER);
+        if (MoveIntoFolder(path, folder) != nullptr)
+          ++result.moved_no_flight;
       }
 
       for (auto &flight : r.flights)
