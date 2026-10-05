@@ -19,6 +19,12 @@
 #include "Dialogs/FilePicker.hpp"
 #include "Dialogs/Message.hpp"
 #include "Repository/FileType.hpp"
+#include "Device/Config.hpp"
+#include "Device/Driver.hpp"
+#include "Device/Register.hpp"
+#include "Device/Features.hpp"
+#include "SystemSettings.hpp"
+#include "Form/Edit.hpp"
 
 using namespace std::chrono;
 
@@ -33,8 +39,10 @@ enum ControlIndex {
   EnableFlightLogger,
   Recorder1,
   Recorder1FromFile,
+  Recorder1Device,
   Recorder2,
   Recorder2FromFile,
+  Recorder2Device,
   LoggerID,
 };
 
@@ -49,7 +57,43 @@ public:
 
 private:
   void ReadRecorderFromFile(unsigned row) noexcept;
+  void AddRecorderDevice(const char *label, const char *help,
+                         unsigned value) noexcept;
 };
+
+/**
+ * A choice of the configured devices whose driver can download
+ * flights: "A: LX Nav", ... and "None".
+ */
+void
+LoggerConfigPanel::AddRecorderDevice(const char *label, const char *help,
+                                     unsigned value) noexcept
+{
+  WndProperty *wp = AddEnum(label, help);
+  DataFieldEnum &df = *(DataFieldEnum *)wp->GetDataField();
+  df.AddChoice(0, _("None"));
+
+  const auto &devices = CommonInterface::GetSystemSettings().devices;
+  for (unsigned i = 0; i < NUMDEV; ++i) {
+    const DeviceConfig &config = devices[i];
+    const DeviceRegister *driver = config.IsDisabled()
+      ? nullptr
+      : FindDriverByName(config.driver_name);
+
+    /* the one set before stays in the list, even if it changed */
+    if ((driver == nullptr || !driver->IsLogger()) && i + 1 != value)
+      continue;
+
+    StaticString<64> text;
+    text.Format("%c: %s", 'A' + i,
+                driver != nullptr ? driver->display_name
+                                  : config.driver_name.c_str());
+    df.AddChoice(i + 1, text);
+  }
+
+  df.SetValue(value);
+  wp->RefreshDisplay();
+}
 
 static constexpr StaticEnumChoice auto_logger_list[] = {
   { LoggerSettings::AutoLogger::ON, N_("On") },
@@ -118,12 +162,21 @@ LoggerConfigPanel::Prepare(ContainerWindow &parent,
       "log book takes it from the file of Recorder 1, then Recorder 2, "
       "then the IGC file of this program.");
 
+  const char *const device_help =
+    _("The device the recorder is connected to; its driver is the type of "
+      "the recorder. A while after the landing, the newest flight is "
+      "downloaded from it into the log book.");
+
   AddText(_("Recorder 1"), recorder_help, logger.recorders[0]);
   AddButton(_("Recorder 1 from IGC file"),
             [this](){ ReadRecorderFromFile(Recorder1); });
+  AddRecorderDevice(_("Recorder 1 device"), device_help,
+                    logger.recorder_devices[0]);
   AddText(_("Recorder 2"), recorder_help, logger.recorders[1]);
   AddButton(_("Recorder 2 from IGC file"),
             [this](){ ReadRecorderFromFile(Recorder2); });
+  AddRecorderDevice(_("Recorder 2 device"), device_help,
+                    logger.recorder_devices[1]);
 
   AddText(_("Logger ID"),
           _("The three-letter logger ID used in the IGC filename."),
@@ -183,6 +236,11 @@ LoggerConfigPanel::Save(bool &changed) noexcept
       changed = true;
     }
   }
+
+  changed |= SaveValueEnum(Recorder1Device, ProfileKeys::Recorder1Device,
+                           logger.recorder_devices[0]);
+  changed |= SaveValueEnum(Recorder2Device, ProfileKeys::Recorder2Device,
+                           logger.recorder_devices[1]);
 
   changed |= SaveValue(LoggerID, ProfileKeys::LoggerID, logger.logger_id);
 

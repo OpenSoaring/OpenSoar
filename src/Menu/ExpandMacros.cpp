@@ -6,6 +6,7 @@
 #include "Logger/Logger.hpp"
 #include "MainWindow.hpp"
 #include "Interface.hpp"
+#include "Logger/ExternalLogger.hpp"
 #include "Gauge/BigTrafficWidget.hpp"
 #include "Computer/Settings.hpp"
 #include "Components.hpp"
@@ -339,6 +340,12 @@ LookupMacro(std::string_view name, bool &invalid) noexcept
     return nullptr;
   } else if (name == "CheckWaypointFile") {
     invalid |= data_components->waypoints->IsEmpty();
+    return nullptr;
+  } else if (name == "CheckRecorder1") {
+    invalid |= !ExternalLogger::IsRecorderReady(0);
+    return nullptr;
+  } else if (name == "CheckRecorder2") {
+    invalid |= !ExternalLogger::IsRecorderReady(1);
     return nullptr;
   } else if (name == "CheckLogger") {
     invalid |= Basic().gps.replay;

@@ -900,6 +900,15 @@ an entry, the crew and the aircraft of the entry stay, as they may have
 been corrected by hand.  The DMSt points use the handicap of the
 current glider, also for older flights.
 
+When a device is set for Recorder 1 or Recorder 2 in the logger
+settings, XCSoar downloads the newest flight from that recorder two
+minutes after the landing, so its file is in the log book without any
+action.  The download is quiet: if the recorder is not connected, has
+no new flight or fails, only the log file says so.  The flight is not
+downloaded again if its file is already in the \texttt{igc} directory.
+The buttons \bmenu{Recorder 1 Download} and \bmenu{Recorder 2
+Download} in the quick menu download any flight by hand.
+
 The button \bmenu{Rebuild} in the log book (or the event
 \verb|Logbook rebuild|) builds the log book again from all recorded
 files.  The current one is kept as \verb|logbook-YYYY-MM-DD.csv|,

@@ -63,6 +63,8 @@ Profile::Load(const ProfileMap &map, LoggerSettings &settings)
   map.Get(ProfileKeys::LoggerID, settings.logger_id);
   map.Get(ProfileKeys::Recorder1, settings.recorders[0]);
   map.Get(ProfileKeys::Recorder2, settings.recorders[1]);
+  map.Get(ProfileKeys::Recorder1Device, settings.recorder_devices[0]);
+  map.Get(ProfileKeys::Recorder2Device, settings.recorder_devices[1]);
   map.Get(ProfileKeys::PilotName, settings.pilot_name);
   map.Get(ProfileKeys::CoPilotName, settings.copilot_name);
   map.Get(ProfileKeys::CrewWeightTemplate, settings.crew_mass_template);

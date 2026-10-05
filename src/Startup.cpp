@@ -43,6 +43,7 @@
 #include "Logger/NMEALogger.hpp"
 #include "Logger/GlueFlightLogger.hpp"
 #include "Logger/GlueLogbook.hpp"
+#include "Logger/GlueRecorderDownload.hpp"
 #include "Waypoint/WaypointDetailsReader.hpp"
 #include "Blackboard/DeviceBlackboard.hpp"
 #include "MapWindow/GlueMapWindow.hpp"
@@ -815,6 +816,12 @@ Startup(UI::Display &display)
       data_components->waypoints.get(),
       backend_components->igc_logger.get());
   }
+
+  /* Recorder 1 and 2 of the logger settings are read after each
+     landing */
+  if (!is_simulator())
+    backend_components->recorder_download =
+      std::make_unique<GlueRecorderDownload>(live_blackboard);
 
   if (computer_settings.logger.enable_nmea_logger)
     backend_components->nmea_logger->Enable();

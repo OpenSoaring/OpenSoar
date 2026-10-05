@@ -481,6 +481,12 @@ Event list
  * - ``QuickMenuPhase P``
    - Chooses the flight phase whose buttons the quick menu shows:
      ``ground``, ``flight``, ``after`` or ``all``.
+ * - ``RecorderDownload N``
+   - Downloads a flight from Recorder 1 or Recorder 2 (``1`` or ``2``),
+     that is from the device chosen for it in the logger settings. Shows
+     the list of flights with the newest one selected. The macros
+     ``$(CheckRecorder1)`` and ``$(CheckRecorder2)`` disable a button
+     while that device is not connected.
  * - ``RepeatStatusMessage``
    - Repeats the last status message. If pressed repeatedly, will
      repeat previous status messages.

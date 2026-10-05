@@ -132,6 +132,12 @@ Version 7.45.4 - not yet released
   - log book: columns "Other files" (the other recordings of the flight,
     best first) and "WeGlide flight ID" (noted after the upload, with
     the link in the details of the flight)
+  - Recorder 1 and Recorder 2 get a device in the logger settings;
+    two minutes after the landing the newest flight is downloaded from
+    it into the log book without a question (with the WeGlide question
+    if that upload is enabled); buttons "Recorder 1/2 Download" in the
+    quick menu pages After and All; the flight list of a download
+    selects the newest flight
   - a log file that ends shortly after the landing lands at its first
     fix at rest (below 10 km/h, within 10 m of the last altitude)
     instead of its last fix, without a remark

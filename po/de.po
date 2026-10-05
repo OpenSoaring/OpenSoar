@@ -12188,3 +12188,31 @@ msgid ""
 msgstr ""
 "So viele Spalten wie Platz haben, jeder Knopf an seinem Platz, und eine "
 "eigene Liste für Boden, Flug und nach der Landung."
+
+msgid "Recorder 1 device"
+msgstr "Gerät von Recorder 1"
+
+msgid "Recorder 2 device"
+msgstr "Gerät von Recorder 2"
+
+msgid ""
+"The device the recorder is connected to; its driver is the type of the "
+"recorder. A while after the landing, the newest flight is downloaded from it "
+"into the log book."
+msgstr ""
+"Das Gerät, an dem der Recorder angeschlossen ist; sein Treiber ist der Typ "
+"des Recorders. Eine Weile nach der Landung wird der neueste Flug von dort "
+"ins Flugbuch geladen."
+
+#, c-format
+msgid "Recorder %u: flight downloaded"
+msgstr "Recorder %u: Flug heruntergeladen"
+
+msgid "No device is set for this recorder in the logger settings."
+msgstr "Für diesen Recorder ist in den Logger-Einstellungen kein Gerät gewählt."
+
+msgid "Recorder 1\nDownload"
+msgstr "Recorder 1\nauslesen"
+
+msgid "Recorder 2\nDownload"
+msgstr "Recorder 2\nauslesen"
