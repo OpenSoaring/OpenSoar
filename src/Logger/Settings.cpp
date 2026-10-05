@@ -15,6 +15,8 @@ LoggerSettings::SetDefaults()
   crew_mass_template = 90;
   for (auto &recorder : recorders)
     recorder.clear();
+  for (auto &device : recorder_devices)
+    device = 0;
 
   /* the log book records the flights with all details now
      (logbook.csv); a pilot expects that without searching for it */
