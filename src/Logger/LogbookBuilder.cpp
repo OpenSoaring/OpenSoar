@@ -23,6 +23,8 @@
 
 #include <algorithm>
 #include <cstring>
+#include <cmath>
+#include <deque>
 #include <set>
 
 namespace Logbook {
@@ -146,6 +148,70 @@ public:
 } // anonymous namespace
 
 /**
+ * The aircraft is at rest after the landing below this ground speed
+ * (10 km/h) ...
+ */
+static constexpr double REST_SPEED = 10 / 3.6;
+
+/**
+ * ... and while its altitude stays within this many metres of the
+ * last fix.
+ */
+static constexpr double REST_HEIGHT = 10;
+
+/**
+ * How much of the end of a file is kept to find the landing.  A
+ * landing at rest for 30 seconds is confirmed by FlyingComputer
+ * anyway, so a few minutes are plenty.
+ */
+static constexpr auto TAIL_DURATION = std::chrono::minutes{5};
+
+namespace {
+
+/** One fix near the end of a file */
+struct TailSample {
+  BrokenDateTime time;
+  GeoPoint location;
+  double altitude, ground_speed;
+  bool altitude_available, ground_speed_available;
+};
+
+} // anonymous namespace
+
+/**
+ * Find the landing in a recording that ends before the program would
+ * have confirmed it: going back from the last fix while the aircraft
+ * is at rest (slower than #REST_SPEED, within #REST_HEIGHT of the last
+ * altitude), the first fix at rest is the landing.  Loggers stop
+ * recording at different times after the landing; without this, the
+ * landing time would depend on that.
+ *
+ * @return nullptr if the aircraft was not at rest at the last fix
+ */
+[[gnu::pure]]
+static const TailSample *
+FindRest(const std::deque<TailSample> &tail) noexcept
+{
+  if (tail.empty())
+    return nullptr;
+
+  const TailSample &last = tail.back();
+  const TailSample *rest = nullptr;
+  for (auto i = tail.rbegin(); i != tail.rend(); ++i) {
+    if (!i->ground_speed_available || i->ground_speed > REST_SPEED)
+      break;
+
+    if (i->altitude_available && last.altitude_available &&
+        std::fabs(i->altitude - last.altitude) > REST_HEIGHT)
+      break;
+
+    rest = &*i;
+  }
+
+  return rest;
+}
+
+/**
  * How often reading a file checks for cancellation (in fixes): a long
  * NMEA log has a hundred thousand of them.
  */
@@ -174,6 +240,7 @@ ReadFile(Path path, const ReadSettings &settings,
   LogbookComputer logbook(trace.GetFull(), trace.GetContest());
 
   std::vector<TrackSample> track;
+  std::deque<TailSample> tail;
   bool last_flying = false;
 
   while (replay.Next()) {
@@ -207,19 +274,32 @@ ReadFile(Path path, const ReadSettings &settings,
         std::chrono::floor<std::chrono::minutes>(basic.date_time_utc.ToTimePoint());
       if (track.empty() || track.back().minute != minute)
         track.push_back({minute, basic.location});
+
+      tail.push_back({basic.date_time_utc, basic.location,
+                      basic.nav_altitude, basic.ground_speed,
+                      basic.NavAltitudeAvailable(),
+                      (bool)basic.ground_speed_available});
+      const auto since = basic.date_time_utc.ToTimePoint() - TAIL_DURATION;
+      while (tail.front().time.ToTimePoint() < since)
+        tail.pop_front();
     }
   }
 
-  /* IGC files often end within a minute of the landing, before the
-     program (which keeps running) would have confirmed it; such a
-     flight is completed at the last fix, marked in the remark */
-  result.cut_short = recorder.IsInFlight();
-  if (result.cut_short) {
+  /* loggers often stop recording within seconds of the landing,
+     before the program (which keeps running) would have confirmed it;
+     such a flight ends at the first fix at rest */
+  if (recorder.IsInFlight()) {
     DerivedInfo &calculated = replay.SetCalculated();
     logbook.SolveFinal(calculated.flight, settings.handicap,
                        calculated.logbook_stats);
+
+    LogbookRecorder::RestFix rest_fix;
+    const TailSample *rest = FindRest(tail);
+    if (rest != nullptr)
+      rest_fix = {rest->time, rest->location};
+
     recorder.FinishAtEnd(replay.Basic(), calculated,
-                         "landing not confirmed, end of file");
+                         rest != nullptr ? &rest_fix : nullptr);
   }
 
   for (auto &entry : handler.flights) {
@@ -237,10 +317,10 @@ bool
 IsComplete(const LogbookEntry &entry) noexcept
 {
   const std::string_view remark{entry.remark};
-  /* "landing not confirmed, end of file" is no gap: a logger stops
-     recording a minute after the landing, before the program would
-     have confirmed it, and the recorder writes "ended in flight"
-     instead if the glider was still fast */
+  /* "landing not confirmed, end of file" (in log books of older
+     versions) is no gap: a logger stops recording soon after the
+     landing, before the program would have confirmed it; the recorder
+     writes "ended in flight" if the glider was still fast */
   return remark.find("began in flight") == remark.npos &&
     remark.find("ended in flight") == remark.npos;
 }

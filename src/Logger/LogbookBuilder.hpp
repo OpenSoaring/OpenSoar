@@ -139,9 +139,6 @@ struct FileResult {
   /** The number of fixes read */
   unsigned fixes = 0;
 
-  /** The last flight was still going at the end of the file */
-  bool cut_short = false;
-
   /** Reading was cancelled; #flights is incomplete */
   bool cancelled = false;
 };
