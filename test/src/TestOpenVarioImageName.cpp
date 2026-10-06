@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#include "OV/System.hpp"
+#include "OpenVario/System.hpp"
 #include "TestUtil.hpp"
 
 using std::string_view_literals::operator""sv;

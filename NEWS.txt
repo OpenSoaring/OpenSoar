@@ -81,6 +81,9 @@ Version 7.46 - not yet released
     Services
   - OpenVario: back up the whole system to a USB stick and restore it,
     in Config → Setup → System Services
+  - OpenVario: remove the separate OpenVarioMenu start program; its
+    functions are part of the XCSoar configuration now, and the
+    OpenVario image starts XCSoar from its own menu
   - OpenVario: calibrate the touch screen from Config → Setup → Screen
   - OpenVario: keep the display orientation set in XCSoar when the
     device is switched off or restarted without quitting XCSoar first

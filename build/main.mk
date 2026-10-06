@@ -824,8 +824,8 @@ XCSOAR_SOURCES += \
 	$(SRC)/Linux/SystemdServiceList.cpp \
 	$(SRC)/Dialogs/Settings/Panels/OpenVarioSystemWidget.cpp \
 	$(SRC)/Dialogs/ProcessDialog.cpp \
-	$(SRC)/OV/System.cpp \
-	$(SRC)/OV/Calibrate.cpp
+	$(SRC)/OpenVario/System.cpp \
+	$(SRC)/OpenVario/Calibrate.cpp
 endif
 
 include $(topdir)/build/net-wifi.mk
