@@ -2,6 +2,9 @@
 // Copyright The XCSoar Project
 
 #include "SystemdConfigPanel.hpp"
+#include "OpenVarioSystemWidget.hpp"
+#include "OV/System.hpp"
+#include "Widget/TwoWidgets.hpp"
 #include "Dialogs/Error.hpp"
 #include "Dialogs/JobDialog.hpp"
 #include "Form/Button.hpp"
@@ -398,5 +401,13 @@ CreateSystemdConfigPanel()
     std::move(list), ButtonPanelWidget::Alignment::BOTTOM);
   panel->HideInLandscape();
   static_cast<SystemdListWidget &>(panel->GetWidget()).SetButtonPanel(*panel);
+
+  /* on an OpenVario, the services sensord and variod belong together
+     with the system functions of the image; they share this page
+     instead of getting one of their own */
+  if (IsOpenVario())
+    return std::make_unique<TwoWidgets>(std::move(panel),
+                                        CreateOpenVarioSystemWidget());
+
   return panel;
 }
