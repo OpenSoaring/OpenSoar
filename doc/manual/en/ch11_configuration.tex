@@ -959,7 +959,18 @@ below the list:
   OpenVario sensor board.  The sensor daemon is stopped during the
   calibration.  A sensor board that has never been initialised is
   detected, and XCSoar offers to initialise it first.
+\item[Back up the system to USB]  Copies the settings of the OpenVario
+  (SSH keys, the WiFi networks, the display and touch screen settings,
+  the state of the services) together with the home directory, which
+  holds the data of XCSoar and OpenSoar, to the folder
+  \texttt{openvario/backup/<MAC address>} on the USB stick.  Not
+  available in flight.
+\item[Restore the system from USB]  Copies such a backup back and
+  restarts the device.  Not available in flight.
 \end{description}
+
+The data of XCSoar alone (profiles, maps, waypoints, flights) is backed up
+and restored in the Data Management dialogue.
 
 
 %%%%%%%%%%%%%%%%%%
