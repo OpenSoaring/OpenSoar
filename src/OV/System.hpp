@@ -104,3 +104,51 @@ OpenvarioImageName(std::string_view line) noexcept
  */
 std::string
 OpenvarioGetImageName();
+
+/**
+ * Where the OpenVario image mounts a USB stick, and where its scripts
+ * look for one.
+ */
+static constexpr const char *openvario_usb_stick = "/usb/usbstick";
+
+/**
+ * Does the given content of /proc/mounts show a real file system
+ * mounted on #path?  The image mounts the stick through a systemd
+ * automount unit, which keeps an "autofs" entry on that path even
+ * while no stick is plugged in; only an entry of another type means
+ * that the stick is there.
+ */
+constexpr bool
+HasRealMount(std::string_view mounts, std::string_view path) noexcept
+{
+  while (!mounts.empty()) {
+    const auto eol = mounts.find('\n');
+    std::string_view line = mounts.substr(0, eol);
+    mounts = eol == mounts.npos ? std::string_view{} : mounts.substr(eol + 1);
+
+    /* "device mountpoint type options ..." */
+    const auto a = line.find(' ');
+    if (a == line.npos)
+      continue;
+    line.remove_prefix(a + 1);
+
+    const auto b = line.find(' ');
+    if (b == line.npos || line.substr(0, b) != path)
+      continue;
+    line.remove_prefix(b + 1);
+
+    const auto type = line.substr(0, line.find(' '));
+    if (!type.empty() && type != "autofs")
+      return true;
+  }
+
+  return false;
+}
+
+/**
+ * Is a USB stick mounted where the scripts of the OpenVario image
+ * expect it?  Looking into the directory first lets the automount
+ * unit mount a stick that has just been plugged in.
+ */
+bool
+OpenvarioIsUsbStickMounted() noexcept;

@@ -79,6 +79,8 @@ Version 7.46 - not yet released
     choose whether XCSoar or OpenSoar starts after boot and calibrate
     the sensors below the service list in Config → Setup → System
     Services
+  - OpenVario: back up the whole system to a USB stick and restore it,
+    in Config → Setup → System Services
   - OpenVario: calibrate the touch screen from Config → Setup → Screen
   - OpenVario: keep the display orientation set in XCSoar when the
     device is switched off or restarted without quitting XCSoar first
