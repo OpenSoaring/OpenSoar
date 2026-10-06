@@ -139,6 +139,11 @@ Version 7.47 - not yet released
   - cross-compile for Raspberry Pi 4 and 5 with TARGET=PI4
     (TARGET=PI5 is an alias). The arm64 sysroot defaults to
     /opt/pi64/root
+* Linux
+  - type lower case letters and all symbols with a keyboard attached to
+    a device without a desktop (Raspberry Pi, OpenVario), in the
+    keyboard layout given by XKB_DEFAULT_LAYOUT; until now it typed
+    upper case letters, digits and the space only
 
 Version 7.46.1 - 2026-10-30
 * ui

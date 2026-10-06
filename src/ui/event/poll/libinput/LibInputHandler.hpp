@@ -5,6 +5,7 @@
 
 #include "event/PipeEvent.hxx"
 #include "InputTransform.hpp"
+#include "XkbKeyboard.hpp"
 #include "ui/dim/Size.hpp"
 #include "ui/dim/Point.hpp"
 #include "DisplayOrientation.hpp"
@@ -33,6 +34,13 @@ class LibInputHandler final {
   struct libinput_interface* li_if = nullptr;
 
   PipeEvent fd;
+
+  /**
+   * Turns the keys into characters with the keyboard layout of the
+   * system.  If it cannot be opened, the characters come from the
+   * fixed table in Translate.hpp, as before.
+   */
+  XkbKeyboard xkb_keyboard;
 
   double x = -1.0, y = -1.0;
 
