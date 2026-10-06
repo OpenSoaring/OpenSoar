@@ -273,6 +273,21 @@ groupadd input
 adduser pi input
 \end{verbatim*}
 
+A keyboard attached to the Raspberry Pi, the Cubieboard or an OpenVario
+types with the US layout unless XCSoar is told otherwise.  It reads the
+layout from the environment variable \texttt{XKB\_DEFAULT\_LAYOUT}, and
+\texttt{XKB\_DEFAULT\_VARIANT} picks a variant; for a German keyboard,
+start XCSoar with:
+
+\begin{verbatim*}
+XKB_DEFAULT_LAYOUT=de xcsoar
+\end{verbatim*}
+
+This needs the keyboard layout files of the system
+(\texttt{/usr/share/X11/xkb}, Debian package \texttt{xkb-data}).
+Without them, the keyboard types only upper case letters, digits and
+the space.
+
 \section{Data files}\label{sec:data files}
 
 To be able to use XCSoar's advanced features, additional data files, such as

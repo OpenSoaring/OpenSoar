@@ -106,8 +106,8 @@ install_llvm() {
 
 install_libinput_gbm() {
   echo Installing dependencies for compiling targets which need libinput or GBM...
-  apt-get install "${APTOPTS[@]}" libinput-dev libgbm-dev libdrm-dev \
-    libgles2-mesa-dev
+  apt-get install "${APTOPTS[@]}" libinput-dev libxkbcommon-dev xkb-data \
+    libgbm-dev libdrm-dev libgles2-mesa-dev
   echo
 }
 

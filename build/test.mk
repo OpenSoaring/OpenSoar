@@ -256,6 +256,17 @@ TEST_OPENVARIO_IMAGE_NAME_SOURCES = \
 TEST_OPENVARIO_IMAGE_NAME_DEPENDS = UTIL
 $(eval $(call link-program,TestOpenVarioImageName,TEST_OPENVARIO_IMAGE_NAME))
 
+ifeq ($(USE_LIBINPUT),y)
+TEST_NAMES += TestXkbKeyboard
+
+TEST_XKB_KEYBOARD_SOURCES = \
+	$(SRC)/ui/event/poll/libinput/XkbKeyboard.cpp \
+	$(TEST_SRC_DIR)/tap.c \
+	$(TEST_SRC_DIR)/TestXkbKeyboard.cpp
+TEST_XKB_KEYBOARD_DEPENDS = XKBCOMMON
+$(eval $(call link-program,TestXkbKeyboard,TEST_XKB_KEYBOARD))
+endif
+
 TEST_NAMES += TestWeatherUIState
 
 TEST_WEATHER_UI_STATE_SOURCES = \
