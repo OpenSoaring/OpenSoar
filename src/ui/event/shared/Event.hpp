@@ -112,7 +112,14 @@ struct Event {
   PixelPoint point2;
 #endif
 
-#ifdef USE_X11
+#if defined(USE_X11) || defined(USE_LIBINPUT)
+  /**
+   * The character typed by a #KEY_DOWN event, independent of the key
+   * code in #param, or 0 if the key does not type one.  Keeping both
+   * apart lets the key bindings see the key while a text field gets
+   * the character, which depends on the keyboard layout and the
+   * modifiers.
+   */
   unsigned ch;
 #else
   bool is_char;
@@ -148,7 +155,7 @@ struct Event {
   }
 
   size_t GetCharacterCount() const {
-#ifdef USE_X11
+#if defined(USE_X11) || defined(USE_LIBINPUT)
     return type == KEY_DOWN && ch != 0;
 #else
     return type == KEY_DOWN && is_char;
@@ -156,7 +163,7 @@ struct Event {
   }
 
   unsigned GetCharacter([[maybe_unused]] size_t characterIdx) const {
-#ifdef USE_X11
+#if defined(USE_X11) || defined(USE_LIBINPUT)
     assert(characterIdx == 0);
     assert(ch != 0);
 
