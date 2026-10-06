@@ -34,6 +34,10 @@
 #include "ui/event/Queue.hpp"
 #endif
 
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
+#include "OV/System.hpp"
+#endif
+
 #include <memory>
 #include <string>
 
@@ -362,6 +366,22 @@ DisplayConfigPanel::Save(bool &_changed) noexcept
 
     if (!Display::Rotate(ui_settings.display.orientation))
       LogString("Display rotation failed");
+
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
+    /* the OpenVario image rotates the console at boot, before
+       XCSoar runs; without this, the boot screen and the menu of the
+       image would come up in the old orientation.  "Default" means
+       "as the system is set up", so it leaves the setting alone. */
+    if (IsOpenVario() &&
+        ui_settings.display.orientation != DisplayOrientation::DEFAULT) {
+      try {
+        OpenvarioSaveRotation(ui_settings.display.orientation);
+      } catch (...) {
+        LogError(std::current_exception(),
+                 "Failed to store the rotation in /boot/config.uEnv");
+      }
+    }
+#endif
 
 #ifdef SOFTWARE_ROTATE_DISPLAY
     CommonInterface::main_window->SetDisplayOrientation(
