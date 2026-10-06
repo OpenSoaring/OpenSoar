@@ -45,6 +45,17 @@ OpenvarioSetBrightness(uint_least8_t value) noexcept;
 DisplayOrientation
 OpenvarioGetRotation();
 
+/**
+ * Store the display orientation in /boot/config.uEnv, from where the
+ * image applies it to the console at the next boot.
+ */
+void
+OpenvarioSaveRotation(DisplayOrientation orientation);
+
+/**
+ * Rotate the display and the console now, and store the orientation
+ * for the next boot.
+ */
 void
 OpenvarioSetRotation(DisplayOrientation orientation);
 
