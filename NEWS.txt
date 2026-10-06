@@ -157,6 +157,9 @@ Version 7.45.4 - not yet released
     the sensors below the service list in Config → Setup → Services
   - OpenVario: back up the whole system to a USB stick and restore it,
     in Config → Setup → Services
+* dialogs
+  - add a symbol page to the on-screen keyboard, so that passwords and
+    file names can contain all printable ASCII characters
 
 Version 7.45.3 - 2026-09-22
 * android
