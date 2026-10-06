@@ -204,3 +204,21 @@ OpenvarioGetImageName()
   first_line = first_line.substr(0, first_line.find_first_of("\r\n"));
   return std::string{OpenvarioImageName(first_line)};
 }
+
+bool
+OpenvarioIsUsbStickMounted() noexcept
+try {
+  /* looking into the directory makes systemd mount a stick that has
+     been plugged in; the result does not matter */
+  File::Exists(AllocatedPath::Build(Path(openvario_usb_stick), Path(".")));
+
+  FileLineReaderA reader(Path("/proc/mounts"));
+  const char *line;
+  while ((line = reader.ReadLine()) != nullptr)
+    if (HasRealMount(line, openvario_usb_stick))
+      return true;
+
+  return false;
+} catch (...) {
+  return false;
+}
