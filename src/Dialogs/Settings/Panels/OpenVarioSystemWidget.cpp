@@ -3,17 +3,26 @@
 
 #include "OpenVarioSystemWidget.hpp"
 #include "Dialogs/Error.hpp"
+#include "Dialogs/Message.hpp"
 #include "Form/DataField/Enum.hpp"
+#include "Interface.hpp"
 #include "Language/Language.hpp"
 #include "OV/Calibrate.hpp"
 #include "OV/System.hpp"
+#include "Profile/Profile.hpp"
 #include "UIGlobals.hpp"
 #include "Widget/RowFormWidget.hpp"
+#include "system/Process.hpp"
+#include "ui/display/Display.hpp"
+#include "ui/event/Globals.hpp"
+#include "ui/event/Queue.hpp"
+#include "ui/window/SingleWindow.hpp"
 
 #include <string>
 
 enum ControlIndex {
   IMAGE,
+  UPGRADE,
   MAIN_APP,
   CALIBRATE_SENSORS,
 };
@@ -63,6 +72,48 @@ try {
   return 0;
 }
 
+static bool
+CheckNotFlying(const char *caption) noexcept
+{
+  if (!CommonInterface::Calculated().flight.flying)
+    return true;
+
+  ShowMessageBox(_("Not available while flying."), caption,
+                 MB_OK | MB_ICONWARNING);
+  return false;
+}
+
+/**
+ * Hand the screen over to the upgrade script of the image.  The
+ * script lets the pilot choose an image (from the USB stick or the
+ * data partition), writes it to the SD card and restarts the device;
+ * cancelling it returns here.  It draws on the console, so XCSoar
+ * gives up the display and the input devices until it is done.
+ */
+static void
+UpgradeFirmware() noexcept
+{
+  if (!CheckNotFlying(_("Upgrade firmware")))
+    return;
+
+  if (ShowMessageBox(_("The upgrade script lets you choose an image and "
+                       "restarts the device when it is done.  Settings "
+                       "changed in this dialog since it was opened are "
+                       "lost if the upgrade goes ahead.  Continue?"),
+                     _("Upgrade firmware"),
+                     MB_YESNO | MB_ICONQUESTION) != IDYES)
+    return;
+
+  /* the restart at the end of the upgrade does not give XCSoar the
+     chance to save the profile */
+  Profile::Save();
+
+  auto &main_window = UIGlobals::GetMainWindow();
+  const UI::ScopeDropMaster drop_master{main_window.GetDisplay()};
+  const UI::ScopeSuspendEventQueue suspend_event_queue{*UI::event_queue};
+  Run("/usr/bin/fw-upgrade.sh");
+}
+
 void
 OpenVarioSystemWidget::Prepare(ContainerWindow &parent,
                                const PixelRect &rc) noexcept
@@ -73,6 +124,8 @@ OpenVarioSystemWidget::Prepare(ContainerWindow &parent,
   AddReadOnly(_("Firmware image"),
               _("The OpenVario image this device is running."),
               image.empty() ? _("Unknown") : image.c_str());
+
+  AddButton(_("Upgrade firmware"), UpgradeFirmware);
 
   main_app = LoadMainApp();
   AddEnum(_("Start after boot"),
