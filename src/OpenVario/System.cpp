@@ -2,21 +2,14 @@
 // Copyright The XCSoar Project
 
 #include "System.hpp"
-#include "lib/dbus/Connection.hxx"
-#include "lib/dbus/ScopeMatch.hxx"
-#include "lib/dbus/Systemd.hxx"
 #include "system/FileUtil.hpp"
 #include "system/Path.hpp"
 #include "io/KeyValueFileReader.hpp"
 #include "io/FileOutputStream.hxx"
 #include "io/BufferedOutputStream.hxx"
 #include "io/FileLineReader.hpp"
-#include "Dialogs/Error.hpp"
 #include "DisplayOrientation.hpp"
-#include "Hardware/RotateDisplay.hpp"
 
-#include <unistd.h>
-#include <sys/stat.h>
 #include <fmt/format.h>
 
 #include <map>
@@ -52,46 +45,6 @@ WriteConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path)
   file.Commit();
 }
 
-uint_least8_t
-OpenvarioGetBrightness() noexcept
-{
-  char line[4];
-  int result = 10;
-
-  if (File::ReadString(Path("/sys/class/backlight/lcd/brightness"), line, sizeof(line))) {
-    result = atoi(line);
-  }
-
-  return result;
-}
-
-void
-OpenvarioSetBrightness(uint_least8_t value) noexcept
-{
-  if (value < 1) { value = 1; }
-  if (value > 10) { value = 10; }
-
-  File::WriteExisting(Path("/sys/class/backlight/lcd/brightness"), fmt::format_int{value}.c_str());
-}
-
-DisplayOrientation
-OpenvarioGetRotation()
-{
-  std::map<std::string, std::string, std::less<>> map;
-  LoadConfigFile(map, Path(boot_config));
-
-  uint_least8_t result;
-  result = map.contains("rotation") ? std::stoi(map.find("rotation")->second) : 0;
-
-  switch (result) {
-  case 0: return DisplayOrientation::LANDSCAPE;
-  case 1: return DisplayOrientation::REVERSE_PORTRAIT;
-  case 2: return DisplayOrientation::REVERSE_LANDSCAPE;
-  case 3: return DisplayOrientation::PORTRAIT;
-  default: return DisplayOrientation::DEFAULT;
-  }
-}
-
 /**
  * The value of "rotation" in /boot/config.uEnv, which is also the
  * value of /sys/class/graphics/fbcon/rotate.
@@ -122,55 +75,6 @@ OpenvarioSaveRotation(DisplayOrientation orientation)
   map.insert_or_assign("rotation",
                        fmt::format_int{ToConfigRotation(orientation)}.c_str());
   WriteConfigFile(map, Path(boot_config));
-}
-
-void
-OpenvarioSetRotation(DisplayOrientation orientation)
-{
-  Display::Rotate(orientation);
-
-  File::WriteExisting(Path("/sys/class/graphics/fbcon/rotate"),
-                      fmt::format_int{ToConfigRotation(orientation)}.c_str());
-
-  OpenvarioSaveRotation(orientation);
-}
-
-SSHStatus
-OpenvarioGetSSHStatus()
-{
-  auto connection = ODBus::Connection::GetSystem();
-
-  if (Systemd::IsUnitEnabled(connection, "dropbear.socket")) {
-    return SSHStatus::ENABLED;
-  } else if (Systemd::IsUnitActive(connection, "dropbear.socket")) {
-    return SSHStatus::TEMPORARY;
-  } else {
-    return SSHStatus::DISABLED;
-  }
-}
-
-void
-OpenvarioEnableSSH(bool temporary)
-{
-  auto connection = ODBus::Connection::GetSystem();
-  const ODBus::ScopeMatch job_removed_match{connection, Systemd::job_removed_match};
-
-  if (temporary)
-    Systemd::DisableUnitFile(connection, "dropbear.socket");
-  else
-    Systemd::EnableUnitFile(connection, "dropbear.socket");
-
-  Systemd::StartUnit(connection, "dropbear.socket");
-}
-
-void
-OpenvarioDisableSSH()
-{
-  auto connection = ODBus::Connection::GetSystem();
-  const ODBus::ScopeMatch job_removed_match{connection, Systemd::job_removed_match};
-
-  Systemd::DisableUnitFile(connection, "dropbear.socket");
-  Systemd::StopUnit(connection, "dropbear.socket");
 }
 
 std::string

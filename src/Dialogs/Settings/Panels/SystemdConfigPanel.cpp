@@ -3,7 +3,7 @@
 
 #include "SystemdConfigPanel.hpp"
 #include "OpenVarioSystemWidget.hpp"
-#include "OV/System.hpp"
+#include "OpenVario/System.hpp"
 #include "Widget/TwoWidgets.hpp"
 #include "Dialogs/Error.hpp"
 #include "Dialogs/JobDialog.hpp"
