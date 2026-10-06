@@ -35,8 +35,8 @@
 #endif
 
 #if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
-#include "OV/Calibrate.hpp"
-#include "OV/System.hpp"
+#include "OpenVario/Calibrate.hpp"
+#include "OpenVario/System.hpp"
 #include "ui/event/Globals.hpp"
 #endif
 

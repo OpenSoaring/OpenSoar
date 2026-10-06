@@ -11,11 +11,6 @@
 
 class Path;
 
-enum class SSHStatus {
-  ENABLED,
-  DISABLED,
-  TEMPORARY,
-};
 /**
  * Is this program running on an OpenVario?  The OpenVario image keeps
  * its boot settings (display rotation, the program to start) in
@@ -36,37 +31,12 @@ LoadConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path);
 void
 WriteConfigFile(std::map<std::string, std::string, std::less<>> &map, Path path);
 
-uint_least8_t
-OpenvarioGetBrightness() noexcept;
-
-void
-OpenvarioSetBrightness(uint_least8_t value) noexcept;
-
-DisplayOrientation
-OpenvarioGetRotation();
-
 /**
  * Store the display orientation in /boot/config.uEnv, from where the
  * image applies it to the console at the next boot.
  */
 void
 OpenvarioSaveRotation(DisplayOrientation orientation);
-
-/**
- * Rotate the display and the console now, and store the orientation
- * for the next boot.
- */
-void
-OpenvarioSetRotation(DisplayOrientation orientation);
-
-SSHStatus
-OpenvarioGetSSHStatus();
-
-void
-OpenvarioEnableSSH(bool temporary);
-
-void
-OpenvarioDisableSSH();
 
 /**
  * The program the OpenVario image starts after boot: the value of

@@ -830,8 +830,8 @@ XCSOAR_SOURCES += \
 	$(SRC)/Linux/SystemdServiceList.cpp \
 	$(SRC)/Dialogs/Settings/Panels/OpenVarioSystemWidget.cpp \
 	$(SRC)/Dialogs/ProcessDialog.cpp \
-	$(SRC)/OV/System.cpp \
-	$(SRC)/OV/Calibrate.cpp
+	$(SRC)/OpenVario/System.cpp \
+	$(SRC)/OpenVario/Calibrate.cpp
 
 ifeq ($(USE_POLL_EVENT),y)
 SYSTEM_TOOLS_DIRECTORY ?= /usr/libexec/xcsoar/system-tools
