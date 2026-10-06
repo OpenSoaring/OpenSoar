@@ -11,6 +11,7 @@
 #include "Look/DialogLook.hpp"
 #include "Widget/Widget.hpp"
 #include "InfoBoxes/Content/Factory.hpp"
+#include "InfoBoxes/Content/Extension.hpp"
 #include "InfoBoxes/InfoBoxArrangeWindow.hpp"
 #include "InfoBoxes/InfoBoxGeometryList.hpp"
 #include "InfoBoxes/InfoBoxLayout.hpp"
@@ -270,7 +271,7 @@ InfoBoxesConfigWidget::OnPaste() noexcept
 
   for (unsigned item = 0; item < clipboard_size; item++) {
     InfoBoxFactory::Type content = clipboard.contents[item];
-    if (content >= InfoBoxFactory::NUM_TYPES)
+    if (!InfoBoxFactory::IsValid(content))
       continue;
 
     data.contents[item] = content;
