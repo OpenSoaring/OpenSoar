@@ -7,6 +7,7 @@
 #include "InfoBoxes/Border.hpp"
 #include "InfoBoxes/InfoBoxArrange.hpp"
 #include "InfoBoxes/Content/Factory.hpp"
+#include "InfoBoxes/Content/Extension.hpp"
 #include "Language/Language.hpp"
 #include "Dialogs/InfoBoxPicker.hpp"
 #include "Profile/InfoBoxConfig.hpp"
@@ -110,8 +111,9 @@ InfoBoxManager::DisplayInfoBox() noexcept
     // should apply to the function DoCalculationsSlow()
     // Do not put calculations here!
 
-    InfoBoxFactory::Type DisplayType = settings.contents[i];
-    if ((unsigned)DisplayType > (unsigned)InfoBoxFactory::MAX_TYPE_VAL)
+    InfoBoxFactory::Type DisplayType =
+      InfoBoxFactory::Resolve(settings.contents[i]);
+    if (!InfoBoxFactory::IsSelectable(DisplayType))
       DisplayType = InfoBoxFactory::NavAltitude;
 
     const bool needupdate = ((DisplayType != DisplayTypeLast[i]) || first);

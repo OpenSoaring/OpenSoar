@@ -159,10 +159,37 @@ namespace InfoBoxFactory
     e_Ballast, /* Water ballast on board; the comment shows the wing loading; tap to open the flight setup */
     e_WP_VMG, /* Speed VMG: the component of ground speed made good towards the next waypoint */
     e_CustomText, /* Shows the free text configured for this slot instead of a value */
-    e_NUM_TYPES /* Last item */
+    e_NUM_TYPES, /* Last item */
+
+    /* OpenSoar's own InfoBoxes live in a second block, far above
+       anything upstream will reach for years, so that an XCSoar
+       update never shifts their numbers.  The order is the one the
+       old OpenSoar (7.44) used: existing profiles keep working.
+       NEVER insert, delete or reorder here either - a box that goes
+       away stays as a placeholder (see InfoBoxes/Content/Extension.cpp). */
+    e_OPENSOAR_FIRST = 500,
+    e_DriftAngle = e_OPENSOAR_FIRST, /* placeholder: track minus true heading (test box of the old OpenSoar) */
+    e_InstantaneousWindSpeed, /* Speed of the instantaneous wind from an external sensor (Anemoi, ...) */
+    e_InstantaneousWindBearing, /* Bearing of the instantaneous wind from an external sensor */
+    e_InternalWind, /* The wind XCSoar estimates itself (circling or EKF), regardless of an external sensor */
+    e_InternalZigZagWind, /* The wind of XCSoar's EKF ("zig-zag") estimator only */
+    e_PageNo, /* Index and kind of the page on display */
+    e_STFSwitch, /* State of the speed-to-fly / vario switch */
+    e_BugsSetting, /* The bugs setting in percent */
+    e_TrueHeading, /* True heading from the attitude sensor */
+    e_WaterBallast, /* Water ballast in litres */
+    e_Mouse, /* placeholder: mouse position (developer box) */
+    e_Coordinates, /* placeholder: coordinates under the mouse (developer box) */
+    e_MouseDistance, /* placeholder: distance to the mouse position (developer box) */
+    e_OPENSOAR_END /* Last item of the OpenSoar block */
   };
 
   static constexpr Type NUM_TYPES = e_NUM_TYPES;
   static constexpr Type MIN_TYPE_VAL = (Type)0;
   static constexpr Type MAX_TYPE_VAL = (Type)(e_NUM_TYPES - 1);
+
+  /* the OpenSoar block */
+  static constexpr Type OPENSOAR_FIRST = e_OPENSOAR_FIRST;
+  static constexpr Type OPENSOAR_END = e_OPENSOAR_END;
+  static constexpr unsigned NUM_OPENSOAR_TYPES = e_OPENSOAR_END - e_OPENSOAR_FIRST;
 }
