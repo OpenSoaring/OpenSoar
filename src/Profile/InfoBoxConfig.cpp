@@ -5,6 +5,7 @@
 #include "Keys.hpp"
 #include "Map.hpp"
 #include "InfoBoxes/InfoBoxSettings.hpp"
+#include "InfoBoxes/Content/Extension.hpp"
 #include "util/StringFormat.hpp"
 #include "util/TruncateString.hpp"
 
@@ -84,10 +85,13 @@ GetIBType(const ProfileMap &map, std::string_view key,
   unsigned _val = val;
   bool ret = map.Get(key, _val);
 
-  if (_val >= e_NUM_TYPES)
+  /* an OpenSoar box that XCSoar has adopted since comes back under
+     the upstream number (Extension.hpp) */
+  const auto type = InfoBoxFactory::Resolve((InfoBoxFactory::Type)_val);
+  if (!InfoBoxFactory::IsValid(type))
     return false;
 
-  val = (InfoBoxFactory::Type)_val;
+  val = type;
   return ret;
 }
 

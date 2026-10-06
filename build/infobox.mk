@@ -6,6 +6,8 @@ LIBINFOBOX_SOURCES = \
 	$(SRC)/InfoBoxes/Content/Direction.cpp \
 	$(SRC)/InfoBoxes/Content/Glide.cpp \
 	$(SRC)/InfoBoxes/Content/Engine.cpp \
+	$(SRC)/InfoBoxes/Content/Extension.cpp \
+	$(SRC)/InfoBoxes/Content/OpenSoar.cpp \
 	$(SRC)/InfoBoxes/Content/MacCready.cpp \
 	$(SRC)/InfoBoxes/Content/Other.cpp \
 	$(SRC)/InfoBoxes/Content/Speed.cpp \
