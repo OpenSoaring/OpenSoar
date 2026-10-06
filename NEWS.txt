@@ -291,6 +291,10 @@ Version 7.47 - not yet released
   - while the log book reads new files, the progress bar says "Analysis
     for the log book:" before the file name
 * Linux
+  - type lower case letters and all symbols with a keyboard attached to
+    a device without a desktop (Raspberry Pi, OpenVario), in the
+    keyboard layout given by XKB_DEFAULT_LAYOUT; until now it typed
+    upper case letters, digits and the space only
   - OpenVario: a click on the firmware in Config → Setup → System
     Services lists the images (download directory and USB stick) with
     Download and Delete; the chosen image becomes the only entry of
