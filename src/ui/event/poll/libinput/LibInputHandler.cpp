@@ -271,7 +271,7 @@ LibInputHandler::HandleEvent(struct libinput_event *li_event) noexcept
       Event e(key_state == LIBINPUT_KEY_STATE_PRESSED
                   ? Event::KEY_DOWN : Event::KEY_UP,
               translated_key_code);
-      e.is_char = is_char;
+      e.ch = is_char ? translated_key_code : 0;
       queue.Push(e);
     }
     break;
