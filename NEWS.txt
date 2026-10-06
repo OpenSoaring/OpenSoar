@@ -17,6 +17,8 @@ Version 7.47 - not yet released
 * dialogs
   - fix a crash opening Pages setup from a weather overlay on a
     landscape screen #3373
+  - add a symbol page to the on-screen keyboard, so that passwords and
+    file names can contain all printable ASCII characters
 * Windows
   - keep the mouse cursor visible with -touchscreen; the switch sizes
     the controls for fingers, it does not take the mouse away (Linux
