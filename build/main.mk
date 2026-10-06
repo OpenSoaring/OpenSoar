@@ -827,7 +827,8 @@ endif
 ifeq ($(TARGET_IS_LINUX)$(TARGET_IS_KOBO)$(TARGET_IS_ANDROID),ynn)
 XCSOAR_SOURCES += \
 	$(SRC)/Dialogs/Settings/Panels/SystemdConfigPanel.cpp \
-	$(SRC)/Linux/SystemdServiceList.cpp
+	$(SRC)/Linux/SystemdServiceList.cpp \
+	$(SRC)/OV/System.cpp
 
 ifeq ($(USE_POLL_EVENT),y)
 SYSTEM_TOOLS_DIRECTORY ?= /usr/libexec/xcsoar/system-tools

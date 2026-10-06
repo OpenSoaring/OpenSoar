@@ -82,6 +82,8 @@ Version 7.46 - not yet released
   - add restart and power-off controls to the Quit dialog
   - add an optional System Tools page for installed maintenance tools
     and personal scripts, with live output and bounded cancellation
+  - OpenVario: keep the display orientation set in XCSoar when the
+    device is switched off or restarted without quitting XCSoar first
   - use OpenGL ES instead of desktop OpenGL #2140
   - in landscape, show Turn on and Restart for System Services in
     the button column so the service list keeps that row
