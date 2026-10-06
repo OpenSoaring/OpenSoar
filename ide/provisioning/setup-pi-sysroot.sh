@@ -45,6 +45,7 @@ PI_SYSROOT_PACKAGES=(
   libgbm-dev
   libgles2-mesa-dev
   libinput-dev
+  libxkbcommon-dev
   libudev-dev
   libegl1-mesa-dev
   mesa-common-dev
