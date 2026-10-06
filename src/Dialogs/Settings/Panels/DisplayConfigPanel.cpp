@@ -35,7 +35,9 @@
 #endif
 
 #if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
+#include "OV/Calibrate.hpp"
 #include "OV/System.hpp"
+#include "ui/event/Globals.hpp"
 #endif
 
 #include <memory>
@@ -339,6 +341,18 @@ DisplayConfigPanel::Prepare(ContainerWindow &parent,
              1, 10, 1, (unsigned)ui_settings.display.cursor_size);
   AddBoolean(_("Invert cursor color"), _("Enable black cursor"),
              ui_settings.display.invert_cursor_colors);
+#endif
+
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
+  /* the touch screen of an OpenVario is calibrated by a script of the
+     image; the button sits here because the calibration belongs to
+     the screen, and it is the last row so that the indices above do
+     not depend on it */
+  if (IsOpenVario())
+    AddButton(_("Calibrate touch screen"), []{
+      CalibrateTouch(UIGlobals::GetMainWindow().GetDisplay(),
+                     *UI::event_queue);
+    });
 #endif
 }
 
