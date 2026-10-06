@@ -8,6 +8,9 @@ Version 7.45.4 - not yet released
     the sensors below the service list in Config → Setup → Services
   - OpenVario: back up the whole system to a USB stick and restore it,
     in Config → Setup → Services
+  - OpenVario: remove the separate OpenVarioMenu start program; its
+    functions are part of the XCSoar configuration now, and the
+    OpenVario image starts XCSoar from its own menu
 
 Version 7.45.3 - 2026-09-22
 * android
