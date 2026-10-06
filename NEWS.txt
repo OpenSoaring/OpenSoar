@@ -82,9 +82,10 @@ Version 7.46 - not yet released
   - add restart and power-off controls to the Quit dialog
   - add an optional System Tools page for installed maintenance tools
     and personal scripts, with live output and bounded cancellation
-  - OpenVario: show the running image, choose whether XCSoar or
-    OpenSoar starts after boot and calibrate the sensors below the
-    service list in Config → Setup → System Services
+  - OpenVario: show the running image, start the firmware upgrade,
+    choose whether XCSoar or OpenSoar starts after boot and calibrate
+    the sensors below the service list in Config → Setup → System
+    Services
   - OpenVario: calibrate the touch screen from Config → Setup → Screen
   - OpenVario: keep the display orientation set in XCSoar when the
     device is switched off or restarted without quitting XCSoar first
