@@ -157,6 +157,10 @@ Version 7.45.4 - not yet released
     the sensors below the service list in Config → Setup → Services
   - OpenVario: back up the whole system to a USB stick and restore it,
     in Config → Setup → Services
+  - type lower case letters and all symbols with a keyboard attached to
+    a device without a desktop (Raspberry Pi, OpenVario), in the
+    keyboard layout given by XKB_DEFAULT_LAYOUT; until now it typed
+    upper case letters, digits and the space only
 * dialogs
   - add a symbol page to the on-screen keyboard, so that passwords and
     file names can contain all printable ASCII characters
