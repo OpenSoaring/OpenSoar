@@ -147,6 +147,8 @@ Version 7.47 - not yet released
     choose whether XCSoar or OpenSoar starts after boot and calibrate
     the sensors below the service list in Config → Setup → System
     Services
+  - OpenVario: back up the whole system to a USB stick and restore it,
+    in Config → Setup → System Services
 
 Version 7.46.1 - 2026-10-30
 * ui
