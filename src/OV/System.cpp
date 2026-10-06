@@ -78,7 +78,7 @@ DisplayOrientation
 OpenvarioGetRotation()
 {
   std::map<std::string, std::string, std::less<>> map;
-  LoadConfigFile(map, Path("/boot/config.uEnv"));
+  LoadConfigFile(map, Path(boot_config));
 
   uint_least8_t result;
   result = map.contains("rotation") ? std::stoi(map.find("rotation")->second) : 0;
@@ -92,34 +92,47 @@ OpenvarioGetRotation()
   }
 }
 
-void
-OpenvarioSetRotation(DisplayOrientation orientation)
+/**
+ * The value of "rotation" in /boot/config.uEnv, which is also the
+ * value of /sys/class/graphics/fbcon/rotate.
+ */
+static constexpr unsigned
+ToConfigRotation(DisplayOrientation orientation) noexcept
 {
-  std::map<std::string, std::string, std::less<>> map;
-
-  Display::Rotate(orientation);
-
-  int rotation = 0; 
   switch (orientation) {
   case DisplayOrientation::DEFAULT:
   case DisplayOrientation::LANDSCAPE:
     break;
   case DisplayOrientation::REVERSE_PORTRAIT:
-    rotation = 1;
-    break;
+    return 1;
   case DisplayOrientation::REVERSE_LANDSCAPE:
-    rotation = 2;
-    break;
+    return 2;
   case DisplayOrientation::PORTRAIT:
-    rotation = 3;
-    break;
+    return 3;
   };
 
-  File::WriteExisting(Path("/sys/class/graphics/fbcon/rotate"), fmt::format_int{rotation}.c_str());
+  return 0;
+}
 
-  LoadConfigFile(map, Path("/boot/config.uEnv"));
-  map.insert_or_assign("rotation", fmt::format_int{rotation}.c_str());
-  WriteConfigFile(map, Path("/boot/config.uEnv"));
+void
+OpenvarioSaveRotation(DisplayOrientation orientation)
+{
+  std::map<std::string, std::string, std::less<>> map;
+  LoadConfigFile(map, Path(boot_config));
+  map.insert_or_assign("rotation",
+                       fmt::format_int{ToConfigRotation(orientation)}.c_str());
+  WriteConfigFile(map, Path(boot_config));
+}
+
+void
+OpenvarioSetRotation(DisplayOrientation orientation)
+{
+  Display::Rotate(orientation);
+
+  File::WriteExisting(Path("/sys/class/graphics/fbcon/rotate"),
+                      fmt::format_int{ToConfigRotation(orientation)}.c_str());
+
+  OpenvarioSaveRotation(orientation);
 }
 
 SSHStatus
