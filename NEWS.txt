@@ -34,6 +34,8 @@ Version 7.47 - not yet released
     above its ceiling
   - fix Ack Day silencing a new airspace after the
     airspace list was empty
+  - add a symbol page to the on-screen keyboard, so that passwords and
+    file names can contain all printable ASCII characters
 * Windows
   - keep the mouse cursor visible with -touchscreen; the switch sizes
     the controls for fingers, it does not take the mouse away (Linux
