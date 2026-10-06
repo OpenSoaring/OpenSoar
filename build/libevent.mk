@@ -37,6 +37,7 @@ CONSOLE_CPPFLAGS = -DUSE_CONSOLE
 
 ifeq ($(USE_LIBINPUT),y)
 EVENT_SOURCES += \
+	$(SRC)/ui/event/poll/libinput/XkbKeyboard.cpp \
 	$(SRC)/ui/event/poll/libinput/LibInputHandler.cpp
 ifeq ($(ENABLE_UDEV),y)
 EVENT_SOURCES += $(SRC)/ui/event/poll/libinput/UdevContext.cpp
@@ -65,6 +66,12 @@ EVENT_CPPFLAGS_INTERNAL += -DLIBINPUT_LEGACY_API
 endif
 LIBINPUT_CPPFLAGS += -DUSE_LIBINPUT
 EVENT_LDLIBS += $(LIBINPUT_LDLIBS) $(UDEV_LDLIBS)
+
+# libinput reports keys only; xkbcommon turns them into characters
+# with the keyboard layout
+$(eval $(call pkg-config-library,XKBCOMMON,xkbcommon))
+EVENT_CPPFLAGS_INTERNAL += $(XKBCOMMON_CPPFLAGS)
+EVENT_LDLIBS += $(XKBCOMMON_LDLIBS)
 endif
 
 EVENT_CPPFLAGS = \
