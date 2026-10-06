@@ -20,10 +20,12 @@
 #include "ui/window/Window.hpp"
 
 #include <algorithm>
+#include <cassert>
 
 namespace {
 struct TextEntryLayout {
   PixelRect editor;
+  PixelRect symbols;
   PixelRect paste;
   PixelRect backspace;
   PixelRect keyboard;
@@ -35,10 +37,12 @@ struct TextEntryLayout {
  * the operating system's keyboard covers the lower part of the screen,
  * and everything is moved up below the editor.
  * @param with_paste reserve room for the @em Paste button
+ * @param with_symbols reserve room for the button that switches the
+ * on-screen keyboard between letters and symbols
  */
 static void
 ComputeTextEntryLayout(const PixelRect &rc, bool with_keyboard, bool with_paste,
-                       TextEntryLayout &o) noexcept
+                       bool with_symbols, TextEntryLayout &o) noexcept
 {
   const int client_height = rc.GetHeight();
   const int padding = Layout::Scale(2);
@@ -47,6 +51,9 @@ ComputeTextEntryLayout(const PixelRect &rc, bool with_keyboard, bool with_paste,
   const int paste_width = with_paste ? Layout::Scale(60) : 0;
   const int paste_left = backspace_left - (with_paste ? padding : 0) -
     paste_width;
+  const int symbols_width = with_symbols ? Layout::Scale(44) : 0;
+  const int symbols_left = paste_left - (with_symbols ? padding : 0) -
+    symbols_width;
   const int editor_height = Layout::Scale(22);
   const int editor_bottom = padding + editor_height;
   const int button_height = Layout::Scale(40);
@@ -92,7 +99,9 @@ ComputeTextEntryLayout(const PixelRect &rc, bool with_keyboard, bool with_paste,
     ? rc.right
     : clear_left + Layout::Scale(50);
 
-  o.editor = {0, padding, paste_left - padding, editor_bottom};
+  o.editor = {0, padding, symbols_left - padding, editor_bottom};
+  o.symbols = {symbols_left, padding, symbols_left + symbols_width,
+               editor_bottom};
   o.paste = {paste_left, padding, paste_left + paste_width, editor_bottom};
   o.backspace = {backspace_left, padding, rc.right - padding, editor_bottom};
   o.keyboard = {padding, keyboard_top, rc.right - padding, keyboard_bottom};
@@ -117,7 +126,7 @@ BackspaceCaption(const ButtonLook &look) noexcept
 static void
 ApplyTextEntryLayout(const TextEntryLayout &L, WndProperty &editor, Button &ok,
                      Button &cancel, Button &clear, KeyboardWidget *keyboard,
-                     Button &backspace, Button *paste,
+                     Button &backspace, Button *paste, Button *symbols,
                      ContainerWindow &client_area) noexcept
 {
   editor.Move(L.editor);
@@ -129,6 +138,8 @@ ApplyTextEntryLayout(const TextEntryLayout &L, WndProperty &editor, Button &ok,
   backspace.Move(L.backspace);
   if (paste != nullptr)
     paste->Move(L.paste);
+  if (symbols != nullptr)
+    symbols->Move(L.symbols);
   client_area.Invalidate();
 }
 } // namespace
@@ -384,6 +395,10 @@ TouchTextEntry(char *text, size_t width,
     UI::TextInput::HasScreenKeyboard();
   const bool with_paste = UI::TextInput::HasClipboard();
 
+  /* the symbol page of our own keyboard needs a button to reach it;
+     like the shift key, it is only there for free text input */
+  const bool with_symbols = !system_keyboard && !accb;
+
   const DialogLook &look = UIGlobals::GetDialogLook();
   WndForm form(UIGlobals::GetMainWindow(), look, caption);
   form.SetKeyDownFunction(FormKeyDown);
@@ -393,7 +408,7 @@ TouchTextEntry(char *text, size_t width,
   textentry_client = &client_area;
   const PixelRect rc0 = client_area.GetClientRect();
   TextEntryLayout L;
-  ComputeTextEntryLayout(rc0, !system_keyboard, with_paste, L);
+  ComputeTextEntryLayout(rc0, !system_keyboard, with_paste, with_symbols, L);
 
   WndProperty _editor(client_area, look, "",
                       L.editor,
@@ -451,13 +466,27 @@ TouchTextEntry(char *text, size_t width,
     textentry_paste = &paste_button;
   }
 
+  Button symbols_button;
+  if (with_symbols) {
+    assert(kb != nullptr && kb->HasSymbolPage());
+    symbols_button.Create(client_area, look.button, "#+=", L.symbols,
+                          button_style, [&symbols_button](){
+                            kb->SetSymbolPage(!kb->IsSymbolPage());
+                            symbols_button.SetCaption(kb->IsSymbolPage()
+                                                      ? "ABC" : "#+=");
+                          });
+  }
+
   form.SetClientLayoutFunction([&]() {
     const PixelRect rc = client_area.GetClientRect();
     TextEntryLayout layout;
-    ComputeTextEntryLayout(rc, !system_keyboard, with_paste, layout);
+    ComputeTextEntryLayout(rc, !system_keyboard, with_paste, with_symbols,
+                           layout);
     ApplyTextEntryLayout(layout, _editor, ok_button, cancel_button, clear_button,
                          kb, backspace_button,
-                         with_paste ? &paste_button : nullptr, client_area);
+                         with_paste ? &paste_button : nullptr,
+                         with_symbols ? &symbols_button : nullptr,
+                         client_area);
     if (system_keyboard)
       UI::TextInput::SetScreenKeyboardRect(layout.editor);
   });

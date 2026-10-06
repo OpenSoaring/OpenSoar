@@ -24,6 +24,47 @@ namespace {
 static constexpr char KEYBOARD_LETTERS[] =
   "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+/**
+ * The printable ASCII characters that the letters page lacks (it has
+ * '.', '@', '-' and, with shift, '_'), which passwords and paths
+ * need, row by row as #SYMBOL_ROWS places them.
+ */
+static constexpr char KEYBOARD_SYMBOLS[] =
+  "!\"#$%&'()*+,/:;<=>?[\\]^`{|}~";
+
+static_assert(sizeof(KEYBOARD_SYMBOLS) - 1 == 28);
+
+/**
+ * The rows of the symbol page below the digits.  The first two take
+ * all ten columns instead of being staggered like the letters, the
+ * third starts right of the shift key like "ZXCVBNM@." and keeps the
+ * '.' in its place; the '@' gives its place to a symbol, which is how
+ * all 28 fit on one page.
+ */
+static constexpr const char *SYMBOL_ROWS[] = {
+  "!\"#$%&'()*",
+  "+,/:;<=>?[",
+  "\\]^`{|}~.",
+};
+
+[[gnu::pure]]
+static bool
+IsPageSymbol(unsigned ch) noexcept
+{
+  return ch != 0 && ch < 0x80 &&
+    StringFind(KEYBOARD_SYMBOLS, (char)ch) != nullptr;
+}
+
+/**
+ * Is this a key of the letters page only?
+ */
+[[gnu::pure]]
+static bool
+IsPageLetter(unsigned ch) noexcept
+{
+  return ch < 0x80 && (IsAlphaASCII((char)ch) || ch == '@');
+}
+
 /** Digits 0-9; matches first keys in @c KEYBOARD_LETTERS order. */
 static constexpr int NUMBER_ROW_KEY_COUNT = 10;
 
@@ -70,6 +111,12 @@ KeyboardWidget::Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept
   AddButton(parent, "@", '@');
   AddButton(parent, "-", '-');
 
+  if (show_shift_button)
+    for (const char *i = KEYBOARD_SYMBOLS; !StringIsEmpty(i); ++i) {
+      caption[0] = *i;
+      AddButton(parent, caption, *i);
+    }
+
   if (show_shift_button) {
     WindowStyle style;
     style.Hide();
@@ -86,8 +133,7 @@ KeyboardWidget::Show(const PixelRect &rc) noexcept
 {
   OnResize(rc);
 
-  for (unsigned i = 0; i < num_buttons; ++i)
-    buttons[i].Show();
+  UpdatePage();
 
   if (show_shift_button)
     shift_button.Show();
@@ -193,6 +239,10 @@ KeyboardWidget::MoveButtons(const PixelRect &rc)
   MoveButtonsToRow(rc, "ASDFGHJKL", 2, int(button_size.width / 3));
   MoveButtonsToRow(rc, "ZXCVBNM@.", 3, int(button_size.width));
 
+  MoveButtonsToRow(rc, SYMBOL_ROWS[0], 1, 0);
+  MoveButtonsToRow(rc, SYMBOL_ROWS[1], 2, 0);
+  MoveButtonsToRow(rc, SYMBOL_ROWS[2], 3, int(button_size.width));
+
   if (IsLandscape(rc)) {
     MoveSymbolKey(rc.GetTopLeft() + PixelSize(int(button_size.width) * 9,
                                               int(Layout::Scale(160U))));
@@ -276,6 +326,24 @@ KeyboardWidget::OnShiftClicked() noexcept
 
   shift_state = !shift_state;
   UpdateShiftState();
+}
+
+void
+KeyboardWidget::UpdatePage() noexcept
+{
+  for (unsigned i = 0; i < num_buttons; ++i) {
+    const unsigned ch = buttons[i].GetCharacter();
+    buttons[i].SetVisible(symbol_page ? !IsPageLetter(ch) : !IsPageSymbol(ch));
+  }
+}
+
+void
+KeyboardWidget::SetSymbolPage(bool _symbol_page) noexcept
+{
+  assert(HasSymbolPage());
+
+  symbol_page = _symbol_page;
+  UpdatePage();
 }
 
 const Button *
