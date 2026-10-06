@@ -4,6 +4,7 @@
 #include "InfoBoxPicker.hpp"
 #include "InfoBoxGroupPicker.hpp"
 #include "InfoBoxes/Content/Factory.hpp"
+#include "InfoBoxes/Content/Extension.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Dialogs/Message.hpp"
 #include "Widget/RowFormWidget.hpp"
@@ -153,11 +154,17 @@ InfoBoxPickerWidget::FillList() noexcept
     if (type == InfoBoxFactory::e_Free_RAM)
       return;
 
-    if (groups.Contains(InfoBoxFactory::GetGroup(type)))
+    /* placeholders of the OpenSoar block and boxes XCSoar has adopted
+       since are not offered (see InfoBoxes/Content/Extension.hpp) */
+    if (InfoBoxFactory::IsSelectable(type) &&
+        groups.Contains(InfoBoxFactory::GetGroup(type)))
       items.push_back(type);
   };
 
   for (unsigned i = InfoBoxFactory::MIN_TYPE_VAL; i < InfoBoxFactory::NUM_TYPES; i++)
+    add(i);
+
+  for (unsigned i = InfoBoxFactory::OPENSOAR_FIRST; i < InfoBoxFactory::OPENSOAR_END; i++)
     add(i);
 
   std::sort(items.begin(), items.end(), [](Type a, Type b){
