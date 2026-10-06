@@ -109,6 +109,10 @@ LibInputHandler::LibInputHandler(EventQueue &_queue) noexcept
 bool
 LibInputHandler::Open() noexcept
 {
+  if (!xkb_keyboard.Open())
+    LogString("libinput: no xkb keymap, typing only upper case letters "
+              "and digits");
+
   if ((nullptr != udev_context)
       || (nullptr != li_if)
       || (nullptr != li)
@@ -212,6 +216,10 @@ LibInputHandler::Suspend() noexcept
 void
 LibInputHandler::Resume() noexcept
 {
+  /* a modifier key may have been released while the devices were
+     with another program, without this process seeing it */
+  xkb_keyboard.Reset();
+
   if (li != nullptr)
     libinput_resume(li);
 }
@@ -267,11 +275,18 @@ LibInputHandler::HandleEvent(struct libinput_event *li_event) noexcept
       libinput_key_state key_state =
         libinput_event_keyboard_get_key_state(kb_li_event);
 
+      const bool pressed = key_state == LIBINPUT_KEY_STATE_PRESSED;
+
+      /* the key code stays what the key bindings know (upper case
+         letters, digits, Linux key codes); the character comes from
+         the keyboard layout and the modifiers */
       const auto [translated_key_code, is_char] = TranslateKeyCode(key_code);
-      Event e(key_state == LIBINPUT_KEY_STATE_PRESSED
-                  ? Event::KEY_DOWN : Event::KEY_UP,
+      Event e(pressed ? Event::KEY_DOWN : Event::KEY_UP,
               translated_key_code);
-      e.ch = is_char ? translated_key_code : 0;
+      if (xkb_keyboard.IsOpen())
+        e.ch = xkb_keyboard.HandleKey(key_code, pressed);
+      else
+        e.ch = pressed && is_char ? translated_key_code : 0;
       queue.Push(e);
     }
     break;
