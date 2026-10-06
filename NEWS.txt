@@ -1,4 +1,7 @@
 Version 7.45.4 - not yet released
+* Linux
+  - OpenVario: keep the display orientation set in XCSoar when the
+    device is switched off or restarted without quitting XCSoar first
 
 Version 7.45.3 - 2026-09-22
 * android
