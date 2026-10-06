@@ -93,6 +93,8 @@ Version 7.47 - not yet released
   - say why SkySight does not load when the server rejects the
     login (wrong e-mail or password, subscription not active, too
     many devices) instead of "Loading SkySight catalog..." #2860
+  - add a symbol page to the on-screen keyboard, so that passwords and
+    file names can contain all printable ASCII characters
 * documentation
   - describe the MacCready InfoBox speed-to-fly comment as true
     airspeed, labelled TAS, and the Setup switch for indicated

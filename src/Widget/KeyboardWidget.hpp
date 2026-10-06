@@ -19,7 +19,9 @@ public:
   typedef bool (*OnCharacterCallback_t)(unsigned ch);
 
 protected:
-  static constexpr unsigned MAX_BUTTONS = 40;
+  /* 36 digits and letters, Space, '.', '@', '-' and the 28 other
+     printable ASCII symbols of the symbol page */
+  static constexpr unsigned MAX_BUTTONS = 68;
 
   const ButtonLook &look;
 
@@ -32,6 +34,11 @@ protected:
 
   Button shift_button;
   bool shift_state;
+
+  /**
+   * Is the symbol page shown in place of the letters?
+   */
+  bool symbol_page = false;
 
   const bool show_shift_button;
 
@@ -56,6 +63,26 @@ public:
     :look(_look), on_character(_on_character), num_buttons(0),
      shift_state(_default_shift_state),
      show_shift_button(_show_shift_button) {}
+
+  /**
+   * Does this keyboard have a page with the symbols that the letters
+   * page lacks?  That is the case for free text input, the same
+   * condition as for the shift button.
+   */
+  bool HasSymbolPage() const noexcept {
+    return show_shift_button;
+  }
+
+  bool IsSymbolPage() const noexcept {
+    return symbol_page;
+  }
+
+  /**
+   * Show the symbol page in place of the letters, or the letters
+   * again.  The digits, Space, '.' and the '-' key are on both
+   * pages.
+   */
+  void SetSymbolPage(bool _symbol_page) noexcept;
 
   /**
    * Show only the buttons representing the specified character list.
@@ -101,6 +128,7 @@ private:
   }
 
   void UpdateShiftState() noexcept;
+  void UpdatePage() noexcept;
   void AddButton(ContainerWindow &parent, const char *caption, unsigned ch);
   void OnShiftClicked() noexcept;
 
