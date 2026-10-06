@@ -930,6 +930,31 @@ will be referenced as `Custom' set and will also be stored in your profile.
 
 
 %%%%%%%%%%%%%%%%%%
+\section{Setup / System Services}\label{sec:setup-system-services}
+
+This page is available on Linux.  The upper part lists the system
+services XCSoar knows (the SSH server, and on an OpenVario the sensor
+daemon \texttt{sensord} and the audio vario \texttt{variod}) and starts,
+stops or restarts them.
+
+On an OpenVario, the system functions of the OpenVario image follow
+below the list:
+
+\begin{description}
+\item[Firmware image]  The name of the OpenVario image the device is
+  running.  Please quote it when reporting a problem.
+\item[Start after boot]  The program the OpenVario starts when it is
+  switched on: XCSoar or OpenSoar.  The choice is stored when the
+  configuration dialogue is closed and takes effect with the next start
+  of the device.
+\item[Calibrate sensors]  Calibrates the pressure sensors of the
+  OpenVario sensor board.  The sensor daemon is stopped during the
+  calibration.  A sensor board that has never been initialised is
+  detected, and XCSoar offers to initialise it first.
+\end{description}
+
+
+%%%%%%%%%%%%%%%%%%
 \section{Setup / Time}
 
 Set the local time offset with respect to UTC.
