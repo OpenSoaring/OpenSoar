@@ -24,6 +24,10 @@ Version 7.47 - not yet released
     the controls for fingers, it does not take the mouse away (Linux
     and macOS with SDL as well)
 * Linux
+  - type lower case letters and all symbols with a keyboard attached to
+    a device without a desktop (Raspberry Pi, OpenVario), in the
+    keyboard layout given by XKB_DEFAULT_LAYOUT; until now it typed
+    upper case letters, digits and the space only
   - OpenVario: the configuration group "OpenVario" and the separate
     OpenVarioBaseMenu are gone; their functions are on the regular pages
     now, the same as in XCSoar (Setup → Screen, Setup → System Services,
