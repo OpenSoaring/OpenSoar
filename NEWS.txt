@@ -143,9 +143,10 @@ Version 7.47 - not yet released
   - OpenVario: keep the display orientation set in XCSoar when the
     device is switched off or restarted without quitting XCSoar first
   - OpenVario: calibrate the touch screen from Config → Setup → Screen
-  - OpenVario: show the running image, choose whether XCSoar or
-    OpenSoar starts after boot and calibrate the sensors below the
-    service list in Config → Setup → System Services
+  - OpenVario: show the running image, start the firmware upgrade,
+    choose whether XCSoar or OpenSoar starts after boot and calibrate
+    the sensors below the service list in Config → Setup → System
+    Services
 
 Version 7.46.1 - 2026-10-30
 * ui
