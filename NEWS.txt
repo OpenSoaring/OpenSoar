@@ -261,6 +261,11 @@ Version 7.47 - not yet released
     selects the newest flight
   - while the log book reads new files, the progress bar says "Analysis
     for the log book:" before the file name
+* Linux
+  - OpenVario: the configuration group "OpenVario" and the separate
+    OpenVarioBaseMenu are gone; their functions are on the regular pages
+    now, the same as in XCSoar (Setup → Screen, Setup → System Services,
+    Setup → Network, Data Management)
 
 Version 7.46.1 - 2026-10-30
 * ui
