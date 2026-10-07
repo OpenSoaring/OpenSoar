@@ -3,13 +3,19 @@
 
 #include "OpenVarioSystemWidget.hpp"
 #include "Dialogs/Error.hpp"
+#include "Dialogs/JobDialog.hpp"
 #include "Dialogs/Message.hpp"
 #include "Dialogs/ProcessDialog.hpp"
 #include "Form/DataField/Enum.hpp"
 #include "Form/Form.hpp"
 #include "Interface.hpp"
+#include "Job/Job.hpp"
+#include "UIActions.hpp"
+#include "util/StaticString.hxx"
 #include "Language/Language.hpp"
 #include "OpenVario/Calibrate.hpp"
+#include "OpenVario/FirmwareImage.hpp"
+#include "OpenVario/FirmwareImagePicker.hpp"
 #include "OpenVario/System.hpp"
 #include "Profile/Profile.hpp"
 #include "Profile/ProfileMap.hpp"
@@ -17,9 +23,6 @@
 #include "Version.hpp"
 #include "Widget/RowFormWidget.hpp"
 #include "system/Process.hpp"
-#include "ui/display/Display.hpp"
-#include "ui/event/Globals.hpp"
-#include "ui/event/Queue.hpp"
 #include "ui/window/SingleWindow.hpp"
 #include "util/StringAPI.hxx"
 
@@ -121,34 +124,88 @@ CheckNotFlying(const char *caption) noexcept
 }
 
 /**
- * Hand the screen over to the upgrade script of the image.  The
- * script lets the pilot choose an image (from the USB stick or the
- * data partition), writes it to the SD card and restarts the device;
- * cancelling it returns here.  It draws on the console, so XCSoar
- * gives up the display and the input devices until it is done.
+ * The exit code that asks ovmenu-ng.sh for a firmware upgrade
+ * (START_UPGRADE of ExitValues.hpp, which defines it on the OpenVario
+ * targets only).
  */
-static void
-UpgradeFirmware() noexcept
+static constexpr unsigned EXIT_START_UPGRADE = 205;
+
+/**
+ * Put the chosen image into $HOME/data/images, copying it from the
+ * USB stick first if necessary, in a thread so the progress shows.
+ */
+class StageFirmwareJob final : public Job {
+  const Path image;
+
+public:
+  AllocatedPath entry;
+  std::exception_ptr error;
+
+  explicit StageFirmwareJob(Path _image) noexcept:image(_image) {}
+
+  void Run(OperationEnvironment &env) override {
+    try {
+      entry = StageFirmwareImage(image, env);
+    } catch (...) {
+      error = std::current_exception();
+    }
+  }
+};
+
+/**
+ * Let the pilot choose (or download) an image, put it into
+ * $HOME/data/images and quit with EXIT_START_UPGRADE.  The upgrade
+ * itself cannot run while the program is still on the screen: the
+ * script draws on the console and rewrites the root file system.  So
+ * ovmenu-ng.sh starts fw-upgrade.sh with the one image it finds in
+ * data/images once the program has ended.
+ *
+ * Signature of WndProperty::EditCallback.
+ */
+static bool
+EditFirmware([[maybe_unused]] const char *caption,
+             [[maybe_unused]] DataField &df,
+             [[maybe_unused]] const char *help_text) noexcept
 {
   if (!CheckNotFlying(_("Upgrade firmware")))
-    return;
+    return false;
 
-  if (ShowMessageBox(_("The upgrade script lets you choose an image and "
-                       "restarts the device when it is done.  Settings "
-                       "changed in this dialog since it was opened are "
-                       "lost if the upgrade goes ahead.  Continue?"),
-                     _("Upgrade firmware"),
-                     MB_YESNO | MB_ICONQUESTION) != IDYES)
-    return;
+  const auto image = PickFirmwareImage(_("Upgrade firmware"), nullptr);
+  if (image == nullptr)
+    return false;
 
-  /* the restart at the end of the upgrade does not give XCSoar the
-     chance to save the profile */
+  StaticString<0x200> text;
+  text.Format(_("Upgrade the firmware to\n%s?\n\n%s quits and the upgrade "
+                "starts; the device reboots afterwards."),
+              image.GetBase().c_str(), main_app_values[RunningApp()]);
+  if (ShowMessageBox(text, _("Upgrade firmware"),
+                     MB_OKCANCEL | MB_ICONQUESTION) != IDOK)
+    return false;
+
+  StageFirmwareJob job{image};
+  JobDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
+            _("Upgrade firmware"), job, true);
+  if (job.error) {
+    ShowError(job.error, _("Upgrade firmware"));
+    return false;
+  }
+
+  if (job.entry == nullptr)
+    /* cancelled while copying */
+    return false;
+
+  /* nothing saves the profile once the upgrade has begun */
   Profile::Save();
 
-  auto &main_window = UIGlobals::GetMainWindow();
-  const UI::ScopeDropMaster drop_master{main_window.GetDisplay()};
-  const UI::ScopeSuspendEventQueue suspend_event_queue{*UI::event_queue};
-  Run("/usr/bin/fw-upgrade.sh");
+  ContainerWindow::SetExitValue(EXIT_START_UPGRADE);
+  /* no further "Quit?" question: the pilot has confirmed already */
+  UIActions::SignalShutdown(true);
+  /* SignalShutdown() closes the main window, but while dialogs are
+     open that only cancels the top-most one; ending the event loop
+     makes every modal loop return, the configuration dialog
+     included, and the regular shutdown then runs with the exit value */
+  UIGlobals::GetMainWindow().PostQuit();
+  return false;
 }
 
 /**
@@ -239,12 +296,15 @@ OpenVarioSystemWidget::Prepare(ContainerWindow &parent,
 {
   RowFormWidget::Prepare(parent, rc);
 
+  /* a short caption leaves the row's width to the image name; a
+     click on it starts the upgrade */
   const std::string image = OpenvarioGetImageName();
-  AddReadOnly(_("Firmware image"),
-              _("The OpenVario image this device is running."),
-              image.empty() ? _("Unknown") : image.c_str());
-
-  AddButton(_("Upgrade firmware"), UpgradeFirmware);
+  AddText(_("Firmware"),
+          _("The OpenVario image this device is running.  Click to choose "
+            "or download another image and upgrade to it: the program "
+            "quits and the upgrade starts."),
+          image.empty() ? _("Unknown") : image.c_str())
+    ->SetEditCallback(EditFirmware);
 
   main_app = LoadMainApp();
   AddEnum(_("Start after boot"),
