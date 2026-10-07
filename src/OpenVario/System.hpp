@@ -122,3 +122,19 @@ HasRealMount(std::string_view mounts, std::string_view path) noexcept
  */
 bool
 OpenvarioIsUsbStickMounted() noexcept;
+
+/**
+ * Ask the program to end with this exit code instead of its own: the
+ * start script of the OpenVario image reads it (205 runs the firmware
+ * upgrade with the image in $HOME/data/images).  The caller still has
+ * to make the program quit.
+ */
+void
+OpenvarioSetExitCode(int code) noexcept;
+
+/**
+ * @return the code set by OpenvarioSetExitCode(), or 0
+ */
+[[gnu::pure]]
+int
+OpenvarioGetExitCode() noexcept;

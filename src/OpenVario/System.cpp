@@ -126,3 +126,17 @@ try {
 } catch (...) {
   return false;
 }
+
+static int openvario_exit_code = 0;
+
+void
+OpenvarioSetExitCode(int code) noexcept
+{
+  openvario_exit_code = code;
+}
+
+int
+OpenvarioGetExitCode() noexcept
+{
+  return openvario_exit_code;
+}

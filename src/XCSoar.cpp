@@ -6,6 +6,11 @@
  * @file XCSoar.cpp
  */
 
+#if defined(__linux__) && !defined(ANDROID) && !defined(KOBO)
+/* src/OpenVario/System.cpp is built for these targets (build/main.mk) */
+#include "OpenVario/System.hpp"
+#define HAVE_OPENVARIO_EXIT_CODE
+#endif
 #include "Startup.hpp"
 #include "LocalPath.hpp"
 #include "Version.hpp"
@@ -95,6 +100,12 @@ Main()
     ShowPendingSystemToolResult();
 #endif
     ret = CommonInterface::main_window->RunEventLoop();
+#ifdef HAVE_OPENVARIO_EXIT_CODE
+    /* the OpenVario system page asks the start script for the next
+       step (the firmware upgrade) through the exit code */
+    if (const int code = OpenvarioGetExitCode(); code != 0)
+      ret = code;
+#endif
   } else if (WasStartupCancelledByUser())
     /* quitting from the startup dialogs is a deliberate user action,
        not an error */

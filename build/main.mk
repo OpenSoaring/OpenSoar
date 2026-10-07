@@ -831,7 +831,9 @@ XCSOAR_SOURCES += \
 	$(SRC)/Dialogs/Settings/Panels/OpenVarioSystemWidget.cpp \
 	$(SRC)/Dialogs/ProcessDialog.cpp \
 	$(SRC)/OpenVario/System.cpp \
-	$(SRC)/OpenVario/Calibrate.cpp
+	$(SRC)/OpenVario/Calibrate.cpp \
+	$(SRC)/OpenVario/FirmwareImage.cpp \
+	$(SRC)/OpenVario/FirmwareImagePicker.cpp
 
 ifeq ($(USE_POLL_EVENT),y)
 SYSTEM_TOOLS_DIRECTORY ?= /usr/libexec/xcsoar/system-tools
