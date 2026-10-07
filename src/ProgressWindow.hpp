@@ -8,7 +8,6 @@
 #include "ui/canvas/Bitmap.hpp"
 #include "ui/canvas/Color.hpp"
 #include "Gauge/LogoView.hpp"
-#include "util/StaticString.hxx"
 
 /**
  * The XCSoar splash screen with a progress bar.
@@ -25,13 +24,14 @@ class ProgressWindow : public ContainerWindow {
 
   LogoView logo;
 
-  StaticString<128> message;
-
+  /**
+   * Shows the message of SetMessage() inside the bar.
+   */
   ProgressBar progress_bar;
 
   unsigned text_height;
 
-  PixelRect logo_position, message_position;
+  PixelRect logo_position;
   PixelRect bottom_position, progress_bar_position;
 
 public:

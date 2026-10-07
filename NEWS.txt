@@ -162,6 +162,8 @@ Version 7.45.4 - not yet released
     keyboard layout given by XKB_DEFAULT_LAYOUT; until now it typed
     upper case letters, digits and the space only
 * dialogs
+  - progress bars show their text inside the bar, light on the part
+    already done and dark on the rest, instead of above the bar
   - add a symbol page to the on-screen keyboard, so that passwords and
     file names can contain all printable ASCII characters
 

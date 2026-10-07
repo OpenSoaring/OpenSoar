@@ -8,6 +8,8 @@
 #include "Look/FontDescription.hpp"
 #include "Resources.hpp"
 
+#include <algorithm>
+
 #ifdef USE_WINUSER
 #include "ui/canvas/AnyCanvas.hpp"
 #else
@@ -19,8 +21,6 @@ ProgressWindow::ProgressWindow(ContainerWindow &parent) noexcept
                     ? COLOR_DARK_THEME_BACKGROUND : COLOR_WHITE),
    dark_mode(GlobalSettings::dark_mode)
 {
-  message.clear();
-
   PixelRect rc = parent.GetClientRect();
   WindowStyle style;
   style.Hide();
@@ -43,6 +43,9 @@ ProgressWindow::ProgressWindow(ContainerWindow &parent) noexcept
 
   // Initialize progress bar
   progress_bar.Create(*this, progress_bar_position);
+#ifndef USE_WINUSER
+  progress_bar.SetFont(font);
+#endif
 
   // Set progress bar step size and range
   SetRange(0, 1000);
@@ -57,17 +60,15 @@ ProgressWindow::UpdateLayout(PixelRect rc) noexcept
 {
   const unsigned height = rc.GetHeight();
 
-  // Make progress bar height proportional to window height
-  const unsigned progress_height = height / 20;
+  /* Make progress bar height proportional to window height, but high
+     enough for the message, which is drawn inside the bar */
+  const unsigned progress_height =
+    std::max(height / 20, text_height + text_height / 2);
   const unsigned progress_horizontal_border = progress_height / 2;
   const unsigned progress_border_height = progress_height * 2;
 
   logo_position = rc;
   logo_position.bottom -= progress_border_height;
-
-  message_position = rc;
-  message_position.bottom -= progress_border_height + height / 48;
-  message_position.top = message_position.bottom - text_height;
 
   bottom_position = rc;
   bottom_position.top = bottom_position.bottom - progress_border_height;
@@ -83,11 +84,7 @@ ProgressWindow::SetMessage(const char *text) noexcept
 {
   AssertThread();
 
-  if (text == nullptr)
-    text = "";
-
-  message = text;
-  Invalidate(message_position);
+  progress_bar.SetText(text);
 }
 
 void
@@ -139,16 +136,6 @@ ProgressWindow::OnPaint(Canvas &canvas) noexcept
   // Draw progress bar background
   canvas.Stretch(bottom_position.GetTopLeft(), bottom_position.GetSize(),
                  bitmap_progress_border);
-
-#ifndef USE_WINUSER
-  canvas.Select(font);
-#endif
-  canvas.SetBackgroundTransparent();
-  canvas.SetTextColor(dark_mode ? COLOR_WHITE : COLOR_BLACK);
-  canvas.DrawText({(message_position.left + message_position.right
-                    - (int)canvas.CalcTextWidth(message.c_str())) / 2,
-      message_position.top},
-                  message.c_str());
 
   ContainerWindow::OnPaint(canvas);
 }
