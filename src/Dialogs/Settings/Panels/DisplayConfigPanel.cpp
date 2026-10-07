@@ -264,11 +264,15 @@ DisplayConfigPanel::Prepare(ContainerWindow &parent,
      image; the button sits here because the calibration belongs to
      the screen, and it is the last row so that the indices above do
      not depend on it */
-  if (IsOpenVario())
-    AddButton(_("Calibrate touch screen"), []{
+  if (IsOpenVario()) {
+    auto *button = AddButton(_("Calibrate touch screen"), []{
       CalibrateTouch(UIGlobals::GetMainWindow().GetDisplay(),
                      *UI::event_queue);
     });
+
+    /* without a touch input device the script could only fail */
+    button->SetEnabled(HasTouchScreenDevice());
+  }
 #endif
 }
 
