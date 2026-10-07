@@ -138,13 +138,16 @@ WndProperty::SetCaptionWidth(int _caption_width) noexcept
 bool
 WndProperty::BeginEditing() noexcept
 {
-  if (IsReadOnly() || data_field == nullptr || edit_callback == nullptr) {
-    /* If readonly and has content, show full content dialog */
-    if (IsReadOnly() && !value.empty()) {
+  if (IsReadOnly()) {
+    /* A read-only field has nothing to edit.  The dialog with the full
+       content is only useful when the field does not show all of it;
+       for a short status text it would merely repeat the field. */
+    if (HasHiddenContent())
       ShowFullContent();
-      return false;
-    }
-    
+    return false;
+  }
+
+  if (data_field == nullptr || edit_callback == nullptr) {
     OnHelp();
     return false;
   } else {
@@ -154,6 +157,25 @@ WndProperty::BeginEditing() noexcept
     RefreshDisplay();
     return true;
   }
+}
+
+bool
+WndProperty::HasHiddenContent() const noexcept
+{
+  if (value.empty())
+    return false;
+
+#if defined(HAVE_RUN_FILE) && !defined(ANDROID)
+  /* the dialog has an "Open" button for a path */
+  if (Path(value.c_str()).IsAbsolute())
+    return true;
+#endif
+
+  /* the same space OnPaint() leaves for the text */
+  const int avail = std::max(0,
+                             static_cast<int>(edit_rc.GetWidth()) -
+                             static_cast<int>(Layout::GetTextPadding()) * 4);
+  return static_cast<int>(look.text_font.TextSize(value).width) > avail;
 }
 
 void
@@ -217,7 +239,10 @@ WndProperty::OnResize(PixelSize new_size) noexcept
 bool
 WndProperty::OnMouseDown([[maybe_unused]] PixelPoint p) noexcept
 {
-  if (!IsReadOnly() || HasHelp()) {
+  /* A read-only field reacts only if the click can show something:
+     before, any read-only field with a help text did, and the dialog
+     then just repeated the short value next to a "Close" button. */
+  if (!IsReadOnly() || HasHiddenContent()) {
     dragging = true;
     pressed = true;
     Invalidate();
