@@ -3934,6 +3934,10 @@ msgstr ""
 msgid "Log book"
 msgstr "Flugbuch"
 
+#, c-format
+msgid "Analysis for the log book: %s"
+msgstr "Analyse für das Flugbuch: %s"
+
 msgid "Rebuild"
 msgstr "Neu aufbauen"
 
