@@ -12308,3 +12308,21 @@ msgstr "%s (%s) ließ sich nicht starten."
 #, c-format
 msgid "Last messages of %s:"
 msgstr "Letzte Meldungen von %s:"
+
+#, c-format
+msgid "No touch screen found (%s)."
+msgstr "Kein Touchscreen gefunden (%s)."
+
+#, c-format
+msgid "The touch screen was not touched for %u seconds, so the calibration was stopped. Is a touch panel connected?"
+msgstr "Der Touchscreen wurde %u Sekunden lang nicht berührt, deshalb wurde die Kalibrierung beendet. Ist ein Touch-Panel angeschlossen?"
+
+#, c-format
+msgid "The calibration took longer than %u minutes and was stopped."
+msgstr "Die Kalibrierung dauerte länger als %u Minuten und wurde beendet."
+
+msgid "The touch screen calibration failed."
+msgstr "Die Kalibrierung des Touchscreens ist fehlgeschlagen."
+
+msgid "Calibrate touch screen"
+msgstr "Touchscreen kalibrieren"
