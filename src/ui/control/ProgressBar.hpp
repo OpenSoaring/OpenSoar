@@ -10,7 +10,7 @@
 class ProgressBar : public PaintWindow {
   unsigned min_value = 0, max_value = 0, value = 0, step_size = 1;
 
-  StaticString<64> caption;
+  StaticString<256> caption;
   Font font;
 
 public:
