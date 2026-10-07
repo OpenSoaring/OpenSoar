@@ -8,7 +8,6 @@
 #include "Look/FontDescription.hpp"
 #include "Look/Colors.hpp"
 #include "Screen/Layout.hpp"
-#include "Asset.hpp"
 
 #include <algorithm>
 
@@ -81,9 +80,11 @@ void
 ProgressBar::OnPaint(Canvas &canvas) noexcept
 {
 #ifdef ROUND_PROGRESS_BAR
-  DrawRoundProgressBar(canvas, canvas.GetRect(), value, min_value, max_value);
+  const int fill_end =
+    DrawRoundProgressBar(canvas, canvas.GetRect(), value, min_value, max_value);
 #else
-  DrawSimpleProgressBar(canvas, canvas.GetRect(), value, min_value, max_value);
+  const int fill_end =
+    DrawSimpleProgressBar(canvas, canvas.GetRect(), value, min_value, max_value);
 #endif
 
   if (caption.empty() || !font.IsDefined())
@@ -93,37 +94,20 @@ ProgressBar::OnPaint(Canvas &canvas) noexcept
   canvas.SetBackgroundTransparent();
 
   const PixelSize size = canvas.CalcTextSize(caption);
-  const int x = (int(canvas.GetWidth()) - int(size.width)) / 2;
+  const int x = std::max((int(canvas.GetWidth()) - int(size.width)) / 2,
+                         int(size.height) / 2);
   const int y = (int(canvas.GetHeight()) - int(size.height)) / 2;
 
   canvas.SetTextColor(COLOR_BLACK);
-  canvas.DrawText({x, y}, caption);
+  canvas.DrawClippedText({x, y}, canvas.GetRect(), std::string_view{caption});
 
-  /* On a black e-paper fill, redraw the part that sits on the bar
-     in white.  The colour fill is light, so black stays readable. */
-  if (!IsDithered() || max_value <= min_value)
-    return;
-
-  const unsigned clamped = std::clamp(value, min_value, max_value);
-  unsigned fill;
-#ifdef ROUND_PROGRESS_BAR
-  /* Same inset as DrawRoundProgressBar, so the white slice ends
-     with the fill and not past the track cap. */
-  const unsigned margin = canvas.GetHeight() / 9;
-  const unsigned width = canvas.GetWidth();
-  if (width <= 2 * margin)
-    return;
-  fill = margin
-    + (clamped - min_value) * (width - 2 * margin)
-      / (max_value - min_value);
-#else
-  fill = (clamped - min_value) * canvas.GetWidth()
-    / (max_value - min_value);
-#endif
-  if (x >= int(fill))
+  /* Redraw the part that sits on the filled bar in white, so the text
+     changes from dark to light where the bar has grown underneath it;
+     the fill is dark enough for that, in colour and on e-paper. */
+  if (x >= fill_end)
     return;
 
   canvas.SetTextColor(COLOR_WHITE);
-  canvas.DrawClippedText({x, y}, unsigned(int(fill) - x),
+  canvas.DrawClippedText({x, y}, unsigned(fill_end - x),
                          std::string_view{caption});
 }

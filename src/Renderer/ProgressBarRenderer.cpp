@@ -20,7 +20,7 @@ CalcProgressBarPosition(unsigned current_value,
   return (value - min_value) * width / (max_value - min_value);
 }
 
-void
+int
 DrawSimpleProgressBar(Canvas &canvas, const PixelRect &r,
                       unsigned current_value,
                       unsigned min_value, unsigned max_value,
@@ -43,9 +43,10 @@ DrawSimpleProgressBar(Canvas &canvas, const PixelRect &r,
   canvas.DrawFilledRectangle(b,
                              background_color != nullptr
                              ? *background_color : COLOR_WHITE);
+  return a.right;
 }
 
-void
+int
 DrawRoundProgressBar(Canvas &canvas, const PixelRect &r,
                      unsigned current_value,
                      unsigned min_value, unsigned max_value,
@@ -66,15 +67,17 @@ DrawRoundProgressBar(Canvas &canvas, const PixelRect &r,
   const unsigned margin = r.GetHeight() / 9;
   const unsigned width = r.GetWidth();
   if (width <= 2 * margin)
-    return;
+    return r.left;
 
   const unsigned position =
     CalcProgressBarPosition(current_value, min_value, max_value,
                             width - 2 * margin);
   if (position == 0)
-    return;
+    return r.left;
 
-  Brush progress_brush(IsDithered() ? COLOR_BLACK : COLOR_XCSOAR_LIGHT);
+  /* dark enough for the white text that ProgressBar draws on the
+     filled part */
+  Brush progress_brush(IsDithered() ? COLOR_BLACK : COLOR_XCSOAR);
   canvas.Select(progress_brush);
   unsigned top, bottom;
   if (position <= r.GetHeight() - 2 * margin) {
@@ -91,4 +94,5 @@ DrawRoundProgressBar(Canvas &canvas, const PixelRect &r,
                                       r.left + int(margin + position),
                                       r.top + int(bottom)),
                             PixelSize{r.GetHeight()});
+  return r.left + int(margin + position);
 }
