@@ -12,9 +12,6 @@
 #include "LogFile.hpp"
 #include "CommandLine.hpp"
 #include "PowerControl.hpp"
-#ifdef IS_OPENVARIO
-#include "OpenVario/System/OpenVarioDevice.hpp"
-#endif
 #include "SystemConfig.hpp"
 #include "MainWindow.hpp"
 #include "ui/window/ContainerWindow.hpp"
@@ -158,13 +155,6 @@ try {
 #endif
 
   InitialiseDataPath();
-
-#ifdef IS_OPENVARIO
-  /* deliberately not in the global constructor: this needs the data
-     path, and globals of other translation units are not alive that
-     early */
-  ovdevice.Initialise();
-#endif
 
   CommandLine::ApplyPendingProfile();
 

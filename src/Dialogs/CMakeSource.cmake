@@ -188,26 +188,6 @@ if(IS_OPENSOAR)
   )
 endif()
 
-if(TARGET_IS_OPENVARIO)
-  list(APPEND _SOURCES
-        ../OpenVario/FileMenuWidget.cpp
-        ../OpenVario/DisplaySettingsWidget.cpp
-        ../OpenVario/SystemSettingsWidget.cpp
-        ../OpenVario/ExtraWidget.cpp
-
-        ../OpenVario/System/OpenVarioDevice.cpp
-        ../OpenVario/System/OpenVarioTools.cpp
-        ../OpenVario/System/FirmwareImagePicker.cpp
-        ../OpenVario/System/SystemMenuWidget.cpp
-        ../OpenVario/System/Setting/RotationWidget.cpp
-        ../OpenVario/System/Setting/WifiWidget.cpp
-        ../OpenVario/System/WifiDialogOV.cpp
-        ../OpenVario/System/WifiSupplicantOV.cpp
-
-        Dialogs/ProcessDialog.cpp
-  )
-endif(TARGET_IS_OPENVARIO)
-
 if(ENABLE_SDL OR ENABLE_ALSA OR ANDROID)   # upstream: HAVE_PCM_PLAYER
   list(APPEND _SOURCES
         Dialogs/Settings/Panels/AudioVarioConfigPanel.cpp

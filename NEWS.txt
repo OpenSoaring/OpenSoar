@@ -144,6 +144,11 @@ Version 7.45.4 - not yet released
 * glide computer
   - a takeoff starts a new trace and contest: the second flight of a
     session (e.g. the next winch launch) no longer counts the one before
+* Linux
+  - OpenVario: the configuration group "OpenVario" and the separate
+    OpenVarioBaseMenu are gone; their functions are on the regular pages
+    now, the same as in XCSoar (Look → Display, Setup → Services,
+    Setup → Network, Data Management)
 
 Version 7.45.3 - 2026-09-22
 * android
