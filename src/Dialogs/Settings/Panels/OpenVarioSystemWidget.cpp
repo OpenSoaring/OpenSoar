@@ -297,6 +297,14 @@ OpenVarioSystemWidget::Prepare(ContainerWindow &parent,
 {
   RowFormWidget::Prepare(parent, rc);
 
+  /* Below the service list in TwoWidgets, this panel is created in
+     Initialise(), the list and its buttons only in Prepare(), so the
+     panel came first among the siblings.  The cursor keys follow that
+     order: Down from the list left the page and skipped these rows,
+     Up reached them only from the other end.  Moving the panel behind
+     the list makes the keys go list, buttons, these rows. */
+  GetWindow().BringToBottom();
+
   /* a short caption leaves the row's width to the image name; a
      click on it starts the upgrade */
   const std::string image = OpenvarioGetImageName();
