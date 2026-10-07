@@ -28,6 +28,7 @@ Version 7.47 - not yet released
     Setup → Network, Data Management)
   - OpenVario: keep the display orientation set in OpenSoar when the
     device is switched off or restarted without quitting OpenSoar first
+  - OpenVario: calibrate the touch screen from Config → Setup → Screen
 * input
   - load several input events files: they are read on top of the
     built-in configuration in the order of their names, so each file
