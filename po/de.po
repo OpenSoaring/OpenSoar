@@ -12257,3 +12257,54 @@ msgstr "Kopieren: %s"
 
 msgid "The OpenVario image this device is running.  Click to choose or download another image and upgrade to it: the program quits and the upgrade starts."
 msgstr "Das OpenVario-Image, das auf diesem Gerät läuft.  Ein Klick wählt ein anderes Image (oder lädt es herunter) und aktualisiert darauf: das Programm wird beendet und die Aktualisierung beginnt."
+
+msgid "The program could not be executed."
+msgstr "Das Programm ließ sich nicht ausführen."
+
+#, c-format
+msgid "The program ended with exit code %d."
+msgstr "Das Programm endete mit dem Rückgabewert %d."
+
+#, c-format
+msgid "The program was ended by signal %d."
+msgstr "Das Programm wurde durch Signal %d beendet."
+
+msgid "The program ended without reporting an error."
+msgstr "Das Programm endete, ohne einen Fehler zu melden."
+
+msgid "It was started too often within a short time."
+msgstr "Er wurde in kurzer Zeit zu oft gestartet."
+
+msgid "systemd could not prepare its start, for instance because a file or directory is missing."
+msgstr "systemd konnte den Start nicht vorbereiten, zum Beispiel weil eine Datei oder ein Verzeichnis fehlt."
+
+#, c-format
+msgid "systemd reports \"%s\"."
+msgstr "systemd meldet „%s“."
+
+msgid "It stopped again right after the start."
+msgstr "Er hat sich gleich nach dem Start wieder beendet."
+
+msgid "A service it needs could not be started."
+msgstr "Ein Dienst, den er braucht, ließ sich nicht starten."
+
+#, c-format
+msgid "A service it needs could not be started: %s"
+msgstr "Ein Dienst, den er braucht, ließ sich nicht starten: %s"
+
+msgid "systemd reports the start as failed."
+msgstr "systemd meldet den Start als fehlgeschlagen."
+
+msgid "systemd gave up waiting for the start."
+msgstr "systemd hat das Warten auf den Start aufgegeben."
+
+msgid "The start was canceled."
+msgstr "Der Start wurde abgebrochen."
+
+#, c-format
+msgid "%s (%s) could not be started."
+msgstr "%s (%s) ließ sich nicht starten."
+
+#, c-format
+msgid "Last messages of %s:"
+msgstr "Letzte Meldungen von %s:"

@@ -21,7 +21,7 @@
 
 namespace Systemd {
 
-void
+std::string
 WaitJobRemoved(ODBus::Connection &connection, const char *object_path,
                int timeout_ms)
 {
@@ -68,7 +68,7 @@ WaitJobRemoved(ODBus::Connection &connection, const char *object_path,
         error.Throw("JobRemoved failed");
 
       if (StringIsEqual(removed_object_path, object_path))
-        break;
+        return result_string;
     }
   }
 }
@@ -287,7 +287,7 @@ IsUnitActive(ODBus::Connection &connection, const char *name)
   }
 }
 
-void
+std::string
 StartUnit(ODBus::Connection &connection,
        const char *name, const char *mode, int timeout_ms)
 {
@@ -307,10 +307,10 @@ StartUnit(ODBus::Connection &connection,
   if (!reply.GetArgs(error, DBUS_TYPE_OBJECT_PATH, &object_path))
     error.Throw("StartUnit reply failed");
 
-  WaitJobRemoved(connection, object_path, timeout_ms);
+  return WaitJobRemoved(connection, object_path, timeout_ms);
 }
 
-void
+std::string
 StopUnit(ODBus::Connection &connection,
       const char *name, const char *mode, int timeout_ms)
 {
@@ -330,7 +330,7 @@ StopUnit(ODBus::Connection &connection,
   if (!reply.GetArgs(error, DBUS_TYPE_OBJECT_PATH, &object_path))
     error.Throw("StopUnit reply failed");
 
-  WaitJobRemoved(connection, object_path, timeout_ms);
+  return WaitJobRemoved(connection, object_path, timeout_ms);
 }
 
 bool
@@ -356,7 +356,7 @@ UnitExists(ODBus::Connection &connection, const char *name) noexcept
   }
 }
 
-void
+std::string
 RestartUnit(ODBus::Connection &connection,
             const char *name, const char *mode, int timeout_ms)
 {
@@ -376,7 +376,7 @@ RestartUnit(ODBus::Connection &connection,
   if (!reply.GetArgs(error, DBUS_TYPE_OBJECT_PATH, &object_path))
     error.Throw("RestartUnit reply failed");
 
-  WaitJobRemoved(connection, object_path, timeout_ms);
+  return WaitJobRemoved(connection, object_path, timeout_ms);
 }
 
 void
