@@ -155,6 +155,8 @@ Version 7.45.4 - not yet released
   - OpenVario: show the running image, start the firmware upgrade,
     choose whether XCSoar or OpenSoar starts after boot and calibrate
     the sensors below the service list in Config → Setup → Services
+  - OpenVario: back up the whole system to a USB stick and restore it,
+    in Config → Setup → Services
 
 Version 7.45.3 - 2026-09-22
 * android
