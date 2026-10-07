@@ -237,6 +237,11 @@ CheckFileContent(Path path, FileType type) noexcept
     return IsGzip(head)
       ? FileCheckResult::OK
       : FileCheckResult::MISMATCH;
+
+  case FileType::OV_UPGRADE:
+  case FileType::OV_IPK:
+    /* not checked (yet): nothing here looks into these files */
+    break;
 #endif  // IS_OPENVARIO
 
   case FileType::FLARMNET:

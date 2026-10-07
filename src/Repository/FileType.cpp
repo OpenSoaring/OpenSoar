@@ -67,6 +67,12 @@ GetFileTypePatterns(const FileType file_type) noexcept
 #ifdef IS_OPENVARIO
   case FileType::OV_IMAGE:
     return "*.img.gz\0";
+
+  case FileType::OV_UPGRADE:
+    return "*.zip\0";
+
+  case FileType::OV_IPK:
+    return "*.ipk\0";
 #endif  // IS_OPENVARIO
 
   case FileType::UNKNOWN:
@@ -135,6 +141,8 @@ GetFileTypeDefaultDir(const FileType file_type)
 
 #ifdef IS_OPENVARIO
   case FileType::OV_IMAGE:
+  case FileType::OV_UPGRADE:
+  case FileType::OV_IPK:
 #endif  // IS_OPENVARIO
 
   case FileType::UNKNOWN:
