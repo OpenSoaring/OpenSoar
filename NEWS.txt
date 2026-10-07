@@ -26,6 +26,8 @@ Version 7.47 - not yet released
     OpenVarioBaseMenu are gone; their functions are on the regular pages
     now, the same as in XCSoar (Setup → Screen, Setup → System Services,
     Setup → Network, Data Management)
+  - OpenVario: keep the display orientation set in OpenSoar when the
+    device is switched off or restarted without quitting OpenSoar first
 * input
   - load several input events files: they are read on top of the
     built-in configuration in the order of their names, so each file
