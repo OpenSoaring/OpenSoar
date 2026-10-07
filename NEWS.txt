@@ -141,6 +141,10 @@ Version 7.47 - not yet released
     without restarting. This covers the map, waypoints, airspace,
     RASP, FLARMNet, the checklist, and the input file #1115 #3092
 * airspace
+  - progress dialogs show their message and the percentage inside the
+    bar, on one line, light on the part already done and dark on the
+    rest; the line above the bar and the amount, speed and time
+    remaining are gone
   - add a symbol page to the on-screen keyboard, so that passwords and
     file names can contain all printable ASCII characters
   - new fill mode "Thin lines": no fill, outlines one pixel wide
