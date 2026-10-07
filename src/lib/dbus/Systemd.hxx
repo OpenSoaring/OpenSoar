@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <string>
+
 namespace ODBus {
 class Connection;
 }
@@ -27,8 +29,12 @@ constexpr auto unit_removed_match = "type='signal',"
  *
  * @param timeout_ms maximum time to wait for completion, or -1 to wait
  * indefinitely
+ * @return the result systemd reports for the job: "done", "failed",
+ * "dependency", "timeout", "canceled", "skipped" and so on; "done"
+ * means the job is finished, not that a started service is still
+ * running
  */
-void
+std::string
 WaitJobRemoved(ODBus::Connection &connection, const char *object_path,
 	       int timeout_ms=-1);
 
@@ -84,8 +90,10 @@ IsUnitActive(ODBus::Connection &connection, const char *name);
  * Note: the caller must establish a match on "JobRemoved".
  *
  * Throws on error.
+ *
+ * @return the job result, see WaitJobRemoved()
  */
-void
+std::string
 StartUnit(ODBus::Connection &connection,
 	  const char *name, const char *mode="replace", int timeout_ms=-1);
 
@@ -93,8 +101,10 @@ StartUnit(ODBus::Connection &connection,
  * Note: the caller must establish a match on "JobRemoved".
  *
  * Throws on error.
+ *
+ * @return the job result, see WaitJobRemoved()
  */
-void
+std::string
 StopUnit(ODBus::Connection &connection,
 	 const char *name, const char *mode="replace", int timeout_ms=-1);
 
@@ -113,8 +123,10 @@ UnitExists(ODBus::Connection &connection, const char *name) noexcept;
  * Note: the caller must establish a match on "JobRemoved".
  *
  * Throws on error.
+ *
+ * @return the job result, see WaitJobRemoved()
  */
-void
+std::string
 RestartUnit(ODBus::Connection &connection,
 	    const char *name, const char *mode="replace", int timeout_ms=-1);
 
