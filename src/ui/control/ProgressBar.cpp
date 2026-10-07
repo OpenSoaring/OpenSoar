@@ -4,7 +4,9 @@
 #include "ProgressBar.hpp"
 #include "ui/canvas/Features.hpp"
 #include "ui/canvas/Canvas.hpp"
+#include "ui/canvas/Font.hpp"
 #include "Renderer/ProgressBarRenderer.hpp"
+#include "Look/Colors.hpp"
 #include "thread/Debug.hpp"
 
 void
@@ -49,6 +51,21 @@ ProgressBar::Step()
   Invalidate();
 }
 
+void
+ProgressBar::SetText(const char *_text) noexcept
+{
+  AssertThread();
+
+  if (_text == nullptr)
+    _text = "";
+
+  if (text == _text)
+    return;
+
+  text = _text;
+  Invalidate();
+}
+
 #if defined(EYE_CANDY) && !defined(HAVE_CLIPPING)
 /* when the Canvas is clipped, we can't render rounded corners,
    because the parent's background would not be left visible then */
@@ -59,8 +76,17 @@ void
 ProgressBar::OnPaint(Canvas &canvas) noexcept
 {
 #ifdef ROUND_PROGRESS_BAR
-  DrawRoundProgressBar(canvas, canvas.GetRect(), value, min_value, max_value);
+  const int fill_end =
+    DrawRoundProgressBar(canvas, canvas.GetRect(), value, min_value, max_value);
 #else
-  DrawSimpleProgressBar(canvas, canvas.GetRect(), value, min_value, max_value);
+  const int fill_end =
+    DrawSimpleProgressBar(canvas, canvas.GetRect(), value, min_value, max_value);
 #endif
+
+  if (!text.empty()) {
+    if (font != nullptr)
+      canvas.Select(*font);
+    DrawProgressBarText(canvas, canvas.GetRect(), fill_end, text,
+                        COLOR_WHITE, COLOR_BLACK, true);
+  }
 }
