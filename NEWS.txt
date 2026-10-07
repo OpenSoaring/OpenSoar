@@ -262,6 +262,12 @@ Version 7.47 - not yet released
   - while the log book reads new files, the progress bar says "Analysis
     for the log book:" before the file name
 * Linux
+  - OpenVario: a click on the firmware in Config → Setup → System
+    Services lists the images (download directory and USB stick) with
+    Download and Delete; the chosen image becomes the only entry of
+    data/images (a hard link; an image from the stick is copied into the
+    download directory first), OpenSoar quits and the start script runs
+    the upgrade
   - OpenVario: back up the whole system to a USB stick and restore it,
     in Config → Setup → System Services
   - OpenVario: show the running image, start the firmware upgrade,
