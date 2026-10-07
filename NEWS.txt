@@ -321,6 +321,11 @@ Version 7.47 - not yet released
     OpenVarioBaseMenu are gone; their functions are on the regular pages
     now, the same as in XCSoar (Setup → Screen, Setup → System Services,
     Setup → Network, Data Management)
+* repository
+  - the download lists also offer the files of the OpenSoar repository
+    (opensoar.de/releases/repository), and on the OpenVario those of
+    ftp.openvario.org/repository, without entering them as a user
+    repository first
 
 Version 7.46.1 - 2026-10-30
 * ui
