@@ -29,9 +29,10 @@
 #include <string>
 #include <string_view>
 
+/* the order of the rows Prepare() adds; the firmware row starts the
+   upgrade itself, there is no button of its own any more */
 enum ControlIndex {
   IMAGE,
-  UPGRADE,
   MAIN_APP,
   CALIBRATE_SENSORS,
   SYSTEM_BACKUP,
