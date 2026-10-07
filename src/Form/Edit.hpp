@@ -105,6 +105,14 @@ private:
    */
   void ShowFullContent() noexcept;
 
+  /**
+   * Does a click on this read-only field have anything to show?  That
+   * is the case if the value is cut off in the field, or if it is a
+   * path the full-content dialog offers to open.
+   */
+  [[gnu::pure]]
+  bool HasHiddenContent() const noexcept;
+
 protected:
   void OnResize(PixelSize new_size) noexcept override;
   void OnSetFocus() noexcept override;
