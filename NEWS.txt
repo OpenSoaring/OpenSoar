@@ -149,6 +149,8 @@ Version 7.45.4 - not yet released
     OpenVarioBaseMenu are gone; their functions are on the regular pages
     now, the same as in XCSoar (Look → Display, Setup → Services,
     Setup → Network, Data Management)
+  - OpenVario: keep the display orientation set in OpenSoar when the
+    device is switched off or restarted without quitting OpenSoar first
 
 Version 7.45.3 - 2026-09-22
 * android
