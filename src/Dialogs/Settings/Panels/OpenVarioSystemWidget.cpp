@@ -4,12 +4,15 @@
 #include "OpenVarioSystemWidget.hpp"
 #include "Dialogs/Error.hpp"
 #include "Dialogs/Message.hpp"
+#include "Dialogs/ProcessDialog.hpp"
 #include "Form/DataField/Enum.hpp"
+#include "Form/Form.hpp"
 #include "Interface.hpp"
 #include "Language/Language.hpp"
 #include "OpenVario/Calibrate.hpp"
 #include "OpenVario/System.hpp"
 #include "Profile/Profile.hpp"
+#include "Profile/ProfileMap.hpp"
 #include "UIGlobals.hpp"
 #include "Version.hpp"
 #include "Widget/RowFormWidget.hpp"
@@ -28,6 +31,8 @@ enum ControlIndex {
   UPGRADE,
   MAIN_APP,
   CALIBRATE_SENSORS,
+  SYSTEM_BACKUP,
+  SYSTEM_RESTORE,
 };
 
 /**
@@ -44,6 +49,12 @@ static constexpr StaticEnumChoice main_app_list[] = {
   { 1, "OpenSoar" },
   nullptr
 };
+
+/**
+ * The script of the OpenVario image which copies the system settings
+ * and the home directory to the USB stick and back.
+ */
+static constexpr const char *transfer_system = "/usr/bin/transfer-system.sh";
 
 class OpenVarioSystemWidget final : public RowFormWidget {
   unsigned main_app;
@@ -140,6 +151,88 @@ UpgradeFirmware() noexcept
   Run("/usr/bin/fw-upgrade.sh");
 }
 
+/**
+ * Run transfer-system.sh with the given action in a process dialog.
+ *
+ * @return true if the script succeeded
+ */
+static bool
+RunTransferSystem(const char *caption, const char *action) noexcept
+{
+  const char *const argv[] = { transfer_system, action, nullptr };
+  return RunProcessDialog(UIGlobals::GetMainWindow(),
+                          UIGlobals::GetDialogLook(),
+                          caption, argv,
+                          [](int status){
+                            return status == EXIT_SUCCESS ? mrOK : 0;
+                          }) == mrOK;
+}
+
+/**
+ * transfer-system.sh does not check for the USB stick itself; without
+ * one it would copy the backup into the empty mount point on the root
+ * file system, or restore from there.
+ */
+static bool
+CheckUsbStick(const char *caption) noexcept
+{
+  if (OpenvarioIsUsbStickMounted())
+    return true;
+
+  ShowMessageBox(_("No USB stick found.  Plug in a USB stick and try "
+                   "again."),
+                 caption, MB_OK | MB_ICONWARNING);
+  return false;
+}
+
+static void
+BackupSystem() noexcept
+{
+  if (!CheckNotFlying(_("System backup")) ||
+      !CheckUsbStick(_("System backup")))
+    return;
+
+  /* the backup contains the profile; it should be the one the pilot
+     sees, not the one from the last start */
+  Profile::Save();
+
+  RunTransferSystem(_("System backup"), "backup");
+}
+
+/**
+ * The restore writes the settings of the system and of both programs
+ * back, the profile in the data directory included.  XCSoar must not
+ * save its own profile over it afterwards, and the restored system
+ * settings only take effect after a restart; so the device restarts
+ * right away.
+ */
+static void
+RestoreSystem() noexcept
+{
+  if (!CheckNotFlying(_("System restore")) ||
+      !CheckUsbStick(_("System restore")))
+    return;
+
+  if (ShowMessageBox(_("This overwrites the settings of the system and "
+                       "of both programs with the backup on the USB "
+                       "stick.  The device restarts afterwards.  "
+                       "Continue?"),
+                     _("System restore"),
+                     MB_YESNO | MB_ICONQUESTION) != IDYES)
+    return;
+
+  if (!RunTransferSystem(_("System restore"), "restore"))
+    return;
+
+  Profile::SetModified(false);
+
+  /* XCSoar 7.45 has no system power control of its own */
+  if (!Run("/sbin/reboot"))
+    ShowMessageBox(_("Please restart the device to apply the restored "
+                     "settings."),
+                   _("System restore"), MB_OK | MB_ICONINFORMATION);
+}
+
 void
 OpenVarioSystemWidget::Prepare(ContainerWindow &parent,
                                const PixelRect &rc) noexcept
@@ -160,6 +253,9 @@ OpenVarioSystemWidget::Prepare(ContainerWindow &parent,
           main_app_list, main_app);
 
   AddButton(_("Calibrate sensors"), CalibrateSensors);
+
+  AddButton(_("Back up the system to USB"), BackupSystem);
+  AddButton(_("Restore the system from USB"), RestoreSystem);
 }
 
 bool
