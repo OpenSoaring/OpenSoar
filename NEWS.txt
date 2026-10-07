@@ -154,11 +154,17 @@ Version 7.45.4 - not yet released
   - OpenVario: keep the display orientation set in OpenSoar when the
     device is switched off or restarted without quitting OpenSoar first
   - OpenVario: calibrate the touch screen from Config → Look → Display
-  - OpenVario: show the running image, start the firmware upgrade,
-    choose whether XCSoar or OpenSoar starts after boot and calibrate
-    the sensors below the service list in Config → Setup → Services
+  - OpenVario: show the running image, choose whether XCSoar or
+    OpenSoar starts after boot and calibrate the sensors below the
+    service list in Config → Setup → Services
   - OpenVario: back up the whole system to a USB stick and restore it,
     in Config → Setup → Services
+  - OpenVario: a click on the firmware in Config → Setup → Services
+    lists the images (download directory and USB stick) with Download
+    and Delete; the chosen image becomes the only entry of data/images
+    (a hard link; an image from the stick is copied into the download
+    directory first), OpenSoar quits and the start script runs the
+    upgrade
   - type lower case letters and all symbols with a keyboard attached to
     a device without a desktop (Raspberry Pi, OpenVario), in the
     keyboard layout given by XKB_DEFAULT_LAYOUT; until now it typed

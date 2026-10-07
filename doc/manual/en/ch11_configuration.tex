@@ -991,16 +991,19 @@ On an OpenVario, the system functions of the OpenVario image follow
 below the list:
 
 \begin{description}
-\item[Firmware image]  The name of the OpenVario image the device is
-  running.  Please quote it when reporting a problem.
-\item[Upgrade firmware]  Starts the upgrade script of the OpenVario
-  image, which lists the images found in the folder \texttt{images} on
-  a USB stick and on the data partition.  After you have chosen one, it
-  writes the image to the SD card and restarts the device.  XCSoar saves
-  its profile first and hands over the screen to the script; if you
-  cancel the script, XCSoar continues.  Settings changed in the
-  configuration dialogue since it was opened are lost when the upgrade
-  goes ahead.  Not available in flight.
+\item[Firmware]  The name of the OpenVario image the device is
+  running.  Please quote it when reporting a problem.  A click on it
+  lists the images in the download directory and on a USB stick (folder
+  \texttt{openvario/images}), with a button to download further images
+  from the repository and one to delete images from the download
+  directory.  After you have chosen an image and confirmed the upgrade,
+  an image from the stick is copied into the download directory, so it
+  stays available without the stick.  The folder \texttt{data/images}
+  then gets a hard link to the image as its only entry, OpenSoar saves
+  its profile and quits, and the start script of the OpenVario image
+  runs the upgrade with that image and restarts the device.  Settings
+  changed in the configuration dialogue since it was opened are lost.
+  Not available in flight.
 \item[Start after boot]  The program the OpenVario starts when it is
   switched on: XCSoar or OpenSoar.  The choice is stored when the
   configuration dialogue is closed and takes effect with the next start
