@@ -840,7 +840,9 @@ XCSOAR_SOURCES += \
 	$(SRC)/Dialogs/Settings/Panels/OpenVarioSystemWidget.cpp \
 	$(SRC)/Dialogs/ProcessDialog.cpp \
 	$(SRC)/OpenVario/System.cpp \
-	$(SRC)/OpenVario/Calibrate.cpp
+	$(SRC)/OpenVario/Calibrate.cpp \
+	$(SRC)/OpenVario/FirmwareImage.cpp \
+	$(SRC)/OpenVario/FirmwareImagePicker.cpp
 endif
 
 include $(topdir)/build/net-wifi.mk

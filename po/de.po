@@ -12220,3 +12220,40 @@ msgstr "Recorder 1\nauslesen"
 
 msgid "Recorder 2\nDownload"
 msgstr "Recorder 2\nauslesen"
+
+msgid "This image is not in the download directory; only downloaded images can be deleted here."
+msgstr "Dieses Image liegt nicht im Download-Verzeichnis; hier lassen sich nur heruntergeladene Images löschen."
+
+msgid "Delete this image?"
+msgstr "Dieses Image löschen?"
+
+msgid "Failed to delete the image."
+msgstr "Das Image konnte nicht gelöscht werden."
+
+msgid "Show all"
+msgstr "Alle zeigen"
+
+#, c-format
+msgid "%s only"
+msgstr "Nur %s"
+
+msgid "Upgrade firmware"
+msgstr "Firmware aktualisieren"
+
+msgid "Choose the image to upgrade to.  Images are looked for in the download directory and on the USB stick (openvario/images)."
+msgstr "Das Image wählen, auf das aktualisiert werden soll.  Gesucht wird im Download-Verzeichnis und auf dem USB-Stick (openvario/images)."
+
+#, c-format
+msgid "Upgrade the firmware to\n%s?\n\n%s quits and the upgrade starts; the device reboots afterwards."
+msgstr "Firmware aktualisieren auf\n%s?\n\n%s wird beendet und die Aktualisierung beginnt; danach startet das Gerät neu."
+
+#, c-format
+msgid "Copying to the download directory: %s"
+msgstr "Kopieren ins Download-Verzeichnis: %s"
+
+#, c-format
+msgid "Copying: %s"
+msgstr "Kopieren: %s"
+
+msgid "The OpenVario image this device is running.  Click to choose or download another image and upgrade to it: the program quits and the upgrade starts."
+msgstr "Das OpenVario-Image, das auf diesem Gerät läuft.  Ein Klick wählt ein anderes Image (oder lädt es herunter) und aktualisiert darauf: das Programm wird beendet und die Aktualisierung beginnt."
