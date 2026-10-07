@@ -146,6 +146,8 @@ Version 7.47 - not yet released
     if that upload is enabled); buttons "Recorder 1/2 Download" in the
     quick menu pages After and All; the flight list of a download
     selects the newest flight
+  - while the log book reads new files, the progress bar says "Analysis
+    for the log book:" before the file name
 
 Version 7.46 - 2026-10-19
 * highlights
