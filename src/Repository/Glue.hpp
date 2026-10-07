@@ -20,7 +20,9 @@ struct RepositoryLink {
 };
 
 /**
- * Get list of user repositories with their local filenames.
+ * Get list of user repositories with their local filenames: the
+ * built-in repositories of this program (opensoar.de, and on the
+ * OpenVario ftp.openvario.org) first, then those of the profile.
  */
 std::vector<RepositoryLink> GetUserRepositories();
 
