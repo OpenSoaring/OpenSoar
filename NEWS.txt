@@ -36,6 +36,10 @@ Version 7.47 - not yet released
     airspace list was empty
   - add a symbol page to the on-screen keyboard, so that passwords and
     file names can contain all printable ASCII characters
+  - progress dialogs show their message and the percentage inside the
+    bar, on one line, light on the part already done and dark on the
+    rest; the line above the bar and the amount, speed and time
+    remaining are gone
 * Windows
   - keep the mouse cursor visible with -touchscreen; the switch sizes
     the controls for fingers, it does not take the mouse away (Linux
