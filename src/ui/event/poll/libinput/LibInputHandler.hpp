@@ -50,8 +50,19 @@ class LibInputHandler final {
 
   /**
    * The number of pointer input devices, touch screens ans keyboards.
+   *
+   * An OpenVario counts one touch screen even when none is attached.
+   * The larger buttons that come with a touch screen are easier to
+   * reach with a remote stick, and their labels fit with the larger
+   * fonts of the OpenVario display.  Until now the OpenVario image
+   * patched this line ("Disable touch-screen auto-detection"); doing
+   * it here lets the image build OpenSoar without that patch.
    */
+#ifdef IS_OPENVARIO
+  unsigned n_pointers = 0, n_touch_screens = 1, n_keyboards = 0;
+#else
   unsigned n_pointers = 0, n_touch_screens = 0, n_keyboards = 0;
+#endif
 
   /**
    * Set when open_restricted fails.  Cleared after a suspend/resume
