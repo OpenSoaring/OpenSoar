@@ -44,20 +44,17 @@ public:
 protected:
   void OnPaint(Canvas &canvas) noexcept override {
     auto &look = UIGlobals::GetDialogLook();
-    DrawSimpleProgressBar(canvas, canvas.GetRect(), position, 0, range,
-                          look.dark_mode ? &look.background_color : nullptr,
-                          look.dark_mode ? &DARK_PROGRESS_GREEN : nullptr);
+    /* the dark green also in the light theme, because the text on the
+       filled part is white */
+    const int fill_end =
+      DrawSimpleProgressBar(canvas, canvas.GetRect(), position, 0, range,
+                            look.dark_mode ? &look.background_color : nullptr,
+                            &DARK_PROGRESS_GREEN);
 
     if (!text.empty()) {
-      auto &font = look.text_font;
-      canvas.Select(font);
-
-      const int text_height = font.GetHeight();
-      const int padding = ((int)canvas.GetHeight() - text_height) / 2;
-
-      canvas.SetTextColor(look.text_color);
-      canvas.SetBackgroundTransparent();
-      canvas.DrawText({padding, padding}, std::string_view{text});
+      canvas.Select(look.text_font);
+      DrawProgressBarText(canvas, canvas.GetRect(), fill_end, text,
+                          COLOR_WHITE, look.text_color, false);
     }
   }
 };
