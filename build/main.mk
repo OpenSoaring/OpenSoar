@@ -836,7 +836,10 @@ endif
 ifeq ($(TARGET_IS_LINUX)$(TARGET_IS_KOBO)$(TARGET_IS_ANDROID),ynn)
 XCSOAR_SOURCES += \
 	$(SRC)/Dialogs/Settings/Panels/SystemdConfigPanel.cpp \
-	$(SRC)/Linux/SystemdServiceList.cpp
+	$(SRC)/Linux/SystemdServiceList.cpp \
+	$(SRC)/Dialogs/ProcessDialog.cpp \
+	$(SRC)/OpenVario/System.cpp \
+	$(SRC)/OpenVario/Calibrate.cpp
 endif
 
 include $(topdir)/build/net-wifi.mk
