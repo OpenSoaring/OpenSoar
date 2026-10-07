@@ -27,6 +27,8 @@
 #include "Language/Language.hpp"
 #endif
 
+#include <algorithm>
+#include <iterator>
 #include <string_view>
 #include <vector>
 
@@ -38,10 +40,30 @@ static constexpr std::string_view USER_REPOSITORY_FILE_PREFIX{
 static bool repository_downloaded = false;
 static bool user_repository_downloaded = false;
 
+/**
+ * Repositories this program knows besides XCSoar's own, so that their
+ * files can be downloaded without first entering a user repository.
+ * Their local files carry the user repository prefix: they are loaded,
+ * refreshed and shown like those, and a download error (a server that
+ * does not exist yet) is not reported.
+ */
+static constexpr struct {
+  const char *uri;
+  const char *filename;
+} builtin_repositories[] = {
+  {"https://opensoar.de/releases/repository", "user_repository_opensoar"},
+#ifdef IS_OPENVARIO
+  {"http://ftp.openvario.org/repository", "user_repository_openvario"},
+#endif
+};
+
 std::vector<RepositoryLink>
 GetUserRepositories()
 {
   std::vector<RepositoryLink> result;
+
+  for (const auto &i : builtin_repositories)
+    result.push_back({i.uri, i.filename});
 
   const char *src = Profile::Get(ProfileKeys::UserRepositoriesList);
   if (src == nullptr || *src == '\0') return result;
@@ -49,6 +71,13 @@ GetUserRepositories()
   int index = 1;
   for (auto i : TIterableSplitString(src, '|')) {
     if (i.empty()) continue;
+    /* a built-in repository entered again by the user is read once */
+    if (std::any_of(std::begin(builtin_repositories),
+                    std::end(builtin_repositories),
+                    [i](const auto &b){ return i == b.uri; })) {
+      ++index;
+      continue;
+    }
     char filename[32];
     StringFormat(filename, std::size(filename), "user_repository_%d", index++);
     result.push_back({std::string{i}, std::string{filename}});
