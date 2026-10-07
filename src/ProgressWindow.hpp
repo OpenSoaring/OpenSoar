@@ -8,6 +8,7 @@
 #include "ui/canvas/Bitmap.hpp"
 #include "ui/canvas/Color.hpp"
 #include "Gauge/LogoView.hpp"
+#include "util/StaticString.hxx"
 
 /**
  * The XCSoar splash screen with a progress bar.
@@ -25,11 +26,21 @@ class ProgressWindow : public ContainerWindow {
   LogoView logo;
 
   /**
-   * Shows the message of SetMessage() inside the bar.
+   * The text of SetMessage() on one line; it is shown inside the bar,
+   * followed by the percentage.
+   */
+  StaticString<256> message;
+
+  /**
+   * Shows the message and the percentage inside the bar.
    */
   ProgressBar progress_bar;
 
   unsigned text_height;
+
+  unsigned range_min = 0, range_max = 0;
+  /** The default range alone does not mean the job reports progress. */
+  bool have_progress_position = false;
 
   PixelRect logo_position;
   PixelRect bottom_position, progress_bar_position;
@@ -46,6 +57,7 @@ public:
 
 private:
   void UpdateLayout(PixelRect rc) noexcept;
+  void UpdateBarLabel() noexcept;
 
 protected:
   void OnResize(PixelSize new_size) noexcept override;

@@ -9,6 +9,7 @@
 #include "Resources.hpp"
 
 #include <algorithm>
+#include <cstdint>
 
 #ifdef USE_WINUSER
 #include "ui/canvas/AnyCanvas.hpp"
@@ -21,6 +22,8 @@ ProgressWindow::ProgressWindow(ContainerWindow &parent) noexcept
                     ? COLOR_DARK_THEME_BACKGROUND : COLOR_WHITE),
    dark_mode(GlobalSettings::dark_mode)
 {
+  message.clear();
+
   PixelRect rc = parent.GetClientRect();
   WindowStyle style;
   style.Hide();
@@ -84,13 +87,46 @@ ProgressWindow::SetMessage(const char *text) noexcept
 {
   AssertThread();
 
-  progress_bar.SetText(text);
+  /* the bar has room for one line only */
+  message = text != nullptr ? text : "";
+  for (auto *p = message.data(); *p != '\0'; ++p)
+    if (*p == '\n' || *p == '\r')
+      *p = ' ';
+
+  UpdateBarLabel();
+}
+
+void
+ProgressWindow::UpdateBarLabel() noexcept
+{
+  if (!have_progress_position || range_max <= range_min) {
+    progress_bar.SetText(message.c_str());
+    return;
+  }
+
+  const unsigned value =
+    std::clamp(progress_bar.GetValue(), range_min, range_max);
+  const unsigned percent = static_cast<unsigned>
+    (uint64_t{value - range_min} * 100u / (range_max - range_min));
+
+  /* A number and a percent sign; nothing to translate. */
+  StaticString<300> label;
+  if (message.empty())
+    label.Format("%u%%", percent);
+  else
+    label.Format("%s – %u%%", message.c_str(), percent);
+  progress_bar.SetText(label.c_str());
 }
 
 void
 ProgressWindow::SetRange(unsigned min_value, unsigned max_value) noexcept
 {
+  if (range_min != min_value || range_max != max_value)
+    have_progress_position = false;
+  range_min = min_value;
+  range_max = max_value;
   progress_bar.SetRange(min_value, max_value);
+  UpdateBarLabel();
 }
 
 void
@@ -104,13 +140,17 @@ ProgressWindow::SetValue(unsigned value) noexcept
 {
   AssertThread();
 
+  have_progress_position = true;
   progress_bar.SetValue(value);
+  UpdateBarLabel();
 }
 
 void
 ProgressWindow::Step() noexcept
 {
+  have_progress_position = true;
   progress_bar.Step();
+  UpdateBarLabel();
 }
 
 void
