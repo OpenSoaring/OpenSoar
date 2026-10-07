@@ -262,6 +262,7 @@ Version 7.47 - not yet released
   - while the log book reads new files, the progress bar says "Analysis
     for the log book:" before the file name
 * Linux
+  - OpenVario: calibrate the touch screen from Config → Setup → Screen
   - OpenVario: keep the display orientation set in OpenSoar when the
     device is switched off or restarted without quitting OpenSoar first
   - OpenVario: the configuration group "OpenVario" and the separate
