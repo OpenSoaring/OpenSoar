@@ -46,6 +46,7 @@ elseif(USE_CONSOLE)
   if(USE_LIBINPUT)
     list(APPEND EVENT_SOURCES
       ${EVENT_SRC_DIR}/poll/libinput/LibInputHandler.cpp
+      ${EVENT_SRC_DIR}/poll/libinput/XkbKeyboard.cpp
     )
     if(ENABLE_UDEV)
         list(APPEND EVENT_SOURCES
