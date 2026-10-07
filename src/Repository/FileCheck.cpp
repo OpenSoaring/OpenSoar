@@ -36,11 +36,18 @@ IsZip(Head head) noexcept
   return StartsWith(head, std::string_view{"PK\x03\x04", 4});
 }
 
+#ifdef IS_OPENVARIO
+
+/**
+ * A gzip stream, as the OpenVario images are delivered.
+ */
 static bool
 IsGzip(Head head) noexcept
 {
   return StartsWith(head, std::string_view{"\x1f\x8b", 2});
 }
+
+#endif  // IS_OPENVARIO
 
 /**
  * A web page instead of data - the classic result of a moved file or
