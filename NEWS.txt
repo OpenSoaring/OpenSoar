@@ -165,7 +165,8 @@ Version 7.45.4 - not yet released
     upper case letters, digits and the space only
 * dialogs
   - progress bars show their text inside the bar, light on the part
-    already done and dark on the rest, instead of above the bar
+    already done and dark on the rest, instead of above the bar, and
+    the percentage done behind it
   - add a symbol page to the on-screen keyboard, so that passwords and
     file names can contain all printable ASCII characters
 
