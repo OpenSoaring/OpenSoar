@@ -22,6 +22,7 @@
 #include "Dialogs/JobDialog.hpp"
 #include "Job/Job.hpp"
 #include "Operation/Operation.hpp"
+#include "Operation/ProxyOperationEnvironment.hpp"
 #include "Repository/FileType.hpp"
 #include "LocalPath.hpp"
 #include "Components.hpp"
@@ -294,9 +295,24 @@ public:
     :files(_files), settings(_settings), move(_move) {}
 
   void Run(OperationEnvironment &env) override {
+    /* the builder reports the bare file name; the dialog says what is
+       being done with it */
+    class AnalysisOperationEnvironment final
+      : public ProxyOperationEnvironment {
+    public:
+      using ProxyOperationEnvironment::ProxyOperationEnvironment;
+
+      void SetText(const char *text) noexcept override {
+        StaticString<256> buffer;
+        buffer.Format(_("Analysis for the log book: %s"), text);
+        ProxyOperationEnvironment::SetText(buffer.c_str());
+      }
+    } analysis_env{env};
+
     try {
       result = Logbook::Update(LogsDataSavePath("logbook.csv"),
-                               GetIndexPath(), files, settings, env, move);
+                               GetIndexPath(), files, settings, analysis_env,
+                               move);
     } catch (...) {
       error = std::current_exception();
     }
