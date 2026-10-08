@@ -94,7 +94,7 @@
 #include "Dialogs/FileManager.hpp"
 
 #if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
-#include "Panels/SystemdConfigPanel.hpp"
+#include "Panels/OpenVarioConfigPanel.hpp"
 #ifdef USE_POLL_EVENT
 #include "Panels/SystemToolsPanel.hpp"
 #endif
@@ -113,6 +113,11 @@ static constexpr TabMenuPage system_pages[] = {
   { NC_("Setting", "System"), CreateSystemConfigPanel },
   { NC_("Menu", "Data Management"), CreateDataManagementPanel },
   { N_("File Manager"), CreateFileManagerPanel },
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
+  /* the system functions of the OpenVario image; on another Linux the
+     page shows what is there (the services, the program choice) */
+  { "OpenVario", CreateOpenVarioConfigPanel },
+#endif
   { nullptr, nullptr }
 };
 
@@ -199,11 +204,9 @@ static constexpr TabMenuPage setup_pages[] = {
   // ToDo: implement API that controls order in which pages are saved
   { N_("Network"), CreateNetworkConfigPanel },
   { N_("Screen"), CreateDisplayConfigPanel },
-#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
-  { N_("System Services"), CreateSystemdConfigPanel },
-#ifdef USE_POLL_EVENT
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO) && \
+  defined(USE_POLL_EVENT)
   { N_("System Tools"), CreateSystemToolsPanel, HasSystemTools },
-#endif
 #endif
   { NC_("Setting", "Time"), CreateTimeConfigPanel },
   { nullptr, nullptr }

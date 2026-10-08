@@ -13,6 +13,15 @@
 #include "system/OpenLink.hpp"
 #include "util/StaticString.hxx"
 
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
+/* the SSH server is a systemd unit; on a Kobo or Android there is no
+   systemd to switch it */
+#define HAVE_SSH_SWITCH
+#include "Dialogs/SystemdService.hpp"
+#include "Form/DataField/Boolean.hpp"
+#include <optional>
+#endif
+
 #include <functional>
 #include <memory>
 #include <stdexcept>
@@ -404,6 +413,12 @@ class NetworkConfigWidget final
   : public RowFormWidget, public DataFieldListener {
   NetworkConfigRows rows;
 
+#ifdef HAVE_SSH_SWITCH
+  /** the SSH server, if one is installed, and its row */
+  std::optional<SystemdService> ssh;
+  unsigned ssh_row = 0;
+#endif
+
 public:
   NetworkConfigWidget()
     :RowFormWidget(UIGlobals::GetDialogLook()) {}
@@ -424,6 +439,18 @@ NetworkConfigWidget::Prepare(ContainerWindow &parent,
   RowFormWidget::Prepare(parent, rc);
 
   unsigned n = 0U;
+
+#ifdef HAVE_SSH_SWITCH
+  /* remote access belongs to the network, above the WiFi; only where
+     an SSH server is installed (an OpenVario, a Linux PC) */
+  ssh = FindSystemdService("ssh");
+  if (ssh) {
+    ssh_row = n++;
+    AddBoolean(ssh->display_name, ssh->description,
+               IsSystemdServiceActive(*ssh), this);
+  }
+#endif
+
   rows.status = n++;
   AddReadOnly(_("Status"), GetStatusHelp(), _("Checking WiFi..."));
 
@@ -477,6 +504,17 @@ NetworkConfigWidget::OnRefresh() noexcept
 void
 NetworkConfigWidget::OnModified(DataField &df) noexcept
 {
+#ifdef HAVE_SSH_SWITCH
+  if (ssh && IsDataField(ssh_row, df)) {
+    const bool on = ((const DataFieldBoolean &)df).GetValue();
+    /* the field shows what actually runs afterwards, also if the
+       switch failed */
+    if (const bool running = SwitchSystemdService(*ssh, on); running != on)
+      LoadValue(ssh_row, running);
+    return;
+  }
+#endif
+
   HandlePlatformModified(*this, rows, df, [this]() { OnRefresh(); });
 }
 
