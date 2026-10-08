@@ -8,12 +8,15 @@
 #include "DisplayConfigPanel.hpp"
 #include "Form/DataField/Enum.hpp"
 #include "Form/Edit.hpp"
+#include "Form/DataField/String.hpp"
+#include "Device/Register.hpp"
+#include "Interface.hpp"
 #include "Language/Language.hpp"
-#include "LocalPath.hpp"
 #include "SystemConfig.hpp"
 #include "UIGlobals.hpp"
 #include "Widget/RowFormWidget.hpp"
-#include "system/Path.hpp"
+
+#include <string>
 
 /**
  * Settings of the device, not of the profile: they are stored beside
@@ -26,7 +29,6 @@ class SystemConfigPanel final : public RowFormWidget {
     DEVICES_IN_PROFILE,
     CUSTOM_DPI,
     DEVICES,
-    LOCATION,
   };
 
 public:
@@ -37,6 +39,54 @@ public:
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
 };
+
+/**
+ * The enabled devices in the order of their ports, by the names of
+ * their drivers ("OpenVario, FLARM"); a port without a driver (the
+ * internal GPS, say) by its own name.
+ */
+static std::string
+DescribeDevices() noexcept
+{
+  std::string text;
+
+  for (const auto &config : CommonInterface::GetSystemSettings().devices) {
+    if (config.IsDisabled())
+      continue;
+
+    char buffer[128];
+    const char *name = config.UsesDriver()
+      ? FindDriverDisplayName(config.driver_name)
+      : config.GetPortName(buffer, sizeof(buffer));
+    if (name == nullptr || *name == '\0')
+      continue;
+
+    if (!text.empty())
+      text += ", ";
+    text += name;
+  }
+
+  if (text.empty())
+    text = _("None");
+  return text;
+}
+
+/**
+ * Open the device list; afterwards the row shows the devices as they
+ * are now.  Signature of WndProperty::EditCallback.
+ */
+static bool
+EditDevices([[maybe_unused]] const char *caption, DataField &df,
+            [[maybe_unused]] const char *help_text) noexcept
+{
+  if (backend_components != nullptr &&
+      backend_components->device_blackboard != nullptr)
+    ShowDeviceList(*backend_components->device_blackboard,
+                   backend_components->devices.get());
+
+  ((DataFieldString &)df).SetValue(DescribeDevices().c_str());
+  return true;
+}
 
 void
 SystemConfigPanel::Prepare(ContainerWindow &parent,
@@ -72,20 +122,13 @@ SystemConfigPanel::Prepare(ContainerWindow &parent,
   wp_dpi->RefreshDisplay();
 
   /* second way to the NMEA devices and their ports: they belong to
-     the device just as much as the settings above */
-  AddButton(_("Devices"), [](){
-    if (backend_components != nullptr &&
-        backend_components->device_blackboard != nullptr)
-      ShowDeviceList(*backend_components->device_blackboard,
-                     backend_components->devices.get());
-  });
-
-  /* where these settings live - deliberately outside the data
-     directory, so they do not travel with it */
-  const Path config_path = GetSystemConfigPath();
-  AddMultiLine(config_path == nullptr
-               ? _("No place for device settings on this system.")
-               : config_path.c_str());
+     the device just as much as the settings above; the row shows
+     which are in use, a click opens the device list */
+  AddText(_("Devices"),
+          _("The enabled devices in the order of their ports.  Click to "
+            "open the device list."),
+          DescribeDevices().c_str())
+    ->SetEditCallback(EditDevices);
 }
 
 bool
