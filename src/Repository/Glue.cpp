@@ -46,7 +46,8 @@ static constexpr std::string_view USER_REPOSITORY_FILE_PREFIX{
  * When the repository indexes were last requested.  A page that offers
  * downloads requests them again once they are older than
  * #RepositoryMaxAge(), so files put on a server while the program runs
- * show up without a restart.
+ * show up without a restart.  Background requests (the RASP update)
+ * only fetch them when they have not been fetched in this run at all.
  */
 static std::optional<std::chrono::steady_clock::time_point>
   repository_downloaded, user_repository_downloaded;
@@ -73,18 +74,44 @@ RepositoryMaxAge() noexcept
 
 /**
  * Is it time to request the index again?  If so, remember that it is
- * being requested now.
+ * being requested now.  Without @p max_age, an index that was already
+ * requested in this run is never due again.
  */
 static bool
 RepositoryDue(std::optional<std::chrono::steady_clock::time_point> &last,
-              bool force) noexcept
+              bool force,
+              std::optional<std::chrono::steady_clock::duration> max_age) noexcept
 {
   const auto now = std::chrono::steady_clock::now();
-  if (!force && last && now - *last < RepositoryMaxAge())
+  if (!force && last && (!max_age || now - *last < *max_age))
     return false;
 
   last = now;
   return true;
+}
+
+static void
+EnqueueRepositoryDownload(bool force, bool main_repo, bool user_repo,
+                          std::optional<std::chrono::steady_clock::duration> max_age)
+{
+  if (main_repo) {
+    if (RepositoryDue(repository_downloaded, force, max_age)) {
+      const auto path = RepositoryDownloadRelativePath("repository");
+      Net::DownloadManager::Enqueue(REPOSITORY_URI, Path(path.c_str()));
+    }
+  }
+
+  // Enqueue additional user-defined repository URIs, if set
+  if (user_repo) {
+    if (RepositoryDue(user_repository_downloaded, force, max_age)) {
+      for (const auto &repo : GetUserRepositories())
+        {
+          const auto path =
+            RepositoryDownloadRelativePath(repo.filename.c_str());
+          Net::DownloadManager::Enqueue(repo.uri.c_str(), Path(path.c_str()));
+        }
+    }
+  }
 }
 
 /**
@@ -201,24 +228,17 @@ LoadAllRepositories(FileRepository &repository)
 void
 EnqueueRepositoryDownload(bool force, bool main_repo, bool user_repo)
 {
-  if (main_repo) {
-    if (RepositoryDue(repository_downloaded, force)) {
-      const auto path = RepositoryDownloadRelativePath("repository");
-      Net::DownloadManager::Enqueue(REPOSITORY_URI, Path(path.c_str()));
-    }
-  }
+  /* The age limit is deliberately not applied here: the RASP glue calls
+     this again whenever a repository download has completed, and with a
+     limit of zero in test versions every completion would enqueue the
+     next download, an endless "Updating repository". */
+  EnqueueRepositoryDownload(force, main_repo, user_repo, std::nullopt);
+}
 
-  // Enqueue additional user-defined repository URIs, if set
-  if (user_repo) {
-    if (RepositoryDue(user_repository_downloaded, force)) {
-      for (const auto &repo : GetUserRepositories())
-        {
-          const auto path =
-            RepositoryDownloadRelativePath(repo.filename.c_str());
-          Net::DownloadManager::Enqueue(repo.uri.c_str(), Path(path.c_str()));
-        }
-    }
-  }
+void
+EnqueueRepositoryRefresh()
+{
+  EnqueueRepositoryDownload(false, true, true, RepositoryMaxAge());
 }
 
 #ifdef HAVE_DOWNLOAD_MANAGER
