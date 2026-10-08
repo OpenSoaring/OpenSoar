@@ -26,6 +26,9 @@
 #include "Repository/Glue.hpp"
 #include "ListPicker.hpp"
 #include "Form/Button.hpp"
+#include "Form/ButtonPanel.hpp"
+#include "Widget/ButtonPanelWidget.hpp"
+#include "Widget/LargeTextWidget.hpp"
 #include "net/http/DownloadManager.hpp"
 #include "ui/event/Notify.hpp"
 #include "thread/Mutex.hxx"
@@ -197,8 +200,16 @@ class ManagedFileListWidget
 
   TrivialArray<FileItem, 64u> items;
 
+  /**
+   * Has the repository index been requested?  That happens when the
+   * list is shown for the first time, not when it is prepared: as a
+   * page of the configuration dialog it is prepared with all other
+   * pages, and opening the configuration must not go online.
+   */
+  bool repository_requested = false;
+
 public:
-  void CreateButtons(WidgetDialog &dialog) noexcept;
+  void CreateButtons(ButtonPanel &buttons) noexcept;
 
 protected:
   [[gnu::pure]]
@@ -274,6 +285,7 @@ protected:
 public:
   /* virtual methods from class Widget */
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
+  void Show(const PixelRect &rc) noexcept override;
   void Unprepare() noexcept override;
 
   /* virtual methods from class List::Handler */
@@ -325,7 +337,18 @@ ManagedFileListWidget::Prepare(ContainerWindow &parent,
   if (Net::DownloadManager::IsAvailable()) {
     Net::DownloadManager::AddListener(*this);
     Net::DownloadManager::Enumerate(*this);
+  }
+#endif
+}
 
+void
+ManagedFileListWidget::Show(const PixelRect &rc) noexcept
+{
+  ListWidget::Show(rc);
+
+#ifdef HAVE_DOWNLOAD_MANAGER
+  if (!repository_requested && Net::DownloadManager::IsAvailable()) {
+    repository_requested = true;
     EnqueueRepositoryDownload();
   }
 #endif
@@ -428,19 +451,19 @@ ManagedFileListWidget::RefreshList()
 }
 
 void
-ManagedFileListWidget::CreateButtons(WidgetDialog &dialog) noexcept
+ManagedFileListWidget::CreateButtons(ButtonPanel &buttons) noexcept
 {
 #ifdef HAVE_DOWNLOAD_MANAGER
   if (Net::DownloadManager::IsAvailable()) {
-    download_button = dialog.AddButton(_("Update"), [this](){ Download(); });
-    add_button = dialog.AddButton(C_("Button", "Add"), [this](){ Add(); });
-    cancel_button = dialog.AddButton(_("Abort"), [this](){ Cancel(); });
-    update_button = dialog.AddButton(_("Update all"), [this](){
+    download_button = buttons.Add(_("Update"), [this](){ Download(); });
+    add_button = buttons.Add(C_("Button", "Add"), [this](){ Add(); });
+    cancel_button = buttons.Add(_("Abort"), [this](){ Cancel(); });
+    update_button = buttons.Add(_("Update all"), [this](){
       UpdateFiles();
     });
   }
 #else
-  (void)dialog;
+  (void)buttons;
 #endif
 }
 
@@ -861,7 +884,7 @@ ShowFileManager2()
            UIGlobals::GetDialogLook(),
            _("File Manager"));
   dialog.SetWidget();
-  dialog.GetWidget().CreateButtons(dialog);
+  dialog.GetWidget().CreateButtons(dialog.GetButtonPanel());
   dialog.AddButton(_("Close"), mrOK);
 
   dialog.EnableCursorSelection();
@@ -885,4 +908,48 @@ ShowFileManager()
     _("The file manager is not available on this device.");
 
   ShowMessageBox(message, _("File Manager"), MB_OK);
+}
+
+#ifdef HAVE_DOWNLOAD_MANAGER
+
+namespace {
+
+/**
+ * The file list below its buttons.  The buttons have to exist before
+ * the list is prepared, because preparing it updates them.
+ */
+class FileManagerPanel final : public ButtonPanelWidget {
+  bool buttons_created = false;
+
+public:
+  FileManagerPanel() noexcept
+    :ButtonPanelWidget(std::make_unique<ManagedFileListWidget>(),
+                       Alignment::BOTTOM) {}
+
+  void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override {
+    if (!buttons_created) {
+      static_cast<ManagedFileListWidget &>(GetWidget())
+        .CreateButtons(GetButtonPanel());
+      buttons_created = true;
+    }
+
+    ButtonPanelWidget::Prepare(parent, rc);
+  }
+};
+
+} // anonymous namespace
+
+#endif
+
+std::unique_ptr<Widget>
+CreateFileManagerPanel() noexcept
+{
+#ifdef HAVE_DOWNLOAD_MANAGER
+  if (Net::DownloadManager::IsAvailable())
+    return std::make_unique<FileManagerPanel>();
+#endif
+
+  return std::make_unique<LargeTextWidget>(
+    UIGlobals::GetDialogLook(),
+    _("The file manager is not available on this device."));
 }
