@@ -117,6 +117,18 @@ VScrollWidget::Prepare(ContainerWindow &, const PixelRect &rc) noexcept
   widget->Prepare(GetWindow(), AdjustForScrollbar(rc));
 }
 
+void
+VScrollWidget::Unprepare() noexcept
+{
+  /* Without this, the hosted widget was prepared but never
+     unprepared: everything it undoes there was left behind.  The file
+     manager, a page of the configuration dialog, stayed registered
+     with the download manager after the dialog had been closed and
+     destroyed, and the next download crashed when it notified the
+     freed widget. */
+  widget->Unprepare();
+}
+
 bool
 VScrollWidget::Save(bool &changed) noexcept
 {
