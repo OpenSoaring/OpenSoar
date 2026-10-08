@@ -14,6 +14,8 @@
 
 #include <map>
 
+#include <unistd.h>
+
 static constexpr const char *boot_config = "/boot/config.uEnv";
 
 bool
@@ -112,6 +114,14 @@ OpenvarioGetImageName()
 bool
 OpenvarioIsUsbStickMounted() noexcept
 try {
+  /* Without a stick there is nothing to mount, and looking into the
+     directory would only make systemd wait for the device until its
+     timeout, while this thread hangs; the journal then shows "Timed
+     out waiting for device USB stick".  usb-usbstick.mount of the
+     image mounts this device. */
+  if (access("/dev/sda1", F_OK) != 0)
+    return false;
+
   /* looking into the directory makes systemd mount a stick that has
      been plugged in; the result does not matter */
   File::Exists(AllocatedPath::Build(Path(openvario_usb_stick), Path(".")));
