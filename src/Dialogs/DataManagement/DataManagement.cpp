@@ -18,14 +18,24 @@
 #include "Dialogs/Message.hpp"
 
 class DataManagementWidget : public RowFormWidget {
+  /**
+   * As a page of the configuration dialog, Site Files and the File
+   * Manager are pages of their own next to this one, so the buttons
+   * that open them would only lead to a second copy.
+   */
+  const bool in_configuration;
+
 public:
-  explicit DataManagementWidget(const DialogLook &look) noexcept
-    :RowFormWidget(look) {}
+  explicit DataManagementWidget(const DialogLook &look,
+                                bool _in_configuration=false) noexcept
+    :RowFormWidget(look), in_configuration(_in_configuration) {}
 
   void Prepare([[maybe_unused]] ContainerWindow &parent,
                [[maybe_unused]] const PixelRect &rc) noexcept override {
-    AddButton(C_("Button", "Navigation & Flight Resources"), [](){ ShowConfigPanel(_("Site Files"), CreateSiteConfigPanel); });
-    AddButton(C_("Button", "Download manager"), [](){ ShowFileManager(); });
+    if (!in_configuration) {
+      AddButton(C_("Button", "Navigation & Flight Resources"), [](){ ShowConfigPanel(_("Site Files"), CreateSiteConfigPanel); });
+      AddButton(C_("Button", "Download manager"), [](){ ShowFileManager(); });
+    }
     AddButton(C_("Button", "Export flights"), [](){ ShowExportFlightsDialog(); });
     AddButton(C_("Button", "Import data"), [](){ ShowImportDataDialog(); });
     AddButton(C_("Button", "Backup manager"), [](){ ShowBackupManagerDialog(); });
@@ -45,4 +55,11 @@ ShowDataManagementDialog()
   dlg.AddButton(C_("Button", "Back"), dlg.MakeModalResultCallback(mrCancel));
   dlg.SetWidget(look);
   dlg.ShowModal();
+}
+
+std::unique_ptr<Widget>
+CreateDataManagementPanel() noexcept
+{
+  return std::make_unique<DataManagementWidget>(UIGlobals::GetDialogLook(),
+                                                true);
 }

@@ -96,6 +96,14 @@ public:
     return widget.Steal();
   }
 
+  /**
+   * The buttons of this dialog, for widgets that add their own buttons
+   * and are also used outside of a dialog (with a #ButtonPanelWidget).
+   */
+  ButtonPanel &GetButtonPanel() noexcept {
+    return buttons;
+  }
+
   Button *AddButton(std::unique_ptr<ButtonRenderer> &&renderer,
                     Button::Callback callback) noexcept {
     return buttons.Add(std::move(renderer), std::move(callback));
