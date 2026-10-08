@@ -322,7 +322,7 @@ DownloadFilePickerWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   Net::DownloadManager::AddListener(*this);
   Net::DownloadManager::Enumerate(*this);
 
-  EnqueueRepositoryDownload();
+  EnqueueRepositoryRefresh();
 }
 
 void
