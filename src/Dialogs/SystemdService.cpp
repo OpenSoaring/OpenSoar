@@ -1,22 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#include "SystemdConfigPanel.hpp"
-#include "OpenVarioSystemWidget.hpp"
-#include "OpenVario/System.hpp"
-#include "Widget/TwoWidgets.hpp"
+#include "SystemdService.hpp"
 #include "Dialogs/Error.hpp"
 #include "Dialogs/JobDialog.hpp"
-#include "Form/Button.hpp"
-#include "Form/ButtonPanel.hpp"
 #include "Job/Job.hpp"
 #include "Language/Language.hpp"
-#include "Linux/SystemdServiceList.hpp"
-#include "Look/DialogLook.hpp"
-#include "Renderer/TwoTextRowsRenderer.hpp"
 #include "UIGlobals.hpp"
-#include "Widget/ButtonPanelWidget.hpp"
-#include "Widget/ListWidget.hpp"
 #include "lib/dbus/AppendIter.hxx"
 #include "lib/dbus/CallMethodSync.hxx"
 #include "lib/dbus/Connection.hxx"
@@ -26,12 +16,9 @@
 #include "lib/dbus/ReadIter.hxx"
 #include "lib/dbus/ScopeMatch.hxx"
 #include "lib/dbus/Systemd.hxx"
-#include "ui/canvas/Canvas.hpp"
-#include "ui/canvas/Color.hpp"
-#include "ui/event/KeyCode.hpp"
-#include "ui/event/PeriodicTimer.hpp"
 #include "util/ScopeExit.hxx"
 #include "util/StaticString.hxx"
+#include "util/StringAPI.hxx"
 
 #include <chrono>
 #include <cstdio>
@@ -46,14 +33,7 @@
 
 namespace {
 
-static constexpr auto refresh_interval = std::chrono::seconds{1};
 static constexpr int systemd_action_timeout_ms = 30000;
-
-enum class SystemdAction {
-  START,
-  STOP,
-  RESTART,
-};
 
 /**
  * A service of type "simple" counts as started as soon as its program
@@ -358,15 +338,15 @@ CheckStarted(ODBus::Connection &connection, const std::string &unit,
   throw std::runtime_error{message};
 }
 
-class SystemdActionJob final : public Job {
-  const SystemdAction action;
+class SystemdSwitchJob final : public Job {
+  const bool on;
   const std::string unit_name;
   const char *const display_name;
 
 public:
-  SystemdActionJob(SystemdAction _action, const std::string &_unit_name,
-                   const char *_display_name)
-    :action(_action), unit_name(_unit_name), display_name(_display_name) {}
+  SystemdSwitchJob(bool _on, const std::string &_unit_name,
+                   const char *_display_name) noexcept
+    :on(_on), unit_name(_unit_name), display_name(_display_name) {}
 
   void Run([[maybe_unused]] OperationEnvironment &env) override {
     auto connection = ODBus::Connection::GetSystemPrivate();
@@ -374,312 +354,64 @@ public:
 
     const ODBus::ScopeMatch match{connection, Systemd::job_removed_match};
 
+    if (!on) {
+      Systemd::StopUnit(connection, unit_name.c_str(), "replace",
+                        systemd_action_timeout_ms);
+      Systemd::DisableUnitFile(connection, unit_name.c_str());
+      return;
+    }
+
     /* journal entries of earlier runs are not part of the answer;
        one second back covers the rounding to whole seconds */
     const std::time_t since = std::time(nullptr) - 1;
 
-    switch (action) {
-    case SystemdAction::START: {
-      RefUnit(connection, LoadUnit(connection, unit_name));
-      const auto result =
-        Systemd::StartUnit(connection, unit_name.c_str(), "replace",
+    /* a restart starts a stopped service as well, and one that runs
+       starts again with its current configuration */
+    RefUnit(connection, LoadUnit(connection, unit_name));
+    const auto result =
+      Systemd::RestartUnit(connection, unit_name.c_str(), "replace",
                            systemd_action_timeout_ms);
-      CheckStarted(connection, unit_name, display_name, result, since);
+    CheckStarted(connection, unit_name, display_name, result, since);
 
-      /* only a service that runs is started again at the next boot;
-         one that cannot run here would only fail there as well */
-      Systemd::EnableUnitFile(connection, unit_name.c_str());
-      break;
-    }
-
-    case SystemdAction::STOP:
-      Systemd::StopUnit(connection, unit_name.c_str(), "replace",
-                        systemd_action_timeout_ms);
-      Systemd::DisableUnitFile(connection, unit_name.c_str());
-      break;
-
-    case SystemdAction::RESTART: {
-      RefUnit(connection, LoadUnit(connection, unit_name));
-      const auto result =
-        Systemd::RestartUnit(connection, unit_name.c_str(), "replace",
-                             systemd_action_timeout_ms);
-      CheckStarted(connection, unit_name, display_name, result, since);
-      break;
-    }
-    }
+    /* only a service that runs is started again at the next boot;
+       one that cannot run here would only fail there as well */
+    Systemd::EnableUnitFile(connection, unit_name.c_str());
   }
 };
 
-struct ServiceStatus {
-  Systemd::ActiveState state = Systemd::ActiveState::INACTIVE;
-  bool valid = false;
-};
+} // anonymous namespace
 
-class SystemdListWidget final : public ListWidget {
-  std::vector<SystemdService> services = BuildSystemdServiceList();
-  std::vector<ServiceStatus> statuses{services.size()};
-  TwoTextRowsRenderer row_renderer;
-  Button *toggle_button = nullptr;
-  Button *restart_button = nullptr;
-  ButtonPanelWidget *button_panel = nullptr;
-  bool actions_armed = false;
-  UI::PeriodicTimer refresh_timer{[this]{ Refresh(); }};
+bool
+IsSystemdServiceActive(const SystemdService &service) noexcept
+try {
+  auto connection = ODBus::Connection::GetSystem();
+  return Systemd::GetUnitActiveState(connection, service.unit_name.c_str()) ==
+    Systemd::ActiveState::ACTIVE;
+} catch (...) {
+  return false;
+}
 
-public:
-  void SetButtonPanel(ButtonPanelWidget &_button_panel) noexcept {
-    button_panel = &_button_panel;
-  }
-
-  void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override {
-    const auto &look = UIGlobals::GetDialogLook();
-    CreateList(parent, look, rc,
-               row_renderer.CalculateLayout(look.text_font, look.small_font));
-    GetList().SetLength(services.empty() ? 1u : services.size());
-
-    if (button_panel != nullptr)
-      CreateButtons(button_panel->GetButtonPanel());
-  }
-
-  void Show(const PixelRect &rc) noexcept override {
-    ListWidget::Show(rc);
-    Refresh();
-    refresh_timer.Schedule(refresh_interval);
-  }
-
-  void Hide() noexcept override {
-    refresh_timer.Cancel();
-    DisarmActions();
-    ListWidget::Hide();
-  }
-
-  void Unprepare() noexcept override {
-    refresh_timer.Cancel();
-    DisarmActions();
-    ListWidget::Unprepare();
-  }
-
-  bool KeyPress(unsigned key_code) noexcept override {
-    if (key_code == KEY_UP && !actions_armed && !services.empty() &&
-        button_panel != nullptr && GetList().HasFocus()) {
-      button_panel->GetButtonPanel().EnableCursorSelection();
-      actions_armed = true;
-      UpdateButtons();
-      return true;
-    }
-
-    return ListWidget::KeyPress(key_code);
-  }
-
-  void OnPaintItem(Canvas &canvas, const PixelRect rc,
-                   unsigned idx) noexcept override {
-    if (idx >= services.size()) {
-      if (services.empty() && idx == 0) {
-        row_renderer.DrawFirstRow(canvas, rc,
-                                  _("No supported services found"));
-        row_renderer.DrawSecondRow(
-          canvas, rc, _("No selected systemd units are installed."));
-      }
-
-      return;
-    }
-
-    const auto &service = services[idx];
-    const auto &status = statuses[idx];
-
-    const char *state_text = _("Unavailable");
-    Color state_color = COLOR_RED;
-    if (status.valid) {
-      switch (status.state) {
-      case Systemd::ActiveState::ACTIVE:
-        state_text = _("On");
-        state_color = COLOR_GREEN;
-        break;
-      case Systemd::ActiveState::INACTIVE:
-        state_text = _("Off");
-        state_color = canvas.GetTextColor();
-        break;
-      case Systemd::ActiveState::ACTIVATING:
-        state_text = _("Starting...");
-        state_color = COLOR_ORANGE;
-        break;
-      case Systemd::ActiveState::DEACTIVATING:
-        state_text = _("Stopping...");
-        state_color = COLOR_ORANGE;
-        break;
-      case Systemd::ActiveState::RELOADING:
-        state_text = _("Reloading...");
-        state_color = COLOR_ORANGE;
-        break;
-      case Systemd::ActiveState::FAILED:
-        state_text = _("Failed");
-        state_color = COLOR_RED;
-        break;
-      }
-    }
-
-    PixelRect name_rc = rc;
-    const auto old_color = canvas.GetTextColor();
-    canvas.SetTextColor(state_color);
-    name_rc.right = row_renderer.DrawRightFirstRow(canvas, rc, state_text);
-    canvas.SetTextColor(old_color);
-    row_renderer.DrawFirstRow(canvas, name_rc, service.display_name);
-    row_renderer.DrawSecondRow(canvas, rc, service.description);
-    row_renderer.DrawRightSecondRow(canvas, rc, service.unit_name.c_str());
-  }
-
-  void OnCursorMoved([[maybe_unused]] unsigned index) noexcept override {
-    UpdateButtons();
-  }
-
-  bool CanActivateItem(unsigned index) const noexcept override {
-    return CanToggle(index);
-  }
-
-  void OnActivateItem(unsigned index) noexcept override {
-    Toggle(index);
-  }
-
-private:
-  void CreateButtons(ButtonPanel &buttons) noexcept {
-    toggle_button = buttons.Add(_("Turn on"), [this]{
-      Toggle(GetList().GetCursorIndex());
-    });
-    restart_button = buttons.Add(_("Restart"), [this]{
-      Restart(GetList().GetCursorIndex());
-    });
-
-    UpdateButtons();
-  }
-
-  [[gnu::pure]] bool CanToggle(unsigned index) const noexcept {
-    if (index >= statuses.size() || !statuses[index].valid)
-      return false;
-
-    switch (statuses[index].state) {
-    case Systemd::ActiveState::ACTIVE:
-    case Systemd::ActiveState::INACTIVE:
-    case Systemd::ActiveState::FAILED:
-      return true;
-
-    case Systemd::ActiveState::ACTIVATING:
-    case Systemd::ActiveState::DEACTIVATING:
-    case Systemd::ActiveState::RELOADING:
-      return false;
-    }
-
-    return false;
-  }
-
-  void UpdateButtons() noexcept {
-    const auto index = GetList().GetCursorIndex();
-    const bool can_toggle = CanToggle(index);
-    const bool is_active = index < statuses.size() && statuses[index].valid &&
-      statuses[index].state == Systemd::ActiveState::ACTIVE;
-
-    if (toggle_button != nullptr) {
-      toggle_button->SetCaption(is_active ? _("Turn off") : _("Turn on"));
-      toggle_button->SetEnabled(can_toggle);
-    }
-
-    if (restart_button != nullptr)
-      restart_button->SetEnabled(is_active);
-
-    if (actions_armed && button_panel != nullptr)
-      button_panel->GetButtonPanel().ReselectToFirstEnabled();
-  }
-
-  void DisarmActions() noexcept {
-    if (!actions_armed || button_panel == nullptr)
-      return;
-
-    button_panel->GetButtonPanel().DisableCursorSelection();
-    actions_armed = false;
-  }
-
-  void Refresh() noexcept {
-    try {
-      auto connection = ODBus::Connection::GetSystem();
-      for (std::size_t i = 0; i < services.size(); ++i) {
-        try {
-          statuses[i].state = Systemd::GetUnitActiveState(
-            connection, services[i].unit_name.c_str());
-          statuses[i].valid = true;
-        } catch (...) {
-          statuses[i].valid = false;
-        }
-      }
-    } catch (...) {
-      for (auto &status : statuses)
-        status.valid = false;
-    }
-
-    GetList().Invalidate();
-    UpdateButtons();
-  }
-
-  void Toggle(unsigned index) noexcept {
-    if (!CanToggle(index))
-      return;
-
-    refresh_timer.Cancel();
-    try {
-      const auto &unit = services[index].unit_name;
-      const auto action = statuses[index].state == Systemd::ActiveState::ACTIVE
-        ? SystemdAction::STOP
-        : SystemdAction::START;
-      SystemdActionJob job{action, unit, services[index].display_name};
-
-      if (!JobDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                     _("System service"), job))
-        throw std::runtime_error{"Failed to start system service job"};
-
-      Refresh();
-    } catch (...) {
-      ShowError(std::current_exception(), _("System service"));
-      Refresh();
-    }
-    refresh_timer.Schedule(refresh_interval);
-  }
-
-  void Restart(unsigned index) noexcept {
-    if (index >= statuses.size() || !statuses[index].valid ||
-        statuses[index].state != Systemd::ActiveState::ACTIVE)
-      return;
-
-    refresh_timer.Cancel();
-    try {
-      SystemdActionJob job{SystemdAction::RESTART,
-                           services[index].unit_name,
-                           services[index].display_name};
-      if (!JobDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
-                     _("System service"), job))
-        throw std::runtime_error{"Failed to start system service job"};
-
-      Refresh();
-    } catch (...) {
-      ShowError(std::current_exception(), _("System service"));
-      Refresh();
-    }
-    refresh_timer.Schedule(refresh_interval);
-  }
-};
-
-} // namespace
-
-std::unique_ptr<Widget>
-CreateSystemdConfigPanel()
+bool
+SwitchSystemdService(const SystemdService &service, bool on) noexcept
 {
-  auto list = std::make_unique<SystemdListWidget>();
-  auto panel = std::make_unique<ButtonPanelWidget>(
-    std::move(list), ButtonPanelWidget::Alignment::BOTTOM);
-  static_cast<SystemdListWidget &>(panel->GetWidget()).SetButtonPanel(*panel);
+  try {
+    SystemdSwitchJob job{on, service.unit_name, service.display_name};
+    if (!JobDialog(UIGlobals::GetMainWindow(), UIGlobals::GetDialogLook(),
+                   service.display_name, job))
+      throw std::runtime_error{"Failed to start system service job"};
+  } catch (...) {
+    ShowError(std::current_exception(), service.display_name);
+  }
 
-  /* on an OpenVario, the services sensord and variod belong together
-     with the system functions of the image; they share this page
-     instead of getting one of their own */
-  if (IsOpenVario())
-    return std::make_unique<TwoWidgets>(std::move(panel),
-                                        CreateOpenVarioSystemWidget());
+  return IsSystemdServiceActive(service);
+}
 
-  return panel;
+std::optional<SystemdService>
+FindSystemdService(const char *id) noexcept
+{
+  for (auto &service : BuildSystemdServiceList())
+    if (StringIsEqual(service.id, id))
+      return std::move(service);
+
+  return std::nullopt;
 }

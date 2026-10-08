@@ -12326,3 +12326,12 @@ msgstr "Die Kalibrierung des Touchscreens ist fehlgeschlagen."
 
 msgid "Calibrate touch screen"
 msgstr "Touchscreen kalibrieren"
+
+msgid "This device is not an OpenVario."
+msgstr "Dieses Gerät ist kein OpenVario."
+
+msgid "Start after boot"
+msgstr "Start nach dem Einschalten"
+
+msgid "The program the OpenVario starts when it is switched on.  The change takes effect with the next start of the device."
+msgstr "Das Programm, das das OpenVario nach dem Einschalten startet.  Die Änderung wirkt ab dem nächsten Start des Geräts."

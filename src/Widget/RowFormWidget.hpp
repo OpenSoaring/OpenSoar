@@ -470,6 +470,15 @@ public:
    */
   void AddLabel(const char *label, unsigned lines = 1) noexcept;
 
+  /**
+   * The number of rows added so far, which is the index the next row
+   * gets; for forms whose rows depend on what the system offers.
+   */
+  [[gnu::pure]]
+  unsigned GetRowCount() const noexcept {
+    return rows.size();
+  }
+
   [[gnu::pure]]
   Widget &GetRowWidget(unsigned i) noexcept {
     return rows[i].GetWidget();
