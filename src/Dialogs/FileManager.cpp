@@ -349,7 +349,7 @@ ManagedFileListWidget::Show(const PixelRect &rc) noexcept
 #ifdef HAVE_DOWNLOAD_MANAGER
   if (!repository_requested && Net::DownloadManager::IsAvailable()) {
     repository_requested = true;
-    EnqueueRepositoryDownload();
+    EnqueueRepositoryRefresh();
   }
 #endif
 }
