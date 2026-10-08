@@ -53,7 +53,7 @@ static constexpr struct {
 } builtin_repositories[] = {
   {"https://opensoar.de/releases/repository", "user_repository_opensoar"},
 #ifdef IS_OPENVARIO
-  {"http://ftp.openvario.org/repository", "user_repository_openvario"},
+  {"https://ftp.openvario.org/repository", "user_repository_openvario"},
 #endif
 };
 
