@@ -27,7 +27,12 @@
 #include "Language/Language.hpp"
 #endif
 
+#include "Version.hpp"
+
 #include <algorithm>
+#include <chrono>
+#include <cstring>
+#include <optional>
 #include <iterator>
 #include <string_view>
 #include <vector>
@@ -37,8 +42,50 @@
 static constexpr std::string_view USER_REPOSITORY_FILE_PREFIX{
     "user_repository_"};
 
-static bool repository_downloaded = false;
-static bool user_repository_downloaded = false;
+/**
+ * When the repository indexes were last requested.  A page that offers
+ * downloads requests them again once they are older than
+ * #RepositoryMaxAge(), so files put on a server while the program runs
+ * show up without a restart.
+ */
+static std::optional<std::chrono::steady_clock::time_point>
+  repository_downloaded, user_repository_downloaded;
+
+/**
+ * How old the indexes may get.  A debug build or a test version
+ * ("7.45.25.t04") fetches them every time a download page opens: that
+ * is where a developer uploads something and wants to see it at once.
+ * A release fetches them at most every quarter of an hour, to spare
+ * the pilot's mobile data.
+ */
+[[gnu::pure]]
+static std::chrono::steady_clock::duration
+RepositoryMaxAge() noexcept
+{
+#ifndef NDEBUG
+  return {};
+#else
+  if (std::strstr(XCSoar_Version, ".t") != nullptr)
+    return {};
+  return std::chrono::minutes{15};
+#endif
+}
+
+/**
+ * Is it time to request the index again?  If so, remember that it is
+ * being requested now.
+ */
+static bool
+RepositoryDue(std::optional<std::chrono::steady_clock::time_point> &last,
+              bool force) noexcept
+{
+  const auto now = std::chrono::steady_clock::now();
+  if (!force && last && now - *last < RepositoryMaxAge())
+    return false;
+
+  last = now;
+  return true;
+}
 
 /**
  * Repositories this program knows besides XCSoar's own, so that their
@@ -155,8 +202,7 @@ void
 EnqueueRepositoryDownload(bool force, bool main_repo, bool user_repo)
 {
   if (main_repo) {
-    if (!repository_downloaded || force) {
-      repository_downloaded = true;
+    if (RepositoryDue(repository_downloaded, force)) {
       const auto path = RepositoryDownloadRelativePath("repository");
       Net::DownloadManager::Enqueue(REPOSITORY_URI, Path(path.c_str()));
     }
@@ -164,8 +210,7 @@ EnqueueRepositoryDownload(bool force, bool main_repo, bool user_repo)
 
   // Enqueue additional user-defined repository URIs, if set
   if (user_repo) {
-    if (!user_repository_downloaded || force) {
-      user_repository_downloaded = true;
+    if (RepositoryDue(user_repository_downloaded, force)) {
       for (const auto &repo : GetUserRepositories())
         {
           const auto path =
@@ -316,7 +361,7 @@ DownloadRepositoriesModal(bool main_repo, bool user_repo)
       if (DownloadFileModal(_("Updating repository"), REPOSITORY_URI,
                             path.c_str()) == nullptr)
         return; /* cancelled */
-      repository_downloaded = true;
+      repository_downloaded = std::chrono::steady_clock::now();
     } catch (...) {
       ShowError(std::current_exception(), _("Updating repository"));
     }
@@ -337,7 +382,7 @@ DownloadRepositoriesModal(bool main_repo, bool user_repo)
       }
     }
     if (user_repo_download_success)
-      user_repository_downloaded = true;
+      user_repository_downloaded = std::chrono::steady_clock::now();
   }
 }
 
