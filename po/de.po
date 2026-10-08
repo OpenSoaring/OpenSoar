@@ -12335,3 +12335,6 @@ msgstr "Start nach dem Einschalten"
 
 msgid "The program the OpenVario starts when it is switched on.  The change takes effect with the next start of the device."
 msgstr "Das Programm, das das OpenVario nach dem Einschalten startet.  Die Änderung wirkt ab dem nächsten Start des Geräts."
+
+msgid "The enabled devices in the order of their ports.  Click to open the device list."
+msgstr "Die aktivierten Geräte in der Reihenfolge ihrer Ports.  Ein Klick öffnet die Geräteliste."
