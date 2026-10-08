@@ -872,9 +872,9 @@ endif
 # Installed system tools and selected systemd unit controls for Linux.
 ifeq ($(TARGET_IS_LINUX)$(TARGET_IS_KOBO)$(TARGET_IS_ANDROID),ynn)
 XCSOAR_SOURCES += \
-	$(SRC)/Dialogs/Settings/Panels/SystemdConfigPanel.cpp \
+	$(SRC)/Dialogs/SystemdService.cpp \
 	$(SRC)/Linux/SystemdServiceList.cpp \
-	$(SRC)/Dialogs/Settings/Panels/OpenVarioSystemWidget.cpp \
+	$(SRC)/Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp \
 	$(SRC)/Dialogs/ProcessDialog.cpp \
 	$(SRC)/OpenVario/System.cpp \
 	$(SRC)/OpenVario/Calibrate.cpp \
