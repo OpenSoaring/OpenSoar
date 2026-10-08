@@ -799,7 +799,12 @@ ManagedFileListWidget::OnDownloadComplete(Path path_relative) noexcept
   if (name.c_str() != "repository"sv && !IsUserRepositoryFile(name.c_str())) {
     if (const auto *remote_file = FindRemoteFile(repository, name.c_str());
         remote_file != nullptr)
-      check = CheckFileContent(LocalPath(path_relative), remote_file->type);
+      /* an OpenVario image is downloaded to an absolute path outside
+         the data directory; ResolveDownloadPath() finds it where the
+         download manager put it, LocalPath() looked for it below the
+         data directory and reported it as unreadable */
+      check = CheckFileContent(ResolveDownloadPath(path_relative),
+                               remote_file->type);
   }
 
   {
