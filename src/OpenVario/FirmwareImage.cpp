@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "FirmwareImage.hpp"
+#include "System.hpp"
 #include "Operation/Operation.hpp"
 #include "Formatter/ByteSizeFormatter.hpp"
 #include "Formatter/TimeFormatter.hpp"
@@ -170,8 +171,12 @@ FindFirmwareImages() noexcept
 
   CollectImages(images, GetFirmwareDownloadPath(), true);
 
-  for (const char *usb : USB_IMAGE_DIRECTORIES)
-    CollectImages(images, Path{usb}, false);
+  /* only with a stick: looking into the automount point without one
+     blocks until systemd gives up waiting for the device, which made
+     the firmware row take seconds to react */
+  if (OpenvarioIsUsbStickMounted())
+    for (const char *usb : USB_IMAGE_DIRECTORIES)
+      CollectImages(images, Path{usb}, false);
 
   std::sort(images.begin(), images.end(),
             [](const FirmwareImage &a, const FirmwareImage &b) {
