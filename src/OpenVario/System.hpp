@@ -118,7 +118,9 @@ HasRealMount(std::string_view mounts, std::string_view path) noexcept
 /**
  * Is a USB stick mounted where the scripts of the OpenVario image
  * expect it?  Looking into the directory first lets the automount
- * unit mount a stick that has just been plugged in.
+ * unit mount a stick that has just been plugged in.  Without a stick
+ * device the directory is not touched, because that would block until
+ * systemd gives up waiting for the device.
  */
 bool
 OpenvarioIsUsbStickMounted() noexcept;
