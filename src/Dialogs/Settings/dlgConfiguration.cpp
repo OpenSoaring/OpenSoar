@@ -90,6 +90,10 @@
 #endif
 #include "Panels/NetworkConfigPanel.hpp"
 
+
+#include "Dialogs/DataManagement/DataManagement.hpp"
+#include "Dialogs/FileManager.hpp"
+
 #if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
 #include "Panels/SystemdConfigPanel.hpp"
 #ifdef USE_POLL_EVENT
@@ -111,6 +115,8 @@ static ArrowPagerWidget *pager;
 static constexpr TabMenuPage system_pages[] = {
   { N_("Site Files"), CreateSiteConfigPanel },
   { NC_("Setting", "System"), CreateSystemConfigPanel },
+  { NC_("Menu", "Data Management"), CreateDataManagementPanel },
+  { N_("File Manager"), CreateFileManagerPanel },
   { nullptr, nullptr }
 };
 
