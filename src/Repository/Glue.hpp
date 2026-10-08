@@ -56,6 +56,17 @@ void
 EnqueueRepositoryDownload(bool force=false, bool main_repo=true, bool user_repo=true);
 
 /**
+ * Called when a page that offers downloads opens: request the
+ * repository indexes again if they are older than the age limit (no
+ * limit in a debug build or a test version, a quarter of an hour in a
+ * release), so files put on a server meanwhile become visible.  Must
+ * not be called from a download completion handler, because with a
+ * limit of zero that would request the indexes again and again.
+ */
+void
+EnqueueRepositoryRefresh();
+
+/**
  * Daily RASP freshness from civil dates.  The local copy is out of
  * date when its modification date is implausible, older than @p today,
  * or older than the repository update= date.  A missing file is
