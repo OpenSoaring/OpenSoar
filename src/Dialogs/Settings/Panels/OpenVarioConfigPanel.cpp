@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright The XCSoar Project
 
-#include "OpenVarioSystemWidget.hpp"
+#include "OpenVarioConfigPanel.hpp"
+#include "Dialogs/SystemdService.hpp"
+#include "Form/DataField/Boolean.hpp"
+#include "Form/DataField/Listener.hpp"
+#include "Form/Edit.hpp"
+#include "io/FileLineReader.hpp"
+#include "util/StringCompare.hxx"
 #include "Dialogs/Error.hpp"
 #include "Dialogs/JobDialog.hpp"
 #include "Dialogs/Message.hpp"
@@ -26,18 +32,9 @@
 #include "ui/window/SingleWindow.hpp"
 #include "util/StringAPI.hxx"
 
+#include <optional>
 #include <string>
 #include <string_view>
-
-/* the order of the rows Prepare() adds; the firmware row starts the
-   upgrade itself, there is no button of its own any more */
-enum ControlIndex {
-  IMAGE,
-  MAIN_APP,
-  CALIBRATE_SENSORS,
-  SYSTEM_BACKUP,
-  SYSTEM_RESTORE,
-};
 
 /**
  * The values of "main_app" which ovmenu-ng.sh knows.  The enum ids
@@ -48,10 +45,20 @@ static constexpr const char *main_app_values[] = {
   "OpenSoar",
 };
 
-static constexpr StaticEnumChoice main_app_list[] = {
-  { 0, "XCSoar" },
-  { 1, "OpenSoar" },
-  nullptr
+/** how the programs are called on the screen, by the index of
+    #main_app_values */
+static constexpr const char *main_app_names[] = {
+  "XCSoar",
+  "OpenSoar",
+};
+
+/**
+ * The opkg packages each program may come from, by the index of
+ * #main_app_values; the image installs one of them.
+ */
+static constexpr const char *main_app_packages[][2] = {
+  { "xcsoar", "xcsoar-testing" },
+  { "opensoar", "opensoar-testing" },
 };
 
 /**
@@ -60,16 +67,31 @@ static constexpr StaticEnumChoice main_app_list[] = {
  */
 static constexpr const char *transfer_system = "/usr/bin/transfer-system.sh";
 
-class OpenVarioSystemWidget final : public RowFormWidget {
+class OpenVarioConfigPanel final
+  : public RowFormWidget, DataFieldListener {
+  /* the rows Prepare() has added, or -1 */
+  int main_app_row = -1;
+  int sensord_row = -1;
+  int variod_row = -1;
+
   unsigned main_app;
 
+  std::optional<SystemdService> sensord, variod;
+
 public:
-  OpenVarioSystemWidget() noexcept
+  OpenVarioConfigPanel() noexcept
     :RowFormWidget(UIGlobals::GetDialogLook()) {}
 
   /* virtual methods from class Widget */
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
+
+private:
+  void AddService(int &row, std::optional<SystemdService> &service,
+                  const char *id) noexcept;
+
+  /* virtual methods from class DataFieldListener */
+  void OnModified(DataField &df) noexcept override;
 };
 
 /**
@@ -291,46 +313,156 @@ RestoreSystem() noexcept
                    _("System restore"), MB_OK | MB_ICONINFORMATION);
 }
 
+/**
+ * The version of an installed package from the opkg status file, the
+ * revision ("-r25.13") left out.  Empty if the package is not
+ * installed or the status file cannot be read.
+ */
+static std::string
+GetPackageVersion(const char *package) noexcept
+{
+  /* where opkg keeps its status on the OpenVario, and on images that
+     put it below /usr */
+  static constexpr const char *status_files[] = {
+    "/var/lib/opkg/status",
+    "/usr/lib/opkg/status",
+  };
+
+  for (const char *status_file : status_files) {
+    try {
+      FileLineReaderA reader{Path{status_file}};
+      bool in_package = false;
+      const char *line;
+      while ((line = reader.ReadLine()) != nullptr) {
+        if (const char *name = StringAfterPrefix(line, "Package: "))
+          in_package = StringIsEqual(name, package);
+        else if (in_package)
+          if (const char *version = StringAfterPrefix(line, "Version: ")) {
+            std::string result = version;
+            if (const auto dash = result.rfind('-');
+                dash != std::string::npos && dash + 1 < result.size() &&
+                result[dash + 1] == 'r')
+              result.erase(dash);
+            return result;
+          }
+      }
+    } catch (...) {
+      /* no such status file; try the next */
+    }
+  }
+
+  return {};
+}
+
+/**
+ * "OpenSoar 7.45.25.t04": the name of a program the image can start,
+ * with the version installed.  For the running program its own
+ * version stands in if opkg does not know it (on a PC, say).
+ */
+static std::string
+MainAppLabel(unsigned i) noexcept
+{
+  std::string version;
+  for (const char *package : main_app_packages[i])
+    if (version = GetPackageVersion(package); !version.empty())
+      break;
+
+  if (version.empty() && i == RunningApp())
+    version = XCSoar_Version;
+
+  std::string label = main_app_names[i];
+  if (!version.empty()) {
+    label += ' ';
+    label += version;
+  }
+  return label;
+}
+
 void
-OpenVarioSystemWidget::Prepare(ContainerWindow &parent,
-                               const PixelRect &rc) noexcept
+OpenVarioConfigPanel::AddService(int &row,
+                                 std::optional<SystemdService> &service,
+                                 const char *id) noexcept
+{
+  service = FindSystemdService(id);
+  if (!service)
+    return;
+
+  row = GetRowCount();
+  AddBoolean(service->display_name, service->description,
+             IsSystemdServiceActive(*service), this);
+}
+
+void
+OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
+                              const PixelRect &rc) noexcept
 {
   RowFormWidget::Prepare(parent, rc);
 
-  /* Below the service list in TwoWidgets, this panel is created in
-     Initialise(), the list and its buttons only in Prepare(), so the
-     panel came first among the siblings.  The cursor keys follow that
-     order: Down from the list left the page and skipped these rows,
-     Up reached them only from the other end.  Moving the panel behind
-     the list makes the keys go list, buttons, these rows. */
-  GetWindow().BringToBottom();
+  const bool is_openvario = IsOpenVario();
 
-  /* a short caption leaves the row's width to the image name; a
-     click on it starts the upgrade */
-  const std::string image = OpenvarioGetImageName();
-  AddText(_("Firmware"),
-          _("The OpenVario image this device is running.  Click to choose "
-            "or download another image and upgrade to it: the program "
-            "quits and the upgrade starts."),
-          image.empty() ? _("Unknown") : image.c_str())
-    ->SetEditCallback(EditFirmware);
+  if (is_openvario) {
+    /* the program the image starts, each with the version installed */
+    main_app = LoadMainApp();
+    main_app_row = GetRowCount();
+    WndProperty *wp =
+      AddEnum(_("Start after boot"),
+              _("The program the OpenVario starts when it is switched on.  "
+                "The change takes effect with the next start of the "
+                "device."));
+    auto &df = *(DataFieldEnum *)wp->GetDataField();
+    for (unsigned i = 0; i < std::size(main_app_values); ++i)
+      df.AddChoice(i, MainAppLabel(i).c_str());
+    df.SetValue(main_app);
+    wp->RefreshDisplay();
 
-  main_app = LoadMainApp();
-  AddEnum(_("Start after boot"),
-          _("The program the OpenVario starts when it is switched on.  "
-            "The change takes effect with the next start of the device."),
-          main_app_list, main_app);
+    /* a click on the image name starts the upgrade */
+    const std::string image = OpenvarioGetImageName();
+    AddText(_("Firmware"),
+            _("The OpenVario image this device is running.  Click to "
+              "choose or download another image and upgrade to it: the "
+              "program quits and the upgrade starts."),
+            image.empty() ? _("Unknown") : image.c_str())
+      ->SetEditCallback(EditFirmware);
+  }
 
-  AddButton(_("Calibrate sensors"), CalibrateSensors);
+  /* switching a service on starts it (again) and keeps it on after
+     the next boot; switching it off stops it for good */
+  AddService(sensord_row, sensord, "sensord");
+  AddService(variod_row, variod, "variod");
 
-  AddButton(_("Back up the system to USB"), BackupSystem);
-  AddButton(_("Restore the system from USB"), RestoreSystem);
+  if (is_openvario) {
+    AddButton(_("Calibrate sensors"), CalibrateSensors);
+
+    AddButton(_("Back up the system to USB"), BackupSystem);
+    AddButton(_("Restore the system from USB"), RestoreSystem);
+  } else if (!sensord && !variod) {
+    AddMultiLine(_("This device is not an OpenVario."));
+  }
+}
+
+void
+OpenVarioConfigPanel::OnModified(DataField &df) noexcept
+{
+  const auto on = ((const DataFieldBoolean &)df).GetValue();
+
+  for (auto [row, service] : {std::pair{sensord_row, &sensord},
+                              std::pair{variod_row, &variod}}) {
+    if (row < 0 || !IsDataField(row, df))
+      continue;
+
+    /* the field shows what actually runs afterwards, also if the
+       switch failed */
+    if (const bool running = SwitchSystemdService(**service, on);
+        running != on)
+      LoadValue(row, running);
+    return;
+  }
 }
 
 bool
-OpenVarioSystemWidget::Save(bool &_changed) noexcept
+OpenVarioConfigPanel::Save(bool &_changed) noexcept
 {
-  if (SaveValueEnum(MAIN_APP, main_app)) {
+  if (main_app_row >= 0 && SaveValueEnum(main_app_row, main_app)) {
     try {
       OpenvarioSetMainApp(main_app_values[main_app]);
     } catch (...) {
@@ -345,7 +477,7 @@ OpenVarioSystemWidget::Save(bool &_changed) noexcept
 }
 
 std::unique_ptr<Widget>
-CreateOpenVarioSystemWidget() noexcept
+CreateOpenVarioConfigPanel() noexcept
 {
-  return std::make_unique<OpenVarioSystemWidget>();
+  return std::make_unique<OpenVarioConfigPanel>();
 }
