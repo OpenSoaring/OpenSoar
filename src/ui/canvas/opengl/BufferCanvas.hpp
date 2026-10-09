@@ -22,9 +22,14 @@ class GLRenderBuffer;
  * An off-screen #Canvas implementation.
  */
 class BufferCanvas : public Canvas {
-  static constexpr GLint INTERNAL_FORMAT = GL_RGB;
-  static constexpr GLint FORMAT = GL_RGB;
   static constexpr GLint TYPE = GL_UNSIGNED_BYTE;
+
+  /**
+   * GL_RGB, or GL_RGBA for a buffer that keeps an alpha channel (see
+   * the constructor).  OpenGL/ES requires the internal format to
+   * equal the format.
+   */
+  GLint format = GL_RGB;
 
   GLTexture *texture = nullptr;
 
@@ -55,6 +60,17 @@ class BufferCanvas : public Canvas {
 #endif
 
 public:
+  BufferCanvas() noexcept = default;
+
+  /**
+   * @param with_alpha keep an alpha channel, so that what is painted
+   * into the buffer can later be blended over other content with
+   * #DrawQuad(); the buffer starts transparent only after the caller
+   * cleared it with alpha 0
+   */
+  explicit BufferCanvas(bool with_alpha) noexcept
+    :format(with_alpha ? GL_RGBA : GL_RGB) {}
+
   ~BufferCanvas() noexcept {
     Destroy();
   }
@@ -116,6 +132,15 @@ public:
   void Commit(Canvas &other) noexcept;
 
   void CopyTo(Canvas &other) noexcept;
+
+  /**
+   * Draw the whole buffer onto the current target, stretched onto the
+   * quadrilateral given by its four corners (top left, top right,
+   * bottom left, bottom right of the buffer), blended by the buffer's
+   * alpha channel.  This allows drawing a cached image moved and
+   * rotated.
+   */
+  void DrawQuad(const BulkPixelPoint corners[4]) const noexcept;
 
   /**
    * Copy a source rectangle from this buffer onto @a dest.

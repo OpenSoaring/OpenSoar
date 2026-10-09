@@ -26,6 +26,15 @@ TopographyRenderer::Draw(Canvas &canvas,
 }
 
 void
+TopographyRenderer::Draw(Canvas &canvas,
+                         const WindowProjection &projection,
+                         double map_scale) noexcept
+{
+  for (auto &i : files)
+    i.Paint(canvas, projection, map_scale);
+}
+
+void
 TopographyRenderer::DrawLabels(Canvas &canvas,
                                const WindowProjection &projection,
                                LabelBlock &label_block) noexcept
