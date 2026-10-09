@@ -76,6 +76,13 @@ public:
   void Paint(Canvas &canvas, const WindowProjection &projection) noexcept;
 
   /**
+   * @param map_scale the scale that decides visibility and thinning,
+   * see TopographyRenderer::Draw()
+   */
+  void Paint(Canvas &canvas, const WindowProjection &projection,
+             double map_scale) noexcept;
+
+  /**
    * Paints a topography label if the space is available in the LabelBlock
    * @param canvas The canvas to paint on
    * @param projection

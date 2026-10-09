@@ -41,6 +41,16 @@ public:
    */
   void Draw(Canvas &canvas, const WindowProjection &projection) noexcept;
 
+  /**
+   * Like Draw(), but with the given map scale deciding which layers
+   * are visible and how much they are thinned, instead of the one of
+   * @a projection.  Used to draw into a buffer larger than the
+   * screen, whose larger size would otherwise hide layers that are
+   * visible on the screen.
+   */
+  void Draw(Canvas &canvas, const WindowProjection &projection,
+            double map_scale) noexcept;
+
   void DrawLabels(Canvas &canvas, const WindowProjection &projection,
                   LabelBlock &label_block) noexcept;
 };
