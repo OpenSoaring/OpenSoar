@@ -260,6 +260,44 @@ class DeviceDescriptor final
   unsigned n_failures = 0;
 
   /**
+   * After this many failed attempts in a row, #AutoReopen() retries
+   * less often and stops logging every attempt.  A configured device
+   * that is simply not connected (a profile taken over from another
+   * instrument, an unplugged adapter) would otherwise fill the log
+   * with three lines every 30 seconds for the whole flight.
+   */
+  static constexpr unsigned QUIET_REOPEN_AFTER_FAILURES = 3;
+
+  /**
+   * Is the device in the quiet retry mode described at
+   * #QUIET_REOPEN_AFTER_FAILURES?  Only written in the main thread
+   * before an open job starts; the job reads it to decide whether to
+   * log its error.
+   */
+  bool quiet_reopen = false;
+
+  /**
+   * Attempts made in the quiet retry mode since the last summary
+   * line in the log.
+   */
+  unsigned quiet_attempts = 0;
+
+  /**
+   * When the last summary line of the quiet retry mode was written.
+   */
+  PeriodClock quiet_summary_clock;
+
+  /**
+   * Leave the quiet retry mode, e.g. after a successful open or a
+   * configuration change.
+   */
+  void ResetQuietReopen() noexcept {
+    quiet_reopen = false;
+    quiet_attempts = 0;
+    quiet_summary_clock.Reset();
+  }
+
+  /**
    * True when a sensor has failed and the device should be closed in
    * the next OnSysTicker() call.
    */
