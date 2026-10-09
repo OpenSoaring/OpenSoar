@@ -143,9 +143,16 @@ void
 TopographyFileRenderer::Paint(Canvas &canvas,
                               const WindowProjection &projection) noexcept
 {
+  Paint(canvas, projection, projection.GetMapScale());
+}
+
+void
+TopographyFileRenderer::Paint(Canvas &canvas,
+                              const WindowProjection &projection,
+                              const double map_scale) noexcept
+{
   const std::lock_guard lock{file.mutex};
 
-  const auto map_scale = projection.GetMapScale();
   if (!file.IsVisible(map_scale))
     return;
 

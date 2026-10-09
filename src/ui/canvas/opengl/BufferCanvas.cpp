@@ -10,6 +10,8 @@
 #include "Init.hpp"
 #include "Shaders.hpp"
 #include "Program.hpp"
+#include "VertexPointer.hpp"
+#include "Attribute.hpp"
 
 #ifdef SOFTWARE_ROTATE_DISPLAY
 #include "DisplayOrientation.hpp"
@@ -23,7 +25,7 @@ BufferCanvas::Create(PixelSize new_size) noexcept
   assert(!active);
 
   Destroy();
-  texture = new GLTexture(INTERNAL_FORMAT, new_size, FORMAT, TYPE, true);
+  texture = new GLTexture(format, new_size, format, TYPE, true);
   frame_buffer = new GLFrameBuffer();
 
   if (OpenGL::render_buffer_stencil != GL_NONE) {
@@ -63,7 +65,7 @@ BufferCanvas::Resize(PixelSize new_size) noexcept
   if (new_size == GetSize())
     return;
 
-  texture->ResizeDiscard(INTERNAL_FORMAT, new_size, FORMAT, TYPE);
+  texture->ResizeDiscard(format, new_size, format, TYPE);
 
   if (stencil_buffer != nullptr) {
     /* the stencil buffer must be detached before we resize it */
@@ -239,4 +241,41 @@ BufferCanvas::CopyTo([[maybe_unused]] Canvas &dest, PixelRect dest_rc,
 
   texture->Bind();
   texture->Draw(dest_rc, src_rc);
+}
+
+void
+BufferCanvas::DrawQuad(const BulkPixelPoint corners[4]) const noexcept
+{
+  assert(IsDefined());
+  assert(!active);
+
+  OpenGL::texture_shader->Use();
+  texture->Bind();
+
+  const ScopeAlphaBlend alpha_blend;
+  const ScopeVertexPointer vp(corners);
+
+  /* the texture may be larger than the buffer (power of two), and an
+     FBO texture is upside down */
+  const PixelSize allocated = texture->GetAllocatedSize();
+  const GLfloat x1 = (GLfloat)GetWidth() / allocated.width;
+  const GLfloat y1 = (GLfloat)GetHeight() / allocated.height;
+  const bool flipped = texture->IsFlipped();
+  const GLfloat top = flipped ? y1 : 0;
+  const GLfloat bottom = flipped ? 0 : y1;
+
+  const GLfloat coord[] = {
+    0, top,
+    x1, top,
+    0, bottom,
+    x1, bottom,
+  };
+
+  glEnableVertexAttribArray(OpenGL::Attribute::TEXCOORD);
+  glVertexAttribPointer(OpenGL::Attribute::TEXCOORD, 2, GL_FLOAT, GL_FALSE,
+                        0, coord);
+
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+  glDisableVertexAttribArray(OpenGL::Attribute::TEXCOORD);
 }
