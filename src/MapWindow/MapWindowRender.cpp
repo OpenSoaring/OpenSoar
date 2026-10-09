@@ -239,6 +239,8 @@ MapWindow::Render(Canvas &canvas, const PixelRect &rc) noexcept
     return;
   }
 
+  draw_sw.Begin();
+
   // Calculate screen position of the aircraft
   PixelPoint aircraft_pos{0,0};
   if (basic.location_available)
