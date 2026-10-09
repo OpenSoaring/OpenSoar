@@ -83,6 +83,7 @@ void
 DeviceDescriptor::SetConfig(const DeviceConfig &_config) noexcept
 {
   ResetFailureCounter();
+  ResetQuietReopen();
 
   config = _config;
 
@@ -416,7 +417,12 @@ try {
     char name_buffer[64];
     const char *name = config.GetPortName(name_buffer, 64);
 
-    LogError(e, name);
+    ++n_failures;
+
+    /* in the quiet retry mode the error is only counted;
+       AutoReopen() reports it once an hour */
+    if (!quiet_reopen)
+      LogError(e, name);
 
     const auto msg = GetFullMessage(e);
     if (!msg.empty()) {
@@ -497,8 +503,10 @@ DeviceDescriptor::Open(OperationEnvironment &env)
   assert(!IsOccupied());
   assert(open_job == nullptr);
 
-  char buffer[64];
-  LogFormat("Opening device: %s", config.GetPortName(buffer, 64));
+  if (!quiet_reopen) {
+    char buffer[64];
+    LogFormat("Opening device: %s", config.GetPortName(buffer, 64));
+  }
 
 #ifdef ANDROID
   /* reset the Kalman filter */
@@ -614,16 +622,41 @@ DeviceDescriptor::AutoReopen(OperationEnvironment &env)
 {
   assert(InMainThread());
 
+  /* attempt to reopen a failed device every 30 seconds; after a few
+     failures in a row only once a minute, because the device is
+     probably not connected at all */
+  const bool quiet = n_failures >= QUIET_REOPEN_AFTER_FAILURES;
+  const auto interval = quiet
+    ? std::chrono::seconds(60)
+    : std::chrono::seconds(30);
+
   if (/* don't reopen a device that is occupied */
       IsOccupied() ||
       !config.IsAvailable() ||
       !ShouldReopen() ||
-      /* attempt to reopen a failed device every 30 seconds */
-      !reopen_clock.CheckUpdate(std::chrono::seconds(30)))
+      !reopen_clock.CheckUpdate(interval))
     return;
 
   char buffer[64];
-  LogFormat("Reconnecting to device: %s", config.GetPortName(buffer, 64));
+  const char *name = config.GetPortName(buffer, 64);
+
+  if (!quiet) {
+    LogFormat("Reconnecting to device: %s", name);
+  } else if (!quiet_reopen) {
+    quiet_reopen = true;
+    quiet_attempts = 1;
+    quiet_summary_clock.Update();
+    LogFormat("Device %s failed %u times in a row (%s); retrying once a "
+              "minute and logging a summary once an hour",
+              name, n_failures, GetErrorMessage().c_str());
+  } else {
+    ++quiet_attempts;
+    if (quiet_summary_clock.CheckUpdate(std::chrono::hours(1))) {
+      LogFormat("Device %s still unavailable: %u attempts in the last hour "
+                "(%s)", name, quiet_attempts, GetErrorMessage().c_str());
+      quiet_attempts = 0;
+    }
+  }
 
   InputEvents::processGlideComputer(GCE_COMMPORT_RESTART);
   Reopen(env);
@@ -1715,6 +1748,15 @@ DeviceDescriptor::OnJobFinished() noexcept
 
   delete open_job;
   open_job = nullptr;
+
+  if (quiet_reopen && n_failures == 0) {
+    /* the open job succeeded; report it, because the quiet retry mode
+       has kept the failed attempts out of the log */
+    char buffer[64];
+    LogFormat("Device %s is available again after %u attempts in quiet "
+              "retry mode", config.GetPortName(buffer, 64), quiet_attempts);
+    ResetQuietReopen();
+  }
 
   PortStateChanged();
 }
