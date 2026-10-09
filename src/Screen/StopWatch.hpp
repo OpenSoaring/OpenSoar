@@ -16,6 +16,14 @@
 #include <profileapi.h>
 #endif /* !HAVE_POSIX */
 
+#else /* !STOP_WATCH */
+
+#include "util/StaticArray.hxx"
+#include "util/StaticString.hxx"
+#include "LogFile.hpp"
+
+#include <chrono>
+
 #endif /* STOP_WATCH */
 
 #ifdef ENABLE_OPENGL
@@ -103,6 +111,8 @@ private:
   }
 
 public:
+  void Begin() {}
+
   void Mark(const char *text) {
     FlushScreen();
     markers.append().Set(text);
@@ -134,8 +144,92 @@ public:
   }
 
 #else /* !STOP_WATCH */
+  /* Without STOP_WATCH only frames that take conspicuously long are
+     reported, so a map that cannot be drawn in time on a slow device
+     shows up in the log together with the layer that costs the time.
+     Neither the screen is flushed nor anything logged for a normal
+     frame; the cost is a clock reading per marker.  GPU work that the
+     driver defers lands in whichever later section waits for it. */
+  using Clock = std::chrono::steady_clock;
+
+  struct Marker {
+    const char *text;
+    Clock::time_point time;
+  };
+
+  StaticArray<Marker, 32u> markers;
+
+  /** frames slower than #SLOW_FRAME since the last report */
+  unsigned slow_frames = 0;
+
+  /** the slowest of them, already formatted for the log */
+  Clock::duration slowest{};
+  StaticString<384> slowest_text;
+
+  Clock::time_point last_report{};
+
+  static constexpr std::chrono::milliseconds SLOW_FRAME{300};
+  static constexpr std::chrono::seconds REPORT_INTERVAL{10};
+
+  static unsigned ToMilliseconds(Clock::duration d) noexcept {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(d).count();
+  }
+
 public:
-  void Mark([[maybe_unused]] const char *text) {}
-  void Finish() {}
+  /**
+   * Start a new frame.  Markers left over from an earlier frame are
+   * dropped, so the idle time between two frames is never counted.
+   */
+  void Begin() noexcept {
+    markers.clear();
+    Mark("Prepare");
+  }
+
+  void Mark(const char *text) noexcept {
+    if (!markers.full())
+      markers.append({text, Clock::now()});
+  }
+
+  void Finish() noexcept {
+    if (markers.empty())
+      return;
+
+    const auto end = Clock::now();
+    const auto total = end - markers.front().time;
+    if (total < SLOW_FRAME) {
+      markers.clear();
+      return;
+    }
+
+    ++slow_frames;
+
+    if (total > slowest) {
+      /* name the sections that took at least a tenth of the frame */
+      slowest = total;
+      slowest_text.Format("%u ms:", ToMilliseconds(total));
+      for (unsigned i = 0; i < markers.size(); ++i) {
+        const auto section_end = i + 1 < markers.size()
+          ? markers[i + 1].time
+          : end;
+        const auto section = section_end - markers[i].time;
+        if (section * 10 >= total)
+          slowest_text.AppendFormat(" %s %u ms", markers[i].text,
+                                    ToMilliseconds(section));
+      }
+    }
+
+    markers.clear();
+
+    if (last_report != Clock::time_point{} &&
+        end - last_report < REPORT_INTERVAL)
+      return;
+
+    LogFormat("Slow map frames: %u since the last report, the slowest %s",
+              slow_frames, slowest_text.c_str());
+
+    slow_frames = 0;
+    slowest = {};
+    last_report = end;
+  }
 #endif /* !STOP_WATCH */
 };
