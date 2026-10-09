@@ -366,7 +366,17 @@ VisitDataFiles(const char* filter, File::Visitor &visitor)
 static AllocatedPath
 FindSystemConfigPath() noexcept
 {
-#ifdef ANDROID
+#if defined(IS_OPENVARIO)
+  /* not $HOME/.config: the home directory is on the root filesystem,
+     which every image upgrade replaces, and with it the device ports
+     and the other device settings.  The data partition (mounted as
+     'data' in the home directory) survives an upgrade. */
+  if (const char *home = getenv("HOME"); home != nullptr && *home != '\0') {
+    const std::string dir = std::string{home}
+      + DIR_SEPARATOR_S "data" DIR_SEPARATOR_S ".config" DIR_SEPARATOR_S PRODUCT_NAME_LC;
+    return AllocatedPath{Path{dir.c_str()}};
+  }
+#elif defined(ANDROID)
   /* private internal storage: invisible to the user, kept when the
      cache is cleared */
   if (auto path = context->GetFilesDir(Java::GetEnv()); path != nullptr)
@@ -569,6 +579,90 @@ MakeCacheDirectory(const char *name) noexcept
   return path;
 }
 
+#ifdef IS_OPENVARIO
+
+/**
+ * Copy a small file byte by byte.  The two places are on different
+ * partitions, so rename() cannot be used, and the copy helpers of
+ * the io library are not available to everything that links this
+ * file.
+ */
+static bool
+CopySmallFile(const char *src, const char *dest) noexcept
+{
+  FILE *in = fopen(src, "rb");
+  if (in == nullptr)
+    return false;
+
+  FILE *out = fopen(dest, "wb");
+  if (out == nullptr) {
+    fclose(in);
+    return false;
+  }
+
+  bool ok = true;
+  char buffer[4096];
+  size_t n;
+  while ((n = fread(buffer, 1, sizeof(buffer), in)) > 0)
+    if (fwrite(buffer, 1, n, out) != n) {
+      ok = false;
+      break;
+    }
+
+  if (ferror(in))
+    ok = false;
+  fclose(in);
+  if (fclose(out) != 0)
+    ok = false;
+  if (!ok)
+    unlink(dest);
+  return ok;
+}
+
+/**
+ * Up to 7.45.25.t13 the device settings were kept in
+ * $HOME/.config/opensoar on the root filesystem.  Move them to the
+ * data partition once, when the new directory does not exist yet, so
+ * that an installation updated by package (not by a new image) keeps
+ * its device ports.
+ */
+static void
+MigrateSystemConfig() noexcept
+{
+  if (system_config_path == nullptr || Directory::Exists(system_config_path))
+    return;
+
+  const char *home = getenv("HOME");
+  if (home == nullptr || *home == '\0')
+    return;
+
+  const std::string old_dir = std::string{home}
+    + DIR_SEPARATOR_S ".config" DIR_SEPARATOR_S PRODUCT_NAME_LC;
+  if (!Directory::Exists(Path{old_dir.c_str()}))
+    return;
+
+  try {
+    Directory::CreateRecursive(system_config_path);
+  } catch (...) {
+    return;
+  }
+
+  struct Mover final : File::Visitor {
+    Path dest_dir;
+    explicit Mover(Path _dest_dir) noexcept:dest_dir(_dest_dir) {}
+
+    void Visit(Path path, Path filename) override {
+      const auto dest = AllocatedPath::Build(dest_dir, filename);
+      if (CopySmallFile(path.c_str(), dest.c_str()))
+        unlink(path.c_str());
+    }
+  } mover{system_config_path};
+
+  Directory::VisitFiles(Path{old_dir.c_str()}, mover);
+}
+
+#endif /* IS_OPENVARIO */
+
 void
 InitialiseDataPath()
 {
@@ -591,6 +685,10 @@ InitialiseDataPath()
 #endif
 
   system_config_path = FindSystemConfigPath();
+
+#ifdef IS_OPENVARIO
+  MigrateSystemConfig();
+#endif
 }
 
 void
