@@ -677,7 +677,7 @@ private:
       return false;
     else
       canvas.Select(look.classes[as_type_or_class].GetBorderPen(
-        settings.fill_mode == AirspaceRendererSettings::FillMode::THIN_LINE));
+        settings.HasThinLines()));
 
     canvas.SelectHollowBrush();
 
@@ -787,7 +787,7 @@ public:
       glClear(GL_STENCIL_BUFFER_BIT);
     }
 
-    if (settings.HasFill())
+    if (settings.HasFill() || settings.FillsWarningsOnly())
       /* see ScopeAlphaBlend: keeps an off-screen buffer usable for
          the airspace cache */
       MapLayerCache::BlendPremultiplied();
@@ -889,7 +889,7 @@ private:
       return false;
     else
       canvas.Select(look.classes[as_type_or_class].GetBorderPen(
-        settings.fill_mode == AirspaceRendererSettings::FillMode::THIN_LINE));
+        settings.HasThinLines()));
 
     canvas.SelectHollowBrush();
 
@@ -907,7 +907,10 @@ private:
     const auto type_or_class = airspace.GetTypeOrClass();
     AirspaceClass as_type_or_class = settings.classes[type_or_class].display
       ? type_or_class : airspace.GetClass();
-    if (!settings.HasFill())
+    if (!settings.HasFill() &&
+        !(settings.FillsWarningsOnly() &&
+          (warning_manager.HasWarning(airspace) ||
+           warning_manager.IsInside(airspace))))
       return false;
 
     const AirspaceClassLook &class_look = look.classes[as_type_or_class];
