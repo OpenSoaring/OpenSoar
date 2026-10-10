@@ -41,11 +41,21 @@ public:
 /**
  * Enable alpha blending with source's alpha value (the most common
  * variant of GL_BLEND).
+ *
+ * The alpha channel of the target is blended separately (source
+ * over destination), so that drawing into a transparent off-screen
+ * buffer leaves the colour premultiplied and the coverage in alpha,
+ * and the buffer can be blended onto the screen later with the same
+ * result as drawing there directly.  On the screen the colours are
+ * the same as with glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA).
  */
-class ScopeAlphaBlend : GLBlend {
+class ScopeAlphaBlend : GLEnable<GL_BLEND> {
 public:
   [[nodiscard]]
-  ScopeAlphaBlend() noexcept:GLBlend(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) {}
+  ScopeAlphaBlend() noexcept {
+    ::glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+                          GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  }
 };
 
 class GLScissor : public GLEnable<GL_SCISSOR_TEST> {
