@@ -118,11 +118,7 @@ OpenGL::SetupContext()
   if (auto s = (const char *)glGetString(GL_RENDERER)) {
     LogFormat("GL renderer: %s", s);
 
-    if (strstr(s, "Mali400") == s) {
-      /* Allwinner A20 SoC has a Mali-400 GPU. Limit the map scale to
-         250 km. */
-      max_map_scale = 251*1000*2;
-    } else if (strstr(s, "PowerVR Rogue") != nullptr) {
+    if (strstr(s, "PowerVR Rogue") != nullptr) {
       disable_multi_draw = true;
       LogFormat("GL: multi-draw disabled on PowerVR Rogue");
 
