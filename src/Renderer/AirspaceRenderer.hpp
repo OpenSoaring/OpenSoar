@@ -7,7 +7,10 @@
 #include "util/StaticArray.hxx"
 #include "Geo/GeoPoint.hpp"
 
-#ifndef ENABLE_OPENGL
+#ifdef ENABLE_OPENGL
+#include "MapLayerCache.hpp"
+#include "util/Serial.hpp"
+#else
 #include "TransparentRendererCache.hpp"
 #include "util/Serial.hpp"
 #endif
@@ -32,7 +35,16 @@ class AirspaceRenderer
 
   StaticArray<GeoPoint,32> intersections;
 
-#ifndef ENABLE_OPENGL
+#ifdef ENABLE_OPENGL
+  /**
+   * The airspaces as an image; filling them took about a third of a
+   * second per frame on an OpenVario when zoomed out far.  The fill
+   * is semi-transparent, hence premultiplied alpha.
+   */
+  MapLayerCache cache{true};
+
+  Serial last_airspaces_serial, last_warning_serial;
+#else
   /**
    * This object caches the airspace fill.  This avoids drawing it
    * again and again each frame when nothing has changed.
@@ -72,7 +84,9 @@ public:
   }
 
   void Flush() {
-#ifndef ENABLE_OPENGL
+#ifdef ENABLE_OPENGL
+    cache.Invalidate();
+#else
     fill_cache.Invalidate();
 #endif
   }
@@ -96,6 +110,14 @@ private:
                    const WindowProjection &projection,
                    const AirspaceRendererSettings &settings,
                    const AirspacePredicate &visible) const;
+#endif
+
+#ifdef ENABLE_OPENGL
+  [[gnu::pure]]
+  uint64_t MakeCacheKey(const WindowProjection &projection,
+                        const AirspaceRendererSettings &settings,
+                        const AirspaceWarningCopy &awc,
+                        const AirspacePredicate &visible) const noexcept;
 #endif
 
   void DrawInternal(Canvas &canvas,
