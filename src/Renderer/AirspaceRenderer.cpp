@@ -56,11 +56,42 @@ AirspaceRenderer::Draw(Canvas &canvas,
   if (airspaces == nullptr || airspaces->IsEmpty())
     return;
 
+#ifdef ENABLE_OPENGL
+  if (airspaces->GetSerial() != last_airspaces_serial ||
+      awc.GetSerial() != last_warning_serial) {
+    last_airspaces_serial = airspaces->GetSerial();
+    last_warning_serial = awc.GetSerial();
+    cache.Invalidate();
+  }
+
+  /* the padding fill needs a stencil buffer, which an off-screen
+     buffer has only if the driver offers one */
+  const auto action = OpenGL::render_buffer_stencil != GL_NONE
+    ? cache.Check(projection,
+                  MakeCacheKey(projection, settings, awc, visible))
+    : MapLayerCache::Action::DIRECT;
+
+  switch (action) {
+  case MapLayerCache::Action::DIRECT:
+    DrawInternal(canvas, projection, settings, awc, visible);
+    break;
+
+  case MapLayerCache::Action::RENDER:
+    DrawInternal(cache.BeginRender(projection), cache.GetBufferProjection(),
+                 settings, awc, visible);
+    cache.EndRender();
+    cache.Draw(projection);
+    break;
+
+  case MapLayerCache::Action::REUSE:
+    cache.Draw(projection);
+    break;
+  }
+#else
   DrawInternal(canvas,
-#ifndef ENABLE_OPENGL
                stencil_canvas,
-#endif
                projection, settings, awc, visible);
+#endif
 
   intersections = awc.GetLocations();
 }
@@ -114,3 +145,55 @@ AirspaceRenderer::Draw(Canvas &canvas,
 #endif
        projection, settings, awc, visible);
 }
+
+#ifdef ENABLE_OPENGL
+
+/**
+ * Everything besides the projection that decides how the airspaces
+ * look: the settings, and which airspaces are visible with which
+ * warning state.  Visibility depends on the altitude of the aircraft
+ * and on activation times, so the set of visible airspaces near the
+ * screen is part of the key, not only the warning serial.  The radius
+ * covers the margin of the cached image.
+ */
+uint64_t
+AirspaceRenderer::MakeCacheKey(const WindowProjection &projection,
+                               const AirspaceRendererSettings &settings,
+                               const AirspaceWarningCopy &awc,
+                               const AirspacePredicate &visible) const noexcept
+{
+  using C = MapLayerCache;
+  uint64_t key = C::KEY_START;
+
+  key = C::Mix(key, settings.enable);
+  key = C::Mix(key, settings.black_outline);
+  key = C::Mix(key, unsigned(settings.altitude_mode));
+  key = C::Mix(key, settings.clip_altitude);
+  key = C::Mix(key, unsigned(settings.fill_mode));
+  for (const auto &c : settings.classes) {
+    key = C::Mix(key, c.display);
+    key = C::Mix(key, (c.border_color.Red() << 16) |
+                 (c.border_color.Green() << 8) | c.border_color.Blue());
+    key = C::Mix(key, (c.fill_color.Red() << 16) |
+                 (c.fill_color.Green() << 8) | c.fill_color.Blue());
+    key = C::Mix(key, c.border_width);
+    key = C::Mix(key, unsigned(c.fill_mode));
+  }
+
+  for (const auto &i :
+         airspaces->QueryWithinRange(projection.GetGeoScreenCenter(),
+                                     projection.GetScreenDistanceMeters() * 1.3)) {
+    const AbstractAirspace &airspace = i.GetAirspace();
+    if (!visible(airspace))
+      continue;
+
+    key = C::Mix(key, reinterpret_cast<uintptr_t>(&airspace));
+    key = C::Mix(key, (awc.HasWarning(airspace) ? 1 : 0) |
+                 (awc.IsInside(airspace) ? 2 : 0) |
+                 (awc.IsAcked(airspace) ? 4 : 0));
+  }
+
+  return key;
+}
+
+#endif
