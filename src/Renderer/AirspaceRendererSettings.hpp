@@ -105,13 +105,43 @@ struct AirspaceRendererSettings {
      * as possible, and the airspaces still show where they are.
      */
     THIN_LINE,
+
+    /**
+     * Like #THIN_LINE, but airspaces that cause a warning or that the
+     * glider is inside are filled: the map stays light without losing
+     * what matters now.  Appended last, because the profile stores
+     * the numeric value.
+     */
+    THIN_LINE_FILL_WARNINGS,
   } fill_mode;
 
   /**
    * Does the fill mode fill the airspace area at all?
    */
+  /**
+   * Are all airspaces filled (according to the mode)?  False for
+   * #THIN_LINE_FILL_WARNINGS, which fills only some of them; see
+   * FillsWarningsOnly().
+   */
   constexpr bool HasFill() const noexcept {
-    return fill_mode != FillMode::NONE && fill_mode != FillMode::THIN_LINE;
+    return fill_mode != FillMode::NONE && fill_mode != FillMode::THIN_LINE &&
+      fill_mode != FillMode::THIN_LINE_FILL_WARNINGS;
+  }
+
+  /**
+   * Are the outlines drawn one pixel wide?
+   */
+  constexpr bool HasThinLines() const noexcept {
+    return fill_mode == FillMode::THIN_LINE ||
+      fill_mode == FillMode::THIN_LINE_FILL_WARNINGS;
+  }
+
+  /**
+   * Are only the airspaces filled that cause a warning or that the
+   * glider is inside?
+   */
+  constexpr bool FillsWarningsOnly() const noexcept {
+    return fill_mode == FillMode::THIN_LINE_FILL_WARNINGS;
   }
 
   /** What type of airspace labels to render */
