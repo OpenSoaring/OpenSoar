@@ -30,6 +30,14 @@
 #include <cstdlib>
 
 static constexpr double NOTAM_LABEL_MAX_MAP_SCALE = 4000;
+
+/**
+ * The altitude labels are drawn only up to this screen width (the
+ * distance shown by the map scale).  Zoomed out further they overlap
+ * and cannot be read, yet drawing hundreds of them kept a core of the
+ * OpenVario busy for a large part of every frame.
+ */
+static constexpr double ALTITUDE_LABEL_MAX_SCREEN_WIDTH = 100000;
 static constexpr std::size_t NOTAM_LABEL_MAX_CHARS = 40;
 static constexpr unsigned NOTAM_CLUSTER_VISIBLE_LINES = 3;
 static constexpr unsigned NOTAM_CLUSTER_LABEL_LINES = 2;
@@ -202,7 +210,8 @@ AirspaceLabelRenderer::Draw(Canvas &canvas,
                             LabelBlock *label_block) noexcept
 {
   const bool draw_altitude_labels =
-    settings.label_selection == AirspaceRendererSettings::LabelSelection::ALL;
+    settings.label_selection == AirspaceRendererSettings::LabelSelection::ALL &&
+    projection.GetScreenWidthMeters() <= ALTITUDE_LABEL_MAX_SCREEN_WIDTH;
   const bool draw_notam_labels =
     settings.show_notam_labels &&
     projection.GetMapScale() <= NOTAM_LABEL_MAX_MAP_SCALE;
