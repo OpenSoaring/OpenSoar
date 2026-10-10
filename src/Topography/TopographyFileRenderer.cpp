@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <numeric>
 #include <set>
+#include <limits>
 
 TopographyFileRenderer::TopographyFileRenderer(const TopographyFile &_file,
                                                const TopographyLook &_look) noexcept
@@ -59,6 +60,7 @@ TopographyFileRenderer::UpdateVisibleShapes(const WindowProjection &projection) 
 
   visible_serial = file.GetSerial();
   visible_bounds = projection.GetScreenBounds().Scale(1.2);
+  ++visible_generation;
   visible_shapes.clear();
   visible_points.clear();
   visible_labels.clear();
@@ -367,67 +369,99 @@ TopographyFileRenderer::PaintLabels(Canvas &canvas,
   if (visible_labels.empty())
     return;
 
-  canvas.Select(file.IsLabelImportant(map_scale)
+  const bool important = file.IsLabelImportant(map_scale);
+  canvas.Select(important
                 ? look.important_label_font
                 : look.regular_label_font);
-  canvas.SetTextColor(file.IsLabelImportant(map_scale) ?
+  canvas.SetTextColor(important ?
                 COLOR_BLACK : COLOR_VERY_DARK_GRAY);
   canvas.SetBackgroundTransparent();
 
   // get drawing info
 
-  int iskip = file.GetSkipSteps(map_scale);
+  const int iskip = file.GetSkipSteps(map_scale);
+
+  if (!anchors_valid ||
+      anchor_generation != visible_generation ||
+      anchor_scale != projection.GetScale() ||
+      anchor_angle != projection.GetScreenAngle() ||
+      anchor_skip != iskip ||
+      anchor_important != important) {
+    anchors_valid = true;
+    anchor_generation = visible_generation;
+    anchor_scale = projection.GetScale();
+    anchor_angle = projection.GetScreenAngle();
+    anchor_skip = iskip;
+    anchor_important = important;
+    label_anchors.clear();
+
+    for (const XShape *shape_p : visible_labels) {
+      const XShape &shape = *shape_p;
+
+      // Skip shapes without a label
+      const char *label = shape.GetLabel();
+      assert(label != nullptr);
+
+      const PixelSize tsize = canvas.CalcTextSize(label);
+
+      const auto lines = shape.GetLines();
+      const auto *points = shape.GetPoints();
+
+      for (const unsigned n : lines) {
+        /* the leftmost point of all, not only of those left of the
+           screen edge: moving the map may bring it onto the screen */
+        int minx = std::numeric_limits<int>::max();
+        GeoPoint location = GeoPoint::Invalid();
+
+        const auto *end = points + n;
+        for (; points < end; points += iskip) {
+#ifdef ENABLE_OPENGL
+          const GeoPoint g = file.ToGeoPoint(*points);
+#else
+          const GeoPoint g = *points;
+#endif
+          auto pt = projection.GeoToScreen(g);
+
+          if (pt.x <= minx) {
+            minx = pt.x;
+            location = g;
+          }
+        }
+
+        points = end;
+
+        label_anchors.push_back({label, location, tsize});
+      }
+    }
+  }
 
   std::set<std::string> drawn_labels;
 
-  // Iterate over all shapes in the file
-  for (const XShape *shape_p : visible_labels) {
-    const XShape &shape = *shape_p;
+  for (const auto &anchor : label_anchors) {
+    PixelPoint pt = anchor.location.IsValid()
+      ? projection.GeoToScreen(anchor.location)
+      : PixelPoint(canvas.GetWidth(), canvas.GetHeight());
 
-    // Skip shapes without a label
-    const char *label = shape.GetLabel();
-    assert(label != nullptr);
+    /* without a point left of the screen edge, the label goes where
+       the search used to start, as it always did */
+    if (pt.x > (int)canvas.GetWidth())
+      pt = PixelPoint(canvas.GetWidth(), canvas.GetHeight());
 
-    const auto lines = shape.GetLines();
-    const auto *points = shape.GetPoints();
+    pt.x += 2;
+    pt.y += 2;
 
-    for (const unsigned n : lines) {
-      int minx = canvas.GetWidth();
-      int miny = canvas.GetHeight();
+    PixelRect brect;
+    brect.left = pt.x;
+    brect.right = brect.left + anchor.size.width;
+    brect.top = pt.y;
+    brect.bottom = brect.top + anchor.size.height;
 
-      const auto *end = points + n;
-      for (; points < end; points += iskip) {
-#ifdef ENABLE_OPENGL
-        auto pt = projection.GeoToScreen(file.ToGeoPoint(*points));
-#else
-        auto pt = projection.GeoToScreen(*points);
-#endif
+    if (!label_block.check(brect))
+      continue;
 
-        if (pt.x <= minx) {
-          minx = pt.x;
-          miny = pt.y;
-        }
-      }
+    if (!drawn_labels.insert(anchor.label).second)
+      continue;
 
-      points = end;
-
-      minx += 2;
-      miny += 2;
-
-      PixelSize tsize = canvas.CalcTextSize(label);
-      PixelRect brect;
-      brect.left = minx;
-      brect.right = brect.left + tsize.width;
-      brect.top = miny;
-      brect.bottom = brect.top + tsize.height;
-
-      if (!label_block.check(brect))
-        continue;
-
-      if (!drawn_labels.insert(label).second)
-        continue;
-
-      canvas.DrawText({minx, miny}, label);
-    }
+    canvas.DrawText(pt, anchor.label);
   }
 }
