@@ -151,7 +151,7 @@ private:
       return false;
     else
       canvas.Select(look.classes[as_type_or_class].GetBorderPen(
-        settings.fill_mode == AirspaceRendererSettings::FillMode::THIN_LINE));
+        settings.HasThinLines()));
 
     canvas.SelectHollowBrush();
 
@@ -273,7 +273,7 @@ private:
       return false;
     else
       canvas.Select(look.classes[as_type_or_class].GetBorderPen(
-        settings.fill_mode == AirspaceRendererSettings::FillMode::THIN_LINE));
+        settings.HasThinLines()));
 
     canvas.SelectHollowBrush();
 
@@ -282,7 +282,10 @@ private:
 
   bool SetupInterior(const AbstractAirspace &airspace) {
 	AirspaceClass as_type_or_class = settings.classes[airspace.GetTypeOrClass()].display ? airspace.GetTypeOrClass() : airspace.GetClass();
-    if (!settings.HasFill())
+    if (!settings.HasFill() &&
+        !(settings.FillsWarningsOnly() &&
+          (warning_manager.HasWarning(airspace) ||
+           warning_manager.IsInside(airspace))))
       return false;
 
     const AirspaceClassLook &class_look = look.classes[as_type_or_class];
