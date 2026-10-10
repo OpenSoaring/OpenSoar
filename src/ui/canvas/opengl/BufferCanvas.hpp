@@ -139,8 +139,13 @@ public:
    * bottom left, bottom right of the buffer), blended by the buffer's
    * alpha channel.  This allows drawing a cached image moved and
    * rotated.
+   *
+   * @param premultiplied the colours in the buffer are premultiplied
+   * with their alpha (semi-transparent content drawn with
+   * #ScopeAlphaBlend into a buffer cleared to transparent)
    */
-  void DrawQuad(const BulkPixelPoint corners[4]) const noexcept;
+  void DrawQuad(const BulkPixelPoint corners[4],
+                bool premultiplied=false) const noexcept;
 
   /**
    * Copy a source rectangle from this buffer onto @a dest.

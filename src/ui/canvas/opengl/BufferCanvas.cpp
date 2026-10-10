@@ -244,7 +244,8 @@ BufferCanvas::CopyTo([[maybe_unused]] Canvas &dest, PixelRect dest_rc,
 }
 
 void
-BufferCanvas::DrawQuad(const BulkPixelPoint corners[4]) const noexcept
+BufferCanvas::DrawQuad(const BulkPixelPoint corners[4],
+                       bool premultiplied) const noexcept
 {
   assert(IsDefined());
   assert(!active);
@@ -252,7 +253,8 @@ BufferCanvas::DrawQuad(const BulkPixelPoint corners[4]) const noexcept
   OpenGL::texture_shader->Use();
   texture->Bind();
 
-  const ScopeAlphaBlend alpha_blend;
+  const GLBlend blend(premultiplied ? GL_ONE : GL_SRC_ALPHA,
+                      GL_ONE_MINUS_SRC_ALPHA);
   const ScopeVertexPointer vp(corners);
 
   /* the texture may be larger than the buffer (power of two), and an
