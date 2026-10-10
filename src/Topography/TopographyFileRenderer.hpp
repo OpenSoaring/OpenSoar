@@ -7,6 +7,9 @@
 #include "ui/canvas/Icon.hpp"
 #include "util/Serial.hpp"
 #include "Geo/GeoBounds.hpp"
+#include "Geo/GeoPoint.hpp"
+#include "Math/Angle.hpp"
+#include "ui/dim/Size.hpp"
 
 #ifdef ENABLE_OPENGL
 #else
@@ -51,6 +54,36 @@ class TopographyFileRenderer final
   GeoBounds visible_bounds;
 
   std::vector<const XShape *> visible_shapes, visible_labels;
+
+  /**
+   * Incremented whenever #visible_labels is rebuilt.
+   */
+  unsigned visible_generation = 0;
+
+  /**
+   * Where each label of #visible_labels goes: the point of its line
+   * that is leftmost on the screen.  Finding it projects every point
+   * of the shape, which for the lakes and rivers of a large map took
+   * a tenth of a second per frame on an OpenVario.  Moving the map
+   * without zooming or turning keeps the leftmost point the same, so
+   * the search is repeated only when the scale, the screen angle, the
+   * label font or the set of visible labels changes.
+   */
+  struct LabelAnchor {
+    const char *label;
+
+    /** the leftmost point, or invalid if no point was found */
+    GeoPoint location;
+
+    PixelSize size;
+  };
+
+  std::vector<LabelAnchor> label_anchors;
+  double anchor_scale = 0;
+  Angle anchor_angle = Angle::Zero();
+  unsigned anchor_generation = 0;
+  int anchor_skip = 0;
+  bool anchor_important = false, anchors_valid = false;
 
   std::vector<GeoPoint> visible_points;
 
