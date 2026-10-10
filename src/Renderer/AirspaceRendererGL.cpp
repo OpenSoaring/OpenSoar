@@ -393,7 +393,9 @@ public:
     }
 
     if (settings.HasFill())
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      /* see ScopeAlphaBlend: keeps an off-screen buffer usable for
+         the airspace cache */
+      MapLayerCache::BlendPremultiplied();
   }
 
 private:
@@ -786,7 +788,9 @@ public:
     }
 
     if (settings.HasFill())
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      /* see ScopeAlphaBlend: keeps an off-screen buffer usable for
+         the airspace cache */
+      MapLayerCache::BlendPremultiplied();
   }
 
 private:
