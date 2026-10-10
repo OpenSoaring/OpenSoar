@@ -26,7 +26,8 @@
  * and rotated quad as long as the scale is unchanged, the map has
  * moved less than half the margin and turned by less than 3 degrees,
  * and the content key of the layer is the same.  The map uses a Web
- * Mercator projection, which is linear, so a moved image is exact.
+ * Mercator projection, which is linear for a given Mercator scale, so
+ * a moved image is exact as long as that scale does not change.
  *
  * While the map keeps changing from frame to frame (zooming, panning,
  * circling with track up) the caller is told to draw directly,
@@ -125,11 +126,16 @@ public:
                                       + PixelPoint{margin, margin});
     buffer_projection.UpdateScreenBounds();
 
+    /* a new buffer instead of a resized one: the Mali-400 driver
+       of the OpenVario keeps drawing into the old storage of a texture
+       that is redefined while attached to a framebuffer, so after the
+       map had changed its size (a page with a cross section below the
+       map) the cache kept showing an outdated, stretched image */
     const PixelSize buffer_size = buffer_projection.GetScreenSize();
-    if (!buffer.IsDefined())
+    if (!buffer.IsDefined() || buffer.GetSize() != buffer_size) {
+      buffer.Destroy();
       buffer.Create(buffer_size);
-    else
-      buffer.Resize(buffer_size);
+    }
 
     buffer.Begin();
     glClearColor(0, 0, 0, 0);
@@ -193,6 +199,15 @@ private:
   static bool IsClose(const WindowProjection &a, const WindowProjection &b,
                       int max_shift, double max_angle_degrees) noexcept {
     if (std::fabs(a.GetScale() - b.GetScale()) > a.GetScale() * 1e-4)
+      return false;
+
+    /* the projection keeps the ground scale and derives the Mercator
+       scale from the latitude of the screen origin, so moving the map
+       north or south stretches a cached image slightly; allow at most
+       half a pixel at the far edge */
+    const auto size = a.GetScreenSize();
+    if (std::fabs(a.GetMercatorScale() - b.GetMercatorScale()) >
+        a.GetMercatorScale() * 0.5 / std::max(size.width, size.height))
       return false;
 
     if ((a.GetScreenAngle() - b.GetScreenAngle()).AsDelta().AbsoluteDegrees()
