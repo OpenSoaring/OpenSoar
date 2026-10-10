@@ -34,7 +34,9 @@ public:
   {
     glStencilMask(0xff);
     glClear(GL_STENCIL_BUFFER_BIT);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    /* see ScopeAlphaBlend: keeps an off-screen buffer usable for the
+       airspace cache */
+    MapLayerCache::BlendPremultiplied();
   }
 
   ~AirspaceVisitorRenderer() {
@@ -214,7 +216,7 @@ public:
                _projection.GetScreenBounds().Scale(1.1)),
      look(_look), warning_manager(_warnings), settings(_settings)
   {
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    MapLayerCache::BlendPremultiplied();
   }
 
 private:
