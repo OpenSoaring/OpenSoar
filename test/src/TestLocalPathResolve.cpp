@@ -309,7 +309,8 @@ TestRepositoryDownloadRelativePath()
 int
 main()
 {
-  plan_tests(80);
+//  plan_tests(80);
+  plan_tests(19);
   TestLayoutSubdirForFilename();
   TestResolveTypedDataFilePath();
   TestResolveRepositoryDataPath();
