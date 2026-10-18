@@ -150,4 +150,9 @@ code, migration-before-profile-load, CUPX binary mode).
     never appeared)
   - GitHub CI: every release tag builds and publishes the Windows
     package automatically; testing tags become pre-releases
+  - downloads: build/cmake/MakeAll.sh builds Android, Win32, Win64,
+    Linux and Kobo and collects the packages under names with the
+    version - Windows as a zip with the ANGLE DLLs (`make dist`),
+    Linux as a Debian package whose libraries apt installs
+    (`make deb`), Kobo as KoboRoot.tgz
 * German translations for everything above
