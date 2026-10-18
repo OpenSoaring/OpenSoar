@@ -1,4 +1,4 @@
-TARGETS = PC WIN64 \
+TARGETS = PC WIN32 WIN64 \
 	UNIX UNIX32 UNIX64 OPT \
 	WAYLAND \
 	FUZZER \
@@ -87,6 +87,16 @@ ifeq ($(TARGET),WIN64)
   # OpenGL/ANGLE build (upstream's WIN64OPENGL); the GDI flavor and
   # the *OPENGL alias targets are gone
   X64 := y
+  override TARGET = PC
+
+  OPENGL = y
+  ENABLE_SDL = y
+  USE_ANGLE = y
+endif
+
+ifeq ($(TARGET),WIN32)
+  # the same for 32 bit Windows (upstream's WIN32OPENGL): without the GDI
+  # flavor, plain TARGET=PC has no way left to draw
   override TARGET = PC
 
   OPENGL = y
