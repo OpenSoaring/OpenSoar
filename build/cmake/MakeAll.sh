@@ -16,7 +16,7 @@
 # name with the version, into output/publish/<version>/<platform>/:
 #
 #   Android/OpenSoar-<version>-arm64.apk   only arm64
-#   Android/OpenSoar-<version>.apk         all four ABIs
+#   Android/OpenSoar-<version>.apk         all four ABIs (TARGET=ANDROIDFAT)
 #   Win32/OpenSoar-<version>-Win32.zip     PC (GDI) build
 #   Win64/OpenSoar-<version>-Win64.zip     OpenGL build with the ANGLE DLLs
 #   Unix/OpenSoar-<version>-<arch>.deb     installs with its dependencies
@@ -44,7 +44,20 @@ if [ "$ANDROID_ONLY" == "y" ] || [ "$ANDROID_ARM64_ONLY" == "y" ]; then
 fi
 
 PUBLISH=output/publish/${PROGRAM_VERSION:-unknown}
-APK=output/ANDROID/bin/OpenSoar-unsigned.apk
+# The make build signs the APK itself: with a release key
+# (ANDROID_KEYSTORE, default ~/.android/mk.keystore, and ANDROID_KEY_ALIAS)
+# it writes OpenSoar.apk, without one OpenSoar-debug.apk, signed with the
+# debug key.  A debug-signed package cannot replace an installed
+# release-signed one, so the run says which one it builds.
+ANDROID_KEYSTORE=${ANDROID_KEYSTORE:-$HOME/.android/mk.keystore}
+if [ -f "$ANDROID_KEYSTORE" ] && [ -n "$ANDROID_KEY_ALIAS" ]; then
+  export ANDROID_KEYSTORE ANDROID_KEY_ALIAS
+  APK=output/ANDROID/bin/OpenSoar.apk
+  echo "Android: release-signed with $ANDROID_KEYSTORE ($ANDROID_KEY_ALIAS)"
+else
+  APK=output/ANDROID/bin/OpenSoar-debug.apk
+  echo "Android: no release key (ANDROID_KEYSTORE/ANDROID_KEY_ALIAS), the APKs are debug-signed"
+fi
 
 wanted() {  # wanted <target>: true when this run builds it
   case " $TARGETS " in *" $1 "*) return 0 ;; esac
@@ -59,7 +72,8 @@ publish() { # publish <platform> <file> [<name>]
 build() {   # build <target> <what it is called> [object directory] [make goals]
   echo "============================================================="
   echo "Make $2:"
-  if [ "$COMPLETE" == "y" ] && [ -n "$3" ]; then rm -rf "$3"; fi
+  # (the object directories are paths without spaces, so $3 may name several)
+  if [ "$COMPLETE" == "y" ] && [ -n "$3" ]; then rm -rf $3; fi
   # a failed target must stop the run: the steps after it would copy
   # the packages of an older build under the new version
   if ! make -j"$JOBS" DEBUG=n TARGET="$1" $4; then
@@ -77,13 +91,13 @@ if wanted ANDROID; then
   rm -rf output/ANDROID/opt
   rm -f "$APK"
 
-  build ANDROIDAARCH64 "Android v8a (64 bit)" output/ANDROID/arm64-v8a/opt/src
-
+  # one build per package: every Android build writes the same APK file,
+  # and a single-ABI build puts only its own ABI into it
+  build ANDROIDAARCH64 "Android arm64" output/ANDROID/arm64-v8a/opt/src "$APK"
   if [ ! -e "$APK" ]; then
     echo "'$APK' not available - stopping here." >&2
     exit 1
   fi
-
   cp -v "$APK" "output/ANDROID/bin/OpenSoar${VERSION_SUFFIX}-arm64.apk"
   publish Android "$APK" "OpenSoar${VERSION_SUFFIX}-arm64.apk"
 
@@ -92,10 +106,15 @@ if wanted ANDROID; then
     exit 0
   fi
 
-  build ANDROID     "Android v7a (32 bit)" output/ANDROID/armeabi-v7a/opt/src
-  build ANDROIDX64  "Android x86_64"       output/ANDROID/x86_64/opt/src
-  build ANDROID86   "Android x86"          output/ANDROID/x86/opt/src
-
+  rm -f "$APK"
+  build ANDROIDFAT "Android (all ABIs)" \
+    "output/ANDROID/armeabi-v7a/opt/src output/ANDROID/x86/opt/src output/ANDROID/x86_64/opt/src" \
+    "$APK"
+  ABIS=$(unzip -Z1 "$APK" 'lib/*' 2>/dev/null | cut -d/ -f2 | sort -u | wc -l)
+  if [ "$ABIS" -lt 4 ]; then
+    echo "'$APK' holds $ABIS ABIs instead of 4 - stopping here." >&2
+    exit 1
+  fi
   cp -v "$APK" "output/ANDROID/bin/OpenSoar${VERSION_SUFFIX}.apk"
   publish Android "$APK" "OpenSoar${VERSION_SUFFIX}.apk"
 
