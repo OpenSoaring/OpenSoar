@@ -292,7 +292,8 @@ already contains the OpenSoar fixes merged upstream in August 2026
   clearer departure symbol
 * fixes: the configuration dialog no longer crashes at the next
   download after it was closed (a page stayed registered with the
-  download manager)
+  download manager); the Kobo menu starts OpenSoar from the
+  KoboRoot.tgz (it looked for a program called xcsoar)
 * infrastructure
   - the log is OpenSoar.log, and the logs of the last nine runs are
     kept as OpenSoar-1.log to OpenSoar-9.log
