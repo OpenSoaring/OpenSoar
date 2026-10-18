@@ -136,6 +136,8 @@ code, migration-before-profile-load, CUPX binary mode).
   - block images in rich text (checklists, About page) keep their
     physical size on high-density displays instead of shrinking to
     thumbnails; two images on one line are laid out side by side
+* Linux: the installed program shows its translations (it looked for
+  xcsoar.mo, but opensoar.mo is installed)
 * fixes: the Kobo menu starts OpenSoar from the KoboRoot.tgz (it
   looked for a program called xcsoar)
 * infrastructure
