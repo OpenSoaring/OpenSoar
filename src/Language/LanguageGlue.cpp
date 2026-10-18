@@ -5,6 +5,7 @@
 #include "Language.hpp"
 #include "Table.hpp"
 #include "LocalPath.hpp"
+#include "ProductName.hpp"
 #include "lib/fmt/PathFormatter.hpp"
 #include "system/Path.hpp"
 #include "LogFile.hpp"
@@ -233,7 +234,10 @@ RestoreLanguageEnvironment() noexcept
 static void
 InitNativeGettext(const char *locale) noexcept
 {
-  const char *const domain = "xcsoar";
+  /* the message catalogue is installed under the lower case product
+     name (build/install.mk: xcsoar.mo, or opensoar.mo in a branded
+     tree), so the program must ask for that name */
+  const char *const domain = PRODUCT_NAME_LC;
 
   /* we want to get UTF-8 strings from gettext() */
   bind_textdomain_codeset(domain, "utf8");
