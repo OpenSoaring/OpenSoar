@@ -247,6 +247,7 @@ endif
 ifeq ($(FUZZER),n)
 include $(topdir)/build/dist.mk
 include $(topdir)/build/install.mk
+include $(topdir)/build/deb.mk
 endif
 
 ######## compiler flags
