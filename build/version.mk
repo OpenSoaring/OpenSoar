@@ -67,3 +67,5 @@ $(call SRC_TO_OBJ,$(SRC)/Version.cpp): $(topdir)/VERSION.txt
 $(call SRC_TO_OBJ,$(SRC)/Version.cpp): CPPFLAGS += $(VERSION_CPPFLAGS)
 $(call SRC_TO_OBJ,$(SRC)/Apple/MacOSMainMenu.cpp): CPPFLAGS += $(VERSION_CPPFLAGS)
 $(call SRC_TO_OBJ,$(SRC)/Dialogs/dlgCredits.cpp): CPPFLAGS += $(VERSION_CPPFLAGS)
+# the gettext domain is the product name, see Language/LanguageGlue.cpp
+$(call SRC_TO_OBJ,$(SRC)/Language/LanguageGlue.cpp): CPPFLAGS += $(PRODUCT_NAME_CPPFLAGS)

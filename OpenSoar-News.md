@@ -290,6 +290,8 @@ already contains the OpenSoar fixes merged upstream in August 2026
   [upstream PR]; read-only fields open their full content only where
   the field cuts it off; the takeoff button of the replay shows a
   clearer departure symbol
+* Linux: the installed program shows its translations (it looked for
+  xcsoar.mo, but opensoar.mo is installed)
 * fixes: the configuration dialog no longer crashes at the next
   download after it was closed (a page stayed registered with the
   download manager); the Kobo menu starts OpenSoar from the
