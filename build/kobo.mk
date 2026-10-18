@@ -46,6 +46,13 @@ KOBO_MENU_STRIP = y
 
 $(eval $(call link-program,KoboMenu,KOBO_MENU))
 
+# KoboMenu starts the program by its file name, which is not "xcsoar" in
+# a branded tree (OpenSoar.config makes it "OpenSoar"); without this,
+# KoboMenu would look for a program that the KoboRoot.tgz never
+# installed.  Kobo/System.cpp is also part of the program itself, which
+# does not mind the extra define.
+$(call SRC_TO_OBJ,$(SRC)/Kobo/System.cpp): CPPFLAGS += -DKOBO_PROGRAM_NAME=\"$(PROGRAM_NAME)\"
+
 ifeq ($(TARGET),UNIX)
 OPTIONAL_OUTPUTS += $(KOBO_MENU_BIN)
 endif
