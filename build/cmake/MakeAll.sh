@@ -6,7 +6,7 @@
 #   COMPLETE=y             rebuild from scratch (default; n keeps objects)
 #   ANDROID_ARM64_ONLY=y   only the 64 bit Android package
 #   ANDROID_ONLY=y         only the Android packages
-#   TARGETS="..."          only these of ANDROID PC WIN64 UNIX KOBO
+#   TARGETS="..."          only these of ANDROID WIN32 WIN64 UNIX KOBO
 #   JOBS=N                 parallel make jobs (default: number of CPUs)
 #   PROGRAM_VERSION=x.y.z  version in the copied file names
 #
@@ -17,7 +17,7 @@
 #
 #   Android/OpenSoar-<version>-arm64.apk   only arm64
 #   Android/OpenSoar-<version>.apk         all four ABIs
-#   Win32/OpenSoar-<version>-Win32.zip     PC (GDI) build
+#   Win32/OpenSoar-<version>-Win32.zip     OpenGL build with the ANGLE DLLs
 #   Win64/OpenSoar-<version>-Win64.zip     OpenGL build with the ANGLE DLLs
 #   Unix/OpenSoar-<version>-<arch>.deb     installs with its dependencies
 #   Kobo/KoboRoot.tgz                      the file a Kobo installs from
@@ -37,7 +37,7 @@ if [ -z "$PROGRAM_VERSION" ] && [ -f ./OpenSoar.config ]; then
 fi
 VERSION_SUFFIX=${PROGRAM_VERSION:+-${PROGRAM_VERSION}}
 
-ALL_TARGETS="ANDROID PC WIN64 UNIX KOBO"
+ALL_TARGETS="ANDROID WIN32 WIN64 UNIX KOBO"
 TARGETS=${TARGETS:-$ALL_TARGETS}
 if [ "$ANDROID_ONLY" == "y" ] || [ "$ANDROID_ARM64_ONLY" == "y" ]; then
   TARGETS=ANDROID
@@ -105,9 +105,9 @@ if wanted ANDROID; then
   fi
 fi
 
-if wanted PC; then
-  build PC "Win32" output/PC/opt/src "all dist"
-  cp -v output/PC/bin/OpenSoar.exe "output/PC/bin/OpenSoar${VERSION_SUFFIX}.exe"
+if wanted WIN32; then
+  build WIN32 "Win32" output/WIN32/opt/src "all dist"
+  cp -v output/WIN32/bin/OpenSoar.exe "output/WIN32/bin/OpenSoar${VERSION_SUFFIX}.exe"
   publish Win32 "output/OpenSoar${VERSION_SUFFIX}-Win32.zip"
 fi
 

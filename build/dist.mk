@@ -7,7 +7,7 @@
 # user has.  The Windows flavors get the names users know (Win32,
 # Win64) instead of the make target names (PC, WIN64).
 
-ifeq ($(TARGET_FLAVOR),PC)
+ifneq ($(filter PC WIN32,$(TARGET_FLAVOR)),)
 DIST_PLATFORM = Win32
 else ifeq ($(TARGET_FLAVOR),WIN64)
 DIST_PLATFORM = Win64
