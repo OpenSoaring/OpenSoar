@@ -387,6 +387,14 @@ KoboExecNickel()
 #endif
 }
 
+/* The name of the program binary next to KoboMenu.  The build passes
+   the name it links (a branded tree calls the program differently from
+   "xcsoar"), so that KoboMenu finds the program the same KoboRoot.tgz
+   installed. */
+#ifndef KOBO_PROGRAM_NAME
+#define KOBO_PROGRAM_NAME "xcsoar"
+#endif
+
 bool
 KoboRunXCSoar([[maybe_unused]] const char *mode)
 {
@@ -394,8 +402,8 @@ KoboRunXCSoar([[maybe_unused]] const char *mode)
   char buffer[256];
   const char *cmd = buffer;
 
-  if (!SiblingPath("xcsoar", buffer, sizeof(buffer)))
-    cmd = "/mnt/onboard/XCSoar/xcsoar";
+  if (!SiblingPath(KOBO_PROGRAM_NAME, buffer, sizeof(buffer)))
+    cmd = "/mnt/onboard/XCSoar/" KOBO_PROGRAM_NAME;
 
   int pipe_fds[2];
   if (pipe(pipe_fds) != 0) {
