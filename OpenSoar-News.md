@@ -136,6 +136,8 @@ code, migration-before-profile-load, CUPX binary mode).
   - block images in rich text (checklists, About page) keep their
     physical size on high-density displays instead of shrinking to
     thumbnails; two images on one line are laid out side by side
+* fixes: the Kobo menu starts OpenSoar from the KoboRoot.tgz (it
+  looked for a program called xcsoar)
 * infrastructure
   - Windows: native CMake/MSVC build (Visual Studio 2022/2026),
     OpenGL-only; third-party libraries build automatically
