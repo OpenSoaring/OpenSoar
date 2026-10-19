@@ -57,6 +57,14 @@ struct Settings {
   unsigned custom_dpi;
 
   /**
+   * Also read the repository of the OpenSoar test versions, so that
+   * the test packages and OpenVario test images show up in the
+   * download lists.  For testers; off by default, because a test
+   * version is not what a pilot should install by accident.
+   */
+  bool test_versions;
+
+  /**
    * OpenVario only: is a touch panel connected?  The touch controller
    * of the OpenVario exists whether a panel is connected or not, so the
    * program cannot find out by itself; it assumes a touch screen unless
@@ -71,6 +79,7 @@ struct Settings {
     devices_in_profile = false;
     last_profile.clear();
     custom_dpi = 0;
+    test_versions = false;
     touch_screen = true;
   }
 };

@@ -15,6 +15,11 @@
 #include "SystemConfig.hpp"
 #include "UIGlobals.hpp"
 #include "Widget/RowFormWidget.hpp"
+#include "net/http/Features.hpp"
+
+#ifdef HAVE_HTTP
+#include "Repository/Glue.hpp"
+#endif
 
 #include <string>
 
@@ -29,6 +34,7 @@ class SystemConfigPanel final : public RowFormWidget {
     DEVICES_IN_PROFILE,
     CUSTOM_DPI,
     DEVICES,
+    TEST_VERSIONS,
   };
 
 public:
@@ -129,6 +135,12 @@ SystemConfigPanel::Prepare(ContainerWindow &parent,
             "open the device list."),
           DescribeDevices().c_str())
     ->SetEditCallback(EditDevices);
+
+  AddBoolean(_("Test versions"),
+             _("Also offer the OpenSoar test versions and OpenVario test "
+               "images in the download lists.  They are meant for testers: "
+               "a test version may still have errors."),
+             SystemConfig::Get().test_versions);
 }
 
 bool
@@ -157,6 +169,19 @@ SystemConfigPanel::Save([[maybe_unused]] bool &changed) noexcept
       custom_dpi != SystemConfig::Get().custom_dpi) {
     SystemConfig::Get().custom_dpi = custom_dpi;
     modified = true;
+  }
+
+  if (const bool test_versions = GetValueBoolean(TEST_VERSIONS);
+      test_versions != SystemConfig::Get().test_versions) {
+    SystemConfig::Get().test_versions = test_versions;
+    modified = true;
+
+#ifdef HAVE_HTTP
+    /* switched on, the test repository is fetched right away, so the
+       next download list has it; switched off, it is no longer read */
+    if (test_versions)
+      EnqueueRepositoryDownload(true, false, true);
+#endif
   }
 
   if (modified)

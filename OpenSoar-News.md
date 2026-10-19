@@ -297,6 +297,10 @@ already contains the OpenSoar fixes merged upstream in August 2026
   [upstream PR]; read-only fields open their full content only where
   the field cuts it off; the takeoff button of the replay shows a
   clearer departure symbol
+* download lists: the file manager offers the packages of the current
+  OpenSoar release for this platform (stored in "programs"); with
+  System > System > Test versions also the test versions and the
+  OpenVario test images
 * Linux: the installed program shows its translations (it looked for
   xcsoar.mo, but opensoar.mo is installed)
 * fixes: the configuration dialog no longer crashes at the next

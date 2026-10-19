@@ -9,6 +9,7 @@
 #include "LocalPath.hpp"
 #include "Profile/Keys.hpp"
 #include "Profile/Profile.hpp"
+#include "SystemConfig.hpp"
 #include "Weather/Rasp/RaspStore.hpp"
 #include "net/http/Features.hpp"
 #include "net/http/DownloadManager.hpp"
@@ -126,9 +127,25 @@ static constexpr struct {
   const char *filename;
 } builtin_repositories[] = {
   {"https://opensoar.de/releases/repository", "user_repository_opensoar"},
+  /* the packages of the current release; the parser keeps only those
+     for this platform */
+  {"https://opensoar.de/releases/repository-programs",
+   "user_repository_programs"},
 #ifdef IS_OPENVARIO
   {"https://opensoar.de/releases/repository-ov", "user_repository_openvario"},
 #endif
+};
+
+/**
+ * The test packages and OpenVario test images; read only when the
+ * pilot asked for test versions (System > System).
+ */
+static constexpr struct {
+  const char *uri;
+  const char *filename;
+} testing_repository = {
+  "https://opensoar.de/releases/repository-testing",
+  "user_repository_testing",
 };
 
 std::vector<RepositoryLink>
@@ -139,6 +156,9 @@ GetUserRepositories()
   for (const auto &i : builtin_repositories)
     result.push_back({i.uri, i.filename});
 
+  if (SystemConfig::Get().test_versions)
+    result.push_back({testing_repository.uri, testing_repository.filename});
+
   const char *src = Profile::Get(ProfileKeys::UserRepositoriesList);
   if (src == nullptr || *src == '\0') return result;
 
@@ -148,7 +168,9 @@ GetUserRepositories()
     /* a built-in repository entered again by the user is read once */
     if (std::any_of(std::begin(builtin_repositories),
                     std::end(builtin_repositories),
-                    [i](const auto &b){ return i == b.uri; })) {
+                    [i](const auto &b){ return i == b.uri; }) ||
+        (SystemConfig::Get().test_versions &&
+         i == testing_repository.uri)) {
       ++index;
       continue;
     }

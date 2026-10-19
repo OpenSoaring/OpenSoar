@@ -11621,6 +11621,18 @@ msgstr "Gerätename"
 msgid "Devices in the profile"
 msgstr "Geräte im Profil"
 
+msgid "Test versions"
+msgstr "Testversionen"
+
+msgid ""
+"Also offer the OpenSoar test versions and OpenVario test images in the "
+"download lists.  They are meant for testers: a test version may still have "
+"errors."
+msgstr ""
+"Auch die Testversionen von OpenSoar und die Test-Images für das OpenVario in "
+"den Download-Listen anbieten.  Sie sind für Tester gedacht: eine "
+"Testversion kann noch Fehler enthalten."
+
 msgid "Display Settings"
 msgstr "Display-Einstellungen"
 

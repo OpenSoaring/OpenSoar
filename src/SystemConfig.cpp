@@ -18,6 +18,7 @@ static constexpr char SYSTEM_CONFIG_FILE[] = "system.prf";
 static constexpr char KEY_XCSOAR_BEHAVIOUR[] = "XCSoarBehaviour";
 static constexpr char KEY_DEVICES_IN_PROFILE[] = "DevicesInProfile";
 static constexpr char KEY_LAST_PROFILE[] = "LastProfile";
+static constexpr char KEY_TEST_VERSIONS[] = "TestVersions";
 static constexpr char KEY_TOUCH_SCREEN[] = "TouchScreen";
 
 /* the same name as in a profile, so the line can be copied between
@@ -29,6 +30,7 @@ static SystemConfig::Settings the_config = {
   .devices_in_profile = false,
   .last_profile = {},
   .custom_dpi = 0,
+  .test_versions = false,
   .touch_screen = true,
 };
 
@@ -64,6 +66,7 @@ SystemConfig::Load() noexcept
   map.Get(KEY_XCSOAR_BEHAVIOUR, the_config.xcsoar_behaviour);
   map.Get(KEY_DEVICES_IN_PROFILE, the_config.devices_in_profile);
   map.Get(KEY_LAST_PROFILE, the_config.last_profile);
+  map.Get(KEY_TEST_VERSIONS, the_config.test_versions);
   map.Get(KEY_TOUCH_SCREEN, the_config.touch_screen);
 
   /* the same range as in a profile (see Profile::Load(UISettings)) */
@@ -89,6 +92,7 @@ SystemConfig::Save() noexcept
   map.Set(KEY_DEVICES_IN_PROFILE, the_config.devices_in_profile);
   map.Set(KEY_LAST_PROFILE, the_config.last_profile.c_str());
   map.Set(KEY_CUSTOM_DPI, the_config.custom_dpi);
+  map.Set(KEY_TEST_VERSIONS, the_config.test_versions);
   map.Set(KEY_TOUCH_SCREEN, the_config.touch_screen);
 
   try {
