@@ -56,11 +56,20 @@ struct Settings {
    */
   unsigned custom_dpi;
 
+  /**
+   * Also read the repository of the OpenSoar test versions, so that
+   * the test packages and OpenVario test images show up in the
+   * download lists.  For testers; off by default, because a test
+   * version is not what a pilot should install by accident.
+   */
+  bool test_versions;
+
   void SetDefaults() noexcept {
     xcsoar_behaviour = false;
     devices_in_profile = false;
     last_profile.clear();
     custom_dpi = 0;
+    test_versions = false;
   }
 };
 
