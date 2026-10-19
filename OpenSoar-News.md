@@ -136,6 +136,10 @@ code, migration-before-profile-load, CUPX binary mode).
   - block images in rich text (checklists, About page) keep their
     physical size on high-density displays instead of shrinking to
     thumbnails; two images on one line are laid out side by side
+* OpenVario: Setup > Screen > Touch screen tells the program whether a
+  touch panel is connected (the OpenVario cannot detect it); without
+  one the controls are drawn for keys and the remote stick, and the
+  touch screen calibration is not offered
 * download lists: the file manager offers the packages of the current
   OpenSoar release for this platform (stored in "programs"); with
   System > System > Test versions also the test versions and the
