@@ -34,6 +34,7 @@ RunProcessDialog([[maybe_unused]] UI::SingleWindow &parent,
 
 #include "WidgetDialog.hpp"
 #include "Widget/LargeTextWidget.hpp"
+#include "ui/control/LargeTextWindow.hpp"
 #include "ui/event/poll/Queue.hpp"
 #include "ui/event/Globals.hpp"
 #include "ui/event/KeyCode.hpp"
@@ -247,6 +248,18 @@ void
 ProcessWidget::UpdateText() noexcept
 {
   SetText(text.empty() ? progress_text : text.c_str());
+
+  /* The newest output is at the bottom.  A long transfer reports its
+     progress line by line, and the pilot has to see the latest line
+     without scrolling, or it looks as if nothing happens. */
+  if (IsDefined()) {
+    auto &window = (LargeTextWindow &)GetWindow();
+    const unsigned rows = window.GetRowCount();
+    const unsigned visible = window.GetVisibleRows();
+    if (rows > visible)
+      window.ScrollTo(rows - visible);
+  }
+
   UI::event_queue->Interrupt();
 }
 
