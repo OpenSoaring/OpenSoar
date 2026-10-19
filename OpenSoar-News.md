@@ -96,6 +96,10 @@ already contains the OpenSoar fixes merged upstream in August 2026
   - Look > Display calibrates the touch screen and keeps the display
     orientation over a reboot; the SSH server is a switch on
     Setup > Network
+  - Look > Display > Touch screen tells the program whether a touch
+    panel is connected (the OpenVario cannot detect it); without one
+    the controls are drawn for keys and the remote stick, and the
+    touch screen calibration is not offered
   - a keyboard attached to the device types lower case letters and all
     symbols in the layout given by XKB_DEFAULT_LAYOUT [upstream PR]
   - its own key, menu and gesture configuration, in files by topic

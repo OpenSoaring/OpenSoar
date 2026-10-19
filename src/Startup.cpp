@@ -500,7 +500,8 @@ Startup(UI::Display &display)
   if (CommandLine::touch_input == CommandLine::TouchInput::Force)
     LogFormat("Touch input mode: forced on (see command line)");
   else if (CommandLine::touch_input == CommandLine::TouchInput::Disable)
-    LogFormat("Touch input mode: forced off (see command line)");
+    LogFormat("Touch input mode: forced off (command line, or no touch "
+              "screen on the OpenVario)");
 #if !defined(NON_INTERACTIVE) && !defined(USE_X11)
   LogFormat("Device capabilities: HasPointer()=%s",
             HasPointer() ? "yes" : "no");

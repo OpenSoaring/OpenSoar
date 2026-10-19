@@ -162,6 +162,15 @@ try {
      starts and how it is left */
   SystemConfig::Load();
 
+#ifdef IS_OPENVARIO
+  /* the OpenVario cannot tell whether a touch panel is connected (see
+     SystemConfig::Settings::touch_screen); a switch on the command line
+     still wins */
+  if (!SystemConfig::Get().touch_screen &&
+      CommandLine::touch_input == CommandLine::TouchInput::Auto)
+    CommandLine::touch_input = CommandLine::TouchInput::Disable;
+#endif
+
   // Write startup note + version to logfile
   LogFormat("Starting %s", XCSoar_ProductToken);
 

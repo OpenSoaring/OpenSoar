@@ -56,11 +56,22 @@ struct Settings {
    */
   unsigned custom_dpi;
 
+  /**
+   * OpenVario only: is a touch panel connected?  The touch controller
+   * of the OpenVario exists whether a panel is connected or not, so the
+   * program cannot find out by itself; it assumes a touch screen unless
+   * this is switched off.  Off, the program draws the controls for
+   * keys and the remote stick instead of fingers, and the touch screen
+   * calibration is not offered.
+   */
+  bool touch_screen;
+
   void SetDefaults() noexcept {
     xcsoar_behaviour = false;
     devices_in_profile = false;
     last_profile.clear();
     custom_dpi = 0;
+    touch_screen = true;
   }
 };
 

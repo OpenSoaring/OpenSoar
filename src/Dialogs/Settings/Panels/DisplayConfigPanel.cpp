@@ -6,6 +6,10 @@
 #include "ui/canvas/Features.hpp" // for DRAW_MOUSE_CURSOR
 #include "Profile/Keys.hpp"
 #include "Form/DataField/Enum.hpp"
+#include "Form/DataField/Boolean.hpp"
+#include "Form/DataField/Listener.hpp"
+#include "Form/Edit.hpp"
+#include "Form/Button.hpp"
 #include "Hardware/DisplayBrightness.hpp"
 #include "Hardware/RotateDisplay.hpp"
 #include "Interface.hpp"
@@ -179,8 +183,19 @@ FillDpiChoices(DataFieldEnum &df, unsigned value,
   df.SetValue(value);
 }
 
-class DisplayConfigPanel final : public RowFormWidget {
+class DisplayConfigPanel final : public RowFormWidget,
+                                 DataFieldListener {
   std::unique_ptr<DisplayBrightness> brightness;
+
+  /* OpenVario only: the "Touch screen" switch and the calibration
+     button that depends on it; nullptr elsewhere */
+  WndProperty *touch_screen = nullptr;
+  Button *calibrate_touch = nullptr;
+
+  void UpdateCalibrateTouch() noexcept;
+
+  /* virtual methods from class DataFieldListener */
+  void OnModified(DataField &df) noexcept override;
 
 public:
   DisplayConfigPanel()
@@ -265,15 +280,42 @@ DisplayConfigPanel::Prepare(ContainerWindow &parent,
      the screen, and it is the last row so that the indices above do
      not depend on it */
   if (IsOpenVario()) {
-    auto *button = AddButton(_("Calibrate touch screen"), []{
+    touch_screen =
+      AddBoolean(_("Touch screen"),
+                 _("Is a touch panel connected?  The OpenVario cannot find "
+                   "out by itself.  Off, the controls are drawn for keys and "
+                   "the remote stick, and the touch screen cannot be "
+                   "calibrated.  The controls change on the next start."),
+                 SystemConfig::Get().touch_screen, this);
+
+    calibrate_touch = AddButton(_("Calibrate touch screen"), []{
       CalibrateTouch(UIGlobals::GetMainWindow().GetDisplay(),
                      *UI::event_queue);
     });
-
-    /* without a touch input device the script could only fail */
-    button->SetEnabled(HasTouchScreenDevice());
+    UpdateCalibrateTouch();
   }
 #endif
+}
+
+void
+DisplayConfigPanel::UpdateCalibrateTouch() noexcept
+{
+  if (touch_screen == nullptr || calibrate_touch == nullptr)
+    return;
+
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
+  /* only with a panel, and without a touch input device the script
+     could only fail */
+  const auto &df = (const DataFieldBoolean &)*touch_screen->GetDataField();
+  calibrate_touch->SetEnabled(df.GetValue() && HasTouchScreenDevice());
+#endif
+}
+
+void
+DisplayConfigPanel::OnModified(DataField &df) noexcept
+{
+  if (touch_screen != nullptr && &df == touch_screen->GetDataField())
+    UpdateCalibrateTouch();
 }
 
 bool
@@ -356,6 +398,17 @@ DisplayConfigPanel::Save(bool &_changed) noexcept
   CommonInterface::main_window->SetCursorColorsInverted(
     ui_settings.display.invert_cursor_colors);
 #endif
+
+  if (touch_screen != nullptr) {
+    const auto &df = (const DataFieldBoolean &)*touch_screen->GetDataField();
+    if (df.GetValue() != SystemConfig::Get().touch_screen) {
+      /* a setting of the device, not of the profile, so "changed" is
+         not touched; the controls follow on the next start */
+      SystemConfig::Get().touch_screen = df.GetValue();
+      SystemConfig::Save();
+      require_restart = true;
+    }
+  }
 
   _changed |= changed;
   return true;

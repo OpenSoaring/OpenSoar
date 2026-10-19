@@ -12337,6 +12337,19 @@ msgstr "Die Kalibrierung des Touchscreens ist fehlgeschlagen."
 msgid "Calibrate touch screen"
 msgstr "Touchscreen kalibrieren"
 
+msgid "Touch screen"
+msgstr "Touchscreen"
+
+msgid ""
+"Is a touch panel connected?  The OpenVario cannot find out by itself.  Off, "
+"the controls are drawn for keys and the remote stick, and the touch screen "
+"cannot be calibrated.  The controls change on the next start."
+msgstr ""
+"Ist ein Touchpanel angeschlossen?  Das OpenVario kann das nicht selbst "
+"erkennen.  Aus: Die Bedienelemente werden für Tasten und den Remote-Stick "
+"gezeichnet, und der Touchscreen lässt sich nicht kalibrieren.  Die "
+"Bedienelemente ändern sich beim nächsten Start."
+
 msgid "This device is not an OpenVario."
 msgstr "Dieses Gerät ist kein OpenVario."
 
