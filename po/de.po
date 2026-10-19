@@ -12350,6 +12350,21 @@ msgstr ""
 "gezeichnet, und der Touchscreen lässt sich nicht kalibrieren.  Die "
 "Bedienelemente ändern sich beim nächsten Start."
 
+msgid "System backup"
+msgstr "System-Backup"
+
+msgid "Back up"
+msgstr "Sichern"
+
+msgid ""
+"The settings are always backed up, together with a list of all files on the "
+"data partition.  Tick the folders to copy as well; large ones take a long "
+"time."
+msgstr ""
+"Die Einstellungen werden immer gesichert, zusammen mit einer Liste aller "
+"Dateien auf der Datenpartition.  Ordner, die zusätzlich kopiert werden "
+"sollen, hier einschalten; große dauern lange."
+
 msgid "This device is not an OpenVario."
 msgstr "Dieses Gerät ist kein OpenVario."
 

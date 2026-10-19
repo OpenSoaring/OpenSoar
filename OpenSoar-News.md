@@ -91,8 +91,11 @@ already contains the OpenSoar fixes merged upstream in August 2026
   - sensord and variod as switches; switching a service on restarts
     it and enables it for the next boot, and if it does not stay
     running, the message says why
-  - sensor calibration, and backup and restore of the whole system to
-    a USB stick
+  - sensor calibration, and backup and restore of the system to a USB
+    stick; the backup asks which folders of the data partition to copy
+    besides the settings (none by default, each with its size), always
+    writes a list of all files on the data partition, and shows its
+    progress
   - Look > Display calibrates the touch screen and keeps the display
     orientation over a reboot; the SSH server is a switch on
     Setup > Network

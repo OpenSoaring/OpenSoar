@@ -12,10 +12,13 @@
 #include "Dialogs/JobDialog.hpp"
 #include "Dialogs/Message.hpp"
 #include "Dialogs/ProcessDialog.hpp"
+#include "Dialogs/WidgetDialog.hpp"
 #include "Form/DataField/Enum.hpp"
 #include "Form/Form.hpp"
+#include "Formatter/ByteSizeFormatter.hpp"
 #include "Interface.hpp"
 #include "Job/Job.hpp"
+#include "Operation/Operation.hpp"
 #include "UIActions.hpp"
 #include "util/StaticString.hxx"
 #include "Language/Language.hpp"
@@ -32,9 +35,15 @@
 #include "ui/window/SingleWindow.hpp"
 #include "util/StringAPI.hxx"
 
+#include <algorithm>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
+
+#include <dirent.h>
+#include <sys/stat.h>
 
 /**
  * The values of "main_app" which ovmenu-ng.sh knows.  The enum ids
@@ -233,19 +242,201 @@ EditFirmware([[maybe_unused]] const char *caption,
 
 /**
  * Run transfer-system.sh with the given action in a process dialog.
+ * Each name in #data_folders becomes a "--data" argument, which makes
+ * the backup copy that folder of the data partition as well.
  *
+ * @param keep_open leave the dialog open after success as well, so
+ * that the pilot can read what was copied; otherwise it closes by
+ * itself then, and stays open only to show an error
  * @return true if the script succeeded
  */
 static bool
-RunTransferSystem(const char *caption, const char *action) noexcept
+RunTransferSystem(const char *caption, const char *action,
+                  bool keep_open = false,
+                  const std::vector<std::string> &data_folders = {}) noexcept
 {
-  const char *const argv[] = { transfer_system, action, nullptr };
-  return RunProcessDialog(UIGlobals::GetMainWindow(),
-                          UIGlobals::GetDialogLook(),
-                          caption, argv,
-                          [](int status){
-                            return status == EXIT_SUCCESS ? mrOK : 0;
-                          }) == mrOK;
+  std::vector<const char *> argv{transfer_system, action};
+  for (const auto &name : data_folders) {
+    argv.push_back("--data");
+    argv.push_back(name.c_str());
+  }
+  argv.push_back(nullptr);
+
+  int result = EXIT_FAILURE;
+  RunProcessDialog(UIGlobals::GetMainWindow(),
+                   UIGlobals::GetDialogLook(),
+                   caption, argv.data(),
+                   [&result, keep_open](int status){
+                     result = status;
+                     return status == EXIT_SUCCESS && !keep_open ? mrOK : 0;
+                   });
+  return result == EXIT_SUCCESS;
+}
+
+/**
+ * Where ovmenu-ng.sh mounts the data partition.  transfer-system.sh
+ * takes the folders to back up by their names below this very path.
+ */
+static constexpr const char *data_partition = "/home/root/data";
+
+struct DataFolder {
+  std::string name;
+  uint64_t size = 0;
+};
+
+/**
+ * The size of all files below a directory.  Symbolic links are
+ * counted as nothing and not followed, as rsync copies them.
+ */
+static uint64_t
+GetDirectorySize(const std::string &path,
+                 OperationEnvironment &env) noexcept
+{
+  DIR *dir = opendir(path.c_str());
+  if (dir == nullptr)
+    return 0;
+
+  uint64_t total = 0;
+  while (const struct dirent *entry = readdir(dir)) {
+    if (env.IsCancelled())
+      break;
+
+    if (StringIsEqual(entry->d_name, ".") ||
+        StringIsEqual(entry->d_name, ".."))
+      continue;
+
+    const std::string child = path + '/' + entry->d_name;
+    struct stat st;
+    if (lstat(child.c_str(), &st) < 0)
+      continue;
+
+    if (S_ISDIR(st.st_mode))
+      total += GetDirectorySize(child, env);
+    else if (S_ISREG(st.st_mode))
+      total += st.st_size;
+  }
+
+  closedir(dir);
+  return total;
+}
+
+/**
+ * Find the folders directly below the data partition and their sizes,
+ * so that the pilot sees what a backup of each would cost.  Walking a
+ * partition of a few gigabytes takes a moment on the SD card, hence a
+ * job.
+ */
+class ListDataFoldersJob final : public Job {
+public:
+  std::vector<DataFolder> folders;
+
+  void Run(OperationEnvironment &env) override {
+    DIR *dir = opendir(data_partition);
+    if (dir == nullptr)
+      return;
+
+    while (const struct dirent *entry = readdir(dir)) {
+      /* "lost+found" belongs to the file system, not to the pilot */
+      if (StringIsEqual(entry->d_name, ".") ||
+          StringIsEqual(entry->d_name, "..") ||
+          StringIsEqual(entry->d_name, "lost+found"))
+        continue;
+
+      const std::string path = std::string{data_partition} + '/' +
+        entry->d_name;
+      struct stat st;
+      if (lstat(path.c_str(), &st) == 0 && S_ISDIR(st.st_mode))
+        folders.push_back({entry->d_name, 0});
+    }
+    closedir(dir);
+
+    std::sort(folders.begin(), folders.end(),
+              [](const DataFolder &a, const DataFolder &b){
+                return a.name < b.name;
+              });
+
+    for (auto &folder : folders) {
+      if (env.IsCancelled())
+        return;
+      env.SetText(folder.name.c_str());
+      folder.size = GetDirectorySize(std::string{data_partition} + '/' +
+                                     folder.name, env);
+    }
+  }
+};
+
+/**
+ * Lets the pilot tick the folders of the data partition that the
+ * system backup copies besides the settings.  Nothing is ticked at
+ * first: maps, images and caches easily come to gigabytes, which take
+ * hours on the USB stick.
+ */
+class DataFolderWidget final : public RowFormWidget {
+  const std::vector<DataFolder> &folders;
+
+  /** the row of the first folder, after the explanation */
+  static constexpr unsigned FIRST_FOLDER = 1;
+
+public:
+  DataFolderWidget(const DialogLook &look,
+                   const std::vector<DataFolder> &_folders) noexcept
+    :RowFormWidget(look), folders(_folders) {}
+
+  void Prepare([[maybe_unused]] ContainerWindow &parent,
+               [[maybe_unused]] const PixelRect &rc) noexcept override {
+    AddLabel(_("The settings are always backed up, together with a list "
+               "of all files on the data partition.  Tick the folders to "
+               "copy as well; large ones take a long time."), 3);
+
+    for (const auto &folder : folders) {
+      char size[32];
+      FormatByteSize(size, sizeof(size), folder.size);
+      StaticString<256> label;
+      label.Format("%s (%s)", folder.name.c_str(), size);
+      AddBoolean(label, nullptr, false);
+    }
+  }
+
+  std::vector<std::string> GetSelected() const noexcept {
+    std::vector<std::string> selected;
+    for (unsigned i = 0; i < folders.size(); ++i)
+      if (GetValueBoolean(FIRST_FOLDER + i))
+        selected.push_back(folders[i].name);
+    return selected;
+  }
+};
+
+/**
+ * Ask which folders of the data partition go into the backup.
+ *
+ * @return false if the pilot cancelled the backup
+ */
+static bool
+ChooseDataFolders(std::vector<std::string> &selected) noexcept
+{
+  const DialogLook &look = UIGlobals::GetDialogLook();
+
+  ListDataFoldersJob job;
+  if (!JobDialog(UIGlobals::GetMainWindow(), look,
+                 _("System backup"), job, true))
+    return false;
+
+  if (job.folders.empty())
+    /* no data partition, or nothing on it: just the settings */
+    return true;
+
+  TWidgetDialog<DataFolderWidget>
+    dialog(WidgetDialog::Auto{}, UIGlobals::GetMainWindow(), look,
+           _("System backup"));
+  dialog.AddButton(_("Back up"), mrOK);
+  dialog.AddButton(_("Cancel"), mrCancel);
+  dialog.SetWidget(look, job.folders);
+
+  if (dialog.ShowModal() != mrOK)
+    return false;
+
+  selected = dialog.GetWidget().GetSelected();
+  return true;
 }
 
 /**
@@ -272,11 +463,15 @@ BackupSystem() noexcept
       !CheckUsbStick(_("System backup")))
     return;
 
+  std::vector<std::string> data_folders;
+  if (!ChooseDataFolders(data_folders))
+    return;
+
   /* the backup contains the profile; it should be the one the pilot
      sees, not the one from the last start */
   Profile::Save();
 
-  RunTransferSystem(_("System backup"), "backup");
+  RunTransferSystem(_("System backup"), "backup", true, data_folders);
 }
 
 /**
