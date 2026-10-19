@@ -75,6 +75,13 @@ GetFileTypePatterns(const FileType file_type) noexcept
     return "*.ipk\0";
 #endif  // IS_OPENVARIO
 
+  case FileType::PROGRAM:
+    /* with the program name in front: a plain "*.zip" would also claim
+       every zip file a pilot keeps in the data directory, and the
+       layout migration would move it into "programs" */
+    return "OpenSoar-*.zip\0OpenSoar-*.deb\0OpenSoar-*.apk\0"
+      "OpenSoar-*-KoboRoot.tgz\0";
+
   case FileType::UNKNOWN:
   case FileType::COUNT:
     return "\0";
@@ -138,6 +145,9 @@ GetFileTypeDefaultDir(const FileType file_type)
 
   case FileType::PROFILE:
     return AllocatedPath("profiles");
+
+  case FileType::PROGRAM:
+    return AllocatedPath("programs");
 
 #ifdef IS_OPENVARIO
   case FileType::OV_IMAGE:

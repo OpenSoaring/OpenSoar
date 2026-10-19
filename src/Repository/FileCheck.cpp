@@ -244,6 +244,9 @@ CheckFileContent(Path path, FileType type) noexcept
     break;
 #endif  // IS_OPENVARIO
 
+  case FileType::PROGRAM:
+    /* zip, ar or gzip archives; the installer of the platform checks
+       them, so nothing is gained by a second look here */
   case FileType::FLARMNET:
   case FileType::RASP:
   case FileType::UNKNOWN:
