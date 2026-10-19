@@ -140,6 +140,11 @@ code, migration-before-profile-load, CUPX binary mode).
   touch panel is connected (the OpenVario cannot detect it); without
   one the controls are drawn for keys and the remote stick, and the
   touch screen calibration is not offered
+* OpenVario: the system backup asks which folders of the data
+  partition to copy besides the settings (none by default, each with
+  its size), always writes a list of all files on the data partition,
+  and shows its progress; before, it copied the whole data partition
+  without a sign of life, which took hours
 * download lists: the file manager offers the packages of the current
   OpenSoar release for this platform (stored in "programs"); with
   System > System > Test versions also the test versions and the
