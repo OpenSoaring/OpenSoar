@@ -31,6 +31,13 @@ enum class FileType : uint8_t {
   OV_UPGRADE,  // OpenVario firmware package (*.zip)
   OV_IPK,      // OpenVario ipk-package (*.ipk)
 #endif  // IS_OPENVARIO
+
+  /**
+   * An OpenSoar program package for this platform (Windows zip, Linux
+   * .deb, Android APK, Kobo KoboRoot.tgz), from the OpenSoar program
+   * repositories; the pilot installs it from the "programs" directory.
+   */
+  PROGRAM,
   COUNT,
 };
 
