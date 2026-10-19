@@ -136,6 +136,11 @@ code, migration-before-profile-load, CUPX binary mode).
   - block images in rich text (checklists, About page) keep their
     physical size on high-density displays instead of shrinking to
     thumbnails; two images on one line are laid out side by side
+* OpenVario: the system backup asks which folders of the data
+  partition to copy besides the settings (none by default, each with
+  its size), always writes a list of all files on the data partition,
+  and shows its progress; before, it copied the whole data partition
+  without a sign of life, which took hours
 * Linux: the installed program shows its translations (it looked for
   xcsoar.mo, but opensoar.mo is installed)
 * fixes: the Kobo menu starts OpenSoar from the KoboRoot.tgz (it
