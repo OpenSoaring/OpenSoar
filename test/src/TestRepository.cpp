@@ -434,6 +434,53 @@ TestAvailableFile()
   ok1(f.type == FileType::UNKNOWN);
 }
 
+/**
+ * Program packages are kept only for the platform they were built for;
+ * the test program is a Linux x86_64 build, so it keeps the amd64 .deb
+ * and drops the Windows zip and the arm64 .deb.
+ */
+static void
+TestProgramPackages()
+{
+  char input[] =
+    "name = OpenSoar-7.46.26-Win64.zip\n"
+    "uri = http://example.com/OpenSoar-7.46.26-Win64.zip\n"
+    "type = win64-zip\n"
+    "device = win64\n"
+    "\n"
+    "name = OpenSoar-7.46.26-amd64.deb\n"
+    "uri = http://example.com/OpenSoar-7.46.26-amd64.deb\n"
+    "device = linux-amd64\n"
+    "type = deb\n"
+    "\n"
+    "name = OpenSoar-7.46.26-arm64.deb\n"
+    "uri = http://example.com/OpenSoar-7.46.26-arm64.deb\n"
+    "type = deb\n"
+    "device = linux-arm64\n"
+    "\n"
+    "name = after.xcw\n"
+    "uri = http://example.com/after.xcw\n"
+    "type = waypoint\n";
+  StringLineReader reader(input);
+  FileRepository repo;
+
+  ok1(ParseFileRepository(repo, reader));
+  ok1(repo.FindByName("OpenSoar-7.46.26-Win64.zip") == nullptr);
+  ok1(repo.FindByName("OpenSoar-7.46.26-arm64.deb") == nullptr);
+
+  const auto *deb = repo.FindByName("OpenSoar-7.46.26-amd64.deb");
+#if defined(__linux__) && defined(__x86_64__) && !defined(ANDROID)
+  ok1(deb != nullptr && deb->type == FileType::PROGRAM);
+#else
+  ok1(deb == nullptr);
+#endif
+
+  /* the entry after a dropped package is read normally */
+  const auto *w = repo.FindByName("after.xcw");
+  ok1(w != nullptr);
+  ok1(w->type == FileType::WAYPOINT);
+}
+
 int main()
 {
   plan_tests(
@@ -455,7 +502,8 @@ int main()
     5 +   // TestFindByName
     3 +   // TestFieldsBeforeName
     7 +   // TestRaspForecastOutOfDate
-    10    // TestAvailableFile
+    10 +  // TestAvailableFile
+    6     // TestProgramPackages
   );
 
   TestEmpty();
@@ -477,6 +525,7 @@ int main()
   TestFieldsBeforeName();
   TestRaspForecastOutOfDate();
   TestAvailableFile();
+  TestProgramPackages();
 
   return exit_status();
 }
