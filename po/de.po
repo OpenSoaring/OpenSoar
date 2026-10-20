@@ -12356,6 +12356,9 @@ msgstr "System-Backup"
 msgid "Back up"
 msgstr "Sichern"
 
+msgid "Free on the USB stick"
+msgstr "Frei auf dem USB-Stick"
+
 msgid ""
 "The settings are always backed up, together with a list of all files on the "
 "data partition.  Tick the folders to copy as well; large ones take a long "

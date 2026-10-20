@@ -43,6 +43,7 @@
 #include <vector>
 
 #include <dirent.h>
+#include <sys/statvfs.h>
 #include <sys/stat.h>
 
 /**
@@ -330,7 +331,16 @@ class ListDataFoldersJob final : public Job {
 public:
   std::vector<DataFolder> folders;
 
+  /** the free space on the USB stick, if it could be found out */
+  std::optional<uint64_t> usb_free;
+
   void Run(OperationEnvironment &env) override {
+    /* a full stick stopped a backup only after half an hour; the
+       pilot should see the room there next to the folder sizes */
+    struct statvfs st;
+    if (statvfs(openvario_usb_stick, &st) == 0)
+      usb_free = uint64_t(st.f_bavail) * st.f_frsize;
+
     DIR *dir = opendir(data_partition);
     if (dir == nullptr)
       return;
@@ -373,20 +383,28 @@ public:
  */
 class DataFolderWidget final : public RowFormWidget {
   const std::vector<DataFolder> &folders;
+  const std::optional<uint64_t> usb_free;
 
-  /** the row of the first folder, after the explanation */
-  static constexpr unsigned FIRST_FOLDER = 1;
+  /** the row of the first folder, after the explanation and the
+      free space on the stick */
+  static constexpr unsigned FIRST_FOLDER = 2;
 
 public:
   DataFolderWidget(const DialogLook &look,
-                   const std::vector<DataFolder> &_folders) noexcept
-    :RowFormWidget(look), folders(_folders) {}
+                   const std::vector<DataFolder> &_folders,
+                   std::optional<uint64_t> _usb_free) noexcept
+    :RowFormWidget(look), folders(_folders), usb_free(_usb_free) {}
 
   void Prepare([[maybe_unused]] ContainerWindow &parent,
                [[maybe_unused]] const PixelRect &rc) noexcept override {
     AddLabel(_("The settings are always backed up, together with a list "
                "of all files on the data partition.  Tick the folders to "
                "copy as well; large ones take a long time."), 3);
+
+    char free_text[32] = "?";
+    if (usb_free)
+      FormatByteSize(free_text, sizeof(free_text), *usb_free);
+    AddReadOnly(_("Free on the USB stick"), nullptr, free_text);
 
     for (const auto &folder : folders) {
       char size[32];
@@ -430,7 +448,7 @@ ChooseDataFolders(std::vector<std::string> &selected) noexcept
            _("System backup"));
   dialog.AddButton(_("Back up"), mrOK);
   dialog.AddButton(_("Cancel"), mrCancel);
-  dialog.SetWidget(look, job.folders);
+  dialog.SetWidget(look, job.folders, job.usb_free);
 
   if (dialog.ShowModal() != mrOK)
     return false;
