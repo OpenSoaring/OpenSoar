@@ -110,6 +110,7 @@ message(STATUS "Image-App: '${BMP_CONVERT_APP}' ")
 add_custom_command(OUTPUT ${_INCLUDE_OUTPUT}/ProgramVersion.h
   COMMENT "Make Config file!"
   COMMAND ${CMAKE_COMMAND} -E make_directory ${_TEMP_OUTPUT}
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT}
   COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_config.py 
           ${CONFIG_FILE}
           ${_INCLUDE_OUTPUT}/ProgramVersion.h
@@ -125,6 +126,10 @@ add_custom_command(OUTPUT ${_INCLUDE_OUTPUT}/ProgramVersion.h
 # .rc it also writes is no longer compiled into anything
 add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc ${_INCLUDE_OUTPUT}/MakeResource.hpp
   COMMENT "Create MakeResource.hpp!"
+  # the generators write into the include folder but do not create it,
+  # so without the folder (a fresh build tree, or a deleted folder)
+  # this command failed and MakeResource.hpp was never written
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT}
   COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/create_resource.py 
           ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt 
           ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc
@@ -137,6 +142,7 @@ add_custom_command(OUTPUT ${PROJECTGROUP_BINARY_DIR}/${PROGRAM_NAME}.rc ${_INCLU
 
 add_custom_command(OUTPUT ${_INCLUDE_OUTPUT}/ResourceLookup_entries.hpp
   COMMENT "Create Resource File! from ${PROJECTGROUP_SOURCE_DIR}/Data/resources.txt"
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT}
   COMMAND ${PYTHON_APP} ${PROJECTGROUP_SOURCE_DIR}/tools/python/GenerateResourceLookup.py
           ## ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt 
           ${PROJECTGROUP_SOURCE_DIR}/Data/resources.txt   # das ist falsch!
