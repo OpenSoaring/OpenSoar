@@ -183,6 +183,26 @@ FillDpiChoices(DataFieldEnum &df, unsigned value,
   df.SetValue(value);
 }
 
+/**
+ * Turn the screen to the given orientation at once.  The settings page
+ * calls it as soon as the pilot picks an orientation, so that one sees
+ * right away whether it is the right one, as in the menu of the
+ * OpenVario image; the profile and the boot configuration are written
+ * only when the configuration is closed.
+ */
+static void
+ApplyDisplayOrientation(DisplayOrientation orientation) noexcept
+{
+  if (!Display::Rotate(orientation))
+    LogString("Display rotation failed");
+
+#ifdef USE_POLL_EVENT
+  UI::event_queue->SetDisplayOrientation(orientation);
+#endif
+
+  CommonInterface::main_window->CheckResize();
+}
+
 class DisplayConfigPanel final : public RowFormWidget,
                                  DataFieldListener {
   std::unique_ptr<DisplayBrightness> brightness;
@@ -194,6 +214,12 @@ class DisplayConfigPanel final : public RowFormWidget,
 
   void UpdateCalibrateTouch() noexcept;
 
+  /* the orientation and the brightness follow the rows at once; when
+     the configuration is left without saving, they go back to these */
+  DisplayOrientation initial_orientation = DisplayOrientation::DEFAULT;
+  int initial_brightness = -1;
+  bool saved = false;
+
   /* virtual methods from class DataFieldListener */
   void OnModified(DataField &df) noexcept override;
 
@@ -204,6 +230,7 @@ public:
 
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
+  void Unprepare() noexcept override;
 };
 
 void
@@ -213,6 +240,12 @@ DisplayConfigPanel::Prepare(ContainerWindow &parent,
   const UISettings &ui_settings = CommonInterface::GetUISettings();
 
   RowFormWidget::Prepare(parent, rc);
+
+  initial_orientation = ui_settings.display.orientation;
+#ifdef HAVE_DISPLAY_BRIGHTNESS_CONTROL
+  if (brightness != nullptr && brightness->IsWritable())
+    initial_brightness = brightness->GetBrightnessPercent();
+#endif
 
   AddEnum(C_("Setting", "Display type"),
           _("Select the display technology. E-ink modes disable kinetic "
@@ -233,7 +266,7 @@ DisplayConfigPanel::Prepare(ContainerWindow &parent,
     AddEnum(_("Display orientation"),
             _("Rotate the display on devices that support it."),
             display_orientation_list,
-            (unsigned)ui_settings.display.orientation);
+            (unsigned)ui_settings.display.orientation, this);
   else
     AddDummy();
 
@@ -244,7 +277,7 @@ DisplayConfigPanel::Prepare(ContainerWindow &parent,
                ? _("Adjust the screen brightness.")
                : _("Screen brightness is read-only because writing requires additional permissions."),
                "%d %%", "%d", 0, 100, 5,
-               brightness->GetBrightnessPercent());
+               brightness->GetBrightnessPercent(), this);
 
     if (!brightness->IsWritable())
       SetReadOnly(ScreenBrightness);
@@ -314,14 +347,50 @@ DisplayConfigPanel::UpdateCalibrateTouch() noexcept
 void
 DisplayConfigPanel::OnModified(DataField &df) noexcept
 {
+  if (Display::RotateSupported() && IsDataField(Orientation, df)) {
+    ApplyDisplayOrientation((DisplayOrientation)GetValueEnum(Orientation));
+    return;
+  }
+
+#ifdef HAVE_DISPLAY_BRIGHTNESS_CONTROL
+  /* the brightness is a setting of the display itself, nothing is
+     stored for it; it changes as the value changes, so that the pilot
+     sees the effect */
+  if (brightness != nullptr && brightness->IsWritable() &&
+      IsDataField(ScreenBrightness, df)) {
+    brightness->SetBrightnessPercent(GetValueInteger(ScreenBrightness));
+    return;
+  }
+#endif
+
   if (touch_screen != nullptr && &df == touch_screen->GetDataField())
     UpdateCalibrateTouch();
+}
+
+void
+DisplayConfigPanel::Unprepare() noexcept
+{
+  if (!saved) {
+    /* left without saving: undo what OnModified() did */
+    if (Display::RotateSupported() &&
+        GetValueEnum(Orientation) != unsigned(initial_orientation))
+      ApplyDisplayOrientation(initial_orientation);
+
+#ifdef HAVE_DISPLAY_BRIGHTNESS_CONTROL
+    if (initial_brightness >= 0 &&
+        GetValueInteger(ScreenBrightness) != initial_brightness)
+      brightness->SetBrightnessPercent(initial_brightness);
+#endif
+  }
+
+  RowFormWidget::Unprepare();
 }
 
 bool
 DisplayConfigPanel::Save(bool &_changed) noexcept
 {
   bool changed = false;
+  saved = true;
 
   UISettings &ui_settings = CommonInterface::SetUISettings();
 
@@ -340,8 +409,9 @@ DisplayConfigPanel::Save(bool &_changed) noexcept
                     ui_settings.display.orientation)) {
     changed = true;
 
-    if (!Display::Rotate(ui_settings.display.orientation))
-      LogString("Display rotation failed");
+    /* OnModified() has turned the screen already while the page was
+       open; turning it once more to the same orientation does no harm */
+    ApplyDisplayOrientation(ui_settings.display.orientation);
 
 #if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
     /* the OpenVario image rotates the console at boot, before
@@ -358,12 +428,6 @@ DisplayConfigPanel::Save(bool &_changed) noexcept
       }
     }
 #endif
-
-#ifdef USE_POLL_EVENT
-    UI::event_queue->SetDisplayOrientation(ui_settings.display.orientation);
-#endif
-
-    CommonInterface::main_window->CheckResize();
   }
 
 #ifdef HAVE_DISPLAY_BRIGHTNESS_CONTROL
