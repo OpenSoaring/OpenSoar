@@ -12,6 +12,7 @@
 #include "Device/Register.hpp"
 #include "Interface.hpp"
 #include "Language/Language.hpp"
+#include "Device/Features.hpp"
 #include "SystemConfig.hpp"
 #include "UIGlobals.hpp"
 #include "Widget/RowFormWidget.hpp"
@@ -56,7 +57,17 @@ DescribeDevices() noexcept
 {
   std::string text;
 
-  for (const auto &config : CommonInterface::GetSystemSettings().devices) {
+  const auto &devices = CommonInterface::GetSystemSettings().devices;
+  for (unsigned i = 0; i < devices.size(); ++i) {
+#ifdef HAVE_REMOTE_STICK
+    /* the program finds and sets up the RemoteStick by itself; it is
+       not one of the devices the pilot configured, and naming it here
+       only made the list look as if something had been added */
+    if (i == REMOTE_PORT)
+      continue;
+#endif
+
+    const auto &config = devices[i];
     if (config.IsDisabled())
       continue;
 
