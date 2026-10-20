@@ -22,7 +22,6 @@ enum ControlIndex {
   AirfieldFileList,
   AirspaceFileList,
   FlarmFile,
-  RaspFile,
   ChecklistFile,
   FrequenciesFile,
   UserRepositoriesList
@@ -99,15 +98,10 @@ SiteConfigPanel::Prepare([[maybe_unused]] ContainerWindow &parent, [[maybe_unuse
           GetFileTypePatterns(FileType::FLARMNET),
           FileType::FLARMNET);
 
-  AddFile("RASP",
-          _("Regional Atmospheric Soaring Prediction file providing "
-            "weather forecasts for soaring. Displays color-coded map "
-            "overlays for thermal strength, boundary layer winds, "
-            "cloud cover, and other soaring-relevant parameters at "
-            "various forecast times throughout the day."),
-          ProfileKeys::RaspFile,
-          GetFileTypePatterns(FileType::RASP),
-          FileType::RASP);
+  /* the RASP file is chosen on the RASP page of the weather settings,
+     next to its update and display options; a second row here, saved
+     when the dialog closes, could write its old choice back over one
+     made on the RASP page in the meantime */
 
   AddFile(_("Checklist"),
           _("The checklist file containing pre-flight and other checklists."),
@@ -152,8 +146,6 @@ SiteConfigPanel::Save(bool &_changed) noexcept
   AirfieldFileChanged = SaveValueMultiFileReader(
       AirfieldFileList, ProfileKeys::AirfieldFileList);
 
-  RaspFileChanged = SaveValueFileReader(RaspFile, ProfileKeys::RaspFile);
-
   ChecklistFileChanged = SaveValueFileReader(ChecklistFile, ProfileKeys::ChecklistFile);
 
   /* the frequency card reads its file every time it opens, so there
@@ -170,7 +162,7 @@ SiteConfigPanel::Save(bool &_changed) noexcept
 
   changed = WaypointFileChanged || AirfieldFileChanged ||
             AirspaceFileChanged || MapFileChanged || FlarmFileChanged ||
-            RaspFileChanged || ChecklistFileChanged ||
+            ChecklistFileChanged ||
             frequencies_changed || UserRepositoriesListChanged;
 
   _changed |= changed;
