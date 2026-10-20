@@ -2,6 +2,8 @@
 // Copyright The XCSoar Project
 
 #include "InterfaceConfigPanel.hpp"
+#include "Form/DataField/Listener.hpp"
+#include "ConfigPanel.hpp"
 #include "Profile/Profile.hpp"
 #include "Widget/RowFormWidget.hpp"
 #include "Form/DataField/Enum.hpp"
@@ -46,7 +48,8 @@ enum ControlIndex {
   DisclaimerAccepted,
 };
 
-class InterfaceConfigPanel final : public RowFormWidget {
+class InterfaceConfigPanel final
+  : public RowFormWidget, DataFieldListener {
 public:
   InterfaceConfigPanel()
     :RowFormWidget(UIGlobals::GetDialogLook()) {}
@@ -54,7 +57,23 @@ public:
 public:
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
+
+private:
+  /* virtual methods from class DataFieldListener */
+  void OnModified(DataField &df) noexcept override;
 };
+
+void
+InterfaceConfigPanel::OnModified([[maybe_unused]] DataField &df) noexcept
+{
+#ifdef HAVE_NLS
+  /* the configuration shows the new language at once: it closes, which
+     saves the choice like every other value, loads the language and
+     comes back to this page */
+  if (IsDataField(LanguageFile, df))
+    ConfigPanel::RequestReopen();
+#endif
+}
 
 #ifdef HAVE_BUILTIN_LANGUAGES
 
@@ -98,7 +117,8 @@ InterfaceConfigPanel::Prepare(ContainerWindow &parent,
   wp = AddEnum(_("Language"),
                _("The language options selects translations for English texts to other "
                    "languages. Select English for a native interface or Automatic to localise "
-                   "XCSoar according to the system settings."));
+                   "XCSoar according to the system settings."),
+               this);
   if (wp != nullptr) {
     DataFieldEnum &df = *(DataFieldEnum *)wp->GetDataField();
     df.addEnumText(_("Automatic"));

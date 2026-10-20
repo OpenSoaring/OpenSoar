@@ -47,6 +47,8 @@
 #include "Language/Language.hpp"
 #include "Audio/Features.hpp"
 #include "UtilsSettings.hpp"
+#include "InfoBoxes/InfoBoxManager.hpp"
+#include "Language/LanguageGlue.hpp"
 #include "net/http/Features.hpp"
 
 #ifdef HAVE_HTTP
@@ -97,6 +99,12 @@ static unsigned current_page;
 
 // TODO: eliminate global variables
 static ArrowPagerWidget *pager;
+
+/** the dialog while it is open, for ConfigPanel::RequestReopen() */
+static WidgetDialog *current_dialog;
+
+/** set by ConfigPanel::RequestReopen() */
+static bool reopen_requested;
 
 static constexpr TabMenuPage system_pages[] = {
   { N_("Site Files"), CreateSiteConfigPanel },
@@ -323,6 +331,14 @@ ConfigPanel::BorrowExtraButton(unsigned i, const char *caption,
 }
 
 void
+ConfigPanel::RequestReopen() noexcept
+{
+  reopen_requested = true;
+  if (current_dialog != nullptr)
+    current_dialog->SetModalResult(mrOK);
+}
+
+void
 ConfigPanel::ReturnExtraButton(unsigned i)
 {
   ConfigurationExtraButtons &extra =
@@ -374,71 +390,102 @@ OnPageFlipped(WidgetDialog &dialog, TabMenuDisplay &menu)
 
 void dlgConfigurationShowModal()
 {
-  const DialogLook &look = UIGlobals::GetDialogLook();
+  bool changed = false, expert_changed = false, reopen_page = false;
 
-  WidgetDialog dialog(WidgetDialog::Full{}, UIGlobals::GetMainWindow(),
-                      look, _("Configuration"));
+  do {
+    reopen_requested = false;
 
-  pager = new ArrowPagerWidget(look.button,
-                               [&dialog](){ OnCloseClicked(dialog); },
-                               std::make_unique<ConfigurationExtraButtons>(look));
+    const DialogLook &look = UIGlobals::GetDialogLook();
 
-  auto _menu = std::make_unique<TabMenuDisplay>(*pager, look);
-  auto &menu = *_menu;
-  pager->Add(std::make_unique<CreateWindowWidget>([&_menu](ContainerWindow &parent,
-                                                           const PixelRect &rc,
-                                                           WindowStyle style) {
-    style.TabStop();
-    _menu->Create(parent, rc, style);
-    return std::move(_menu);
-  }));
+    WidgetDialog dialog(WidgetDialog::Full{}, UIGlobals::GetMainWindow(),
+                        look, _("Configuration"));
 
-  menu.InitMenu(main_menu_captions, ARRAY_SIZE(main_menu_captions));
+    pager = new ArrowPagerWidget(look.button,
+                                 [&dialog](){ OnCloseClicked(dialog); },
+                                 std::make_unique<ConfigurationExtraButtons>(look));
 
-  /* restore last selected menu item */
-  menu.SetCursor(current_page);
+    auto _menu = std::make_unique<TabMenuDisplay>(*pager, look);
+    auto &menu = *_menu;
+    pager->Add(std::make_unique<CreateWindowWidget>([&_menu](ContainerWindow &parent,
+                                                             const PixelRect &rc,
+                                                             WindowStyle style) {
+      style.TabStop();
+      _menu->Create(parent, rc, style);
+      return std::move(_menu);
+    }));
 
-  pager->SetPageFlippedCallback([&dialog, &menu](){
-    OnPageFlipped(dialog, menu);
-  });
+    menu.InitMenu(main_menu_captions, ARRAY_SIZE(main_menu_captions));
 
-  dialog.FinishPreliminary(pager);
+    /* restore last selected menu item */
+    menu.SetCursor(current_page);
 
-  /* Esc on a settings panel returns to the menu (same as Back);
-     on the menu itself, leave Esc to cancel the dialog. */
-  dialog.SetKeyDownFunction([&dialog](unsigned key_code) {
-    if (key_code != KEY_ESCAPE || pager->GetCurrentIndex() == 0)
-      return false;
+    pager->SetPageFlippedCallback([&dialog, &menu](){
+      OnPageFlipped(dialog, menu);
+    });
 
-    OnCloseClicked(dialog);
-    return true;
-  });
+    dialog.FinishPreliminary(pager);
 
-  const int result = dialog.ShowModal();
+    /* Esc on a settings panel returns to the menu (same as Back);
+       on the menu itself, leave Esc to cancel the dialog. */
+    dialog.SetKeyDownFunction([&dialog](unsigned key_code) {
+      if (key_code != KEY_ESCAPE || pager->GetCurrentIndex() == 0)
+        return false;
 
-  /* save page number for next time this dialog is opened */
-  current_page = menu.GetCursor();
+      OnCloseClicked(dialog);
+      return true;
+    });
 
-  /* Persist Expert only on OK. Missing UserLevel means beginner —
-     write "1" when enabling Expert; remove the key when returning to
-     beginner (do not leave UserLevel=0 cruft) (#1793). */
-  bool expert_changed = false;
-  if (result == mrOK) {
-    const bool expert = CommonInterface::GetUISettings().dialog.expert;
-    if (expert) {
-      bool profile_expert = false;
-      Profile::Get(ProfileKeys::UserLevel, profile_expert);
-      if (!profile_expert) {
-        Profile::Set(ProfileKeys::UserLevel, true);
+    /* after a reopen, go straight back to the page the pilot was on;
+       page 0 of the pager is the menu (TabMenuDisplay::PAGE_OFFSET) */
+    if (reopen_page) {
+      pager->ClickPage(1 + current_page);
+      /* the dialog is not shown yet, so the caption and the Back
+         button are set here */
+      OnPageFlipped(dialog, menu);
+    }
+
+    current_dialog = &dialog;
+    const int result = dialog.ShowModal();
+    current_dialog = nullptr;
+
+    /* save page number for next time this dialog is opened */
+    current_page = menu.GetCursor();
+
+    /* Persist Expert only on OK. Missing UserLevel means beginner —
+       write "1" when enabling Expert; remove the key when returning to
+       beginner (do not leave UserLevel=0 cruft) (#1793). */
+    if (result == mrOK) {
+      const bool expert = CommonInterface::GetUISettings().dialog.expert;
+      if (expert) {
+        bool profile_expert = false;
+        Profile::Get(ProfileKeys::UserLevel, profile_expert);
+        if (!profile_expert) {
+          Profile::Set(ProfileKeys::UserLevel, true);
+          expert_changed = true;
+        }
+      } else if (Profile::Exists(ProfileKeys::UserLevel)) {
+        Profile::Remove(ProfileKeys::UserLevel);
         expert_changed = true;
       }
-    } else if (Profile::Exists(ProfileKeys::UserLevel)) {
-      Profile::Remove(ProfileKeys::UserLevel);
-      expert_changed = true;
     }
-  }
 
-  if (dialog.GetChanged() || expert_changed) {
+
+    changed |= dialog.GetChanged();
+
+    if (reopen_requested) {
+      /* the pages have written their values to the profile; the texts
+         of a new language are loaded before the dialog is built
+         again, the rest is applied when it is closed for good */
+      if (LanguageChanged) {
+        ReadLanguageFile();
+        InfoBoxManager::InvalidateAfterLanguageChange();
+      }
+
+      reopen_page = true;
+    }
+  } while (reopen_requested);
+
+  if (changed || expert_changed) {
     Profile::Save();
     if (require_restart)
       OfferRestart(_("Changes to configuration saved."));
