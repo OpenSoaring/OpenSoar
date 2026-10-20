@@ -18,6 +18,7 @@
 #include "Formatter/ByteSizeFormatter.hpp"
 #include "Interface.hpp"
 #include "Job/Job.hpp"
+#include "LocalPath.hpp"
 #include "Operation/Operation.hpp"
 #include "UIActions.hpp"
 #include "util/StaticString.hxx"
@@ -36,6 +37,8 @@
 #include "util/StringAPI.hxx"
 
 #include <algorithm>
+#include <climits>
+#include <cstdlib>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -283,7 +286,31 @@ static constexpr const char *data_partition = "/home/root/data";
 struct DataFolder {
   std::string name;
   uint64_t size = 0;
+
+  /** the folder holds the data of this program */
+  bool own = false;
 };
+
+/**
+ * The name of the folder below the data partition that holds the data
+ * of this program: ovmenu-ng.sh starts OpenSoar with
+ * -datapath=data/OpenSoarData.  Empty if the data lie elsewhere.
+ */
+static std::string
+GetOwnDataFolder() noexcept
+{
+  char partition[PATH_MAX], data[PATH_MAX];
+  if (realpath(data_partition, partition) == nullptr ||
+      realpath(GetPrimaryDataPath().c_str(), data) == nullptr)
+    return {};
+
+  const std::string_view p{partition}, d{data};
+  if (!d.starts_with(p) || d.size() <= p.size() || d[p.size()] != '/')
+    return {};
+
+  const auto rest = d.substr(p.size() + 1);
+  return std::string{rest.substr(0, rest.find('/'))};
+}
 
 /**
  * The size of all files below a directory.  Symbolic links are
@@ -365,6 +392,10 @@ public:
                 return a.name < b.name;
               });
 
+    const std::string own = GetOwnDataFolder();
+    for (auto &folder : folders)
+      folder.own = folder.name == own;
+
     for (auto &folder : folders) {
       if (env.IsCancelled())
         return;
@@ -377,8 +408,10 @@ public:
 
 /**
  * Lets the pilot tick the folders of the data partition that the
- * system backup copies besides the settings.  Nothing is ticked at
- * first: maps, images and caches easily come to gigabytes, which take
+ * system backup copies besides the settings.  Only the data folder of
+ * this program is ticked at first, because its profiles, tasks and
+ * flights are what a pilot expects to find in a backup; the others,
+ * with maps, images and caches, easily come to gigabytes, which take
  * hours on the USB stick.
  */
 class DataFolderWidget final : public RowFormWidget {
@@ -411,7 +444,7 @@ public:
       FormatByteSize(size, sizeof(size), folder.size);
       StaticString<256> label;
       label.Format("%s (%s)", folder.name.c_str(), size);
-      AddBoolean(label, nullptr, false);
+      AddBoolean(label, nullptr, folder.own);
     }
   }
 
