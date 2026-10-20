@@ -118,8 +118,11 @@ try {
      directory would only make systemd wait for the device until its
      timeout, while this thread hangs; the journal then shows "Timed
      out waiting for device USB stick".  usb-usbstick.mount of the
-     image mounts this device. */
-  if (access("/dev/sda1", F_OK) != 0)
+     image mounts /dev/usbstick, which a udev rule points to the first
+     partition of the stick, or to the stick itself when it carries its
+     file system without a partition table; images before that rule
+     mount /dev/sda1. */
+  if (access("/dev/usbstick", F_OK) != 0 && access("/dev/sda1", F_OK) != 0)
     return false;
 
   /* looking into the directory makes systemd mount a stick that has
