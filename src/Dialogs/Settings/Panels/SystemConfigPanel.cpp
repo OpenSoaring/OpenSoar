@@ -7,6 +7,7 @@
 #include "Dialogs/Device/DeviceListDialog.hpp"
 #include "DisplayConfigPanel.hpp"
 #include "Form/DataField/Enum.hpp"
+#include "Form/DataField/Listener.hpp"
 #include "Form/Edit.hpp"
 #include "Form/DataField/String.hpp"
 #include "Device/Register.hpp"
@@ -29,7 +30,8 @@
  * the data directory (SystemConfig) and therefore stay behind when
  * the data directory travels to another device.
  */
-class SystemConfigPanel final : public RowFormWidget {
+class SystemConfigPanel final
+  : public RowFormWidget, DataFieldListener {
   enum ControlIndex {
     XCSOAR_BEHAVIOUR,
     DEVICES_IN_PROFILE,
@@ -38,6 +40,15 @@ class SystemConfigPanel final : public RowFormWidget {
     TEST_VERSIONS,
   };
 
+  /**
+   * The "Test versions" switch takes effect at once, so that a download
+   * list opened before the configuration is closed already shows the
+   * test versions; this is its value when the page opened, to tell
+   * whether the system configuration must be written.
+   */
+  bool initial_test_versions = false;
+  bool saved = false;
+
 public:
   SystemConfigPanel() noexcept
     :RowFormWidget(UIGlobals::GetDialogLook()) {}
@@ -45,6 +56,11 @@ public:
   /* virtual methods from class Widget */
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
+  void Unprepare() noexcept override;
+
+private:
+  /* virtual methods from class DataFieldListener */
+  void OnModified(DataField &df) noexcept override;
 };
 
 /**
@@ -151,13 +167,47 @@ SystemConfigPanel::Prepare(ContainerWindow &parent,
              _("Also offer the OpenSoar test versions and OpenVario test "
                "images in the download lists.  They are meant for testers: "
                "a test version may still have errors."),
-             SystemConfig::Get().test_versions);
+             SystemConfig::Get().test_versions, this);
+  initial_test_versions = SystemConfig::Get().test_versions;
+}
+
+void
+SystemConfigPanel::Unprepare() noexcept
+{
+  /* left without saving: the switch goes back to what is stored */
+  if (!saved)
+    SystemConfig::Get().test_versions = initial_test_versions;
+
+  RowFormWidget::Unprepare();
+}
+
+void
+SystemConfigPanel::OnModified(DataField &df) noexcept
+{
+  if (!IsDataField(TEST_VERSIONS, df))
+    return;
+
+  const bool test_versions = GetValueBoolean(TEST_VERSIONS);
+  if (test_versions == SystemConfig::Get().test_versions)
+    return;
+
+  /* the repository list reads the setting whenever it is built; the
+     file itself is written when the configuration is closed */
+  SystemConfig::Get().test_versions = test_versions;
+
+#ifdef HAVE_HTTP
+  /* switched on, the test repository is fetched right away, so the
+     next download list has it; switched off, it is no longer read */
+  if (test_versions)
+    EnqueueRepositoryDownload(true, false, true);
+#endif
 }
 
 bool
 SystemConfigPanel::Save([[maybe_unused]] bool &changed) noexcept
 {
   bool modified = false;
+  saved = true;
 
   if (const bool xcsoar_behaviour = GetValueBoolean(XCSOAR_BEHAVIOUR);
       xcsoar_behaviour != SystemConfig::Get().xcsoar_behaviour) {
@@ -182,17 +232,12 @@ SystemConfigPanel::Save([[maybe_unused]] bool &changed) noexcept
     modified = true;
   }
 
+  /* OnModified() has applied the switch already */
   if (const bool test_versions = GetValueBoolean(TEST_VERSIONS);
-      test_versions != SystemConfig::Get().test_versions) {
+      test_versions != initial_test_versions) {
     SystemConfig::Get().test_versions = test_versions;
+    initial_test_versions = test_versions;
     modified = true;
-
-#ifdef HAVE_HTTP
-    /* switched on, the test repository is fetched right away, so the
-       next download list has it; switched off, it is no longer read */
-    if (test_versions)
-      EnqueueRepositoryDownload(true, false, true);
-#endif
   }
 
   if (modified)
