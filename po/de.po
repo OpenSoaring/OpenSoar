@@ -13503,6 +13503,7 @@ msgid ""
 msgstr ""
 "Die Lufträume nicht füllen und alle Umrisse dünn zeichnen, unabhängig von "
 "ihrer Randbreite."
+
 msgid "Thin lines, fill warnings"
 msgstr "Dünne Linien, Warnungen füllen"
 
@@ -13513,7 +13514,6 @@ msgstr ""
 "Alle Umrisse dünn zeichnen, unabhängig von ihrer Randbreite, und nur die "
 "Lufträume füllen, die eine Warnung auslösen oder in denen sich das "
 "Segelflugzeug befindet."
-
 
 msgid ""
 "The MacCready setting: the climb rate expected in the next thermal.  Setting "

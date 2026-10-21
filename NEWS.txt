@@ -155,6 +155,11 @@ Version 7.47 - not yet released
     (TARGET=PI5 is an alias). The arm64 sysroot defaults to
     /opt/pi64/root
 * input
+  - the Analysis input event takes a page name, e.g. "Analysis
+    barograph", to open that page directly
+  - keys Q (quit) and X (switch off) also outside the OpenVario; the
+    Exit event opens the power dialog with the focus on the button it
+    names ("Exit system", "Exit shutdown", "Exit restart", ...)
   - Quit is the last button of the complete quick menu and also in the
     lists before the flight and after the landing
     its location, an empty location stays an empty cell; the phase
