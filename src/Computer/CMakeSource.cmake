@@ -18,6 +18,7 @@ set(_SOURCES
         Computer/CuComputer.cpp
         Computer/Events.cpp
         Computer/FlyingComputer.cpp
+        Computer/FlarmRangeComputer.cpp
         Computer/GlideComputer.cpp
         Computer/GlideComputerAirData.cpp
         Computer/GlideComputerBlackboard.cpp
