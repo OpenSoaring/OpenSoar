@@ -46,6 +46,55 @@ if (TARGET_IS_OPENVARIO)
   string(APPEND PROJECT_NAME "-OV")
 endif()
 project(${PROJECT_NAME})
+
+# A build directory belongs to the branch it was created for: the build
+# scripts create one per branch and pass its name.  Visual Studio keeps
+# the solution open across a checkout, and a build after the checkout
+# rebuilt only some libraries and linked them with libraries of the other
+# branch.  HEAD of the repository is a configure dependency, so a checkout
+# makes the next build run CMake again, and CMake stops it here before
+# anything is compiled.  XCSOAR_BRANCH_CHECK is off when the build scripts
+# were given a fixed name instead of the checked-out branch.
+if (XCSOAR_BRANCH AND XCSOAR_BRANCH_CHECK)
+  execute_process(
+    COMMAND git rev-parse --git-dir
+    WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+    OUTPUT_VARIABLE _GIT_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE _GIT_RESULT
+    ERROR_QUIET
+  )
+  if (_GIT_RESULT EQUAL 0)
+    get_filename_component(_GIT_DIR "${_GIT_DIR}" ABSOLUTE
+                           BASE_DIR ${PROJECTGROUP_SOURCE_DIR})
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+                 ${_GIT_DIR}/HEAD)
+    execute_process(
+      COMMAND git rev-parse --abbrev-ref HEAD
+      WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+      OUTPUT_VARIABLE _GIT_BRANCH
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET
+    )
+    # the build scripts flatten topic/xyz to topic_xyz the same way
+    string(REPLACE "/" "_" _GIT_BRANCH "${_GIT_BRANCH}")
+    if (_GIT_BRANCH STREQUAL "HEAD")
+      message(FATAL_ERROR
+        "This build directory belongs to the branch '${XCSOAR_BRANCH}', "
+        "but no branch is checked out (detached HEAD).  Check out "
+        "'${XCSOAR_BRANCH}' again, or build the detached state with "
+        "XCSOAR_BRANCH=none in a directory without a branch name.")
+    elseif (NOT _GIT_BRANCH STREQUAL XCSOAR_BRANCH)
+      message(FATAL_ERROR
+        "This build directory belongs to the branch '${XCSOAR_BRANCH}', "
+        "but the checked-out branch is '${_GIT_BRANCH}'.  "
+        "Check out '${XCSOAR_BRANCH}' again, or open the solution "
+        "${APP_NAME}-${_GIT_BRANCH} of that branch; if it does not exist "
+        "yet, create it with build/cmake/Compile-${APP_NAME}.cmd <toolchain> 1.")
+    endif()
+  endif()
+endif()
+
 set(PROGRAM_NAME ${APP_NAME})
 # in test programs PROGRAM_NAME and APP_NAME different:
 set(PROGRAM_NAME_CC ${APP_NAME})              # CamelCase
@@ -688,7 +737,32 @@ endif()
 add_subdirectory(src/lib)
 add_subdirectory(src)   # lib${APP_NAME}!
 
-add_subdirectory(src/Android)  # Android  -> EXCLUDE_FROM_ALL TRUE
+add_subdirectory(src/Android)  # Android: sources for the IDE only
+
+# Every library may include headers that the Data directory generates
+# (MakeResource.hpp through Resources.hpp, the input event tables, ...),
+# but only some of them depended on a target that writes them.  With an
+# empty include folder the others compiled first and failed.  So every
+# target below src/ and test/ waits for GeneratedHeaders, which writes
+# them and nothing else.
+function(_xcsoar_collect_targets _dir _out)
+  get_property(_targets DIRECTORY ${_dir} PROPERTY BUILDSYSTEM_TARGETS)
+  get_property(_subdirs DIRECTORY ${_dir} PROPERTY SUBDIRECTORIES)
+  foreach(_sub ${_subdirs})
+    _xcsoar_collect_targets(${_sub} _sub_targets)
+    list(APPEND _targets ${_sub_targets})
+  endforeach()
+  set(${_out} ${_targets} PARENT_SCOPE)
+endfunction()
+_xcsoar_collect_targets(${PROJECTGROUP_SOURCE_DIR} _ALL_TARGETS)
+foreach(_target ${_ALL_TARGETS})
+  get_target_property(_type ${_target} TYPE)
+  get_target_property(_dir ${_target} SOURCE_DIR)
+  if (_type MATCHES "LIBRARY|EXECUTABLE" AND
+      (_dir MATCHES "^${PROJECTGROUP_SOURCE_DIR}/(src|test)(/|$)"))
+    add_dependencies(${_target} GeneratedHeaders)
+  endif()
+endforeach()
 
 # the upstream main source file is XCSoar.cpp regardless of branding;
 # only the executable NAME follows APP_NAME
