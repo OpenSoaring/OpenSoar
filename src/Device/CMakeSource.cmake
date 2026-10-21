@@ -42,6 +42,7 @@ set(_SOURCES
         Device/Driver/FLARM/Logger.cpp
         Device/Driver/FLARM/Mode.cpp
         Device/Driver/FLARM/Parser.cpp
+        Device/Driver/FLARM/RangeParser.cpp
         # Device/Driver/FLARM/RegisterFLARM.cpp  # [topic/device-misc] not in upstream XCSoar yet
         Device/Driver/FLARM/Register.cpp
         Device/Driver/FLARM/Settings.cpp

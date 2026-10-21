@@ -13,6 +13,7 @@ set(_SOURCES
         FLARM/List.cpp
         FLARM/NameDatabase.cpp
         FLARM/NameFile.cpp
+        FLARM/RangeEstimate.cpp
         FLARM/SpokenAlert.cpp
         FLARM/Traffic.cpp
         FLARM/TrafficDatabases.cpp
