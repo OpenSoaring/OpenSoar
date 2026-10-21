@@ -917,7 +917,9 @@ read from older files have none.  The button \bmenu{Export} copies the log
 book to a USB stick or SD card, into the folder
 \verb|xcsoar_flights| beside the exported flights; an older copy there
 is replaced.  The log book is the file
-\verb|logbook.csv| in the `logs' subdirectory, a table separated by
+\verb|logbook.csv| directly in the XCSoarData directory (older versions
+kept it in the `logs' subdirectory, from where it is moved at the first
+start), a table separated by
 semicolons that a spreadsheet opens directly.  Numbers have a decimal
 comma, as spreadsheets in most European languages expect.  Times in the
 file are UTC.  The file is read by the names in its header, so columns
