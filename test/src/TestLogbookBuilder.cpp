@@ -305,6 +305,17 @@ TestRetire()
 
   File::Delete(old1);
   File::Delete(old2);
+
+  /* into another folder, which is created */
+  const Path folder("TestLogbookBuilder.tmp.dir");
+  Logbook::Write(book, {MakeEntry(10, 15, "a.igc")});
+  const auto retired3 = Logbook::Retire(book, index, folder);
+  ok1(retired3 != nullptr && retired3 == AllocatedPath::Build(folder, old1));
+  ok1(!File::Exists(book));
+  ok1(File::Exists(retired3));
+
+  File::Delete(retired3);
+  Directory::Remove(folder);
 }
 
 static void
@@ -384,7 +395,7 @@ TestUpdateAndMove()
 int
 main()
 {
-  plan_tests(62);
+  plan_tests(65);
 
   TestIsComplete();
   TestRank();
