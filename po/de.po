@@ -13512,7 +13512,6 @@ msgstr ""
 "Lufträume füllen, die eine Warnung auslösen oder in denen sich das "
 "Segelflugzeug befindet."
 
-
 msgid ""
 "The MacCready setting: the climb rate expected in the next thermal.  Setting "
 "it here switches auto MacCready off."
