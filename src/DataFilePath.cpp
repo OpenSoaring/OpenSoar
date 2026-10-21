@@ -206,6 +206,43 @@ LogsDataSavePath(const char *filename) noexcept
   return AllocatedPath::Build(logs_dir, filename);
 }
 
+/**
+ * The files of the log book, which older versions kept in "logs".
+ */
+static constexpr const char *logbook_files[] = {
+  "logbook.csv",
+  "logbook-files.txt",
+};
+
+/**
+ * Move the log book of an older version from "logs" into the data
+ * directory, the first time it is looked for there.  Both files are
+ * moved together: an index without its log book would make the next
+ * update add only the new flights to an empty log book.
+ */
+static void
+MoveLogbookFromLogs() noexcept
+{
+  for (const char *name : logbook_files)
+    if (File::ExistsAny(LocalPath(name)))
+      /* already there (or a new one was started): nothing is
+         replaced */
+      return;
+
+  for (const char *name : logbook_files) {
+    const auto old_path = LogsDataSavePath(name);
+    if (File::Exists(old_path))
+      File::Rename(old_path, LocalPath(name));
+  }
+}
+
+AllocatedPath
+LogbookDataPath(const char *filename) noexcept
+{
+  MoveLogbookFromLogs();
+  return LocalPath(filename);
+}
+
 AllocatedPath
 ResolveLogsDataPath(const char *filename) noexcept
 {

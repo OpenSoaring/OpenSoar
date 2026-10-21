@@ -867,7 +867,7 @@ Update(Path logbook_path, Path index_path,
 }
 
 AllocatedPath
-Retire(Path logbook_path, Path index_path)
+Retire(Path logbook_path, Path index_path, Path folder)
 {
   File::Delete(index_path);
 
@@ -885,7 +885,11 @@ Retire(Path logbook_path, Path index_path)
   if (!date.IsPlausible())
     date = BrokenDateTime::NowUTC();
 
-  const auto dir = logbook_path.GetParent();
+  const auto dir = folder != nullptr
+    ? AllocatedPath{folder}
+    : logbook_path.GetParent();
+  if (folder != nullptr)
+    Directory::CreateRecursive(folder);
   for (unsigned n = 1;; ++n) {
     const auto name = n == 1
       ? fmt::format("logbook-{:04}-{:02}-{:02}.csv",
