@@ -32,10 +32,16 @@ set(TARGET_NAME OpenSoar)
 set(APP_NAME ${TARGET_NAME})
 set(IS_OPENSOAR ON)
 # The solution is named after the application, not after the toolchain -
-# each toolchain builds in its own directory anyway.  An OpenVario test
-# build (-DTARGET_IS_OPENVARIO=ON) says so in the name, so the IDE title
-# bar tells the two solutions apart.
+# each toolchain builds in its own directory anyway.  The build scripts
+# pass the branch (-DXCSOAR_BRANCH=work25) because every branch builds in
+# a directory of its own, and the IDE title bar should tell the solutions
+# of two branches apart just as well.  An OpenVario test build
+# (-DTARGET_IS_OPENVARIO=ON) says so in the name for the same reason.
+# Only the solution changes its name; the program stays APP_NAME.
 set (PROJECT_NAME "${APP_NAME}")
+if (XCSOAR_BRANCH)
+  string(APPEND PROJECT_NAME "-${XCSOAR_BRANCH}")
+endif()
 if (TARGET_IS_OPENVARIO)
   string(APPEND PROJECT_NAME "-OV")
 endif()
