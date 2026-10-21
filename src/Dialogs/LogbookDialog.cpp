@@ -273,7 +273,7 @@ LogbookEntryWidget::Save(bool &_changed) noexcept
 static AllocatedPath
 GetIndexPath() noexcept
 {
-  return LogsDataSavePath("logbook-files.txt");
+  return LogbookDataPath("logbook-files.txt");
 }
 
 /**
@@ -310,7 +310,7 @@ public:
     } analysis_env{env};
 
     try {
-      result = Logbook::Update(LogsDataSavePath("logbook.csv"),
+      result = Logbook::Update(LogbookDataPath("logbook.csv"),
                                GetIndexPath(), files, settings, analysis_env,
                                move);
     } catch (...) {
@@ -415,7 +415,10 @@ RebuildLogbook() noexcept
     return false;
 
   try {
-    Logbook::Retire(LogsDataSavePath("logbook.csv"), GetIndexPath());
+    /* the old log books go into "logs", so the data directory keeps
+       only the current one */
+    Logbook::Retire(LogbookDataPath("logbook.csv"), GetIndexPath(),
+                    LogsDataSavePath("logbook.csv").GetParent());
   } catch (...) {
     ShowError(std::current_exception(), _("Log book"));
     return false;
@@ -473,7 +476,7 @@ class LogbookListWidget final : public ListWidget {
 
 public:
   LogbookListWidget() noexcept
-    :path(LogsDataSavePath("logbook.csv")) {}
+    :path(LogbookDataPath("logbook.csv")) {}
 
   void CreateButtons(WidgetDialog &dialog) noexcept;
 
