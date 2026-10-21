@@ -72,11 +72,6 @@ Version 7.47 - not yet released
     built-in configuration in the order of their names, so each file
     can hold one topic and a later one can override an earlier one;
     an existing single file is taken over
-  - the Analysis input event takes a page name, e.g. "Analysis
-    barograph", to open that page directly
-  - keys Q (quit) and X (switch off) also outside the OpenVario; the
-    Exit event opens the power dialog with the focus on the button it
-    names ("Exit system", "Exit shutdown", "Exit restart", ...)
   - the quick menu style "Dynamic" has a list of its own before the
     flight, in flight and after the landing (modes QuickGround,
     QuickFlight and QuickAfter, built-in lists included); it follows
@@ -101,6 +96,11 @@ Version 7.47 - not yet released
     the focus (dark grey) and only beep, so the cursor keys move
     straight across the field; turning the screen keeps the focus on
     its button
+  - the Analysis input event takes a page name, e.g. "Analysis
+    barograph", to open that page directly
+  - keys Q (quit) and X (switch off) also outside the OpenVario; the
+    Exit event opens the power dialog with the focus on the button it
+    names ("Exit system", "Exit shutdown", "Exit restart", ...)
   - Quit is the last button of the complete quick menu and also in the
     lists before the flight and after the landing
   - the quick menu is clearer: the switches of the map display
