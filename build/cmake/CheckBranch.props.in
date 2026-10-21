@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Written by the top-level CMakeLists.txt into a build directory that
+     belongs to the branch @XCSOAR_BRANCH@.  CMake makes every project
+     import this sheet in place of the user property sheet.  Before a
+     project builds anything, it checks that @XCSOAR_BRANCH@ is still
+     checked out, and fails otherwise; ZERO_CHECK is left out, because
+     there CMake runs again and reports the wrong branch itself. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+          Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  <Target Name="XCSoarCheckBranch"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(MSBuildProjectName)' != 'ZERO_CHECK'">
+    <Exec Command="&quot;@CMAKE_COMMAND@&quot; -DSOURCE_DIR=&quot;@PROJECTGROUP_SOURCE_DIR@&quot; -DBRANCH=@XCSOAR_BRANCH@ -DTARGET=$(MSBuildProjectName) -P &quot;@XCSOAR_CHECK_BRANCH_SCRIPT@&quot;" />
+  </Target>
+</Project>
