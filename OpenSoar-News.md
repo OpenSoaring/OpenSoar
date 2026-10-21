@@ -28,7 +28,7 @@ bookkeeping) lives in the old repository and is not repeated here -
 
 ---
 
-## OpenSoar 7.45.25 - not released yet
+## OpenSoar 7.45.25 - 2026-10-21
 
 Base: XCSoar 7.45.3 of 2026-09-22, that is XCSoar master as of
 2026-08-28 (the 7.45 feature set: OpenGL rendering on all targets,
@@ -93,12 +93,17 @@ already contains the OpenSoar fixes merged upstream in August 2026
     running, the message says why
   - sensor calibration, and backup and restore of the system to a USB
     stick; the backup asks which folders of the data partition to copy
-    besides the settings (none by default, each with its size), always
-    writes a list of all files on the data partition, and shows its
-    progress
-  - Look > Display calibrates the touch screen and keeps the display
-    orientation over a reboot; the SSH server is a switch on
-    Setup > Network
+    besides the settings (each with its size, the data folder of the
+    program ticked), shows the free space on the stick and refuses to
+    start when the folders do not fit, always writes a list of all
+    files on the data partition, and shows its progress
+  - a USB stick without a partition table (formatted as a whole) is
+    found as well
+  - Look > Display turns the display and sets the brightness while the
+    row changes, so a wrong orientation is seen at once (leaving
+    without saving turns it back), calibrates the touch screen and
+    keeps the display orientation over a reboot; the SSH server is a
+    switch on Setup > Network
   - Look > Display > Touch screen tells the program whether a touch
     panel is connected (the OpenVario cannot detect it); without one
     the controls are drawn for keys and the remote stick, and the
@@ -243,8 +248,9 @@ already contains the OpenSoar fixes merged upstream in August 2026
     seconds
   - a Windows serial write that moves no byte (a USB adapter still
     coming up) is retried instead of stopping a debug build
-  - the System page lists the devices in use by their drivers and opens
-    the device list
+  - the System page lists the devices in use by their drivers (the
+    RemoteStick, which has its own slot, is left out) and opens the
+    device list
   - display resolutions "140 dpi (5.7", 640x480 px)" and "180 dpi
     (7.0", 1024x600 px)" for devices such as the SteFlyNav, and a
     display resolution for the device itself in the system settings;
@@ -300,7 +306,11 @@ already contains the OpenSoar fixes merged upstream in August 2026
 * download lists: the file manager offers the packages of the current
   OpenSoar release for this platform (stored in "programs"); with
   System > System > Test versions also the test versions and the
-  OpenVario test images
+  OpenVario test images.  The switch takes effect at once, like a new
+  language, which the configuration shows as soon as it is picked
+* System > Site Files no longer offers the RASP file; it is chosen on
+  the RASP page of the weather settings, which could otherwise be
+  overwritten with the old choice
 * Linux: the installed program shows its translations (it looked for
   xcsoar.mo, but opensoar.mo is installed)
 * fixes: the configuration dialog no longer crashes at the next
@@ -318,7 +328,10 @@ already contains the OpenSoar fixes merged upstream in August 2026
     program's own name; CI builds Android, Kobo, Linux and macOS as
     well; Android debug builds can be attached to by a debugger
   - Windows: native CMake/MSVC build (Visual Studio 2022/2026),
-    OpenGL-only; third-party libraries build automatically
+    OpenGL-only; third-party libraries build automatically; every
+    branch builds in a directory and a solution of its own
+    (OpenSoar-<branch>), and a build in the directory of another branch
+    stops before anything is compiled
   - OpenGL everywhere, also in the make build: TARGET=WIN64 is the
     OpenGL/ANGLE build (upstream's WIN64OPENGL) - the GDI flavor and
     the *OPENGL alias targets are gone.  Without OpenGL there were
