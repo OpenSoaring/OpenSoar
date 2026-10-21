@@ -53,9 +53,11 @@ project(${PROJECT_NAME})
 # rebuilt only some libraries and linked them with libraries of the other
 # branch.  HEAD of the repository is a configure dependency, so a checkout
 # makes the next build run CMake again, and CMake stops it here before
-# anything is compiled.  XCSOAR_BRANCH_CHECK is off when the build scripts
-# were given a fixed name instead of the checked-out branch.
-if (XCSOAR_BRANCH AND XCSOAR_BRANCH_CHECK)
+# anything is compiled.  The build scripts set XCSOAR_BRANCH_CHECK=OFF
+# when they were given a fixed name instead of the checked-out branch.
+# Without the variable the check is on: a directory configured by older
+# scripts only knows XCSOAR_BRANCH, and it has to be protected as well.
+if (XCSOAR_BRANCH AND NOT (DEFINED XCSOAR_BRANCH_CHECK AND NOT XCSOAR_BRANCH_CHECK))
   execute_process(
     COMMAND git rev-parse --git-dir
     WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
