@@ -13423,6 +13423,7 @@ msgid ""
 "Don't fill the airspace area, and draw the outlines one pixel wide."
 msgstr ""
 "Die Lufträume nicht füllen und die Umrisse ein Pixel breit zeichnen."
+
 msgid "Thin lines, fill warnings"
 msgstr "Dünne Linien, Warnungen füllen"
 
@@ -13432,7 +13433,6 @@ msgid ""
 msgstr ""
 "Die Umrisse ein Pixel breit zeichnen und nur die Lufträume füllen, die eine "
 "Warnung auslösen oder in denen sich das Segelflugzeug befindet."
-
 
 msgid ""
 "The MacCready setting: the climb rate expected in the next thermal.  Setting "
