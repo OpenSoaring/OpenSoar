@@ -107,12 +107,15 @@ endif()
 # the place of the user property sheet (and imports that one, so nothing
 # of it is lost).  In the wrong branch each project fails at once, and no
 # file of the other branch gets into this directory.  Makefile and Ninja
-# builds stop with the failed CMake run already.
+# builds stop with the failed CMake run already.  The sheet is assigned to
+# the targets at the end of this file (VS_USER_PROPS is a target property
+# only; there is no variable that sets it for all targets).
+set(_XCSOAR_BRANCH_PROPS)
 if (_XCSOAR_CHECK_BRANCH AND CMAKE_GENERATOR MATCHES "Visual Studio")
   set(XCSOAR_CHECK_BRANCH_SCRIPT ${PROJECTGROUP_SOURCE_DIR}/build/cmake/CheckBranch.cmake)
   configure_file(${PROJECTGROUP_SOURCE_DIR}/build/cmake/CheckBranch.props.in
                  ${PROJECTGROUP_BINARY_DIR}/CheckBranch.props @ONLY)
-  set(CMAKE_VS_USER_PROPS ${PROJECTGROUP_BINARY_DIR}/CheckBranch.props)
+  set(_XCSOAR_BRANCH_PROPS ${PROJECTGROUP_BINARY_DIR}/CheckBranch.props)
 endif()
 
 set(PROGRAM_NAME ${APP_NAME})
@@ -1035,3 +1038,12 @@ foreach(_target ${_ALL_TARGETS})
     add_dependencies(${_target} GeneratedHeaders)
   endif()
 endforeach()
+
+# every Visual Studio project of this build directory checks the branch
+# before it builds (see CheckBranch.props above), the third-party builds
+# included, since they install into the shared link_libs
+if (_XCSOAR_BRANCH_PROPS)
+  foreach(_target ${_ALL_TARGETS})
+    set_property(TARGET ${_target} PROPERTY VS_USER_PROPS ${_XCSOAR_BRANCH_PROPS})
+  endforeach()
+endif()
