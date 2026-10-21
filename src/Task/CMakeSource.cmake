@@ -20,6 +20,14 @@ set(_SOURCES
         Task/XCTrackTaskFile.cpp  # add 7.38
         Task/XCTrackTaskDecoder.cpp  # add 7.38
         Task/PolylineDecoder.cpp  # add 7.38
+        # task exchange by QR code (XCSoar 7.46); without zxing on Windows
+        # the scanner is the stub in QRScanner.cpp, and the QR dialog and
+        # its renderer are not built
+        Task/CupTaskQR.cpp
+        Task/QRScanner.cpp
+        Task/ReceiveTask.cpp
+        Task/XCSoarTaskQR.cpp
+        Task/XCTrackTaskEncoder.cpp
 )
 
 set(SCRIPT_FILES
