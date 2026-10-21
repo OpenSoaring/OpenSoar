@@ -159,7 +159,7 @@ try {
   /* the log book links the flight to WeGlide from now on; a failure
      there does not make the upload fail */
   try {
-    Logbook::SetWeGlideFlightId(LogsDataSavePath("logbook.csv"),
+    Logbook::SetWeGlideFlightId(LogbookDataPath("logbook.csv"),
                                 igc_path.GetBase().c_str(),
                                 flight_data.flight_id);
   } catch (...) {

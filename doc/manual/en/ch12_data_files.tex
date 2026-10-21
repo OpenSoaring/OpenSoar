@@ -307,11 +307,13 @@ lists only the files in `igc'.  These files can be imported into other
 programs for analysis after flight.
 
 The log book (section~\ref{sec:logbook}) is the file \verb|logbook.csv|
-in the `logs' subdirectory: one line per flight, columns separated by
+directly in the XCSoarData directory: one line per flight, columns separated by
 semicolons, times in UTC, distances in kilometres with a decimal
 comma.  Beside it, \verb|logbook-files.txt| lists the recorded files
-already read into the log book, and \verb|logbook-YYYY-MM-DD.csv| are
-log books kept when it was rebuilt.  The older file
+already read into the log book; \verb|logbook-YYYY-MM-DD.csv| in the
+`logs' subdirectory are log books kept when it was rebuilt.  Older
+versions kept the log book and its list in `logs'; the first start of
+this version moves them into the XCSoarData directory.  The older file
 \verb|flights.log| lists only takeoff and landing times.
 
 \section{FLARM Identification}\label{sec:flarm-ident-file}
