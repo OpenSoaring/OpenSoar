@@ -4,14 +4,17 @@ import os, sys, glob, subprocess
 from CMakeSoaringProject import create_xcsoar
 
 # ====================
-# The binary/output directory is FIXED by default
-# (<project_dir>/Binaries/<project>/<toolchain>), so generated IDE
-# project files keep working across branch switches.
+# Every branch builds in a directory of its own,
+# <project_dir>/Binaries/<project>-<branch>/<toolchain>, and its solution
+# carries the same name (OpenSoar-work25).  A shared directory mixed the
+# libraries and the generated headers of two branches after a checkout,
+# and the linker then found the functions of the other branch.
 #
-# To separate output per branch again, set the environment variable
-# XCSOAR_BRANCH - either to a fixed name (XCSOAR_BRANCH=work) or to the
-# special value 'git', which resolves to the currently checked-out
-# branch.
+# The branch is the one checked out.  The environment variable
+# XCSOAR_BRANCH overrides it with a fixed name (XCSOAR_BRANCH=work), and
+# XCSOAR_BRANCH=none builds without a branch name in the old directory
+# <project_dir>/Binaries/<project>.  A detached HEAD has no branch name
+# either and builds there as well.
 def current_git_branch():
     try:
         out = subprocess.check_output(
@@ -21,9 +24,11 @@ def current_git_branch():
     except Exception:
         return ''
 
-branch = os.environ.get('XCSOAR_BRANCH', '')
-if branch == 'git':
+branch = os.environ.get('XCSOAR_BRANCH', '').strip()
+if branch == '' or branch == 'git':
     branch = current_git_branch()
+elif branch.lower() == 'none':
+    branch = ''
 branch = branch.replace('/', '_')  # topic/xyz -> topic_xyz (flat output dir)
 # ====================
 
@@ -90,7 +95,7 @@ for _cfg in sorted(glob.glob('*.config')):
         app_name = _base
         break
 arguments.append(app_name)   # project_name
-arguments.append(branch)        # branch ('' -> fixed dir 'build')
+arguments.append(branch)        # branch ('' -> no branch in the names)
 
 arguments.append(toolchain)     # build-toolchain
 arguments.append(creation_flag)
