@@ -41,24 +41,21 @@ endif()
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/Engine)
 
+# On Android the sources build a library.  Everywhere else the project
+# only brings the Android sources into the IDE, so that they can be read
+# and searched there; they need jni.h and the NDK and cannot be compiled,
+# so a utility target holds them, which "Build Solution" leaves alone.
 if(ANDROID)
-set(_BUILD_CONDITION )
+  add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
+      ${SOURCE_FILES}
+      ${HEADER_FILES}
+      ${SCRIPT_FILES}
+  )
+  target_link_libraries(${TARGET_NAME} PUBLIC io Engine)
 else()
-set(_BUILD_CONDITION EXCLUDE_FROM_ALL )
+  add_custom_target(${TARGET_NAME}
+      SOURCES ${SOURCE_FILES} ${HEADER_FILES} ${SCRIPT_FILES}
+  )
 endif()
-add_library(${TARGET_NAME} ${XCSOAR_LIB_TYPE}
-    ${_BUILD_CONDITION}
-    ${SOURCE_FILES}
-    ${HEADER_FILES}
-    ${SCRIPT_FILES}
-)
 
-target_link_libraries(${TARGET_NAME} PUBLIC io Engine)
-
-# message(FATAL_ERROR "Stop!")
-set_target_properties(${TARGET_NAME} PROPERTIES
-                FOLDER _Main
-                EXCLUDE_FROM_ALL TRUE
-)
-
-# add_dependencies(${TARGET_NAME} _Main)
+set_target_properties(${TARGET_NAME} PROPERTIES FOLDER _Main)
