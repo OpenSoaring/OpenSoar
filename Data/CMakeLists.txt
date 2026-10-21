@@ -304,6 +304,21 @@ set(TEXT_FILES
           ${CMAKE_CURRENT_SOURCE_DIR}/resources.txt 
 )
 
+# The headers that the libraries in src/ include, in a target of their
+# own: every library depends on it (see the top-level CMakeLists.txt), so
+# they exist before the first compilation.  resource_data.h is left out on
+# purpose; only ResourceLoader.cpp in lib${APP_NAME} includes it, which
+# depends on Data anyway, and its command converts all the graphics, which
+# would otherwise hold back every library.
+set(GENERATED_HEADERS
+    ${_INCLUDE_OUTPUT}/ProgramVersion.h
+    ${_INCLUDE_OUTPUT}/MakeResource.hpp
+    ${_INCLUDE_OUTPUT}/ResourceLookup_entries.hpp
+    ${INPUTEVENTS_CPP}
+)
+add_custom_target(GeneratedHeaders DEPENDS ${GENERATED_HEADERS})
+set_target_properties(GeneratedHeaders PROPERTIES FOLDER Data)
+
 # IDE folder 
 source_group("Graphics" FILES  ${GRAPHIC_FILES})
 source_group("TextFiles" FILES  ${TEXT_FILES}) 
@@ -334,6 +349,9 @@ set_target_properties(${TARGET_NAME} PROPERTIES
     #  ENABLE_EXPORTS TRUE
 )
 
-add_dependencies(${TARGET_NAME} po-Files)
+# Data lists the same headers among its sources; building them first in
+# GeneratedHeaders keeps the two targets from running the commands at
+# the same time
+add_dependencies(${TARGET_NAME} po-Files GeneratedHeaders)
 
 # set (RESOURCE_FILES ${RESOURCE_FILES}) 
