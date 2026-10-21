@@ -57,7 +57,9 @@ project(${PROJECT_NAME})
 # when they were given a fixed name instead of the checked-out branch.
 # Without the variable the check is on: a directory configured by older
 # scripts only knows XCSOAR_BRANCH, and it has to be protected as well.
+set(_XCSOAR_CHECK_BRANCH OFF)
 if (XCSOAR_BRANCH AND NOT (DEFINED XCSOAR_BRANCH_CHECK AND NOT XCSOAR_BRANCH_CHECK))
+  set(_XCSOAR_CHECK_BRANCH ON)
   execute_process(
     COMMAND git rev-parse --git-dir
     WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
@@ -95,6 +97,22 @@ if (XCSOAR_BRANCH AND NOT (DEFINED XCSOAR_BRANCH_CHECK AND NOT XCSOAR_BRANCH_CHE
         "yet, create it with build/cmake/Compile-${APP_NAME}.cmd <toolchain> 1.")
     endif()
   endif()
+endif()
+
+# The check above stops CMake when it runs again after a checkout, but
+# Visual Studio goes on to build every project of the solution even
+# though ZERO_CHECK failed ("Attempting to stop IDE build" does not work
+# there any more).  So in Visual Studio every project checks the branch
+# itself before it builds anything, through a property sheet that takes
+# the place of the user property sheet (and imports that one, so nothing
+# of it is lost).  In the wrong branch each project fails at once, and no
+# file of the other branch gets into this directory.  Makefile and Ninja
+# builds stop with the failed CMake run already.
+if (_XCSOAR_CHECK_BRANCH AND CMAKE_GENERATOR MATCHES "Visual Studio")
+  set(XCSOAR_CHECK_BRANCH_SCRIPT ${PROJECTGROUP_SOURCE_DIR}/build/cmake/CheckBranch.cmake)
+  configure_file(${PROJECTGROUP_SOURCE_DIR}/build/cmake/CheckBranch.props.in
+                 ${PROJECTGROUP_BINARY_DIR}/CheckBranch.props @ONLY)
+  set(CMAKE_VS_USER_PROPS ${PROJECTGROUP_BINARY_DIR}/CheckBranch.props)
 endif()
 
 set(PROGRAM_NAME ${APP_NAME})
@@ -741,30 +759,6 @@ add_subdirectory(src)   # lib${APP_NAME}!
 
 add_subdirectory(src/Android)  # Android: sources for the IDE only
 
-# Every library may include headers that the Data directory generates
-# (MakeResource.hpp through Resources.hpp, the input event tables, ...),
-# but only some of them depended on a target that writes them.  With an
-# empty include folder the others compiled first and failed.  So every
-# target below src/ and test/ waits for GeneratedHeaders, which writes
-# them and nothing else.
-function(_xcsoar_collect_targets _dir _out)
-  get_property(_targets DIRECTORY ${_dir} PROPERTY BUILDSYSTEM_TARGETS)
-  get_property(_subdirs DIRECTORY ${_dir} PROPERTY SUBDIRECTORIES)
-  foreach(_sub ${_subdirs})
-    _xcsoar_collect_targets(${_sub} _sub_targets)
-    list(APPEND _targets ${_sub_targets})
-  endforeach()
-  set(${_out} ${_targets} PARENT_SCOPE)
-endfunction()
-_xcsoar_collect_targets(${PROJECTGROUP_SOURCE_DIR} _ALL_TARGETS)
-foreach(_target ${_ALL_TARGETS})
-  get_target_property(_type ${_target} TYPE)
-  get_target_property(_dir ${_target} SOURCE_DIR)
-  if (_type MATCHES "LIBRARY|EXECUTABLE" AND
-      (_dir MATCHES "^${PROJECTGROUP_SOURCE_DIR}/(src|test)(/|$)"))
-    add_dependencies(${_target} GeneratedHeaders)
-  endif()
-endforeach()
 
 # the upstream main source file is XCSoar.cpp regardless of branding;
 # only the executable NAME follows APP_NAME
@@ -1014,3 +1008,30 @@ if (MSVC)
         "${PROJECTGROUP_BINARY_DIR}/${APP_NAME}.vcxproj.user"
     )
 endif()
+
+#==========================================================
+# Every library may include headers that the Data directory generates
+# (MakeResource.hpp through Resources.hpp, the input event tables, ...),
+# but only some of them depended on a target that writes them.  With an
+# empty include folder the others compiled first and failed.  So every
+# target below src/ and test/ waits for GeneratedHeaders, which writes
+# them and nothing else.  This runs at the end of the file, after the
+# executable and the tests in test/src exist.
+function(_xcsoar_collect_targets _dir _out)
+  get_property(_targets DIRECTORY ${_dir} PROPERTY BUILDSYSTEM_TARGETS)
+  get_property(_subdirs DIRECTORY ${_dir} PROPERTY SUBDIRECTORIES)
+  foreach(_sub ${_subdirs})
+    _xcsoar_collect_targets(${_sub} _sub_targets)
+    list(APPEND _targets ${_sub_targets})
+  endforeach()
+  set(${_out} ${_targets} PARENT_SCOPE)
+endfunction()
+_xcsoar_collect_targets(${PROJECTGROUP_SOURCE_DIR} _ALL_TARGETS)
+foreach(_target ${_ALL_TARGETS})
+  get_target_property(_type ${_target} TYPE)
+  get_target_property(_dir ${_target} SOURCE_DIR)
+  if (_type MATCHES "LIBRARY|EXECUTABLE" AND
+      (_dir MATCHES "^${PROJECTGROUP_SOURCE_DIR}/(src|test)(/|$)"))
+    add_dependencies(${_target} GeneratedHeaders)
+  endif()
+endforeach()
