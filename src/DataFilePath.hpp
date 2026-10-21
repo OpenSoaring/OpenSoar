@@ -67,3 +67,12 @@ LogsDataSavePath(const char *filename) noexcept;
 [[gnu::pure]]
 AllocatedPath
 ResolveLogsDataPath(const char *filename) noexcept;
+
+/**
+ * The path of a file of the log book (logbook.csv, logbook-files.txt)
+ * directly in the data directory, where the pilot finds it without
+ * searching.  A log book an older version kept in "logs" is moved
+ * here first, as long as there is none here yet.
+ */
+AllocatedPath
+LogbookDataPath(const char *filename) noexcept;
