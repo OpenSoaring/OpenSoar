@@ -180,6 +180,8 @@ def create_xcsoar(args):
   project_name = args[0]
   branch = args[1]
   toolchain = args[2]
+  # '-work25' in the directory names, nothing without a branch
+  branch_suffix = ('-' + branch) if branch else ''
 
   # A toolchain name may carry a build flavor: "msvc2026-OV" builds the
   # same toolchain with the OpenVario menus, into its own directory and
@@ -264,11 +266,14 @@ def create_xcsoar(args):
     program_dir = (os.environ.get('XCSOAR_PROGRAM_DIR')
                    or 'C:/Programs').replace('\\', '/')
     src_dir = start_dir
-    binary_dir = project_dir + '/Binaries/' + project_name
+    # one directory per branch (see Start-CMake-SoaringProject.py), and
+    # the same name for the install directory, so that installing one
+    # branch does not overwrite the program of the other
+    binary_dir = project_dir + '/Binaries/' + project_name + branch_suffix
     build_dir = binary_dir + '/' + toolchain_flavor
     link_libs = os.environ.get('XCSOAR_LINK_LIBS') or (project_dir + '/link_libs')
     third_party = os.environ.get('XCSOAR_THIRD_PARTY') or (project_dir + '/Libs')
-    install_dir = program_dir + '/Install/' + project_name
+    install_dir = program_dir + '/Install/' + project_name + branch_suffix
   else:
     src_dir = start_dir
     root_dir = my_env['HOME']
@@ -387,6 +392,10 @@ def create_xcsoar(args):
         arguments.append('-DCMAKE_TOOLCHAIN_FILE:PATH=' + src_dir.replace('\\','/') + '/build/cmake/toolchains/LinuxGCC.toolchain')
 
     arguments.append('-DTOOLCHAIN=' + toolchain)
+    # names the solution after the branch as well (OpenSoar-work25); an
+    # empty value is passed too, so that a directory configured before
+    # with a branch name does not keep it in its cache
+    arguments.append('-DXCSOAR_BRANCH=' + branch)
     if openvario:
       arguments.append('-DTARGET_IS_OPENVARIO=ON')
     if toolchain.startswith('msvc'):
@@ -511,7 +520,7 @@ def create_xcsoar(args):
   # end-of-run summary: repeat the key facts from the header so they
   # are visible without scrolling all the way up
   print('\n====================================')
-  print('Project  :', project_name, '/', toolchain, '/', BuildConfig)
+  print('Project  :', project_name + branch_suffix, '/', toolchain, '/', BuildConfig)
   if git_line:
     print('Git      :', git_line)
   if(not creation):
