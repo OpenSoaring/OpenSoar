@@ -28,6 +28,20 @@ bookkeeping) lives in the old repository and is not repeated here -
 
 ---
 
+## OpenSoar 7.45.25.1 - not released yet
+
+A bugfix release on the base of 7.45.25, for pilots who stay on the
+7.45 line.
+
+* log book: `logbook.csv` and its index `logbook-files.txt` are kept
+  directly in the data directory instead of between the NMEA logs in
+  "logs"; a log book of 7.45.25 is moved over the first time it is
+  needed, so a later update to 7.46 or a way back finds the same file
+* fixes: on Android, the USB serial library is back at the state of
+  XCSoar 7.45.3 - 7.45.25 had fallen back to an older state without
+  the shorter latency timer for FTDI adapters, which belongs to
+  XCSoar's fix for unreliable FLARM IGC downloads over a USB cable
+
 ## OpenSoar 7.45.25 - 2026-10-21
 
 Base: XCSoar 7.45.3 of 2026-09-22, that is XCSoar master as of
