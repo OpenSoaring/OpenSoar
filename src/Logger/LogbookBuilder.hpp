@@ -305,11 +305,14 @@ Update(Path logbook_path, Path index_path,
  * after its last flight (a number is added if that exists), and
  * delete the index, so all files are read again.
  *
+ * @param folder the folder the old log book goes into; nullptr keeps
+ * it beside the current one
+ *
  * @return the new name of the old log book, nullptr if there was none
  *
  * Throws on error.
  */
 AllocatedPath
-Retire(Path logbook_path, Path index_path);
+Retire(Path logbook_path, Path index_path, Path folder = nullptr);
 
 } // namespace Logbook

@@ -854,7 +854,7 @@ Startup(UI::Display &display)
     /* the log book with all details of each flight, beside the
        plain list of flights.log */
     backend_components->logbook = std::make_unique<GlueLogbook>(
-      live_blackboard, LogsDataSavePath("logbook.csv"),
+      live_blackboard, LogbookDataPath("logbook.csv"),
       data_components->waypoints.get(),
       backend_components->igc_logger.get());
   }
