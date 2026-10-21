@@ -15,6 +15,8 @@ set(_SOURCES
         Dialogs/Device/DeviceListDialog.cpp
         Dialogs/Device/FLARM/ConfigWidget.cpp
         Dialogs/Device/FLARM/RangeConfigWidget.cpp
+        Dialogs/Device/FLARM/RangePlot.cpp
+        Dialogs/Device/FLARM/RangeStatisticsDialog.cpp
         Dialogs/Device/LX/ManageLX16xxDialog.cpp
         Dialogs/Device/LX/ManageNanoDialog.cpp
         Dialogs/Device/LX/ManageLXNAVVarioDialog.cpp
@@ -143,6 +145,7 @@ set(_SOURCES
         Dialogs/Task/Manager/TaskMiscPanel.cpp
         Dialogs/Task/Manager/TaskPropertiesPanel.cpp
         Dialogs/Task/Manager/WeGlideTasksPanel.cpp  # 7.36
+        Dialogs/Task/Manager/WeGlidePanel.cpp
         Dialogs/Task/MutateTaskPointDialog.cpp
         Dialogs/Task/OptionalStartsDialog.cpp
         Dialogs/Task/TargetDialog.cpp
