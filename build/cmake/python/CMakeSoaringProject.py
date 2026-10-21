@@ -396,6 +396,10 @@ def create_xcsoar(args):
     # empty value is passed too, so that a directory configured before
     # with a branch name does not keep it in its cache
     arguments.append('-DXCSOAR_BRANCH=' + branch)
+    # CMake checks that the checked-out branch still matches - but only
+    # when the name came from git; a fixed XCSOAR_BRANCH is a choice
+    from_git = os.environ.get('XCSOAR_BRANCH', '').strip() in ('', 'git')
+    arguments.append('-DXCSOAR_BRANCH_CHECK=' + ('ON' if from_git and branch else 'OFF'))
     if openvario:
       arguments.append('-DTARGET_IS_OPENVARIO=ON')
     if toolchain.startswith('msvc'):
