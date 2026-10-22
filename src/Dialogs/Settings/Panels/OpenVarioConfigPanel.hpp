@@ -12,7 +12,9 @@ class Widget;
  * boot (with the versions installed), the image the device runs with
  * the firmware upgrade behind it, the services sensord and variod as
  * switches, the sensor calibration and the system backup and restore.
- * On another Linux it shows the services only, if they are installed.
+ * Only OpenVario builds (IS_OPENVARIO) have the page.  Without the
+ * image, on a PC with Linux or Windows, it shows the same rows, and
+ * their functions say that they are not available.
  */
 std::unique_ptr<Widget>
 CreateOpenVarioConfigPanel() noexcept;
