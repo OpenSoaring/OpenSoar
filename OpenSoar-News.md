@@ -41,6 +41,8 @@ A bugfix release on the base of 7.45.25, for pilots who stay on the
   XCSoar 7.45.3 - 7.45.25 had fallen back to an older state without
   the shorter latency timer for FTDI adapters, which belongs to
   XCSoar's fix for unreliable FLARM IGC downloads over a USB cable
+* fixes: the start screen shows the version only; a build without a
+  release tag had the commit id appended there, which did not fit
 
 ## OpenSoar 7.45.25 - 2026-10-21
 

@@ -142,13 +142,18 @@ endif
 
 # The title graphics carry @PROGRAM_NAME@ / @PROGRAM_VERSION@ tokens
 # (shared with the CMake build, which substitutes them the same way):
-# substitute product name and full version before rendering, so the
-# start screen always shows the real brand and version.
+# substitute product name and version before rendering, so the start
+# screen always shows the real brand and version.  It is VERSION and
+# not FULL_VERSION, because the title has room for the version only and
+# the CMake build puts the plain version there as well; the commit id
+# of an unreleased build stays in the version text of the program
+# (Version.cpp) and in the Windows file version.  The rule depends on
+# this file, so a change of the substitution reaches existing builds.
 BRAND_SVG_DIR = $(DATA)/graphics_brand
-$(BRAND_SVG_DIR)/%.svg: Data/graphics/%.svg $(BRAND_CONFIG) | $(BRAND_SVG_DIR)/dirstamp
+$(BRAND_SVG_DIR)/%.svg: Data/graphics/%.svg $(BRAND_CONFIG) build/resource.mk | $(BRAND_SVG_DIR)/dirstamp
 	@$(NQ)echo "  BRAND   $@"
 	$(Q)sed -e 's/@PROGRAM_NAME@/$(PRODUCT_NAME)/g' \
-		-e 's|@PROGRAM_VERSION@|$(FULL_VERSION)|g' $< > $@
+		-e 's|@PROGRAM_VERSION@|$(VERSION)|g' $< > $@
 
 SVG_TITLE = Data/graphics/title.svg Data/graphics/title_red.svg
 PNG_TITLE_110 = $(patsubst Data/graphics/%.svg,$(DATA)/graphics/%_110.png,$(SVG_TITLE))
