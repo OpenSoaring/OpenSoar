@@ -95,11 +95,13 @@
 #include "Dialogs/DataManagement/DataManagement.hpp"
 #include "Dialogs/FileManager.hpp"
 
-#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
+#ifdef IS_OPENVARIO
 #include "Panels/OpenVarioConfigPanel.hpp"
-#ifdef USE_POLL_EVENT
-#include "Panels/SystemToolsPanel.hpp"
 #endif
+
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO) && \
+  defined(USE_POLL_EVENT)
+#include "Panels/SystemToolsPanel.hpp"
 #endif
 
 #include <algorithm>
@@ -121,9 +123,10 @@ static constexpr TabMenuPage system_pages[] = {
   { NC_("Setting", "System"), CreateSystemConfigPanel },
   { NC_("Menu", "Data Management"), CreateDataManagementPanel },
   { N_("File Manager"), CreateFileManagerPanel },
-#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
-  /* the system functions of the OpenVario image; on another Linux the
-     page shows what is there (the services, the program choice) */
+#ifdef IS_OPENVARIO
+  /* the system functions of the OpenVario image; an OpenVario build
+     shows the page on every system, so that it can be tried on a PC,
+     where the functions say that they are not available */
   { "OpenVario", CreateOpenVarioConfigPanel },
 #endif
   { nullptr, nullptr }

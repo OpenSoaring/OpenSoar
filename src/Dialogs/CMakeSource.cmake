@@ -191,6 +191,14 @@ if(HAVE_SKYSIGHT)
   )
 endif(HAVE_SKYSIGHT)
 
+if(TARGET_IS_OPENVARIO)
+  # System > OpenVario: an OpenVario test build shows the page on
+  # Windows as well, where its functions say they are not available
+  list(APPEND _SOURCES
+        Dialogs/Settings/Panels/OpenVarioConfigPanel.cpp
+  )
+endif()
+
 if(IS_OPENSOAR)
   list(APPEND _SOURCES
         # Dialogs/Settings/Panels/ConfigurationConfigPanel.cpp  # [topic/misc] not in upstream XCSoar yet
