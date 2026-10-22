@@ -52,6 +52,30 @@
 #define HAVE_DISPLAY_BRIGHTNESS_CONTROL
 #endif
 
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
+#define HAVE_OPENVARIO_SYSTEM
+#endif
+
+#ifdef IS_OPENVARIO
+#include "Dialogs/Message.hpp"
+#endif
+
+/**
+ * Can the orientation be chosen?  An OpenVario build offers it on
+ * every system, so that its settings can be tried on a PC; where the
+ * display cannot turn, the choice is only stored.
+ */
+[[gnu::pure]]
+static bool
+HasOrientationSetting() noexcept
+{
+#ifdef IS_OPENVARIO
+  return true;
+#else
+  return Display::RotateSupported();
+#endif
+}
+
 enum ControlIndex {
   AppDisplayType,
   CustomDPI,
@@ -357,7 +381,7 @@ private:
 void
 DisplayConfigPanel::OnModified(DataField &df) noexcept
 {
-  if (Display::RotateSupported() && IsDataField(Orientation, df)) {
+  if (HasOrientationSetting() && IsDataField(Orientation, df)) {
     ApplyDisplayOrientation((DisplayOrientation)GetValueEnum(Orientation));
     return;
   }
@@ -417,7 +441,7 @@ DisplayConfigPanel::Prepare(ContainerWindow &parent,
   wp_dpi->RefreshDisplay();
   SetExpertRow(CustomDPI);
 
-  if (Display::RotateSupported())
+  if (HasOrientationSetting())
     AddEnum(_("Display orientation"),
             _("Rotate the display on devices that support it."),
             display_orientation_list,
@@ -474,12 +498,13 @@ DisplayConfigPanel::Prepare(ContainerWindow &parent,
              ui_settings.display.invert_cursor_colors);
 #endif
 
-#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
+#ifdef IS_OPENVARIO
   /* the touch screen of an OpenVario is calibrated by a script of the
      image; the button sits here because the calibration belongs to
      the screen, and it is the last row so that the indices above do
-     not depend on it */
-  if (IsOpenVario()) {
+     not depend on it.  An OpenVario build shows both on every
+     system, so that they can be tried on a PC. */
+  {
     touch_screen =
       AddBoolean(_("Touch screen"),
                  _("Is a touch panel connected?  The OpenVario cannot find "
@@ -489,8 +514,17 @@ DisplayConfigPanel::Prepare(ContainerWindow &parent,
                  SystemConfig::Get().touch_screen, this);
 
     calibrate_touch = AddButton(_("Calibrate touch screen"), []{
-      CalibrateTouch(UIGlobals::GetMainWindow().GetDisplay(),
-                     *UI::event_queue);
+#ifdef HAVE_OPENVARIO_SYSTEM
+      if (IsOpenVario()) {
+        CalibrateTouch(UIGlobals::GetMainWindow().GetDisplay(),
+                       *UI::event_queue);
+        return;
+      }
+#endif
+      ShowMessageBox(_("This function is not available on your platform "
+                       "yet."),
+                     _("Calibrate touch screen"),
+                     MB_OK | MB_ICONINFORMATION);
     });
     UpdateCalibrateTouch();
   }
@@ -503,12 +537,16 @@ DisplayConfigPanel::UpdateCalibrateTouch() noexcept
   if (touch_screen == nullptr || calibrate_touch == nullptr)
     return;
 
-#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
-  /* only with a panel, and without a touch input device the script
-     could only fail */
+  /* only with a panel, and on the OpenVario without a touch input
+     device the script could only fail; elsewhere the button says that
+     it is not available */
   const auto &df = (const DataFieldBoolean &)*touch_screen->GetDataField();
-  calibrate_touch->SetEnabled(df.GetValue() && HasTouchScreenDevice());
+  bool enabled = df.GetValue();
+#ifdef HAVE_OPENVARIO_SYSTEM
+  if (IsOpenVario())
+    enabled = enabled && HasTouchScreenDevice();
 #endif
+  calibrate_touch->SetEnabled(enabled);
 }
 
 void
@@ -516,7 +554,7 @@ DisplayConfigPanel::Unprepare() noexcept
 {
   if (!saved) {
     /* left without saving: undo what OnModified() did */
-    if (Display::RotateSupported() &&
+    if (HasOrientationSetting() &&
         GetValueEnum(Orientation) != unsigned(initial_orientation))
       ApplyDisplayOrientation(initial_orientation);
 
@@ -551,7 +589,7 @@ DisplayConfigPanel::Save(bool &_changed) noexcept
                     ui_settings.custom_dpi))
     require_restart = changed = true;
 
-  if (Display::RotateSupported() &&
+  if (HasOrientationSetting() &&
       SaveValueEnum(Orientation, ProfileKeys::MapOrientation,
                     ui_settings.display.orientation)) {
     changed = true;

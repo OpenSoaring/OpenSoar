@@ -2,40 +2,55 @@
 // Copyright The XCSoar Project
 
 #include "OpenVarioConfigPanel.hpp"
-#include "Dialogs/SystemdService.hpp"
 #include "Form/DataField/Boolean.hpp"
 #include "Form/DataField/Listener.hpp"
 #include "Form/Edit.hpp"
 #include "io/FileLineReader.hpp"
 #include "util/StringCompare.hxx"
 #include "Dialogs/Error.hpp"
-#include "Dialogs/JobDialog.hpp"
 #include "Dialogs/Message.hpp"
-#include "Dialogs/ProcessDialog.hpp"
-#include "Dialogs/WidgetDialog.hpp"
 #include "Form/DataField/Enum.hpp"
+#include "Interface.hpp"
+#include "util/StaticString.hxx"
+#include "Language/Language.hpp"
+#include "UIGlobals.hpp"
+#include "Version.hpp"
+#include "Widget/RowFormWidget.hpp"
+#include "util/StringAPI.hxx"
+
+/* The functions behind this page belong to the Linux of the OpenVario
+   image.  An OpenVario build for another system, above all a test
+   build on Windows, shows the same rows, so that the page can be
+   tried there; a row then does nothing or says that its function is
+   not available. */
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(KOBO)
+#define HAVE_OPENVARIO_SYSTEM
+#endif
+
+#ifdef HAVE_OPENVARIO_SYSTEM
+#include "Dialogs/JobDialog.hpp"
+#include "Dialogs/ProcessDialog.hpp"
+#include "Dialogs/SystemdService.hpp"
+#include "Dialogs/WidgetDialog.hpp"
 #include "Form/Form.hpp"
 #include "Formatter/ByteSizeFormatter.hpp"
 #include "Hardware/SystemPower.hpp"
-#include "Interface.hpp"
 #include "Job/Job.hpp"
 #include "LocalPath.hpp"
 #include "Operation/Operation.hpp"
-#include "UIActions.hpp"
-#include "util/StaticString.hxx"
-#include "Language/Language.hpp"
 #include "OpenVario/Calibrate.hpp"
 #include "OpenVario/FirmwareImage.hpp"
 #include "OpenVario/FirmwareImagePicker.hpp"
 #include "OpenVario/System.hpp"
 #include "Profile/Profile.hpp"
-#include "Profile/ProfileMap.hpp"
-#include "UIGlobals.hpp"
-#include "Version.hpp"
-#include "Widget/RowFormWidget.hpp"
+#include "UIActions.hpp"
 #include "system/Process.hpp"
 #include "ui/window/SingleWindow.hpp"
-#include "util/StringAPI.hxx"
+
+#include <dirent.h>
+#include <sys/statvfs.h>
+#include <sys/stat.h>
+#endif
 
 #include <algorithm>
 #include <climits>
@@ -45,10 +60,6 @@
 #include <string>
 #include <string_view>
 #include <vector>
-
-#include <dirent.h>
-#include <sys/statvfs.h>
-#include <sys/stat.h>
 
 /**
  * The values of "main_app" which ovmenu-ng.sh knows.  The enum ids
@@ -90,7 +101,9 @@ class OpenVarioConfigPanel final
 
   unsigned main_app;
 
+#ifdef HAVE_OPENVARIO_SYSTEM
   std::optional<SystemdService> sensord, variod;
+#endif
 
 public:
   OpenVarioConfigPanel() noexcept
@@ -101,8 +114,14 @@ public:
   bool Save(bool &changed) noexcept override;
 
 private:
+#ifdef HAVE_OPENVARIO_SYSTEM
   void AddService(int &row, std::optional<SystemdService> &service,
-                  const char *id) noexcept;
+                  const char *id, const char *display_name,
+                  const char *description) noexcept;
+#else
+  void AddService(int &row, const char *display_name,
+                  const char *description) noexcept;
+#endif
 
   /* virtual methods from class DataFieldListener */
   void OnModified(DataField &df) noexcept override;
@@ -138,6 +157,7 @@ RunningApp() noexcept
  */
 static unsigned
 LoadMainApp() noexcept
+#ifdef HAVE_OPENVARIO_SYSTEM
 try {
   const std::string value = OpenvarioGetMainApp();
   for (unsigned i = 0; i < std::size(main_app_values); ++i)
@@ -148,6 +168,39 @@ try {
 } catch (...) {
   return RunningApp();
 }
+#else
+{
+  return RunningApp();
+}
+#endif
+
+/**
+ * Tell the pilot that the function behind a row needs the OpenVario
+ * image, on a test build on another system or on a PC with Linux.
+ */
+static void
+ShowNotAvailable(const char *caption) noexcept
+{
+  ShowMessageBox(_("This function is not available on your platform yet."),
+                 caption, MB_OK | MB_ICONINFORMATION);
+}
+
+/**
+ * Is the OpenVario image there, with the scripts and files the rows
+ * work with?  Elsewhere they only say that they are not available.
+ */
+[[gnu::pure]]
+static bool
+HasOpenVarioImage() noexcept
+{
+#ifdef HAVE_OPENVARIO_SYSTEM
+  return IsOpenVario();
+#else
+  return false;
+#endif
+}
+
+#ifdef HAVE_OPENVARIO_SYSTEM
 
 static bool
 CheckNotFlying(const char *caption) noexcept
@@ -160,6 +213,9 @@ CheckNotFlying(const char *caption) noexcept
   return false;
 }
 
+#endif
+
+#ifdef HAVE_OPENVARIO_SYSTEM
 /**
  * The exit code that asks ovmenu-ng.sh for a firmware upgrade
  * (START_UPGRADE of ExitValues.hpp, which defines it on the OpenVario
@@ -204,6 +260,11 @@ EditFirmware([[maybe_unused]] const char *caption,
              [[maybe_unused]] DataField &df,
              [[maybe_unused]] const char *help_text) noexcept
 {
+  if (!HasOpenVarioImage()) {
+    ShowNotAvailable(_("Upgrade firmware"));
+    return false;
+  }
+
   if (!CheckNotFlying(_("Upgrade firmware")))
     return false;
 
@@ -511,6 +572,11 @@ CheckUsbStick(const char *caption) noexcept
 static void
 BackupSystem() noexcept
 {
+  if (!HasOpenVarioImage()) {
+    ShowNotAvailable(_("System backup"));
+    return;
+  }
+
   if (!CheckNotFlying(_("System backup")) ||
       !CheckUsbStick(_("System backup")))
     return;
@@ -536,6 +602,11 @@ BackupSystem() noexcept
 static void
 RestoreSystem() noexcept
 {
+  if (!HasOpenVarioImage()) {
+    ShowNotAvailable(_("System restore"));
+    return;
+  }
+
   if (!CheckNotFlying(_("System restore")) ||
       !CheckUsbStick(_("System restore")))
     return;
@@ -558,6 +629,37 @@ RestoreSystem() noexcept
                      "settings."),
                    _("System restore"), MB_OK | MB_ICONINFORMATION);
 }
+
+#else
+
+static bool
+EditFirmware([[maybe_unused]] const char *caption,
+             [[maybe_unused]] DataField &df,
+             [[maybe_unused]] const char *help_text) noexcept
+{
+  ShowNotAvailable(_("Upgrade firmware"));
+  return false;
+}
+
+static void
+CalibrateSensors() noexcept
+{
+  ShowNotAvailable(_("Calibrate sensors"));
+}
+
+static void
+BackupSystem() noexcept
+{
+  ShowNotAvailable(_("System backup"));
+}
+
+static void
+RestoreSystem() noexcept
+{
+  ShowNotAvailable(_("System restore"));
+}
+
+#endif
 
 /**
  * The version of an installed package from the opkg status file, the
@@ -624,19 +726,37 @@ MainAppLabel(unsigned i) noexcept
   return label;
 }
 
+#ifdef HAVE_OPENVARIO_SYSTEM
+
 void
 OpenVarioConfigPanel::AddService(int &row,
                                  std::optional<SystemdService> &service,
-                                 const char *id) noexcept
+                                 const char *id, const char *display_name,
+                                 const char *description) noexcept
 {
   service = FindSystemdService(id);
-  if (!service)
-    return;
 
   row = GetRowCount();
-  AddBoolean(service->display_name, service->description,
-             IsSystemdServiceActive(*service), this);
+  if (service)
+    AddBoolean(service->display_name, service->description,
+               IsSystemdServiceActive(*service), this);
+  else
+    /* not installed: the switch is still there, so the page looks the
+       same everywhere, and says so when it is used */
+    AddBoolean(display_name, description, false, this);
 }
+
+#else
+
+void
+OpenVarioConfigPanel::AddService(int &row, const char *display_name,
+                                 const char *description) noexcept
+{
+  row = GetRowCount();
+  AddBoolean(display_name, description, false, this);
+}
+
+#endif
 
 void
 OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
@@ -644,46 +764,54 @@ OpenVarioConfigPanel::Prepare(ContainerWindow &parent,
 {
   RowFormWidget::Prepare(parent, rc);
 
-  const bool is_openvario = IsOpenVario();
+  /* the program the image starts, each with the version installed */
+  main_app = LoadMainApp();
+  main_app_row = GetRowCount();
+  WndProperty *wp =
+    AddEnum(_("Start after boot"),
+            _("The program the OpenVario starts when it is switched on.  "
+              "The change takes effect with the next start of the "
+              "device."));
+  auto &df = *(DataFieldEnum *)wp->GetDataField();
+  for (unsigned i = 0; i < std::size(main_app_values); ++i)
+    df.AddChoice(i, MainAppLabel(i).c_str());
+  df.SetValue(main_app);
+  wp->RefreshDisplay();
 
-  if (is_openvario) {
-    /* the program the image starts, each with the version installed */
-    main_app = LoadMainApp();
-    main_app_row = GetRowCount();
-    WndProperty *wp =
-      AddEnum(_("Start after boot"),
-              _("The program the OpenVario starts when it is switched on.  "
-                "The change takes effect with the next start of the "
-                "device."));
-    auto &df = *(DataFieldEnum *)wp->GetDataField();
-    for (unsigned i = 0; i < std::size(main_app_values); ++i)
-      df.AddChoice(i, MainAppLabel(i).c_str());
-    df.SetValue(main_app);
-    wp->RefreshDisplay();
-
-    /* a click on the image name starts the upgrade */
-    const std::string image = OpenvarioGetImageName();
-    AddText(_("Firmware"),
-            _("The OpenVario image this device is running.  Click to "
-              "choose or download another image and upgrade to it: the "
-              "program quits and the upgrade starts."),
-            image.empty() ? _("Unknown") : image.c_str())
-      ->SetEditCallback(EditFirmware);
-  }
+  /* a click on the image name starts the upgrade */
+#ifdef HAVE_OPENVARIO_SYSTEM
+  const std::string image = OpenvarioGetImageName();
+#else
+  const std::string image;
+#endif
+  AddText(_("Firmware"),
+          _("The OpenVario image this device is running.  Click to "
+            "choose or download another image and upgrade to it: the "
+            "program quits and the upgrade starts."),
+          image.empty() ? _("Unknown") : image.c_str())
+    ->SetEditCallback(EditFirmware);
 
   /* switching a service on starts it (again) and keeps it on after
      the next boot; switching it off stops it for good */
-  AddService(sensord_row, sensord, "sensord");
-  AddService(variod_row, variod, "variod");
+#ifdef HAVE_OPENVARIO_SYSTEM
+  AddService(sensord_row, sensord, "sensord",
+             _("Sensors"), _("OpenVario sensor daemon"));
+  AddService(variod_row, variod, "variod",
+             _("Audio vario"), _("OpenVario audio vario daemon"));
+#else
+  AddService(sensord_row, _("Sensors"), _("OpenVario sensor daemon"));
+  AddService(variod_row, _("Audio vario"), _("OpenVario audio vario daemon"));
+#endif
 
-  if (is_openvario) {
-    AddButton(_("Calibrate sensors"), CalibrateSensors);
+  AddButton(_("Calibrate sensors"), []{
+    if (HasOpenVarioImage())
+      CalibrateSensors();
+    else
+      ShowNotAvailable(_("Calibrate sensors"));
+  });
 
-    AddButton(_("Back up the system to USB"), BackupSystem);
-    AddButton(_("Restore the system from USB"), RestoreSystem);
-  } else if (!sensord && !variod) {
-    AddMultiLine(_("This device is not an OpenVario."));
-  }
+  AddButton(_("Back up the system to USB"), BackupSystem);
+  AddButton(_("Restore the system from USB"), RestoreSystem);
 }
 
 void
@@ -691,10 +819,14 @@ OpenVarioConfigPanel::OnModified(DataField &df) noexcept
 {
   const auto on = ((const DataFieldBoolean &)df).GetValue();
 
+#ifdef HAVE_OPENVARIO_SYSTEM
   for (auto [row, service] : {std::pair{sensord_row, &sensord},
                               std::pair{variod_row, &variod}}) {
     if (row < 0 || !IsDataField(row, df))
       continue;
+
+    if (!*service)
+      break;
 
     /* the field shows what actually runs afterwards, also if the
        switch failed */
@@ -703,12 +835,31 @@ OpenVarioConfigPanel::OnModified(DataField &df) noexcept
       LoadValue(row, running);
     return;
   }
+#endif
+
+  /* a service that is not installed here stays off */
+  for (int row : {sensord_row, variod_row}) {
+    if (row < 0 || !IsDataField(row, df))
+      continue;
+
+    if (on) {
+      ShowNotAvailable(GetControl(row).GetCaption());
+      LoadValue(row, false);
+    }
+    return;
+  }
 }
 
 bool
-OpenVarioConfigPanel::Save(bool &_changed) noexcept
+OpenVarioConfigPanel::Save([[maybe_unused]] bool &_changed) noexcept
 {
   if (main_app_row >= 0 && SaveValueEnum(main_app_row, main_app)) {
+    /* without the image there is no file to keep the choice in; the
+       row has done its part by showing the programs */
+    if (!HasOpenVarioImage())
+      return true;
+
+#ifdef HAVE_OPENVARIO_SYSTEM
     try {
       OpenvarioSetMainApp(main_app_values[main_app]);
     } catch (...) {
@@ -717,6 +868,7 @@ OpenVarioConfigPanel::Save(bool &_changed) noexcept
     }
 
     _changed = true;
+#endif
   }
 
   return true;
