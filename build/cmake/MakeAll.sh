@@ -4,9 +4,13 @@
 # MakeComplete.sh, but works alone.
 #
 #   COMPLETE=y             rebuild from scratch (default; n keeps objects)
-#   ANDROID_ARM64_ONLY=y   only the 64 bit Android package
-#   ANDROID_ONLY=y         only the Android packages
-#   TARGETS="..."          only these of ANDROID PC WIN64 UNIX KOBO
+#   ANDROID_ARM64_ONLY=y   only the arm64 Android package (TARGETS=ANDROID64)
+#   ANDROID_ONLY=y         only the Android packages of a full run
+#                          (TARGETS="ANDROID ANDROID64")
+#   TARGETS="..."          only these of ANDROID ANDROID64 ANDROID32
+#                          ANDROID-X64 ANDROID-X86 PC WIN64 UNIX KOBO;
+#                          ANDROID is the package with all four ABIs, the
+#                          other ANDROID* targets one ABI each
 #   JOBS=N                 parallel make jobs (default: number of CPUs)
 #   PROGRAM_VERSION=x.y.z  version in the copied file names
 #
@@ -15,15 +19,19 @@
 # Every package that is meant for the web page is also copied, under a
 # name with the version, into output/publish/<version>/<platform>/:
 #
-#   Android/OpenSoar-<version>-arm64.apk   only arm64
 #   Android/OpenSoar-<version>.apk         all four ABIs (TARGET=ANDROIDFAT)
+#   Android/OpenSoar-<version>-arm64.apk   only arm64 (ANDROID64)
+#   Android/OpenSoar-<version>-armv7.apk   only armeabi-v7a (ANDROID32)
+#   Android/OpenSoar-<version>-x86_64.apk  only x86_64 (ANDROID-X64)
+#   Android/OpenSoar-<version>-x86.apk     only x86 (ANDROID-X86)
 #   Win32/OpenSoar-<version>-Win32.zip     PC (GDI) build
 #   Win64/OpenSoar-<version>-Win64.zip     OpenGL build with the ANGLE DLLs
 #   Unix/OpenSoar-<version>-<arch>.deb     installs with its dependencies
 #   Kobo/KoboRoot.tgz                      the file a Kobo installs from
 #   Kobo/OpenSoar-<version>-KoboRoot.tgz   the same, named by version
 #
-# Only a run that built all targets writes output/publish/<version>/COMPLETE.
+# Only a run that built all targets of ALL_TARGETS writes
+# output/publish/<version>/COMPLETE.
 # The upload (publish_testing.py) refuses a folder without it, so that a
 # partial run, which leaves packages of an older build in place, never
 # reaches the web page.
@@ -37,11 +45,37 @@ if [ -z "$PROGRAM_VERSION" ] && [ -f ./OpenSoar.config ]; then
 fi
 VERSION_SUFFIX=${PROGRAM_VERSION:+-${PROGRAM_VERSION}}
 
-ALL_TARGETS="ANDROID PC WIN64 UNIX KOBO"
+# ALL_TARGETS is what a full run builds, the packages on the web page;
+# KNOWN_TARGETS adds the single-ABI Android packages for testing, each
+# about a quarter of the size of the one with all four ABIs.
+ALL_TARGETS="ANDROID ANDROID64 PC WIN64 UNIX KOBO"
+KNOWN_TARGETS="ANDROID ANDROID64 ANDROID32 ANDROID-X64 ANDROID-X86 PC WIN64 UNIX KOBO"
 TARGETS=${TARGETS:-$ALL_TARGETS}
-if [ "$ANDROID_ONLY" == "y" ] || [ "$ANDROID_ARM64_ONLY" == "y" ]; then
-  TARGETS=ANDROID
+if [ "$ANDROID_ARM64_ONLY" == "y" ]; then
+  TARGETS=ANDROID64
+elif [ "$ANDROID_ONLY" == "y" ]; then
+  TARGETS="ANDROID ANDROID64"
 fi
+
+# the names of the make targets work as well, in any case, separated
+# by blanks or commas
+normalized=
+for t in ${TARGETS//,/ }; do
+  t=$(echo "$t" | tr '[:lower:]' '[:upper:]')
+  case "$t" in
+    ANDROIDFAT) t=ANDROID ;;
+    ANDROIDAARCH64|ANDROIDARM64) t=ANDROID64 ;;
+    ANDROID7) t=ANDROID32 ;;
+    ANDROIDX64) t=ANDROID-X64 ;;
+    ANDROID86|ANDROIDX86) t=ANDROID-X86 ;;
+  esac
+  case " $KNOWN_TARGETS " in
+    *" $t "*) ;;
+    *) echo "Unknown target '$t' - known are: $KNOWN_TARGETS" >&2; exit 1 ;;
+  esac
+  normalized="$normalized $t"
+done
+TARGETS=${normalized# }
 
 PUBLISH=output/publish/${PROGRAM_VERSION:-unknown}
 # The make build signs the APK itself: with a release key
@@ -86,41 +120,56 @@ build() {   # build <target> <what it is called> [object directory] [make goals]
 # packages of an earlier run of the same version must not survive
 rm -rf "$PUBLISH"
 
-if wanted ANDROID; then
-  # a fresh run must not pick up yesterday's packages
-  rm -rf output/ANDROID/opt
-  rm -f "$APK"
+# Every Android build writes the same APK file, and a single-ABI build
+# puts only its own ABI into it, so each package is copied away before
+# the next build starts.
+ANDROID_BUILT=   # object directories built from scratch in this run
 
-  # one build per package: every Android build writes the same APK file,
-  # and a single-ABI build puts only its own ABI into it
-  build ANDROIDAARCH64 "Android arm64" output/ANDROID/arm64-v8a/opt/src "$APK"
+android() {  # android <make target> <what> <object dirs> <name suffix>
+  rm -f "$APK"
+  build "$1" "$2" "$3" "$APK"
+  ANDROID_BUILT="$ANDROID_BUILT $3"
   if [ ! -e "$APK" ]; then
     echo "'$APK' not available - stopping here." >&2
     exit 1
   fi
-  cp -v "$APK" "output/ANDROID/bin/OpenSoar${VERSION_SUFFIX}-arm64.apk"
-  publish Android "$APK" "OpenSoar${VERSION_SUFFIX}-arm64.apk"
+  cp -v "$APK" "output/ANDROID/bin/OpenSoar${VERSION_SUFFIX}$4.apk"
+  publish Android "$APK" "OpenSoar${VERSION_SUFFIX}$4.apk"
+}
 
-  if [ "$ANDROID_ARM64_ONLY" == "y" ]; then
-    echo "ANDROID_ARM64_ONLY = y - done."
-    exit 0
-  fi
-
+if wanted ANDROID || wanted ANDROID64 || wanted ANDROID32 ||
+   wanted ANDROID-X64 || wanted ANDROID-X86; then
+  # a fresh run must not pick up yesterday's packages
+  rm -rf output/ANDROID/opt
   rm -f "$APK"
-  build ANDROIDFAT "Android (all ABIs)" \
-    "output/ANDROID/armeabi-v7a/opt/src output/ANDROID/x86/opt/src output/ANDROID/x86_64/opt/src" \
-    "$APK"
+fi
+
+if wanted ANDROID64; then
+  android ANDROIDAARCH64 "Android arm64" output/ANDROID/arm64-v8a/opt/src -arm64
+fi
+if wanted ANDROID32; then
+  android ANDROID7 "Android armv7" output/ANDROID/armeabi-v7a/opt/src -armv7
+fi
+if wanted ANDROID-X64; then
+  android ANDROIDX64 "Android x86_64" output/ANDROID/x86_64/opt/src -x86_64
+fi
+if wanted ANDROID-X86; then
+  android ANDROID86 "Android x86" output/ANDROID/x86/opt/src -x86
+fi
+
+if wanted ANDROID; then
+  # the ABIs that a single-ABI build of this run has just compiled from
+  # scratch are not compiled once more
+  FAT_DIRS=
+  for d in output/ANDROID/armeabi-v7a/opt/src output/ANDROID/arm64-v8a/opt/src \
+           output/ANDROID/x86/opt/src output/ANDROID/x86_64/opt/src; do
+    case " $ANDROID_BUILT " in *" $d "*) ;; *) FAT_DIRS="$FAT_DIRS $d" ;; esac
+  done
+  android ANDROIDFAT "Android (all ABIs)" "${FAT_DIRS# }" ""
   ABIS=$(unzip -Z1 "$APK" 'lib/*' 2>/dev/null | cut -d/ -f2 | sort -u | wc -l)
   if [ "$ABIS" -lt 4 ]; then
     echo "'$APK' holds $ABIS ABIs instead of 4 - stopping here." >&2
     exit 1
-  fi
-  cp -v "$APK" "output/ANDROID/bin/OpenSoar${VERSION_SUFFIX}.apk"
-  publish Android "$APK" "OpenSoar${VERSION_SUFFIX}.apk"
-
-  if [ "$ANDROID_ONLY" == "y" ]; then
-    echo "ANDROID_ONLY = y - done."
-    exit 0
   fi
 fi
 
@@ -148,12 +197,16 @@ if wanted KOBO; then
   publish Kobo output/KOBO/KoboRoot.tgz "OpenSoar${VERSION_SUFFIX}-KoboRoot.tgz"
 fi
 
-if [ "$TARGETS" == "$ALL_TARGETS" ]; then
+complete=y
+for t in $ALL_TARGETS; do
+  wanted "$t" || complete=n
+done
+if [ "$complete" == "y" ]; then
   {
     echo "version=$PROGRAM_VERSION"
     echo "commit=$(git rev-parse HEAD 2>/dev/null)"
     echo "date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-    echo "targets=$ALL_TARGETS"
+    echo "targets=$TARGETS"
   } > "$PUBLISH/COMPLETE"
   echo "All targets built - $PUBLISH is ready for publish_testing.py."
 else
