@@ -28,7 +28,7 @@ bookkeeping) lives in the old repository and is not repeated here -
 
 ---
 
-## OpenSoar 7.45.25.1 - not released yet
+## OpenSoar 7.45.25.1 - 2026-10-23
 
 A bugfix release on the base of 7.45.25, for pilots who stay on the
 7.45 line.
