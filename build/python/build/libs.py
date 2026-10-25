@@ -352,6 +352,12 @@ libjpeg = CmakeProject(
     [
         "-DENABLE_STATIC=ON",
         "-DENABLE_SHARED=OFF",
+        # Only libjpeg itself is linked.  The TurboJPEG API, the tools
+        # and the tests pull in the bundled libspng, whose SSE2 code
+        # does not compile with the 32 bit mingw gcc 13 at -march=i586.
+        "-DWITH_TURBOJPEG=OFF",
+        "-DWITH_TOOLS=OFF",
+        "-DWITH_TESTS=OFF",
     ],
     env={
         # unwind tables are needed for throwing C++ exceptions from C
