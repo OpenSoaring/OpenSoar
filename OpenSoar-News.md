@@ -28,6 +28,54 @@ bookkeeping) lives in the old repository and is not repeated here -
 
 ---
 
+## OpenSoar 7.45.25.2 - 2026-10-27
+
+A second bugfix release on the base of 7.45.25, above all for the
+OpenVario.
+
+* fixes: on the OpenVario the system clock is set from the GPS again.
+  systemd refused it while automatic time synchronization was switched
+  on, even without network, so the clock resumed at the time the device
+  was switched off, and OpenSoar.log and the NMEA logs carried dates
+  weeks in the past (IGC files and the log book use the GPS time and
+  were right)
+* fixes: the SteFly Rotary Panel is found by itself like the Remote
+  Stick, on a device slot of its own with the driver "RotaryPanel"; in
+  7.45.25 it was neither found nor offered as a driver.  The slot
+  cannot be edited, and the manage dialog sets the key configuration,
+  shows the device information and restarts the panel
+* devices: the manage dialog of the SteFly Remote Stick and Rotary
+  Panel also sets the double click time, the long press time and the
+  mouse step of the device (firmware with SteFlyRemoteCore 1.1 or
+  later), and it shows the serial number the device reports
+* fixes: on Windows a serial port is called "COM7" everywhere, also
+  from COM10 on, and is opened by its device path, so a SteFly device
+  opens again when Windows gives it a port from COM10 on (it was found,
+  but opening the port failed with "file not found"); the old
+  spellings "COM7:" and "\\.\COM12" in existing settings are corrected
+  by themselves
+* fixes: on Windows the port list shows what is behind a port again,
+  as in OpenSoar 7.44, e.g. "COM3 (USB)" or "COM10 (Larus)" for a
+  paired Bluetooth device, instead of the kernel's device name; the
+  incoming port Windows creates next to every Bluetooth device is left
+  out, as no device calls in
+* fixes: the device list sets the SteFly devices apart from the
+  regular ports with a real gap and a colour of their own (the lines
+  were drawn over the row), and names them alike, "SteFly Remote
+  Stick" and "SteFly Rotary Panel"
+* devices: the manage dialog of the SteFly devices offers the key
+  layouts the attached device reports, so the choice matches its
+  firmware (the Rotary Panel has no starter key layouts); this needs
+  firmware with SteFlyRemoteCore 1.2, older firmware keeps its layout
+* download lists: with System > System > Test versions the test list
+  is read from opensoar.de/testing, where the test builds are published
+  now
+* infrastructure: the Win32 package builds again with the 32 bit mingw
+  compiler of current Debian and Ubuntu (libjpeg-turbo without its
+  TurboJPEG part, which OpenSoar never used); `MakeAll.sh` builds each
+  Android ABI as a target of its own and collects the packages where
+  the caller wants them
+
 ## OpenSoar 7.45.25.1 - 2026-10-23
 
 A bugfix release on the base of 7.45.25, for pilots who stay on the
