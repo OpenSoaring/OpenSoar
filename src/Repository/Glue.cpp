@@ -138,13 +138,15 @@ static constexpr struct {
 
 /**
  * The test packages and OpenVario test images; read only when the
- * pilot asked for test versions (System > System).
+ * pilot asked for test versions (System > System).  The list lies in
+ * the test folder of the web site, next to the version folders of the
+ * test builds it points to, not among the release lists.
  */
 static constexpr struct {
   const char *uri;
   const char *filename;
 } testing_repository = {
-  "https://opensoar.de/releases/repository-testing",
+  "https://opensoar.de/testing/repository-testing",
   "user_repository_testing",
 };
 
