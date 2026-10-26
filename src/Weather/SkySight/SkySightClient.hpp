@@ -112,6 +112,12 @@ public:
   StaticString<128> GetLoginRejectedMessage() const noexcept;
 
   bool IsLiveViewUpdating(std::string_view layer_id) const noexcept;
+
+  /**
+   * The acquisition time of the live tiles shown on the map for this
+   * layer (UTC), or 0 if none are shown.
+   */
+  time_t GetDisplayedLiveTime(std::string_view layer_id) const noexcept;
   bool HasDownloadActivity() const noexcept;
 
   time_t GetThrottleRemainingSeconds() const noexcept;
