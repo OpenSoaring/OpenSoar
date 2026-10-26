@@ -10,6 +10,8 @@ struct PageLayout;
 
 namespace SkySight {
 
+struct Layer;
+
 using LayerPickerResult = WeatherMapOverlay::FieldPickerResult;
 
 void ApplyCursorFromPageLayout(const PageLayout &page) noexcept;
@@ -28,6 +30,14 @@ LayerPickerResult OpenLayerPicker(bool offer_setup=false) noexcept;
 
 void FormatTimeLabelForPage(StaticString<64> &text,
                             const PageLayout &page) noexcept;
+
+/**
+ * The time row of a live layer: "Live (hh:mm)" with the time of the
+ * images on the map, or of the newest images known when none is shown
+ * yet; "updating" adds that newer tiles are being downloaded.
+ */
+void FormatLiveTimeLabel(StaticString<64> &text, const Layer &layer,
+                         bool updating) noexcept;
 
 void FormatLayerLabelForPage(StaticString<64> &text,
                              const PageLayout &page) noexcept;
