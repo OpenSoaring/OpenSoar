@@ -193,6 +193,33 @@ OpenLayerPicker(bool offer_setup) noexcept
 }
 
 void
+FormatLiveTimeLabel(StaticString<64> &text, const Layer &layer,
+                    bool updating) noexcept
+{
+  const auto skysight = DataGlobals::GetSkySight();
+  time_t live_time = skysight != nullptr
+    ? skysight->GetDisplayedLiveTime(layer.id)
+    : 0;
+  if (live_time <= 0)
+    live_time = layer.last_update;
+
+  if (live_time <= 0 || skysight == nullptr) {
+    text = updating
+      ? C_("Status", "Live (updating...)")
+      : C_("Status", "Live");
+    return;
+  }
+
+  const auto hhmm = FormatLocalTimeHHMM(
+    TimeStamp(std::chrono::duration<double>(live_time)),
+    DisplayOffsetFor(*skysight, live_time));
+  if (updating)
+    text.Format(C_("Status", "Live (%s, updating...)"), hhmm.c_str());
+  else
+    text.Format(C_("Status", "Live (%s)"), hhmm.c_str());
+}
+
+void
 FormatTimeLabelForPage(StaticString<64> &text,
                        const PageLayout &page) noexcept
 {
@@ -204,7 +231,7 @@ FormatTimeLabelForPage(StaticString<64> &text,
   }
 
   if (layer->SupportsLiveTiles()) {
-    text = C_("Status", "Live");
+    FormatLiveTimeLabel(text, *layer, false);
     return;
   }
 

@@ -447,6 +447,21 @@ SkySightClient::IsLiveViewUpdating(std::string_view layer_id) const noexcept
     api->HasPendingTileDownloads();
 }
 
+time_t
+SkySightClient::GetDisplayedLiveTime(std::string_view layer_id) const noexcept
+{
+  if (displayed_layer == nullptr || displayed_layer->id != layer_id)
+    return 0;
+
+  /* all tiles of one view share one acquisition time, except coarser
+     tiles kept while the new view arrives */
+  time_t result = 0;
+  for (std::size_t i = 0; i < tile_filenames.size(); ++i)
+    if (!tile_filenames[i].empty())
+      result = std::max(result, tile_timestamps[i]);
+  return result;
+}
+
 bool
 SkySightClient::HasDownloadActivity() const noexcept
 {
