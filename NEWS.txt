@@ -2,6 +2,11 @@ Version 7.46.1 - not yet released
 * android
   - fix a map crash on PowerVR Rogue tablets while panning with
     topography enabled #1235
+* OpenVario
+  - fix the system clock not being set from the GPS when automatic
+    time synchronization is on but no network is available; the clock
+    resumed at the time of the last shutdown, so the log file and the
+    NMEA logs carried old dates
 
 Version 7.46 - 2026-10-19
 * highlights
