@@ -139,6 +139,11 @@ Version 7.47 - not yet released
   - cross-compile for Raspberry Pi 4 and 5 with TARGET=PI4
     (TARGET=PI5 is an alias). The arm64 sysroot defaults to
     /opt/pi64/root
+* OpenVario
+  - fix the system clock not being set from the GPS when automatic
+    time synchronization is on but no network is available; the clock
+    resumed at the time of the last shutdown, so the log file and the
+    NMEA logs carried old dates
 
 Version 7.46.1 - 2026-10-30
 * ui
