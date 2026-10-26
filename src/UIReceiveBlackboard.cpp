@@ -20,8 +20,26 @@
 #include "lib/dbus/Connection.hxx"
 #include "lib/dbus/TimeDate.hxx"
 #include "LogFile.hpp"
+#include "system/Error.hxx"
 
+#include <time.h> // for clock_settime()
 #include <unistd.h> // for geteuid()
+
+/**
+ * Set the kernel clock directly, bypassing systemd-timedated.
+ */
+static void
+SetKernelClock(std::chrono::system_clock::time_point t)
+{
+  const auto usec = std::chrono::duration_cast<std::chrono::microseconds>(
+    t.time_since_epoch()).count();
+  const struct timespec ts{
+    time_t(usec / 1000000),
+    long(usec % 1000000) * 1000,
+  };
+  if (clock_settime(CLOCK_REALTIME, &ts) < 0)
+    throw MakeErrno("clock_settime() failed");
+}
 #endif
 
 static TaskEventObserver task_event_observer;
@@ -110,9 +128,28 @@ UIReceiveSensorData(OperationEnvironment &env)
 
     try {
       auto connection = ODBus::Connection::GetSystem();
-      if (!TimeDate::IsNTPSynchronized(connection))
-        TimeDate::SetTime(connection, CommonInterface::Basic().date_time_utc.ToTimePoint());
-      LogFormat("System clock set from GPS");
+      if (!TimeDate::IsNTPSynchronized(connection)) {
+        const auto gps_time =
+          CommonInterface::Basic().date_time_utc.ToTimePoint();
+        try {
+          TimeDate::SetTime(connection, gps_time);
+        } catch (...) {
+          /* timedated refuses SetTime() while automatic time
+             synchronization is switched on, even if systemd-timesyncd
+             has never reached a server - which is the normal case on
+             an OpenVario without network.  Without a battery-backed
+             RTC the clock then resumes at the time it was switched
+             off, and log files and NMEA logs carry wrong dates.
+             Setting the kernel clock directly does not disturb
+             timesyncd: it still corrects the clock when it reaches a
+             server. */
+          LogError(std::current_exception(),
+                   "timedated refused the GPS time, setting the clock "
+                   "directly");
+          SetKernelClock(gps_time);
+        }
+        LogFormat("System clock set from GPS");
+      }
     } catch (...) {
       LogError(std::current_exception(), "Failed to set the system clock from GPS");
     }
