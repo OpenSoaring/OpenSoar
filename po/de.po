@@ -13704,3 +13704,13 @@ msgstr "Das Programm, das das OpenVario nach dem Einschalten startet.  Die Ände
 
 msgid "The enabled devices in the order of their ports.  Click to open the device list."
 msgstr "Die aktivierten Geräte in der Reihenfolge ihrer Ports.  Ein Klick öffnet die Geräteliste."
+
+#, c-format
+msgctxt "Status"
+msgid "Live (%s)"
+msgstr "Live (%s)"
+
+#, c-format
+msgctxt "Status"
+msgid "Live (%s, updating...)"
+msgstr "Live (%s, aktualisiert…)"
