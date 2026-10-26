@@ -428,6 +428,17 @@ SkySightAPI::ParseLayers(const boost::json::value &value,
   }
 }
 
+/**
+ * The finest tile level requested for the live layers.  At level 7 a
+ * tile pixel is about 1.2 km at the equator and 0.8 km in central
+ * Europe, which is about the resolution of the satellite and radar
+ * images behind the tiles; level 8 tiles show the same picture enlarged,
+ * at four times the number of requests, which count against SkySight's
+ * download limit per minute.  At larger map scales the level 7 tiles
+ * are drawn enlarged.
+ */
+static constexpr unsigned LIVE_TILE_MAX_ZOOM = 7;
+
 void
 SkySightAPI::InitialiseLayers(std::vector<SkySight::Layer> &new_layers)
 {
@@ -435,11 +446,11 @@ SkySightAPI::InitialiseLayers(std::vector<SkySight::Layer> &new_layers)
 
   new_layers.emplace_back("satellite", C_("Weather layer", "Satellite"),
                           _("Live SkySight satellite tiles"),
-                          true, true, true, 1, 8, 1.0f);
+                          true, true, true, 1, LIVE_TILE_MAX_ZOOM, 1.0f);
 
   new_layers.emplace_back("rain", C_("Weather layer", "Rain"),
                           _("Live SkySight precipitation tiles"),
-                          true, true, true, 1, 8, 0.7f);
+                          true, true, true, 1, LIVE_TILE_MAX_ZOOM, 0.7f);
 }
 
 void
