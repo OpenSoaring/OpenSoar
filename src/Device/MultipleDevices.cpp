@@ -72,14 +72,14 @@ MultipleDevices::HasVega() const noexcept
 #ifdef HAVE_REMOTE_STICK
 
 bool
-MultipleDevices::HasRemoteStick() const noexcept
+MultipleDevices::HasSteFlyDevice(unsigned slot) const noexcept
 {
-  /* the REMOTE_PORT slot is populated at startup by
-     SteFly::DiscoverPortByUsbId() -> SystemSettings::devices[REMOTE_PORT]
+  /* the SteFly slots are populated at startup by
+     SteFly::DiscoverPortByUsbId() -> SystemSettings::devices[slot]
      -> devStartup() (see Startup.cpp); if discovery found nothing, the
      descriptor keeps its default DISABLED config */
-  auto *d = devices[REMOTE_PORT];
-  return d != nullptr && d->GetConfig().UsesPort();
+  auto *d = devices[slot];
+  return IsSteFlySlot(slot) && d != nullptr && d->GetConfig().UsesPort();
 }
 
 #endif // HAVE_REMOTE_STICK

@@ -16,3 +16,10 @@ class DeviceDescriptor;
  */
 void
 ManageRemoteDialog(DeviceDescriptor &descriptor, Device &device);
+
+/**
+ * Open the manage dialog of the SteFly RotaryPanel: key layout, device
+ * information and reboot, in the same way as for the Remote Stick.
+ */
+void
+ManageRotaryPanelDialog(DeviceDescriptor &descriptor, Device &device);
