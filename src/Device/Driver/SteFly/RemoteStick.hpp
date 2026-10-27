@@ -18,22 +18,9 @@
 class StickRemoteControl final : public SteFlyDevice {
 public:
   struct RemoteStickSettings {
-    /** Key-layout preset, matches firmware's loadPresetFromFlash. */
-    enum class Layout : uint32_t {
-      BASIC    = 0,
-      ADVANCED = 1,
-      ANDROID0 = 2,
-      ANDROID1 = 3,
-      STARTER0 = 4,
-      STARTER1 = 5,
-#ifdef XCSOAR_TESTING
-      TEST = 6,
-#endif
-      USER  = 255,
-    };
+    /** Key-layout preset, see SteFlyDevice::Layout. */
+    using Layout = SteFlyDevice::Layout;
     Layout layout = Layout::BASIC;
-
-    static constexpr const char *LAYOUT_NAME = "Layout";
   };
 
 private:

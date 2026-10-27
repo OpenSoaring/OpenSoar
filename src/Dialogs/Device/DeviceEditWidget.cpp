@@ -448,10 +448,10 @@ DeviceEditWidget::Prepare(ContainerWindow &parent,
   const struct DeviceRegister *driver;
   for (unsigned i = 0; (driver = GetDriverByIndex(i)) != nullptr; i++) {
 #ifdef HAVE_REMOTE_STICK
-    /* drivers reserved for the auto-detected SteFly slot must not
+    /* drivers reserved for the auto-detected SteFly slots must not
        appear in the dropdown for regular editable ports - the
-       DeviceListDialog never lets the user edit REMOTE_PORT anyway,
-       so hiding them here is enough */
+       DeviceListDialog never lets the user edit REMOTE_PORT or
+       ROTARY_PORT anyway, so hiding them here is enough */
     if (StringIsEqual(driver->name, "RemoteStick") ||
         StringIsEqual(driver->name, "RotaryPanel"))
       continue;

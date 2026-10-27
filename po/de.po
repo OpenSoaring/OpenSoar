@@ -12391,3 +12391,18 @@ msgstr "Das Programm, das das OpenVario nach dem Einschalten startet.  Die Ände
 
 msgid "The enabled devices in the order of their ports.  Click to open the device list."
 msgstr "Die aktivierten Geräte in der Reihenfolge ihrer Ports.  Ein Klick öffnet die Geräteliste."
+
+msgid "SteFly RotaryPanel"
+msgstr "SteFly RotaryPanel"
+
+msgid "Reboot RotaryPanel"
+msgstr "RotaryPanel neu starten"
+
+msgid "Rebooting RotaryPanel"
+msgstr "RotaryPanel startet neu"
+
+msgid "Waiting for the panel to reboot…"
+msgstr "Warte auf den Neustart des Panels…"
+
+msgid "Waiting for the panel to reconnect…"
+msgstr "Warte, bis sich das Panel wieder verbindet…"
