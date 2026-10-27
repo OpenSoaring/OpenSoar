@@ -12992,6 +12992,27 @@ msgstr "Gerätename"
 msgid "Devices in the profile"
 msgstr "Geräte im Profil"
 
+msgid "Distance of one mouse step in mouse mode, in quarters of the distance in the key layout. Smaller values place the cursor more precisely."
+msgstr "Weg eines Mausschritts im Mausmodus, in Vierteln des Wegs im Tastenlayout. Kleinere Werte setzen den Mauszeiger genauer."
+
+msgid "Double click time"
+msgstr "Doppelklick-Zeit"
+
+msgid "Highest multiplier of the mouse step when the input is used fast or long; 1 switches the acceleration off."
+msgstr "Höchster Faktor für den Mausschritt, wenn schnell oder lange bedient wird; 1 schaltet die Beschleunigung aus."
+
+msgid "How long a button has to be held for its long press action. The reset with the Enter button keeps its 2 s."
+msgstr "Wie lange eine Taste für ihre Aktion bei langem Druck gehalten werden muss. Der Neustart mit der Enter-Taste bleibt bei 2 s."
+
+msgid "Long press time"
+msgstr "Zeit für langen Druck"
+
+msgid "Mouse acceleration"
+msgstr "Mausbeschleunigung"
+
+msgid "Mouse step"
+msgstr "Mausschritt"
+
 msgid "Test versions"
 msgstr "Testversionen"
 
@@ -13180,6 +13201,9 @@ msgstr "Der Repository-Eintrag \"%s\" hat keine zum Typ passende Dateiendung.  D
 
 msgid "This profile is already in use."
 msgstr "Dieses Profil wird bereits verwendet."
+
+msgid "Time within which a second click counts as a double click. Longer is more forgiving with gloves, shorter makes the single click of buttons with a double click action react faster."
+msgstr "Zeit, innerhalb der ein zweiter Klick als Doppelklick zählt. Länger verzeiht mehr mit Handschuhen, kürzer lässt den einfachen Klick von Tasten mit Doppelklick-Aktion schneller reagieren."
 
 msgid "Timeout for Program Start."
 msgstr "Timeout für den Programmstart."
