@@ -75,13 +75,12 @@ DescribeDevices() noexcept
 
   const auto &devices = CommonInterface::GetSystemSettings().devices;
   for (unsigned i = 0; i < devices.size(); ++i) {
-#ifdef HAVE_REMOTE_STICK
-    /* the program finds and sets up the RemoteStick by itself; it is
-       not one of the devices the pilot configured, and naming it here
-       only made the list look as if something had been added */
-    if (i == REMOTE_PORT)
+    /* the program finds and sets up the SteFly RemoteStick and
+       RotaryPanel by itself; they are not devices the pilot
+       configured, and naming them here only made the list look as if
+       something had been added */
+    if (IsSteFlySlot(i))
       continue;
-#endif
 
     const auto &config = devices[i];
     if (config.IsDisabled())

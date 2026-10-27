@@ -28,9 +28,10 @@ const struct DeviceRegister remote_stick_driver = {
 // ------------- SteFly RotaryPanel -----------------------------------
 //
 // Same SteFly NMEA family as the RemoteStick, identified by its own
-// USB ids (VID 0x1209, PID 0x8502). Listed as a separate driver entry
-// so the user can pick "SteFly RotaryPanel" explicitly in the port /
-// driver dialog.
+// USB ids (VID 0x1209, PID 0x8502).  Like the RemoteStick it is bound
+// automatically to a fixed slot of its own (ROTARY_PORT, see
+// Startup.cpp); the driver dialog of the regular slots does not offer
+// it.
 
 static Device *
 RotaryPanelCreateOnPort(const DeviceConfig &config, Port &com_port)

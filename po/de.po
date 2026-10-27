@@ -13714,3 +13714,18 @@ msgstr "Live (%s)"
 msgctxt "Status"
 msgid "Live (%s, updating...)"
 msgstr "Live (%s, aktualisiert…)"
+
+msgid "SteFly RotaryPanel"
+msgstr "SteFly RotaryPanel"
+
+msgid "Reboot RotaryPanel"
+msgstr "RotaryPanel neu starten"
+
+msgid "Rebooting RotaryPanel"
+msgstr "RotaryPanel startet neu"
+
+msgid "Waiting for the panel to reboot…"
+msgstr "Warte auf den Neustart des Panels…"
+
+msgid "Waiting for the panel to reconnect…"
+msgstr "Warte, bis sich das Panel wieder verbindet…"
