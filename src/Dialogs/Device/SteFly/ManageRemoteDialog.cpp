@@ -199,6 +199,10 @@ public:
 class ManageRemoteWidget final : public RowFormWidget {
   enum Controls {
     LAYOUT,
+    DBLCLICK,
+    LONGPRESS,
+    MOUSESTEP,
+    MOUSEACCEL,
   };
 
   DeviceDescriptor &descriptor;
@@ -222,6 +226,7 @@ class ManageRemoteWidget final : public RowFormWidget {
   // every SteFly device, so we use the base type name.
   SteFlyDevice::SteFlyInfo info;
   SteFlyDevice::Layout layout = SteFlyDevice::Layout::BASIC;
+  SteFlyDevice::UserSettings user_settings;
 
 public:
   ManageRemoteWidget(const DialogLook &look,
@@ -302,6 +307,7 @@ ManageRemoteWidget::RefreshFromDevice() noexcept
     layout = is_remote_stick
       ? GetRemoteStick().GetSettings().layout
       : GetRotaryPanel().GetSettings().layout;
+    user_settings = device->GetUserSettings();
   } catch (...) {
   }
 }
@@ -433,6 +439,36 @@ ManageRemoteWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
           layout_choices,
           unsigned(layout));
 
+  // --- user settings, in the order of the Controls enum. Firmware
+  //     before SteFlyRemoteCore 1.1 does not report them; the rows
+  //     still exist then (so the indices stay fixed) but are hidden.
+  using US = SteFlyDevice::UserSettings;
+  AddInteger(_("Double click time"),
+             _("Time within which a second click counts as a double click. "
+               "Longer is more forgiving with gloves, shorter makes the "
+               "single click of buttons with a double click action react "
+               "faster."),
+             "%d ms", "%d", US::DBLCLICK_MIN, US::DBLCLICK_MAX, 10,
+             user_settings.dblclick_ms);
+  AddInteger(_("Long press time"),
+             _("How long a button has to be held for its long press "
+               "action. The reset with the Enter button keeps its 2 s."),
+             "%d ms", "%d", US::LONGPRESS_MIN, US::LONGPRESS_MAX, 50,
+             user_settings.long_press_ms);
+  AddInteger(_("Mouse step"),
+             _("Distance of one mouse step in mouse mode, in quarters of "
+               "the distance in the key layout. Smaller values place the "
+               "cursor more precisely."),
+             "%d", "%d", US::MOUSESTEP_MIN, US::MOUSESTEP_MAX, 1,
+             user_settings.mouse_step);
+  AddInteger(_("Mouse acceleration"),
+             _("Highest multiplier of the mouse step when the input is "
+               "used fast or long; 1 switches the acceleration off."),
+             "%d", "%d", US::MOUSEACCEL_MIN, US::MOUSEACCEL_MAX, 1,
+             user_settings.mouse_accel);
+  for (unsigned i = DBLCLICK; i <= MOUSEACCEL; ++i)
+    SetRowVisible(i, user_settings.available);
+
   // --- read-only info ----------------------------------------------
   if (info.available) {
     if (!info.name.empty())
@@ -477,6 +513,14 @@ ManageRemoteWidget::Save(bool &changed) noexcept
   if (chosen != SteFlyDevice::Layout::USER)
     new_layout = chosen;
 
+  auto new_user = user_settings;
+  if (user_settings.available) {
+    changed |= SaveValueInteger(DBLCLICK, new_user.dblclick_ms);
+    changed |= SaveValueInteger(LONGPRESS, new_user.long_press_ms);
+    changed |= SaveValueInteger(MOUSESTEP, new_user.mouse_step);
+    changed |= SaveValueInteger(MOUSEACCEL, new_user.mouse_accel);
+  }
+
   if (device == nullptr)
     return false;  // device gone after a failed reboot; nothing to write
 
@@ -490,6 +534,9 @@ ManageRemoteWidget::Save(bool &changed) noexcept
       settings.layout = new_layout;
       GetRotaryPanel().WriteDeviceSettings(settings, env);
     }
+
+    if (user_settings.available)
+      device->WriteUserSettings(new_user, env);
   } catch (OperationCancelled) {
     return false;
   } catch (...) {

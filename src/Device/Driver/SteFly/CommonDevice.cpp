@@ -159,9 +159,74 @@ SteFlyDevice::ParseSettingsSentence(NMEAInputLine &line)
 
   {
     const std::lock_guard lock{settings_block.mutex};
-    ApplySettingsField(key, value);
+    if (!ApplyUserSettingField(key, value))
+      ApplySettingsField(key, value);
   }
   return true;
+}
+
+// ============== Common user settings ================================
+
+bool
+SteFlyDevice::ApplyUserSettingField(std::string_view key,
+                                    std::string_view value)
+{
+  unsigned *target;
+  if (key == UserSettings::DBLCLICK_NAME)
+    target = &user_settings.dblclick_ms;
+  else if (key == UserSettings::LONGPRESS_NAME)
+    target = &user_settings.long_press_ms;
+  else if (key == UserSettings::MOUSESTEP_NAME)
+    target = &user_settings.mouse_step;
+  else if (key == UserSettings::MOUSEACCEL_NAME)
+    target = &user_settings.mouse_accel;
+  else
+    return false;
+
+  unsigned parsed = 0;
+  auto [ptr, ec] = std::from_chars(value.data(), value.data() + value.size(),
+                                   parsed);
+  if (ec == std::errc{}) {
+    *target = parsed;
+    user_settings.available = true;
+  }
+  return true;
+}
+
+SteFlyDevice::UserSettings
+SteFlyDevice::GetUserSettings() noexcept
+{
+  const std::lock_guard lock{settings_block.mutex};
+  return user_settings;
+}
+
+void
+SteFlyDevice::WriteUserSettings(const UserSettings &new_settings,
+                                OperationEnvironment &env)
+{
+  const UserSettings old_settings = GetUserSettings();
+
+  // Diff against the cached snapshot, write only what changed: each
+  // write is an EEPROM write on the device.
+  if (new_settings.dblclick_ms != old_settings.dblclick_ms)
+    WriteDeviceSetting(SETTINGS_TALKER, 'S', UserSettings::DBLCLICK_NAME,
+                       std::to_string(new_settings.dblclick_ms), env);
+  if (new_settings.long_press_ms != old_settings.long_press_ms)
+    WriteDeviceSetting(SETTINGS_TALKER, 'S', UserSettings::LONGPRESS_NAME,
+                       std::to_string(new_settings.long_press_ms), env);
+  if (new_settings.mouse_step != old_settings.mouse_step)
+    WriteDeviceSetting(SETTINGS_TALKER, 'S', UserSettings::MOUSESTEP_NAME,
+                       std::to_string(new_settings.mouse_step), env);
+  if (new_settings.mouse_accel != old_settings.mouse_accel)
+    WriteDeviceSetting(SETTINGS_TALKER, 'S', UserSettings::MOUSEACCEL_NAME,
+                       std::to_string(new_settings.mouse_accel), env);
+
+  // Apply optimistically; the firmware's answer ($PSRCS,A,<Key>,<v>)
+  // corrects the cache if it had to clamp a value.
+  const std::lock_guard lock{settings_block.mutex};
+  const bool available = user_settings.available;
+  user_settings = new_settings;
+  user_settings.available = available;
 }
 
 // ============== Shared commands =====================================
