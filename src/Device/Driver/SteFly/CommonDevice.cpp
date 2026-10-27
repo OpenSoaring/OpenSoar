@@ -87,7 +87,7 @@ SteFlyDevice::ApplyInfoField(std::string_view key, std::string_view value)
     info.name.assign(value);
   } else if (key == "FileName") {
     info.file_name.assign(value);
-  } else if (key == "SerialNumber") {
+  } else if (key == "S/N") {
     info.serial_number.assign(value);
   }
 }
