@@ -5,8 +5,6 @@
 
 #include "RemoteStick.hpp"
 
-#include <charconv>
-#include <string>
 
 StickRemoteControl::StickRemoteControl([[maybe_unused]] const DeviceConfig &cfg,
                                        Port &_port) noexcept
@@ -42,11 +40,7 @@ void
 StickRemoteControl::SetLayout(RemoteStickSettings::Layout layout,
                               OperationEnvironment &env)
 {
-  // "$PSRCS,S,Layout,<n>*XX" — Settings group, Set direction.
-  WriteDeviceSetting(SETTINGS_TALKER, 'S',
-                     RemoteStickSettings::LAYOUT_NAME,
-                     std::to_string(uint32_t(layout)),
-                     env);
+  WriteLayout(layout, env);
 }
 
 void
@@ -56,14 +50,8 @@ StickRemoteControl::ApplySettingsField(std::string_view key,
   // Caller holds settings_block.mutex (from the base class).
   // Only react to Stick-specific keys; unknown keys are silently
   // ignored to keep the driver forward-compatible.
-  if (key == RemoteStickSettings::LAYOUT_NAME) {
-    unsigned long parsed = 0;
-    auto [ptr, ec] = std::from_chars(value.data(),
-                                     value.data() + value.size(),
-                                     parsed);
-    if (ec == std::errc{})
-      settings.layout = RemoteStickSettings::Layout(parsed);
-  }
+  if (key == LAYOUT_NAME)
+    ParseLayout(value, settings.layout);
 }
 
 #endif // HAVE_REMOTE_STICK
