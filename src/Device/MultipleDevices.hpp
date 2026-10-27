@@ -77,12 +77,12 @@ public:
 
 #ifdef HAVE_REMOTE_STICK
   /**
-   * True if the fixed REMOTE_PORT slot has been auto-set-up at
-   * startup (SteFly RemoteStick present). Controls whether the
-   * DeviceListDialog exposes the extra row at all.
+   * True if the fixed SteFly slot (REMOTE_PORT or ROTARY_PORT) has
+   * been set up at startup because its device is attached.  Controls
+   * whether the DeviceListDialog shows the row at all.
    */
   [[gnu::pure]]
-  bool HasRemoteStick() const noexcept;
+  bool HasSteFlyDevice(unsigned slot) const noexcept;
 #endif
 
   void VegaWriteNMEA(const char *text, OperationEnvironment &env) noexcept;

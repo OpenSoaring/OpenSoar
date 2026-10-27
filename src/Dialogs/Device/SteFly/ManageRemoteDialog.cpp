@@ -15,6 +15,7 @@
 #include "Operation/PopupOperationEnvironment.hpp"
 #include "Operation/Operation.hpp"
 #include "Device/Driver/SteFly/RemoteStick.hpp"
+#include "Device/Driver/SteFly/RotaryPanel.hpp"
 #include "Device/Descriptor.hpp"
 #include "Device/Port/State.hpp"
 #include "Job/Job.hpp"
@@ -86,6 +87,45 @@ static constexpr StaticEnumChoice stefly_layout_names_with_user[] = {
 namespace {
 
 /**
+ * The texts that differ between the SteFly devices this dialog
+ * manages, translated when the dialog opens.
+ */
+struct SteFlyTexts {
+  const char *caption;          // dialog caption
+  const char *title;            // title of the message boxes
+  const char *reboot_button;
+  const char *rebooting;        // caption of the reboot wait dialog
+  const char *waiting_reboot;
+  const char *waiting_reconnect;
+};
+
+static SteFlyTexts
+RemoteStickTexts() noexcept
+{
+  return {
+    "SteFly Remote",
+    _("SteFly Remote Stick"),
+    _("Reboot Remote Stick"),
+    _("Rebooting Remote Stick"),
+    _("Waiting for stick to reboot…"),
+    _("Waiting for stick to reconnect…"),
+  };
+}
+
+static SteFlyTexts
+RotaryPanelTexts() noexcept
+{
+  return {
+    "SteFly RotaryPanel",
+    _("SteFly RotaryPanel"),
+    _("Reboot RotaryPanel"),
+    _("Rebooting RotaryPanel"),
+    _("Waiting for the panel to reboot…"),
+    _("Waiting for the panel to reconnect…"),
+  };
+}
+
+/**
  * Modal-friendly job that polls the descriptor's port state until it
  * comes back to PortState::READY or the timeout / cancellation fires.
  *
@@ -95,13 +135,15 @@ namespace {
  */
 class WaitForReconnectJob final : public Job {
   DeviceDescriptor &descriptor;
+  const SteFlyTexts &texts;
   std::chrono::milliseconds total_timeout;
   bool success = false;
 
 public:
   WaitForReconnectJob(DeviceDescriptor &_descriptor,
+                      const SteFlyTexts &_texts,
                       std::chrono::milliseconds _timeout) noexcept
-    :descriptor(_descriptor), total_timeout(_timeout) {}
+    :descriptor(_descriptor), texts(_texts), total_timeout(_timeout) {}
 
   bool WasSuccessful() const noexcept { return success; }
 
@@ -120,7 +162,7 @@ public:
     // Re-borrowing in that window means the PortMonitor's later
     // Close() trips assert(!IsBorrowed()) — which is the bug this
     // logic exists to prevent.
-    env.SetText(_("Waiting for stick to reboot…"));
+    env.SetText(texts.waiting_reboot);
     const auto deadline = Clock::now() + total_timeout;
     bool saw_disconnect = false;
 
@@ -134,7 +176,7 @@ public:
       if (state != PortState::READY) {
         if (!saw_disconnect) {
           saw_disconnect = true;
-          env.SetText(_("Waiting for stick to reconnect…"));
+          env.SetText(texts.waiting_reconnect);
           LogString("RebootStick: disconnect seen");
         }
       } else if (saw_disconnect) {
@@ -160,31 +202,51 @@ class ManageRemoteWidget final : public RowFormWidget {
   };
 
   DeviceDescriptor &descriptor;
+  const SteFlyTexts texts;
+
+  /**
+   * Which device this is: both have the same key layout presets, but
+   * each driver keeps its own settings struct.
+   */
+  const bool is_remote_stick;
+
   // Pointer — NOT a reference — because the underlying Device* is
-  // recreated by DeviceDescriptor::Reopen() when the stick disconnects
-  // (firmware reboot, USB unplug, etc.). After every Reopen we re-fetch
-  // the fresh pointer via descriptor.GetDevice(); a reference would be
-  // a use-after-free as soon as the first reboot finishes.
-  StickRemoteControl *device = nullptr;
+  // recreated by DeviceDescriptor::Reopen() when the device
+  // disconnects (firmware reboot, USB unplug, etc.). After every
+  // Reopen we re-fetch the fresh pointer via descriptor.GetDevice(); a
+  // reference would be a use-after-free as soon as the first reboot
+  // finishes.
+  SteFlyDevice *device = nullptr;
 
   // SteFlyInfo lives on the SteFlyDevice base class — same shape for
   // every SteFly device, so we use the base type name.
-  SteFlyDevice::SteFlyInfo                info;
-  StickRemoteControl::RemoteStickSettings settings;
+  SteFlyDevice::SteFlyInfo info;
+  SteFlyDevice::Layout layout = SteFlyDevice::Layout::BASIC;
 
 public:
   ManageRemoteWidget(const DialogLook &look,
                      DeviceDescriptor &_descriptor,
-                     StickRemoteControl &_device) noexcept
-    :RowFormWidget(look), descriptor(_descriptor), device(&_device) {}
+                     SteFlyDevice &_device,
+                     const SteFlyTexts &_texts,
+                     bool _is_remote_stick) noexcept
+    :RowFormWidget(look), descriptor(_descriptor), texts(_texts),
+     is_remote_stick(_is_remote_stick), device(&_device) {}
 
 private:
   /** Re-fetch the live Device* from the descriptor. Must be called
    *  after every Reopen(); returns false (and clears `device`) when
    *  the descriptor currently has no device. */
   bool RefreshDevicePointer() noexcept {
-    device = static_cast<StickRemoteControl *>(descriptor.GetDevice());
+    device = static_cast<SteFlyDevice *>(descriptor.GetDevice());
     return device != nullptr;
+  }
+
+  StickRemoteControl &GetRemoteStick() const noexcept {
+    return *static_cast<StickRemoteControl *>(device);
+  }
+
+  RotaryPanelDevice &GetRotaryPanel() const noexcept {
+    return *static_cast<RotaryPanelDevice *>(device);
   }
 
 public:
@@ -196,7 +258,7 @@ public:
 private:
   /**
    * Run the post-open info + settings queries; updates the cached
-   * `info` and `settings` members. Called from Prepare() (initial
+   * `info` and `layout` members. Called from Prepare() (initial
    * population) and after a successful Reboot (so Save() diffs
    * against the post-reboot state).
    */
@@ -237,7 +299,9 @@ ManageRemoteWidget::RefreshFromDevice() noexcept
   try {
     device->RequestSettings(env);
     device->WaitForSettings(SETTINGS_TIMEOUT_MS);
-    settings = device->GetSettings();
+    layout = is_remote_stick
+      ? GetRemoteStick().GetSettings().layout
+      : GetRotaryPanel().GetSettings().layout;
   } catch (...) {
   }
 }
@@ -247,7 +311,7 @@ ManageRemoteWidget::RebootStick() noexcept
 {
   if (device == nullptr) {
     ShowMessageBox(_("No active device."),
-                   _("SteFly Remote Stick"),
+                   texts.title,
                    MB_OK | MB_ICONWARNING);
     return false;
   }
@@ -278,17 +342,17 @@ ManageRemoteWidget::RebootStick() noexcept
   // 3. Modal wait until the port shows up as READY again. JobDialog
   //    runs the job on a worker thread and pops a small dialog with
   //    a Cancel button; we poll descriptor.GetState() every 200 ms.
-  WaitForReconnectJob job{descriptor, REBOOT_TOTAL_TIMEOUT};
+  WaitForReconnectJob job{descriptor, texts, REBOOT_TOTAL_TIMEOUT};
   const bool job_finished =
     JobDialog(UIGlobals::GetMainWindow(),
               UIGlobals::GetDialogLook(),
-              _("Rebooting Remote Stick"),
+              texts.rebooting,
               job,
               true /* cancellable */);
 
   if (!job_finished || !job.WasSuccessful()) {
     ShowMessageBox(_("Device did not reconnect after reboot."),
-                   _("SteFly Remote Stick"),
+                   texts.title,
                    MB_OK | MB_ICONWARNING);
     // Leave the descriptor unborrowed; the outer ScopeReturnDevice
     // is now a no-op (see DeviceDescriptor.hpp::ScopeReturnDevice).
@@ -325,7 +389,7 @@ ManageRemoteWidget::RebootStick() noexcept
   }
   if (!reborrowed) {
     ShowMessageBox(_("Could not re-acquire device after reboot."),
-                   _("SteFly Remote Stick"),
+                   texts.title,
                    MB_OK | MB_ICONWARNING);
     return false;
   }
@@ -335,7 +399,7 @@ ManageRemoteWidget::RebootStick() noexcept
   //    Open() has just created a new instance.
   if (!RefreshDevicePointer()) {
     ShowMessageBox(_("Reopen left no active device."),
-                   _("SteFly Remote Stick"),
+                   texts.title,
                    MB_OK | MB_ICONWARNING);
     descriptor.Return();   // keep the borrow state consistent
     return false;
@@ -361,13 +425,13 @@ ManageRemoteWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   // Otherwise it stays hidden so the user is not tempted to pick a
   // value that we can't actually write to the device.
   const auto *layout_choices =
-    settings.layout == StickRemoteControl::RemoteStickSettings::Layout::USER
+    layout == SteFlyDevice::Layout::USER
       ? stefly_layout_names_with_user
       : stefly_layout_names;
   AddEnum(_("Key Configuration"),
           _("Default Key Configuration"),
           layout_choices,
-          unsigned(settings.layout));
+          unsigned(layout));
 
   // --- read-only info ----------------------------------------------
   if (info.available) {
@@ -389,7 +453,7 @@ ManageRemoteWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   // close it manually via Cancel. (The Reboot button is guarded by
   // a null-check in RebootStick(), so a second click after a failed
   // first attempt is safe.)
-  AddButton(_("Reboot Remote Stick"), [this]() {
+  AddButton(texts.reboot_button, [this]() {
     RebootStick();
   });
 }
@@ -398,12 +462,11 @@ bool
 ManageRemoteWidget::Save(bool &changed) noexcept
 {
   PopupOperationEnvironment env;
-  auto new_settings = settings;
+  auto new_layout = layout;
 
-  unsigned layout_value = unsigned(new_settings.layout);
+  unsigned layout_value = unsigned(new_layout);
   changed |= SaveValueEnum(LAYOUT, layout_value);
-  const auto chosen =
-    StickRemoteControl::RemoteStickSettings::Layout(layout_value);
+  const auto chosen = SteFlyDevice::Layout(layout_value);
 
   // USER is a read-only state the firmware reports when the active
   // key map doesn't match any preset — it "emerges" from custom key
@@ -411,34 +474,43 @@ ManageRemoteWidget::Save(bool &changed) noexcept
   // picked USER from the dropdown we silently keep the previous
   // layout so the dialog does not write a meaningless "Layout=255"
   // sentence to the stick.
-  if (chosen != StickRemoteControl::RemoteStickSettings::Layout::USER)
-    new_settings.layout = chosen;
+  if (chosen != SteFlyDevice::Layout::USER)
+    new_layout = chosen;
 
   if (device == nullptr)
     return false;  // device gone after a failed reboot; nothing to write
 
   try {
-    device->WriteDeviceSettings(new_settings, env);
+    if (is_remote_stick) {
+      auto settings = GetRemoteStick().GetSettings();
+      settings.layout = new_layout;
+      GetRemoteStick().WriteDeviceSettings(settings, env);
+    } else {
+      auto settings = GetRotaryPanel().GetSettings();
+      settings.layout = new_layout;
+      GetRotaryPanel().WriteDeviceSettings(settings, env);
+    }
   } catch (OperationCancelled) {
     return false;
   } catch (...) {
-    ShowError(std::current_exception(), "SteFly Remote Stick");
+    ShowError(std::current_exception(), texts.title);
     return false;
   }
 
   return true;
 }
 
-void
-ManageRemoteDialog(DeviceDescriptor &descriptor, Device &device)
+static void
+ShowManageDialog(DeviceDescriptor &descriptor, SteFlyDevice &device,
+                 const SteFlyTexts &texts, bool is_remote_stick)
 {
   WidgetDialog dialog(WidgetDialog::Auto{},
                       UIGlobals::GetMainWindow(),
                       UIGlobals::GetDialogLook(),
-                      "SteFly Remote",
+                      texts.caption,
                       new ManageRemoteWidget(UIGlobals::GetDialogLook(),
-                                             descriptor,
-                                             static_cast<StickRemoteControl &>(device)));
+                                             descriptor, device,
+                                             texts, is_remote_stick));
   // OK triggers the widget's Save() — that's where the modified
   // layout (and any future setting) is actually written to the stick
   // via device.WriteDeviceSettings(). Without this, closing the
@@ -446,4 +518,18 @@ ManageRemoteDialog(DeviceDescriptor &descriptor, Device &device)
   dialog.AddButton(_("OK"), mrOK);
   dialog.AddButton(_("Cancel"), mrCancel);
   dialog.ShowModal();
+}
+
+void
+ManageRemoteDialog(DeviceDescriptor &descriptor, Device &device)
+{
+  ShowManageDialog(descriptor, static_cast<StickRemoteControl &>(device),
+                   RemoteStickTexts(), true);
+}
+
+void
+ManageRotaryPanelDialog(DeviceDescriptor &descriptor, Device &device)
+{
+  ShowManageDialog(descriptor, static_cast<RotaryPanelDevice &>(device),
+                   RotaryPanelTexts(), false);
 }

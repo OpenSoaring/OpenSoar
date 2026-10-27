@@ -13,32 +13,24 @@
  * joystick buttons.
  *
  * USB identification: VID 0x1209, PID 0x8502 (pid.codes / SteFly
- * allocation). The OpenSoar UsbSerialHelper picks this device up as a
- * separate USB-Serial endpoint; the user explicitly selects the
- * "SteFly RotaryPanel" driver entry in the device list.
+ * allocation). Like the RemoteStick it is found by its USB ids at
+ * startup and bound with this driver to a fixed device slot of its
+ * own (ROTARY_PORT), which the pilot cannot edit; the device list
+ * offers its manage dialog.
  *
- * Settings are not finalised yet — the firmware side is still in
- * progress. This class therefore lands as a scaffold:
- *   - inherits the full SteFly Info / Reboot / Settings-block plumbing
- *     for free,
- *   - exposes an empty RotaryPanelSettings struct that gets filled in
- *     once the firmware fields are nailed down,
- *   - ApplySettingsField is an empty stub. As soon as the protocol is
- *     set, extending it follows the same 4-step pattern documented in
- *     the RemoteStick driver.
+ * The panel firmware is built on the same SteFlyRemoteCore library as
+ * the RemoteStick, so it speaks the same protocol: the info block, the
+ * reboot and the key layout presets (SteFlyDevice::Layout), under the
+ * same names and indices.  Settings of the encoders themselves are
+ * not defined yet; once the firmware has them, they are added to
+ * RotaryPanelSettings and ApplySettingsField the same way.
  */
 class RotaryPanelDevice final : public SteFlyDevice {
 public:
   struct RotaryPanelSettings {
-    // TODO(stefly): wire up the actual rotary panel settings here.
-    // Likely candidates (placeholder names):
-    //   uint32_t rotary_left_mode  = 0;
-    //   uint32_t rotary_right_mode = 0;
-    //   uint32_t click_action      = 0;
-    //
-    // For each setting, add a `static constexpr const char *NAME = "…";`
-    // identifier — that's the key the firmware will emit in
-    // "$PSRCS,R,<NAME>,<Value>*XX" (key and value as two NMEA fields).
+    /** Key-layout preset, see SteFlyDevice::Layout. */
+    using Layout = SteFlyDevice::Layout;
+    Layout layout = Layout::BASIC;
   };
 
 private:
@@ -51,8 +43,8 @@ public:
   [[gnu::pure]]
   RotaryPanelSettings GetSettings() noexcept;
 
-  /** Diff-and-send the rotary-panel-specific settings.
-   *  Skeleton: currently a no-op until the protocol is defined. */
+  /** Send diffs against the cached snapshot. Updates the cache
+   *  optimistically (no ack from the firmware). */
   void WriteDeviceSettings(const RotaryPanelSettings &new_settings,
                            OperationEnvironment &env);
 
