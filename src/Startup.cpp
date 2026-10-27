@@ -52,7 +52,7 @@
 #include "Device/device.hpp"
 #include "Device/MultipleDevices.hpp"
 #ifdef HAVE_REMOTE_STICK
-# include "Device/Features.hpp"  // REMOTE_PORT
+# include "Device/Features.hpp"  // the SteFly slots
 # include "Device/Driver/SteFly/Discovery.hpp"
 # include "SystemSettings.hpp"
 # include "LogFile.hpp"
@@ -745,32 +745,33 @@ Startup(UI::Display &display)
   AudioVarioGlue::Configure(ui_settings.sound.vario);
 
 #ifdef HAVE_REMOTE_STICK
-  /* scan the USB bus once at startup for a SteFly RemoteStick and, if
-     one is attached, pre-configure the fixed REMOTE_PORT slot in
-     SystemSettings so the subsequent devStartup() call opens it with
-     the "RemoteStick" driver; this slot is NOT persisted to the
-     profile - every launch rescans, and if no matching device is
-     present the DeviceListDialog simply hides the extra row (see
-     MultipleDevices::HasRemoteStick()) */
-  if (auto stefly_port =
-        SteFly::DiscoverPortByUsbId(SteFly::VID_STEFLY,
-                                    SteFly::PID_REMOTE_STICK)) {
-    LogFmt("SteFly RemoteStick detected on {} - binding to REMOTE_PORT slot",
-           stefly_port->path.c_str());
+  /* scan the USB bus once at startup for the SteFly devices (the
+     RemoteStick and the RotaryPanel) and pre-configure the fixed slot
+     of each one that is attached, so the subsequent devStartup() call
+     opens it with its own driver; every launch rescans, and a slot
+     whose device is not present stays disabled and its row hidden in
+     the device list (see MultipleDevices::HasSteFlyDevice()) */
+  for (const auto &auto_slot : SteFly::AUTO_SLOTS) {
     DeviceConfig &cfg =
-      CommonInterface::SetSystemSettings().devices[REMOTE_PORT];
+      CommonInterface::SetSystemSettings().devices[auto_slot.slot];
+    /* also clears whatever an older version stored for the slot */
     cfg.Clear();
+
+    const auto stefly_port =
+      SteFly::DiscoverPortByUsbId(SteFly::VID_STEFLY, auto_slot.pid);
+    if (!stefly_port)
+      continue;
+
+    LogFmt("SteFly {} detected on {} - binding to device slot {}",
+           auto_slot.driver_name, stefly_port->path.c_str(),
+           auto_slot.slot);
     /* the port type comes from the discovery, because Android opens
-       the stick through the UsbSerialHelper (ANDROID_USB_SERIAL) instead of a
-       device node (SERIAL) */
+       the device through the UsbSerialHelper (ANDROID_USB_SERIAL)
+       instead of a device node (SERIAL) */
     cfg.port_type = stefly_port->type;
     cfg.path = stefly_port->path.c_str();
-    cfg.driver_name = "RemoteStick";
+    cfg.driver_name = auto_slot.driver_name;
     cfg.enabled = true;
-  } else {
-    /* make sure the slot stays disabled even if the profile ever
-       stored something there */
-    CommonInterface::SetSystemSettings().devices[REMOTE_PORT].Clear();
   }
 #endif // HAVE_REMOTE_STICK
 
