@@ -6,12 +6,11 @@
  * Startup-time USB / serial discovery for the SteFly device family
  * (RemoteStick, RotaryPanel).
  *
- * The result is one port (e.g. "COM7" on Windows, "/dev/ttyACM0" on
- * Linux or the UsbSerialHelper id "1209:8500#1" on Android) which
- * Startup.cpp uses to pre-configure the fixed REMOTE_PORT slot in
- * SystemSettings::devices before devStartup() opens the ports. This
- * slot is never persisted to the user profile - every launch rescans
- * the bus.
+ * The result is one port per device (e.g. "COM7" on Windows,
+ * "/dev/ttyACM0" on Linux or the UsbSerialHelper id "1209:8500#1" on
+ * Android) which Startup.cpp uses to pre-configure the fixed slot of
+ * that device (see AUTO_SLOTS) in SystemSettings::devices before
+ * devStartup() opens the ports.  Every launch rescans the bus.
  *
  * Only invoked once, right after MultipleDevices is constructed. A
  * RemoteStick that is plugged in after startup is deliberately not
@@ -27,6 +26,7 @@
 #ifdef HAVE_REMOTE_STICK
 
 #include "Device/Config.hpp"
+#include "Device/Features.hpp"
 
 #include <cstdint>
 #include <optional>
@@ -49,6 +49,21 @@ static constexpr std::uint16_t PID_REMOTE_STICK = 0x8500;
  * Device/Driver/SteFly/RotaryPanel.cpp).
  */
 static constexpr std::uint16_t PID_ROTARY_PANEL = 0x8502;
+
+/**
+ * A SteFly device the program finds by itself: its USB product id,
+ * the fixed device slot it is bound to and the driver that slot gets.
+ */
+struct AutoSlot {
+  std::uint16_t pid;
+  unsigned slot;
+  const char *driver_name;
+};
+
+static constexpr AutoSlot AUTO_SLOTS[] = {
+  { PID_REMOTE_STICK, REMOTE_PORT, "RemoteStick" },
+  { PID_ROTARY_PANEL, ROTARY_PORT, "RotaryPanel" },
+};
 
 /**
  * A port found by DiscoverPortByUsbId(). The port type is part of the

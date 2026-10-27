@@ -61,6 +61,28 @@ public:
     bool available = false;     // true once at least one field arrived
   };
 
+  /**
+   * The key layout presets of the SteFly firmware (the
+   * SteFlyRemoteCore library): the index "$PSRCS,S,Layout,N" selects.
+   * The RemoteStick and the RotaryPanel ship layouts of the same names
+   * under the same indices.  USER is what the firmware reports when
+   * the active key map matches no preset; it can never be selected.
+   */
+  enum class Layout : uint32_t {
+    BASIC    = 0,
+    ADVANCED = 1,
+    ANDROID0 = 2,
+    ANDROID1 = 3,
+    STARTER0 = 4,
+    STARTER1 = 5,
+#ifdef XCSOAR_TESTING
+    TEST = 6,
+#endif
+    USER  = 255,
+  };
+
+  static constexpr const char *LAYOUT_NAME = "Layout";
+
 protected:
   // Per-group talker names. The host emits all sentences as
   // "$PSRC<G>,<direction>,…*XX", so each group has its own talker
@@ -108,6 +130,12 @@ public:
   void Restart(OperationEnvironment &env);
 
 protected:
+  /** Select a key layout preset ("$PSRCS,S,Layout,<n>"). */
+  void WriteLayout(Layout layout, OperationEnvironment &env);
+
+  /** Parse the value of a "Layout" settings field. */
+  static bool ParseLayout(std::string_view value, Layout &layout) noexcept;
+
   /**
    * Apply an info field ("Device", "Version", "FileName", "SerialNumber").
    * Default implementation handles the common keys; override and
