@@ -8,6 +8,7 @@
 #include "NMEA/InputLine.hpp"
 #include "LogFile.hpp"
 
+#include <charconv>
 #include <chrono>
 #include <string>
 
@@ -170,6 +171,28 @@ SteFlyDevice::Restart(OperationEnvironment &env)
 {
   // Control group: "$PSRCC,S,Reboot*XX"
   SendNMEA("PSRCC,S,Reboot", env);
+}
+
+void
+SteFlyDevice::WriteLayout(Layout layout, OperationEnvironment &env)
+{
+  // "$PSRCS,S,Layout,<n>*XX" — Settings group, Set direction.
+  WriteDeviceSetting(SETTINGS_TALKER, 'S', LAYOUT_NAME,
+                     std::to_string(uint32_t(layout)), env);
+}
+
+bool
+SteFlyDevice::ParseLayout(std::string_view value, Layout &layout) noexcept
+{
+  unsigned long parsed = 0;
+  auto [ptr, ec] = std::from_chars(value.data(),
+                                   value.data() + value.size(),
+                                   parsed);
+  if (ec != std::errc{})
+    return false;
+
+  layout = Layout(parsed);
+  return true;
 }
 
 #endif // HAVE_REMOTE_STICK

@@ -51,6 +51,8 @@
 #include "Components.hpp"
 #include "BackendComponents.hpp"
 
+#include <array>
+
 #ifdef ANDROID
 #include "java/Global.hxx"
 #include "Android/Main.hpp"
@@ -259,6 +261,21 @@ class DeviceListWidget final
   Item items[NUMDEV];
   std::string error_messages[NUMDEV];
 
+  /**
+   * The device slot shown in each list row.  The regular slots always
+   * have a row; a SteFly slot only while its device is attached, so
+   * the rows after VISIBLE_NUMDEV do not always match the slot index.
+   */
+  std::array<unsigned, NUMDEV> row_slots;
+  unsigned n_rows = 0;
+
+  /** The slot of the selected row, or NUMDEV if there is none. */
+  [[gnu::pure]]
+  unsigned GetCurrentSlot() const noexcept {
+    const unsigned row = GetList().GetCursorIndex();
+    return row < n_rows ? row_slots[row] : NUMDEV;
+  }
+
   Button *disable_button;
   Button *reconnect_button, *flight_button;
   Button *edit_button;
@@ -319,7 +336,7 @@ public:
 
   /* virtual methods from class List::Handler */
    void OnPaintItem(Canvas &canvas, const PixelRect rc,
-                    unsigned idx) noexcept override;
+                    unsigned row) noexcept override;
   void OnCursorMoved(unsigned index) noexcept override;
 
 private:
@@ -351,19 +368,20 @@ DeviceListWidget::Prepare(ContainerWindow &parent,
   const DialogLook &look = UIGlobals::GetDialogLook();
   const unsigned margin = Layout::GetTextPadding();
   font_height = look.list.font->GetHeight();
+  /* a SteFly slot (RemoteStick, RotaryPanel) only gets a row while
+     its device was auto-detected at startup */
+  n_rows = 0;
+  for (unsigned i = 0; i < NUMDEV; ++i) {
 #ifdef HAVE_REMOTE_STICK
-  /* the REMOTE_PORT row is only visible while a SteFly RemoteStick
-     was auto-detected at startup; otherwise stop the list at
-     VISIBLE_NUMDEV so the row does not appear at all */
-  const unsigned row_count =
-    (devices != nullptr && devices->HasRemoteStick())
-      ? NUMDEV : VISIBLE_NUMDEV;
-#else
-  const unsigned row_count = NUMDEV;
+    if (IsSteFlySlot(i) &&
+        (devices == nullptr || !devices->HasSteFlyDevice(i)))
+      continue;
 #endif
+    row_slots[n_rows++] = i;
+  }
 
   CreateList(parent, look, rc, 3 * margin + font_height +
-             look.small_font.GetHeight()).SetLength(row_count);
+             look.small_font.GetHeight()).SetLength(n_rows);
 
   for (Item &i : items)
     i.Clear();
@@ -437,15 +455,11 @@ DeviceListWidget::CreateButtons(WidgetDialog &dialog)
 void
 DeviceListWidget::UpdateButtons()
 {
-  const unsigned current = GetList().GetCursorIndex();
+  const unsigned current = GetCurrentSlot();
 
-#ifdef HAVE_REMOTE_STICK
-  /* the REMOTE_PORT slot (SteFly RemoteStick) is auto-configured and
-     must not be manually enabled/disabled or edited */
-  const bool is_remote_slot = (current == REMOTE_PORT);
-#else
-  constexpr bool is_remote_slot = false;
-#endif
+  /* the SteFly slots (RemoteStick, RotaryPanel) are auto-configured
+     and must not be manually enabled/disabled or edited */
+  const bool is_remote_slot = IsSteFlySlot(current);
 
   if (current < NUMDEV && !is_remote_slot) {
     const auto &config = CommonInterface::GetSystemSettings().devices[current];
@@ -630,15 +644,17 @@ DeviceListWidget::DrawAliveStatus(Canvas &canvas, PixelPoint p,
 
 void
 DeviceListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
-                              unsigned idx) noexcept
+                              unsigned row) noexcept
 {
-  assert(idx < NUMDEV);
+  assert(row < n_rows);
+  const unsigned idx = row_slots[row];
 
 #ifdef HAVE_REMOTE_STICK
-  /* visual separator above the REMOTE_PORT row (SteFly RemoteStick)
-     so it is clearly set apart from the regular editable ports: a
-     DPI-scaled thick bar plus a hairline below it */
-  if (idx == REMOTE_PORT) {
+  /* visual separator above the first SteFly row (RemoteStick,
+     RotaryPanel) so the auto-detected devices are clearly set apart
+     from the regular editable ports: a DPI-scaled thick bar plus a
+     hairline below it */
+  if (row == VISIBLE_NUMDEV) {
     const int thick = Layout::Scale(3);
     const int gap   = Layout::Scale(2);
 
@@ -730,7 +746,7 @@ DeviceListWidget::OnCursorMoved([[maybe_unused]] unsigned index) noexcept
 inline void
 DeviceListWidget::EnableDisableCurrent()
 {
-  const unsigned index = GetList().GetCursorIndex();
+  const unsigned index = GetCurrentSlot();
   if (index >= NUMDEV)
     return;
 
@@ -767,7 +783,7 @@ DeviceListWidget::ReconnectCurrent()
   if (devices == nullptr)
     return;
 
-  const unsigned current = GetList().GetCursorIndex();
+  const unsigned current = GetCurrentSlot();
   if (current >= NUMDEV)
     return;
 
@@ -801,7 +817,7 @@ DeviceListWidget::DownloadFlightFromCurrent()
   if (devices == nullptr)
     return;
 
-  const unsigned current = GetList().GetCursorIndex();
+  const unsigned current = GetCurrentSlot();
   if (current >= NUMDEV)
     return;
 
@@ -829,7 +845,7 @@ DeviceListWidget::DownloadFlightFromCurrent()
 inline void
 DeviceListWidget::EditCurrent()
 {
-  const unsigned current = GetList().GetCursorIndex();
+  const unsigned current = GetCurrentSlot();
   if (current >= NUMDEV)
     return;
 
@@ -871,7 +887,7 @@ DeviceListWidget::ManageCurrent()
   if (devices == nullptr)
     return;
 
-  const unsigned current = GetList().GetCursorIndex();
+  const unsigned current = GetCurrentSlot();
   if (current >= NUMDEV)
     return;
 
@@ -921,6 +937,8 @@ DeviceListWidget::ManageCurrent()
        borrow during a reboot so the port can be closed/reopened while
        the stick re-enumerates, then re-borrows */
     ManageRemoteDialog(descriptor, *device);
+  else if (descriptor.IsDriver("RotaryPanel"))
+    ManageRotaryPanelDialog(descriptor, *device);
 #endif
   else if (descriptor.IsDriver("Stratux"))
     ManageStratuxDialog(*device);
@@ -978,7 +996,7 @@ DeviceListWidget::MonitorCurrent()
   if (devices == nullptr)
     return;
 
-  const unsigned current = GetList().GetCursorIndex();
+  const unsigned current = GetCurrentSlot();
   if (current >= NUMDEV)
     return;
 
@@ -992,7 +1010,7 @@ DeviceListWidget::DebugCurrent()
   if (devices == nullptr)
     return;
 
-  const unsigned current = GetList().GetCursorIndex();
+  const unsigned current = GetCurrentSlot();
   if (current >= NUMDEV)
     return;
 
