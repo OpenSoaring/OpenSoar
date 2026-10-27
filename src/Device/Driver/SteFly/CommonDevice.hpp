@@ -40,6 +40,21 @@ class NMEAInputLine;
  * Key and Value are separate NMEA fields (comma-separated), so the
  * driver reads them as two consecutive line.ReadView() calls.
  *
+ * User settings: since SteFlyRemoteCore 1.1 every device additionally
+ * lists four tuning values in its settings block, after "Layout":
+ *
+ *   $PSRCS,A,DblClick,<ms>      double click window      (100..1000)
+ *   $PSRCS,A,LongPress,<ms>     long press time          (300..1900)
+ *   $PSRCS,A,MouseStep,<n>      mouse distance in quarters of the
+ *                               layout's distance        (1..16)
+ *   $PSRCS,A,MouseAccel,<n>     highest mouse multiplier (1..8)
+ *
+ * They are written with "$PSRCS,S,<Key>,<Value>*XX"; the firmware clamps
+ * the value, stores it in its EEPROM and answers with the value in
+ * effect. They are the same on every SteFly device and are therefore
+ * handled here, in the base class. Older firmware does not send them, so
+ * UserSettings::available stays false and the dialog hides them.
+ *
  * Each block has its own ApplyXField hook on the base class:
  *   - ApplyInfoField has a default impl that claims the common info
  *     fields. Subclasses override + chain to the base if they add
@@ -83,6 +98,28 @@ public:
 
   static constexpr const char *LAYOUT_NAME = "Layout";
 
+  /**
+   * Tuning values common to all SteFly devices (see above).
+   */
+  struct UserSettings {
+    unsigned dblclick_ms = 350;
+    unsigned long_press_ms = 900;
+    unsigned mouse_step = 4;
+    unsigned mouse_accel = 1;
+    /** true once the firmware has reported at least one of them */
+    bool available = false;
+
+    static constexpr const char *DBLCLICK_NAME    = "DblClick";
+    static constexpr const char *LONGPRESS_NAME   = "LongPress";
+    static constexpr const char *MOUSESTEP_NAME   = "MouseStep";
+    static constexpr const char *MOUSEACCEL_NAME  = "MouseAccel";
+
+    static constexpr unsigned DBLCLICK_MIN = 100, DBLCLICK_MAX = 1000;
+    static constexpr unsigned LONGPRESS_MIN = 300, LONGPRESS_MAX = 1900;
+    static constexpr unsigned MOUSESTEP_MIN = 1, MOUSESTEP_MAX = 16;
+    static constexpr unsigned MOUSEACCEL_MIN = 1, MOUSEACCEL_MAX = 8;
+  };
+
 protected:
   // Per-group talker names. The host emits all sentences as
   // "$PSRC<G>,<direction>,…*XX", so each group has its own talker
@@ -96,6 +133,9 @@ protected:
 
   // Protected by info_block.mutex.
   SteFlyInfo info;
+
+  // Protected by settings_block.mutex.
+  UserSettings user_settings;
 
   explicit SteFlyDevice(Port &port) noexcept;
 
@@ -123,6 +163,16 @@ public:
 
   /** Block until the settings block's "Ready" arrives or the timeout fires. */
   bool WaitForSettings(unsigned timeout_ms);
+
+  /** Snapshot of the common user settings gathered so far. */
+  [[gnu::pure]]
+  UserSettings GetUserSettings() noexcept;
+
+  /** Send the user settings that differ from the cached snapshot. The
+   *  firmware answers each with the value in effect, which updates the
+   *  cache; until then the cache is updated optimistically. */
+  void WriteUserSettings(const UserSettings &new_settings,
+                         OperationEnvironment &env);
 
   // ============== Shared commands ====================================
 
@@ -155,6 +205,12 @@ protected:
                                   std::string_view value) = 0;
 
 private:
+  /**
+   * Apply a common user setting field. Returns false if the key is
+   * not one of them. Called with settings_block.mutex held.
+   */
+  bool ApplyUserSettingField(std::string_view key, std::string_view value);
+
   bool ParseInfoSentence(NMEAInputLine &line);
   bool ParseSettingsSentence(NMEAInputLine &line);
 };
