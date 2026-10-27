@@ -137,7 +137,7 @@ protected:
   static bool ParseLayout(std::string_view value, Layout &layout) noexcept;
 
   /**
-   * Apply an info field ("Device", "Version", "FileName", "SerialNumber").
+   * Apply an info field ("Device", "Version", "FileName", "S/N").
    * Default implementation handles the common keys; override and
    * chain to the base if your device adds further info fields.
    *
