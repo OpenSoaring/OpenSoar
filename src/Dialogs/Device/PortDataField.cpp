@@ -20,7 +20,8 @@
 #endif
 
 #ifdef _WIN32
-# include "system/WindowsRegistry.hpp"
+# include "Device/Port/WindowsSerialPorts.hpp"
+# include "LogFile.hpp"
 # include "util/StringFormat.hpp"
 #endif
 
@@ -169,42 +170,39 @@ DetectSerialPorts(DataFieldEnum &df) noexcept
 
 static void
 DetectSerialPorts(DataFieldEnum &df) noexcept
-try {
-  /* the registry key HKEY_LOCAL_MACHINE/Hardware/DEVICEMAP/SERIALCOMM
-     is the best way to discover serial ports on Windows */
+{
+  const auto e = EnumerateSerialPorts();
 
-  RegistryKey hardware{HKEY_LOCAL_MACHINE, "Hardware"};
-  RegistryKey devicemap{hardware, "DEVICEMAP"};
-  RegistryKey serialcomm{devicemap, "SERIALCOMM"};
+  if (!e.have_serialcomm) {
+    LogString("PortPicker: no serial ports "
+              "(Hardware\\DeviceMap\\SerialComm is missing)");
+    return;
+  }
 
-  for (unsigned i = 0;; ++i) {
-    char name[128];
-    char value[64];
+  if (!e.have_arbiter)
+    LogString("PortPicker: COM Name Arbiter not readable, "
+              "device classes are unknown");
 
-    DWORD type;
-    if (!serialcomm.EnumValue(i, std::span{name}, &type,
-                              std::as_writable_bytes(std::span{value})))
-      break;
+  for (const auto &port : e.ports) {
+    LogFmt("PortPicker: {} ({}) class={}{}{}", port.path, port.device_path,
+           port.arbiter.empty() ? "unknown" : port.arbiter.c_str(),
+           port.hidden ? " hidden: " : "",
+           port.hidden ? port.hidden_reason : "");
 
-    if (type != REG_SZ)
-      // weird
+    if (port.hidden)
       continue;
-
-    /* the port is listed by the name Windows gives it ("COM7"), which
-       is also the name the device settings store (see
-       DeviceConfig::NormalizeSerialPath()); SerialPort::Open() turns
-       it into the device path.  The kernel's name of the port, e.g.
-       \Device\USBSER000, is only of interest as the help text. */
-    const char *path = value;
 
     /* skip the ports the SteFly devices have been auto-bound to */
-    if (IsSteFlyReserved(path))
+    if (IsSteFlyReserved(port.path.c_str()))
       continue;
 
-    AddPort(df, DeviceConfig::PortType::SERIAL, path, nullptr, name);
+    /* the port is stored by its name ("COM7", see
+       DeviceConfig::NormalizeSerialPath()) and shown with what is
+       behind it, e.g. "COM19 (SteFly Rotary Panel)"; the kernel's
+       name of the port is the help text */
+    AddPort(df, DeviceConfig::PortType::SERIAL, port.path.c_str(),
+            port.display.c_str(), port.device_path.c_str());
   }
-} catch (const std::system_error &) {
-  // silently ignore registry errors
 }
 
 #endif
