@@ -103,7 +103,7 @@ static SteFlyTexts
 RemoteStickTexts() noexcept
 {
   return {
-    "SteFly Remote",
+    "SteFly Remote Stick",
     _("SteFly Remote Stick"),
     _("Reboot Remote Stick"),
     _("Rebooting Remote Stick"),
@@ -116,10 +116,10 @@ static SteFlyTexts
 RotaryPanelTexts() noexcept
 {
   return {
-    "SteFly RotaryPanel",
-    _("SteFly RotaryPanel"),
-    _("Reboot RotaryPanel"),
-    _("Rebooting RotaryPanel"),
+    "SteFly Rotary Panel",
+    _("SteFly Rotary Panel"),
+    _("Reboot Rotary Panel"),
+    _("Rebooting Rotary Panel"),
     _("Waiting for the panel to reboot…"),
     _("Waiting for the panel to reconnect…"),
   };
