@@ -45,6 +45,9 @@
 #include "Device/Driver/XCTracer.hpp"
 #include "Device/Driver/XCVario.hpp"
 #include "Device/Driver/Zander.hpp"
+#ifdef HAVE_REMOTE_STICK
+#include "Device/Driver/SteFly/RotaryPanel.hpp"
+#endif
 #include "Device/Parser.hpp"
 #include "Device/Port/NullPort.hpp"
 #include "DumpPort.hpp"
@@ -1176,6 +1179,59 @@ TestNanoDownloadFlightRecordLength()
 
   File::Delete(path);
 }
+
+#ifdef HAVE_REMOTE_STICK
+/**
+ * The layout table a SteFly device reports in its info block
+ * (SteFlyRemoteCore 1.2): the manage dialog offers exactly these
+ * layouts, so the table has to come through as sent, gaps in the
+ * indices included, and a new info request must start from scratch.
+ */
+static void
+TestSteFlyLayouts()
+{
+  NullPort null;
+  std::unique_ptr<Device> device{rotary_panel_driver.CreateOnPort(dummy_config,
+                                                                  null)};
+  ok1(device != nullptr);
+  auto &stefly = static_cast<SteFlyDevice &>(*device);
+
+  NullOperationEnvironment env;
+  stefly.RequestInfo(env);
+
+  NMEAInfo nmea_info;
+  nmea_info.Reset();
+  ok1(stefly.ParseNMEA("$PSRCI,A,Version,4.0*46", nmea_info));
+  ok1(stefly.ParseNMEA("$PSRCI,A,Layout,0,Basic*4A", nmea_info));
+  ok1(stefly.ParseNMEA("$PSRCI,A,Layout,1,Advanced*2F", nmea_info));
+  ok1(stefly.ParseNMEA("$PSRCI,A,Layout,4,Test-Layout*35", nmea_info));
+  /* a repeated index replaces the entry */
+  ok1(stefly.ParseNMEA("$PSRCI,A,Layout,1,Advanced (new)*72", nmea_info));
+  /* not a layout: the USER marker, a bad index, no name */
+  ok1(stefly.ParseNMEA("$PSRCI,A,Layout,255,User*23", nmea_info));
+  ok1(stefly.ParseNMEA("$PSRCI,A,Layout,x,Bad*1F", nmea_info));
+  ok1(stefly.ParseNMEA("$PSRCI,A,Layout,5,*15", nmea_info));
+  ok1(stefly.ParseNMEA("$PSRCI,A,Ready*51", nmea_info));
+  ok1(stefly.WaitForInfo(0));
+
+  auto info = stefly.GetInfo();
+  ok1(info.available);
+  ok1(info.version == "4.0");
+  ok1(info.layouts.size() == 3);
+  ok1(info.layouts[0].index == 0 && info.layouts[0].name == "Basic");
+  ok1(info.layouts[1].index == 1 &&
+      info.layouts[1].name == "Advanced (new)");
+  /* the panel has no starter key layouts, so its test layout sits at
+     index 4; the name comes from the device, not from the index */
+  ok1(info.layouts[2].index == 4 && info.layouts[2].name == "Test-Layout");
+
+  /* the next request forgets the table, so that a layout the firmware
+     no longer has after an update does not linger */
+  stefly.RequestInfo(env);
+  info = stefly.GetInfo();
+  ok1(info.layouts.empty());
+}
+#endif
 
 static void
 TestAltairRU()
@@ -4718,6 +4774,9 @@ int main()
              + 6 /* FlarmMinimumRange */
              + 23 /* NanoDownloadFlight */
              + 9 /* LXNanoLogbook */
+#ifdef HAVE_REMOTE_STICK
+             + 18 /* SteFlyLayouts */
+#endif
              + 17 /* LXNAVQNH */
              + 25 /* LXNAVQNHModel */
              + 6 /* LXNAVQNHEcho */);
@@ -4731,6 +4790,9 @@ int main()
   TestNanoDownloadFlight();
   TestNanoDownloadFlightRecordLength();
   TestAltairRU();
+#ifdef HAVE_REMOTE_STICK
+  TestSteFlyLayouts();
+#endif
   TestBlueFly();
   TestBorgeltB50();
   TestCAI302();
