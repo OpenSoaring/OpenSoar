@@ -95,6 +95,28 @@ ReadTtyUsbId(const char *name, std::uint16_t &vid,
 
 namespace SteFly {
 
+/**
+ * The path that opens a port named "COMn". CreateFile() knows only
+ * COM1..COM9 by their plain names; from COM10 on a plain name is taken
+ * as a file name and fails with "file not found", so the port has to be
+ * given as the device path "\\.\COMnn". The spelling is the one the
+ * port picker uses (PortDataField.cpp), so that both name a port alike.
+ */
+static std::string
+ComPortPath(const char *port_name) noexcept
+{
+  if (std::strncmp(port_name, "COM", 3) == 0) {
+    char *endptr;
+    const unsigned long n = std::strtoul(port_name + 3, &endptr, 10);
+    if (endptr != port_name + 3 && *endptr == '\0')
+      return n < 10
+        ? std::string(port_name) + ":"
+        : std::string("\\\\.\\") + port_name;
+  }
+
+  return port_name;
+}
+
 std::optional<DiscoveredPort>
 DiscoverPortByUsbId(std::uint16_t vid, std::uint16_t pid) noexcept
 {
@@ -137,8 +159,7 @@ DiscoverPortByUsbId(std::uint16_t vid, std::uint16_t pid) noexcept
 
     // Match — pull the "PortName" value ("COM7") from the device
     // parameters key. This is exactly what Device Manager displays as
-    // the user-facing port name and what CreateFile() expects (with a
-    // "\\.\" prefix for COM10+).
+    // the user-facing port name.
     HKEY hk = SetupDiOpenDevRegKey(hdi, &dev, DICS_FLAG_GLOBAL, 0,
                                    DIREG_DEV, KEY_READ);
     if (hk == INVALID_HANDLE_VALUE)
@@ -155,7 +176,8 @@ DiscoverPortByUsbId(std::uint16_t vid, std::uint16_t pid) noexcept
 
     LogFmt("SteFly::Discovery: matched VID_{:04X}&PID_{:04X} on port {}",
            vid, pid, port);
-    result.emplace(DiscoveredPort{DeviceConfig::PortType::SERIAL, port});
+    result.emplace(DiscoveredPort{DeviceConfig::PortType::SERIAL,
+                                  ComPortPath(port)});
     break;
   }
 
