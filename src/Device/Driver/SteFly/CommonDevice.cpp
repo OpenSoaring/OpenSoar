@@ -217,8 +217,6 @@ SteFlyDevice::ApplyUserSettingField(std::string_view key,
     target = &user_settings.long_press_ms;
   else if (key == UserSettings::MOUSESTEP_NAME)
     target = &user_settings.mouse_step;
-  else if (key == UserSettings::MOUSEACCEL_NAME)
-    target = &user_settings.mouse_accel;
   else
     return false;
 
@@ -256,9 +254,6 @@ SteFlyDevice::WriteUserSettings(const UserSettings &new_settings,
   if (new_settings.mouse_step != old_settings.mouse_step)
     WriteDeviceSetting(SETTINGS_TALKER, 'S', UserSettings::MOUSESTEP_NAME,
                        std::to_string(new_settings.mouse_step), env);
-  if (new_settings.mouse_accel != old_settings.mouse_accel)
-    WriteDeviceSetting(SETTINGS_TALKER, 'S', UserSettings::MOUSEACCEL_NAME,
-                       std::to_string(new_settings.mouse_accel), env);
 
   // Apply optimistically; the firmware's answer ($PSRCS,A,<Key>,<v>)
   // corrects the cache if it had to clamp a value.

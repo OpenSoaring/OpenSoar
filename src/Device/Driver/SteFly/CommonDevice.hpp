@@ -43,13 +43,17 @@ class NMEAInputLine;
  * driver reads them as two consecutive line.ReadView() calls.
  *
  * User settings: since SteFlyRemoteCore 1.1 every device additionally
- * lists four tuning values in its settings block, after "Layout":
+ * lists its tuning values in its settings block, after "Layout":
  *
  *   $PSRCS,A,DblClick,<ms>      double click window      (100..1000)
  *   $PSRCS,A,LongPress,<ms>     long press time          (300..1900)
  *   $PSRCS,A,MouseStep,<n>      mouse distance in quarters of the
  *                               layout's distance        (1..16)
- *   $PSRCS,A,MouseAccel,<n>     highest mouse multiplier (1..8)
+ *
+ * Core 1.1 also listed "MouseAccel", a multiplier of the mouse step when
+ * the input is used fast or long.  Since 1.2 the acceleration is fixed at
+ * 1 and no longer a setting, because it confused more than it helped; a
+ * MouseAccel field of older firmware is ignored here.
  *
  * They are written with "$PSRCS,S,<Key>,<Value>*XX"; the firmware clamps
  * the value, stores it in its EEPROM and answers with the value in
@@ -119,19 +123,16 @@ public:
     unsigned dblclick_ms = 350;
     unsigned long_press_ms = 900;
     unsigned mouse_step = 4;
-    unsigned mouse_accel = 1;
     /** true once the firmware has reported at least one of them */
     bool available = false;
 
     static constexpr const char *DBLCLICK_NAME    = "DblClick";
     static constexpr const char *LONGPRESS_NAME   = "LongPress";
     static constexpr const char *MOUSESTEP_NAME   = "MouseStep";
-    static constexpr const char *MOUSEACCEL_NAME  = "MouseAccel";
 
     static constexpr unsigned DBLCLICK_MIN = 100, DBLCLICK_MAX = 1000;
     static constexpr unsigned LONGPRESS_MIN = 300, LONGPRESS_MAX = 1900;
     static constexpr unsigned MOUSESTEP_MIN = 1, MOUSESTEP_MAX = 16;
-    static constexpr unsigned MOUSEACCEL_MIN = 1, MOUSEACCEL_MAX = 8;
   };
 
 protected:
