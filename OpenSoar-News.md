@@ -29,7 +29,7 @@ bookkeeping) lives in the old repository and is not repeated here -
 
 ---
 
-## OpenSoar 7.46.26 - not released yet
+## OpenSoar 7.46.26 - 2026-10-30
 
 Base: XCSoar 7.46 of 2026-10-19 plus the fixes of the XCSoar 7.46
 branch up to 2026-10-21 (the map no longer crashes on PowerVR Rogue
@@ -71,26 +71,26 @@ release is the one of XCSoar 7.46, unchanged.
 * devices: a Larus sensor box can be managed in the device list; the
   dialog shows the firmware version the box sends in $PLARF - thanks
   to Blaubart
-* devices: the SteFly RotaryPanel is found by itself like the
-  RemoteStick, on a device slot of its own with the driver
+* devices: the SteFly Rotary Panel is found by itself like the
+  Remote Stick, on a device slot of its own with the driver
   "RotaryPanel"; the slot cannot be edited, and the manage dialog sets
   the key configuration, shows the device information and restarts the
   panel
-* devices: the manage dialog of the SteFly RemoteStick and RotaryPanel
+* devices: the manage dialog of the SteFly Remote Stick and Rotary Panel
   also sets the double click time, the long press time and the mouse
   step of the device (firmware with SteFlyRemoteCore 1.1 or later), and
   it shows the serial number the device reports
 * devices: on Windows a serial port is called "COM7" everywhere, also
   from COM10 on, and is opened by its device path, so a device on
-  COM10 or above opens again - the SteFly RemoteStick and RotaryPanel
+  COM10 or above opens again - the SteFly Remote Stick and Rotary Panel
   were found there, but opening the port failed with "file not found";
   the old spellings "COM7:" and "\\.\COM12" in existing settings are
   corrected by themselves
 * devices: on Windows the port list shows what is behind a port, e.g.
-  "COM19 (SteFly Rotary Panel)", "COM3 (USB)" or "COM10 (Larus)" for a
-  paired Bluetooth device, instead of the kernel's device name; the
-  incoming port Windows creates next to every Bluetooth device is left
-  out, as no device calls in (as in OpenSoar 7.44)
+  "COM3 (USB)" or "COM10 (Larus)" for a paired Bluetooth device, instead
+  of the kernel's device name; the incoming port Windows creates next to
+  every Bluetooth device is left out, as no device calls in (as in
+  OpenSoar 7.44)
 * devices: the device list sets the SteFly devices apart from the
   regular ports with a gap and a colour of their own, and names them
   alike, "SteFly Remote Stick" and "SteFly Rotary Panel"
