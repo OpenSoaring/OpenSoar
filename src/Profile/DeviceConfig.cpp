@@ -117,7 +117,7 @@ LoadPortIndex(const ProfileMap &map, DeviceConfig &config, unsigned n)
     index = 0;
 
   char path[64];
-  const int written = StringFormat(path, sizeof(path), "COM%u:", index);
+  const int written = StringFormat(path, sizeof(path), "COM%u", index);
   if (written < 0 || static_cast<size_t>(written) >= sizeof(path))
     return false;
 

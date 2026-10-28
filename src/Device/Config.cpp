@@ -3,6 +3,7 @@
 
 #include "Config.hpp"
 #include "Asset.hpp"
+#include "Device/Port/ComPortName.hpp"
 #include "Language/Language.hpp"
 #include "util/Compiler.h"
 #include "util/StringCompare.hxx"
@@ -203,6 +204,25 @@ DeviceConfig::Clear() noexcept
 #ifndef NDEBUG
   dump_port = false;
 #endif
+}
+
+bool
+DeviceConfig::NormalizeSerialPath() noexcept
+{
+  if (port_type != PortType::SERIAL)
+    return false;
+
+  const unsigned number = ParseComPortNumber(path.c_str());
+  if (number == 0)
+    return false;
+
+  StaticString<16> normalized;
+  normalized.Format("COM%u", number);
+  if (path == normalized.c_str())
+    return false;
+
+  path = normalized;
+  return true;
 }
 
 const char *

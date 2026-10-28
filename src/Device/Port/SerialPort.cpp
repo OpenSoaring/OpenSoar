@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "SerialPort.hpp"
+#include "ComPortName.hpp"
 #include "Device/Error.hpp"
 #include "Operation/Cancelled.hpp"
 #include "system/Error.hxx"
@@ -46,7 +47,18 @@ SerialPort::Open(const char *path, unsigned _baud_rate)
 
   DCB PortDCB;
 
-  // Open the serial port (wide API; path is UTF-8, usually "COMn").
+  /* a serial port is opened by its device path "\\.\COMn": the plain
+     name "COMn" is only known to CreateFile() for COM1 to COM9, from
+     COM10 on it is taken as a file name and fails with "file not
+     found"; the device path works for every number, so it is used for
+     all of them (and for the old spellings "COMn:" and "\\.\COMn") */
+  char device_path[16];
+  if (const unsigned number = ParseComPortNumber(path); number > 0) {
+    snprintf(device_path, sizeof(device_path), "\\\\.\\COM%u", number);
+    path = device_path;
+  }
+
+  // Open the serial port (wide API; path is UTF-8).
   hPort = CreateFileW(UTF8ToWide(path).c_str(),
                       GENERIC_READ | GENERIC_WRITE, // Access (read-write) mode
                       0,            // Share mode
