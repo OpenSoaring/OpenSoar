@@ -123,6 +123,7 @@ set(_SOURCES
         Device/Port/K6BtPort.cpp
         Device/Port/NullPort.cpp
         Device/Port/Port.cpp
+        Device/Port/SerialPortClassify.cpp
         Device/Port/SocketPort.cpp
         Device/Port/TCPClientPort.cpp
         Device/Port/TCPPort.cpp
@@ -170,6 +171,7 @@ if(UNIX)
 elseif(WIN32)
   list(APPEND _SOURCES
         Device/Port/SerialPort.cpp
+        Device/Port/WindowsSerialPorts.cpp
   )
 endif()
 
