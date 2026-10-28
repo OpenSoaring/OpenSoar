@@ -19,9 +19,9 @@
  * offers its manage dialog.
  *
  * The panel firmware is built on the same SteFlyRemoteCore library as
- * the RemoteStick, so it speaks the same protocol: the info block, the
- * reboot and the key layout presets (SteFlyDevice::Layout), under the
- * same names and indices.  Settings of the encoders themselves are
+ * the RemoteStick, so it speaks the same protocol: the info block with
+ * its own table of key layouts, the layout selection and the reboot.
+ * Settings of the encoders themselves are
  * not defined yet; once the firmware has them, they are added to
  * RotaryPanelSettings and ApplySettingsField the same way.
  */
