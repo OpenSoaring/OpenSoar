@@ -1250,6 +1250,10 @@ msgid "Initialising display"
 msgstr "Initialisiere Anzeige"
 
 #. Show progress dialog
+#, c-format
+msgid "%s in %u s"
+msgstr "%s in %u s"
+
 msgid "Shutdown, please wait..."
 msgstr "Wird beendet, bitte warten..."
 
