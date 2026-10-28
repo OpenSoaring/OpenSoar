@@ -58,6 +58,13 @@ void
 SteFlyDevice::RequestInfo(OperationEnvironment &env)
 {
   info_block.Reset();
+  {
+    /* the device reports its whole layout table with every info
+       block; start from an empty one, so that a layout the firmware
+       no longer has (after an update) does not stay in the list */
+    const std::lock_guard lock{info_block.mutex};
+    info.layouts.clear();
+  }
   SendNMEA("PSRCI,R,Info", env);
 }
 
@@ -132,12 +139,44 @@ SteFlyDevice::ParseInfoSentence(NMEAInputLine &line)
 
   const auto value = line.ReadView();
 
+  if (key == LAYOUT_NAME) {
+    /* one entry of the layout table: "Layout,<index>,<name>" */
+    const auto name = line.ReadView();
+    const std::lock_guard lock{info_block.mutex};
+    ApplyLayoutChoice(value, name);
+    info.available = true;
+    return true;
+  }
+
   {
     const std::lock_guard lock{info_block.mutex};
     ApplyInfoField(key, value);
     info.available = true;
   }
   return true;
+}
+
+void
+SteFlyDevice::ApplyLayoutChoice(std::string_view index,
+                                std::string_view name)
+{
+  Layout layout;
+  if (!ParseLayout(index, layout) || layout == Layout::USER ||
+      name.empty())
+    return;
+
+  const unsigned i = unsigned(layout);
+
+  /* a repeated index (the table was sent again without a new request)
+     replaces the entry instead of adding a second one */
+  for (auto &choice : info.layouts) {
+    if (choice.index == i) {
+      choice.name.assign(name);
+      return;
+    }
+  }
+
+  info.layouts.push_back({i, std::string{name}});
 }
 
 bool
