@@ -167,26 +167,6 @@ DetectSerialPorts(DataFieldEnum &df) noexcept
 
 #elif defined(_WIN32)
 
-/**
- * If this is a "COMx" name, parse "x" and return it; otherwise,
- * return -1.
- */
-[[gnu::pure]]
-static int
-ComIndex(char *name) noexcept
-{
-  const char *suffix = StringAfterPrefix(name, "COM");
-  if (suffix == nullptr)
-    return -1;
-
-  char *endptr;
-  const auto i = strtoul(suffix, &endptr, 10);
-  if (endptr == suffix || *endptr != '\0')
-    return -1;
-
-  return static_cast<int>(i);
-}
-
 static void
 DetectSerialPorts(DataFieldEnum &df) noexcept
 try {
@@ -210,26 +190,18 @@ try {
       // weird
       continue;
 
+    /* the port is listed by the name Windows gives it ("COM7"), which
+       is also the name the device settings store (see
+       DeviceConfig::NormalizeSerialPath()); SerialPort::Open() turns
+       it into the device path.  The kernel's name of the port, e.g.
+       \Device\USBSER000, is only of interest as the help text. */
     const char *path = value;
 
-    char buffer[128];
-    if (const auto com_idx = ComIndex(value); com_idx >= 0) {
-      if (com_idx < 10)
-        /* old-style raw names (with trailing colon for backwards
-           compatibility with older XCSoar versions) */
-        StringFormatUnsafe(buffer, "%s:", value);
-      else
-        /* COM10 and above must use UNC paths */
-        StringFormatUnsafe(buffer, "\\\\.\\%s", value);
-      path = buffer;
-    }
-
-    /* skip the ports the SteFly devices have been auto-bound to; their
-       slots hold the path in the same spelling as built above */
+    /* skip the ports the SteFly devices have been auto-bound to */
     if (IsSteFlyReserved(path))
       continue;
 
-    AddPort(df, DeviceConfig::PortType::SERIAL, path, name);
+    AddPort(df, DeviceConfig::PortType::SERIAL, path, nullptr, name);
   }
 } catch (const std::system_error &) {
   // silently ignore registry errors

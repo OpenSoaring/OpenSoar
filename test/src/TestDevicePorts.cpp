@@ -12,6 +12,7 @@
 
 #include "Device/PortsConfig.hpp"
 #include "Device/Config.hpp"
+#include "Device/Port/ComPortName.hpp"
 #include "Interface.hpp"
 #include "Blackboard/InterfaceBlackboard.hpp"
 #include "LocalPath.hpp"
@@ -80,7 +81,7 @@ TestSaveLoadRoundTrip()
   for (auto &i : devices)
     i.Clear();
 
-  devices[0] = MakeConfig(DeviceConfig::PortType::SERIAL, "COM3:",
+  devices[0] = MakeConfig(DeviceConfig::PortType::SERIAL, "COM3",
                           38400, "LX");
   devices[1] = MakeConfig(DeviceConfig::PortType::TCP_CLIENT, "",
                           0, "Condor");
@@ -131,7 +132,7 @@ TestSaveOverwrites()
   for (auto &i : devices)
     i.Clear();
 
-  devices[0] = MakeConfig(DeviceConfig::PortType::SERIAL, "COM1:",
+  devices[0] = MakeConfig(DeviceConfig::PortType::SERIAL, "COM1",
                           4800, "Volkslogger");
   ok1(DevicePorts::Save(devices));
 
@@ -203,7 +204,7 @@ TestSparseFile()
   for (auto &i : devices)
     i.Clear();
 
-  devices[0] = MakeConfig(DeviceConfig::PortType::SERIAL, "COM2:",
+  devices[0] = MakeConfig(DeviceConfig::PortType::SERIAL, "COM2",
                           4800, "CAI302");
   devices[0].sync_to_device = false;
 
@@ -245,6 +246,46 @@ TestSparseFile()
   ok1(loaded2[0].driver_name == StaticString<32>("CAI302"));
 }
 
+/*
+ * OpenSoar stores a Windows serial port as "COMn".  Older settings hold
+ * "COMn:" or "\\.\COMn"; they are corrected when the ports are applied
+ * (DevicePorts::Apply()), and SerialPort::Open() accepts all of them.
+ */
+static void
+TestSerialPortNames()
+{
+  ok1(ParseComPortNumber("COM1") == 1);
+  ok1(ParseComPortNumber("COM3:") == 3);
+  ok1(ParseComPortNumber("\\\\.\\COM12") == 12);
+  ok1(ParseComPortNumber("COM255") == 255);
+  ok1(ParseComPortNumber("COM") == 0);
+  ok1(ParseComPortNumber("COMx") == 0);
+  ok1(ParseComPortNumber("COM1234") == 0);
+  ok1(ParseComPortNumber("COM15 (Larus1234)") == 0);
+  ok1(ParseComPortNumber("/dev/ttyACM0") == 0);
+
+  auto config = MakeConfig(DeviceConfig::PortType::SERIAL, "COM3:",
+                           4800, "Generic");
+  ok1(config.NormalizeSerialPath());
+  ok1(config.path == StaticString<64>("COM3"));
+  /* a second pass finds nothing to correct, so nothing is saved */
+  ok1(!config.NormalizeSerialPath());
+
+  config.path = "\\\\.\\COM19";
+  ok1(config.NormalizeSerialPath());
+  ok1(config.path == StaticString<64>("COM19"));
+
+  config.path = "/dev/ttyUSB0";
+  ok1(!config.NormalizeSerialPath());
+  ok1(config.path == StaticString<64>("/dev/ttyUSB0"));
+
+  /* only serial ports are touched */
+  config = MakeConfig(DeviceConfig::PortType::ANDROID_USB_SERIAL, "COM3:",
+                      4800, "Generic");
+  ok1(!config.NormalizeSerialPath());
+  ok1(config.path == StaticString<64>("COM3:"));
+}
+
 int
 main()
 {
@@ -257,12 +298,13 @@ main()
   SetSingleDataPath(Path{template_path});
   InitialiseDataPath();
 
-  plan_tests(52);
+  plan_tests(70);
 
   TestSaveLoadRoundTrip();
   TestSaveOverwrites();
   TestLegacyConversion();
   TestSparseFile();
+  TestSerialPortNames();
 
   DeinitialiseDataPath();
 

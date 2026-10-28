@@ -123,7 +123,9 @@ struct DeviceConfig {
   unsigned bulk_baud_rate;
 
   /**
-   * The path name of the serial port, e.g. "COM4:" or "/dev/ttyUSB0".
+   * The path name of the serial port, e.g. "COM4" or "/dev/ttyUSB0".
+   * A Windows port is always stored as "COMn", see
+   * NormalizeSerialPath().
    */
   StaticString<64> path;
 
@@ -524,6 +526,17 @@ struct DeviceConfig {
   void ApplySpectateDefaults() noexcept;
 
   void Clear() noexcept;
+
+  /**
+   * Bring the name of a Windows serial port into the one spelling
+   * OpenSoar stores and shows, "COMn".  Settings written by older
+   * versions or by XCSoar may hold "COMn:" or "\\.\COMn" instead;
+   * they open the same port, but the port picker would list the port
+   * twice and compare it wrongly with the ports in use.
+   *
+   * @return true if the path was changed and should be saved
+   */
+  bool NormalizeSerialPath() noexcept;
 
   /**
    * Generates a human-readable (localised) port name.
