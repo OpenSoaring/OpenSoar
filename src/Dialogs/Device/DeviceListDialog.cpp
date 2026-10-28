@@ -33,6 +33,7 @@
 #include "Blackboard/DeviceBlackboard.hpp"
 #include "Blackboard/BlackboardListener.hpp"
 #include "Look/DialogLook.hpp"
+#include "Look/Colors.hpp"
 #include "Widget/ListWidget.hpp"
 #include "ui/canvas/Canvas.hpp"
 #include "ui/canvas/Color.hpp"
@@ -115,6 +116,14 @@ class DeviceListWidget final
   const DialogLook &look;
 
   unsigned font_height;
+
+  /**
+   * The height of the gap that sets the SteFly rows apart from the
+   * regular ports; 0 while no SteFly device is attached.  All rows
+   * are this much taller, because the list has one row height, and
+   * only the first SteFly row uses the room as the gap.
+   */
+  unsigned stefly_gap = 0;
 
   struct Flags {
     bool duplicate:1;
@@ -378,8 +387,12 @@ DeviceListWidget::Prepare(ContainerWindow &parent,
     row_slots[n_rows++] = i;
   }
 
+#ifdef HAVE_REMOTE_STICK
+  stefly_gap = n_rows > VISIBLE_NUMDEV ? Layout::Scale(8) : 0;
+#endif
+
   CreateList(parent, look, rc, 3 * margin + font_height +
-             look.small_font.GetHeight()).SetLength(n_rows);
+             look.small_font.GetHeight() + stefly_gap).SetLength(n_rows);
 
   for (Item &i : items)
     i.Clear();
@@ -640,30 +653,66 @@ DeviceListWidget::DrawAliveStatus(Canvas &canvas, PixelPoint p,
   }
 }
 
+/**
+ * The colour of the SteFly rows, which OpenSoar sets up by itself:
+ * the dark OpenSoar blue, close enough to black to read as easily, and
+ * a light blue on the dark theme, where the dark one would vanish.
+ */
+[[gnu::const]]
+static constexpr Color
+SteFlyRowColor(bool dark_mode) noexcept
+{
+  return dark_mode ? COLOR_XCSOAR_LIGHT : COLOR_XCSOAR_DARK;
+}
+
 void
-DeviceListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
+DeviceListWidget::OnPaintItem(Canvas &canvas, const PixelRect item_rc,
                               unsigned row) noexcept
 {
   assert(row < n_rows);
   const unsigned idx = row_slots[row];
 
+  /* the content sits in the middle of the extra room, except in the
+     first SteFly row, which uses all of it as the gap above itself */
+  PixelRect rc = item_rc;
+  rc.top += stefly_gap / 2;
+
 #ifdef HAVE_REMOTE_STICK
-  /* visual separator above the first SteFly row (RemoteStick,
-     RotaryPanel) so the auto-detected devices are clearly set apart
-     from the regular editable ports: a DPI-scaled thick bar plus a
-     hairline below it */
-  if (row == VISIBLE_NUMDEV) {
-    const int thick = Layout::Scale(3);
-    const int gap   = Layout::Scale(2);
+  const bool stefly_row = IsSteFlySlot(idx);
+  const Color stefly_color = SteFlyRowColor(look.dark_mode);
 
-    canvas.SelectBlackPen(thick);
-    canvas.DrawLine({rc.left, rc.top + thick / 2},
-                    {rc.right, rc.top + thick / 2});
+  /* the gap above the first SteFly row (RemoteStick, RotaryPanel)
+     sets the devices OpenSoar configures by itself apart from the
+     regular ports: it keeps the list background even when the row is
+     selected, so it reads as space between the rows, and carries a
+     thick and a thin line in the colour of the SteFly rows */
+  if (row == VISIBLE_NUMDEV && stefly_gap > 0) {
+    PixelRect gap_rc = item_rc;
+    gap_rc.bottom = gap_rc.top + stefly_gap;
+    canvas.DrawFilledRectangle(gap_rc, look.list.background_color);
 
-    canvas.SelectBlackPen();
-    canvas.DrawLine({rc.left,  rc.top + thick + gap},
-                    {rc.right, rc.top + thick + gap});
+    const int thick = Layout::Scale(2);
+    const Color line_color = HasColors() ? stefly_color
+      : look.list.text_color;
+
+    canvas.Select(Pen(thick, line_color));
+    const int y1 = gap_rc.top + Layout::Scale(2) + thick / 2;
+    canvas.DrawLine({gap_rc.left, y1}, {gap_rc.right, y1});
+
+    canvas.Select(Pen(1, line_color));
+    const int y2 = gap_rc.top + Layout::Scale(6);
+    canvas.DrawLine({gap_rc.left, y2}, {gap_rc.right, y2});
+
+    rc.top = gap_rc.bottom;
   }
+
+  /* the text of a SteFly row in its own colour, as long as the list
+     shows it in the normal text colour; the colours of a selected
+     row stay, so the cursor reads the same in every row */
+  if (stefly_row && HasColors() &&
+      canvas.GetTextColor() == look.list.text_color &&
+      !(look.dark_mode && row == GetList().GetCursorIndex()))
+    canvas.SetTextColor(stefly_color);
 #endif // HAVE_REMOTE_STICK
 
   const DeviceConfig &config =
