@@ -19,17 +19,48 @@
  * the running program and can therefore be tested on its own.
  */
 
+/**
+ * Correct the Windows serial port names of older settings ("COM3:",
+ * "\\.\COM12") to the spelling OpenSoar uses, "COMn", without asking:
+ * they name the same port, and only one spelling lets the port picker
+ * find the configured port in its list.
+ *
+ * @param in_profile also write the corrected slots into the profile
+ * @return true if a slot was changed, so that the caller saves it
+ */
+static bool
+NormalizeSerialPaths(std::array<DeviceConfig, NUMDEV> &devices,
+                     bool in_profile) noexcept
+{
+  bool changed = false;
+  for (unsigned i = 0; i < devices.size(); ++i) {
+    if (!devices[i].NormalizeSerialPath())
+      continue;
+
+    LogFmt("Device ports: slot {} now on {}", i, devices[i].path.c_str());
+    if (in_profile)
+      Profile::SetDeviceConfig(Profile::map, i, devices[i]);
+    changed = true;
+  }
+
+  return changed;
+}
+
 void
 DevicePorts::Apply(SystemSettings &settings) noexcept
 {
   if (SystemConfig::Get().devices_in_profile) {
     LogString("Device ports: profile");
+    if (NormalizeSerialPaths(settings.devices, true))
+      Profile::Save();
     return;
   }
 
   if (Load(settings.devices)) {
     const auto path = GetPath();
     LogFmt("Device ports: {}", path.c_str());
+    if (NormalizeSerialPaths(settings.devices, false))
+      Save(settings.devices);
     return;
   }
 
@@ -39,6 +70,7 @@ DevicePorts::Apply(SystemSettings &settings) noexcept
   const auto legacy_path = LocalPath(Path{DevicePorts::FILE_NAME});
   if (File::Exists(legacy_path) &&
       LoadLegacy(legacy_path, settings.devices)) {
+    NormalizeSerialPaths(settings.devices, false);
     if (Save(settings.devices))
       LogFmt("Device ports: converted from {}", legacy_path.c_str());
     else
@@ -50,6 +82,7 @@ DevicePorts::Apply(SystemSettings &settings) noexcept
   /* no file at all: the profile's devices - just loaded into
      "settings" - become the first content of the device port file, so
      that an existing installation keeps its ports */
+  NormalizeSerialPaths(settings.devices, false);
   if (Save(settings.devices))
     LogString("Device ports: taken over from the profile");
   else
