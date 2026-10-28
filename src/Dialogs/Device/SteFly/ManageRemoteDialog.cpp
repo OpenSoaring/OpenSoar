@@ -202,7 +202,6 @@ class ManageRemoteWidget final : public RowFormWidget {
     DBLCLICK,
     LONGPRESS,
     MOUSESTEP,
-    MOUSEACCEL,
   };
 
   DeviceDescriptor &descriptor;
@@ -462,12 +461,7 @@ ManageRemoteWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
                "cursor more precisely."),
              "%d", "%d", US::MOUSESTEP_MIN, US::MOUSESTEP_MAX, 1,
              user_settings.mouse_step);
-  AddInteger(_("Mouse acceleration"),
-             _("Highest multiplier of the mouse step when the input is "
-               "used fast or long; 1 switches the acceleration off."),
-             "%d", "%d", US::MOUSEACCEL_MIN, US::MOUSEACCEL_MAX, 1,
-             user_settings.mouse_accel);
-  for (unsigned i = DBLCLICK; i <= MOUSEACCEL; ++i)
+  for (unsigned i = DBLCLICK; i <= MOUSESTEP; ++i)
     SetRowVisible(i, user_settings.available);
 
   // --- read-only info ----------------------------------------------
@@ -523,7 +517,6 @@ ManageRemoteWidget::Save(bool &changed) noexcept
     changed |= SaveValueInteger(DBLCLICK, new_user.dblclick_ms);
     changed |= SaveValueInteger(LONGPRESS, new_user.long_press_ms);
     changed |= SaveValueInteger(MOUSESTEP, new_user.mouse_step);
-    changed |= SaveValueInteger(MOUSEACCEL, new_user.mouse_accel);
   }
 
   if (device == nullptr)
