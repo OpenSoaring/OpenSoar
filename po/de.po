@@ -11726,6 +11726,13 @@ msgstr "Funkfrequenzen"
 msgid "Re-Connect"
 msgstr "Neu verbinden"
 
+msgid "User (custom keys)"
+msgstr "Benutzer (eigene Tasten)"
+
+#, c-format
+msgid "Layout %u"
+msgstr "Layout %u"
+
 msgid "SteFly Remote Stick"
 msgstr "SteFly Remote Stick"
 
