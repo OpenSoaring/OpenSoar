@@ -210,10 +210,6 @@ try {
       // weird
       continue;
 
-    /* skip the ports the SteFly devices have been auto-bound to */
-    if (IsSteFlyReserved(value))
-      continue;
-
     const char *path = value;
 
     char buffer[128];
@@ -227,6 +223,11 @@ try {
         StringFormatUnsafe(buffer, "\\\\.\\%s", value);
       path = buffer;
     }
+
+    /* skip the ports the SteFly devices have been auto-bound to; their
+       slots hold the path in the same spelling as built above */
+    if (IsSteFlyReserved(path))
+      continue;
 
     AddPort(df, DeviceConfig::PortType::SERIAL, path, name);
   }
