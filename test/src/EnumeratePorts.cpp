@@ -3,10 +3,79 @@
 
 #ifdef HAVE_POSIX
 #include "Device/Port/TTYEnumerator.hpp"
+#elif defined(_WIN32)
+#include "Device/Port/WindowsSerialPorts.hpp"
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef _WIN32
+
+static const char *
+ToString(DetectedSerialPort::Kind kind) noexcept
+{
+  switch (kind) {
+  case DetectedSerialPort::Kind::SERIAL:
+    return "serial";
+
+  case DetectedSerialPort::Kind::USB:
+    return "usb";
+
+  case DetectedSerialPort::Kind::BLUETOOTH:
+    return "bluetooth";
+
+  case DetectedSerialPort::Kind::BLUETOOTH_LE:
+    return "bluetooth-le";
+  }
+
+  return "other";
+}
+
+/**
+ * Print what the port picker of OpenSoar makes of this machine: the
+ * same enumeration and classification, with the raw registry strings
+ * it was made from, so that a wrong label can be diagnosed without
+ * starting OpenSoar.
+ */
+static bool
+DumpSerialPorts() noexcept
+{
+  const auto e = EnumerateSerialPorts();
+
+  printf("registry keys:\n");
+  printf("  Enum\\BthEnum            %s\n",
+         e.have_bthenum ? "yes" : "MISSING (no classic device ever paired)");
+  printf("  Enum\\BthLE              %s\n",
+         e.have_bthle ? "yes" : "MISSING (no LE device ever paired)");
+  printf("  DeviceMap\\SerialComm    %s\n",
+         e.have_serialcomm ? "yes" : "MISSING (no serial port at all)");
+  printf("  COM Name Arbiter        %s\n",
+         e.have_arbiter ? "yes" : "MISSING (device classes unknown)");
+
+  printf("\n%zu port(s):\n", e.ports.size());
+
+  for (const auto &port : e.ports) {
+    printf("\n  %s\n", port.path.c_str());
+    printf("    shown as   %s\n", port.display.c_str());
+    printf("    kind       %s\n", ToString(port.kind));
+    printf("    device     %s\n", port.device_path.c_str());
+    printf("    class      %s\n",
+           port.arbiter.empty() ? "(no arbiter entry)" : port.arbiter.c_str());
+
+    if (!port.address.empty())
+      printf("    address    %s\n", port.address.c_str());
+
+    if (port.hidden)
+      printf("    HIDDEN     %s\n", port.hidden_reason);
+  }
+
+  /* a machine without a single serial port is a normal machine, so
+     this is not a failure - the output is the result */
+  return true;
+}
+
+#endif /* _WIN32 */
 
 int main()
 {
@@ -24,6 +93,9 @@ int main()
       printf("%s\n", path);
   } else
     fprintf(stderr, "Failed to enumerate TTY ports\n");
+#elif defined(_WIN32)
+  implemented = true;
+  success = DumpSerialPorts();
 #endif
 
   if (!implemented)

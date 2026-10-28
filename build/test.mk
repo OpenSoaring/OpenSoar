@@ -186,11 +186,19 @@ ifeq ($(HAVE_WIN32),y)
 TEST_NAMES += TestUTF8Win
 endif
 
+TEST_NAMES += TestSerialPorts
+
 ifeq ($(HAVE_HTTP),y)
 TEST_NAMES += TestNOTAM
 endif
 
 TESTS = $(call name-to-bin,$(TEST_NAMES))
+
+TEST_SERIAL_PORTS_SOURCES = \
+	$(SRC)/Device/Port/SerialPortClassify.cpp \
+	$(TEST_SRC_DIR)/tap.c \
+	$(TEST_SRC_DIR)/TestSerialPorts.cpp
+$(eval $(call link-program,TestSerialPorts,TEST_SERIAL_PORTS))
 
 TEST_HEX_STRING_SOURCES = \
 	$(TEST_SRC_DIR)/tap.c \
