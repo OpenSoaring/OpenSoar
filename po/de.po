@@ -11627,17 +11627,11 @@ msgstr "Weg eines Mausschritts im Mausmodus, in Vierteln des Wegs im Tastenlayou
 msgid "Double click time"
 msgstr "Doppelklick-Zeit"
 
-msgid "Highest multiplier of the mouse step when the input is used fast or long; 1 switches the acceleration off."
-msgstr "Höchster Faktor für den Mausschritt, wenn schnell oder lange bedient wird; 1 schaltet die Beschleunigung aus."
-
 msgid "How long a button has to be held for its long press action. The reset with the Enter button keeps its 2 s."
 msgstr "Wie lange eine Taste für ihre Aktion bei langem Druck gehalten werden muss. Der Neustart mit der Enter-Taste bleibt bei 2 s."
 
 msgid "Long press time"
 msgstr "Zeit für langen Druck"
-
-msgid "Mouse acceleration"
-msgstr "Mausbeschleunigung"
 
 msgid "Mouse step"
 msgstr "Mausschritt"
