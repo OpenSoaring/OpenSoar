@@ -7,6 +7,7 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
 
 struct NMEAInfo;
 class NMEAInputLine;
@@ -32,6 +33,7 @@ class NMEAInputLine;
  *
  *   --- Stick / Panel -> Host ------------------------------------
  *   $PSRCI,A,<Key>,<Value>*XX  info field   (Version, FileName, …)
+ *   $PSRCI,A,Layout,<n>,<name>*XX  one entry of the layout table
  *   $PSRCI,A,Ready*XX          info block terminator
  *   $PSRCS,A,<Key>,<Value>*XX  setting field (device-specific keys)
  *   $PSRCS,A,Ready*XX          settings block terminator
@@ -68,31 +70,43 @@ public:
    * Static device info — populated once after detection. Common to
    * every SteFly device, so it lives here.
    */
+  /**
+   * One key layout the device has: the index "$PSRCS,S,Layout,N"
+   * selects and the name to show for it.
+   */
+  struct LayoutChoice {
+    unsigned index;
+    std::string name;
+  };
+
   struct SteFlyInfo {
     std::string name;           // firmware device name"
     std::string version;        // firmware version, e.g. "1.4.3"
     std::string file_name;      // currently loaded key-config file
     std::string serial_number;  // SteFly serial (from EEPROM)
+
+    /**
+     * The layout table of the device, in the order it was reported.
+     * Firmware with SteFlyRemoteCore 1.2 or later sends it in the info
+     * block ("$PSRCI,A,Layout,<n>,<name>"), because every device may
+     * have other layouts.  It is empty with older firmware, which
+     * then cannot have its layout chosen; that needs a firmware update.
+     */
+    std::vector<LayoutChoice> layouts;
+
     bool available = false;     // true once at least one field arrived
   };
 
   /**
-   * The key layout presets of the SteFly firmware (the
-   * SteFlyRemoteCore library): the index "$PSRCS,S,Layout,N" selects.
-   * The RemoteStick and the RotaryPanel ship layouts of the same names
-   * under the same indices.  USER is what the firmware reports when
-   * the active key map matches no preset; it can never be selected.
+   * A key layout of the SteFly firmware: the index "$PSRCS,S,Layout,N"
+   * selects.  Which layouts a device has, and under which index, only
+   * the device knows; it reports them in SteFlyInfo::layouts.  BASIC is
+   * the factory default every device has at index 0.  USER is what the
+   * firmware reports when the active key map matches no layout; it can
+   * never be selected.
    */
   enum class Layout : uint32_t {
-    BASIC    = 0,
-    ADVANCED = 1,
-    ANDROID0 = 2,
-    ANDROID1 = 3,
-    STARTER0 = 4,
-    STARTER1 = 5,
-#ifdef XCSOAR_TESTING
-    TEST = 6,
-#endif
+    BASIC = 0,
     USER  = 255,
   };
 
@@ -210,6 +224,12 @@ private:
    * not one of them. Called with settings_block.mutex held.
    */
   bool ApplyUserSettingField(std::string_view key, std::string_view value);
+
+  /**
+   * Store one entry of the layout table ("Layout,<n>,<name>").
+   * Called with info_block.mutex held.
+   */
+  void ApplyLayoutChoice(std::string_view index, std::string_view name);
 
   bool ParseInfoSentence(NMEAInputLine &line);
   bool ParseSettingsSentence(NMEAInputLine &line);
