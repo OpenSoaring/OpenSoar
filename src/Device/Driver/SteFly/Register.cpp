@@ -17,7 +17,7 @@ RemoteStickCreateOnPort(const DeviceConfig &config, Port &com_port)
 
 const struct DeviceRegister remote_stick_driver = {
   "RemoteStick",
-  "RemoteStick",
+  "SteFly Remote Stick",
   DeviceRegister::MANAGE |
   DeviceRegister::NO_TIMEOUT |
   DeviceRegister::SEND_SETTINGS |
@@ -41,7 +41,7 @@ RotaryPanelCreateOnPort(const DeviceConfig &config, Port &com_port)
 
 const struct DeviceRegister rotary_panel_driver = {
   "RotaryPanel",
-  "SteFly RotaryPanel",
+  "SteFly Rotary Panel",
   DeviceRegister::MANAGE |
   DeviceRegister::NO_TIMEOUT |
   DeviceRegister::SEND_SETTINGS |
