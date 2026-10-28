@@ -13078,6 +13078,9 @@ msgstr "Funkfrequenzen"
 msgid "Re-Connect"
 msgstr "Neu verbinden"
 
+msgid "SteFly Remote Stick"
+msgstr "SteFly Remote Stick"
+
 msgid "Reboot Remote Stick"
 msgstr "Remote Stick neu starten"
 
@@ -13720,14 +13723,14 @@ msgctxt "Status"
 msgid "Live (%s, updating...)"
 msgstr "Live (%s, aktualisiert…)"
 
-msgid "SteFly RotaryPanel"
-msgstr "SteFly RotaryPanel"
+msgid "SteFly Rotary Panel"
+msgstr "SteFly Rotary Panel"
 
-msgid "Reboot RotaryPanel"
-msgstr "RotaryPanel neu starten"
+msgid "Reboot Rotary Panel"
+msgstr "Rotary Panel neu starten"
 
-msgid "Rebooting RotaryPanel"
-msgstr "RotaryPanel startet neu"
+msgid "Rebooting Rotary Panel"
+msgstr "Rotary Panel startet neu"
 
 msgid "Waiting for the panel to reboot…"
 msgstr "Warte auf den Neustart des Panels…"
