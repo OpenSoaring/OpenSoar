@@ -20,7 +20,9 @@
 #include "Device/Port/State.hpp"
 #include "Job/Job.hpp"
 #include "LogFile.hpp"
+#include "util/StaticString.hxx"
 
+#include <algorithm>
 #include <chrono>
 #include <thread>
 #ifdef __MINGW32__
@@ -49,40 +51,38 @@ static constexpr auto REBOOT_POLL_INTERVAL = std::chrono::milliseconds(200);
 static constexpr unsigned REBOOT_BORROW_RETRIES  = 50;
 static constexpr auto REBOOT_BORROW_INTERVAL     = std::chrono::milliseconds(100);
 
-// The "User" mode is read-only — the firmware reports it when the
-// active key map doesn't match any preset, but it can never be set
-// from this dialog. We therefore keep two near-identical layout
-// lists: the regular one (no USER row, that's what the dropdown
-// shows in 99% of opens) and an extended one that includes USER
-// purely so the dropdown can DISPLAY a USER state when the stick is
-// actually in it. Picking USER would still be a no-op (see Save()
-// and StickRemoteControl::WriteDeviceSettings).
-static constexpr StaticEnumChoice stefly_layout_names[] = {
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::BASIC),    "Basic" },
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ADVANCED), "Advanced" },
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ANDROID0), "Android" },
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ANDROID1), "Android (/w App switch)" },
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER0), "Starter-Key" },
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER1), "Starter-Key (/w App switch)" },
-#ifdef XCSOAR_TESTING
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::TEST),     "Test-Layout" },
-#endif
-  nullptr
-};
+/**
+ * Fill the layout choice with the table the device reported, so that
+ * it offers exactly the layouts of the attached device.  The "User"
+ * entry is only added while
+ * the device is in that state (the EEPROM holds a custom key map), so
+ * that the dropdown can show it; it cannot be selected otherwise,
+ * because it cannot be written to the device.  A reported active
+ * layout that the table does not name (e.g. an index the EEPROM kept
+ * from before a firmware update) gets an entry of its own, so that
+ * the dropdown never shows a different layout than the active one.
+ */
+static void
+FillLayoutChoices(DataFieldEnum &df,
+                  const std::vector<SteFlyDevice::LayoutChoice> &layouts,
+                  SteFlyDevice::Layout active) noexcept
+{
+  for (const auto &layout : layouts)
+    df.AddChoice(layout.index, layout.name.c_str());
 
-static constexpr StaticEnumChoice stefly_layout_names_with_user[] = {
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::BASIC),    "Basic" },
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ADVANCED), "Advanced" },
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ANDROID0), "Android" },
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::ANDROID1), "Android (/w App switch)" },
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER0), "Starter-Key" },
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::STARTER1), "Starter-Key (/w App switch)" },
-#ifdef XCSOAR_TESTING
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::TEST),     "Test-Layout" },
-#endif
-  { unsigned(StickRemoteControl::RemoteStickSettings::Layout::USER),     "User (custom keys)" },
-  nullptr
-};
+  if (active == SteFlyDevice::Layout::USER) {
+    df.AddChoice(unsigned(active), _("User (custom keys)"));
+  } else if (std::none_of(layouts.begin(), layouts.end(),
+                          [active](const auto &layout) {
+                            return layout.index == unsigned(active);
+                          })) {
+    StaticString<32> name;
+    name.Format(_("Layout %u"), unsigned(active));
+    df.AddChoice(unsigned(active), name.c_str());
+  }
+
+  df.SetValue(unsigned(active));
+}
 
 namespace {
 
@@ -209,8 +209,8 @@ class ManageRemoteWidget final : public RowFormWidget {
   const SteFlyTexts texts;
 
   /**
-   * Which device this is: both have the same key layout presets, but
-   * each driver keeps its own settings struct.
+   * Which device this is: both speak the same protocol, but each
+   * driver keeps its own settings struct.
    */
   const bool is_remote_stick;
 
@@ -425,19 +425,20 @@ ManageRemoteWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
 
   // --- editable settings (MUST come first so the Controls enum
   //     indices line up — SaveValueEnum below uses LAYOUT == 0).
-  //
-  // Show the "User" entry only when the stick is actually in the
-  // USER state right now (i.e. the EEPROM holds a custom key map).
-  // Otherwise it stays hidden so the user is not tempted to pick a
-  // value that we can't actually write to the device.
-  const auto *layout_choices =
-    layout == SteFlyDevice::Layout::USER
-      ? stefly_layout_names_with_user
-      : stefly_layout_names;
-  AddEnum(_("Key Configuration"),
-          _("Default Key Configuration"),
-          layout_choices,
-          unsigned(layout));
+  //     The choice is built from the layouts of the attached device,
+  //     see FillLayoutChoices().  Firmware before SteFlyRemoteCore 1.2
+  //     does not report them; the row then stays hidden (the index
+  //     stays fixed) and the layout is left alone, until the device
+  //     gets the new firmware.
+  auto *layout_control = AddEnum(_("Key Configuration"),
+                                 _("Default Key Configuration"));
+  if (!info.layouts.empty()) {
+    FillLayoutChoices(*static_cast<DataFieldEnum *>(
+                        layout_control->GetDataField()),
+                      info.layouts, layout);
+    layout_control->RefreshDisplay();
+  } else
+    SetRowVisible(LAYOUT, false);
 
   // --- user settings, in the order of the Controls enum. Firmware
   //     before SteFlyRemoteCore 1.1 does not report them; the rows
@@ -500,18 +501,22 @@ ManageRemoteWidget::Save(bool &changed) noexcept
   PopupOperationEnvironment env;
   auto new_layout = layout;
 
-  unsigned layout_value = unsigned(new_layout);
-  changed |= SaveValueEnum(LAYOUT, layout_value);
-  const auto chosen = SteFlyDevice::Layout(layout_value);
+  // Without a layout table from the device there was nothing to
+  // choose, so the layout is left as it is.
+  if (!info.layouts.empty()) {
+    unsigned layout_value = unsigned(new_layout);
+    changed |= SaveValueEnum(LAYOUT, layout_value);
+    const auto chosen = SteFlyDevice::Layout(layout_value);
 
-  // USER is a read-only state the firmware reports when the active
-  // key map doesn't match any preset — it "emerges" from custom key
-  // assignments and cannot be selected explicitly. If the user
-  // picked USER from the dropdown we silently keep the previous
-  // layout so the dialog does not write a meaningless "Layout=255"
-  // sentence to the stick.
-  if (chosen != SteFlyDevice::Layout::USER)
-    new_layout = chosen;
+    // USER is a read-only state the firmware reports when the active
+    // key map doesn't match any preset — it "emerges" from custom key
+    // assignments and cannot be selected explicitly. If the user
+    // picked USER from the dropdown we silently keep the previous
+    // layout so the dialog does not write a meaningless "Layout=255"
+    // sentence to the stick.
+    if (chosen != SteFlyDevice::Layout::USER)
+      new_layout = chosen;
+  }
 
   auto new_user = user_settings;
   if (user_settings.available) {
