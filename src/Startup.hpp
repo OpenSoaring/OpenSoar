@@ -19,6 +19,15 @@ bool
 WasStartupCancelledByUser() noexcept;
 
 /**
+ * Forget what the run that just ended leaves behind in global state,
+ * so that Startup() can run once more within the same process (an
+ * internal restart, see PowerControl::TakeRestart()).  Called after
+ * Shutdown().
+ */
+void
+PrepareRestart() noexcept;
+
+/**
  * Write all user state which is only kept in memory (the profile
  * settings and the FLARM databases) to disk.  Apart from the regular
  * shutdown, this is called whenever the operating system may kill the

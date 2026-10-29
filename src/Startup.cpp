@@ -65,6 +65,7 @@
 #include "Audio/VolumeController.hpp"
 #include "CommandLine.hpp"
 #include "MainWindow.hpp"
+#include "UIActions.hpp"
 #ifdef HAVE_HTTP
 #include "Dialogs/NOTAM/NOTAMMessageListener.hpp"
 #endif
@@ -172,6 +173,26 @@ bool
 WasStartupCancelledByUser() noexcept
 {
   return startup_cancelled_by_user;
+}
+
+void
+PrepareRestart() noexcept
+{
+  startup_cancelled_by_user = false;
+
+  /* Profile::Load() reads the file into the map that is still there,
+     without clearing it: settings of the profile used so far that the
+     next one does not name would live on, and the next save would
+     write them into the other profile.  The file of that profile goes
+     as well, or the startup dialog would preselect it instead of the
+     one the user activated for the restart. */
+  Profile::Reset();
+
+  /* the restart itself was a forced shutdown; closing the window in
+     the next run must ask again */
+  UIActions::ResetShutdown();
+
+  ContainerWindow::SetExitValue(0);
 }
 
 static bool
