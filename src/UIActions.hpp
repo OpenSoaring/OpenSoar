@@ -21,6 +21,12 @@ namespace UIActions {
 
   bool CheckShutdown() noexcept;
 
+  /**
+   * Forget a shutdown that was signalled before, for the next run of
+   * an internal restart.
+   */
+  void ResetShutdown() noexcept;
+
   [[gnu::pure]]
   ExitAction GetExitAction() noexcept;
 

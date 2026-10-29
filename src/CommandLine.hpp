@@ -88,6 +88,12 @@ PrintHelp() noexcept;
   void Parse(Args &args);
 
 /**
+ * Use the directory given with @c -datapath=, if any.  Called before
+ * InitialiseDataPath() at the start of every run.
+ */
+  void ApplyDataPath() noexcept;
+
+/**
  * Apply a pending @c -profile= value after the data path is known
  * (@c -datapath= and/or InitialiseDataPath()).  Basename profiles are
  * resolved under the primary data path / @c profiles/.

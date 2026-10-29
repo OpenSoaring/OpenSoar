@@ -155,33 +155,51 @@ try {
     CommandLine::Parse(args);
   }
 
-#ifndef _WIN32
-  /* remember the command line: a restart needs it after the program
-     has shut down (PowerControl::Perform()) */
-  PowerControl::SaveCommandLine(argc, argv);
+#ifdef IS_OPENVARIO
+  /* what the command line said, before the system settings below get a
+     say - each run of a restart decides anew */
+  const auto touch_input_from_command_line = CommandLine::touch_input;
 #endif
 
-  InitialiseDataPath();
+  /* "Restart" runs Main() once more within this process instead of
+     ending it, as OpenSoar did up to 7.44: no new process, no help
+     from the OpenVario base menu, and on every target the same */
+  int ret;
+  while (true) {
+    CommandLine::ApplyDataPath();
+    InitialiseDataPath();
 
-  CommandLine::ApplyPendingProfile();
+    /* a "-profile=" on the command line applies to the first run only;
+       a restart picks the profile the user chose since */
+    CommandLine::ApplyPendingProfile();
 
-  /* device settings (not part of any profile) decide how the program
-     starts and how it is left */
-  SystemConfig::Load();
+    /* device settings (not part of any profile) decide how the program
+       starts and how it is left */
+    SystemConfig::Load();
 
 #ifdef IS_OPENVARIO
-  /* the OpenVario cannot tell whether a touch panel is connected (see
-     SystemConfig::Settings::touch_screen); a switch on the command line
-     still wins */
-  if (!SystemConfig::Get().touch_screen &&
-      CommandLine::touch_input == CommandLine::TouchInput::Auto)
-    CommandLine::touch_input = CommandLine::TouchInput::Disable;
+    /* the OpenVario cannot tell whether a touch panel is connected (see
+       SystemConfig::Settings::touch_screen); a switch on the command
+       line still wins */
+    CommandLine::touch_input = touch_input_from_command_line;
+    if (!SystemConfig::Get().touch_screen &&
+        CommandLine::touch_input == CommandLine::TouchInput::Auto)
+      CommandLine::touch_input = CommandLine::TouchInput::Disable;
 #endif
 
-  // Write startup note + version to logfile
-  LogFormat("Starting %s", XCSoar_ProductToken);
+    // Write startup note + version to logfile
+    LogFormat("Starting %s", XCSoar_ProductToken);
 
-  int ret = PowerControl::Perform(Main());
+    ret = Main();
+
+    if (!PowerControl::TakeRestart())
+      break;
+
+    LogString("Restart");
+    PrepareRestart();
+  }
+
+  ret = PowerControl::Perform(ret);
 
   bool power_action_succeeded = true;
   switch (UIActions::GetExitAction()) {

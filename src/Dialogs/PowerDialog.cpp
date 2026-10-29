@@ -396,7 +396,8 @@ AskPowerAction(PowerAction preselect) noexcept
     return false;
 
   /* the action itself happens after the program has shut down, so
-     that the settings are saved first (PowerControl::Perform()) */
+     that the settings are saved first (PowerControl::TakeRestart() and
+     PowerControl::Perform()) */
   PowerControl::Set(action);
   BeginShutdownFeedback(action);
   return true;
