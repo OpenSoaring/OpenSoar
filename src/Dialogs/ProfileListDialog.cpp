@@ -15,7 +15,6 @@
 #include "Profile/Map.hpp"
 #include "Profile/File.hpp"
 #include "Profile/Profile.hpp"
-#include "PowerControl.hpp"
 #include "Repository/FileType.hpp"
 #include "UIGlobals.hpp"
 #include "Language/Language.hpp"
@@ -355,10 +354,6 @@ ProfileListWidget::ActivateClicked()
                    MB_OK | MB_ICONERROR);
     return;
   }
-
-  /* a restart shall pick the newest profile, not the one the command
-     line names */
-  PowerControl::DropRestartOption("-profile=");
 
   activated = true;
 
