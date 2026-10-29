@@ -21,7 +21,11 @@
 #include "lib/dbus/TimeDate.hxx"
 #include "LogFile.hpp"
 #include "system/Error.hxx"
+#include "io/UniqueFileDescriptor.hxx"
 
+#include <linux/rtc.h> // for RTC_SET_TIME
+#include <sys/ioctl.h>
+#include <stdexcept>
 #include <time.h> // for clock_settime()
 #include <unistd.h> // for geteuid()
 
@@ -39,6 +43,38 @@ SetKernelClock(std::chrono::system_clock::time_point t)
   };
   if (clock_settime(CLOCK_REALTIME, &ts) < 0)
     throw MakeErrno("clock_settime() failed");
+}
+
+/**
+ * Write the time to the battery-backed real-time clock, in UTC as
+ * systemd keeps it by default.  timedated does this as part of
+ * SetTime(); when the kernel clock had to be set directly, the RTC
+ * would otherwise keep its wrong time until the device reaches an NTP
+ * server, and the next start without network would begin with it
+ * again.
+ */
+static void
+SetHardwareClock(std::chrono::system_clock::time_point t)
+{
+  UniqueFileDescriptor fd;
+  if (!fd.OpenReadOnly("/dev/rtc0"))
+    throw MakeErrno("Failed to open /dev/rtc0");
+
+  const time_t seconds = std::chrono::system_clock::to_time_t(t);
+  struct tm tm;
+  if (gmtime_r(&seconds, &tm) == nullptr)
+    throw std::runtime_error("gmtime_r() failed");
+
+  struct rtc_time rt{};
+  rt.tm_sec = tm.tm_sec;
+  rt.tm_min = tm.tm_min;
+  rt.tm_hour = tm.tm_hour;
+  rt.tm_mday = tm.tm_mday;
+  rt.tm_mon = tm.tm_mon;
+  rt.tm_year = tm.tm_year;
+
+  if (ioctl(fd.Get(), RTC_SET_TIME, &rt) < 0)
+    throw MakeErrno("Failed to set the real-time clock");
 }
 #endif
 
@@ -147,6 +183,15 @@ UIReceiveSensorData(OperationEnvironment &env)
                    "timedated refused the GPS time, setting the clock "
                    "directly");
           SetKernelClock(gps_time);
+
+          /* a failure here is only logged: the system clock is right
+             now, and a board without RTC has no /dev/rtc0 at all */
+          try {
+            SetHardwareClock(gps_time);
+          } catch (...) {
+            LogError(std::current_exception(),
+                     "Failed to write the GPS time to the RTC");
+          }
         }
         LogFormat("System clock set from GPS");
       }
