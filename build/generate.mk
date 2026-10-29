@@ -24,12 +24,16 @@ $(call SRC_TO_OBJ,$(SRC)/Math/FastMath.cpp): $(OUT)/include/MathTables.h
 $(call SRC_TO_OBJ,$(SRC)/Math/FastTrig.cpp): $(OUT)/include/MathTables.h
 $(call SRC_TO_OBJ,$(SRC)/Computer/ThermalRecency.cpp): $(OUT)/include/MathTables.h
 
-# Quick Guide: compile-time Markdown slice of NEWS.txt (headings + list items)
-$(OUT)/include/QuickGuideNEWS.hpp: $(topdir)/NEWS.txt \
+# Quick Guide: compile-time Markdown slice of NEWS.txt (headings + list
+# items), or of the brand's own news when the tree has them
+QUICKGUIDE_BRAND_NEWS = $(wildcard $(topdir)/OpenSoar-News.md)
+$(OUT)/include/QuickGuideNEWS.hpp: $(topdir)/NEWS.txt $(QUICKGUIDE_BRAND_NEWS) \
 	$(topdir)/tools/news_to_quickguide_md.py | $(OUT)/include/dirstamp
 	@$(NQ)echo "  GEN     $@"
 	$(Q)/usr/bin/env python3 $(topdir)/tools/news_to_quickguide_md.py \
-		$(topdir)/NEWS.txt >$@.$(RANDOM_NUMBER).tmp
+		$(topdir)/NEWS.txt \
+		$(if $(QUICKGUIDE_BRAND_NEWS),--opensoar-news $(QUICKGUIDE_BRAND_NEWS)) \
+		>$@.$(RANDOM_NUMBER).tmp
 	$(Q)mv $@.$(RANDOM_NUMBER).tmp $@
 
 $(call SRC_TO_OBJ,$(SRC)/Dialogs/dlgQuickGuide.cpp): $(OUT)/include/QuickGuideNEWS.hpp
