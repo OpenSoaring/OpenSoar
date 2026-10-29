@@ -15,6 +15,12 @@ namespace UIActions {
   bool CheckShutdown();
 
   /**
+   * Forget a shutdown that was signalled before, for the next run of
+   * an internal restart.
+   */
+  void ResetShutdown() noexcept;
+
+  /**
    * Switch to the traffic radar page.
    */
   void ShowTrafficRadar();

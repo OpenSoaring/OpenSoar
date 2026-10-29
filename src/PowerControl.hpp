@@ -9,7 +9,8 @@
  * What shall happen after the program has closed itself.  Which of
  * these a build offers depends on the target: a Kobo can power itself
  * off, an OpenVario lets its base menu do it, a desktop and an
- * Android can only quit or start themselves again.
+ * Android can only quit.  A restart is possible everywhere, because
+ * the program does it within its own process.
  */
 enum class PowerAction : uint8_t {
   /** no action pending - the ordinary end of the program */
@@ -45,34 +46,21 @@ IsAvailable(PowerAction action) noexcept;
 void
 Set(PowerAction action) noexcept;
 
-[[gnu::pure]]
-PowerAction
-Get() noexcept;
-
 /**
- * Remember the command line for a later restart.  Called from main()
- * before anything else; a no-op where the platform provides the
- * command line by itself (Windows) or restarts through the Java side
- * (Android).
+ * Was a restart chosen?  If so, forget it and return true: the caller
+ * then runs Main() once more, within the same process, instead of
+ * ending it.  This is faster than starting a new process, and it works
+ * the same on every target - also where the program cannot start
+ * itself (Android) or where the base menu would have to do it
+ * (OpenVario).
  */
-void
-SaveCommandLine(int argc, char **argv) noexcept;
-
-/**
- * Leave an option out of the command line of a later RESTART - for
- * example "-profile=", once the user picked another profile for the
- * next start.  A no-op where the restart does not carry a command
- * line (Android, OpenVario).
- *
- * @param prefix the start of the option, e.g. "-profile="
- */
-void
-DropRestartOption(const char *prefix) noexcept;
+bool
+TakeRestart() noexcept;
 
 /**
  * Carry out the pending action.  Called after the program has shut
- * down; may replace the running process (restart on POSIX) or never
- * return (reboot).
+ * down for good (a restart was taken by TakeRestart() before); may
+ * never return (reboot on the Kobo).
  *
  * @param exit_code the exit code the program would use otherwise
  * @return the exit code the process should exit with

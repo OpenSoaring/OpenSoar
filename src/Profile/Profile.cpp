@@ -65,6 +65,15 @@ Profile::Load() noexcept
   SetModified(false);
 }
 
+void
+Profile::Reset() noexcept
+{
+  Clear();
+  read_only = false;
+  startProfileFile = nullptr;
+  next_start_profile = nullptr;
+}
+
 bool
 Profile::IsLoaded() noexcept
 {
