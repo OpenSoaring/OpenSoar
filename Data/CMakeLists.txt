@@ -211,13 +211,21 @@ endif()
     
     list(APPEND INPUTEVENTS_CPP ${OUTPUT_FOLDER}/include/Status_defaults.hpp)
 
-    # Quick Guide: compile-time Markdown slice of NEWS.txt
+    # Quick Guide: compile-time Markdown slice of NEWS.txt, or of the
+    # brand's own news when the tree has them
     # (mirrors build/generate.mk: QuickGuideNEWS.hpp)
+    set(_QUICKGUIDE_NEWS_ARGS)
+    set(_QUICKGUIDE_NEWS_DEPENDS)
+    if(EXISTS ${PROJECTGROUP_SOURCE_DIR}/OpenSoar-News.md)
+        set(_QUICKGUIDE_NEWS_ARGS --opensoar-news OpenSoar-News.md)
+        set(_QUICKGUIDE_NEWS_DEPENDS ${PROJECTGROUP_SOURCE_DIR}/OpenSoar-News.md)
+    endif()
     add_custom_command(OUTPUT ${_INCLUDE_OUTPUT}/QuickGuideNEWS.hpp
         COMMENT "Create QuickGuideNEWS.hpp!"
         COMMAND ${CMAKE_COMMAND} -E make_directory ${_INCLUDE_OUTPUT}
-        COMMAND ${PYTHON_APP} tools/news_to_quickguide_md.py NEWS.txt >${_INCLUDE_OUTPUT}/QuickGuideNEWS.hpp
+        COMMAND ${PYTHON_APP} tools/news_to_quickguide_md.py NEWS.txt ${_QUICKGUIDE_NEWS_ARGS} >${_INCLUDE_OUTPUT}/QuickGuideNEWS.hpp
         DEPENDS ${PROJECTGROUP_SOURCE_DIR}/NEWS.txt
+                ${_QUICKGUIDE_NEWS_DEPENDS}
                 ${PROJECTGROUP_SOURCE_DIR}/tools/news_to_quickguide_md.py
         WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
     )
