@@ -243,16 +243,26 @@ Java_org_xcsoar_NativeView_isSimulatorNative([[maybe_unused]] JNIEnv *env,
 #endif
 }
 
-gcc_visibility_default
-JNIEXPORT void JNICALL
-Java_org_xcsoar_NativeView_runNative(JNIEnv *env, jobject obj,
-                                     jobject _context,
-                                     jobject _permission_manager,
-                                     jint width, jint height,
-                                     jint display_width, jint display_height,
-                                     jint xdpi, jint ydpi, jint density_dpi,
-                                     jstring product)
-try {
+/**
+ * The size of the view as last reported by resizedNative(): the next
+ * run of an internal restart creates its window with it, because the
+ * size runNative() was called with may be outdated by then (the device
+ * was turned in the meantime).
+ */
+static jint current_width, current_height;
+
+/**
+ * One run of the program, from the start to the end of Shutdown().
+ * runNative() calls it again for an internal restart.
+ */
+static void
+RunOnce(JNIEnv *env, jobject obj,
+        jobject _context, jobject _permission_manager,
+        jint width, jint height,
+        jint display_width, jint display_height,
+        jint xdpi, jint ydpi, jint density_dpi,
+        jstring product)
+{
   const std::scoped_lock shutdown_lock{shutdown_mutex};
 
   InitThreadDebug();
@@ -390,12 +400,37 @@ try {
   }
 
   Shutdown();
+}
 
-  /* "Restart" cannot exec() on Android the way it does on the other
-     targets: hand the wish to the Java side, which starts a fresh
-     instance right before System.exit() ends this process */
-  if (PowerControl::Get() == PowerAction::RESTART)
-    native_view->RequestRestart(env);
+gcc_visibility_default
+JNIEXPORT void JNICALL
+Java_org_xcsoar_NativeView_runNative(JNIEnv *env, jobject obj,
+                                     jobject _context,
+                                     jobject _permission_manager,
+                                     jint width, jint height,
+                                     jint display_width, jint display_height,
+                                     jint xdpi, jint ydpi, jint density_dpi,
+                                     jstring product)
+try {
+  /* "Restart" runs the program once more within this process, as on
+     every other target (see PowerControl::TakeRestart()): no new
+     activity and no System.exit() in between, so the restart is quick
+     and the foreground service keeps running */
+  current_width = width;
+  current_height = height;
+
+  while (true) {
+    RunOnce(env, obj, _context, _permission_manager,
+            current_width, current_height,
+            display_width, display_height, xdpi, ydpi, density_dpi,
+            product);
+
+    if (!PowerControl::TakeRestart())
+      break;
+
+    LogString("Restart");
+    PrepareRestart();
+  }
 } catch (...) {
   /* if an error occurs, rethrow the C++ exception as Java exception,
      to be displayed by the Java glue code */
@@ -414,6 +449,9 @@ Java_org_xcsoar_NativeView_resizedNative(JNIEnv *env, jobject obj,
                                          jint shape_right, jint shape_bottom)
 {
   const std::scoped_lock shutdown_lock{shutdown_mutex};
+
+  current_width = width;
+  current_height = height;
 
   if (auto *main_window = NativeView::GetPointer(env, obj)) {
     main_window->AnnounceSafeAreaInsets(std::max(inset_left, 0),
