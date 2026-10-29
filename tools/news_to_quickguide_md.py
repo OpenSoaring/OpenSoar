@@ -37,6 +37,85 @@ def extract_first_version_block(text: str) -> str:
     return "\n".join(out)
 
 
+def extract_first_opensoar_release(text: str) -> str:
+    """The first release section of OpenSoar-News.md: from the first
+    ``## OpenSoar `` heading up to the next ``## `` heading."""
+    out: list[str] = []
+    for line in text.split("\n"):
+        if line.startswith("## "):
+            if out:
+                break
+            if line.startswith("## OpenSoar "):
+                out.append(line)
+            continue
+        if out:
+            out.append(line)
+    return "\n".join(out)
+
+
+def convert_opensoar_section_to_markdown(block: str) -> str:
+    """OpenSoar-News.md is Markdown already, but written for a text
+    viewer: list items wrap over indented lines and code spans use
+    backticks.  The in-app renderer wants one line per list item or
+    paragraph, so the same shape as convert_news_block_to_markdown()
+    is produced: the release heading as Heading 1, ``###`` headings as
+    Heading 2, every ``* `` item and every nested ``  - `` item as one
+    list item, and every other paragraph as one line."""
+    lines = block.replace("`", "").split("\n")
+    md: list[str] = []
+    if lines:
+        md.append("# " + lines[0][3:].strip())
+        md.append("")
+
+    i = 1
+    while i < len(lines):
+        line = lines[i].rstrip("\r")
+        if line.strip() == "" or line.strip() == "---":
+            if md and md[-1] != "":
+                md.append("")
+            i += 1
+            continue
+
+        if line.startswith("### "):
+            if md and md[-1] != "":
+                md.append("")
+            md.append("## " + line[4:].strip())
+            md.append("")
+            i += 1
+            continue
+
+        if line.startswith("* ") or line.startswith("  - "):
+            nested = line.startswith("  - ")
+            cont = "    " if nested else "  "
+            parts = [line[4:].strip() if nested else line[2:].strip()]
+            i += 1
+            while i < len(lines):
+                nl = lines[i]
+                if (nl.strip() == "" or nl.startswith("* ") or
+                        nl.startswith("  - ") or not nl.startswith(cont)):
+                    break
+                parts.append(nl.strip())
+                i += 1
+            md.append("- " + " ".join(parts))
+            continue
+
+        # a plain paragraph: everything up to the next blank line or item
+        parts = [line.strip()]
+        i += 1
+        while i < len(lines):
+            nl = lines[i]
+            if (nl.strip() == "" or nl.startswith("* ") or
+                    nl.startswith("  - ") or nl.startswith("#")):
+                break
+            parts.append(nl.strip())
+            i += 1
+        md.append(" ".join(parts))
+
+    while md and md[-1] == "":
+        md.pop()
+    return linkify_github_issue_refs("\n".join(md) + "\n")
+
+
 def linkify_github_issue_refs(text: str) -> str:
     """Turn ``#1234`` into ``[#1234](https://github.com/.../issues/1234)``."""
 
@@ -157,7 +236,31 @@ def main() -> int:
         default="NEWS.txt",
         help="Path to NEWS.txt (default: NEWS.txt)",
     )
+    p.add_argument(
+        "--opensoar-news",
+        metavar="FILE",
+        help="OpenSoar-News.md; when given, the page shows its first "
+             "release section instead of the first block of NEWS.txt",
+    )
     args = p.parse_args()
+
+    # An OpenSoar build shows the OpenSoar news of the release: the
+    # first block of NEWS.txt belongs to the next XCSoar version, which
+    # is often still "not yet released" and names none of the OpenSoar
+    # changes.  NEWS.txt stays the fallback, e.g. for an unbranded tree.
+    if args.opensoar_news:
+        try:
+            with open(args.opensoar_news, encoding="utf-8") as f:
+                block = extract_first_opensoar_release(f.read())
+        except OSError as e:
+            print(f"news_to_quickguide_md: {e}", file=sys.stderr)
+            return 1
+        if block.strip():
+            md = convert_opensoar_section_to_markdown(block)
+            if md.strip():
+                emit_header(md)
+                return 0
+
     try:
         with open(args.news_file, encoding="utf-8") as f:
             text = f.read()
