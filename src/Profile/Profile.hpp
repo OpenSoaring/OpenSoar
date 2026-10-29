@@ -101,6 +101,15 @@ void
 SetFiles(Path override_path) noexcept;
 
 /**
+ * Forget the profile of the run that just ended: its settings, its
+ * file and the one marked for the next start.  Used by an internal
+ * restart, after which the startup dialog chooses the profile anew,
+ * just as at a fresh start of the program.
+ */
+void
+Reset() noexcept;
+
+/**
  * Reads a configured path from the profile, and expands it with
  * ExpandLocalPath().
  *

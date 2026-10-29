@@ -33,6 +33,13 @@ UIActions::SignalShutdown(bool force)
     CommonInterface::main_window->Close();
 }
 
+void
+UIActions::ResetShutdown() noexcept
+{
+  force_shutdown = false;
+  exit_action = ExitAction::NONE;
+}
+
 bool
 UIActions::CheckShutdown() noexcept
 {
