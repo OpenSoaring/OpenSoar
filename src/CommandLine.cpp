@@ -36,6 +36,14 @@ namespace CommandLine {
 
   /** Set by @c -profile=; applied in ApplyPendingProfile(). */
   static AllocatedPath pending_profile;
+
+  /**
+   * Set by @c -datapath=; applied in ApplyDataPath().  It is kept
+   * because every run of an internal restart starts with a fresh data
+   * path (DeinitialiseDataPath() forgets it at the end of a run), and
+   * the next run must use the same directory as the first.
+   */
+  static AllocatedPath data_path_option;
 }
 
 /** Option list for Args::UsageError (stderr); leading newline continues Usage:. */
@@ -167,7 +175,7 @@ CommandLine::Parse(Args &args)
     } else if (StringIsEqual(s, "-datapath=", 10)) {
       s += 10;
       PathName convert(s);
-      SetSingleDataPath(convert);
+      data_path_option = AllocatedPath(Path(convert));
 #ifdef HAVE_CMDLINE_REPLAY
     } else if (StringIsEqual(s, "-replay=", 8)) {
       replay_path = s + 8;
@@ -252,6 +260,13 @@ CommandLine::Parse(Args &args)
   if (width < 240 || width > 4096 ||
       height < 240 || height > 4096)
     args.UsageError();
+}
+
+void
+CommandLine::ApplyDataPath() noexcept
+{
+  if (data_path_option != nullptr)
+    SetSingleDataPath(data_path_option);
 }
 
 void
