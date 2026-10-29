@@ -53,6 +53,7 @@ set(_SOURCES
         Engine/GlideSolvers/MacCready.cpp
         Engine/Navigation/Aircraft.cpp
         Engine/Navigation/TraceHistory.cpp
+        Engine/Observation/Store.cpp
         Engine/Route/AirspaceRoute.cpp
         Engine/Route/Config.cpp
         Engine/Route/FlatTriangleFan.cpp

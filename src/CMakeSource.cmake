@@ -41,6 +41,7 @@ set(BASIC_SOURCES
 
     ${SRC}/Pan.cpp
     ${SRC}/Radio/TransponderCode.cpp
+    ${SRC}/Observation/Publish.cpp
 
     ${SRC}/PageSettings.cpp
     ${SRC}/PageState.cpp
