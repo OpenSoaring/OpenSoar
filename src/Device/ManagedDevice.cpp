@@ -3,6 +3,7 @@
 
 #include "ManagedDevice.hpp"
 #include "Device/Util/NMEAWriter.hpp"
+#include "LogFile.hpp"
 
 #include <cassert>
 #include <cstdio>
@@ -11,6 +12,10 @@ void
 ManagedDevice::SendNMEA(const char *sentence, OperationEnvironment &env)
 {
   assert(sentence != nullptr);
+  /* the managed devices send only on request (manage dialog, device
+     start), so a line per sentence keeps the log readable and shows
+     what was asked of the device */
+  LogFmt("Device tx: ${}", sentence);
   PortWriteNMEA(port, sentence, env);
 }
 
@@ -34,6 +39,7 @@ ManagedDevice::WriteDeviceSetting(const char *write_talker,
   if (written < 0 || written >= int(sizeof(buffer)))
     return; // would be truncated, drop the sentence
 
+  LogFmt("Device tx: ${}", buffer);
   PortWriteNMEA(port, buffer, env);
 }
 
@@ -54,5 +60,6 @@ ManagedDevice::WriteDeviceSetting(const char *write_talker,
   if (written < 0 || written >= int(sizeof(buffer)))
     return; // would be truncated, drop the sentence
 
+  LogFmt("Device tx: ${}", buffer);
   PortWriteNMEA(port, buffer, env);
 }

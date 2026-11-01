@@ -185,11 +185,16 @@ public final class UsbSerialHelper extends BroadcastReceiver {
     }
 
     public synchronized AndroidPort open(int baud) throws IOException {
-      if (port != null)
+      if (port != null) {
+        DiagLog.log("USB open " + id + ": already open in this app");
         throw new IOException("Port already occupied");
+      }
 
       port = new UsbSerialPort(this, baud);
-      if (usbmanager.hasPermission(device)) {
+      final boolean permitted = usbmanager.hasPermission(device);
+      DiagLog.log("USB open " + id + " at " + baud + " baud, permission " +
+                  (permitted ? "yes" : "no, asking"));
+      if (permitted) {
         port.open(usbmanager, device, iface);
       } else {
         requestPermission(device);
@@ -236,6 +241,28 @@ public final class UsbSerialHelper extends BroadcastReceiver {
     return Arrays.binarySearch(devices, createDevice(vendorId, productId)) >= 0;
   }
 
+  /**
+   * A device in one line for the diagnostic log: ids, names, the
+   * classes of its interfaces and whether this app may open it.  A
+   * device that comes back with other ids or without its serial
+   * interface (firmware in another mode) shows here.
+   */
+  private String describe(UsbDevice device) {
+    StringBuilder b = new StringBuilder();
+    b.append(String.format("%04X:%04X", device.getVendorId(),
+                           device.getProductId()));
+    b.append(" ").append(device.getDeviceName());
+    b.append(" \"").append(device.getProductName()).append("\"");
+    b.append(" by \"").append(device.getManufacturerName()).append("\"");
+    b.append(", interfaces");
+    for (int i = 0; i < device.getInterfaceCount(); ++i)
+      b.append(" ").append(i).append(":class ")
+        .append(device.getInterface(i).getInterfaceClass());
+    b.append(", permission ")
+      .append(usbmanager.hasPermission(device) ? "yes" : "no");
+    return b.toString();
+  }
+
   private static boolean isSupported(UsbDevice device) {
     return UsbSerialDevice.isSupported(device) &&
       exists(supported_ids, device.getVendorId(), device.getProductId());
@@ -278,6 +305,7 @@ public final class UsbSerialHelper extends BroadcastReceiver {
         return;
 
       if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+        DiagLog.log("USB attached: " + describe(device));
         if (usbmanager.hasPermission(device))
           addAvailable(device);
         else
@@ -285,9 +313,20 @@ public final class UsbSerialHelper extends BroadcastReceiver {
              serial number */
           requestPermission(device);
       } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+        DiagLog.log("USB detached: " + String.format("%04X:%04X %s",
+                                                     device.getVendorId(),
+                                                     device.getProductId(),
+                                                     device.getDeviceName()));
         removeAvailable(device);
       } else if (ACTION_USB_PERMISSION.equals(action)) {
-        if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+        final boolean granted =
+          intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false);
+        DiagLog.log("USB permission " + (granted ? "granted" : "DENIED") +
+                    ": " + String.format("%04X:%04X %s",
+                                         device.getVendorId(),
+                                         device.getProductId(),
+                                         device.getDeviceName()));
+        if (granted) {
           Log.d(TAG, "permission granted for device " + device.getDeviceName());
 
           //Iterate through list of Pending connections. For each entry matching with granted device, open port and remove from list
@@ -307,8 +346,12 @@ public final class UsbSerialHelper extends BroadcastReceiver {
   }
 
   private synchronized void addAvailable(UsbDevice device) {
-    if (!isSupported(device))
+    if (!isSupported(device)) {
+      DiagLog.log("USB device not supported as serial port: " +
+                  String.format("%04X:%04X", device.getVendorId(),
+                                device.getProductId()));
       return;
+    }
 
     final int n = device.getInterfaceCount();
     final UsbDeviceInterface[] existing = new UsbDeviceInterface[n];
@@ -341,6 +384,7 @@ public final class UsbSerialHelper extends BroadcastReceiver {
       if (iclass == UsbConstants.USB_CLASS_VENDOR_SPEC || iclass == UsbConstants.USB_CLASS_CDC_DATA) {
         UsbDeviceInterface deviface = new UsbDeviceInterface(device, iface);
         interfaces.add(deviface);
+        DiagLog.log("USB serial port available: " + deviface.id);
         broadcastDetectedDeviceInterface(deviface);
       }
     }
@@ -359,6 +403,8 @@ public final class UsbSerialHelper extends BroadcastReceiver {
     while (iter.hasNext()) {
       UsbDeviceInterface iface = iter.next();
       if (iface.isDevice(removeddevice)) {
+        DiagLog.log("USB serial port gone: " + iface.id +
+                    (iface.port != null ? " (it was open)" : ""));
         iface.onDisconnect();
         iter.remove();
       }
@@ -374,7 +420,9 @@ public final class UsbSerialHelper extends BroadcastReceiver {
       throw new IOException("No USB service");
 
     HashMap<String, UsbDevice> devices = usbmanager.getDeviceList();
+    DiagLog.log("USB devices at the start: " + devices.size());
     for (Map.Entry<String, UsbDevice> entry : devices.entrySet()) {
+      DiagLog.log("USB device: " + describe(entry.getValue()));
       addAvailable(entry.getValue());
     }
 
@@ -420,6 +468,10 @@ public final class UsbSerialHelper extends BroadcastReceiver {
   }
 
   private void requestPermission(UsbDevice device) {
+    DiagLog.log("USB permission requested: " +
+                String.format("%04X:%04X %s", device.getVendorId(),
+                              device.getProductId(), device.getDeviceName()));
+
     /* mutable, so the UsbManager can add EXTRA_DEVICE and
        EXTRA_PERMISSION_GRANTED to the result; explicit, because
        Android 14 refuses a mutable PendingIntent with an implicit
@@ -444,8 +496,10 @@ public final class UsbSerialHelper extends BroadcastReceiver {
       deviface = getAvailable(id);
     }
 
-    if (deviface == null)
+    if (deviface == null) {
+      DiagLog.log("USB connect " + id + ": not found");
       throw new IOException("USB serial device not found");
+    }
 
     return deviface.open(baud);
   }
@@ -491,6 +545,9 @@ public final class UsbSerialHelper extends BroadcastReceiver {
           i.device.getProductId() == productId)
         return i.id;
 
+    DiagLog.log(String.format("USB search for %04X:%04X: nothing among %d " +
+                              "serial port(s)", vendorId, productId,
+                              interfaces.size()));
     return null;
   }
 }
