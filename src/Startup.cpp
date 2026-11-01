@@ -883,34 +883,25 @@ Startup(UI::Display &display)
      of each one that is attached, so the subsequent devStartup() call
      opens it with its own driver; every launch rescans, and a slot
      whose device is not present stays disabled and its row hidden in
-     the device list (see MultipleDevices::HasSteFlyDevice()) */
+     the device list (see MultipleDevices::HasSteFlyDevice()) until
+     the device list looks again when it opens */
   for (const auto &auto_slot : SteFly::AUTO_SLOTS) {
     DeviceConfig &cfg =
       CommonInterface::SetSystemSettings().devices[auto_slot.slot];
     /* also clears whatever an older version stored for the slot */
     cfg.Clear();
 
-    const auto stefly_port =
-      SteFly::DiscoverPortByUsbId(SteFly::VID_STEFLY, auto_slot.pid);
-    if (!stefly_port) {
+    if (!SteFly::FindAutoSlotDevice(auto_slot, cfg)) {
       /* said explicitly, because a device that is plugged in but not
-         found here is missing from the device list until the next
-         start */
+         found here is missing from the device list until the list is
+         opened (which looks again) */
       LogFmt("SteFly {} not found on the USB bus - device slot {} stays "
              "empty", auto_slot.driver_name, auto_slot.slot);
       continue;
     }
 
     LogFmt("SteFly {} detected on {} - binding to device slot {}",
-           auto_slot.driver_name, stefly_port->path.c_str(),
-           auto_slot.slot);
-    /* the port type comes from the discovery, because Android opens
-       the device through the UsbSerialHelper (ANDROID_USB_SERIAL)
-       instead of a device node (SERIAL) */
-    cfg.port_type = stefly_port->type;
-    cfg.path = stefly_port->path.c_str();
-    cfg.driver_name = auto_slot.driver_name;
-    cfg.enabled = true;
+           auto_slot.driver_name, cfg.path.c_str(), auto_slot.slot);
   }
 #endif // HAVE_REMOTE_STICK
 

@@ -380,4 +380,25 @@ IsUsbTty(const char * /*path*/, std::uint16_t /*vid*/,
 
 #endif
 
+namespace SteFly {
+
+bool
+FindAutoSlotDevice(const AutoSlot &auto_slot, DeviceConfig &config) noexcept
+{
+  const auto port = DiscoverPortByUsbId(VID_STEFLY, auto_slot.pid);
+  if (!port)
+    return false;
+
+  /* the port type comes from the discovery, because Android opens
+     the device through the UsbSerialHelper (ANDROID_USB_SERIAL)
+     instead of a device node (SERIAL) */
+  config.port_type = port->type;
+  config.path = port->path.c_str();
+  config.driver_name = auto_slot.driver_name;
+  config.enabled = true;
+  return true;
+}
+
+} // namespace SteFly
+
 #endif // HAVE_REMOTE_STICK

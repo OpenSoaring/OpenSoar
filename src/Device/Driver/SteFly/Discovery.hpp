@@ -12,13 +12,16 @@
  * that device (see AUTO_SLOTS) in SystemSettings::devices before
  * devStartup() opens the ports.  Every launch rescans the bus.
  *
- * Only invoked once, right after MultipleDevices is constructed. A
- * RemoteStick that is plugged in after startup is deliberately not
- * bound: most installations (smartphones, tablets without a stick)
- * never see one, and they should not pay for a permanent watch on
- * the bus. The existing PortMonitor path (Windows WM_DEVICECHANGE,
- * Linux libudev, Android JNI) still reopens the slot when a stick
- * that was found at startup is unplugged and plugged in again.
+ * Invoked at startup, right after MultipleDevices is constructed, and
+ * again whenever the device list opens (BindAutoSlot()).  There is no
+ * permanent watch on the bus: most installations (smartphones,
+ * tablets without a stick) never see one, and they should not pay for
+ * it.  A device plugged in later is found the next time the pilot
+ * opens the device list; until then its keys still work as an
+ * ordinary keyboard, only without the serial connection.  The
+ * existing PortMonitor path (Windows WM_DEVICECHANGE, Linux libudev,
+ * Android JNI) still reopens a slot whose device is unplugged and
+ * plugged in again.
  */
 
 #pragma once
@@ -96,6 +99,18 @@ struct DiscoveredPort {
  */
 std::optional<DiscoveredPort>
 DiscoverPortByUsbId(std::uint16_t vid, std::uint16_t pid) noexcept;
+
+/**
+ * Look for the device of an automatic slot on the USB bus and, if it
+ * is attached, describe its port in a configuration for that slot
+ * (port type, path, the fixed driver, enabled).
+ *
+ * @param config the configuration to fill; left alone if the device
+ *        is not attached
+ * @return true if the device was found
+ */
+bool
+FindAutoSlotDevice(const AutoSlot &auto_slot, DeviceConfig &config) noexcept;
 
 /**
  * Does the given serial device node (e.g. "/dev/ttyUSB0") belong to
