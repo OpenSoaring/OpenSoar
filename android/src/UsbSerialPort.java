@@ -40,12 +40,15 @@ public final class UsbSerialPort
   public synchronized void open(UsbManager manager, UsbDevice device, int iface) {
     connection = manager.openDevice(device);
     if (connection == null) {
+      DiagLog.log("USB open failed: UsbManager.openDevice() refused " +
+                  device.getDeviceName());
       setState(STATE_FAILED);
       return;
     }
 
     serialDevice = UsbSerialDevice.createUsbSerialDevice(device, connection, iface);
     if (serialDevice == null) {
+      DiagLog.log("USB open failed: no serial driver for interface " + iface);
       connection.close();
       connection = null;
       setState(STATE_FAILED);
@@ -53,6 +56,11 @@ public final class UsbSerialPort
     }
 
     if (!serialDevice.open()) {
+      /* usually the interface could not be claimed: another app holds
+         it, for example a GPS connector or a second XCSoar */
+      DiagLog.log("USB open failed: interface " + iface + " of " +
+                  device.getDeviceName() + " not available (claimed by " +
+                  "another app?)");
       serialDevice = null;
       connection.close();
       connection = null;
@@ -67,10 +75,13 @@ public final class UsbSerialPort
     serialDevice.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
     serialDevice.read(this);
 
+    DiagLog.log("USB open: " + device.getDeviceName() + " interface " + iface +
+                " ready");
     setState(STATE_READY);
   }
 
   public synchronized void close() {
+    DiagLog.log("USB close: " + parent.id);
     parent.portClosed(this);
 
     setState(STATE_FAILED);
@@ -93,6 +104,7 @@ public final class UsbSerialPort
    * Called by UsbSerialHelper after the device got disconnected.
    */
   public void onDisconnect() {
+    DiagLog.log("USB disconnected: " + parent.id);
     error("Disconnected");
   }
 

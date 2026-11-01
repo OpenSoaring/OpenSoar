@@ -11,6 +11,7 @@
 #include <charconv>
 #include <chrono>
 #include <string>
+#include <string_view>
 
 SteFlyDevice::SteFlyDevice(Port &_port) noexcept
   :ManagedDevice(_port)
@@ -21,8 +22,20 @@ bool
 SteFlyDevice::ParseNMEA(const char *_line,
                         [[maybe_unused]] NMEAInfo &nmea_info)
 {
-  if (!VerifyNMEAChecksum(_line))
+  const bool ours = std::string_view{_line}.starts_with("$PSRC");
+
+  if (!VerifyNMEAChecksum(_line)) {
+    if (ours)
+      LogFmt("SteFly rx with a bad checksum: {}", _line);
     return false;
+  }
+
+  /* every sentence of the SteFly protocol is logged: they come only as
+     answers and as the device's own messages, so there are few of
+     them, and they show what the device reports about its layout and
+     settings while a key stops working */
+  if (ours)
+    LogFmt("SteFly rx: {}", _line);
 
   NMEAInputLine line(_line);
   const auto type = line.ReadView();
@@ -47,6 +60,8 @@ SteFlyDevice::ParseNMEA(const char *_line,
 void
 SteFlyDevice::LinkTimeout()
 {
+  LogString("SteFly: no data from the device any more (link timeout)");
+
   // Wake everything waiting — no more replies coming.
   info_block.NotifyReady();
   settings_block.NotifyReady();
