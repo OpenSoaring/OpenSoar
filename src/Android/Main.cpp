@@ -48,6 +48,7 @@
 #include "java/InputStream.hxx"
 #include "java/URL.hxx"
 #include "java/Closeable.hxx"
+#include "java/String.hxx"
 #include "util/Compiler.h"
 #include "org_xcsoar_NativeView.h"
 #include "Simulator.hpp"
@@ -73,6 +74,81 @@
 #include <mutex>
 
 #include <stdlib.h>
+
+#include <android/log.h>
+#include <fmt/format.h>
+
+#include <atomic>
+#include <mutex>
+#include <string>
+#include <vector>
+
+/*
+ * Diagnostic lines for the problems that only show on some Android
+ * devices: the map that is built again and again (pause, resume, a
+ * destroyed or resized surface), and USB devices such as the SteFly
+ * RemoteStick that stop working or disappear while another app (a GPS
+ * connector, a second XCSoar) competes for them.  The Java side sends
+ * its lines through DiagLog.java.
+ *
+ * LogString() opens the log file in the data directory, which exists
+ * only once RunOnce() has initialised it.  Lines that arrive earlier
+ * (from Activity.onCreate(), for example) are kept and written as soon
+ * as the log is ready, so that the log shows the whole start.
+ */
+static std::atomic_bool diag_log_ready{false};
+static std::mutex diag_log_mutex;
+static std::vector<std::string> diag_log_pending;
+
+static void
+DiagLog(std::string &&line) noexcept
+{
+  __android_log_print(ANDROID_LOG_INFO, "OpenSoar", "%s", line.c_str());
+
+  if (!diag_log_ready.load()) {
+    const std::lock_guard lock{diag_log_mutex};
+    if (!diag_log_ready.load()) {
+      /* a bounded buffer: an app that never gets to RunOnce() must not
+         collect lines without end */
+      if (diag_log_pending.size() < 200)
+        diag_log_pending.emplace_back(std::move(line));
+      return;
+    }
+  }
+
+  LogString(line);
+}
+
+/**
+ * The log file can be written now: write what came before, and from
+ * now on write directly.
+ */
+static void
+DiagLogReady() noexcept
+{
+  std::vector<std::string> pending;
+  {
+    const std::lock_guard lock{diag_log_mutex};
+    pending.swap(diag_log_pending);
+    diag_log_ready.store(true);
+  }
+
+  for (const auto &line : pending)
+    LogFmt("{} (before the start)", line);
+}
+
+/* explicitly extern "C": DiagLog.java has no generated JNI header in
+   the build, unlike the classes listed in build/android.mk */
+extern "C" gcc_visibility_default JNIEXPORT void JNICALL
+Java_org_xcsoar_DiagLog_logNative(JNIEnv *env, [[maybe_unused]] jclass cls,
+                                  jstring msg)
+{
+  if (msg == nullptr)
+    return;
+
+  DiagLog(fmt::format("Android: {}",
+                      Java::String::GetUTFChars(env, msg).c_str()));
+}
 
 using namespace UI;
 
@@ -301,6 +377,7 @@ RunOnce(JNIEnv *env, jobject obj,
   SystemConfig::Load();
 
   LogFormat("Starting %s", XCSoar_ProductToken);
+  DiagLogReady();
 
   TextUtil::Initialise(env);
   AtScopeExit(env) { TextUtil::Deinitialise(env); };
@@ -450,6 +527,21 @@ Java_org_xcsoar_NativeView_resizedNative(JNIEnv *env, jobject obj,
 {
   const std::scoped_lock shutdown_lock{shutdown_mutex};
 
+  /* only a change is worth a line: a size or inset that changes every
+     second makes the map start from scratch every second */
+  static jint last[10] = {-1};
+  const jint now[10] = {width, height, inset_left, inset_top, inset_right,
+                        inset_bottom, shape_left, shape_top, shape_right,
+                        shape_bottom};
+  if (!std::equal(std::begin(now), std::end(now), std::begin(last))) {
+    std::copy(std::begin(now), std::end(now), std::begin(last));
+    DiagLog(fmt::format("Android: surface size {}x{}, insets {} {} {} {}, "
+                        "shape {} {} {} {}",
+                        width, height, inset_left, inset_top, inset_right,
+                        inset_bottom, shape_left, shape_top, shape_right,
+                        shape_bottom));
+  }
+
   current_width = width;
   current_height = height;
 
@@ -478,6 +570,10 @@ gcc_visibility_default
 JNIEXPORT void JNICALL
 Java_org_xcsoar_NativeView_surfaceDestroyedNative(JNIEnv *env, jobject obj)
 {
+  /* the OpenGL surface goes, and with it every texture: terrain,
+     topography and the other cached map layers are built again */
+  DiagLog("Android: surface destroyed");
+
   const std::scoped_lock shutdown_lock{shutdown_mutex};
 
   if (auto *main_window = NativeView::GetPointer(env, obj))
@@ -488,6 +584,8 @@ gcc_visibility_default
 JNIEXPORT void JNICALL
 Java_org_xcsoar_NativeView_pauseNative(JNIEnv *env, jobject obj)
 {
+  DiagLog("Android: pause");
+
   const std::scoped_lock shutdown_lock{shutdown_mutex};
 
   if (event_queue == nullptr)
@@ -505,6 +603,8 @@ gcc_visibility_default
 JNIEXPORT void JNICALL
 Java_org_xcsoar_NativeView_resumeNative(JNIEnv *env, jobject obj)
 {
+  DiagLog("Android: resume");
+
   const std::scoped_lock shutdown_lock{shutdown_mutex};
 
   if (event_queue == nullptr)

@@ -780,8 +780,14 @@ Startup(UI::Display &display)
 
     const auto stefly_port =
       SteFly::DiscoverPortByUsbId(SteFly::VID_STEFLY, auto_slot.pid);
-    if (!stefly_port)
+    if (!stefly_port) {
+      /* said explicitly, because a device that is plugged in but not
+         found here is missing from the device list until the next
+         start */
+      LogFmt("SteFly {} not found on the USB bus - device slot {} stays "
+             "empty", auto_slot.driver_name, auto_slot.slot);
       continue;
+    }
 
     LogFmt("SteFly {} detected on {} - binding to device slot {}",
            auto_slot.driver_name, stefly_port->path.c_str(),

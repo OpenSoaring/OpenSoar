@@ -224,12 +224,14 @@ class NativeView extends SurfaceView
   }
 
   @Override public void surfaceCreated(SurfaceHolder holder) {
+    DiagLog.log("surface created");
     if (rotationListener != null && rotationListener.canDetectOrientation())
       rotationListener.enable();
   }
 
   @Override public void surfaceChanged(SurfaceHolder holder, int format,
                                        int width, int height) {
+    DiagLog.log("surface changed " + width + "x" + height);
     if (thread == null || !thread.isAlive())
       start();
 
@@ -763,7 +765,25 @@ class NativeView extends SurfaceView
            keyCode == KeyEvent.KEYCODE_VOLUME_MUTE;
   }
 
+  /**
+   * One line per key event: which device sent which key.  A RemoteStick
+   * key that the stick should turn into an Android key (App Switch,
+   * Home) shows up here as the key it actually sent.
+   */
+  private static void logKey(String what, int keyCode, KeyEvent event) {
+    String device = "?";
+    if (event != null && event.getDevice() != null)
+      device = event.getDevice().getName();
+
+    DiagLog.log("key " + what + " " + KeyEvent.keyCodeToString(keyCode) +
+                " (" + keyCode + ") from " + device +
+                (event != null && event.getRepeatCount() > 0
+                 ? ", repeat " + event.getRepeatCount() : ""));
+  }
+
   @Override public boolean onKeyDown(int keyCode, final KeyEvent event) {
+    logKey("down", keyCode, event);
+
     if (isVolumeKey(keyCode))
       return false;
 
@@ -772,6 +792,8 @@ class NativeView extends SurfaceView
   }
 
   @Override public boolean onKeyUp(int keyCode, final KeyEvent event) {
+    logKey("up", keyCode, event);
+
     if (isVolumeKey(keyCode))
       return false;
 
