@@ -152,10 +152,15 @@ protected:
   // Protected by settings_block.mutex.
   UserSettings user_settings;
 
+  /** EnableNMEA() has asked the device for its state since it was
+      opened; a new opening creates a new instance */
+  bool asked_on_open = false;
+
   explicit SteFlyDevice(Port &port) noexcept;
 
 public:
   /* virtual methods from AbstractDevice */
+  bool EnableNMEA(OperationEnvironment &env) override;
   bool ParseNMEA(const char *line, NMEAInfo &info) override;
   void LinkTimeout() override;
 
