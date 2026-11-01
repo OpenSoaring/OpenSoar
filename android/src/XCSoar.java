@@ -92,6 +92,10 @@ public class XCSoar extends Activity implements PermissionManager {
     Log.d(TAG, "BOARD=" + Build.BOARD);
     Log.d(TAG, "FINGERPRINT=" + Build.FINGERPRINT);
 
+    DiagLog.log("activity created: " + getPackageName() + ", Android " +
+                Build.VERSION.RELEASE + " (SDK " + Build.VERSION.SDK_INT +
+                "), " + Build.MANUFACTURER + " " + Build.MODEL);
+
     currentActivity = this;
 
     if (!Loader.loaded) {
@@ -352,6 +356,7 @@ public class XCSoar extends Activity implements PermissionManager {
   }
 
   @Override protected void onPause() {
+    DiagLog.log("activity paused");
     if (nativeView != null)
       nativeView.onPause();
     super.onPause();
@@ -374,6 +379,8 @@ public class XCSoar extends Activity implements PermissionManager {
   @Override protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
 
+    DiagLog.log("activity got intent " + intent.getAction());
+
     /* an IOIO plugged in while XCSoar runs (launchMode singleInstance
        delivers USB_*_ATTACHED here); wake the connect attempt that is
        waiting for it */
@@ -385,6 +392,8 @@ public class XCSoar extends Activity implements PermissionManager {
 
   @Override protected void onResume() {
     super.onResume();
+
+    DiagLog.log("activity resumed");
 
     if (!Loader.loaded)
       return;
@@ -471,6 +480,10 @@ public class XCSoar extends Activity implements PermissionManager {
   }
 
   @Override public void onWindowFocusChanged(boolean hasFocus) {
+    /* another app or a system window in front - for example a GPS
+       connector app that brings itself back - takes the focus */
+    DiagLog.log(hasFocus ? "window got the focus" : "window lost the focus");
+
     if (hasFocus && wantFullScreen()) {
       /* some Android don't restore fullscreen settings after returning to
          this app or after orientation changes, so we need to reapply all
