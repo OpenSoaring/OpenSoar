@@ -16,6 +16,8 @@
 #include "LX/ManageLX16xxDialog.hpp"
 #ifdef HAVE_REMOTE_STICK
 # include "SteFly/ManageRemoteDialog.hpp"
+# include "Device/Driver/SteFly/Discovery.hpp"
+# include "LogFile.hpp"
 #endif
 #include "PortMonitor.hpp"
 #include "Dialogs/WidgetDialog.hpp"
@@ -1085,9 +1087,66 @@ DeviceListWidget::OnGPSUpdate([[maybe_unused]] const MoreData &basic)
     UpdateButtons();
 }
 
+#ifdef HAVE_REMOTE_STICK
+
+/**
+ * Look again for the SteFly devices of the automatic slots, as at the
+ * start, and bind the ones that are new: a RemoteStick plugged in
+ * while the program runs works as a keyboard, but without the serial
+ * connection it sends no settings and nothing reaches the log.  The
+ * bus is looked at only here and at the start, never in the
+ * background.
+ *
+ * A slot whose device is already bound to the port found keeps running
+ * untouched; a slot bound to another port (the device came back with
+ * another COM number) is moved to the new one.  A device that is gone
+ * keeps its slot, so that the descriptor reopens it when it comes
+ * back.
+ */
+static void
+BindNewSteFlyDevices(MultipleDevices *devices) noexcept
+{
+  for (const auto &auto_slot : SteFly::AUTO_SLOTS) {
+    DeviceConfig &config =
+      CommonInterface::SetSystemSettings().devices[auto_slot.slot];
+
+    DeviceConfig found = config;
+    if (!SteFly::FindAutoSlotDevice(auto_slot, found))
+      continue;
+
+    if (config.UsesPort() && config.port_type == found.port_type &&
+        config.path == found.path)
+      /* already bound to this port */
+      continue;
+
+    LogFmt("SteFly {} found on {} when the device list opened - binding "
+           "to device slot {}", auto_slot.driver_name, found.path.c_str(),
+           auto_slot.slot);
+
+    config = found;
+
+    if (devices != nullptr) {
+      DeviceDescriptor &descriptor = (*devices)[auto_slot.slot];
+      descriptor.SetConfig(config);
+
+      /* this OperationEnvironment instance must be persistent, because
+         DeviceDescriptor::Open() is asynchronous */
+      static MessageOperationEnvironment env;
+      descriptor.Reopen(env);
+    }
+  }
+}
+
+#endif // HAVE_REMOTE_STICK
+
 void
 ShowDeviceList(MultipleDevices *devices)
 {
+#ifdef HAVE_REMOTE_STICK
+  /* before the rows are laid out: a device found now gets its row */
+  BindNewSteFlyDevices(devices);
+#endif
+
   /* Per-device NMEA (FLARM version, port flags) lives on
      DeviceBlackboard, not the merged InterfaceBlackboard. */
   DeviceBlackboard *device_blackboard =
