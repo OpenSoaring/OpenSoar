@@ -57,10 +57,41 @@ SteFlyDevice::ParseNMEA(const char *_line,
   }
 }
 
+bool
+SteFlyDevice::EnableNMEA(OperationEnvironment &env)
+{
+  /* Each time the device is opened - at the start, and again after it
+     re-attached itself to the USB bus - it is asked what it is and how
+     it is set up: firmware version and layout table (info), active
+     layout and click times (settings), and the health of the layout in
+     its EEPROM ("$PSRCH,A,Corruptions=..,Seq=..,Preset=.."), which
+     tells whether the device fell back to a preset after a damaged
+     layout.  The answers are logged as "SteFly rx", so a log begins
+     with the state of the device before a key stops working.  A
+     firmware before v4.2 does not know the health request and only
+     reports a parse error.
+
+     Only once per opening: the device is silent between key presses,
+     every silence ends in a link timeout, and the descriptor calls
+     this method again after each one - asking every time would keep
+     the device talking every few seconds. */
+  if (asked_on_open)
+    return true;
+
+  asked_on_open = true;
+  RequestInfo(env);
+  RequestSettings(env);
+  SendNMEA("PSRCH,R,Health", env);
+  return true;
+}
+
 void
 SteFlyDevice::LinkTimeout()
 {
-  LogString("SteFly: no data from the device any more (link timeout)");
+  /* the device sends only when a key is pressed or when it is asked,
+     so this is normal after a quiet while; it matters when it comes
+     right after a key that did not work */
+  LogString("SteFly: link timeout (no data for a while)");
 
   // Wake everything waiting — no more replies coming.
   info_block.NotifyReady();
