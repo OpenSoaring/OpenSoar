@@ -6,6 +6,8 @@
 #include "Dialogs/Error.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Widget/RowFormWidget.hpp"
+#include "Widget/ListWidget.hpp"
+#include "Renderer/TwoTextRowsRenderer.hpp"
 #include "UIGlobals.hpp"
 #include "Interface.hpp"
 #include "Components.hpp"
@@ -13,6 +15,8 @@
 #include "CalculationThread.hpp"
 #include "MergeThread.hpp"
 #include "Replay/Replay.hpp"
+#include "Profile/Profile.hpp"
+#include "Profile/Keys.hpp"
 #include "Form/DataField/Base.hpp"
 #include "Language/Language.hpp"
 #include "Repository/FileType.hpp"
@@ -85,12 +89,157 @@ public:
   }
 };
 
+/**
+ * The sources of an NMEA log (one per device that was connected when
+ * it was written), in the order of their rank.  As with the devices
+ * in flight, the source at the top has the say for every value it
+ * provides and the ones below only fill in what is missing; the user
+ * may switch sources off and move them, to see what another
+ * arrangement of the devices would have made of the same flight.
+ * Changes take effect at once, also in a running replay.
+ */
+class ReplaySourcesWidget final : public ListWidget {
+  NmeaReplaySources &sources;
+
+  Button *toggle_button = nullptr, *up_button = nullptr,
+    *down_button = nullptr;
+
+  TwoTextRowsRenderer row_renderer;
+
+public:
+  explicit ReplaySourcesWidget(NmeaReplaySources &_sources) noexcept
+    :sources(_sources) {}
+
+  void CreateButtons(WidgetDialog &dialog) noexcept {
+    toggle_button = dialog.AddButton(_("On/Off"), [this](){
+      Toggle(GetList().GetCursorIndex());
+    });
+    up_button = dialog.AddButton(_("Up"), [this](){
+      MoveUp(GetList().GetCursorIndex());
+    });
+    down_button = dialog.AddButton(_("Down"), [this](){
+      MoveDown(GetList().GetCursorIndex());
+    });
+    dialog.AddButton(_("Close"), mrOK);
+  }
+
+private:
+  void RefreshView() noexcept {
+    /* the replay may have met a new source meanwhile */
+    GetList().SetLength(sources.size());
+    GetList().Invalidate();
+    UpdateButtons();
+  }
+
+  void UpdateButtons() noexcept {
+    if (toggle_button == nullptr)
+      return;
+
+    const unsigned i = GetList().GetCursorIndex();
+    toggle_button->SetEnabled(i < sources.size());
+    up_button->SetEnabled(i > 0 && i < sources.size());
+    down_button->SetEnabled(i + 1 < sources.size());
+  }
+
+  void Toggle(unsigned i) noexcept {
+    if (i < sources.size())
+      sources.Toggle(i);
+    RefreshView();
+  }
+
+  void MoveUp(unsigned i) noexcept {
+    if (i == 0 || i >= sources.size())
+      return;
+    sources.MoveUp(i);
+    GetList().SetCursorIndex(i - 1);
+    RefreshView();
+  }
+
+  void MoveDown(unsigned i) noexcept {
+    if (i + 1 >= sources.size())
+      return;
+    sources.MoveUp(i + 1);
+    GetList().SetCursorIndex(i + 1);
+    RefreshView();
+  }
+
+public:
+  /* virtual methods from class Widget */
+  void Prepare(ContainerWindow &parent,
+               const PixelRect &rc) noexcept override {
+    const DialogLook &look = UIGlobals::GetDialogLook();
+    CreateList(parent, look, rc,
+               row_renderer.CalculateLayout(*look.list.font_bold,
+                                            look.small_font));
+    RefreshView();
+  }
+
+  /* virtual methods from class List::Handler */
+  void OnPaintItem(Canvas &canvas, const PixelRect rc,
+                   unsigned i) noexcept override {
+    if (i >= sources.size())
+      return;
+
+    const auto &source = sources[i];
+
+    StaticString<64> title;
+    title.Format("%u. %s", i + 1,
+                 source.label.empty() ? _("Lines without head")
+                 : source.label.c_str());
+    row_renderer.DrawFirstRow(canvas, rc, title.c_str());
+    row_renderer.DrawRightFirstRow(canvas, rc,
+                                   source.enabled ? _("On") : _("Off"));
+
+    /* the first source that is switched on has the say, wherever
+       it stands */
+    unsigned first_enabled = 0;
+    while (first_enabled < sources.size() &&
+           !sources[first_enabled].enabled)
+      ++first_enabled;
+
+    const char *text;
+    if (!source.enabled)
+      text = _("Left out of the replay and the NMEA output.");
+    else if (i == first_enabled)
+      text = _("Has the say for every value it provides.");
+    else
+      text = _("Fills in what the sources above do not provide.");
+    row_renderer.DrawSecondRow(canvas, rc, text);
+  }
+
+  void OnCursorMoved([[maybe_unused]] unsigned index) noexcept override {
+    UpdateButtons();
+  }
+
+  bool CanActivateItem([[maybe_unused]] unsigned index) const noexcept override {
+    return true;
+  }
+
+  void OnActivateItem(unsigned index) noexcept override {
+    Toggle(index);
+  }
+};
+
+static void
+ShowReplaySourcesDialog(NmeaReplaySources &sources) noexcept
+{
+  TWidgetDialog<ReplaySourcesWidget>
+    dialog(WidgetDialog::Full{}, UIGlobals::GetMainWindow(),
+           UIGlobals::GetDialogLook(), _("Data sources"));
+  dialog.SetWidget(sources);
+  dialog.GetWidget().CreateButtons(dialog);
+  dialog.EnableCursorSelection();
+  dialog.ShowModal();
+}
+
 class ReplayControlWidget final
   : public RowFormWidget
 {
   enum Controls {
     FILE,
     RATE,
+    OUTPUT_CURRENT_TIME,
+    SOURCES,
     STATUS,
   };
 
@@ -163,6 +312,9 @@ private:
     }
 
     SetText(STATUS, text.c_str());
+
+    /* only an NMEA log has sources to choose from */
+    SetRowVisible(SOURCES, !replay.GetNmeaSources().empty());
 
     /* while a seek runs, the progress bar takes the position row's
        place */
@@ -248,6 +400,26 @@ ReplayControlWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
            0, 10, 1, false, replay.GetTimeScale());
   GetDataField(RATE).SetOnModified([this]{
     replay.SetTimeScale(GetValueFloat(RATE));
+  });
+
+  AddBoolean(_("NMEA output: current time"),
+             _("The replayed sentences also go out on the ports with the "
+               "\"NMEA output\" driver, as received data does in flight; "
+               "data received from the devices is not passed on meanwhile.  "
+               "Off: with the times recorded in the file.  On: time and "
+               "date of the position sentences replaced by the current "
+               "time, so that a device behind such a port takes the replay "
+               "for live data."),
+             replay.GetOutputCurrentTime());
+  GetDataField(OUTPUT_CURRENT_TIME).SetOnModified([this]{
+    const bool value = GetValueBoolean(OUTPUT_CURRENT_TIME);
+    replay.SetOutputCurrentTime(value);
+    Profile::Set(ProfileKeys::ReplayOutputCurrentTime, value);
+    Profile::Save();
+  });
+
+  AddButton(_("Data sources"), [this](){
+    ShowReplaySourcesDialog(replay.GetNmeaSources());
   });
 
   AddReadOnly(_("Position"),

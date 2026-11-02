@@ -85,6 +85,15 @@ MultipleDevices::HasSteFlyDevice(unsigned slot) const noexcept
 #endif // HAVE_REMOTE_STICK
 
 void
+MultipleDevices::ForwardReplayLine(const char *line) noexcept
+{
+  /* ForwardLine() writes only to a port with the "NMEA output"
+     driver */
+  for (DeviceDescriptor *i : devices)
+    i->ForwardLine(line);
+}
+
+void
 MultipleDevices::VegaWriteNMEA(const char *text,
                                OperationEnvironment &env) noexcept
 {
