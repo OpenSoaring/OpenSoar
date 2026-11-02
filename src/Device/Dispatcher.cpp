@@ -8,6 +8,12 @@
 bool
 DeviceDispatcher::LineReceived(const char *line) noexcept
 {
+  if (devices.IsReplayActive())
+    /* the "NMEA output" ports carry the replayed sentences now (see
+       NmeaReplay); mixing them with the live ones would give a device
+       behind such a port two aircraft at once */
+    return true;
+
   unsigned i = 0;
   for (DeviceDescriptor *device : devices) {
     if (i++ == exclude)

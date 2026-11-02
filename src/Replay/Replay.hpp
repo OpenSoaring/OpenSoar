@@ -8,6 +8,7 @@
 #include "time/PeriodClock.hpp"
 #include "time/Stamp.hpp"
 #include "system/Path.hpp"
+#include "NmeaReplaySources.hpp"
 
 class DeviceBlackboard;
 class Logger;
@@ -18,14 +19,38 @@ class MergeThread;
 class CalculationThread;
 class Error;
 struct DeviceConfig;
+class MultipleDevices;
 
 class Replay final
 {
   DeviceBlackboard &device_blackboard;
 
+  /**
+   * The devices whose "NMEA output" ports get the replayed sentences
+   * and stop passing on the live ones while a replay runs, or nullptr.
+   */
+  MultipleDevices *const devices;
+
   UI::Timer timer{[this]{ OnTimer(); }};
 
   double time_scale = 1;
+
+  /**
+   * The option "current time on the NMEA output" (see NmeaReplay):
+   * false sends the replayed sentences with the times recorded in the
+   * file, true with the time of now.
+   */
+  bool output_current_time = false;
+
+  /**
+   * The sources of the NMEA log being replayed, with their rank and
+   * whether they take part (see NmeaReplaySources).  They belong to
+   * the file in #nmea_sources_path and are kept while that file is
+   * replayed, also across the jumps back that start it anew; another
+   * file starts with its own sources in the order they had in flight.
+   */
+  NmeaReplaySources nmea_sources;
+  AllocatedPath nmea_sources_path = nullptr;
 
   AbstractReplay *replay = nullptr;
 
@@ -97,8 +122,10 @@ class Replay final
 
 public:
   Replay(DeviceBlackboard &_device_blackboard,
-         Logger *_logger, ProtectedTaskManager &_task_manager)
+         Logger *_logger, ProtectedTaskManager &_task_manager,
+         MultipleDevices *_devices=nullptr)
     :device_blackboard(_device_blackboard),
+     devices(_devices),
      logger(_logger), task_manager(_task_manager) {}
 
   ~Replay() {
@@ -126,6 +153,23 @@ public:
 
   double GetTimeScale() const {
     return time_scale;
+  }
+
+  bool GetOutputCurrentTime() const noexcept {
+    return output_current_time;
+  }
+
+  /** takes effect at once, also in a running replay */
+  void SetOutputCurrentTime(bool value) noexcept {
+    output_current_time = value;
+  }
+
+  /**
+   * The sources of the NMEA log being replayed; empty for any other
+   * replay.  Changes take effect with the next line of the log.
+   */
+  NmeaReplaySources &GetNmeaSources() noexcept {
+    return nmea_sources;
   }
 
   unsigned GetFixCount() const {
