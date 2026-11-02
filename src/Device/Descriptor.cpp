@@ -31,6 +31,7 @@
 #include "Job/Job.hpp"
 #include "Operation/MessageOperationEnvironment.hpp"
 #include "Device/RecordedFlight.hpp"
+#include "time/Convert.hxx"
 
 #ifdef ANDROID
 #include "java/Closeable.hxx"
@@ -43,8 +44,11 @@
 #endif
 
 #include <cassert>
+#include <chrono>
+#include <cstdio>
 #include <exception>
 #include <optional>
+#include <string>
 
 class OpenDeviceJob final : public Job {
   DeviceDescriptor &device;
@@ -1928,13 +1932,53 @@ DeviceDescriptor::DataReceived(std::span<const std::byte> s) noexcept
   return true;
 }
 
+/**
+ * A line of the NMEA log: the local time with milliseconds, the slot
+ * letter of the device and its driver in front of the sentence
+ * ("hhmmss.mmm - A Driver: $...").  OpenSoar 7.44 wrote the driver
+ * only; the letter was added because two devices with the same driver
+ * could not be told apart, and because the letter is the position of
+ * the device in the list, which decides whose values count first.
+ * With it the NMEA replay can keep the devices apart and merge their
+ * data by the same rank (see NmeaReplaySources); it cuts the head off
+ * before the sentence is parsed.
+ */
+static std::string
+FormatNMEALogLine(unsigned index, const char *driver_name,
+                  const char *line) noexcept
+{
+  const auto now = std::chrono::system_clock::now();
+  const unsigned ms = unsigned(std::chrono::duration_cast<std::chrono::milliseconds>(
+    now.time_since_epoch()).count() % 1000);
+
+  char head[32];
+  try {
+    const struct tm tm = LocalTime(now);
+    snprintf(head, sizeof(head), "%02d%02d%02d.%03u",
+             tm.tm_hour, tm.tm_min, tm.tm_sec, ms);
+  } catch (...) {
+    snprintf(head, sizeof(head), "------.%03u", ms);
+  }
+
+  std::string result{head};
+  result += " - ";
+  result += char('A' + index);
+  result += ' ';
+  result += driver_name;
+  result += ": ";
+  result += line;
+  return result;
+}
+
 bool
 DeviceDescriptor::LineReceived(const char *line) noexcept
 {
   if (nmea_logger != nullptr) {
     /* Skip logging high-frequency LXWP2 sentences */
     if (!StringStartsWith(line, "$LXWP2,"))
-      nmea_logger->Log(line);
+      nmea_logger->Log(FormatNMEALogLine(index,
+                                         config.driver_name.c_str(),
+                                         line).c_str());
   }
 
   if (dispatcher != nullptr)
