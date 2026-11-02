@@ -654,7 +654,16 @@ Startup(UI::Display &display)
   backend_components->replay =
     std::make_unique<Replay>(*backend_components->device_blackboard,
                              backend_components->igc_logger.get(),
-                             *backend_components->protected_task_manager);
+                             *backend_components->protected_task_manager,
+                             backend_components->devices.get());
+
+  {
+    /* the replay option of the last session, also for a replay that
+       the command line starts without the dialog */
+    bool output_current_time = false;
+    Profile::Get(ProfileKeys::ReplayOutputCurrentTime, output_current_time);
+    backend_components->replay->SetOutputCurrentTime(output_current_time);
+  }
 
 #ifdef HAVE_CMDLINE_REPLAY
   if (CommandLine::replay_path != nullptr) {
