@@ -36,6 +36,15 @@ class Replay final
   double time_scale = 1;
 
   /**
+   * The option "NMEA output": does the replayed flight go out on the
+   * ports with the "NMEA output" driver at all?  Off by default, since
+   * most pilots replay a flight only to watch it, and a device behind
+   * such a port would otherwise follow the replay unasked.  While it is
+   * off, the live data passes on to these ports as without a replay.
+   */
+  bool nmea_output = false;
+
+  /**
    * The option "current time on the NMEA output" (see NmeaReplay):
    * false sends the replayed sentences with the times recorded in the
    * file, true with the time of now.
@@ -165,6 +174,13 @@ public:
   double GetTimeScale() const {
     return time_scale;
   }
+
+  bool GetNMEAOutput() const noexcept {
+    return nmea_output;
+  }
+
+  /** takes effect at once, also in a running replay */
+  void SetNMEAOutput(bool value) noexcept;
 
   bool GetOutputCurrentTime() const noexcept {
     return output_current_time;
