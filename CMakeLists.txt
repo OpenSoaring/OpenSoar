@@ -478,7 +478,39 @@ execute_process(
   OUTPUT_VARIABLE GIT_COMMIT_ID
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-add_compile_definitions("GIT_COMMIT_ID=\"${GIT_COMMIT_ID}\"")
+
+# The version and the commit id above are read only when CMake runs, and
+# Visual Studio runs CMake again only when one of its input files has
+# changed.  Moving the checked-out branch to another commit (a commit,
+# an amend, a reset, a delivery applied by script) touches none of
+# them, nor does a new test version in the config file, so the solution
+# went on building the old version and commit id into the program.
+# HEAD's reflog gets a line whenever HEAD moves, including a move of the
+# checked-out branch, so it is the one file that tells CMake about every
+# such change.  The commit id is defined below for the few files that
+# show it only, so that this new run does not rebuild the whole program.
+foreach(_config_file ${APP_NAME}.config VERSION.txt)
+  if (EXISTS ${PROJECTGROUP_SOURCE_DIR}/${_config_file})
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+                 ${PROJECTGROUP_SOURCE_DIR}/${_config_file})
+  endif()
+endforeach()
+execute_process(
+  COMMAND git rev-parse --git-path logs/HEAD
+  WORKING_DIRECTORY ${PROJECTGROUP_SOURCE_DIR}
+  OUTPUT_VARIABLE _GIT_HEAD_LOG
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  RESULT_VARIABLE _GIT_RESULT
+  ERROR_QUIET
+)
+if (_GIT_RESULT EQUAL 0)
+  get_filename_component(_GIT_HEAD_LOG "${_GIT_HEAD_LOG}" ABSOLUTE
+                         BASE_DIR ${PROJECTGROUP_SOURCE_DIR})
+  if (EXISTS ${_GIT_HEAD_LOG})
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+                 ${_GIT_HEAD_LOG})
+  endif()
+endif()
 
 if (HAVE_SKYSIGHT)
   add_compile_definitions(HAVE_SKYSIGHT)
@@ -1047,3 +1079,19 @@ if (_XCSOAR_BRANCH_PROPS)
     set_property(TARGET ${_target} PROPERTY VS_USER_PROPS ${_XCSOAR_BRANCH_PROPS})
   endforeach()
 endif()
+
+# The commit id goes only into the files that show it (see above, where
+# it is read): defined for all files, as before, every commit would
+# have rebuilt the whole program once CMake runs again after each one.
+# Each target applies source properties of its own directory only.
+foreach(_target lib${APP_NAME} Dialogs ${APP_NAME})
+  if (TARGET ${_target})
+    set_property(SOURCE
+                 ${PROJECTGROUP_SOURCE_DIR}/src/Version.cpp
+                 ${PROJECTGROUP_SOURCE_DIR}/src/Dialogs/dlgCredits.cpp
+                 ${PROJECTGROUP_SOURCE_DIR}/Data/${APP_NAME}Icon.rc
+                 TARGET_DIRECTORY ${_target}
+                 APPEND PROPERTY COMPILE_DEFINITIONS
+                 "GIT_COMMIT_ID=\"${GIT_COMMIT_ID}\"")
+  endif()
+endforeach()
