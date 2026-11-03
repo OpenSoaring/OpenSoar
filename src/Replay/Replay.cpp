@@ -298,6 +298,39 @@ Replay::Stop()
 }
 
 void
+Replay::PrepareNmeaSources(Path _path) noexcept
+{
+  const bool nmea = _path.c_str() != nullptr && !_path.empty() &&
+    !FilenameMatchesFileType(_path.GetBase().c_str(), FileType::IGC) &&
+    !FilenameMatchesFileType(_path.GetBase().c_str(), FileType::SENSORLOG);
+
+  if (!nmea) {
+    nmea_sources.Clear();
+    nmea_sources_path = nullptr;
+    return;
+  }
+
+  /* a jump back starts the same file anew and must keep what the
+     user chose for its sources; only another file brings its own */
+  if (nmea_sources_path.c_str() != nullptr && nmea_sources_path == _path)
+    return;
+
+  nmea_sources.Clear();
+  nmea_sources_path = _path;
+
+  /* the first lines name nearly every source, so that the replay
+     dialog can show them before the replay reaches them; a device
+     connected later in the flight is added when its first line is
+     played */
+  try {
+    FileLineReaderA scan(_path);
+    NmeaReplay::ScanSources(scan, nmea_sources, 20000);
+  } catch (...) {
+    /* the replay itself reports a file that cannot be read */
+  }
+}
+
+void
 Replay::Start(Path _path, const DeviceConfig &device)
 {
   assert(_path != nullptr);
@@ -307,6 +340,7 @@ Replay::Start(Path _path, const DeviceConfig &device)
   Stop();
 
   path = _path;
+  PrepareNmeaSources(path);
 
   if (path == nullptr || path.empty()) {
     replay = new DemoReplayGlue(device_blackboard, task_manager);
@@ -320,29 +354,9 @@ Replay::Start(Path _path, const DeviceConfig &device)
                                      FileType::SENSORLOG)) {
     replay = new SensorLogReplay(path);
   } else {
-    /* a jump back starts the same file anew and must keep what the
-       user chose for its sources; only another file brings its own */
-    if (nmea_sources_path.c_str() == nullptr || nmea_sources_path != path) {
-      nmea_sources.Clear();
-      nmea_sources_path = Path{path};
-
-      /* the first lines name nearly every source, so that the replay
-         dialog can show them before the replay reaches them; a device
-         connected later in the flight is added when its first line is
-         played */
-      FileLineReaderA scan(path);
-      NmeaReplay::ScanSources(scan, nmea_sources, 20000);
-    }
-
     replay = new NmeaReplay(std::make_unique<FileLineReaderA>(path),
                             device, devices, &output_current_time,
                             &nmea_sources);
-  }
-
-  if (nmea_sources_path.c_str() != nullptr && nmea_sources_path != path) {
-    /* another kind of replay: no NMEA sources to show */
-    nmea_sources.Clear();
-    nmea_sources_path = nullptr;
   }
 
   /* any replay, not only an NMEA one: the live sentences on the "NMEA
