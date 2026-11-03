@@ -27,6 +27,13 @@ private:
   /** Landscape gives this row to the child. */
   bool hide_in_landscape = false;
 
+  /**
+   * With #Alignment::BOTTOM: the buttons before this index form an
+   * upper row, the others a lower one (see
+   * ButtonPanel::TwoRowBottomLayout()).  0 means one row.
+   */
+  unsigned bottom_row_split = 0;
+
 public:
   ButtonPanelWidget(std::unique_ptr<Widget> &&_widget,
                     Alignment _alignment=Alignment::AUTO) noexcept
@@ -34,6 +41,15 @@ public:
 
   void HideInLandscape() noexcept {
     hide_in_landscape = true;
+  }
+
+  /**
+   * Lay out the buttons at the bottom in two rows, the first \a split
+   * buttons above the others, for two groups that belong apart.  Call
+   * before the widget is prepared.
+   */
+  void SetBottomRowSplit(unsigned split) noexcept {
+    bottom_row_split = split;
   }
 
   ~ButtonPanelWidget() noexcept override;
@@ -49,6 +65,10 @@ public:
   }
 
 private:
+  unsigned GetButtonRows() const noexcept {
+    return alignment == Alignment::BOTTOM && bottom_row_split > 0 ? 2 : 1;
+  }
+
   PixelRect UpdateLayout(const PixelRect &rc) noexcept;
 
 public:
