@@ -172,6 +172,14 @@ public:
     return nmea_sources;
   }
 
+  /**
+   * Read the sources of this NMEA log, so that they can be arranged
+   * before the replay starts; for any other file, clear them.  Keeps
+   * the arrangement if the file is the one already prepared.  Must not
+   * be called while a replay runs, whose sources these are.
+   */
+  void PrepareNmeaSources(Path path) noexcept;
+
   unsigned GetFixCount() const {
     return fix_count;
   }

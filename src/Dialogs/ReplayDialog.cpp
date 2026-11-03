@@ -394,6 +394,18 @@ ReplayControlWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   LoadValue(FILE, replay.GetFilename());
   GetFileDataField(FILE).Sort(FileDataField::SortOrder::DESCENDING, true);
 
+  /* the sources of an NMEA log can be arranged before the replay
+     starts; a file chosen while a replay runs takes effect only when
+     that replay has ended, and so do its sources */
+  if (!replay.IsActive())
+    replay.PrepareNmeaSources(GetValueFile(FILE));
+  GetDataField(FILE).SetOnModified([this]{
+    if (!replay.IsActive()) {
+      replay.PrepareNmeaSources(GetValueFile(FILE));
+      UpdateStatus();
+    }
+  });
+
   AddFloat(_("Rate"),
            _("Time acceleration of replay. Set to 0 for pause, 1 for normal real-time replay."),
            "%.0f x", "%.0f",
