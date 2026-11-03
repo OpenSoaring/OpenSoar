@@ -62,12 +62,19 @@ class Replay final
   AllocatedPath nmea_sources_path = nullptr;
 
   /**
-   * Does this replay have to build its own sentences for the "NMEA
-   * output" ports?  An NMEA log passes on its lines as they are; an
-   * IGC file or a sensor log has none, so the replayed state is
-   * written as sentences instead (see OutputState()).
+   * What this replay sends to the "NMEA output" ports besides the
+   * replay marker (see OutputState()).
    */
-  bool synthesize_output = false;
+  enum class OutputKind {
+    /** an NMEA log: it passes on its own lines (see NmeaReplay) */
+    LINES,
+
+    /** an IGC file: position and barometric altitude */
+    IGC,
+
+    /** a Larus sensor log: position and the sentences of a Larus */
+    SENSOR_LOG,
+  } output_kind = OutputKind::LINES;
 
   /** the flight time of the last sentences built for the output */
   TimeStamp last_output_time = TimeStamp::Undefined();
@@ -209,8 +216,9 @@ public:
 
 private:
   /**
-   * Send the replayed state as NMEA sentences to the "NMEA output"
-   * ports, for a replay whose input has none (#synthesize_output).
+   * Once per second of the flight: tell the "NMEA output" ports that a
+   * replay is running, and send the replayed state as sentences for a
+   * replay whose input has none (see #output_kind).
    */
   void OutputState(const NMEAInfo &state) noexcept;
 
