@@ -162,12 +162,14 @@ NmeaReplay::Channel::~Channel() noexcept
 NmeaReplay::NmeaReplay(std::unique_ptr<NLineReader> &&_reader,
                        const DeviceConfig &config,
                        MultipleDevices *_outputs,
+                       const bool *_output_enabled,
                        const bool *_output_current_time,
                        NmeaReplaySources *_sources)
   :reader(std::move(_reader)),
    default_driver(config.driver_name.c_str()),
    sources(_sources),
    outputs(_outputs),
+   output_enabled(_output_enabled),
    output_current_time(_output_current_time)
 {
   if (sources == nullptr) {
@@ -247,7 +249,8 @@ NmeaReplay::ParseLine(Channel &channel, const char *line)
   /* the replayed sentences go out on the "NMEA output" ports, as the
      received ones do in flight, so that a device behind such a port (a
      second program, a display) follows the replayed flight */
-  if (outputs != nullptr) {
+  if (outputs != nullptr &&
+      (output_enabled == nullptr || *output_enabled)) {
     if (output_current_time != nullptr && *output_current_time)
       outputs->ForwardReplayLine(
         RetimeSentence(line, std::chrono::system_clock::now()).c_str());
