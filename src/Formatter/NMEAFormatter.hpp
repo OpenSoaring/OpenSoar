@@ -129,6 +129,21 @@ FormatGPRMB(char *buffer, size_t buffer_size,
             const GeoPoint &here, const AGeoPoint &destination,
             std::string_view destination_name = {}) noexcept;
 
+/**
+ * LK8EX1,<1>,<2>,<3>,<4>,<5>
+ *
+ * The vario sentence of LK8000, read by most gliding programs.
+ *
+ * <1>  Static pressure in Pa, 999999 if unknown
+ * <2>  Pressure altitude in m (used only if <1> is unknown), 99999 if
+ *      unknown
+ * <3>  Vertical speed in cm/s, 9999 if unknown
+ * <4>  Outside air temperature in degrees Celsius, 99 if unknown
+ * <5>  Battery voltage, 999 if unknown
+ */
+void
+FormatLK8EX1(char *buffer, size_t buffer_size, const NMEAInfo &info) noexcept;
+
 /*
  * PGRMZ,<1>,<2>,<3>
  *

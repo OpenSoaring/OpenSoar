@@ -52,6 +52,17 @@ class Replay final
   NmeaReplaySources nmea_sources;
   AllocatedPath nmea_sources_path = nullptr;
 
+  /**
+   * Does this replay have to build its own sentences for the "NMEA
+   * output" ports?  An NMEA log passes on its lines as they are; an
+   * IGC file or a sensor log has none, so the replayed state is
+   * written as sentences instead (see OutputState()).
+   */
+  bool synthesize_output = false;
+
+  /** the flight time of the last sentences built for the output */
+  TimeStamp last_output_time = TimeStamp::Undefined();
+
   AbstractReplay *replay = nullptr;
 
   Logger *const logger;
@@ -179,6 +190,15 @@ public:
    * be called while a replay runs, whose sources these are.
    */
   void PrepareNmeaSources(Path path) noexcept;
+
+private:
+  /**
+   * Send the replayed state as NMEA sentences to the "NMEA output"
+   * ports, for a replay whose input has none (#synthesize_output).
+   */
+  void OutputState(const NMEAInfo &state) noexcept;
+
+public:
 
   unsigned GetFixCount() const {
     return fix_count;
