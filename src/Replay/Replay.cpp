@@ -21,6 +21,9 @@
 #include "time/BrokenDateTime.hpp"
 #include "Formatter/NMEAFormatter.hpp"
 #include "NMEA/Checksum.hpp"
+#include "Atmosphere/Pressure.hpp"
+#include "Atmosphere/AirDensity.hpp"
+#include "Units/Units.hpp"
 
 #include <algorithm> // for std::clamp()
 #include <cassert>
@@ -356,7 +359,7 @@ Replay::Start(Path _path, const DeviceConfig &device)
 
   path = _path;
   PrepareNmeaSources(path);
-  synthesize_output = false;
+  output_kind = OutputKind::LINES;
   last_output_time = TimeStamp::Undefined();
 
   if (path == nullptr || path.empty()) {
@@ -364,14 +367,14 @@ Replay::Start(Path _path, const DeviceConfig &device)
   } else if (FilenameMatchesFileType(path.GetBase().c_str(),
                                       FileType::IGC)) {
     replay = new IgcReplay(std::make_unique<FileLineReaderA>(path));
-    synthesize_output = true;
+    output_kind = OutputKind::IGC;
 
     cli = new CatmullRomInterpolator(FloatDuration{0.98});
     cli->Reset();
   } else if (FilenameMatchesFileType(path.GetBase().c_str(),
                                      FileType::SENSORLOG)) {
     replay = new SensorLogReplay(path);
-    synthesize_output = true;
+    output_kind = OutputKind::SENSOR_LOG;
   } else {
     replay = new NmeaReplay(std::make_unique<FileLineReaderA>(path),
                             device, devices, &nmea_output,
@@ -561,22 +564,139 @@ Replay::Update()
   return true;
 }
 
+/**
+ * The sentences a Larus sends, built from the state of a sensor log
+ * replay, so that a device behind the "NMEA output" port that knows
+ * the Larus gets what it would get in flight.  The sensor log holds
+ * the raw measurements only: the values the Larus computes from them
+ * are computed here the way XCSoar does it, the vario is the GNSS
+ * vertical speed unless the replay has a better one, and the attitude
+ * and the average climb rate are left out, because nothing in the log
+ * gives them.
+ */
+template<typename F>
+static void
+FormatLarusSentences(const NMEAInfo &info, F &&forward) noexcept
+{
+  char body[128];
+
+  if (info.attitude.heading_available) {
+    snprintf(body, sizeof(body), "HCHDT,%.1f,T",
+             info.attitude.heading.Degrees());
+    forward(body);
+  }
+
+  double pressure_altitude = 0;
+  bool have_pressure_altitude = false;
+  if (info.pressure_altitude_available) {
+    pressure_altitude = info.pressure_altitude;
+    have_pressure_altitude = true;
+  } else if (info.static_pressure_available) {
+    pressure_altitude = AtmosphericPressure::StaticPressureToPressureAltitude(
+      info.static_pressure);
+    have_pressure_altitude = true;
+  }
+
+  {
+    char vario[16] = "", altitude[16] = "", tas[16] = "", g_load[16] = "";
+    if (info.total_energy_vario_available)
+      snprintf(vario, sizeof(vario), "%.2f", info.total_energy_vario);
+    else if (info.noncomp_vario_available)
+      snprintf(vario, sizeof(vario), "%.2f", info.noncomp_vario);
+
+    if (have_pressure_altitude)
+      snprintf(altitude, sizeof(altitude), "%.0f", pressure_altitude);
+
+    if (info.airspeed_available)
+      snprintf(tas, sizeof(tas), "%.0f",
+               Units::ToUserUnit(info.true_airspeed,
+                                 Unit::KILOMETER_PER_HOUR));
+    else if (info.dyn_pressure_available && have_pressure_altitude) {
+      const double ias = IndicatedAirspeedFromDynamicPressure(
+        info.dyn_pressure.GetHectoPascal());
+      snprintf(tas, sizeof(tas), "%.0f",
+               Units::ToUserUnit(ias * AirDensityRatio(pressure_altitude),
+                                 Unit::KILOMETER_PER_HOUR));
+    }
+
+    if (info.acceleration.available)
+      snprintf(g_load, sizeof(g_load), "%.2f", info.acceleration.g_load);
+
+    snprintf(body, sizeof(body), "PLARV,%s,,%s,%s,%s",
+             vario, altitude, tas, g_load);
+    forward(body);
+  }
+
+  if (have_pressure_altitude) {
+    /* estimated from the pressure altitude, as the Larus marks it
+       when it has no temperature */
+    snprintf(body, sizeof(body), "PLARD,%.1f,E",
+             AirDensity(pressure_altitude) * 1000);
+    forward(body);
+  }
+
+  if (info.voltage_available || info.temperature_available) {
+    char voltage[16] = "", temperature[16] = "";
+    if (info.voltage_available)
+      snprintf(voltage, sizeof(voltage), "%.2f", info.voltage);
+    if (info.temperature_available)
+      snprintf(temperature, sizeof(temperature), "%.1f",
+               info.temperature.ToCelsius());
+    snprintf(body, sizeof(body), "PLARB,%s,%s", voltage, temperature);
+    forward(body);
+  }
+
+  if (info.external_instantaneous_wind_available) {
+    snprintf(body, sizeof(body), "PLARW,%.0f,%.0f,I,A",
+             info.external_instantaneous_wind.bearing.Degrees(),
+             Units::ToUserUnit(info.external_instantaneous_wind.norm,
+                               Unit::KILOMETER_PER_HOUR));
+    forward(body);
+  }
+
+  if (info.external_wind_available) {
+    snprintf(body, sizeof(body), "PLARW,%.0f,%.0f,A,A",
+             info.external_wind.bearing.Degrees(),
+             Units::ToUserUnit(info.external_wind.norm,
+                               Unit::KILOMETER_PER_HOUR));
+    forward(body);
+  }
+}
+
 void
 Replay::OutputState(const NMEAInfo &state) noexcept
 {
-  if (!nmea_output || !synthesize_output || devices == nullptr ||
-      !state.time_available ||
-      !state.location_available)
+  if (!nmea_output || devices == nullptr || !state.time_available)
     return;
 
   /* one set of sentences per second of the flight, as a GPS receiver
-     with a vario sends them; the IGC replay is interpolated many times
-     a second, and the receiving side would only be flooded.  A jump
-     back starts the count anew. */
+     or a vario sends them; the IGC replay is interpolated many times a
+     second, and the receiving side would only be flooded.  A jump back
+     starts the count anew. */
   if (last_output_time.IsDefined() && state.time >= last_output_time &&
       state.time < last_output_time + std::chrono::seconds{1})
     return;
   last_output_time = state.time;
+
+  const auto forward = [this](const char *body){
+    char sentence[160];
+    const int length = snprintf(sentence, sizeof(sentence), "$%s", body);
+    if (length < 0 || length > int(sizeof(sentence)) - 4)
+      return;
+
+    AppendNMEAChecksum(sentence);
+    devices->ForwardReplayLine(sentence);
+  };
+
+  /* a device behind the port can tell from this sentence that what
+     follows is a replay and no live data, whatever the times in the
+     sentences say; the second field is the replay rate */
+  char body[128];
+  snprintf(body, sizeof(body), "PREPLAY,%.0f", time_scale);
+  forward(body);
+
+  if (output_kind == OutputKind::LINES || !state.location_available)
+    return;
 
   NMEAInfo info = state;
 
@@ -594,31 +714,25 @@ Replay::OutputState(const NMEAInfo &state) noexcept
        NMEA replay (see NmeaReplay) */
     info.date_time_utc = BrokenDateTime::NowUTC();
 
-  const auto forward = [this](const char *body){
-    char sentence[160];
-    const int length = snprintf(sentence, sizeof(sentence), "$%s", body);
-    if (length < 0 || length > int(sizeof(sentence)) - 4)
-      return;
-
-    AppendNMEAChecksum(sentence);
-    devices->ForwardReplayLine(sentence);
-  };
-
-  char body[128];
   FormatGPRMC(body, sizeof(body), info);
   forward(body);
   FormatGPGGA(body, sizeof(body), info);
   forward(body);
 
-  if (info.baro_altitude_available) {
-    FormatPGRMZ(body, sizeof(body), info);
-    forward(body);
-  }
+  switch (output_kind) {
+  case OutputKind::LINES:
+    break;
 
-  if (info.static_pressure_available || info.pressure_altitude_available ||
-      info.noncomp_vario_available || info.total_energy_vario_available) {
-    FormatLK8EX1(body, sizeof(body), info);
-    forward(body);
+  case OutputKind::IGC:
+    if (info.baro_altitude_available) {
+      FormatPGRMZ(body, sizeof(body), info);
+      forward(body);
+    }
+    break;
+
+  case OutputKind::SENSOR_LOG:
+    FormatLarusSentences(info, forward);
+    break;
   }
 }
 

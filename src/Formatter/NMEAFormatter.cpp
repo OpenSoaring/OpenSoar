@@ -221,39 +221,6 @@ FormatPGRMZ(char *buffer, size_t buffer_size, const NMEAInfo &info) noexcept
 }
 
 void
-FormatLK8EX1(char *buffer, size_t buffer_size, const NMEAInfo &info) noexcept
-{
-  const unsigned pressure = info.static_pressure_available
-    ? unsigned(info.static_pressure.GetPascal() + 0.5)
-    : 999999;
-
-  const int altitude = info.pressure_altitude_available
-    ? int(info.pressure_altitude)
-    : 99999;
-
-  /* a receiver takes this field for the uncompensated vario, so that
-     one comes first; the total energy vario only stands in for it */
-  int vario = 9999;
-  if (info.noncomp_vario_available)
-    vario = int(info.noncomp_vario * 100);
-  else if (info.total_energy_vario_available)
-    vario = int(info.total_energy_vario * 100);
-
-  const int temperature = info.temperature_available
-    ? int(info.temperature.ToCelsius())
-    : 99;
-
-  char voltage[16];
-  if (info.voltage_available)
-    snprintf(voltage, sizeof(voltage), "%.1f", info.voltage);
-  else
-    snprintf(voltage, sizeof(voltage), "999");
-
-  StringFormat(buffer, buffer_size, "LK8EX1,%u,%d,%d,%d,%s",
-               pressure, altitude, vario, temperature, voltage);
-}
-
-void
 FormatLatitude(char *buffer, size_t buffer_size, Angle latitude) noexcept
 {
   snprintf(buffer, buffer_size,
