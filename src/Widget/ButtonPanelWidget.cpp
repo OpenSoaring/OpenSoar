@@ -33,7 +33,9 @@ ButtonPanelWidget::UpdateLayout(const PixelRect &rc) noexcept
     return buttons->LeftLayout(rc);
 
   case Alignment::BOTTOM:
-    return buttons->BottomLayout(rc);
+    return bottom_row_split > 0
+      ? buttons->TwoRowBottomLayout(rc, bottom_row_split)
+      : buttons->BottomLayout(rc);
   }
 
   gcc_unreachable();
@@ -44,7 +46,7 @@ ButtonPanelWidget::GetMinimumSize() const noexcept
 {
   PixelSize size = widget->GetMinimumSize();
   if (size.height > 0)
-    size.height += Layout::GetMinimumControlHeight();
+    size.height += GetButtonRows() * Layout::GetMinimumControlHeight();
   return size;
 }
 
@@ -53,7 +55,7 @@ ButtonPanelWidget::GetMaximumSize() const noexcept
 {
   PixelSize size = widget->GetMaximumSize();
   if (size.height > 0)
-    size.height += Layout::GetMaximumControlHeight();
+    size.height += GetButtonRows() * Layout::GetMaximumControlHeight();
   return size;
 }
 
