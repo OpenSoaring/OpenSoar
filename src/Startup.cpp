@@ -763,8 +763,12 @@ Startup(UI::Display &display)
                              backend_components->devices.get());
 
   {
-    /* the replay option of the last session, also for a replay that
+    /* the replay options of the last session, also for a replay that
        the command line starts without the dialog */
+    bool nmea_output = false;
+    Profile::Get(ProfileKeys::ReplayNMEAOutput, nmea_output);
+    backend_components->replay->SetNMEAOutput(nmea_output);
+
     bool output_current_time = false;
     Profile::Get(ProfileKeys::ReplayOutputCurrentTime, output_current_time);
     backend_components->replay->SetOutputCurrentTime(output_current_time);
