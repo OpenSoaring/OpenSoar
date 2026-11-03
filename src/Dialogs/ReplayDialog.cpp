@@ -361,6 +361,7 @@ ShowReplaySourcesDialog(NmeaReplaySources &sources) noexcept
  */
 class ReplayOptionsWidget final : public RowFormWidget {
   enum Controls {
+    NMEA_OUTPUT,
     OUTPUT_CURRENT_TIME,
   };
 
@@ -373,15 +374,29 @@ public:
   /* virtual methods from class Widget */
   void Prepare([[maybe_unused]] ContainerWindow &parent,
                [[maybe_unused]] const PixelRect &rc) noexcept override {
+    AddBoolean(_("NMEA output"),
+               _("Send the replayed flight out on the ports with the "
+                 "\"NMEA output\" driver, as received data goes out in "
+                 "flight: an NMEA log line by line, an IGC file or a sensor "
+                 "log as position, altitude and vario sentences built from "
+                 "it.  Meanwhile the data received from the devices is not "
+                 "passed on to these ports, so that the two do not mix.  "
+                 "Off: these ports carry the received data as without a "
+                 "replay."),
+               replay.GetNMEAOutput());
+    GetDataField(NMEA_OUTPUT).SetOnModified([this]{
+      const bool value = GetValueBoolean(NMEA_OUTPUT);
+      replay.SetNMEAOutput(value);
+      SetRowEnabled(OUTPUT_CURRENT_TIME, value);
+      Profile::Set(ProfileKeys::ReplayNMEAOutput, value);
+      Profile::Save();
+    });
+
     AddBoolean(_("NMEA output: current time"),
-               _("The replayed flight also goes out on the ports with the "
-                 "\"NMEA output\" driver, as received data does in flight: "
-                 "an NMEA log line by line, an IGC file or a sensor log as "
-                 "position, altitude and vario sentences built from it.  "
-                 "Data received from the devices is not passed on "
-                 "meanwhile.  Off: with the times recorded in the file.  "
-                 "On: with the current time and date, so that a device "
-                 "behind such a port takes the replay for live data."),
+               _("Off: the replayed sentences carry the times recorded in "
+                 "the file.  On: the current time and date, so that a "
+                 "device behind such a port takes the replay for live "
+                 "data."),
                replay.GetOutputCurrentTime());
     GetDataField(OUTPUT_CURRENT_TIME).SetOnModified([this]{
       const bool value = GetValueBoolean(OUTPUT_CURRENT_TIME);
@@ -389,6 +404,7 @@ public:
       Profile::Set(ProfileKeys::ReplayOutputCurrentTime, value);
       Profile::Save();
     });
+    SetRowEnabled(OUTPUT_CURRENT_TIME, replay.GetNMEAOutput());
 
     /* only an NMEA log has sources to choose from; the dialog is
        built anew each time, so the row is simply left out otherwise */

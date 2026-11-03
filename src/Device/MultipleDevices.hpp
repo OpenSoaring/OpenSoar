@@ -45,9 +45,10 @@ class MultipleDevices final : PortListener {
   std::list<PortListener *> listeners;
 
   /**
-   * A replay is running: the "NMEA output" ports carry the replayed
-   * sentences only, and the sentences received from the other ports
-   * are not passed on to them (see DeviceDispatcher).
+   * A replay is running and sends its flight to the "NMEA output"
+   * ports: they carry the replayed sentences only, and the sentences
+   * received from the other ports are not passed on to them (see
+   * DeviceDispatcher).
    */
   std::atomic_bool replay_active{false};
 
@@ -94,10 +95,11 @@ public:
 #endif
 
   /**
-   * Start or end a replay: while it runs, the sentences received from
-   * the devices are no longer passed on to the "NMEA output" ports,
-   * so that a device behind such a port gets the replayed flight
-   * alone and not mixed with the live data.
+   * Start or end a replay that sends its flight to the "NMEA output"
+   * ports: while it runs, the sentences received from the devices are
+   * no longer passed on to these ports, so that a device behind such a
+   * port gets the replayed flight alone and not mixed with the live
+   * data.
    */
   void SetReplayActive(bool active) noexcept {
     replay_active.store(active, std::memory_order_relaxed);

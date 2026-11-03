@@ -80,6 +80,14 @@ class NmeaReplay: public AbstractReplay
   MultipleDevices *const outputs;
 
   /**
+   * Points to the replay option "NMEA output": the lines go out on
+   * the ports of #outputs only while it is true.  Read for every line,
+   * so that a change in the replay dialog takes effect at once.
+   * nullptr means always.
+   */
+  const bool *const output_enabled;
+
+  /**
    * Points to the replay option "current time on the NMEA output": if
    * true, the time and date in the replayed position sentences are
    * replaced by the current time before they go out (see
@@ -92,6 +100,7 @@ public:
   NmeaReplay(std::unique_ptr<NLineReader> &&_reader,
              const DeviceConfig &config,
              MultipleDevices *_outputs=nullptr,
+             const bool *_output_enabled=nullptr,
              const bool *_output_current_time=nullptr,
              NmeaReplaySources *_sources=nullptr);
   ~NmeaReplay() noexcept;

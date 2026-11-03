@@ -302,6 +302,17 @@ Replay::Stop()
 }
 
 void
+Replay::SetNMEAOutput(bool value) noexcept
+{
+  nmea_output = value;
+
+  /* the live data stops at the "NMEA output" ports only while the
+     replayed flight goes out there */
+  if (devices != nullptr)
+    devices->SetReplayActive(value && replay != nullptr);
+}
+
+void
 Replay::PrepareNmeaSources(Path _path) noexcept
 {
   const bool nmea = _path.c_str() != nullptr && !_path.empty() &&
@@ -363,14 +374,15 @@ Replay::Start(Path _path, const DeviceConfig &device)
     synthesize_output = true;
   } else {
     replay = new NmeaReplay(std::make_unique<FileLineReaderA>(path),
-                            device, devices, &output_current_time,
+                            device, devices, &nmea_output,
+                            &output_current_time,
                             &nmea_sources);
   }
 
-  /* any replay, not only an NMEA one: the live sentences on the "NMEA
-     output" ports would contradict the replayed flight */
+  /* any replay that sends its flight to the "NMEA output" ports, not
+     only an NMEA one: the live sentences there would contradict it */
   if (devices != nullptr)
-    devices->SetReplayActive(true);
+    devices->SetReplayActive(nmea_output);
 
   if (logger != nullptr)
     logger->ClearBuffer();
@@ -552,7 +564,8 @@ Replay::Update()
 void
 Replay::OutputState(const NMEAInfo &state) noexcept
 {
-  if (!synthesize_output || devices == nullptr || !state.time_available ||
+  if (!nmea_output || !synthesize_output || devices == nullptr ||
+      !state.time_available ||
       !state.location_available)
     return;
 
