@@ -18,9 +18,13 @@
 #include "Repository/FileType.hpp"
 #include "CatmullRomInterpolator.hpp"
 #include "time/Cast.hxx"
+#include "time/BrokenDateTime.hpp"
+#include "Formatter/NMEAFormatter.hpp"
+#include "NMEA/Checksum.hpp"
 
 #include <algorithm> // for std::clamp()
 #include <cassert>
+#include <cstdio>
 #include <stdexcept>
 
 bool
@@ -341,18 +345,22 @@ Replay::Start(Path _path, const DeviceConfig &device)
 
   path = _path;
   PrepareNmeaSources(path);
+  synthesize_output = false;
+  last_output_time = TimeStamp::Undefined();
 
   if (path == nullptr || path.empty()) {
     replay = new DemoReplayGlue(device_blackboard, task_manager);
   } else if (FilenameMatchesFileType(path.GetBase().c_str(),
                                       FileType::IGC)) {
     replay = new IgcReplay(std::make_unique<FileLineReaderA>(path));
+    synthesize_output = true;
 
     cli = new CatmullRomInterpolator(FloatDuration{0.98});
     cli->Reset();
   } else if (FilenameMatchesFileType(path.GetBase().c_str(),
                                      FileType::SENSORLOG)) {
     replay = new SensorLogReplay(path);
+    synthesize_output = true;
   } else {
     replay = new NmeaReplay(std::make_unique<FileLineReaderA>(path),
                             device, devices, &output_current_time,
@@ -449,6 +457,9 @@ Replay::Update()
       device_blackboard.ScheduleMerge();
     }
 
+    if (!fast_forward.IsDefined())
+      OutputState(next_data);
+
     while (true) {
       if (!replay->Update(next_data)) {
         Stop();
@@ -530,9 +541,72 @@ Replay::Update()
       device_blackboard.SetReplayState() = data;
       device_blackboard.ScheduleMerge();
     }
+
+    if (!fast_forward.IsDefined())
+      OutputState(data);
   }
 
   return true;
+}
+
+void
+Replay::OutputState(const NMEAInfo &state) noexcept
+{
+  if (!synthesize_output || devices == nullptr || !state.time_available ||
+      !state.location_available)
+    return;
+
+  /* one set of sentences per second of the flight, as a GPS receiver
+     with a vario sends them; the IGC replay is interpolated many times
+     a second, and the receiving side would only be flooded.  A jump
+     back starts the count anew. */
+  if (last_output_time.IsDefined() && state.time >= last_output_time &&
+      state.time < last_output_time + std::chrono::seconds{1})
+    return;
+  last_output_time = state.time;
+
+  NMEAInfo info = state;
+
+  /* IGC files and sensor logs do not record the quality of the fix;
+     a position they hold was a fix, and a receiver that reads "no fix"
+     in the GGA sentence would throw it away */
+  if (!info.gps.fix_quality_available ||
+      info.gps.fix_quality == FixQuality::NO_FIX) {
+    info.gps.fix_quality = FixQuality::GPS;
+    info.gps.fix_quality_available.Update(info.clock);
+  }
+
+  if (output_current_time)
+    /* the replay option "current time on the NMEA output", as for the
+       NMEA replay (see NmeaReplay) */
+    info.date_time_utc = BrokenDateTime::NowUTC();
+
+  const auto forward = [this](const char *body){
+    char sentence[160];
+    const int length = snprintf(sentence, sizeof(sentence), "$%s", body);
+    if (length < 0 || length > int(sizeof(sentence)) - 4)
+      return;
+
+    AppendNMEAChecksum(sentence);
+    devices->ForwardReplayLine(sentence);
+  };
+
+  char body[128];
+  FormatGPRMC(body, sizeof(body), info);
+  forward(body);
+  FormatGPGGA(body, sizeof(body), info);
+  forward(body);
+
+  if (info.baro_altitude_available) {
+    FormatPGRMZ(body, sizeof(body), info);
+    forward(body);
+  }
+
+  if (info.static_pressure_available || info.pressure_altitude_available ||
+      info.noncomp_vario_available || info.total_energy_vario_available) {
+    FormatLK8EX1(body, sizeof(body), info);
+    forward(body);
+  }
 }
 
 unsigned
