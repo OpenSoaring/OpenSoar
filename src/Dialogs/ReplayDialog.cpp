@@ -30,6 +30,9 @@
 #include "Look/ButtonLook.hpp"
 #include "Look/DialogLook.hpp"
 #include "ui/canvas/Canvas.hpp"
+#include "ui/canvas/Icon.hpp"
+#include "ui/canvas/Brush.hpp"
+#include "Resources.hpp"
 #include "ui/control/ProgressBar.hpp"
 #include "Screen/Layout.hpp"
 #include "ui/event/PeriodicTimer.hpp"
@@ -86,6 +89,124 @@ public:
                                 SymbolRenderer::MediaSymbol::PAUSE);
     else
       SymbolRenderer::DrawArrow(canvas, draw_rc, SymbolRenderer::RIGHT);
+  }
+};
+
+/**
+ * A button of the jump row: an arrow and the symbol of the flight
+ * phase it jumps to, the circling symbol for a thermal and the glide
+ * symbol for a glide.  The arrow points at the symbol - "-> O" jumps
+ * forward to the next one, "O <-" back to the previous one.
+ */
+class JumpButtonRenderer final : public ButtonRenderer {
+public:
+  enum class Kind { THERMAL, GLIDE };
+
+private:
+  ButtonFrameRenderer frame_renderer;
+  MaskedIcon icon;
+  const bool forward;
+
+public:
+  JumpButtonRenderer(const ButtonLook &_look, Kind kind,
+                     bool _forward) noexcept
+    :frame_renderer(_look), forward(_forward) {
+    /* the ..._ALL macros expand to an argument list */
+    if (kind == Kind::THERMAL)
+      icon.LoadResource(IDB_CLIMB_ALL);
+    else
+      icon.LoadResource(IDB_CRUISE_ALL);
+  }
+
+  void DrawButton(Canvas &canvas, const PixelRect &rc,
+                  ButtonState state) const noexcept override {
+    frame_renderer.DrawButton(canvas, rc, state);
+
+    const ButtonLook &look = frame_renderer.GetLook();
+
+    Color color;
+    switch (state) {
+    case ButtonState::DISABLED:
+      color = look.disabled.color;
+      break;
+
+    case ButtonState::FOCUSED:
+    case ButtonState::PRESSED:
+      color = look.focused.foreground_color;
+      break;
+
+    case ButtonState::SELECTED:
+      color = look.selected.foreground_color;
+      break;
+
+    case ButtonState::ENABLED:
+    default:
+      color = look.standard.foreground_color;
+      break;
+    }
+
+    const PixelRect draw_rc = frame_renderer.GetDrawingRect(rc, state);
+    const int height = int(draw_rc.GetHeight());
+    if (height <= 4)
+      return;
+
+    /* symbol and arrow side by side, centred together */
+    const int symbol_size = std::max(4, height * 4 / 5);
+    const int arrow_length = std::max(4, height * 3 / 5);
+    const int gap = std::max(2, symbol_size / 5);
+    const int total = symbol_size + gap + arrow_length;
+
+    const auto center = draw_rc.GetCenter();
+    const int left = center.x - total / 2;
+
+    int arrow_left, symbol_center_x;
+    if (forward) {
+      arrow_left = left;
+      symbol_center_x = left + arrow_length + gap + symbol_size / 2;
+    } else {
+      symbol_center_x = left + symbol_size / 2;
+      arrow_left = left + symbol_size + gap;
+    }
+
+    DrawArrow(canvas, arrow_left, arrow_left + arrow_length, center.y,
+              forward, color);
+
+    if (icon.IsDefined())
+      icon.Draw(canvas, {symbol_center_x, center.y}, unsigned(symbol_size));
+  }
+
+private:
+  /**
+   * A real arrow with shaft and head between \a x1 and \a x2, the head
+   * at the right end if \a right.
+   */
+  static void DrawArrow(Canvas &canvas, int x1, int x2, int y, bool right,
+                        Color color) noexcept {
+    const int length = x2 - x1;
+    const int head_length = std::max(3, length * 2 / 5);
+    const int head_half = std::max(2, length / 3);
+    const int shaft_half = std::max(1, length / 14);
+
+    const Brush brush(color);
+    canvas.SelectNullPen();
+    canvas.Select(brush);
+
+    /* the shaft, up to the base of the head */
+    if (right)
+      canvas.DrawRectangle(PixelRect{x1, y - shaft_half,
+                                     x2 - head_length, y + shaft_half + 1});
+    else
+      canvas.DrawRectangle(PixelRect{x1 + head_length, y - shaft_half,
+                                     x2, y + shaft_half + 1});
+
+    const int tip = right ? x2 : x1;
+    const int base = right ? x2 - head_length : x1 + head_length;
+    const BulkPixelPoint head[3] = {
+      {tip, y},
+      {base, y - head_half},
+      {base, y + head_half},
+    };
+    canvas.DrawPolygon(head, 3);
   }
 };
 
@@ -232,14 +353,70 @@ ShowReplaySourcesDialog(NmeaReplaySources &sources) noexcept
   dialog.ShowModal();
 }
 
+/**
+ * The settings of the replay that most pilots never need: what goes
+ * out on the "NMEA output" ports and, for an NMEA log, its data
+ * sources.  They have a dialog of their own, so that the replay dialog
+ * shows only what a plain replay needs.
+ */
+class ReplayOptionsWidget final : public RowFormWidget {
+  enum Controls {
+    OUTPUT_CURRENT_TIME,
+  };
+
+  Replay &replay;
+
+public:
+  ReplayOptionsWidget(Replay &_replay, const DialogLook &look) noexcept
+    :RowFormWidget(look), replay(_replay) {}
+
+  /* virtual methods from class Widget */
+  void Prepare([[maybe_unused]] ContainerWindow &parent,
+               [[maybe_unused]] const PixelRect &rc) noexcept override {
+    AddBoolean(_("NMEA output: current time"),
+               _("The replayed flight also goes out on the ports with the "
+                 "\"NMEA output\" driver, as received data does in flight: "
+                 "an NMEA log line by line, an IGC file or a sensor log as "
+                 "position, altitude and vario sentences built from it.  "
+                 "Data received from the devices is not passed on "
+                 "meanwhile.  Off: with the times recorded in the file.  "
+                 "On: with the current time and date, so that a device "
+                 "behind such a port takes the replay for live data."),
+               replay.GetOutputCurrentTime());
+    GetDataField(OUTPUT_CURRENT_TIME).SetOnModified([this]{
+      const bool value = GetValueBoolean(OUTPUT_CURRENT_TIME);
+      replay.SetOutputCurrentTime(value);
+      Profile::Set(ProfileKeys::ReplayOutputCurrentTime, value);
+      Profile::Save();
+    });
+
+    /* only an NMEA log has sources to choose from; the dialog is
+       built anew each time, so the row is simply left out otherwise */
+    if (!replay.GetNmeaSources().empty())
+      AddButton(_("Data sources"), [this](){
+        ShowReplaySourcesDialog(replay.GetNmeaSources());
+      });
+  }
+};
+
+static void
+ShowReplayOptionsDialog(Replay &replay) noexcept
+{
+  const DialogLook &look = UIGlobals::GetDialogLook();
+  TWidgetDialog<ReplayOptionsWidget>
+    dialog(WidgetDialog::Auto{}, UIGlobals::GetMainWindow(), look,
+           _("Replay options"));
+  dialog.SetWidget(replay, look);
+  dialog.AddButton(_("Close"), mrOK);
+  dialog.ShowModal();
+}
+
 class ReplayControlWidget final
   : public RowFormWidget
 {
   enum Controls {
     FILE,
     RATE,
-    OUTPUT_CURRENT_TIME,
-    SOURCES,
     STATUS,
   };
 
@@ -313,9 +490,6 @@ private:
 
     SetText(STATUS, text.c_str());
 
-    /* only an NMEA log has sources to choose from */
-    SetRowVisible(SOURCES, !replay.GetNmeaSources().empty());
-
     /* while a seek runs, the progress bar takes the position row's
        place */
     const bool busy = replay.IsActive() && replay.IsSeeking();
@@ -361,6 +535,25 @@ private:
                 [this](){ OnPlayPauseClicked(); });
     panel.AddSymbol(">>", [this](){ OnFastForwardClicked(); });
     panel.AddSymbol(">|", [this](){ OnEndClicked(); });
+  }
+
+  /**
+   * The row below the tape deck: back to the previous and on to the
+   * next thermal, back to the previous and on to the next glide.  The
+   * jumps themselves follow in the next step; for now the buttons
+   * show only where they will be.
+   */
+  void CreateJumpButtons(ButtonPanel &panel) noexcept {
+    const ButtonLook &look = GetLook().button;
+    using Kind = JumpButtonRenderer::Kind;
+    panel.Add(std::make_unique<JumpButtonRenderer>(look, Kind::THERMAL,
+                                                   false), []{});
+    panel.Add(std::make_unique<JumpButtonRenderer>(look, Kind::THERMAL,
+                                                   true), []{});
+    panel.Add(std::make_unique<JumpButtonRenderer>(look, Kind::GLIDE,
+                                                   false), []{});
+    panel.Add(std::make_unique<JumpButtonRenderer>(look, Kind::GLIDE,
+                                                   true), []{});
   }
 
 private:
@@ -414,26 +607,6 @@ ReplayControlWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
     replay.SetTimeScale(GetValueFloat(RATE));
   });
 
-  AddBoolean(_("NMEA output: current time"),
-             _("The replayed sentences also go out on the ports with the "
-               "\"NMEA output\" driver, as received data does in flight; "
-               "data received from the devices is not passed on meanwhile.  "
-               "Off: with the times recorded in the file.  On: time and "
-               "date of the position sentences replaced by the current "
-               "time, so that a device behind such a port takes the replay "
-               "for live data."),
-             replay.GetOutputCurrentTime());
-  GetDataField(OUTPUT_CURRENT_TIME).SetOnModified([this]{
-    const bool value = GetValueBoolean(OUTPUT_CURRENT_TIME);
-    replay.SetOutputCurrentTime(value);
-    Profile::Set(ProfileKeys::ReplayOutputCurrentTime, value);
-    Profile::Save();
-  });
-
-  AddButton(_("Data sources"), [this](){
-    ShowReplaySourcesDialog(replay.GetNmeaSources());
-  });
-
   AddReadOnly(_("Position"),
               _("The current fix number, its UTC time, and how much of the file has been played.  "
                 "The buttons work like a tape deck: |< back to the start, "
@@ -460,6 +633,7 @@ ReplayControlWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
   }
 
   CreateTapeButtons(buttons_widget->GetButtonPanel());
+  CreateJumpButtons(buttons_widget->GetButtonPanel());
 }
 
 inline bool
@@ -649,8 +823,16 @@ ShowReplayDialog(Replay &replay) noexcept
                           ButtonPanelWidget::Alignment::BOTTOM);
   ((ReplayControlWidget &)panel->GetWidget()).SetButtonPanel(*panel);
 
+  /* the tape deck above, the jumps to thermals and glides below */
+  panel->SetBottomRowSplit(6);
+
   WidgetDialog dialog(WidgetDialog::Auto{}, UIGlobals::GetMainWindow(),
                       look, _("Replay"), panel);
+
+  /* the settings most pilots never need, out of the way */
+  dialog.AddButton(_("Options"), [&replay](){
+    ShowReplayOptionsDialog(replay);
+  });
 
   /* "Hide" only closes the window - the replay keeps running */
   dialog.AddButton(_("Hide"), mrOK);
