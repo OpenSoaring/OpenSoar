@@ -92,6 +92,15 @@ BufferCanvas::Activate() noexcept
   assert(!active);
   assert(frame_buffer != nullptr);
 
+  /* remember the frame buffer that was bound before: a buffer may be
+     drawn while another one is active (the map draws into its own
+     #BufferWindow buffer and caches layers in further buffers), and
+     unbinding to the default frame buffer afterwards would send the
+     rest of the outer drawing to the screen instead */
+  GLint old_frame_buffer_id = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &old_frame_buffer_id);
+  old_frame_buffer = old_frame_buffer_id;
+
   /* activate the frame buffer */
   frame_buffer->Bind();
   texture->AttachFramebuffer(FBO::COLOR_ATTACHMENT0);
@@ -114,6 +123,7 @@ BufferCanvas::Activate() noexcept
 
   old_translate = OpenGL::translate;
   old_size = OpenGL::viewport_size;
+  old_window_size = OpenGL::window_size;
 
   /* Parent paint may have enabled a screen-space scissor (e.g.
      VScrollPanel).  That box is wrong for this FBO's viewport and
@@ -148,7 +158,7 @@ BufferCanvas::Deactivate() noexcept
   assert(OpenGL::translate.x == 0);
   assert(OpenGL::translate.y == 0);
 
-  frame_buffer->Unbind();
+  FBO::BindFramebuffer(FBO::FRAMEBUFFER, old_frame_buffer);
 
   /* restore the old viewport */
 
@@ -162,6 +172,11 @@ BufferCanvas::Deactivate() noexcept
 
   OpenGL::translate = old_translate;
   OpenGL::viewport_size = old_size;
+
+  /* SetupViewport() in Activate() set the window size to the size of
+     this buffer; TopCanvas::CheckResize() and the touch coordinate
+     transformation read it */
+  OpenGL::window_size = old_window_size;
 
   OpenGL::UpdateShaderTranslate();
 
