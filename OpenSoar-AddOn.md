@@ -10,8 +10,8 @@ House rule: as soon as one of these items is merged into XCSoar, it
 is no longer an add-on and gets REMOVED from this list.  Items marked
 `[upstream PR]` are already submitted and expected to leave the list.
 
-This version of the list belongs to OpenSoar 7.46.26, which is built
-on XCSoar 7.46.
+This version of the list belongs to OpenSoar 7.46.26.1, which is built
+on XCSoar 7.46.1.
 
 ## Additional drivers
 

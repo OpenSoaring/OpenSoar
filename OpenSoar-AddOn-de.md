@@ -11,8 +11,8 @@ er kein Add-on mehr und wird aus dieser Liste ENTFERNT.  Punkte mit
 `[upstream PR]` sind bereits bei XCSoar eingereicht und werden die
 Liste voraussichtlich verlassen.
 
-Diese Fassung der Liste gehört zu OpenSoar 7.46.26, das auf XCSoar
-7.46 aufbaut.
+Diese Fassung der Liste gehört zu OpenSoar 7.46.26.1, das auf XCSoar
+7.46.1 aufbaut.
 
 ## Zusätzliche Treiber
 

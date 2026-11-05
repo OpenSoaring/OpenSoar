@@ -29,6 +29,19 @@ bookkeeping) lives in the old repository and is not repeated here -
 
 ---
 
+## OpenSoar 7.46.26.1 - not released yet
+
+A bugfix release on the base of 7.46.26, for pilots who stay on the
+7.46 line.  Base: XCSoar 7.46.1 of 2026-10-30, which brings the fixes
+of the XCSoar 7.46 branch (see `NEWS.txt`, the one of XCSoar 7.46.1,
+unchanged); the OpenSoar additions of 7.46.26 are carried over
+unchanged.
+
+* fixes: on OpenGL (Windows, Android, OpenVario) the airspaces, the
+  topography and its labels no longer vanish from the map for a moment
+  now and then, which happened most often when zoomed out, in replay
+  and while panning or zooming
+
 ## OpenSoar 7.46.26 - 2026-10-30
 
 Base: XCSoar 7.46 of 2026-10-19 plus the fixes of the XCSoar 7.46
