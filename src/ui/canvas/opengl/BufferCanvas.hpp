@@ -42,7 +42,13 @@ class BufferCanvas : public Canvas {
   glm::mat4 old_projection_matrix;
 
   PixelPoint old_translate;
-  UnsignedPoint2D old_size;
+  UnsignedPoint2D old_size, old_window_size;
+
+  /**
+   * The frame buffer that was bound when Activate() was called, bound
+   * again by Deactivate().
+   */
+  GLuint old_frame_buffer = 0;
 
   /**
    * Screen-space scissor must not clip FBO draws (e.g. #VScrollPanel
