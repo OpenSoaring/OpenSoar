@@ -29,7 +29,7 @@ bookkeeping) lives in the old repository and is not repeated here -
 
 ---
 
-## OpenSoar 7.46.26.1 - not released yet
+## OpenSoar 7.46.26.1 - 2026-11-06
 
 A bugfix release on the base of 7.46.26, for pilots who stay on the
 7.46 line.  Base: XCSoar 7.46.1 of 2026-10-30, which brings the fixes
