@@ -299,6 +299,9 @@ Version 7.47 - not yet released
     (opensoar.de/releases/repository), and on the OpenVario those of
     ftp.openvario.org/repository, without entering them as a user
     repository first
+* gauges
+  - the horizon page says "No attitude data available" instead of
+    staying blank when no device sends bank or pitch
 
 Version 7.46.1 - 2026-10-30
 * ui

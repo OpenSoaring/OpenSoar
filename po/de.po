@@ -980,6 +980,10 @@ msgid "Horizon"
 msgstr "Horizont"
 
 #, no-c-format
+msgid "No attitude data available"
+msgstr "Keine Lagedaten verfügbar"
+
+#, no-c-format
 msgid "Info"
 msgstr "Info"
 

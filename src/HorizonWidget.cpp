@@ -4,6 +4,7 @@
 #include "HorizonWidget.hpp"
 #include "UIGlobals.hpp"
 #include "Look/Look.hpp"
+#include "Look/DialogLook.hpp"
 #include "Interface.hpp"
 #include "Input/InputEvents.hpp"
 #include "UIUtil/GestureManager.hpp"
@@ -11,6 +12,7 @@
 #include "ui/window/AntiFlickerWindow.hpp"
 #include "ui/canvas/Canvas.hpp"
 #include "Renderer/HorizonRenderer.hpp"
+#include "Language/Language.hpp"
 
 /**
  * A Window which renders a terrain and airspace cross-section
@@ -56,11 +58,45 @@ protected:
     else
       canvas.ClearWhite();
 
-    if (!attitude.bank_angle_available && !attitude.pitch_angle_available)
-      // TODO: paint "no data" hint
+    if (!attitude.bank_angle_available && !attitude.pitch_angle_available) {
+      PaintNoData(canvas);
       return;
+    }
 
     HorizonRenderer::Draw(canvas, canvas.GetRect(), look, attitude);
+  }
+
+  /**
+   * Without attitude data the page would stay an empty white (or black)
+   * area, which looks like a broken display.  Name the page and say
+   * why nothing is drawn, so the pilot knows the device sends no
+   * attitude.
+   */
+  void PaintNoData(Canvas &canvas) noexcept {
+    const DialogLook &dialog_look = UIGlobals::GetDialogLook();
+    const char *title = _("Horizon");
+    const char *text = _("No attitude data available");
+
+    canvas.SetBackgroundTransparent();
+    canvas.SetTextColor(inverse ? COLOR_WHITE : COLOR_BLACK);
+
+    canvas.Select(dialog_look.bold_font);
+    const PixelSize title_size = canvas.CalcTextSize(title);
+    canvas.Select(dialog_look.text_font);
+    const PixelSize text_size = canvas.CalcTextSize(text);
+
+    const PixelRect rc = canvas.GetRect();
+    const int gap = Layout::GetTextPadding();
+    const int top = rc.GetCenter().y -
+      int(title_size.height + gap + text_size.height) / 2;
+    const int center_x = rc.GetCenter().x;
+
+    canvas.Select(dialog_look.bold_font);
+    canvas.DrawText({center_x - int(title_size.width) / 2, top}, title);
+    canvas.Select(dialog_look.text_font);
+    canvas.DrawText({center_x - int(text_size.width) / 2,
+                     top + int(title_size.height) + gap},
+                    text);
   }
 
   /* virtual methods from Window */
