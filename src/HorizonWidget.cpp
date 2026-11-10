@@ -15,8 +15,10 @@
 #include "Renderer/HorizonRenderer.hpp"
 #include "Formatter/AngleFormatter.hpp"
 #include "Language/Language.hpp"
+#include "util/StaticString.hxx"
 
 #include <algorithm>
+#include <cmath>
 
 /**
  * A Window which renders a terrain and airspace cross-section
@@ -29,6 +31,9 @@ class HorizonWindow : public AntiFlickerWindow {
 
   GestureManager gestures;
   bool dragging = false;
+
+  const Pen tape_pen{Layout::ScalePenWidth(1), COLOR_WHITE};
+  const Brush index_brush{COLOR_WHITE};
 
 public:
   /**
@@ -109,42 +114,97 @@ protected:
   /**
    * The direction of the longitudinal axis, from a compass or, without
    * one, from the GPS track corrected for the wind (see
-   * ComputeHeading() in BasicComputer).  A box at the bottom centre,
-   * white on black, so it stays readable over sky and ground alike.
+   * ComputeHeading() in BasicComputer), as a compass tape at the
+   * bottom: the scale runs through under a fixed index and covers
+   * #TAPE_RANGE degrees to either side, with a mark every 5 degrees
+   * and a label every 10.  The value itself stands in a box above the
+   * index.  White on black, so it stays readable over sky and ground
+   * alike.
    */
+  static constexpr int TAPE_RANGE = 20;
+
   void PaintHeading(Canvas &canvas, Angle heading) noexcept {
     const InfoBoxLook &info_box_look = UIGlobals::GetLook().info_box;
-    const char *label = _("Heading");
-    const auto value_buffer = FormatBearing(heading);
-    const char *value = value_buffer.c_str();
-
-    canvas.Select(info_box_look.title_font);
-    const PixelSize label_size = canvas.CalcTextSize(label);
-    canvas.Select(info_box_look.value_font);
-    const PixelSize value_size = canvas.CalcTextSize(value);
-
-    const int padding = Layout::GetTextPadding();
-    const int width = int(std::max(label_size.width, value_size.width)) +
-      4 * padding;
-    const int height = int(label_size.height + value_size.height) +
-      2 * padding;
+    const Font &label_font = info_box_look.title_font;
+    const Font &value_font = info_box_look.value_font;
 
     const PixelRect rc = canvas.GetRect();
-    const int center_x = rc.GetCenter().x;
-    const PixelRect box{center_x - width / 2, rc.bottom - padding - height,
-                        center_x + width / 2, rc.bottom - padding};
-    canvas.DrawFilledRectangle(box, COLOR_BLACK);
+    const int padding = Layout::GetTextPadding();
+    const int label_height = int(label_font.GetHeight());
+    const int tick_long = label_height * 2 / 3;
+    const int tick_short = tick_long / 2;
 
+    /* the tape: marks at the top, labels below them */
+    const int tape_width = int(rc.GetWidth()) - 2 * padding;
+    const int tape_height = padding + tick_long + label_height + padding;
+    const PixelRect tape{rc.left + padding, rc.bottom - padding - tape_height,
+                         rc.left + padding + tape_width, rc.bottom - padding};
+    const int center_x = tape.GetCenter().x;
+    const double pixels_per_degree = tape_width / (2. * TAPE_RANGE);
+
+    canvas.DrawFilledRectangle(tape, COLOR_BLACK);
+    canvas.Select(tape_pen);
     canvas.SetBackgroundTransparent();
     canvas.SetTextColor(COLOR_WHITE);
-    canvas.Select(info_box_look.title_font);
-    canvas.DrawText({center_x - int(label_size.width) / 2,
-                     box.top + padding},
-                    label);
-    canvas.Select(info_box_look.value_font);
-    canvas.DrawText({center_x - int(value_size.width) / 2,
-                     box.top + padding + int(label_size.height)},
-                    value);
+    canvas.Select(label_font);
+
+    const double degrees = heading.AsBearing().Degrees();
+    for (int mark = int(std::ceil((degrees - TAPE_RANGE) / 5)) * 5;
+         mark <= degrees + TAPE_RANGE; mark += 5) {
+      const int x = center_x +
+        int(std::lround((mark - degrees) * pixels_per_degree));
+      const bool major = mark % 10 == 0;
+      canvas.DrawLine({x, tape.top},
+                      {x, tape.top + (major ? tick_long : tick_short)});
+      if (!major)
+        continue;
+
+      const auto label_buffer = MarkLabel((mark % 360 + 360) % 360);
+      const char *const label = label_buffer.c_str();
+      const PixelSize size = canvas.CalcTextSize(label);
+      const int label_x = x - int(size.width) / 2;
+      /* a label cut off at the edge of the tape would be misread */
+      if (label_x >= tape.left && label_x + int(size.width) <= tape.right)
+        canvas.DrawText({label_x, tape.top + tick_long}, label);
+    }
+
+    /* the value in a box above the fixed index */
+    const auto value_buffer = FormatBearing(heading);
+    const char *value = value_buffer.c_str();
+    canvas.Select(value_font);
+    const PixelSize value_size = canvas.CalcTextSize(value);
+    const int box_width = int(value_size.width) + 4 * padding;
+    const int box_height = int(value_size.height) + padding;
+    const PixelRect box{center_x - box_width / 2, tape.top - box_height,
+                        center_x + box_width / 2, tape.top};
+    canvas.DrawFilledRectangle(box, COLOR_BLACK);
+    canvas.DrawText({center_x - int(value_size.width) / 2, box.top}, value);
+
+    /* the index: a triangle pointing down onto the scale */
+    const int half = tick_short;
+    const BulkPixelPoint index[3] = {
+      {center_x - half, tape.top},
+      {center_x + half, tape.top},
+      {center_x, tape.top + tick_long},
+    };
+    canvas.Select(index_brush);
+    canvas.DrawPolygon(index, 3);
+  }
+
+  /**
+   * The label of a 10 degree mark: the cardinal points as letters, as
+   * on a compass card, the rest in degrees.
+   */
+  static StaticString<8> MarkLabel(int degrees) noexcept {
+    StaticString<8> label;
+    switch (degrees) {
+    case 0: label = "N"; break;
+    case 90: label = "E"; break;
+    case 180: label = "S"; break;
+    case 270: label = "W"; break;
+    default: label.UnsafeFormat("%d", degrees); break;
+    }
+    return label;
   }
 
   /* virtual methods from Window */

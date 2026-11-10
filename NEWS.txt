@@ -300,6 +300,8 @@ Version 7.47 - not yet released
     ftp.openvario.org/repository, without entering them as a user
     repository first
 * gauges
+  - the horizon page shows the heading at the bottom as a compass
+    tape of +/-20 degrees with a mark every 5 degrees, also when no
   - the horizon page shows the heading at the bottom, also when no
     bank and pitch arrive
   - the horizon page says "No attitude data available" instead of
