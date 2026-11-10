@@ -5,6 +5,7 @@
 #include "UIGlobals.hpp"
 #include "Look/Look.hpp"
 #include "Look/DialogLook.hpp"
+#include "Look/InfoBoxLook.hpp"
 #include "Interface.hpp"
 #include "Input/InputEvents.hpp"
 #include "UIUtil/GestureManager.hpp"
@@ -12,7 +13,10 @@
 #include "ui/window/AntiFlickerWindow.hpp"
 #include "ui/canvas/Canvas.hpp"
 #include "Renderer/HorizonRenderer.hpp"
+#include "Formatter/AngleFormatter.hpp"
 #include "Language/Language.hpp"
+
+#include <algorithm>
 
 /**
  * A Window which renders a terrain and airspace cross-section
@@ -58,12 +62,15 @@ protected:
     else
       canvas.ClearWhite();
 
-    if (!attitude.bank_angle_available && !attitude.pitch_angle_available) {
+    if (!attitude.bank_angle_available && !attitude.pitch_angle_available)
       PaintNoData(canvas);
-      return;
-    }
+    else
+      HorizonRenderer::Draw(canvas, canvas.GetRect(), look, attitude);
 
-    HorizonRenderer::Draw(canvas, canvas.GetRect(), look, attitude);
+    /* the heading on its own is no attitude indicator, so it is shown
+       even when the device withholds bank and pitch */
+    if (attitude.heading_available)
+      PaintHeading(canvas, attitude.heading);
   }
 
   /**
@@ -97,6 +104,47 @@ protected:
     canvas.DrawText({center_x - int(text_size.width) / 2,
                      top + int(title_size.height) + gap},
                     text);
+  }
+
+  /**
+   * The direction of the longitudinal axis, from a compass or, without
+   * one, from the GPS track corrected for the wind (see
+   * ComputeHeading() in BasicComputer).  A box at the bottom centre,
+   * white on black, so it stays readable over sky and ground alike.
+   */
+  void PaintHeading(Canvas &canvas, Angle heading) noexcept {
+    const InfoBoxLook &info_box_look = UIGlobals::GetLook().info_box;
+    const char *label = _("Heading");
+    const auto value_buffer = FormatBearing(heading);
+    const char *value = value_buffer.c_str();
+
+    canvas.Select(info_box_look.title_font);
+    const PixelSize label_size = canvas.CalcTextSize(label);
+    canvas.Select(info_box_look.value_font);
+    const PixelSize value_size = canvas.CalcTextSize(value);
+
+    const int padding = Layout::GetTextPadding();
+    const int width = int(std::max(label_size.width, value_size.width)) +
+      4 * padding;
+    const int height = int(label_size.height + value_size.height) +
+      2 * padding;
+
+    const PixelRect rc = canvas.GetRect();
+    const int center_x = rc.GetCenter().x;
+    const PixelRect box{center_x - width / 2, rc.bottom - padding - height,
+                        center_x + width / 2, rc.bottom - padding};
+    canvas.DrawFilledRectangle(box, COLOR_BLACK);
+
+    canvas.SetBackgroundTransparent();
+    canvas.SetTextColor(COLOR_WHITE);
+    canvas.Select(info_box_look.title_font);
+    canvas.DrawText({center_x - int(label_size.width) / 2,
+                     box.top + padding},
+                    label);
+    canvas.Select(info_box_look.value_font);
+    canvas.DrawText({center_x - int(value_size.width) / 2,
+                     box.top + padding + int(label_size.height)},
+                    value);
   }
 
   /* virtual methods from Window */
