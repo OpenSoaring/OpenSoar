@@ -132,8 +132,8 @@ Version 7.47 - not yet released
     remaining are gone
   - add a symbol page to the on-screen keyboard, so that passwords and
     file names can contain all printable ASCII characters
-  - new fill mode "Thin lines": no fill, all outlines as thin as a
-    border width of 1, so that they stay visible on every display
+  - new fill mode "Thin lines": no fill, all outlines one pixel wide;
+    on the OpenVario as wide as a border width of 1
   - show when an OpenAir airspace is active from its activation
     times #2520
 * task

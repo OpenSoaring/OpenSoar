@@ -85,9 +85,9 @@ struct AirspaceRendererSettings {
     NONE,
 
     /**
-     * Don't fill anything and draw the outlines as thin as a border
-     * width of 1, whatever the border width of the class: the map
-     * stays as clear
+     * Don't fill anything and draw the outlines one pixel wide (a
+     * little wider on the OpenVario), whatever the border width of the
+     * class: the map stays as clear
      * as possible, and the airspaces still show where they are.
      */
     THIN_LINE,
