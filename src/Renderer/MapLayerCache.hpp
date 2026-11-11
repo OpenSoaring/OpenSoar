@@ -33,9 +33,22 @@
  * circling with track up) the caller is told to draw directly,
  * because filling the larger buffer would only add work.
  *
+ * Only the OpenVario uses the cache.  A moved and rotated image is
+ * sampled again, and lines one or two pixels wide come out faint and
+ * broken wherever they fall between the pixels of the screen; on a
+ * phone or tablet with track up the airspace borders looked dashed.
+ * The cache was made for the Mali-400 of the OpenVario; elsewhere
+ * the layers are drawn directly and stay sharp.
+ *
  * Header only, because the layers live in different libraries.
  */
 class MapLayerCache {
+#ifdef IS_OPENVARIO
+  static constexpr bool enabled = true;
+#else
+  static constexpr bool enabled = false;
+#endif
+
   /** the cached image, with alpha so the layers below show through */
   BufferCanvas buffer{true};
 
@@ -90,6 +103,9 @@ public:
    * changes for a reason other than the projection
    */
   Action Check(const WindowProjection &projection, uint64_t key) noexcept {
+    if constexpr (!enabled)
+      return Action::DIRECT;
+
     const bool stable = previous_valid &&
       previous_projection.GetScreenSize() == projection.GetScreenSize() &&
       IsClose(previous_projection, projection, 2, 0.5);
