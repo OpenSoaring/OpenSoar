@@ -78,6 +78,8 @@ Version 7.47 - not yet released
     kilometre keep the newer one #3093
   - draw own-ship, Cloud, and SkyLines wave lines from one list
     #3094
+  - keep airspace borders and topography lines sharp while the map
+    moves or turns; only the OpenVario draws them from a cached image
 * task
   - sign in to SoaringScoring from Services and load the contest task
     from its task manager page, shown while signed in. Upload Flight
