@@ -93,6 +93,7 @@ set(_SOURCES
         Dialogs/Settings/Panels/SkyLinesConfigPanel.cpp
         Dialogs/Settings/Panels/TrackingIntervalChoices.cpp
         Dialogs/Settings/Panels/WeGlideConfigPanel.cpp
+        Dialogs/Settings/Panels/SoaringScoringConfigPanel.cpp
         Dialogs/Settings/Panels/DisplayConfigPanel.cpp
         Dialogs/Settings/Panels/GaugesConfigPanel.cpp
         Dialogs/Settings/Panels/VarioDisplayConfigPanel.cpp
@@ -122,6 +123,7 @@ set(_SOURCES
         Dialogs/Settings/Panels/WindConfigPanel.cpp
         Dialogs/Settings/WindSettingsDialog.cpp
         Dialogs/Settings/WindSettingsPanel.cpp
+        Dialogs/Settings/SoaringScoringDeviceSignIn.cpp
 
         Dialogs/SimulatorPromptWindow.cpp
         Dialogs/PowerDialog.cpp
@@ -145,6 +147,7 @@ set(_SOURCES
         Dialogs/Task/Manager/TaskMiscPanel.cpp
         Dialogs/Task/Manager/TaskPropertiesPanel.cpp
         Dialogs/Task/Manager/WeGlideTasksPanel.cpp  # 7.36
+        Dialogs/Task/Manager/SoaringScoringTasksPanel.cpp
         Dialogs/Task/Manager/WeGlidePanel.cpp
         Dialogs/Task/MutateTaskPointDialog.cpp
         Dialogs/Task/OptionalStartsDialog.cpp

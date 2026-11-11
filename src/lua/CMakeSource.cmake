@@ -8,6 +8,7 @@ set(_SOURCES
         lua/Dialogs.cpp
         lua/Error.cxx
         lua/Full.cpp
+        lua/Key.cpp
         lua/Geo.cpp
         lua/InputEvent.cpp
         lua/Legacy.cpp
