@@ -14,6 +14,7 @@
 #endif
 
 #include <algorithm>
+#include <cstdint>
 #include <initializer_list>
 
 LogoView::LogoView() noexcept try
@@ -121,6 +122,77 @@ LogoView::draw(Canvas &canvas, const PixelRect &rc,
 
   const unsigned width = rc.GetWidth(), height = rc.GetHeight();
 
+  /* The bitmaps, their sizes and the magnification for one
+     orientation */
+  struct LogoLayout {
+    const Bitmap *bitmap_logo, *bitmap_title;
+    PixelSize logo_size, title_size;
+    unsigned spacing;
+    /** do logo and title fit into the rectangle at all? */
+    bool fits;
+  };
+
+  auto calculate = [&](LogoViewOrientation orientation) noexcept {
+    LogoLayout l;
+
+    /* Select appropriate bitmap size based on display dimensions */
+    /* Pick the highest-resolution bitmap that IsDefined() (fall back from huge -> big -> logo) */
+    if ((orientation == LogoViewOrientation::LANDSCAPE && width >= 1024 && height >= 340) ||
+        (orientation == LogoViewOrientation::PORTRAIT && width >= 660 && height >= 500) ||
+        (orientation == LogoViewOrientation::SQUARE && width >= 420 && height >= 420)) {
+      /* Use huge (320px logo, 640px title) for very high resolution displays */
+      if (huge_logo.IsDefined() && huge_title.IsDefined()) {
+        l.bitmap_logo = &huge_logo;
+        l.bitmap_title = &huge_title;
+      } else if (big_logo.IsDefined() && big_title.IsDefined()) {
+        l.bitmap_logo = &big_logo;
+        l.bitmap_title = &big_title;
+      } else {
+        l.bitmap_logo = &logo;
+        l.bitmap_title = &title;
+      }
+    } else if ((orientation == LogoViewOrientation::LANDSCAPE && width >= 510 && height >= 170) ||
+               (orientation == LogoViewOrientation::PORTRAIT && width >= 330 && height >= 250) ||
+               (orientation == LogoViewOrientation::SQUARE && width >= 210 && height >= 210)) {
+      /* Use big (160px logo, 320px title) for HD displays */
+      if (big_logo.IsDefined() && big_title.IsDefined()) {
+        l.bitmap_logo = &big_logo;
+        l.bitmap_title = &big_title;
+      } else {
+        l.bitmap_logo = &logo;
+        l.bitmap_title = &title;
+      }
+    } else {
+      /* Use standard (80px logo, 110px title) for low resolution displays */
+      l.bitmap_logo = &logo;
+      l.bitmap_title = &title;
+    }
+
+    l.logo_size = l.bitmap_logo->GetSize();
+    l.title_size = l.bitmap_title->GetSize();
+    l.spacing = l.title_size.height / 2;
+
+    const auto estimated_size = EstimateLogoViewSize(orientation, l.logo_size,
+                                                     l.title_size, l.spacing);
+    l.fits = estimated_size.width + 16u <= width &&
+      estimated_size.height + 16u <= height;
+
+    const unsigned magnification = l.fits
+      ? std::min((width - 16u) / estimated_size.width,
+                 (height - 16u) / estimated_size.height)
+      : 1;
+
+    if (magnification > 1) {
+      l.logo_size.width *= magnification;
+      l.logo_size.height *= magnification;
+      l.title_size.width *= magnification;
+      l.title_size.height *= magnification;
+      l.spacing *= magnification;
+    }
+
+    return l;
+  };
+
   LogoViewOrientation orientation;
   if (width == height)
     orientation = LogoViewOrientation::SQUARE;
@@ -129,63 +201,34 @@ LogoView::draw(Canvas &canvas, const PixelRect &rc,
   else
     orientation = LogoViewOrientation::PORTRAIT;
 
-  /* Select appropriate bitmap size based on display dimensions */
-  /* Pick the highest-resolution bitmap that IsDefined() (fall back from huge -> big -> logo) */
-  const Bitmap *bitmap_logo, *bitmap_title;
-  
-  if ((orientation == LogoViewOrientation::LANDSCAPE && width >= 1024 && height >= 340) ||
-      (orientation == LogoViewOrientation::PORTRAIT && width >= 660 && height >= 500) ||
-      (orientation == LogoViewOrientation::SQUARE && width >= 420 && height >= 420)) {
-    /* Use huge (320px logo, 640px title) for very high resolution displays */
-    if (huge_logo.IsDefined() && huge_title.IsDefined()) {
-      bitmap_logo = &huge_logo;
-      bitmap_title = &huge_title;
-    } else if (big_logo.IsDefined() && big_title.IsDefined()) {
-      bitmap_logo = &big_logo;
-      bitmap_title = &big_title;
-    } else {
-      bitmap_logo = &logo;
-      bitmap_title = &title;
+  LogoLayout layout = calculate(orientation);
+
+  /* A rectangle only a little wider than high, such as the space above
+     the controls of the start screen on a 480x640 display, leaves the
+     title beside the logo very small.  The other arrangement wins if it
+     draws logo and title larger; a layout that does not fit never
+     wins. */
+  if (orientation != LogoViewOrientation::SQUARE) {
+    const auto other_orientation = orientation == LogoViewOrientation::LANDSCAPE
+      ? LogoViewOrientation::PORTRAIT
+      : LogoViewOrientation::LANDSCAPE;
+    const LogoLayout other = calculate(other_orientation);
+
+    auto area = [](const LogoLayout &l) noexcept {
+      return uint64_t{l.logo_size.width} * l.logo_size.height +
+        uint64_t{l.title_size.width} * l.title_size.height;
+    };
+
+    if (other.fits && (!layout.fits || area(other) > area(layout))) {
+      orientation = other_orientation;
+      layout = other;
     }
-  } else if ((orientation == LogoViewOrientation::LANDSCAPE && width >= 510 && height >= 170) ||
-             (orientation == LogoViewOrientation::PORTRAIT && width >= 330 && height >= 250) ||
-             (orientation == LogoViewOrientation::SQUARE && width >= 210 && height >= 210)) {
-    /* Use big (160px logo, 320px title) for HD displays */
-    if (big_logo.IsDefined() && big_title.IsDefined()) {
-      bitmap_logo = &big_logo;
-      bitmap_title = &big_title;
-    } else {
-      bitmap_logo = &logo;
-      bitmap_title = &title;
-    }
-  } else {
-    /* Use standard (80px logo, 110px title) for low resolution displays */
-    bitmap_logo = &logo;
-    bitmap_title = &title;
   }
 
-  // Determine logo size
-  PixelSize logo_size = bitmap_logo->GetSize();
-
-  // Determine title image size
-  PixelSize title_size = bitmap_title->GetSize();
-
-  unsigned spacing = title_size.height / 2;
-
-  const auto estimated_size = EstimateLogoViewSize(orientation, logo_size,
-                                                   title_size, spacing);
-
-  const unsigned magnification =
-    std::min((width - 16u) / estimated_size.width,
-             (height - 16u) / estimated_size.height);
-
-  if (magnification > 1) {
-    logo_size.width *= magnification;
-    logo_size.height *= magnification;
-    title_size.width *= magnification;
-    title_size.height *= magnification;
-    spacing *= magnification;
-  }
+  const Bitmap *bitmap_logo = layout.bitmap_logo;
+  const PixelSize logo_size = layout.logo_size;
+  const PixelSize title_size = layout.title_size;
+  const unsigned spacing = layout.spacing;
 
   PixelPoint logo_position, title_position;
   const PixelPoint origin = rc.GetTopLeft();

@@ -12,6 +12,8 @@ Version 7.47 - not yet released
   - the start screen draws logo and title sharp on narrow screens:
     a magnified logo now comes from the larger bitmap instead of the
     small one blown up
+  - on a tall screen the title of the start screen stands under the
+    logo instead of beside it, where it was drawn small
   - show whether the aircraft is in flight on the Status Times page
   - remember the ATC radial and the current Goto when an unfinished
     flight is restored; loading or resuming an ordered task clears
