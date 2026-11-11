@@ -6,6 +6,8 @@
 #include "Renderer/AirspaceRendererSettings.hpp"
 #include "Resources.hpp"
 
+#include <algorithm>
+
 const RGB8Color AirspaceLook::preset_colors[] = {
   RGB8_RED,
   RGB8_GREEN,
@@ -37,7 +39,14 @@ AirspaceClassLook::Initialise(const AirspaceClassRendererSettings &settings)
   if (settings.border_width != 0) {
     border_pen.Create(Layout::ScalePenWidth(settings.border_width),
                       Color(settings.border_color));
-    thin_border_pen.Create(1, Color(settings.border_color));
+    /* A fixed single pixel is about 0.2 mm on a 120 dpi display and
+       nearly vanishes on the terrain; at high densities it vanishes
+       altogether.  So the thin outline is as wide as a border width of
+       1, scaled like the other pens but rounded instead of truncated,
+       which still gives one pixel at 80 dpi and below. */
+    const unsigned thin_width =
+      std::max(1u, (Layout::ScalePenWidth(2) + 1) / 2);
+    thin_border_pen.Create(thin_width, Color(settings.border_color));
   }
 }
 

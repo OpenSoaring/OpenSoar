@@ -85,8 +85,9 @@ struct AirspaceRendererSettings {
     NONE,
 
     /**
-     * Don't fill anything and draw the outlines one pixel wide,
-     * whatever the border width of the class: the map stays as clear
+     * Don't fill anything and draw the outlines as thin as a border
+     * width of 1, whatever the border width of the class: the map
+     * stays as clear
      * as possible, and the airspaces still show where they are.
      */
     THIN_LINE,
@@ -114,7 +115,7 @@ struct AirspaceRendererSettings {
   }
 
   /**
-   * Are the outlines drawn one pixel wide?
+   * Are all outlines drawn thin, whatever their border width?
    */
   constexpr bool HasThinLines() const noexcept {
     return fill_mode == FillMode::THIN_LINE ||
