@@ -5,8 +5,8 @@
 
 #include "ui/canvas/Bitmap.hpp"
 #include "ui/canvas/Font.hpp"
+#include "ui/dim/Rect.hpp"
 
-struct PixelRect;
 class Canvas;
 
 class LogoView {
@@ -32,4 +32,31 @@ public:
    */
   void draw(Canvas &canvas, const PixelRect &rc,
             bool dark_mode = false) noexcept;
+
+  /**
+   * Fill @a rc with the background of the start screen, which the
+   * progress window keeps while the program loads: a gradient in the
+   * colour of the logo with OpenGL; without it there is no alpha
+   * blending for the bitmaps, so the background stays white.
+   *
+   * @return true if the background is dark, i.e. draw() has to be
+   * called with dark_mode for the white title
+   */
+  static bool DrawSplashBackground(Canvas &canvas,
+                                   const PixelRect &rc) noexcept;
+
+  /**
+   * The height of the controls at the bottom of the start screen: the
+   * profile, "Continue" and the bar.  The progress window reserves the
+   * same, so the logo does not move when the one follows the other.
+   */
+  [[gnu::pure]]
+  static unsigned GetSplashControlsHeight() noexcept;
+
+  /**
+   * The rectangle of control row @a row (0 to 2) at the bottom of the
+   * start screen @a rc, centred and not wider than a phone.
+   */
+  [[gnu::pure]]
+  static PixelRect GetSplashRow(const PixelRect &rc, unsigned row) noexcept;
 };

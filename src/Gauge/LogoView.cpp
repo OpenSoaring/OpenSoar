@@ -8,6 +8,8 @@
 #include "util/Compiler.h"
 #include "Resources.hpp"
 #include "Version.hpp"
+#include "Look/Colors.hpp"
+#include "Renderer/GradientRenderer.hpp"
 
 #ifdef ENABLE_OPENGL
 #include "ui/canvas/opengl/Scope.hpp"
@@ -316,4 +318,43 @@ LogoView::draw(Canvas &canvas, const PixelRect &rc,
     canvas.DrawText(text_pos, warning_text);
   }
 #endif
+}
+
+bool
+LogoView::DrawSplashBackground(Canvas &canvas, const PixelRect &rc) noexcept
+{
+#ifdef ENABLE_OPENGL
+  /* the banded variant, because the progress window is a child
+     window, where the plain OpenGL gradient does not land */
+  DrawBandedVerticalGradient(canvas, rc, COLOR_SPLASH, COLOR_SPLASH_DARK);
+  return true;
+#else
+  canvas.DrawFilledRectangle(rc, COLOR_WHITE);
+  return false;
+#endif
+}
+
+static unsigned
+GetSplashPadding() noexcept
+{
+  return Layout::GetTextPadding() * 2;
+}
+
+unsigned
+LogoView::GetSplashControlsHeight() noexcept
+{
+  return 3 * Layout::GetMaximumControlHeight() + 4 * GetSplashPadding();
+}
+
+PixelRect
+LogoView::GetSplashRow(const PixelRect &rc, unsigned row) noexcept
+{
+  const int padding = GetSplashPadding();
+  const int row_height = Layout::GetMaximumControlHeight();
+  const int width = std::min(int(rc.GetWidth()) - 2 * padding,
+                             int(Layout::Scale(320)));
+  const int left = rc.left + (int(rc.GetWidth()) - width) / 2;
+  const int top = rc.bottom - int(GetSplashControlsHeight()) + padding +
+    int(row) * (row_height + padding);
+  return {left, top, left + width, top + row_height};
 }

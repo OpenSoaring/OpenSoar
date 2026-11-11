@@ -32,7 +32,9 @@ ProgressGlue::Create(const char *text) noexcept
   UIGlobals::GetMainWindow().RefreshSize();
 
   if (global_progress_window == nullptr)
-    global_progress_window = new ProgressWindow(UIGlobals::GetMainWindow());
+    /* the loading after the start screen goes on in its look */
+    global_progress_window = new ProgressWindow(UIGlobals::GetMainWindow(),
+                                                true);
 
   global_progress_window->SetMessage(text);
 
