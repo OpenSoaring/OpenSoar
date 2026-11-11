@@ -34,8 +34,11 @@ is no longer an add-on and gets REMOVED from this list.  Items marked
 ## Startup and leaving the program
 
 * the profile dialog is the start screen: it always appears, with a
-  configurable countdown ("Startup timeout"); any input stops the
-  countdown, zero waits for the user; `-profile=X` preselects X
+  configurable countdown ("Startup timeout") shown as a bar; any input
+  stops the countdown, zero waits for the user; `-profile=X`
+  preselects X; it is drawn like the fly/simulator prompt of XCSoar, on
+  a gradient in the colour of the logo, and the loading after it keeps
+  that picture
 * the fly/simulator prompt appears only with the `-ask` command line
   option (`-simulator` works as before)
 * one power dialog for leaving: Quit / Restart / Reboot / Shutdown,

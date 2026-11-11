@@ -21,226 +21,100 @@
 #include "ProfilePasswordDialog.hpp"
 #include "Screen/Layout.hpp"
 #include "UIGlobals.hpp"
-#include "Widget/RowFormWidget.hpp"
-#include "Widget/TwoWidgets.hpp"
+#include "Widget/WindowWidget.hpp"
 #include "WidgetDialog.hpp"
 #include "system/FileUtil.hpp"
 #include "SystemConfig.hpp"
 #include "UISettings.hpp"
 #include "ui/canvas/Canvas.hpp"
+#include "ui/control/ProgressBar.hpp"
+#include "ui/window/ContainerWindow.hpp"
 #include "ui/event/PeriodicTimer.hpp"
 #include "util/StaticString.hxx"
 
-class LogoWindow final : public PaintWindow {
+/**
+ * The start screen: the logo on the background of the progress window
+ * that follows it, the version at the top left and "Quit" at the top
+ * right, and at the bottom the profile, "Continue" and a bar that counts
+ * down to continuing on its own.  The countdown stops at the first
+ * touch or key; then the screen waits for a decision.
+ */
+class StartupWindow final : public ContainerWindow {
+  const DialogLook &look;
+  WndForm &dialog;
+  FileDataField &df;
+
   LogoView logo;
-  bool dark_mode;
+  PixelRect logo_rect;
+  PixelPoint label_position;
 
-public:
-  explicit LogoWindow(bool _dark_mode = false,
-                     Color _background_color = COLOR_WHITE) noexcept
-    :dark_mode(_dark_mode), background_color(_background_color) {}
-
-protected:
-  void OnPaint(Canvas &canvas) noexcept override {
-    canvas.Clear(background_color);
-    logo.draw(canvas, GetClientRect(), dark_mode);
-  }
-
-private:
-  Color background_color;
-};
-
-class LogoQuitWidget final : public NullWidget {
-  const ButtonLook &look;
-  WndForm &dialog;
-
-  LogoWindow logo;
-  Button quit;
-
-public:
-  LogoQuitWidget(const ButtonLook &_look, WndForm &_dialog,
-                 bool dark_mode, Color background_color) noexcept
-    :look(_look), dialog(_dialog), logo(dark_mode, background_color) {}
-
-private:
-  PixelRect GetButtonRect(PixelRect rc) noexcept {
-    rc.left = rc.right - Layout::Scale(75);
-    rc.bottom = rc.top + Layout::GetMaximumControlHeight();
-    return rc;
-  }
-
-public:
-  /* virtual methods from class Widget */
-  PixelSize GetMinimumSize() const noexcept override {
-    return { 150, 150 };
-  }
-
-  PixelSize GetMaximumSize() const noexcept override {
-    /* use as much as possible */
-    return { 8192, 8192 };
-  }
-
-  void Prepare(ContainerWindow &parent,
-               const PixelRect &rc) noexcept override {
-    WindowStyle style;
-    style.Hide();
-
-    WindowStyle button_style(style);
-    button_style.Hide();
-    button_style.TabStop();
-
-    quit.Create(parent, look, _("Quit"), rc,
-                button_style, dialog.MakeModalResultCallback(mrCancel));
-    logo.Create(parent, rc, style);
-  }
-
-  void Show(const PixelRect &rc) noexcept override {
-    quit.MoveAndShow(GetButtonRect(rc));
-    logo.MoveAndShow(rc);
-  }
-
-  void Hide() noexcept override {
-    quit.FastHide();
-    logo.FastHide();
-  }
-
-  void Move(const PixelRect &rc) noexcept override {
-    quit.Move(GetButtonRect(rc));
-    logo.Move(rc);
-  }
-};
-
-class StartupWidget final : public RowFormWidget {
-  enum Controls {
-    PROFILE,
-    CONTINUE,
-  };
-
-  WndForm &dialog;
-  DataField *const df;
+  Button quit_button, profile_button, continue_button;
+  ProgressBar countdown_bar;
 
   /**
-   * Seconds left until the dialog continues with the preselected
-   * profile; zero means there is no countdown (the user decides).
+   * Tenths of a second left until the screen continues with the
+   * preselected profile; zero means there is no countdown.
    */
   unsigned countdown;
+  const unsigned countdown_total;
 
   UI::PeriodicTimer countdown_timer{[this]{ OnCountdown(); }};
 
 public:
-  StartupWidget(const DialogLook &look, WndForm &_dialog,
-                DataField *_df, unsigned _timeout) noexcept
-    :RowFormWidget(look), dialog(_dialog), df(_df), countdown(_timeout) {}
+  StartupWindow(const DialogLook &_look, WndForm &_dialog,
+                FileDataField &_df, unsigned timeout_seconds) noexcept
+    :look(_look), dialog(_dialog), df(_df),
+     countdown(timeout_seconds * 10), countdown_total(timeout_seconds * 10) {}
 
-  ~StartupWidget() noexcept;
-
-  /**
-   * Any user input stops the countdown: from here on the dialog waits
-   * for a decision.
-   */
   void CancelCountdown() noexcept {
     if (countdown == 0)
       return;
 
     countdown = 0;
     countdown_timer.Cancel();
-    ((Button &)GetRow(CONTINUE)).SetCaption(_("Continue"));
+    countdown_bar.Hide();
+  }
+
+  void FocusContinue() noexcept {
+    continue_button.SetFocus();
   }
 
 private:
-  void UpdateContinueButton() noexcept {
+  void UpdateProfileCaption() noexcept {
+    profile_button.SetCaption(df.GetAsDisplayString());
+  }
+
+  void UpdateCountdownBar() noexcept {
+    countdown_bar.SetValue(countdown);
+
     StaticString<64> caption;
-    caption.Format("%s (%u)", _("Continue"), countdown);
-    ((Button &)GetRow(CONTINUE)).SetCaption(caption);
+    caption.Format("%s (%u)", _("Continue"), (countdown + 9) / 10);
+    countdown_bar.SetText(caption);
   }
 
   void OnCountdown() noexcept {
     if (countdown <= 1) {
-      /* CancelCountdown() first: if Save() fails (a password-protected
-         profile), the dialog stays open without a stale counter */
+      /* CancelCountdown() first: if the profile cannot be used (a
+         password-protected one), the screen stays without a stale bar */
       CancelCountdown();
-      dialog.SetModalResult(mrOK);
+      Continue();
       return;
     }
 
     --countdown;
-    UpdateContinueButton();
+    UpdateCountdownBar();
   }
 
-public:
-  /* virtual methods from class Widget */
-  void Prepare(ContainerWindow &parent,
-               const PixelRect &rc) noexcept override;
-  bool Save(bool &changed) noexcept override;
+  void ChooseProfile() noexcept;
+  void Continue() noexcept;
+  void LayoutControls() noexcept;
 
-  void Show(const PixelRect &rc) noexcept override {
-    RowFormWidget::Show(rc);
-
-    if (countdown > 0) {
-      UpdateContinueButton();
-      countdown_timer.Schedule(std::chrono::seconds{1});
-    }
-  }
-
-  void Hide() noexcept override {
-    countdown_timer.Cancel();
-    RowFormWidget::Hide();
-  }
-
-  bool KeyPress(unsigned key_code) noexcept override {
-    /* the key itself is still handled by the focused control */
-    CancelCountdown();
-    return RowFormWidget::KeyPress(key_code);
-  }
-
-  bool SetFocus() noexcept override {
-    /* focus the "Continue" button by default */
-    GetRow(CONTINUE).SetFocus();
-    return true;
-  }
+protected:
+  /* virtual methods from class Window */
+  void OnCreate() override;
+  void OnResize(PixelSize new_size) noexcept override;
+  void OnPaint(Canvas &canvas) noexcept override;
 };
-
-/**
- * The startup dialog exists once at a time; the profile editor is a
- * plain callback function and reaches the widget through this.
- */
-static StartupWidget *startup_widget;
-
-StartupWidget::~StartupWidget() noexcept
-{
-  if (startup_widget == this)
-    startup_widget = nullptr;
-}
-
-static bool
-SelectProfileCallback([[maybe_unused]] const char *caption, [[maybe_unused]] DataField &_df,
-                      [[maybe_unused]] const char *help_text) noexcept
-{
-  /* touching the profile is a decision: no countdown from here on */
-  if (startup_widget != nullptr)
-    startup_widget->CancelCountdown();
-
-  FileDataField &df = (FileDataField &)_df;
-
-  const auto path = SelectProfileDialog(df.GetValue());
-  if (path == nullptr)
-    return false;
-
-  df.ForceModify(path);
-  return true;
-}
-
-void
-StartupWidget::Prepare([[maybe_unused]] ContainerWindow &parent,
-                       [[maybe_unused]] const PixelRect &rc) noexcept
-{
-  startup_widget = this;
-
-  auto *pe = Add(_("Profile"), nullptr, df);
-  pe->SetEditCallback(SelectProfileCallback);
-
-  AddButton(_("Continue"), dialog.MakeModalResultCallback(mrOK));
-}
 
 static bool
 SelectProfile(Path path) noexcept
@@ -281,17 +155,148 @@ SelectProfile(Path path) noexcept
   return true;
 }
 
-bool
-StartupWidget::Save(bool &changed) noexcept
+void
+StartupWindow::ChooseProfile() noexcept
 {
-  const auto &dff = (const FileDataField &)GetDataField(PROFILE);
-  if (!SelectProfile(dff.GetValue()))
-    return false;
+  /* touching the profile is a decision: no countdown from here on */
+  CancelCountdown();
 
-  changed = true;
+  const auto path = SelectProfileDialog(df.GetValue());
+  if (path == nullptr)
+    return;
 
-  return true;
+  df.ForceModify(path);
+  UpdateProfileCaption();
 }
+
+void
+StartupWindow::Continue() noexcept
+{
+  if (SelectProfile(df.GetValue()))
+    dialog.SetModalResult(mrOK);
+  else
+    CancelCountdown();
+}
+
+void
+StartupWindow::OnCreate()
+{
+  ContainerWindow::OnCreate();
+
+  const PixelRect rc = GetClientRect();
+
+  WindowStyle style;
+  style.TabStop();
+
+  quit_button.Create(*this, look.button, _("Quit"), rc, style,
+                     [this]{ dialog.SetModalResult(mrCancel); });
+  profile_button.Create(*this, look.button, "", rc, style,
+                        [this]{ ChooseProfile(); });
+  continue_button.Create(*this, look.button, _("Continue"), rc, style,
+                         [this]{ CancelCountdown(); Continue(); });
+
+  WindowStyle bar_style;
+  if (countdown == 0)
+    bar_style.Hide();
+  countdown_bar.Create(*this, rc, bar_style);
+  countdown_bar.SetRange(0, countdown_total);
+
+  UpdateProfileCaption();
+
+  if (countdown > 0) {
+    UpdateCountdownBar();
+    countdown_timer.Schedule(std::chrono::milliseconds{100});
+  }
+}
+
+void
+StartupWindow::LayoutControls() noexcept
+{
+  const PixelRect rc = GetClientRect();
+
+  logo_rect = rc;
+  logo_rect.bottom -= LogoView::GetSplashControlsHeight();
+
+  PixelRect quit_rc = rc;
+  quit_rc.left = quit_rc.right - Layout::Scale(75);
+  quit_rc.bottom = quit_rc.top + Layout::GetMaximumControlHeight();
+  quit_button.Move(quit_rc);
+
+  /* the label "Profile" in front of the profile button, as in a form */
+  PixelRect profile_rc = LogoView::GetSplashRow(rc, 0);
+  const unsigned label_width = look.text_font.TextSize(_("Profile")).width +
+    2 * Layout::GetTextPadding();
+  label_position = {
+    profile_rc.left,
+    profile_rc.top + (int(profile_rc.GetHeight()) -
+                      int(look.text_font.GetHeight())) / 2,
+  };
+  profile_rc.left += label_width;
+  profile_button.Move(profile_rc);
+
+  continue_button.Move(LogoView::GetSplashRow(rc, 1));
+  countdown_bar.Move(LogoView::GetSplashRow(rc, 2));
+}
+
+void
+StartupWindow::OnResize(PixelSize new_size) noexcept
+{
+  ContainerWindow::OnResize(new_size);
+  LayoutControls();
+}
+
+void
+StartupWindow::OnPaint(Canvas &canvas) noexcept
+{
+  const bool dark = LogoView::DrawSplashBackground(canvas, GetClientRect())
+    || look.dark_mode;
+
+  logo.draw(canvas, logo_rect, dark);
+
+  canvas.Select(look.text_font);
+  canvas.SetTextColor(dark ? COLOR_WHITE : COLOR_BLACK);
+  canvas.SetBackgroundTransparent();
+  canvas.DrawText(label_position, _("Profile"));
+
+  ContainerWindow::OnPaint(canvas);
+}
+
+class StartupWidget final : public WindowWidget {
+  const DialogLook &look;
+  WndForm &dialog;
+  FileDataField &df;
+  const unsigned timeout;
+
+public:
+  StartupWidget(const DialogLook &_look, WndForm &_dialog,
+                FileDataField &_df, unsigned _timeout) noexcept
+    :look(_look), dialog(_dialog), df(_df), timeout(_timeout) {}
+
+  /* virtual methods from class Widget */
+  void Prepare(ContainerWindow &parent,
+               const PixelRect &rc) noexcept override {
+    WindowStyle style;
+    style.Hide();
+    style.ControlParent();
+
+    auto w = std::make_unique<StartupWindow>(look, dialog, df, timeout);
+    w->Create(parent, rc, style);
+    SetWindow(std::move(w));
+  }
+
+  bool SetFocus() noexcept override {
+    /* "Continue" has the focus, so Enter takes the profile shown */
+    ((StartupWindow &)GetWindow()).FocusContinue();
+    return true;
+  }
+
+  bool KeyPress([[maybe_unused]] unsigned key_code) noexcept override {
+    /* any key is a decision; the key itself goes to the focused
+       button */
+    ((StartupWindow &)GetWindow()).CancelCountdown();
+    return false;
+  }
+};
 
 /**
  * How long the dialog waits before it continues with the preselected
@@ -413,16 +418,14 @@ dlgStartupShowModal() noexcept
 
   const unsigned timeout = GetStartupTimeout(dff->GetValue());
 
-  /* show the dialog */
+  /* show the start screen */
   const DialogLook &look = UIGlobals::GetDialogLook();
-  TWidgetDialog<TwoWidgets> dialog(WidgetDialog::Full{},
-                                   UIGlobals::GetMainWindow(),
-                                   UIGlobals::GetDialogLook(),
-                                   nullptr);
+  TWidgetDialog<StartupWidget> dialog(WidgetDialog::Full{},
+                                      UIGlobals::GetMainWindow(),
+                                      look, nullptr);
+  dialog.SetWidget(look, dialog, *dff, timeout);
 
-  dialog.SetWidget(std::make_unique<LogoQuitWidget>(look.button, dialog,
-                                                    look.dark_mode, look.background_color),
-                   std::make_unique<StartupWidget>(look, dialog, dff, timeout));
-
-  return dialog.ShowModal() == mrOK;
+  const bool ok = dialog.ShowModal() == mrOK;
+  delete dff;
+  return ok;
 }
