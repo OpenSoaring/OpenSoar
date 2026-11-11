@@ -15,6 +15,7 @@
 #endif
 
 #include <algorithm>
+#include <initializer_list>
 
 LogoView::LogoView() noexcept try
   :logo(IDB_LOGO), big_logo(IDB_LOGO_HD), huge_logo(IDB_LOGO_UHD),
@@ -46,6 +47,38 @@ Center(unsigned canvas_size, unsigned element_size)
   /* cast to int to force signed integer division, just in case the
      difference is negative */
   return int(canvas_size - element_size) / 2;
+}
+
+/**
+ * The first defined bitmap of @a candidates (ascending by size) that is
+ * at least @a width pixels wide, or else the largest defined one.  A
+ * larger bitmap drawn smaller stays sharp; a smaller one magnified gets
+ * soft and blocky.
+ */
+static const Bitmap *
+PickBitmap(std::initializer_list<const Bitmap *> candidates,
+           unsigned width) noexcept
+{
+  const Bitmap *best = nullptr;
+  for (const Bitmap *b : candidates) {
+    if (b == nullptr || !b->IsDefined())
+      continue;
+
+    best = b;
+    if (b->GetSize().width >= width)
+      break;
+  }
+
+  return best;
+}
+
+/**
+ * The transparent variant if there is one, else the opaque one.
+ */
+static const Bitmap *
+PreferRGBA(const Bitmap &rgba, const Bitmap &opaque) noexcept
+{
+  return rgba.IsDefined() ? &rgba : &opaque;
 }
 
 enum class LogoViewOrientation {
@@ -132,16 +165,6 @@ LogoView::draw(Canvas &canvas, const PixelRect &rc,
     bitmap_title = &title;
   }
 
-  /* Prefer RGBA logos (transparent background).  Opaque BMP/PNG
-     variants have a white fill that shows as a rectangle on the
-     parchment dialog background and on dark themes. */
-  if (bitmap_logo == &huge_logo && huge_logo_rgba.IsDefined())
-    bitmap_logo = &huge_logo_rgba;
-  else if (bitmap_logo == &big_logo && big_logo_rgba.IsDefined())
-    bitmap_logo = &big_logo_rgba;
-  else if (bitmap_logo == &logo && logo_rgba.IsDefined())
-    bitmap_logo = &logo_rgba;
-
   // Determine logo size
   PixelSize logo_size = bitmap_logo->GetSize();
 
@@ -196,26 +219,30 @@ LogoView::draw(Canvas &canvas, const PixelRect &rc,
   logo_position += origin;
   title_position += origin;
 
+  /* The sizes above are decided with the bitmaps chosen for the
+     display, and a magnification multiplies them.  What is drawn into
+     that size is the smallest bitmap that is at least as large, so a
+     magnified logo is not a small bitmap blown up.  Transparent
+     variants come first: the opaque ones have a white fill, which shows
+     as a rectangle on the parchment dialog background and on dark
+     themes. */
+  bitmap_logo = PickBitmap({PreferRGBA(logo_rgba, logo),
+                            PreferRGBA(big_logo_rgba, big_logo),
+                            PreferRGBA(huge_logo_rgba, huge_logo)},
+                           logo_size.width);
+
   // Draw 'XCSoar N.N' title
   if (orientation != LogoViewOrientation::SQUARE) {
-    const Bitmap *draw_title = bitmap_title;
-    /* Opaque title BMPs have a white fill.  Prefer matching-size RGBA
-       variants so the title composites over parchment / dark dialog
-       backgrounds (OpenGL and memory canvas). */
-    if (dark_mode) {
-      if (bitmap_title == &huge_title &&
-          huge_white_title.IsDefined())
-        draw_title = &huge_white_title;
-      else if (white_title.IsDefined())
-        draw_title = &white_title;
-    } else if (bitmap_title == &huge_title &&
-               huge_title_rgba.IsDefined())
-      draw_title = &huge_title_rgba;
-    else if (bitmap_title == &big_title &&
-             big_title_rgba.IsDefined())
-      draw_title = &big_title_rgba;
-    else if (bitmap_title == &title && title_rgba.IsDefined())
-      draw_title = &title_rgba;
+    /* dark mode: the white title, of which there are the two larger
+       sizes only */
+    const Bitmap *draw_title = dark_mode
+      ? PickBitmap({&white_title, &huge_white_title}, title_size.width)
+      : nullptr;
+    if (draw_title == nullptr)
+      draw_title = PickBitmap({PreferRGBA(title_rgba, title),
+                               PreferRGBA(big_title_rgba, big_title),
+                               PreferRGBA(huge_title_rgba, huge_title)},
+                              title_size.width);
 #ifdef ENABLE_OPENGL
     const ScopeAlphaBlend alpha_blend;
 #endif

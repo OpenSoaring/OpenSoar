@@ -9,6 +9,9 @@ Version 7.47 - not yet released
   - remember QNH and the maximum forecast temperature with that
     same question
 * ui
+  - the start screen draws logo and title sharp on narrow screens:
+    a magnified logo now comes from the larger bitmap instead of the
+    small one blown up
   - add a ground-side shadow to the artificial horizon line so it
     stays visible on both sky and ground
   - draw the artificial-horizon aircraft reference as a yellow bar
