@@ -594,8 +594,13 @@ LineToTriangles(const BulkPixelPoint *points, unsigned num_points,
 bool
 UseOpenGLLineLoopOutline(unsigned pen_width) noexcept
 {
+  /* OpenGL ES guarantees lines one pixel wide, and the spurious
+     lines of #1514 came from wider ones.  Drawn as triangles instead,
+     a strip one pixel wide covers the pixel centres only here and
+     there, so hairlines such as thin airspace borders came out broken
+     or vanished. */
   if (IsAndroid())
-    return false;
+    return pen_width <= 1;
 
   return pen_width <= (IsMacOSX() ? 1u : 2u);
 }

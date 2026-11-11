@@ -72,7 +72,8 @@ LineToTriangles(const BulkPixelPoint *points, unsigned num_points,
 /**
  * OpenGL ES only guarantees 1px line width.  On Android (Adreno),
  * GL_LINE_LOOP with glLineWidth() > 1 produces spurious lines on
- * high-DPI devices (#1514).
+ * high-DPI devices (#1514), so there only one pixel outlines are
+ * drawn as line loops.
  */
 [[gnu::const]]
 bool
