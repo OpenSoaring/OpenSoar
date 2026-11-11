@@ -13,8 +13,9 @@
 #include <algorithm>
 #include <cstdint>
 
-ProgressWindow::ProgressWindow(ContainerWindow &parent) noexcept
-  :background_color(GlobalSettings::dark_mode
+ProgressWindow::ProgressWindow(ContainerWindow &parent, bool _splash) noexcept
+  :splash(_splash),
+   background_color(GlobalSettings::dark_mode
                     ? COLOR_DARK_THEME_BACKGROUND : COLOR_WHITE),
    dark_mode(GlobalSettings::dark_mode)
 {
@@ -25,15 +26,17 @@ ProgressWindow::ProgressWindow(ContainerWindow &parent) noexcept
   style.Hide();
   Create(parent, rc, style);
 
-  // Load progress bar background
-  bitmap_progress_border.Load(IDB_PROGRESSBORDER);
+  if (!splash) {
+    // Load progress bar background
+    bitmap_progress_border.Load(IDB_PROGRESSBORDER);
 
-  // Determine text height
-  font.Load(FontDescription(Layout::FontScale(10)));
-  text_height = font.GetHeight();
-  if (const unsigned spacing = font.GetLineSpacing();
-      spacing > text_height)
-    text_height = spacing;
+    // Determine text height
+    font.Load(FontDescription(Layout::FontScale(10)));
+    text_height = font.GetHeight();
+    if (const unsigned spacing = font.GetLineSpacing();
+        spacing > text_height)
+      text_height = spacing;
+  }
 
   UpdateLayout(GetClientRect());
 
@@ -51,6 +54,17 @@ ProgressWindow::ProgressWindow(ContainerWindow &parent) noexcept
 void
 ProgressWindow::UpdateLayout(PixelRect rc) noexcept
 {
+  if (splash) {
+    /* the layout of the start screen: the logo in the same place, the
+       bar where the start screen counts down, so that loading looks
+       like the start screen going on */
+    logo_position = rc;
+    logo_position.bottom -= LogoView::GetSplashControlsHeight();
+
+    progress_bar_position = LogoView::GetSplashRow(rc, 2);
+    return;
+  }
+
   const unsigned height = rc.GetHeight();
 
   /* Make progress bar height proportional to window height, and high
@@ -161,13 +175,20 @@ ProgressWindow::OnResize(PixelSize new_size) noexcept
 void
 ProgressWindow::OnPaint(Canvas &canvas) noexcept
 {
-  canvas.Clear(background_color);
+  if (splash) {
+    const bool splash_dark =
+      LogoView::DrawSplashBackground(canvas, GetClientRect());
 
-  logo.draw(canvas, logo_position, dark_mode);
+    logo.draw(canvas, logo_position, splash_dark || dark_mode);
+  } else {
+    canvas.Clear(background_color);
 
-  // Draw progress bar background
-  canvas.Stretch(bottom_position.GetTopLeft(), bottom_position.GetSize(),
-                 bitmap_progress_border);
+    logo.draw(canvas, logo_position, dark_mode);
+
+    // Draw progress bar background
+    canvas.Stretch(bottom_position.GetTopLeft(), bottom_position.GetSize(),
+                   bitmap_progress_border);
+  }
 
   ContainerWindow::OnPaint(canvas);
 }

@@ -16,6 +16,19 @@ static constexpr Color COLOR_XCSOAR_DARK = Color(0x00, 0x31, 0x5e);
 #endif
 
 /**
+ * The background of the start screen and of the progress window while
+ * loading: a gradient in the colour of the logo, red for a test
+ * version and green for a release, dark enough for the white title.
+ */
+#ifdef XCSOAR_TESTING
+static constexpr Color COLOR_SPLASH = Color(0x7a, 0x10, 0x10);
+static constexpr Color COLOR_SPLASH_DARK = Color(0x24, 0x04, 0x04);
+#else
+static constexpr Color COLOR_SPLASH = Color(0x16, 0x5c, 0x16);
+static constexpr Color COLOR_SPLASH_DARK = Color(0x03, 0x1c, 0x03);
+#endif
+
+/**
  * Dark mode color palette derived from the XCSoar brand color.
  */
 static constexpr Color COLOR_DARK_THEME_BACKGROUND =
