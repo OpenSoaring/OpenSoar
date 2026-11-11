@@ -59,6 +59,7 @@ set(_SOURCES
         Renderer/TransparentRendererCache.cpp
         Renderer/TwoTextRowsRenderer.cpp
         Renderer/UnitSymbolRenderer.cpp
+        Renderer/WarningRibbonRenderer.cpp
         Renderer/VarioBarRenderer.cpp
         Renderer/VarioHistogramRenderer.cpp
         Renderer/WaveRenderer.cpp

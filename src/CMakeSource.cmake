@@ -30,6 +30,7 @@ set(BASIC_SOURCES
     ${SRC}/ResourceLoader.cpp
     ${SRC}/Simulator.cpp
     ${SRC}/Startup.cpp
+    ${SRC}/Session/SessionFile.cpp
     # --- synced from upstream XCSoar (v7.44 -> master, 2026-08-13) ---
     ${SRC}/DataFilePath.cpp
     ${SRC}/DataFileLayout.cpp

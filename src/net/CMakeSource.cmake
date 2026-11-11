@@ -53,6 +53,10 @@ list(APPEND _SOURCES
         net/client/SyncHttp.cpp
         net/client/FlarmHub/Client.cpp
         net/client/auth/JwtBearerSession.cpp
+        net/client/auth/DeviceFlow.cpp
+        net/client/SoaringScoring/Account.cpp
+        net/client/SoaringScoring/Client.cpp
+        net/client/SoaringScoring/Parse.cpp
         net/client/xctherm/Http.cpp
 )
 if(UNIX)  # wifi backends use D-Bus / Connman / NetworkManager
