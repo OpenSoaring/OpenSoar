@@ -69,6 +69,12 @@ TextUtil::create(const FontDescription &d)
   const bool alias_edging = DisplayTypeUsesMonochromeFonts(display_type) ||
     IsDithered();
 
+  /* TEST BUILD ONLY: draw the glyphs without anti-aliasing on every
+     display, to compare their sharpness on a coarse LCD (480x640 at
+     120 dpi).  Hinting stays as before, so on an LCD the stems still
+     snap to the pixel grid. */
+  constexpr bool test_no_antialias = true;
+
   auto &e = *env;
   Java::LocalObject localObject{&e,
     e.NewObject(cls, midTextUtil,
@@ -76,7 +82,7 @@ TextUtil::create(const FontDescription &d)
                 (jboolean)d.IsBold(),
                 (jboolean)d.IsItalic(),
                 (jboolean)d.IsMonospace(),
-                (jboolean)alias_edging,
+                (jboolean)(alias_edging || test_no_antialias),
                 (jboolean)alias_edging,
                 (jfloat)d.GetLetterSpacing())};
   Java::RethrowException(&e);
