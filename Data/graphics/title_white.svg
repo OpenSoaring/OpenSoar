@@ -77,7 +77,7 @@
      transform="translate(-2.5436861,-1.0464608)">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;line-height:0%;font-family:Arial;-inkscape-font-specification:Arial;fill:#008000;fill-opacity:1;stroke:none"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:Arial;-inkscape-font-specification:Arial;fill:#8fe08f;fill-opacity:1;stroke:none"
        x="106.47736"
        y="14.124277"
        id="versionno"
@@ -90,10 +90,10 @@
          id="tspan9395-4-7-2"
          x="106.47736"
          y="14.124277"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:17.3333px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#008000;fill-opacity:1">@PROGRAM_VERSION@</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:17.3333px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#8fe08f;fill-opacity:1">@PROGRAM_VERSION@</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:12.0984px;line-height:0%;font-family:Arial;-inkscape-font-specification:Arial;fill:#008000;fill-opacity:1;stroke:none;stroke-width:1.0082"
+       style="font-style:normal;font-weight:normal;font-size:12.0984px;line-height:0%;font-family:Arial;-inkscape-font-specification:Arial;fill:#8fe08f;fill-opacity:1;stroke:none;stroke-width:1.0082"
        x="2.4971049"
        y="29.230089"
        id="versionno-9"
