@@ -39,13 +39,20 @@ AirspaceClassLook::Initialise(const AirspaceClassRendererSettings &settings)
   if (settings.border_width != 0) {
     border_pen.Create(Layout::ScalePenWidth(settings.border_width),
                       Color(settings.border_color));
-    /* A fixed single pixel is about 0.2 mm on a 120 dpi display and
-       nearly vanishes on the terrain; at high densities it vanishes
-       altogether.  So the thin outline is as wide as a border width of
-       1, scaled like the other pens but rounded instead of truncated,
-       which still gives one pixel at 80 dpi and below. */
+#ifdef IS_OPENVARIO
+    /* The OpenVario draws the airspaces from a cached image that is
+       moved and turned with the map (see MapLayerCache), and a line
+       of a single pixel comes out faint and broken there.  So the thin
+       outline is as wide as a border width of 1, scaled like the other
+       pens but rounded instead of truncated, which gives two pixels
+       from about 120 dpi on. */
     const unsigned thin_width =
       std::max(1u, (Layout::ScalePenWidth(2) + 1) / 2);
+#else
+    /* elsewhere the airspaces are drawn directly, and the hairline the
+       fill mode promises stays sharp */
+    constexpr unsigned thin_width = 1;
+#endif
     thin_border_pen.Create(thin_width, Color(settings.border_color));
   }
 }

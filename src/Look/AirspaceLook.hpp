@@ -26,8 +26,8 @@ struct AirspaceClassLook {
   Pen border_pen;
 
   /**
-   * The outline as thin as a border width of 1, for the "thin line"
-   * fill modes (see AirspaceRendererSettings::HasThinLines()).
+   * The outline one pixel wide (wider on the OpenVario), for the
+   * "thin line" fill modes (see AirspaceRendererSettings::HasThinLines()).
    */
   Pen thin_border_pen;
 
