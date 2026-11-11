@@ -148,6 +148,8 @@ Version 7.47 - not yet released
     without restarting. This covers the map, waypoints, airspace,
     RASP, FLARMNet, the checklist, and the input file #1115 #3092
 * airspace
+  - new fill mode "Thin lines": no fill, all outlines as thin as a
+    border width of 1, so that they stay visible on every display
   - progress dialogs show their message and the percentage inside the
     bar, on one line, light on the part already done and dark on the
     rest; the line above the bar and the amount, speed and time

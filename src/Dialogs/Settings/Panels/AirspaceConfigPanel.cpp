@@ -59,12 +59,13 @@ static constexpr StaticEnumChoice as_fill_mode_list[] = {
   { AirspaceRendererSettings::FillMode::NONE, N_("No fill"),
     N_("Don't fill the airspace area.") },
   { AirspaceRendererSettings::FillMode::THIN_LINE, N_("Thin lines"),
-    N_("Don't fill the airspace area, and draw the outlines one pixel "
-       "wide.") },
+    N_("Don't fill the airspace area, and draw all outlines thin, "
+       "whatever their border width.") },
   { AirspaceRendererSettings::FillMode::THIN_LINE_FILL_WARNINGS,
     N_("Thin lines, fill warnings"),
-    N_("Draw the outlines one pixel wide, and fill only the airspaces "
-       "that cause a warning or that the glider is inside.") },
+    N_("Draw all outlines thin, whatever their border width, and fill "
+       "only the airspaces that cause a warning or that the glider is "
+       "inside.") },
   nullptr
 };
 
