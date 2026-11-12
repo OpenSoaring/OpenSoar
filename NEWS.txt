@@ -101,6 +101,9 @@ Version 7.47 - not yet released
   - Larus: pass on the instantaneous wind of ``$PLARW`` (``I``) next
     to the average wind (``A``)
 * android
+  - a mouse wheel or a rotary encoder scrolls lists and zooms the map
+    as it does on other systems; Android delivered its turns, but they
+    were not passed on
   - Setup > Audio has a master volume on Android as well: it sets the
     media and notification volume of the device
   - fix a crash after a restart: applying the settings started the

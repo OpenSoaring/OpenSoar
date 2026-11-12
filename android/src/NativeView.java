@@ -7,6 +7,7 @@ import java.io.File;
 import android.util.Log;
 import android.util.DisplayMetrics;
 import android.app.Activity;
+import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.KeyEvent;
 import android.view.Surface;
@@ -790,14 +791,15 @@ class NativeView extends SurfaceView
     return NetUtil.getWifiIpAddress();
   }
 
-  @Override public boolean onTouchEvent(final MotionEvent event)
-  {
-    /* the MotionEvent coordinates are supposed to be relative to this
-       View, but in fact they are not: they seem to be relative to
-       this app's Window; to work around this, we apply an offset;
-       this.getXY() (which is usually 0) plus getParent().getXY()
-       (which is a FrameLayout with non-zero coordinates unless we're
-       in full-screen mode) */
+  /**
+   * The MotionEvent coordinates are supposed to be relative to this
+   * View, but in fact they are not: they seem to be relative to this
+   * app's Window; to work around this, we apply an offset;
+   * this.getXY() (which is usually 0) plus getParent().getXY() (which
+   * is a FrameLayout with non-zero coordinates unless we're in
+   * full-screen mode).
+   */
+  private float[] getEventOffset() {
     float offsetX = getX(), offsetY = getY();
     ViewParent _p = getParent();
     if (_p instanceof View) {
@@ -805,8 +807,58 @@ class NativeView extends SurfaceView
       offsetX += p.getX();
       offsetY += p.getY();
     }
+    return new float[]{offsetX, offsetY};
+  }
 
-    edgeTouchFilter.onTouchEvent(event, offsetX, offsetY);
+  @Override public boolean onTouchEvent(final MotionEvent event)
+  {
+    float[] offset = getEventOffset();
+    edgeTouchFilter.onTouchEvent(event, offset[0], offset[1]);
+    return true;
+  }
+
+  /**
+   * The part of a turn that was smaller than one notch.  A wheel with
+   * fine steps or a touchpad reports fractions, which add up to a
+   * notch here instead of being lost.
+   */
+  private float wheelRemainder = 0;
+
+  /**
+   * A mouse wheel or a rotary encoder does not come as a touch, but as
+   * a generic motion event, which was ignored, so the wheel did not
+   * scroll lists or zoom the map on Android as it does elsewhere.  It
+   * is passed on as notches, the same as the mouse wheel on Linux.
+   */
+  @Override public boolean onGenericMotionEvent(final MotionEvent event)
+  {
+    if (event.getActionMasked() != MotionEvent.ACTION_SCROLL)
+      return super.onGenericMotionEvent(event);
+
+    float value = 0;
+    if (event.isFromSource(InputDevice.SOURCE_CLASS_POINTER))
+      value = event.getAxisValue(MotionEvent.AXIS_VSCROLL);
+    else if (Build.VERSION.SDK_INT >= 26 &&
+             event.isFromSource(InputDevice.SOURCE_ROTARY_ENCODER))
+      /* a rotary encoder turns clockwise with a positive value, which
+         is "down" like the arrow key */
+      value = -event.getAxisValue(MotionEvent.AXIS_SCROLL);
+    else
+      return super.onGenericMotionEvent(event);
+
+    if (value * wheelRemainder < 0)
+      /* turned back: the rest of the other direction does not count */
+      wheelRemainder = 0;
+
+    wheelRemainder += value;
+    int notches = (int)wheelRemainder;
+    if (notches == 0)
+      return true;
+
+    wheelRemainder -= notches;
+    float[] offset = getEventOffset();
+    EventBridge.onMouseWheel((int)(event.getX() + offset[0]),
+                             (int)(event.getY() + offset[1]), notches);
     return true;
   }
 
