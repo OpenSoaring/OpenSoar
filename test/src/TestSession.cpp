@@ -54,7 +54,7 @@ TestRoundTrip()
   state.checklist[0].sum = SessionHash("page");
   state.checklist[0].ticks = "1010";
 
-  const Path path("output/TestSession.txt");
+  const Path path("output/TestSession.json");
   SaveSession(state, path);
 
   SessionState loaded;
@@ -96,7 +96,7 @@ TestFlyingClearIgnoresPolar()
                "Bugs=\"0.98\"\n"));
 
   SessionState loaded;
-  LoadSession(loaded, Path("output/TestSessionFlying.txt"));
+  LoadLegacySession(loaded, Path("output/TestSessionFlying.txt"));
   ok1(!loaded.flying);
   ok1(loaded.have_ballast);
   ok1(equals(loaded.ballast_litres, 120));
@@ -109,7 +109,7 @@ TestBadGeoPoint()
                "AtcReference=\"999 10\"\n"));
 
   SessionState loaded;
-  LoadSession(loaded, Path("output/TestSessionGeo.txt"));
+  LoadLegacySession(loaded, Path("output/TestSessionGeo.txt"));
   ok1(!loaded.have_atc_reference);
   ok1(!loaded.atc_reference.IsValid());
 }
@@ -196,7 +196,7 @@ TestNonFinite()
                "GotoId=\"7\"\n"));
 
   SessionState loaded;
-  LoadSession(loaded, Path("output/TestSessionNonFinite.txt"));
+  LoadLegacySession(loaded, Path("output/TestSessionNonFinite.txt"));
   ok1(!loaded.have_ballast);
   ok1(!loaded.have_crew);
   ok1(!loaded.have_atc_declination);
@@ -205,10 +205,105 @@ TestNonFinite()
   ok1(loaded.goto_id == 7);
 }
 
+
+/**
+ * A session written before the move to JSON must survive an update:
+ * read the old format, write JSON, and get the same values back.
+ */
+static void
+TestLegacyMigration()
+{
+  ok1(WriteRaw(Path("output/TestSessionLegacy.txt"),
+               "Flying=\"1\"\n"
+               "BallastLitres=\"80\"\n"
+               "CrewMass=\"90\"\n"
+               "Bugs=\"0.95\"\n"
+               "QNH=\"1009\"\n"
+               "AtcReference=\"8.5 47.4\"\n"
+               "GotoId=\"12\"\n"
+               "GotoName=\"Hahnweide\"\n"
+               "ChecklistFile=\"checklists/x.txt\"\n"
+               "ChecklistPage=\"2\"\n"
+               "Checklist.3.Sum=\"4711\"\n"
+               "Checklist.3.Ticks=\"101\"\n"));
+
+  SessionState legacy;
+  LoadLegacySession(legacy, Path("output/TestSessionLegacy.txt"));
+  SaveSession(legacy, Path("output/TestSessionMigrated.json"));
+
+  SessionState loaded;
+  LoadSession(loaded, Path("output/TestSessionMigrated.json"));
+  ok1(loaded.flying);
+  ok1(loaded.have_ballast && equals(loaded.ballast_litres, 80));
+  ok1(loaded.have_crew && equals(loaded.crew_mass, 90));
+  ok1(loaded.have_bugs && equals(loaded.bugs, 0.95));
+  ok1(loaded.have_qnh && equals(loaded.qnh_hpa, 1009));
+  ok1(loaded.have_atc_reference);
+  ok1(equals(loaded.atc_reference.latitude.Degrees(), 47.4));
+  ok1(loaded.goto_id == 12);
+  ok1(loaded.goto_name == "Hahnweide");
+  ok1(loaded.checklist_file == "checklists/x.txt");
+  ok1(loaded.checklist_page == 2);
+
+  std::string ticks;
+  ok1(loaded.ChecklistTicks(3, 4711, ticks));
+  ok1(ticks == "101");
+}
+
+/**
+ * Values of the wrong type or out of range are dropped one by one;
+ * the rest of the file still counts.
+ */
+static void
+TestJsonInvalidValues()
+{
+  ok1(WriteRaw(Path("output/TestSessionBad.json"),
+               "{\"flying\":\"yes\","
+               "\"polar\":{\"ballast_litres\":-5,\"crew_mass\":\"90\","
+               "\"bugs\":0.9},"
+               "\"atmosphere\":{\"qnh_hpa\":5000,\"max_temperature_k\":1e999},"
+               "\"atc\":{\"reference\":{\"longitude\":999,\"latitude\":10}},"
+               "\"goto\":{\"id\":-3,\"name\":\"(goto)\"},"
+               "\"checklist\":{\"file\":\"c.txt\",\"pages\":["
+               "{\"index\":99,\"sum\":1,\"ticks\":\"1\"},"
+               "{\"index\":0,\"sum\":1,\"ticks\":\"1x\"},"
+               "{\"index\":1,\"sum\":2,\"ticks\":\"01\"}]}}"));
+
+  SessionState loaded;
+  LoadSession(loaded, Path("output/TestSessionBad.json"));
+  ok1(!loaded.flying);
+  ok1(!loaded.have_ballast);
+  ok1(!loaded.have_crew);
+  ok1(loaded.have_bugs && equals(loaded.bugs, 0.9));
+  ok1(!loaded.have_qnh);
+  ok1(!loaded.have_max_temp);
+  ok1(!loaded.have_atc_reference);
+  ok1(loaded.goto_id == 0);
+  ok1(loaded.goto_name == "(goto)");
+  ok1(!loaded.checklist[0].present);
+  ok1(loaded.checklist[1].present);
+}
+
+/** A file that is not a JSON object at all is an error, not defaults. */
+static void
+TestJsonNotAnObject()
+{
+  ok1(WriteRaw(Path("output/TestSessionArray.json"), "[1,2,3]"));
+
+  SessionState loaded;
+  bool thrown = false;
+  try {
+    LoadSession(loaded, Path("output/TestSessionArray.json"));
+  } catch (...) {
+    thrown = true;
+  }
+  ok1(thrown);
+}
+
 int
 main()
 {
-  plan_tests(22 + 4 + 3 + 5 + 2 + 12 + 7 + 7);
+  plan_tests(22 + 4 + 3 + 5 + 2 + 12 + 7 + 7 + 14 + 12 + 2);
 
   TestRoundTrip();
   TestFlyingClearIgnoresPolar();
@@ -218,6 +313,9 @@ main()
   TestFlyingLatch();
   TestDeclinedRestore();
   TestNonFinite();
+  TestLegacyMigration();
+  TestJsonInvalidValues();
+  TestJsonNotAnObject();
 
   return exit_status();
 }

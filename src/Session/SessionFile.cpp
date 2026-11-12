@@ -8,13 +8,31 @@
 #include "Math/Classify.hpp"
 #include "Profile/File.hpp"
 #include "Profile/Map.hpp"
+#include "io/FileOutputStream.hxx"
+#include "io/FileReader.hxx"
+#include "json/Geo.hpp"
+#include "json/Parse.hxx"
+#include "json/Serialize.hxx"
 #include "system/FileUtil.hpp"
 #include "system/Path.hpp"
 
+#include <boost/json.hpp>
+
+#include <limits>
+#include <stdexcept>
 #include <stdio.h>
 #include <utility>
 
-static constexpr char SESSION_FILE[] = "xcsoar-session.txt";
+/* JSON groups the values by topic, which the flat key=value format of
+   a profile could only imitate with key prefixes, and the extension
+   keeps the file out of the airspace file list, which claims *.txt. */
+static constexpr char SESSION_FILE[] = "flight-session.json";
+
+/* The name and format before the move to JSON.  Read once to take
+   over an unfinished flight across an update, then removed. */
+static constexpr char LEGACY_SESSION_FILE[] = "xcsoar-session.txt";
+
+static constexpr unsigned SESSION_FILE_VERSION = 1;
 static constexpr std::string_view TAKEOFF_GOTO{"(takeoff)"};
 
 static constexpr double QNH_MIN_HPA = 100;
@@ -68,7 +86,7 @@ ChecklistKey(char *buffer, std::size_t size,
 }
 
 static void
-ReadChecklist(const ProfileMap &map, SessionState &state) noexcept
+ReadLegacyChecklist(const ProfileMap &map, SessionState &state) noexcept
 {
   for (unsigned i = 0; i < SESSION_MAX_CHECKLIST_PAGES; ++i) {
     char sum_key[32];
@@ -86,29 +104,6 @@ ReadChecklist(const ProfileMap &map, SessionState &state) noexcept
     page.present = true;
     page.sum = sum;
     page.ticks = std::move(ticks);
-  }
-}
-
-static void
-WriteChecklist(ProfileMap &map, const SessionState &state) noexcept
-{
-  if (state.checklist_file.empty())
-    return;
-
-  map.Set("ChecklistFile", state.checklist_file);
-  map.Set("ChecklistPage", state.checklist_page);
-
-  for (unsigned i = 0; i < SESSION_MAX_CHECKLIST_PAGES; ++i) {
-    const auto &page = state.checklist[i];
-    if (!page.present)
-      continue;
-
-    char sum_key[32];
-    char ticks_key[32];
-    ChecklistKey(sum_key, sizeof(sum_key), i, "Sum");
-    ChecklistKey(ticks_key, sizeof(ticks_key), i, "Ticks");
-    map.Set(sum_key, page.sum);
-    map.Set(ticks_key, page.ticks);
   }
 }
 
@@ -176,7 +171,7 @@ SessionState::NoteFlying(bool now_flying, double ballast, double crew,
 }
 
 void
-LoadSession(SessionState &state, Path path)
+LoadLegacySession(SessionState &state, Path path)
 {
   ProfileMap map;
   /* shortcut: LoadFile also migrates AirspaceFile and WPFile keys,
@@ -258,45 +253,292 @@ LoadSession(SessionState &state, Path path)
   if (unsigned page; map.Get("ChecklistPage", page))
     loaded.checklist_page = page;
 
-  ReadChecklist(map, loaded);
+  ReadLegacyChecklist(map, loaded);
   state = std::move(loaded);
+}
+
+/* JSON helpers.  A value of the wrong type or out of range counts as
+   missing, so a damaged file degrades to the defaults field by field
+   instead of losing the whole session. */
+
+static const boost::json::object *
+GetObject(const boost::json::object &parent, std::string_view key) noexcept
+{
+  const auto *v = parent.if_contains(key);
+  return v != nullptr ? v->if_object() : nullptr;
+}
+
+static bool
+GetNumber(const boost::json::object &parent, std::string_view key,
+          double &value) noexcept
+{
+  const auto *v = parent.if_contains(key);
+  if (v == nullptr || !v->is_number())
+    return false;
+
+  const double d = v->to_number<double>();
+  if (!IsFinite(d))
+    return false;
+
+  value = d;
+  return true;
+}
+
+static bool
+GetUnsigned(const boost::json::object &parent, std::string_view key,
+            unsigned &value) noexcept
+{
+  const auto *v = parent.if_contains(key);
+  if (v == nullptr)
+    return false;
+
+  if (const auto *i = v->if_int64(); i != nullptr && *i >= 0 &&
+      *i <= std::numeric_limits<unsigned>::max()) {
+    value = static_cast<unsigned>(*i);
+    return true;
+  }
+
+  if (const auto *u = v->if_uint64();
+      u != nullptr && *u <= std::numeric_limits<unsigned>::max()) {
+    value = static_cast<unsigned>(*u);
+    return true;
+  }
+
+  return false;
+}
+
+static bool
+GetString(const boost::json::object &parent, std::string_view key,
+          std::string &value) noexcept
+{
+  const auto *v = parent.if_contains(key);
+  if (v == nullptr || !v->is_string())
+    return false;
+
+  value = v->get_string();
+  return true;
+}
+
+/** The counterpart of the GeoPoint conversion in json/Geo.hpp. */
+static bool
+GetGeoPoint(const boost::json::object &parent, std::string_view key,
+            GeoPoint &value) noexcept
+{
+  const auto *o = GetObject(parent, key);
+  if (o == nullptr)
+    return false;
+
+  double longitude, latitude;
+  if (!GetNumber(*o, "longitude", longitude) ||
+      !GetNumber(*o, "latitude", latitude))
+    return false;
+
+  const GeoPoint p{Angle::Degrees(longitude), Angle::Degrees(latitude)};
+  if (!p.Check())
+    return false;
+
+  value = p;
+  return true;
+}
+
+static void
+ReadChecklist(const boost::json::object &checklist,
+              SessionState &state) noexcept
+{
+  GetString(checklist, "file", state.checklist_file);
+  if (unsigned page; GetUnsigned(checklist, "page", page))
+    state.checklist_page = page;
+
+  const auto *pages = checklist.if_contains("pages");
+  if (pages == nullptr || !pages->is_array())
+    return;
+
+  for (const auto &item : pages->get_array()) {
+    const auto *o = item.if_object();
+    if (o == nullptr)
+      continue;
+
+    unsigned index, sum;
+    std::string ticks;
+    if (!GetUnsigned(*o, "index", index) ||
+        index >= SESSION_MAX_CHECKLIST_PAGES ||
+        !GetUnsigned(*o, "sum", sum) ||
+        !GetString(*o, "ticks", ticks) || !ValidTicks(ticks))
+      continue;
+
+    auto &page = state.checklist[index];
+    page.present = true;
+    page.sum = sum;
+    page.ticks = std::move(ticks);
+  }
+}
+
+void
+LoadSession(SessionState &state, Path path)
+{
+  FileReader file{path};
+  const auto root_value = Json::Parse(file);
+  const auto *root = root_value.if_object();
+  if (root == nullptr)
+    throw std::runtime_error("Session file is not a JSON object");
+
+  SessionState loaded;
+
+  if (const auto *v = root->if_contains("flying");
+      v != nullptr && v->is_bool())
+    loaded.flying = v->get_bool();
+
+  if (const auto *polar = GetObject(*root, "polar")) {
+    if (double litres; GetNumber(*polar, "ballast_litres", litres) &&
+        litres >= 0) {
+      loaded.ballast_litres = litres;
+      loaded.have_ballast = true;
+    }
+
+    if (double mass; GetNumber(*polar, "crew_mass", mass) && mass >= 0) {
+      loaded.crew_mass = mass;
+      loaded.have_crew = true;
+    }
+
+    if (double bugs; GetNumber(*polar, "bugs", bugs) &&
+        bugs > 0 && bugs <= 1) {
+      loaded.bugs = bugs;
+      loaded.have_bugs = true;
+    }
+  }
+
+  if (const auto *atmosphere = GetObject(*root, "atmosphere")) {
+    if (double qnh; GetNumber(*atmosphere, "qnh_hpa", qnh) &&
+        InOpenRange(qnh, QNH_MIN_HPA, QNH_MAX_HPA)) {
+      loaded.qnh_hpa = qnh;
+      loaded.have_qnh = true;
+    }
+
+    if (double kelvin; GetNumber(*atmosphere, "max_temperature_k", kelvin) &&
+        InOpenRange(kelvin, TEMP_MIN_K, TEMP_MAX_K)) {
+      loaded.max_temp_k = kelvin;
+      loaded.have_max_temp = true;
+    }
+  }
+
+  if (const auto *atc = GetObject(*root, "atc")) {
+    if (GetGeoPoint(*atc, "reference", loaded.atc_reference))
+      loaded.have_atc_reference = true;
+
+    if (double degrees; GetNumber(*atc, "declination_deg", degrees)) {
+      loaded.atc_declination_deg = degrees;
+      loaded.have_atc_declination = true;
+    }
+  }
+
+  if (const auto *go = GetObject(*root, "goto")) {
+    if (unsigned id; GetUnsigned(*go, "id", id)) {
+      loaded.goto_id = id;
+      loaded.have_goto = true;
+    }
+
+    if (GetGeoPoint(*go, "location", loaded.goto_location)) {
+      loaded.have_goto_location = true;
+      loaded.have_goto = true;
+    }
+
+    if (double elevation; GetNumber(*go, "elevation", elevation)) {
+      loaded.goto_elevation = elevation;
+      loaded.have_goto_elevation = true;
+      loaded.have_goto = true;
+    }
+
+    if (std::string name; GetString(*go, "name", name)) {
+      loaded.goto_name = std::move(name);
+      loaded.have_goto = true;
+    }
+  }
+
+  if (const auto *checklist = GetObject(*root, "checklist"))
+    ReadChecklist(*checklist, loaded);
+
+  state = std::move(loaded);
+}
+
+static boost::json::value
+GeoPointValue(const GeoPoint &p) noexcept
+{
+  return boost::json::value_from(p);
 }
 
 void
 SaveSession(const SessionState &state, Path path)
 {
-  ProfileMap map;
-  map.Set("Flying", state.flying);
+  boost::json::object root;
+  root["version"] = SESSION_FILE_VERSION;
+  root["flying"] = state.flying;
 
+  boost::json::object polar;
   if (state.have_ballast)
-    map.Set("BallastLitres", state.ballast_litres);
+    polar["ballast_litres"] = state.ballast_litres;
   if (state.have_crew)
-    map.Set("CrewMass", state.crew_mass);
+    polar["crew_mass"] = state.crew_mass;
   if (state.have_bugs)
-    map.Set("Bugs", state.bugs);
-  if (state.have_qnh)
-    map.Set("QNH", state.qnh_hpa);
-  if (state.have_max_temp)
-    map.Set("MaxTemp", state.max_temp_k);
+    polar["bugs"] = state.bugs;
+  if (!polar.empty())
+    root["polar"] = std::move(polar);
 
+  boost::json::object atmosphere;
+  if (state.have_qnh)
+    atmosphere["qnh_hpa"] = state.qnh_hpa;
+  if (state.have_max_temp)
+    atmosphere["max_temperature_k"] = state.max_temp_k;
+  if (!atmosphere.empty())
+    root["atmosphere"] = std::move(atmosphere);
+
+  boost::json::object atc;
   if (state.have_atc_reference)
-    map.SetGeoPoint("AtcReference", state.atc_reference);
+    atc["reference"] = GeoPointValue(state.atc_reference);
   if (state.have_atc_declination)
-    map.Set("AtcDeclination", state.atc_declination_deg);
+    atc["declination_deg"] = state.atc_declination_deg;
+  if (!atc.empty())
+    root["atc"] = std::move(atc);
 
   if (state.have_goto && state.goto_name != TAKEOFF_GOTO) {
+    boost::json::object go;
     if (state.goto_id != 0)
-      map.Set("GotoId", state.goto_id);
+      go["id"] = state.goto_id;
     if (state.have_goto_location)
-      map.SetGeoPoint("GotoLocation", state.goto_location);
+      go["location"] = GeoPointValue(state.goto_location);
     if (state.have_goto_elevation)
-      map.Set("GotoElevation", state.goto_elevation);
-    map.Set("GotoName", state.goto_name);
+      go["elevation"] = state.goto_elevation;
+    go["name"] = state.goto_name;
+    root["goto"] = std::move(go);
   }
 
-  WriteChecklist(map, state);
-  /* SaveFile, not Profile::Save(): that returns when the .prf is clean. */
-  Profile::SaveFile(map, path);
+  if (!state.checklist_file.empty()) {
+    boost::json::object checklist;
+    checklist["file"] = state.checklist_file;
+    checklist["page"] = state.checklist_page;
+
+    boost::json::array pages;
+    for (unsigned i = 0; i < SESSION_MAX_CHECKLIST_PAGES; ++i) {
+      const auto &page = state.checklist[i];
+      if (!page.present)
+        continue;
+
+      pages.push_back(boost::json::object{
+        {"index", i},
+        {"sum", page.sum},
+        {"ticks", page.ticks},
+      });
+    }
+
+    checklist["pages"] = std::move(pages);
+    root["checklist"] = std::move(checklist);
+  }
+
+  /* FileOutputStream writes a temporary file and renames it on
+     Commit(), so a power cut while writing leaves the previous
+     session intact. */
+  FileOutputStream file{path};
+  Json::Serialize(file, boost::json::value{std::move(root)});
+  file.Commit();
 }
 
 namespace Session {
@@ -307,19 +549,51 @@ State() noexcept
   return session_state;
 }
 
+/**
+ * Take over a session written before the move to JSON, so that an
+ * update installed between two flights - or during one - does not
+ * lose the restore question.  The old file is removed only after the
+ * new one has been written.
+ */
+static void
+MigrateLegacy() noexcept
+{
+  const auto legacy_path = LocalPath(LEGACY_SESSION_FILE);
+  if (!File::Exists(legacy_path))
+    return;
+
+  try {
+    LoadLegacySession(session_state, legacy_path);
+    SaveSession(session_state, LocalPath(SESSION_FILE));
+    File::Delete(legacy_path);
+    LogFmt("Session: migrated {} to {}", LEGACY_SESSION_FILE, SESSION_FILE);
+  } catch (...) {
+    LogError(std::current_exception(), "Failed to migrate session");
+    session_state = {};
+  }
+}
+
 void
 Load() noexcept
 {
-  try {
-    const auto path = LocalPath(SESSION_FILE);
-    if (!File::Exists(path))
-      return;
+  const auto path = LocalPath(SESSION_FILE);
+  if (!File::Exists(path)) {
+    MigrateLegacy();
+    return;
+  }
 
+  try {
     LoadSession(session_state, path);
   } catch (...) {
     LogError(std::current_exception(), "Failed to load session");
     session_state = {};
   }
+
+  /* A legacy file next to a JSON one is a leftover of an interrupted
+     migration; the JSON file is the newer of the two. */
+  const auto legacy_path = LocalPath(LEGACY_SESSION_FILE);
+  if (File::Exists(legacy_path))
+    File::Delete(legacy_path);
 }
 
 void

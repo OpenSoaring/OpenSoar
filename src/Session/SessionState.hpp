@@ -108,13 +108,24 @@ struct SessionState {
 SessionHash(std::string_view text) noexcept;
 
 /**
- * Replace @p state with the file.  Throws on I/O error.
- * A missing key leaves that field at its default.
+ * Replace @p state with the JSON file.  Throws on I/O and syntax
+ * errors.  A missing or invalid value leaves that field at its
+ * default.
  */
 void
 LoadSession(SessionState &state, Path path);
 
-/** Throws on I/O error.  Does not clear @c modified. */
+/**
+ * Replace @p state with a file in the key=value format used before
+ * the move to JSON.  Only for taking over such a file once.
+ */
+void
+LoadLegacySession(SessionState &state, Path path);
+
+/**
+ * Write the JSON file atomically.  Throws on I/O error.  Does not
+ * clear @c modified.
+ */
 void
 SaveSession(const SessionState &state, Path path);
 
@@ -123,7 +134,10 @@ namespace Session {
 SessionState &
 State() noexcept;
 
-/** Load @c xcsoar-session.txt.  A missing file keeps defaults. */
+/**
+ * Load @c flight-session.json, or take over an @c xcsoar-session.txt
+ * from an earlier version.  A missing file keeps defaults.
+ */
 void
 Load() noexcept;
 
