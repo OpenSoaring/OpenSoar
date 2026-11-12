@@ -124,10 +124,12 @@ struct SessionState {
                                     std::string &ticks) const noexcept;
 
   /**
+   * @param on_ground the flying computer is sure that the aircraft is
+   * on the ground, see FlyingState::on_ground
    * @return true when the persisted flying flag or polar snapshot changed
    */
-  bool NoteFlying(bool now_flying, double ballast_litres, double crew_mass,
-                  double bugs) noexcept;
+  bool NoteFlying(bool now_flying, bool on_ground, double ballast_litres,
+                  double crew_mass, double bugs) noexcept;
 };
 
 [[nodiscard]] uint32_t

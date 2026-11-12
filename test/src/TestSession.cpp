@@ -152,20 +152,42 @@ TestFlyingLatch()
   state.have_ballast = true;
   state.ballast_litres = 40;
 
-  ok1(!state.NoteFlying(false, 0, 90, 1));
+  ok1(!state.NoteFlying(false, false, 0, 90, 1));
   ok1(state.flying);
   ok1(equals(state.ballast_litres, 40));
 
-  ok1(state.NoteFlying(true, 10, 80, 0.9));
+  ok1(state.NoteFlying(true, false, 10, 80, 0.9));
   ok1(state.seen_flying);
   ok1(state.flying);
   ok1(equals(state.ballast_litres, 10));
   ok1(equals(state.crew_mass, 80));
   ok1(equals(state.bugs, 0.9));
 
-  ok1(state.NoteFlying(false, 10, 80, 0.9));
+  ok1(state.NoteFlying(false, false, 10, 80, 0.9));
   ok1(!state.flying);
-  ok1(!state.NoteFlying(false, 0, 90, 1));
+  ok1(!state.NoteFlying(false, false, 0, 90, 1));
+}
+
+/**
+ * A flight restored from the file whose landing this process never saw,
+ * because it was restarted on the ground: the flying computer reports
+ * "on the ground" and that ends the flight, while a restart in the air,
+ * which is not on the ground yet, keeps it.
+ */
+static void
+TestRestoredFlightLands()
+{
+  SessionState state;
+  state.flying = true;
+
+  ok1(!state.NoteFlying(false, false, 0, 90, 1));
+  ok1(state.flying);
+
+  ok1(state.NoteFlying(false, true, 0, 90, 1));
+  ok1(!state.flying);
+  ok1(state.modified);
+
+  ok1(!state.NoteFlying(false, true, 0, 90, 1));
 }
 
 static void
@@ -174,14 +196,14 @@ TestDeclinedRestore()
   SessionState state;
   state.restore_declined = true;
 
-  ok1(!state.NoteFlying(true, 10, 80, 0.9));
+  ok1(!state.NoteFlying(true, false, 10, 80, 0.9));
   ok1(!state.flying);
   ok1(!state.seen_flying);
 
-  ok1(!state.NoteFlying(false, 10, 80, 0.9));
+  ok1(!state.NoteFlying(false, false, 10, 80, 0.9));
   ok1(!state.restore_declined);
 
-  ok1(state.NoteFlying(true, 10, 80, 0.9));
+  ok1(state.NoteFlying(true, false, 10, 80, 0.9));
   ok1(state.flying);
 }
 
@@ -363,7 +385,7 @@ TestTakeoffPending()
   state.takeoff_utc = BrokenDateTime(2026, 7, 13, 9, 0, 0);
   state.aircraft_registration = "D-OLD";
 
-  ok1(state.NoteFlying(true, 0, 90, 1));
+  ok1(state.NoteFlying(true, false, 0, 90, 1));
   ok1(state.takeoff_pending);
   ok1(!state.have_takeoff);
   ok1(state.aircraft_registration.empty());
@@ -372,7 +394,7 @@ TestTakeoffPending()
   restarted.flying = true;
   restarted.have_takeoff = true;
   restarted.takeoff_utc = BrokenDateTime(2026, 7, 14, 10, 23, 45);
-  restarted.NoteFlying(true, 0, 90, 1);
+  restarted.NoteFlying(true, false, 0, 90, 1);
   ok1(!restarted.takeoff_pending);
   ok1(restarted.have_takeoff);
 }
@@ -380,7 +402,7 @@ TestTakeoffPending()
 int
 main()
 {
-  plan_tests(22 + 4 + 3 + 5 + 2 + 12 + 7 + 7 + 14 + 12 + 2 + 10 + 4 + 6);
+  plan_tests(22 + 4 + 3 + 5 + 2 + 12 + 7 + 7 + 14 + 12 + 2 + 10 + 4 + 6 + 6);
 
   TestRoundTrip();
   TestFlyingClearIgnoresPolar();
@@ -388,6 +410,7 @@ main()
   TestChecklistMismatch();
   TestTakeoffGoto();
   TestFlyingLatch();
+  TestRestoredFlightLands();
   TestDeclinedRestore();
   TestNonFinite();
   TestLegacyMigration();
