@@ -300,10 +300,87 @@ TestJsonNotAnObject()
   ok1(thrown);
 }
 
+/** The takeoff block survives a round trip, pilot and aircraft too. */
+static void
+TestTakeoffRoundTrip()
+{
+  SessionState state;
+  state.flying = true;
+  state.have_takeoff = true;
+  state.takeoff_utc = BrokenDateTime(2026, 7, 14, 10, 23, 45);
+  state.takeoff_location = GeoPoint(Angle::Degrees(9.43),
+                                    Angle::Degrees(48.69));
+  state.have_takeoff_altitude = true;
+  state.takeoff_altitude = 512;
+  state.pilot_name = "Uwe";
+  state.aircraft_registration = "D-1234";
+  state.competition_id = "UA";
+  state.aircraft_type = "LS 8";
+
+  SaveSession(state, Path("output/TestSessionTakeoff.json"));
+
+  SessionState loaded;
+  LoadSession(loaded, Path("output/TestSessionTakeoff.json"));
+  ok1(loaded.have_takeoff);
+  ok1(loaded.takeoff_utc == BrokenDateTime(2026, 7, 14, 10, 23, 45));
+  ok1(loaded.takeoff_location.IsValid());
+  ok1(equals(loaded.takeoff_location.latitude.Degrees(), 48.69));
+  ok1(loaded.have_takeoff_altitude && equals(loaded.takeoff_altitude, 512));
+  ok1(loaded.pilot_name == "Uwe");
+  ok1(loaded.aircraft_registration == "D-1234");
+  ok1(loaded.competition_id == "UA");
+  ok1(loaded.aircraft_type == "LS 8");
+  /* only a takeoff seen by this process may be recorded */
+  ok1(!loaded.takeoff_pending);
+}
+
+/** A takeoff without a valid time is not a takeoff. */
+static void
+TestTakeoffBadTime()
+{
+  ok1(WriteRaw(Path("output/TestSessionTakeoffBad.json"),
+               "{\"flying\":true,\"flight\":{\"takeoff\":"
+               "{\"time\":\"2026-13-40T25:00:00Z\",\"altitude\":500},"
+               "\"pilot\":\"Uwe\"}}"));
+
+  SessionState loaded;
+  LoadSession(loaded, Path("output/TestSessionTakeoffBad.json"));
+  ok1(loaded.flying);
+  ok1(!loaded.have_takeoff);
+  ok1(!loaded.have_takeoff_altitude);
+}
+
+/**
+ * A takeoff after "not flying" starts a new flight and forgets the
+ * old takeoff; a restart in the air keeps the recorded one and must
+ * not replace it with the moment of the restart.
+ */
+static void
+TestTakeoffPending()
+{
+  SessionState state;
+  state.have_takeoff = true;
+  state.takeoff_utc = BrokenDateTime(2026, 7, 13, 9, 0, 0);
+  state.aircraft_registration = "D-OLD";
+
+  ok1(state.NoteFlying(true, 0, 90, 1));
+  ok1(state.takeoff_pending);
+  ok1(!state.have_takeoff);
+  ok1(state.aircraft_registration.empty());
+
+  SessionState restarted;
+  restarted.flying = true;
+  restarted.have_takeoff = true;
+  restarted.takeoff_utc = BrokenDateTime(2026, 7, 14, 10, 23, 45);
+  restarted.NoteFlying(true, 0, 90, 1);
+  ok1(!restarted.takeoff_pending);
+  ok1(restarted.have_takeoff);
+}
+
 int
 main()
 {
-  plan_tests(22 + 4 + 3 + 5 + 2 + 12 + 7 + 7 + 14 + 12 + 2);
+  plan_tests(22 + 4 + 3 + 5 + 2 + 12 + 7 + 7 + 14 + 12 + 2 + 10 + 4 + 6);
 
   TestRoundTrip();
   TestFlyingClearIgnoresPolar();
@@ -316,6 +393,9 @@ main()
   TestLegacyMigration();
   TestJsonInvalidValues();
   TestJsonNotAnObject();
+  TestTakeoffRoundTrip();
+  TestTakeoffBadTime();
+  TestTakeoffPending();
 
   return exit_status();
 }
