@@ -12,14 +12,18 @@
 #include "io/FileReader.hxx"
 #include "json/Geo.hpp"
 #include "json/Parse.hxx"
-#include "json/Serialize.hxx"
 #include "system/FileUtil.hpp"
 #include "system/Path.hpp"
+#include "util/SpanCast.hxx"
 
 #include <boost/json.hpp>
+#include <fmt/format.h>
 
+#include <cmath>
+#include <iterator>
 #include <limits>
 #include <stdexcept>
+#include <string>
 #include <stdio.h>
 #include <utility>
 
@@ -550,6 +554,69 @@ GeoPointValue(const GeoPoint &p) noexcept
   return boost::json::value_from(p);
 }
 
+/** append @p v as compact JSON, for a scalar or an empty container */
+static void
+AppendCompact(std::string &out, const boost::json::value &v)
+{
+  boost::json::serializer serializer;
+  serializer.reset(&v);
+  while (!serializer.done()) {
+    char buffer[BOOST_JSON_STACK_BUFFER_SIZE];
+    out += serializer.read(buffer);
+  }
+}
+
+/**
+ * Write @p v as JSON with one member per line, indented by two spaces
+ * per level.  The file is small and pilots and testers read it to see
+ * what will be restored; boost::json writes everything on one line.
+ */
+static void
+AppendIndented(std::string &out, const boost::json::value &v,
+               unsigned level)
+{
+  const auto newline = [&out](unsigned n){
+    out.push_back('\n');
+    out.append(2 * n, ' ');
+  };
+
+  if (const auto *object = v.if_object(); object != nullptr &&
+      !object->empty()) {
+    out.push_back('{');
+    bool first = true;
+    for (const auto &member : *object) {
+      if (!first)
+        out.push_back(',');
+      first = false;
+      newline(level + 1);
+      AppendCompact(out, boost::json::value{member.key()});
+      out += ": ";
+      AppendIndented(out, member.value(), level + 1);
+    }
+    newline(level);
+    out.push_back('}');
+  } else if (const auto *array = v.if_array(); array != nullptr &&
+             !array->empty()) {
+    out.push_back('[');
+    bool first = true;
+    for (const auto &element : *array) {
+      if (!first)
+        out.push_back(',');
+      first = false;
+      newline(level + 1);
+      AppendIndented(out, element, level + 1);
+    }
+    newline(level);
+    out.push_back(']');
+  } else if (v.is_double() && std::isfinite(v.get_double()))
+    /* ten digits, about a millimetre in a coordinate, instead of the
+       seventeen and the exponent of boost::json ("5.12E2"), so that a
+       value can be read at a glance; fmt ignores the locale */
+    fmt::format_to(std::back_inserter(out), "{:.10g}", v.get_double());
+  else
+    AppendCompact(out, v);
+}
+
 void
 SaveSession(const SessionState &state, Path path)
 {
@@ -645,8 +712,12 @@ SaveSession(const SessionState &state, Path path)
   /* FileOutputStream writes a temporary file and renames it on
      Commit(), so a power cut while writing leaves the previous
      session intact. */
+  std::string text;
+  AppendIndented(text, boost::json::value{std::move(root)}, 0);
+  text.push_back('\n');
+
   FileOutputStream file{path};
-  Json::Serialize(file, boost::json::value{std::move(root)});
+  file.Write(AsBytes(std::string_view{text}));
   file.Commit();
 }
 
