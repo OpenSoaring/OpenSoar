@@ -669,15 +669,8 @@ InputEvents::eventSetup(const char *misc)
     dlgTargetShowModal();
   else if (StringIsEqual(misc, "Plane"))
     dlgPlanesShowModal();
-  else if (StringIsEqual(misc, "Profile")) {
-    /* activating closes the list and asks for the restart; the list
-       comes back, on the activated profile, when the user declines */
-    AllocatedPath activated = nullptr;
-    do {
-      activated = ProfileListDialog(Profile::GetPath(), activated);
-    } while (activated != nullptr &&
-             !OfferRestart(_("Another profile was activated.")));
-  }
+  else if (StringIsEqual(misc, "Profile"))
+    ShowProfileList();
   else if (StringIsEqual(misc, "Alternates")) {
     dlgAlternatesListShowModal(data_components->waypoints.get(),
                                AlternateInfoBoxSlot::FIRST);

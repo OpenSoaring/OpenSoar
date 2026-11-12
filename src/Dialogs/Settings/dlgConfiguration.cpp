@@ -15,6 +15,7 @@
 #include "Renderer/TextButtonRenderer.hpp"
 #include "Screen/Layout.hpp"
 #include "Profile/Profile.hpp"
+#include "Dialogs/ProfileListDialog.hpp"
 #include "util/Macros.hpp"
 #include "util/ScopeExit.hxx"
 #include "Panels/ConfigPanel.hpp"
@@ -115,6 +116,9 @@ static WidgetDialog *current_dialog;
 
 /** set by ConfigPanel::RequestReopen() */
 static bool reopen_requested;
+
+/** set by ConfigPanel::RequestProfileList() */
+static bool profile_list_requested;
 
 /** Menu page to show when Configuration opens. */
 static std::unique_ptr<Widget> (*initial_page)() = nullptr;
@@ -478,6 +482,14 @@ ConfigPanel::ReturnExtraButton(unsigned i)
 }
 
 void
+ConfigPanel::RequestProfileList() noexcept
+{
+  profile_list_requested = true;
+  if (current_dialog != nullptr)
+    current_dialog->SetModalResult(mrOK);
+}
+
+void
 ConfigPanel::RequestReopen() noexcept
 {
   reopen_requested = true;
@@ -557,6 +569,8 @@ dlgConfigurationShowPage(std::unique_ptr<Widget> (*page)())
 void dlgConfigurationShowModal()
 {
   bool changed = false, expert_changed = false, reopen_page = false;
+
+  profile_list_requested = false;
 
   do {
     reopen_requested = false;
@@ -662,6 +676,11 @@ void dlgConfigurationShowModal()
     }
   } while (reopen_requested);
 
-  if (changed || expert_changed)
+  /* before the profile list, so that a restart into another profile
+     does not lose what was just set in the current one */
+  if (changed || expert_changed || profile_list_requested)
     Profile::Save();
+
+  if (profile_list_requested)
+    ShowProfileList();
 }

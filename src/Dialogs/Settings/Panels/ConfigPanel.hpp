@@ -35,4 +35,12 @@ CheckBoxControl &GetExpertCheckbox() noexcept;
  * the pilot wants to see right away.
  */
 void RequestReopen() noexcept;
+
+/**
+ * Close the configuration dialog once all pages have saved their
+ * values to the profile, and then open the profile list.  Another
+ * profile is only loaded by a restart, and what was set in the dialog
+ * must be in the current profile before that.
+ */
+void RequestProfileList() noexcept;
 };
