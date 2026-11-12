@@ -17,6 +17,7 @@
 #include "ui/canvas/Canvas.hpp"
 #include "ui/canvas/Pen.hpp"
 #include "ui/event/KeyCode.hpp"
+#include "ui/event/Timer.hpp"
 #include "ui/window/ContainerWindow.hpp"
 #include "ui/window/PaintWindow.hpp"
 #include "util/StaticString.hxx"
@@ -445,8 +446,12 @@ public:
   /** has anything been stored in the profile? */
   bool changed = false;
 
-  explicit AudioWindow(const DialogLook &_look) noexcept
-    :look(_look) {}
+  /** called on every change, see ShowAudioDialog() */
+  const std::function<void()> on_activity;
+
+  AudioWindow(const DialogLook &_look,
+              std::function<void()> _on_activity) noexcept
+    :look(_look), on_activity(std::move(_on_activity)) {}
 
   void FocusFirst() noexcept {
     vario_bar.SetFocus();
@@ -480,17 +485,20 @@ private:
   void Update() noexcept;
 
   void OnMaster(unsigned v) noexcept {
+    on_activity();
     SetMasterVolume(v);
     changed = true;
     Update();
   }
 
   void OnMasterMute(bool muted) noexcept {
+    on_activity();
     SetMasterMuted(muted);
     Update();
   }
 
   void OnVario(unsigned v) noexcept {
+    on_activity();
     auto &s = Settings();
     s.volume = v;
     Profile::Set(ProfileKeys::SoundVolume, v);
@@ -500,6 +508,7 @@ private:
   }
 
   void OnVarioMute(bool muted) noexcept {
+    on_activity();
     auto &s = Settings();
     SetVarioMuted(muted);
 
@@ -516,6 +525,7 @@ private:
   }
 
   void OnSource() noexcept {
+    on_activity();
     auto &s = Settings();
     s.SetMode(s.source == VarioSoundSource::INTERNAL
               ? VarioSoundMode::VARIOD
@@ -675,10 +685,12 @@ AudioWindow::OnPaint(Canvas &canvas) noexcept
 
 class AudioWidget final : public WindowWidget {
   const DialogLook &look;
+  std::function<void()> on_activity;
 
 public:
-  explicit AudioWidget(const DialogLook &_look) noexcept
-    :look(_look) {}
+  AudioWidget(const DialogLook &_look,
+              std::function<void()> _on_activity) noexcept
+    :look(_look), on_activity(std::move(_on_activity)) {}
 
   bool HasChanged() const noexcept {
     return ((const AudioWindow &)GetWindow()).changed;
@@ -701,7 +713,7 @@ public:
     style.Hide();
     style.ControlParent();
 
-    auto w = std::make_unique<AudioWindow>(look);
+    auto w = std::make_unique<AudioWindow>(look, on_activity);
     w->Create(parent, rc, style);
     SetWindow(std::move(w));
   }
@@ -720,8 +732,18 @@ ShowAudioDialog() noexcept
     dialog(WidgetDialog::Auto{}, UIGlobals::GetMainWindow(), look,
            _("Audio"));
   dialog.AddButton(_("Close"), mrOK);
-  dialog.SetWidget(look);
+
+  /* a quick dialog over the map: it closes itself 10 seconds after
+     the last change, so that it does not cover the map in flight when
+     the pilot has turned back to flying */
+  static constexpr auto IDLE_TIMEOUT = std::chrono::seconds{10};
+  UI::Timer close_timer{[&dialog]{ dialog.SetModalResult(mrOK); }};
+  dialog.SetWidget(look, [&close_timer]{
+    close_timer.Schedule(IDLE_TIMEOUT);
+  });
+  close_timer.Schedule(IDLE_TIMEOUT);
   dialog.ShowModal();
+  close_timer.Cancel();
 
   /* the changes were applied and set in the profile at once; write the
      file once */

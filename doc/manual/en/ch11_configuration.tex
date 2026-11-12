@@ -1102,7 +1102,8 @@ but not found (``Vario: OpenVario (not found)''), so that the program's
 own sound can be chosen again.  When \texttt{sensord} has no sensors it
 reports a vario of 99~m/s; that is not taken as a vario, and
 \texttt{variod} is muted until a valid one arrives.  The settings are written to the profile
-when the dialog is closed.
+when the dialog is closed.  The dialog closes itself 10 seconds after
+the last change, so that it does not stay over the map in flight.
 
 
 %%%%%%%%%%%%%%%%%%

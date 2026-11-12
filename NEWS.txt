@@ -42,6 +42,8 @@ Version 7.47 - not yet released
     variod
   - Setup > Audio plays a changed volume at once, before the
     configuration is closed
+  - the audio dialog closes itself 10 seconds after the last change, so
+    that it does not stay over the map in flight
   - the vario volume goes in steps of 10 percent of 3 dB each, so that
     50 percent sounds clearly softer than 100 percent instead of almost
     as loud
