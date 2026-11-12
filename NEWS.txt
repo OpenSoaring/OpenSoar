@@ -18,8 +18,8 @@ Version 7.47 - not yet released
     set to 0, so the two tones no longer play at once
   - the audio dialog (quick menu "Audio", or a tap on a volume in
     Setup > Audio) shows the master and the vario volume as bars, which
-    a tap, a drag or the cursor keys set at once; the vario bar shows
-    lighter what a lower master volume takes away. A button with a
+    a tap, a drag or the cursor keys set at once; the vario bar lies
+    within the length of the master bar, as a share of it. A button with a
     loudspeaker beside each bar mutes it until it is pressed again or
     the program restarts, and on the OpenVario with variod running a
     further button switches the vario sound between the program and

@@ -28,18 +28,21 @@
 /** volumes go in steps of 10 percent, 3 dB each for the vario */
 static constexpr unsigned STEP = 10;
 
-/* the colours of a bar: the part that is heard, and the part of the
-   set volume that a lower master volume takes away */
+/* the colours of a bar: the volume, and the range of the vario within
+   the master volume */
 static constexpr Color HEARD_COLOR{0x2e, 0x7d, 0x32};
 static constexpr Color CUT_COLOR{0xa5, 0xd6, 0xa7};
 
 /**
  * A volume as a bar that fills from the left.  A tap or a drag sets the
- * volume, the cursor keys left and right change it by one step.  The
- * part of the volume that a lower master volume takes away is drawn
- * lighter, and the bar is grey and does not react while it is muted.
- * The percentage is written into the bar, light on the filled part and
- * dark on the empty one, so that it can be read on both.
+ * volume, the cursor keys left and right change it by one step.  The bar
+ * is grey and does not react while it is muted.  The percentage is
+ * written into the bar, light on the filled part and dark on the empty
+ * one, so that it can be read on both.
+ *
+ * The vario plays through the master volume, so its bar is a share of
+ * the master bar: a light band as long as the master bar is its whole
+ * range, and the dark part in it the vario volume, see SetScale().
  */
 class VolumeBar final : public PaintWindow {
   const DialogLook &look;
@@ -47,8 +50,11 @@ class VolumeBar final : public PaintWindow {
 
   unsigned value = 0, max_value = 100;
 
-  /** the part of #value that is heard, see SetLimit() */
-  unsigned limit = 100;
+  /** the share of the track in percent that #max_value covers */
+  unsigned scale = 100;
+
+  /** draw the range up to #max_value as a light band? */
+  bool band = false;
 
   bool greyed = false;
 
@@ -73,11 +79,14 @@ public:
   }
 
   /**
-   * How much of the volume is heard: a master volume below 100 percent
-   * turns the vario down as well.
+   * Draw the whole range as a light band over @a _scale percent of the
+   * width, and the volume as the same share of it: the vario at 50
+   * percent under a master volume of 60 percent fills 30 percent of the
+   * width, half of the band, which is what is heard.
    */
-  void SetLimit(unsigned _limit) noexcept {
-    limit = _limit;
+  void SetScale(unsigned _scale) noexcept {
+    scale = std::clamp(_scale, 1u, 100u);
+    band = true;
     Invalidate();
   }
 
@@ -111,17 +120,23 @@ private:
     return GetClientRect().WithPadding(Layout::GetTextPadding());
   }
 
+  /** the width that #max_value covers */
+  [[gnu::pure]]
+  int GetRangeWidth(const PixelRect &track) const noexcept {
+    return std::max(1, (int)(track.GetWidth() * scale / 100));
+  }
+
   /** the horizontal position of the volume @a v */
   [[gnu::pure]]
   int ToX(const PixelRect &track, unsigned v) const noexcept {
-    return track.left + (int)(track.GetWidth() * v / max_value);
+    return track.left + GetRangeWidth(track) * (int)v / (int)max_value;
   }
 
   /** the step nearest to the horizontal position @a x */
   [[gnu::pure]]
   unsigned ValueAt(int x) const noexcept {
     const PixelRect track = GetTrack();
-    const int width = std::max(1, (int)track.GetWidth());
+    const int width = GetRangeWidth(track);
     const int steps = max_value / STEP;
     const int step = ((x - track.left) * steps + width / 2) / width;
     return std::clamp(step, 0, steps) * STEP;
@@ -208,16 +223,16 @@ VolumeBar::OnPaint(Canvas &canvas) noexcept
   const PixelRect track = GetTrack();
   canvas.DrawFilledRectangle(track, COLOR_WHITE);
 
-  const int heard_x = ToX(track, std::min(value, limit));
-  const int value_x = ToX(track, value);
+  const int heard_x = ToX(track, value);
 
   PixelRect part = track;
+  if (band) {
+    part.right = ToX(track, max_value);
+    canvas.DrawFilledRectangle(part, greyed ? COLOR_LIGHT_GRAY : CUT_COLOR);
+  }
+
   part.right = heard_x;
   canvas.DrawFilledRectangle(part, greyed ? COLOR_GRAY : HEARD_COLOR);
-
-  part.left = heard_x;
-  part.right = value_x;
-  canvas.DrawFilledRectangle(part, greyed ? COLOR_LIGHT_GRAY : CUT_COLOR);
 
   canvas.DrawOutlineRectangle(track, COLOR_GRAY);
 
@@ -470,27 +485,30 @@ AudioWindow::Update() noexcept
 {
   const auto &s = Settings();
 
-  unsigned master = 100;
+  bool master_silent = false;
   if (have_master) {
+    const unsigned master = GetMasterVolume();
     const bool muted = IsMasterMuted();
-    master = muted ? 0 : GetMasterVolume();
-    master_bar.SetValue(GetMasterVolume());
-    master_bar.SetLimit(GetMasterVolume());
+    master_silent = muted || master == 0;
+    master_bar.SetValue(master);
     master_bar.SetGreyed(muted, muted);
     master_mute.SetMuted(muted);
+
+    /* the master volume is the whole output: Android's media volume,
+       or on Linux the program's mixer and the mixer of the sound card,
+       which variod plays on as well.  The vario bar is drawn within the
+       length of the master bar, an approximation of what is heard; a
+       master volume of 0 would leave nothing to tap on, so the vario
+       keeps the full width then */
+    vario_bar.SetScale(master > 0 ? master : 100);
   }
 
-  /* the master volume is the whole output: Android's media volume,
-     or on Linux the program's mixer and the mixer of the sound card,
-     which variod plays on as well; the bar shows it as a share of the
-     vario volume, an approximation */
   vario_bar.SetValue(s.volume);
-  vario_bar.SetLimit(s.volume * std::min(master, 100u) / 100);
 
-  /* a master volume of 0 silences the vario as well, although its own
+  /* a silent master silences the vario as well, although its own
      button is not pressed; it stays adjustable then */
   const bool silent = IsVarioSilent();
-  vario_bar.SetGreyed(silent || (have_master && master == 0), silent);
+  vario_bar.SetGreyed(silent || master_silent, silent);
   vario_mute.SetMuted(silent);
 
   if (have_source)

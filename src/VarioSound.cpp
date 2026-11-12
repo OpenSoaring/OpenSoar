@@ -150,8 +150,11 @@ GetMasterVolume() noexcept
 #ifdef HAVE_VOLUME_CONTROLLER
   return CommonInterface::GetUISettings().sound.master_volume;
 #elif defined(ANDROID)
-  return std::max(SoundUtil::GetMasterVolume(Java::GetEnv(), context->Get()),
-                  0);
+  /* Android has its own steps, often 15: 30 percent is set as step
+     4.5, rounded to 5, which reads back as 33 percent.  Rounding to
+     the program's steps of 10 shows what was set. */
+  return VarioSoundSettings::RoundVolume(
+    std::max(SoundUtil::GetMasterVolume(Java::GetEnv(), context->Get()), 0));
 #else
   return 0;
 #endif
