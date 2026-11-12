@@ -122,6 +122,7 @@
 #include "Weather/NOAAStore.hpp"
 #include "Plane/PlaneGlue.hpp"
 #include "Session/SessionState.hpp"
+#include "util/StaticString.hxx"
 #include "Atmosphere/Pressure.hpp"
 #include "Atmosphere/Temperature.hpp"
 #include "time/Stamp.hpp"
@@ -392,10 +393,26 @@ ConfirmSessionRestore() noexcept
   if (!Session::State().flying)
     return;
 
+  /* Name the takeoff, so the pilot can tell this flight from an
+     older one that was never finished, e.g. on a shared device. */
+  const SessionState &state = Session::State();
+  StaticString<256> text;
+  if (state.have_takeoff) {
+    const BrokenDateTime local = state.takeoff_utc +
+      CommonInterface::GetComputerSettings().utc_offset.ToDuration();
+    StaticString<64> details;
+    details.Format("%02u:%02u", local.hour, local.minute);
+    if (!state.aircraft_registration.empty())
+      details.AppendFormat(", %s", state.aircraft_registration.c_str());
+    text.Format(_("Unfinished flight detected (takeoff %s). "
+                  "Restore flight settings?"),
+                details.c_str());
+  } else
+    text = _("Unfinished flight detected. Restore flight settings?");
+
   /* No answer restores.  A crash restart should not wait on a tap. */
-  const int answer = ShowMessageBox(
-    _("Unfinished flight detected. Restore flight settings?"),
-    _("Flight"), MB_YESNO, 5000, IDYES);
+  const int answer = ShowMessageBox(text.c_str(), _("Flight"),
+                                    MB_YESNO, 5000, IDYES);
   if (answer == IDYES)
     return;
 

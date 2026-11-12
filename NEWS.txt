@@ -11,6 +11,8 @@ Version 7.47 - not yet released
   - store that state as flight-session.json instead of
     xcsoar-session.txt, which showed up in the airspace file list.
     An existing xcsoar-session.txt is taken over once
+  - record takeoff time, place and altitude with pilot and aircraft
+    in that file, and name the takeoff in the restore question
 * ui
   - the start screen shows the profile on a gradient in the colour of
     the logo (red for a test version, green for a release) with

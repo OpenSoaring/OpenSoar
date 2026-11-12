@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Geo/GeoPoint.hpp"
+#include "time/BrokenDateTime.hpp"
 
 #include <array>
 #include <cstdint>
@@ -88,6 +89,31 @@ struct SessionState {
   unsigned checklist_page = 0;
   std::array<SessionChecklistPage, SESSION_MAX_CHECKLIST_PAGES> checklist{};
 
+  /**
+   * Set when this process has seen a takeoff that started a new
+   * flight, until that takeoff has been recorded.  Not stored.  A
+   * restart in the air does not set it: the takeoff the computer
+   * detects then is only the moment of the restart.
+   */
+  bool takeoff_pending = false;
+
+  /**
+   * The takeoff of the current flight, recorded once per flight.
+   * The basis for continuing the flight after a restart, and the
+   * pilot and aircraft tell which flight the session belongs to.
+   */
+  bool have_takeoff = false;
+  BrokenDateTime takeoff_utc = BrokenDateTime::Invalid();
+  GeoPoint takeoff_location = GeoPoint::Invalid();
+  bool have_takeoff_altitude = false;
+  double takeoff_altitude = 0;
+  std::string pilot_name;
+  std::string aircraft_registration;
+  std::string competition_id;
+  std::string aircraft_type;
+
+  void ClearTakeoff() noexcept;
+
   [[nodiscard]] bool ShouldRestoreGoto() const noexcept;
 
   /**
@@ -170,6 +196,19 @@ NoteMaxTemp(double kelvin) noexcept;
 
 void
 NoteAtcReference(const GeoPoint &reference) noexcept;
+
+/**
+ * Record the takeoff of the current flight, together with pilot and
+ * aircraft.  Does nothing unless a new flight has started in this
+ * process and its takeoff is not yet recorded.  Writes the file.
+ */
+void
+NoteTakeoff(const BrokenDateTime &utc, const GeoPoint &location,
+            bool has_altitude, double altitude,
+            std::string_view pilot_name,
+            std::string_view registration,
+            std::string_view competition_id,
+            std::string_view aircraft_type) noexcept;
 
 void
 ClearAtcReference() noexcept;

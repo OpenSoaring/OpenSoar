@@ -203,6 +203,39 @@ UTCOffsetProcessTimer() noexcept
     CommonInterface::SetComputerSettings().utc_offset = utc_offset;
 }
 
+/**
+ * Record the takeoff of a new flight once the flying computer has
+ * detected it.  The computer keeps only the time of day, so the date
+ * comes from the current fix.
+ */
+static void
+SessionNoteTakeoff(const ComputerSettings &settings) noexcept
+{
+  const auto &state = Session::State();
+  if (!state.takeoff_pending || !state.flying)
+    return;
+
+  const auto &basic = CommonInterface::Basic();
+  const auto &flight = CommonInterface::Calculated().flight;
+  if (!flight.takeoff_time.IsDefined() || !basic.time_available ||
+      !basic.date_time_utc.IsPlausible())
+    return;
+
+  const FloatDuration since = basic.time - flight.takeoff_time;
+  if (since.count() < 0)
+    return;
+
+  const BrokenDateTime takeoff_utc = basic.date_time_utc -
+    std::chrono::duration_cast<std::chrono::system_clock::duration>(since);
+
+  Session::NoteTakeoff(takeoff_utc, flight.takeoff_location,
+                       true, flight.takeoff_altitude,
+                       settings.logger.pilot_name.c_str(),
+                       settings.plane.registration.c_str(),
+                       settings.plane.competition_id.c_str(),
+                       settings.plane.type.c_str());
+}
+
 static void
 SessionProcessTimer() noexcept
 {
@@ -218,6 +251,8 @@ SessionProcessTimer() noexcept
         polar.glide_polar_task.GetCrewMass(),
         polar.bugs))
     Session::Flush();
+
+  SessionNoteTakeoff(settings);
 
   /* QNH only once it has been set.  The startup default is not known,
      so automatic QNH can still run. */
