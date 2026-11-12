@@ -16,6 +16,19 @@ Version 7.47 - not yet released
   - OpenVario: Setup > Audio chooses whether the program or variod plays
     the vario sound; the chosen one gets the vario volume, the other is
     set to 0, so the two tones no longer play at once
+  - the audio dialog (quick menu "Audio", or a tap on a volume in
+    Setup > Audio) shows the master and the vario volume as bars, which
+    a tap, a drag, the cursor keys or the mouse wheel set at once; the vario bar lies
+    within the length of the master bar, as a share of it; on Android
+    the master volume goes in the steps of the device ("5/15"). A button
+    with a loudspeaker beside each bar mutes it until it is pressed again
+    or the program restarts, and on the OpenVario with variod running a
+    further button switches the vario sound between the program and
+    variod
+  - Setup > Audio plays a changed volume at once, before the
+    configuration is closed
+  - the audio dialog closes itself 10 seconds after the last change or
+    key press, so that it does not stay over the map in flight
   - the vario volume goes in steps of 10 percent of 3 dB each, so that
     50 percent sounds clearly softer than 100 percent instead of almost
     as loud

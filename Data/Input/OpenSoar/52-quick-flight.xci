@@ -9,12 +9,12 @@
 # screen with "landscape=C:N": place N counted in C columns.
 #
 #    1 Analysis         2 MacCready        3 Configuration
-#    4 Map Display      5 Flight Setup     6 -
+#    4 Map Display      5 Flight Setup     6 Audio
 #    7 Previous WP      8 Alternates       9 Next WP
 #   10 -               11 Waypoint List   12 -
 #   13 Task Restart    14 Task Manager    15 Pilot Event An.
 #
-# 6, 10 and 12 stay empty for now; the list can grow.
+# 10 and 12 stay empty for now; the list can grow.
 
 mode=QuickFlight
 type=key
@@ -54,6 +54,14 @@ event=Setup Basic
 event=Mode default
 label=Flight Setup
 location=5
+
+mode=QuickFlight
+type=key
+data=0
+event=Audio
+event=Mode default
+label=Audio
+location=6
 
 mode=QuickFlight
 type=key

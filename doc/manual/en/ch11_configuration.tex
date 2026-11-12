@@ -1053,6 +1053,51 @@ Master volume and the audio variometer. \label{conf:audiovariogauge}
 \item[Deadband max.\ lift*]  If the deadband feature is enabled the vario will play sounds when the climb rate is above this threshold.
 \end{description}
 
+A changed volume or source is heard at once, before the configuration
+is closed.
+
+\subsection*{The audio dialog}
+
+The button \button{Audio} of the quick menu opens a small dialog for the
+sound in flight; a tap on \emph{Master Volume} or \emph{Vario Volume}
+on this page opens it as well.  It shows the master volume and the vario
+volume as bars; a tap or a drag along the bar, the cursor keys left
+and right or the mouse wheel over the bar set the volume in steps of 10
+percent, and the change is heard
+at once.  The percentage is written into the bar.  On Android the master
+volume is the media volume of the device and goes in its own steps,
+shown as ``5/15'': the device has a fixed number of them, often 15, and
+a percentage between two steps would read back as another one.  iOS
+does not let a program set the volume of the device, so there is no
+master bar there.  Below 100 percent the
+master volume turns the vario down as well, so the vario bar is drawn
+within it: a light band as long as the master bar is the range of the
+vario, and the dark part in it the vario volume, the share that is
+heard.  This is an approximation of the loudness.  When the master
+volume is muted or 0 the vario bar is grey as well.  The master volume goes up
+to 100 percent; above that the program's mixer would only clip.
+
+On Linux, Windows and the OpenVario the master volume is the gain of the
+program's own mixer: it turns the program's sounds down and leaves the
+volume of the system and its controls alone.  \texttt{variod} on the
+OpenVario plays past that mixer, so with \texttt{variod} as the source
+the master volume does not limit the vario, and its bar takes the whole
+width.  On Android the master volume is the media volume of the device.
+
+The button with the loudspeaker right of each bar mutes that volume: it
+stays pressed, the loudspeaker is crossed out and the bar is grey.  The
+master mute silences everything, spoken messages and warnings included;
+the vario mute only the vario.  A mute is not stored, every start of the
+program begins with sound.  On Android the master mute sets the media
+volume of the device to 0, so a device on which the program ends while
+muted stays silent until its volume is raised again.  On the OpenVario
+a further button switches the vario sound between the program and
+\texttt{variod}; it is shown only while the OpenVario sensors and
+\texttt{variod} are connected.  The settings are written to the profile
+when the dialog is closed.  The dialog closes itself 10 seconds after
+the last change or key press, so that it does not stay over the map in
+flight.
+
 
 %%%%%%%%%%%%%%%%%%
 \section{Setup / Language, Input}\label{sec:interface}

@@ -20,17 +20,16 @@
 #include "Profile/Keys.hpp"
 #include "UIGlobals.hpp"
 #include "Units/Units.hpp"
+#include "VarioSound.hpp"
+#include "Dialogs/AudioDialog.hpp"
+#include "Profile/Profile.hpp"
 #include "Widget/RowFormWidget.hpp"
+#include "util/StaticString.hxx"
 
 #ifdef HAVE_VOLUME_CONTROLLER
 #include "Audio/VolumeController.hpp"
 #endif
 
-#ifdef ANDROID
-#include "Android/Main.hpp"
-#include "Android/SoundUtil.hpp"
-#include "Android/Context.hpp"
-#endif
 
 #if defined(HAVE_VOLUME_CONTROLLER) || defined(ANDROID)
 /* a master volume: the program's own mixer, or on Android the volume
@@ -89,11 +88,32 @@ static constexpr StaticEnumChoice switching_modes[] = {
   nullptr
 };
 
+class AudioConfigPanel;
+
+/**
+ * The page that is open, for the edit callback of the volume rows,
+ * which is a plain function.
+ */
+static AudioConfigPanel *audio_config_panel = nullptr;
+
 class AudioConfigPanel final
   : public RowFormWidget, DataFieldListener {
 public:
   AudioConfigPanel()
     :RowFormWidget(UIGlobals::GetDialogLook()) {}
+
+  ~AudioConfigPanel() noexcept override {
+    if (audio_config_panel == this)
+      audio_config_panel = nullptr;
+  }
+
+  /**
+   * Open the audio dialog in place of the editor of a volume row: the
+   * bars are heard at once and need no typing of a number.  The page
+   * is saved first, so that the dialog starts from what the page
+   * shows, and it shows what the dialog has set afterwards.
+   */
+  void OpenAudioDialog() noexcept;
 
   /**
    * Show the rows that apply to the selected source: variod has only
@@ -101,13 +121,20 @@ public:
    */
   void UpdateVisibility() noexcept;
 
+  /**
+   * Play the volumes and the source as they are on the page, without
+   * storing them, so that a change is heard at once and not only when
+   * the configuration closes.
+   */
+  void PlayPreview() noexcept;
+
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
 
 private:
 #ifdef ANDROID
-  /** the Android volume when the page opened, or -1 */
-  int initial_android_volume = -1;
+  /** the step of the Android volume when the page opened */
+  unsigned initial_android_volume = 0;
 #endif
 
   void OnModified(DataField &df) noexcept override;
@@ -140,15 +167,86 @@ AudioConfigPanel::UpdateVisibility() noexcept
   SetRowAvailable(DEAD_BAND_MAX, own_sound && dead_band);
 }
 
+static bool
+EditVolumeWithAudioDialog([[maybe_unused]] const char *caption,
+                          [[maybe_unused]] DataField &df,
+                          [[maybe_unused]] const char *help) noexcept
+{
+  if (audio_config_panel != nullptr)
+    audio_config_panel->OpenAudioDialog();
+
+  /* the rows have been loaded again already */
+  return false;
+}
+
+void
+AudioConfigPanel::OpenAudioDialog() noexcept
+{
+  bool changed = false;
+  Save(changed);
+  if (changed)
+    Profile::Save();
+
+  ShowAudioDialog();
+
+#ifdef HAVE_VOLUME_CONTROLLER
+  LoadValue(MASTER_VOLUME,
+            (int)CommonInterface::GetUISettings().sound.master_volume);
+#elif defined(ANDROID)
+  initial_android_volume = GetMasterVolume();
+  LoadValue(MASTER_VOLUME, (int)initial_android_volume);
+#endif
+
+  if (!AudioVarioGlue::HaveAudioVario())
+    return;
+
+  const auto &settings = CommonInterface::GetUISettings().sound.vario;
+#ifdef IS_OPENVARIO
+  LoadValueEnum(SOURCE, settings.source);
+#endif
+  LoadValue(ENABLED, settings.enabled);
+  LoadValue(VOLUME, (int)settings.volume);
+  UpdateVisibility();
+}
+
+void
+AudioConfigPanel::PlayPreview() noexcept
+{
+  if (!AudioVarioGlue::HaveAudioVario())
+    return;
+
+  VarioSoundSettings preview = CommonInterface::GetUISettings().sound.vario;
+#ifdef IS_OPENVARIO
+  preview.source = (VarioSoundSource)GetValueEnum(SOURCE);
+#endif
+  preview.enabled = GetValueBoolean(ENABLED);
+  preview.volume = GetValueInteger(VOLUME);
+  ApplyVarioSound(preview);
+}
+
 void
 AudioConfigPanel::OnModified(DataField &df) noexcept
 {
+#ifdef HAVE_MASTER_VOLUME_ROW
+  if (IsDataField(MASTER_VOLUME, df)) {
+    PlayMasterVolume(GetValueInteger(MASTER_VOLUME));
+    return;
+  }
+#endif
+
   if (IsDataField(ENABLED, df) || IsDataField(DEAD_BAND_ENABLED, df)
 #ifdef IS_OPENVARIO
       || IsDataField(SOURCE, df)
 #endif
       )
     UpdateVisibility();
+
+  if (IsDataField(ENABLED, df) || IsDataField(VOLUME, df)
+#ifdef IS_OPENVARIO
+      || IsDataField(SOURCE, df)
+#endif
+      )
+    PlayPreview();
 }
 
 void
@@ -156,6 +254,7 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
                           const PixelRect &rc) noexcept
 {
   RowFormWidget::Prepare(parent, rc);
+  audio_config_panel = this;
 
 #ifdef HAVE_VOLUME_CONTROLLER
   const auto &sound = CommonInterface::GetUISettings().sound;
@@ -163,20 +262,29 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
   AddInteger(_("Master Volume"),
              _("The overall audio output volume."),
              "%d %%", "%d",
-             0, VolumeController::GetMaxValue(), 1, sound.master_volume);
+             0, GetMasterVolumeMax(), 1, sound.master_volume,
+             this);
 #elif defined(ANDROID)
   /* the volume of the device, read each time the page opens, so that
      it also shows what the volume buttons have set; not stored in the
      profile, because Android keeps it */
-  initial_android_volume =
-    SoundUtil::GetMasterVolume(Java::GetEnv(), context->Get());
+  initial_android_volume = GetMasterVolume();
+
+  /* in the steps of the device ("5/15"): a percentage between two of
+     them would read back as another one */
+  StaticString<32> android_format;
+  android_format.Format("%%d/%u", GetMasterVolumeMax());
   AddInteger(_("Master Volume"),
              _("The volume of the device for media and notifications, "
                "which the audio vario and the spoken messages use.  The "
                "same as the volume buttons and the sound settings of "
-               "Android."),
-             "%d %%", "%d", 0, 100, VOLUME_STEP,
-             RoundVolume(std::max(initial_android_volume, 0)));
+               "Android, in their steps."),
+             android_format.c_str(), "%d", 0, GetMasterVolumeMax(), 1,
+             initial_android_volume, this);
+#endif
+
+#ifdef HAVE_MASTER_VOLUME_ROW
+  GetControl(MASTER_VOLUME).SetEditCallback(EditVolumeWithAudioDialog);
 #endif
 
   if (!AudioVarioGlue::HaveAudioVario())
@@ -205,7 +313,8 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
              _("The audio vario sound volume.  Each step of 10 percent is "
                "3 dB: 50 percent sounds clearly softer than 100 percent, "
                "10 percent is quiet but still audible."),
-             "%u %%", "%u", 0, 100, VOLUME_STEP, settings.volume);
+             "%u %%", "%u", 0, 100, VOLUME_STEP, settings.volume, this);
+  GetControl(VOLUME).SetEditCallback(EditVolumeWithAudioDialog);
 
   AddEnum(C_("Setting", "Mode switching"),
       _("Choose whether the audio vario stays in manual mode or switches automatically between Vario in circling and STF in cruise. Manual mode starts in Vario after each restart and can be changed by external input events. In the built-in simulator, STF audio needs valid airspeed and total-energy vario input; without those, manual STF is silent and auto cruise falls back to vario."),
@@ -273,8 +382,8 @@ AudioConfigPanel::Save(bool &changed) noexcept
                               sound.master_volume);
 #elif defined(ANDROID)
   if (const unsigned volume = GetValueInteger(MASTER_VOLUME);
-      volume != RoundVolume(std::max(initial_android_volume, 0)))
-    SoundUtil::SetMasterVolume(Java::GetEnv(), context->Get(), volume);
+      volume != initial_android_volume)
+    SetMasterVolume(volume);
 #endif
 
   if (!AudioVarioGlue::HaveAudioVario())

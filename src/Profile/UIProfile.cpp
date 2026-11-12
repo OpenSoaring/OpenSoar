@@ -10,6 +10,8 @@
 #include "UnitsConfig.hpp"
 #include "UISettings.hpp"
 
+#include <algorithm>
+
 namespace Profile {
   static void Load(const ProfileMap &map, DisplaySettings &settings);
   static void Load(const ProfileMap &map, FormatSettings &settings);
@@ -128,6 +130,9 @@ Profile::Load(const ProfileMap &map, SoundSettings &settings)
   map.Get(ProfileKeys::SoundDeadband, settings.sound_deadband);
 
   map.Get(ProfileKeys::MasterAudioVolume, settings.master_volume);
+  /* the mixer allowed up to 150 percent, which only made the program
+     clip; a profile from then plays at full volume */
+  settings.master_volume = std::min<unsigned>(settings.master_volume, 100);
 
   Load(map, settings.vario);
 }

@@ -79,6 +79,7 @@ set(_SOURCES
         Dialogs/Plane/PolarShapeEditWidget.cpp
 
         Dialogs/ProfileListDialog.cpp
+        Dialogs/AudioDialog.cpp
         Dialogs/ProfilePasswordDialog.cpp
 
         Dialogs/ProgressDialog.cpp

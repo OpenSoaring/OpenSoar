@@ -200,6 +200,7 @@ void eventVarioVolume(const char *misc);
 void eventAdjustWaypoint(const char *misc);
 void eventAnalysis(const char *misc);
 void eventArmAdvance(const char *misc);
+void eventAudio(const char *misc);
 void eventAudioDeadband(const char *misc);
 void eventBallast(const char *misc);
 void eventBugs(const char *misc);
