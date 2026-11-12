@@ -29,6 +29,22 @@ bookkeeping) lives in the old repository and is not repeated here -
 
 ---
 
+## OpenSoar 7.46.26.2 - not released yet
+
+A bugfix release on the base of 7.46.26.1, for pilots who stay on the
+7.46 line.  Base: XCSoar 7.46.1 of 2026-10-30, unchanged.
+
+* fixes: on Android the thin airspace borders and other one pixel
+  outlines are drawn complete again; they came out with gaps, and on a
+  SteFlyNav whole sections of a border were missing
+* fixes: airspace borders and topography lines stay sharp while the map
+  moves or turns; they are no longer drawn from a cached image that made
+  thin lines faint and dashed.  Only the OpenVario keeps that cache,
+  because it needs the speed
+* the "Thin lines" fill modes draw the outlines one pixel wide; on the
+  OpenVario, which still draws from the cache, as wide as a border width
+  of 1, so that they stay visible there
+
 ## OpenSoar 7.46.26.1 - 2026-11-06
 
 A bugfix release on the base of 7.46.26, for pilots who stay on the
