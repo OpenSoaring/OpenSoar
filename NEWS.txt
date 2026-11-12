@@ -16,12 +16,14 @@ Version 7.47 - not yet released
   - OpenVario: Setup > Audio chooses whether the program or variod plays
     the vario sound; the chosen one gets the vario volume, the other is
     set to 0, so the two tones no longer play at once
-  - the audio dialog (quick menu "Audio") shows the master and the vario
-    volume as bars, which a tap or the cursor keys set at once; the vario
-    bar shows lighter what a lower master volume takes away. A button
-    with a loudspeaker mutes the vario until it is pressed again or the
-    program restarts, and on the OpenVario with variod running a second
-    button switches the vario sound between the program and variod
+  - the audio dialog (quick menu "Audio", or a tap on a volume in
+    Setup > Audio) shows the master and the vario volume as bars, which
+    a tap, a drag or the cursor keys set at once; the vario bar shows
+    lighter what a lower master volume takes away. A button with a
+    loudspeaker beside each bar mutes it until it is pressed again or
+    the program restarts, and on the OpenVario with variod running a
+    further button switches the vario sound between the program and
+    variod
   - Setup > Audio plays a changed volume at once, before the
     configuration is closed
   - the vario volume goes in steps of 10 percent of 3 dB each, so that

@@ -267,7 +267,10 @@ SettingsLeave(const UISettings &old_ui_settings)
   ActionInterface::SendMapSettings(true);
 
 #ifdef HAVE_VOLUME_CONTROLLER
-  volume_controller->SetVolume(ui_settings.sound.master_volume);
+  /* a mute from the audio dialog stays until it is ended there or a
+     master volume is played */
+  if (!IsMasterMuted())
+    volume_controller->SetVolume(ui_settings.sound.master_volume);
 #endif
 
   ApplyVarioSound(CommonInterface::GetUISettings().sound.vario);

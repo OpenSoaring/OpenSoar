@@ -71,7 +71,22 @@ SetMasterVolume(unsigned percent) noexcept;
 
 /**
  * Play at this master volume without storing it, so that a settings
- * page can let the pilot hear a value before it is saved.
+ * page can let the pilot hear a value before it is saved.  It ends a
+ * mute of the master volume.
  */
 void
 PlayMasterVolume(unsigned percent) noexcept;
+
+/**
+ * Silence the whole output, spoken messages and warnings included, or
+ * bring back the volume it had.  Like the vario mute it is not stored.
+ * On Android the media volume of the device is set to 0, so a program
+ * that ends while muted leaves the device silent until its volume is
+ * raised again.
+ */
+void
+SetMasterMuted(bool muted) noexcept;
+
+[[gnu::pure]]
+bool
+IsMasterMuted() noexcept;

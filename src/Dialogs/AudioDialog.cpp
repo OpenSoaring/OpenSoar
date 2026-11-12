@@ -28,25 +28,26 @@
 /** volumes go in steps of 10 percent, 3 dB each for the vario */
 static constexpr unsigned STEP = 10;
 
+/* the colours of a bar: the part that is heard, the part of the set
+   volume that a lower master volume takes away, the part above 100
+   percent where the program's mixer may clip */
+static constexpr Color HEARD_COLOR{0x2e, 0x7d, 0x32};
+static constexpr Color CUT_COLOR{0xa5, 0xd6, 0xa7};
+static constexpr Color LOUD_COLOR{0xc6, 0x28, 0x28};
+
 /**
- * A volume as a row of segments, one per 10 percent.  A tap or a drag
- * sets the volume, the cursor keys left and right change it by one
- * step.  The part of the volume that is not reached because of a
- * lower master volume is drawn lighter, and the whole bar is grey and
- * does not react while the sound is muted.
+ * A volume as a bar that fills from the left.  A tap or a drag sets the
+ * volume, the cursor keys left and right change it by one step.  The
+ * part of the volume that a lower master volume takes away is drawn
+ * lighter, and the bar is grey and does not react while it is muted.
+ * The percentage is written into the bar, light on the filled part and
+ * dark on the empty one, so that it can be read on both.
  */
 class VolumeBar final : public PaintWindow {
   const DialogLook &look;
   const std::function<void(unsigned)> on_change;
 
   unsigned value = 0, max_value = 100;
-
-  /**
-   * The volume that fills the whole width.  Both bars of the dialog
-   * get the same scale, so that 100 percent of the vario is drawn
-   * under 100 percent of the master volume.
-   */
-  unsigned scale_max = 100;
 
   /** the part of #value that is heard, see SetLimit() */
   unsigned limit = 100;
@@ -59,9 +60,8 @@ public:
             std::function<void(unsigned)> _on_change) noexcept
     :look(_look), on_change(std::move(_on_change)) {}
 
-  void SetMax(unsigned _max_value, unsigned _scale_max) noexcept {
+  void SetMax(unsigned _max_value) noexcept {
     max_value = std::max(_max_value / STEP * STEP, STEP);
-    scale_max = std::max(_scale_max / STEP * STEP, max_value);
     Invalidate();
   }
 
@@ -98,31 +98,25 @@ private:
     on_change(value);
   }
 
-  /** the area of the segments; the percent text is right of it */
   [[gnu::pure]]
-  PixelRect GetSegmentArea() const noexcept {
-    PixelRect rc = GetClientRect().WithPadding(Layout::GetTextPadding());
-    rc.right -= look.bold_font.TextSize("150 %").width +
-      2 * Layout::GetTextPadding();
-    return rc;
+  PixelRect GetTrack() const noexcept {
+    return GetClientRect().WithPadding(Layout::GetTextPadding());
   }
 
-  /** the distance from one segment to the next */
+  /** the horizontal position of the volume @a v */
   [[gnu::pure]]
-  int GetSegmentPitch(const PixelRect &area) const noexcept {
-    return std::max(1, (int)area.GetWidth() / (int)(scale_max / STEP));
+  int ToX(const PixelRect &track, unsigned v) const noexcept {
+    return track.left + (int)(track.GetWidth() * v / max_value);
   }
 
-  /** the step under the horizontal position @a x */
+  /** the step nearest to the horizontal position @a x */
   [[gnu::pure]]
   unsigned ValueAt(int x) const noexcept {
-    const PixelRect area = GetSegmentArea();
-    const int pitch = GetSegmentPitch(area);
-
-    /* a tap on a segment selects it, a tap left of the first one
-       silences */
-    const int segment = (x - area.left + pitch - 1) / pitch;
-    return std::clamp(segment, 0, (int)(max_value / STEP)) * STEP;
+    const PixelRect track = GetTrack();
+    const int width = std::max(1, (int)track.GetWidth());
+    const int steps = max_value / STEP;
+    const int step = ((x - track.left) * steps + width / 2) / width;
+    return std::clamp(step, 0, steps) * STEP;
   }
 
 protected:
@@ -156,7 +150,8 @@ protected:
     return true;
   }
 
-  bool OnMouseMove(PixelPoint p, [[maybe_unused]] unsigned keys) noexcept override {
+  bool OnMouseMove(PixelPoint p,
+                   [[maybe_unused]] unsigned keys) noexcept override {
     if (dragging)
       Change(ValueAt(p.x));
     return true;
@@ -195,52 +190,56 @@ VolumeBar::OnPaint(Canvas &canvas) noexcept
   canvas.DrawFilledRectangle(rc, look.background_color);
 
   if (HasFocus()) {
-    /* a frame, so the colours of the segments stay what they mean */
+    /* a frame, so the colours of the bar keep their meaning */
     const Pen pen(Layout::ScalePenWidth(2), look.focused.background_color);
     canvas.Select(pen);
     canvas.SelectHollowBrush();
     canvas.DrawRectangle(rc.WithPadding(Layout::ScalePenWidth(1)));
   }
 
-  const PixelRect area = GetSegmentArea();
-  const int steps = max_value / STEP;
-  const int pitch = GetSegmentPitch(area);
-  const int gap = std::clamp(pitch / 6, 1, (int)Layout::Scale(3u));
+  const PixelRect track = GetTrack();
+  canvas.DrawFilledRectangle(track, COLOR_WHITE);
 
-  /* heard, set but cut by the master volume, above 100 percent (the
-     program's mixer may clip there), not set */
-  const Color heard = greyed ? COLOR_GRAY : Color(0x2e, 0x7d, 0x32);
-  const Color cut = greyed ? COLOR_LIGHT_GRAY : Color(0xa5, 0xd6, 0xa7);
-  const Color loud = greyed ? COLOR_GRAY : Color(0xc6, 0x28, 0x28);
+  const unsigned heard = std::min({value, limit, 100u});
+  const int heard_x = ToX(track, heard);
+  const int cut_x = ToX(track, std::min(value, 100u));
+  const int value_x = ToX(track, value);
 
-  for (int i = 0; i < steps; ++i) {
-    const unsigned level = (i + 1) * STEP;
-    PixelRect segment = area;
-    segment.left = area.left + i * pitch;
-    segment.right = segment.left + pitch - gap;
+  PixelRect part = track;
+  part.right = heard_x;
+  canvas.DrawFilledRectangle(part, greyed ? COLOR_GRAY : HEARD_COLOR);
 
-    if (level <= value) {
-      Color color = level > 100 ? loud : (level <= limit ? heard : cut);
-      canvas.DrawFilledRectangle(segment, color);
-    } else {
-      canvas.DrawFilledRectangle(segment, COLOR_WHITE);
-      canvas.DrawOutlineRectangle(segment, COLOR_GRAY);
-    }
-  }
+  part.left = heard_x;
+  part.right = cut_x;
+  canvas.DrawFilledRectangle(part, greyed ? COLOR_LIGHT_GRAY : CUT_COLOR);
 
+  part.left = cut_x;
+  part.right = value_x;
+  canvas.DrawFilledRectangle(part, greyed ? COLOR_GRAY : LOUD_COLOR);
+
+  canvas.DrawOutlineRectangle(track, COLOR_GRAY);
+
+  /* the percentage in the middle of the bar: dark everywhere, then
+     light again over the dark (heard or loud) part of the bar */
   StaticString<16> text;
   text.Format("%u %%", value);
   canvas.Select(look.bold_font);
   canvas.SetBackgroundTransparent();
-  canvas.SetTextColor(greyed ? COLOR_DARK_GRAY : COLOR_BLACK);
   const PixelSize size = canvas.CalcTextSize(text.c_str());
-  canvas.DrawText({rc.right - (int)Layout::GetTextPadding() * 2 - (int)size.width,
-                   rc.top + ((int)rc.GetHeight() - (int)size.height) / 2},
-                  text.c_str());
+  const PixelPoint p = track.CenteredTopLeft(size);
+
+  canvas.SetTextColor(COLOR_BLACK);
+  canvas.DrawText(p, text.c_str());
+
+  const int dark_x = value > 100 ? value_x : heard_x;
+  if (dark_x > p.x) {
+    canvas.SetTextColor(COLOR_WHITE);
+    canvas.DrawClippedText(p, (unsigned)(dark_x - p.x), text.c_str());
+  }
 }
 
 /**
- * A button that stays pressed while the vario is muted, with a
+ * A small button that stays pressed while its sound is muted, with a
  * loudspeaker that is crossed out then.
  */
 class MuteButton final : public PaintWindow {
@@ -302,18 +301,22 @@ void
 MuteButton::OnPaint(Canvas &canvas) noexcept
 {
   const PixelRect rc = GetClientRect();
+  canvas.DrawFilledRectangle(rc, look.background_color);
 
   /* pressed in while muted, like a latching switch */
-  canvas.DrawFilledRectangle(rc, muted ? COLOR_DARK_GRAY : COLOR_LIGHT_GRAY);
-  if (HasFocus())
-    canvas.DrawFilledRectangle(rc.WithPadding(Layout::Scale(2u)),
-                               muted
-                               ? COLOR_GRAY
-                               : look.focused.background_color);
+  const PixelRect face = rc.WithPadding(Layout::GetTextPadding());
+  canvas.DrawFilledRectangle(face, muted ? COLOR_DARK_GRAY : COLOR_LIGHT_GRAY);
+  if (HasFocus()) {
+    const Pen pen(Layout::ScalePenWidth(2), look.focused.background_color);
+    canvas.Select(pen);
+    canvas.SelectHollowBrush();
+    canvas.DrawRectangle(rc.WithPadding(Layout::ScalePenWidth(1)));
+  }
 
   const Color ink = muted ? COLOR_WHITE : COLOR_BLACK;
-  const PixelPoint c = rc.GetCenter();
-  const int s = std::min(rc.GetWidth() / 5, rc.GetHeight() / 4);
+  const PixelPoint c = face.GetCenter();
+  const int s = std::max(2, std::min((int)face.GetWidth() / 5,
+                                     (int)face.GetHeight() / 4));
 
   /* the loudspeaker: a box and a cone, left of the centre */
   const BulkPixelPoint speaker[] = {
@@ -351,8 +354,9 @@ MuteButton::OnPaint(Canvas &canvas) noexcept
 }
 
 /**
- * The content of the dialog: labelled bars, the mute button and, on the
- * OpenVario with variod running, the switch of the source.
+ * The content of the dialog: a row with label, bar and mute button for
+ * the master volume and one for the vario, and, on the OpenVario with
+ * variod running, the switch of the source.
  */
 class AudioWindow final : public ContainerWindow {
   const DialogLook &look;
@@ -361,11 +365,10 @@ class AudioWindow final : public ContainerWindow {
   const bool have_source = IsVariodAvailable();
 
   VolumeBar master_bar{look, [this](unsigned v){ OnMaster(v); }};
+  MuteButton master_mute{look, [this](bool m){ OnMasterMute(m); }};
   VolumeBar vario_bar{look, [this](unsigned v){ OnVario(v); }};
-  MuteButton mute_button{look, [this](bool m){ OnMute(m); }};
+  MuteButton vario_mute{look, [this](bool m){ OnVarioMute(m); }};
   Button source_button;
-
-  unsigned master_volume = 100;
 
   PixelPoint master_label, vario_label;
 
@@ -381,10 +384,10 @@ public:
   }
 
   [[gnu::pure]]
-  static PixelSize GetSize(bool with_master) noexcept {
+  static PixelSize GetSize() noexcept {
     const unsigned row = Layout::GetMaximumControlHeight();
     const unsigned padding = Layout::GetTextPadding() * 2;
-    const unsigned rows = with_master ? 3 : 2;
+    const unsigned rows = 1 + HasMasterVolume() + IsVariodAvailable();
     return {Layout::Scale(280u), rows * row + (rows + 1) * padding};
   }
 
@@ -398,7 +401,7 @@ private:
    * source and switched off in the settings?
    */
   [[gnu::pure]]
-  bool IsSilent() noexcept {
+  bool IsVarioSilent() noexcept {
     const auto &s = Settings();
     return IsVarioMuted() ||
       (s.source == VarioSoundSource::INTERNAL && !s.enabled);
@@ -407,9 +410,13 @@ private:
   void Update() noexcept;
 
   void OnMaster(unsigned v) noexcept {
-    master_volume = v;
     SetMasterVolume(v);
     changed = true;
+    Update();
+  }
+
+  void OnMasterMute(bool muted) noexcept {
+    SetMasterMuted(muted);
     Update();
   }
 
@@ -422,7 +429,7 @@ private:
     Update();
   }
 
-  void OnMute(bool muted) noexcept {
+  void OnVarioMute(bool muted) noexcept {
     auto &s = Settings();
     SetVarioMuted(muted);
 
@@ -461,24 +468,30 @@ void
 AudioWindow::Update() noexcept
 {
   const auto &s = Settings();
-  const bool internal = s.source == VarioSoundSource::INTERNAL;
-  const bool silent = IsSilent();
 
-  vario_bar.SetValue(s.volume);
+  unsigned master = 100;
+  if (have_master) {
+    const bool muted = IsMasterMuted();
+    master = muted ? 0 : GetMasterVolume();
+    master_bar.SetValue(GetMasterVolume());
+    master_bar.SetLimit(GetMasterVolume());
+    master_bar.SetGreyed(muted);
+    master_mute.SetMuted(muted);
+  }
 
   /* the master volume is the whole output: Android's media volume,
      or on Linux the program's mixer and the mixer of the sound card,
-     which variod plays on as well */
-  unsigned limit = s.volume;
-  if (have_master)
-    limit = s.volume * std::min(master_volume, 100u) / 100;
-  vario_bar.SetLimit(limit);
-  vario_bar.SetGreyed(silent);
+     which variod plays on as well; the bar shows it as a share of the
+     vario volume, an approximation */
+  vario_bar.SetValue(s.volume);
+  vario_bar.SetLimit(s.volume * std::min(master, 100u) / 100);
 
-  mute_button.SetMuted(silent);
+  const bool silent = IsVarioSilent();
+  vario_bar.SetGreyed(silent);
+  vario_mute.SetMuted(silent);
 
   if (have_source)
-    source_button.SetCaption(internal
+    source_button.SetCaption(s.source == VarioSoundSource::INTERNAL
                              ? _("Vario: Program")
                              : _("Vario: OpenVario"));
 }
@@ -494,16 +507,13 @@ AudioWindow::OnCreate()
   const PixelRect dummy{0, 0, 1, 1};
 
   if (have_master) {
-    master_volume = GetMasterVolume();
     master_bar.Create(*this, dummy, style);
-    master_bar.SetMax(GetMasterVolumeMax(), GetMasterVolumeMax());
-    master_bar.SetValue(master_volume);
-    master_bar.SetLimit(master_volume);
+    master_bar.SetMax(GetMasterVolumeMax());
+    master_mute.Create(*this, dummy, style);
   }
 
   vario_bar.Create(*this, dummy, style);
-  vario_bar.SetMax(100, have_master ? GetMasterVolumeMax() : 100);
-  mute_button.Create(*this, dummy, style);
+  vario_mute.Create(*this, dummy, style);
 
   if (have_source)
     source_button.Create(*this, look.button, _("Vario: Program"), dummy,
@@ -525,27 +535,29 @@ AudioWindow::LayoutControls() noexcept
   const int label_width =
     std::max(look.text_font.TextSize(master_text).width,
              look.text_font.TextSize(vario_text).width) + 2 * padding;
+  const int label_y = (row - (int)look.text_font.GetHeight()) / 2;
+
+  /* the mute button right of its bar, a little smaller than a row */
+  const int mute_width = row * 5 / 4;
+  const int bar_right = rc.right - padding - mute_width;
 
   int y = rc.top + padding;
-  const int label_y = (row - (int)look.text_font.GetHeight()) / 2;
 
   if (have_master) {
     master_label = {rc.left + padding, y + label_y};
-    master_bar.Move({rc.left + label_width, y, rc.right - padding, y + row});
+    master_bar.Move({rc.left + label_width, y, bar_right, y + row});
+    master_mute.Move({bar_right, y, rc.right - padding, y + row});
     y += row + padding;
   }
 
   vario_label = {rc.left + padding, y + label_y};
-  vario_bar.Move({rc.left + label_width, y, rc.right - padding, y + row});
+  vario_bar.Move({rc.left + label_width, y, bar_right, y + row});
+  vario_mute.Move({bar_right, y, rc.right - padding, y + row});
   y += row + padding;
 
-  const int mute_width = row * 2;
-  mute_button.Move({rc.left + padding, y, rc.left + padding + mute_width,
-                    y + row});
-
   if (have_source)
-    source_button.Move({rc.left + 2 * padding + mute_width, y,
-                        rc.right - padding, y + row});
+    source_button.Move({rc.left + label_width, y, rc.right - padding,
+                        y + row});
 }
 
 void
@@ -584,7 +596,7 @@ public:
 
   /* virtual methods from class Widget */
   PixelSize GetMinimumSize() const noexcept override {
-    return AudioWindow::GetSize(HasMasterVolume());
+    return AudioWindow::GetSize();
   }
 
   PixelSize GetMaximumSize() const noexcept override {
@@ -610,7 +622,7 @@ public:
   }
 };
 
-void
+bool
 ShowAudioDialog() noexcept
 {
   const DialogLook &look = UIGlobals::GetDialogLook();
@@ -623,6 +635,8 @@ ShowAudioDialog() noexcept
 
   /* the changes were applied and set in the profile at once; write the
      file once */
-  if (dialog.GetWidget().HasChanged())
+  const bool changed = dialog.GetWidget().HasChanged();
+  if (changed)
     Profile::Save();
+  return changed;
 }

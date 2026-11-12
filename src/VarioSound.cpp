@@ -24,6 +24,15 @@
 
 static bool vario_muted = false;
 
+static bool master_muted = false;
+
+/**
+ * The master volume before the mute.  Android has no volume of its own
+ * in the settings: while muted the device reports 0, and this value is
+ * what comes back.
+ */
+static unsigned master_before_mute = 0;
+
 #ifdef IS_OPENVARIO
 #include "BackendComponents.hpp"
 #include "Components.hpp"
@@ -136,6 +145,9 @@ GetMasterVolumeMax() noexcept
 unsigned
 GetMasterVolume() noexcept
 {
+  if (master_muted)
+    return master_before_mute;
+
 #ifdef HAVE_VOLUME_CONTROLLER
   return CommonInterface::GetUISettings().sound.master_volume;
 #elif defined(ANDROID)
@@ -158,8 +170,9 @@ SetMasterVolume(unsigned percent) noexcept
   PlayMasterVolume(percent);
 }
 
-void
-PlayMasterVolume([[maybe_unused]] unsigned percent) noexcept
+/** set the output without looking at the mute */
+static void
+OutputMasterVolume([[maybe_unused]] unsigned percent) noexcept
 {
 #ifdef HAVE_VOLUME_CONTROLLER
   volume_controller->SetVolume(std::min(percent,
@@ -168,4 +181,33 @@ PlayMasterVolume([[maybe_unused]] unsigned percent) noexcept
   SoundUtil::SetMasterVolume(Java::GetEnv(), context->Get(),
                              std::min(percent, 100u));
 #endif
+}
+
+void
+PlayMasterVolume(unsigned percent) noexcept
+{
+  master_muted = false;
+  OutputMasterVolume(percent);
+}
+
+void
+SetMasterMuted(bool muted) noexcept
+{
+  if (muted == master_muted)
+    return;
+
+  if (muted) {
+    master_before_mute = GetMasterVolume();
+    master_muted = true;
+    OutputMasterVolume(0);
+  } else {
+    master_muted = false;
+    OutputMasterVolume(master_before_mute);
+  }
+}
+
+bool
+IsMasterMuted() noexcept
+{
+  return master_muted;
 }

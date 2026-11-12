@@ -1059,19 +1059,24 @@ is closed.
 \subsection*{The audio dialog}
 
 The button \button{Audio} of the quick menu opens a small dialog for the
-sound in flight.  It shows the master volume and the vario volume as bars
-of 10 percent segments; a tap on a segment, a drag along the bar or the
-cursor keys left and right set the volume, and the change is heard at
-once.  Below 100 percent the master volume turns the vario down as
-well; the vario bar shows the part that is taken away lighter.  This is
-an approximation, the bar takes the master volume as a share of the
-vario volume.  A master volume above 100 percent is drawn red, because the
-sound may clip there.
+sound in flight; a tap on \emph{Master Volume} or \emph{Vario Volume}
+on this page opens it as well.  It shows the master volume and the vario
+volume as bars; a tap or a drag along the bar or the cursor keys left
+and right set the volume in steps of 10 percent, and the change is heard
+at once.  The percentage is written into the bar.  Below 100 percent the
+master volume turns the vario down as well; the vario bar shows the part
+that is taken away lighter.  This is an approximation, the bar takes the
+master volume as a share of the vario volume.  A master volume above
+100 percent is drawn red, because the sound may clip there.
 
-The button with the loudspeaker mutes the vario: it stays pressed, the
-loudspeaker is crossed out and the vario bar is grey.  The mute is not
-stored, every start of the program begins with sound.  On the OpenVario
-a second button switches the vario sound between the program and
+The button with the loudspeaker right of each bar mutes that volume: it
+stays pressed, the loudspeaker is crossed out and the bar is grey.  The
+master mute silences everything, spoken messages and warnings included;
+the vario mute only the vario.  A mute is not stored, every start of the
+program begins with sound.  On Android the master mute sets the media
+volume of the device to 0, so a device on which the program ends while
+muted stays silent until its volume is raised again.  On the OpenVario
+a further button switches the vario sound between the program and
 \texttt{variod}; it is shown only while the OpenVario sensors and
 \texttt{variod} are connected.  The settings are written to the profile
 when the dialog is closed.
