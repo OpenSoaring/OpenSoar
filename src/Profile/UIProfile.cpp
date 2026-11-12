@@ -101,6 +101,10 @@ Profile::Load(const ProfileMap &map, VarioSoundSettings &settings)
 {
   map.Get(ProfileKeys::SoundAudioVario, settings.enabled);
   map.Get(ProfileKeys::SoundVolume, settings.volume);
+  /* a profile from before the steps of 10 percent may hold any value;
+     it starts on the nearest step, so that the setting, the volume
+     events and the sound agree */
+  settings.volume = VarioSoundSettings::RoundVolume(settings.volume);
   map.GetEnum(ProfileKeys::VarioSoundSwitchingMode, settings.switching_mode);
   map.Get(ProfileKeys::VarioDeadBandEnabled, settings.dead_band_enabled);
 

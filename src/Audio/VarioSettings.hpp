@@ -34,6 +34,14 @@ struct VarioSoundSettings {
   double max_dead;
 
   void SetDefaults();
+
+  /**
+   * The vario volume goes in steps of 10 percent, 3 dB each (see
+   * ToneSynthesiser::VolumeToGain()); this is the nearest step.
+   */
+  static constexpr uint8_t RoundVolume(unsigned percent) noexcept {
+    return percent >= 100 ? 100 : (percent + 5) / 10 * 10;
+  }
 };
 
 static_assert(std::is_trivial<VarioSoundSettings>::value, "type is not trivial");

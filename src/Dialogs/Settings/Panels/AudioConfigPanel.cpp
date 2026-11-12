@@ -6,6 +6,8 @@
 
 #ifdef HAVE_PCM_PLAYER
 
+#include <algorithm>
+
 #include "Audio/VarioGlue.hpp"
 #include "Audio/VarioSettings.hpp"
 #include "Form/DataField/Boolean.hpp"
@@ -24,8 +26,33 @@
 #include "Audio/VolumeController.hpp"
 #endif
 
+#ifdef ANDROID
+#include "Android/Main.hpp"
+#include "Android/SoundUtil.hpp"
+#include "Android/Context.hpp"
+#endif
+
+#if defined(HAVE_VOLUME_CONTROLLER) || defined(ANDROID)
+/* a master volume: the program's own mixer, or on Android the volume
+   of the device itself */
+#define HAVE_MASTER_VOLUME_ROW
+#endif
+
+/**
+ * The volume rows go in steps of 10 percent; the vario's curve gives
+ * each step 3 dB (see ToneSynthesiser::VolumeToGain()), finer steps
+ * could hardly be told apart.
+ */
+static constexpr unsigned VOLUME_STEP = 10;
+
+static constexpr unsigned
+RoundVolume(unsigned percent) noexcept
+{
+  return VarioSoundSettings::RoundVolume(percent);
+}
+
 enum ControlIndex {
-#ifdef HAVE_VOLUME_CONTROLLER
+#ifdef HAVE_MASTER_VOLUME_ROW
   MASTER_VOLUME,
   MASTER_VOLUME_SPACER,
 #endif
@@ -61,6 +88,11 @@ public:
   bool Save(bool &changed) noexcept override;
 
 private:
+#ifdef ANDROID
+  /** the Android volume when the page opened, or -1 */
+  int initial_android_volume = -1;
+#endif
+
   void OnModified(DataField &df) noexcept override;
 };
 
@@ -114,12 +146,25 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
              _("The overall audio output volume."),
              "%d %%", "%d",
              0, VolumeController::GetMaxValue(), 1, sound.master_volume);
+#elif defined(ANDROID)
+  /* the volume of the device, read each time the page opens, so that
+     it also shows what the volume buttons have set; not stored in the
+     profile, because Android keeps it */
+  initial_android_volume =
+    SoundUtil::GetMasterVolume(Java::GetEnv(), context->Get());
+  AddInteger(_("Master Volume"),
+             _("The volume of the device for media and notifications, "
+               "which the audio vario and the spoken messages use.  The "
+               "same as the volume buttons and the sound settings of "
+               "Android."),
+             "%d %%", "%d", 0, 100, VOLUME_STEP,
+             RoundVolume(std::max(initial_android_volume, 0)));
 #endif
 
   if (!AudioVarioGlue::HaveAudioVario())
     return;
 
-#ifdef HAVE_VOLUME_CONTROLLER
+#ifdef HAVE_MASTER_VOLUME_ROW
   AddSpacer();
 #endif
 
@@ -130,8 +175,10 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
              settings.enabled, this);
 
   AddInteger(_("Vario Volume"),
-             _("The audio vario sound volume."), "%u %%", "%u",
-             0, 100, 1, settings.volume);
+             _("The audio vario sound volume.  Each step of 10 percent is "
+               "3 dB: 50 percent sounds clearly softer than 100 percent, "
+               "10 percent is quiet but still audible."),
+             "%u %%", "%u", 0, 100, VOLUME_STEP, settings.volume);
 
   AddEnum(C_("Setting", "Mode switching"),
       _("Choose whether the audio vario stays in manual mode or switches automatically between Vario in circling and STF in cruise. Manual mode starts in Vario after each restart and can be changed by external input events. In the built-in simulator, STF audio needs valid airspeed and total-energy vario input; without those, manual STF is silent and auto cruise falls back to vario."),
@@ -198,6 +245,10 @@ AudioConfigPanel::Save(bool &changed) noexcept
 
   changed |= SaveValueInteger(MASTER_VOLUME, ProfileKeys::MasterAudioVolume,
                               sound.master_volume);
+#elif defined(ANDROID)
+  if (const unsigned volume = GetValueInteger(MASTER_VOLUME);
+      volume != RoundVolume(std::max(initial_android_volume, 0)))
+    SoundUtil::SetMasterVolume(Java::GetEnv(), context->Get(), volume);
 #endif
 
   if (!AudioVarioGlue::HaveAudioVario())
