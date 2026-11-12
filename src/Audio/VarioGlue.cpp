@@ -79,16 +79,8 @@ AudioVarioGlue::Configure(const VarioSoundSettings &settings)
   manual_mode = settings.manual_mode;
   switching_mode = settings.switching_mode;
 
-  /* Configure() runs for every change of a setting; the log tells only
-     when the vario starts or stops, and whether the audio device could
-     be opened, so that a silent vario can be traced from the log */
-  static bool was_enabled = false;
-  if (settings.enabled != was_enabled) {
-    was_enabled = settings.enabled;
-    LogFmt("Audio vario {}, volume {}%",
-           settings.enabled ? "on" : "off", settings.volume);
-  }
-
+  /* whether the vario is on is logged by ApplyVarioSound(), which
+     knows the source; here only whether the sound output started */
   if (settings.enabled) {
     synthesiser->SetVolume(settings.volume);
     synthesiser->SetDeadBand(settings.dead_band_enabled);

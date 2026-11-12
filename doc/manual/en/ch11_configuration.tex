@@ -1092,8 +1092,13 @@ program begins with sound.  On Android the master mute sets the media
 volume of the device to 0, so a device on which the program ends while
 muted stays silent until its volume is raised again.  On the OpenVario
 a further button switches the vario sound between the program and
-\texttt{variod}; it is shown only while the OpenVario sensors and
-\texttt{variod} are connected.  The settings are written to the profile
+\texttt{variod}.  The program's own sound is the default; \texttt{variod}
+is a fallback.  The button is shown while the OpenVario sensors and
+\texttt{variod} deliver a vario, and also while \texttt{variod} is chosen
+but not found (``Vario: OpenVario (not found)''), so that the program's
+own sound can be chosen again.  When \texttt{sensord} has no sensors it
+reports a vario of 99~m/s; that is not taken as a vario, and
+\texttt{variod} is muted until a valid one arrives.  The settings are written to the profile
 when the dialog is closed.
 
 

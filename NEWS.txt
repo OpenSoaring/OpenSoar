@@ -25,7 +25,12 @@ Version 7.47 - not yet released
     loading then goes on on the same picture
   - OpenVario: Setup > Audio chooses whether the program or variod plays
     the vario sound; the chosen one gets the vario volume, the other is
-    set to 0, so the two tones no longer play at once
+    set to 0, so the two tones no longer play at once. The program's own
+    sound is the default, variod a fallback chosen on purpose
+  - OpenVario: when sensord has no sensors and reports 99 m/s, that is
+    no longer shown as a climb, and variod is muted until a valid vario
+    arrives; the audio dialog offers the source switch also while a
+    chosen variod is not found
   - the audio dialog (quick menu "Audio", or a tap on a volume in
     Setup > Audio) shows the master and the vario volume as bars, which
     a tap, a drag, the cursor keys or the mouse wheel set at once; the vario bar lies

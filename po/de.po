@@ -13930,3 +13930,6 @@ msgstr "Vario: OpenVario"
 
 msgid "Audio\n(F1)"
 msgstr "Audio\n(F1)"
+
+msgid "Vario: OpenVario (not found)"
+msgstr "Vario: OpenVario (nicht gefunden)"
