@@ -157,8 +157,8 @@ SessionState::ClearTakeoff() noexcept
 }
 
 bool
-SessionState::NoteFlying(bool now_flying, double ballast, double crew,
-                         double _bugs) noexcept
+SessionState::NoteFlying(bool now_flying, bool on_ground, double ballast,
+                         double crew, double _bugs) noexcept
 {
   if (now_flying) {
     /* No wrote Flying=0 while still airborne.  Do not put it back. */
@@ -183,7 +183,13 @@ SessionState::NoteFlying(bool now_flying, double ballast, double crew,
 
   restore_declined = false;
 
-  if (!seen_flying || !flying)
+  /* Not flying is no landing yet after a restart: the flying computer
+     needs a few seconds of movement before it reports a restored flight
+     as flying.  Only a flight this process has seen, or "on the
+     ground", which needs ten seconds without movement, ends it.
+     Without the latter a flight restored on the ground would stay
+     open until the next takeoff and landing. */
+  if (!flying || (!seen_flying && !on_ground))
     return false;
 
   flying = false;
