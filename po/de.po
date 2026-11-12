@@ -13892,3 +13892,29 @@ msgstr ""
 "Die Lautstärke des Geräts für Medien und Benachrichtigungen, die das "
 "Audio-Vario und die Sprachmeldungen verwenden.  Dieselbe wie die "
 "Lautstärketasten und die Toneinstellungen von Android."
+
+msgid "Vario sound"
+msgstr "Vario-Ton"
+
+msgid ""
+"Which program plays the vario sound.  Only one of them gets the volume, the "
+"other is set to 0."
+msgstr ""
+"Welches Programm den Vario-Ton spielt.  Nur eines bekommt die Lautstärke, "
+"das andere wird auf 0 gestellt."
+
+msgid "Program"
+msgstr "Programm"
+
+msgid "The program plays the vario sound; variod is set to 0."
+msgstr "Das Programm spielt den Vario-Ton; variod wird auf 0 gestellt."
+
+msgid "OpenVario (variod)"
+msgstr "OpenVario (variod)"
+
+msgid ""
+"The vario daemon of the OpenVario plays the vario sound with the volume set "
+"here; the program's own vario sound is off."
+msgstr ""
+"Der Vario-Dienst des OpenVario spielt den Vario-Ton mit der hier "
+"eingestellten Lautstärke; der eigene Vario-Ton des Programms ist aus."

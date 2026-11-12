@@ -13,6 +13,9 @@
 #include "Geo/Gravity.hpp"
 #include "Math/Angle.hpp"
 
+#include <algorithm>
+#include <atomic>
+
 using std::string_view_literals::operator""sv;
 
 class OpenVarioDevice : public AbstractDevice {
@@ -29,7 +32,10 @@ public:
   bool PutBugs(double bugs, OperationEnvironment &env) override;
   void OnCalculatedUpdate(const MoreData &basic,
                   const DerivedInfo &calculated) override;
+  bool PutVolume(unsigned volume, OperationEnvironment &env) override;
+  void LinkTimeout() override;
 private:
+  void SendVolume(OperationEnvironment &env);
   bool POV(NMEAInputLine &line, NMEAInfo &info);
   bool ComposeWrite(const char p_type,PolarCoefficients &p,
                   OperationEnvironment &env);
@@ -47,6 +53,30 @@ private:
   constexpr bool IsEqual(const PolarCoefficients &p1, const PolarCoefficients &p2);
   // copy the 3 coffeicients from src to dest
   constexpr void Copy(PolarCoefficients &dest, const PolarCoefficients &src);
+
+  /**
+   * The vario volume of variod in percent, in its steps of 10.  variod
+   * only knows "louder" and "softer" by 10 percent ($POV,C,VU and VD)
+   * and keeps its volume when the program restarts, so it is set by
+   * going down to 0 first and then up to the wanted step.
+   */
+  std::atomic<unsigned> volume{0};
+
+  /**
+   * Has the program asked for a volume at all?  Only then it takes
+   * charge of variod's volume; otherwise (on a device other than the
+   * OpenVario itself) variod keeps its own.
+   */
+  std::atomic<bool> volume_known{false};
+
+  /** must #volume still be sent? */
+  std::atomic<bool> volume_pending{false};
+
+  /**
+   * Has variod sent anything on this port?  Before, a command would
+   * go nowhere: variod connects to the program only after its start.
+   */
+  std::atomic<bool> variod_seen{false};
 
   // remember the settings to be able to repeat the most recent values upon request
   double _bugs = 1;
@@ -188,6 +218,9 @@ OpenVarioDevice::OnCalculatedUpdate([[maybe_unused]] const MoreData &basic,
 {
   NullOperationEnvironment env;
 
+  if (variod_seen && volume_pending.exchange(false))
+    SendVolume(env);
+
   PutIdealPolar(calculated, env);
   PutRealPolar(calculated, env);
 
@@ -268,11 +301,49 @@ OpenVarioDevice::ParseNMEA(const char *_line, NMEAInfo &info)
   if (!VerifyNMEAChecksum(_line))
     return false;
 
+  variod_seen = true;
+
   NMEAInputLine line(_line);
   if (line.ReadCompare("$POV"))
     return POV(line, info);
 
   return false;
+}
+
+void
+OpenVarioDevice::SendVolume(OperationEnvironment &env)
+{
+  /* from wherever variod stands down to 0 (it stops there), then up
+     by its steps of 10; every one of the commands also ends a mute of
+     variod, and 0 is silent without it */
+  for (unsigned i = 0; i < 10; ++i)
+    PortWriteNMEA(port, "POV,C,VD", env);
+
+  for (unsigned i = 0, n = volume.load() / 10; i < n; ++i)
+    PortWriteNMEA(port, "POV,C,VU", env);
+}
+
+bool
+OpenVarioDevice::PutVolume(unsigned _volume, OperationEnvironment &env)
+{
+  volume = std::min(_volume, 100u) / 10 * 10;
+  volume_known = true;
+  volume_pending = true;
+
+  if (variod_seen && volume_pending.exchange(false))
+    SendVolume(env);
+
+  return true;
+}
+
+void
+OpenVarioDevice::LinkTimeout()
+{
+  /* variod may have been restarted, back at its default volume; set
+     it again as soon as it is heard from */
+  variod_seen = false;
+  if (volume_known)
+    volume_pending = true;
 }
 
 bool
