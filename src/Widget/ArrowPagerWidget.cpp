@@ -23,7 +23,14 @@ ArrowPagerWidget::Layout::Layout(const ButtonLook &look, PixelRect rc,
   const unsigned width = rc.GetWidth(), height = rc.GetHeight();
   const unsigned button_height = ::Layout::GetMaximumControlHeight();
 
-  if (width > height) {
+  /* Only clearly wider than high is landscape.  On a 480x640 screen
+     the airspace warning below the dialog takes enough height that the
+     dialog becomes slightly wider than high; with a plain comparison
+     the buttons jumped from the bottom row to a left column and back
+     whenever a warning appeared or was acknowledged, and the left
+     column cut the captions of the menu.  A landscape screen leaves the
+     dialog at least a quarter wider than high. */
+  if (width * 4 > height * 5) {
     /* landscape */
 
     /* Size for Close or Back so a caller can swap the caption without
