@@ -8,6 +8,9 @@ Version 7.47 - not yet released
     empty ballast #1019
   - remember QNH and the maximum forecast temperature with that
     same question
+  - store that state as flight-session.json instead of
+    xcsoar-session.txt, which showed up in the airspace file list.
+    An existing xcsoar-session.txt is taken over once
 * ui
   - the start screen shows the profile on a gradient in the colour of
     the logo (red for a test version, green for a release) with
