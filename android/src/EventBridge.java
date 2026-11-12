@@ -49,6 +49,12 @@ class EventBridge {
   public static native void onMouseCancel();
 
   /**
+   * A mouse wheel or a rotary encoder turned by @p delta notches,
+   * positive away from the user ("up"), at view-relative pixels.
+   */
+  public static native void onMouseWheel(int x, int y, int delta);
+
+  /**
    * A second pointer was pressed.  Coordinates are view-relative
    * pixels for the first two active pointers.
    */

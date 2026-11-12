@@ -155,6 +155,23 @@ Java_org_xcsoar_EventBridge_onMouseCancel([[maybe_unused]] JNIEnv *env, [[maybe_
 
 gcc_visibility_default
 void
+Java_org_xcsoar_EventBridge_onMouseWheel([[maybe_unused]] JNIEnv *env,
+                                         [[maybe_unused]] jclass cls,
+                                         jint x, jint y, jint delta)
+{
+  if (event_queue == nullptr || delta == 0)
+    /* XCSoar not yet initialised */
+    return;
+
+  /* the same as a mouse wheel on Linux: positive is "up" */
+  Event event(Event::MOUSE_WHEEL, PixelPoint(x, y));
+  event.param = unsigned(delta);
+  event_queue->Inject(event);
+  ResetUserIdle();
+}
+
+gcc_visibility_default
+void
 Java_org_xcsoar_EventBridge_onPointerDown([[maybe_unused]] JNIEnv *env,
                                           [[maybe_unused]] jclass cls,
                                           jint x1, jint y1,
