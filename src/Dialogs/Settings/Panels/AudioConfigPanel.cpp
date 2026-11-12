@@ -20,6 +20,7 @@
 #include "Profile/Keys.hpp"
 #include "UIGlobals.hpp"
 #include "Units/Units.hpp"
+#include "VarioSound.hpp"
 #include "Widget/RowFormWidget.hpp"
 
 #ifdef HAVE_VOLUME_CONTROLLER
@@ -101,6 +102,13 @@ public:
    */
   void UpdateVisibility() noexcept;
 
+  /**
+   * Play the volumes and the source as they are on the page, without
+   * storing them, so that a change is heard at once and not only when
+   * the configuration closes.
+   */
+  void PlayPreview() noexcept;
+
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
 
@@ -141,14 +149,43 @@ AudioConfigPanel::UpdateVisibility() noexcept
 }
 
 void
+AudioConfigPanel::PlayPreview() noexcept
+{
+  if (!AudioVarioGlue::HaveAudioVario())
+    return;
+
+  VarioSoundSettings preview = CommonInterface::GetUISettings().sound.vario;
+#ifdef IS_OPENVARIO
+  preview.source = (VarioSoundSource)GetValueEnum(SOURCE);
+#endif
+  preview.enabled = GetValueBoolean(ENABLED);
+  preview.volume = GetValueInteger(VOLUME);
+  ApplyVarioSound(preview);
+}
+
+void
 AudioConfigPanel::OnModified(DataField &df) noexcept
 {
+#ifdef HAVE_MASTER_VOLUME_ROW
+  if (IsDataField(MASTER_VOLUME, df)) {
+    PlayMasterVolume(GetValueInteger(MASTER_VOLUME));
+    return;
+  }
+#endif
+
   if (IsDataField(ENABLED, df) || IsDataField(DEAD_BAND_ENABLED, df)
 #ifdef IS_OPENVARIO
       || IsDataField(SOURCE, df)
 #endif
       )
     UpdateVisibility();
+
+  if (IsDataField(ENABLED, df) || IsDataField(VOLUME, df)
+#ifdef IS_OPENVARIO
+      || IsDataField(SOURCE, df)
+#endif
+      )
+    PlayPreview();
 }
 
 void
@@ -163,7 +200,8 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
   AddInteger(_("Master Volume"),
              _("The overall audio output volume."),
              "%d %%", "%d",
-             0, VolumeController::GetMaxValue(), 1, sound.master_volume);
+             0, VolumeController::GetMaxValue(), 1, sound.master_volume,
+             this);
 #elif defined(ANDROID)
   /* the volume of the device, read each time the page opens, so that
      it also shows what the volume buttons have set; not stored in the
@@ -176,7 +214,7 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
                "same as the volume buttons and the sound settings of "
                "Android."),
              "%d %%", "%d", 0, 100, VOLUME_STEP,
-             RoundVolume(std::max(initial_android_volume, 0)));
+             RoundVolume(std::max(initial_android_volume, 0)), this);
 #endif
 
   if (!AudioVarioGlue::HaveAudioVario())
@@ -205,7 +243,7 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
              _("The audio vario sound volume.  Each step of 10 percent is "
                "3 dB: 50 percent sounds clearly softer than 100 percent, "
                "10 percent is quiet but still audible."),
-             "%u %%", "%u", 0, 100, VOLUME_STEP, settings.volume);
+             "%u %%", "%u", 0, 100, VOLUME_STEP, settings.volume, this);
 
   AddEnum(C_("Setting", "Mode switching"),
       _("Choose whether the audio vario stays in manual mode or switches automatically between Vario in circling and STF in cruise. Manual mode starts in Vario after each restart and can be changed by external input events. In the built-in simulator, STF audio needs valid airspeed and total-energy vario input; without those, manual STF is silent and auto cruise falls back to vario."),

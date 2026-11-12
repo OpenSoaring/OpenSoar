@@ -8,13 +8,13 @@
 # "center=yes".  A button can get a place of its own for a wider
 # screen with "landscape=C:N": place N counted in C columns.
 #
-#    1 -                2 MacCready        3 -
+#    1 -                2 MacCready        3 Audio
 #    4 -                5 Flight Setup     6 Forecast Contr.
 #    7 Weather          8 Configuration    9 Map Display
 #   10 Pan Mode        11 Task Manager    12 Quick Guide
 #   13 Replay          14 Devices         15 Data Management
 #
-# 1, 3 and 4 stay empty for now; the list can grow.
+# 1 and 4 stay empty for now; the list can grow.
 #
 # 18 Quit, in a row of its own below the block, on the right: the
 # last button, as in the complete quick menu.
@@ -25,6 +25,14 @@ data=0
 event=Mode mc
 label=MacCready
 location=2
+
+mode=QuickGround
+type=key
+data=0
+event=Audio
+event=Mode default
+label=Audio
+location=3
 
 mode=QuickGround
 type=key

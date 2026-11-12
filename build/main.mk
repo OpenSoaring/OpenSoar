@@ -90,6 +90,7 @@ DIALOG_SOURCES = \
 	$(SRC)/Dialogs/dlgChecklist.cpp \
 	$(SRC)/Dialogs/FrequencyDialog.cpp \
 	$(SRC)/Dialogs/ProfileListDialog.cpp \
+	$(SRC)/Dialogs/AudioDialog.cpp \
 	$(SRC)/Dialogs/Plane/PlaneListDialog.cpp \
 	$(SRC)/Dialogs/Plane/PlaneDetailsDialog.cpp \
 	$(SRC)/Dialogs/Plane/WeGlideTypePicker.cpp \

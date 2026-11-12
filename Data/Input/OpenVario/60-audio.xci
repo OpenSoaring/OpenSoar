@@ -1,39 +1,23 @@
-# OpenVario input configuration: the vario audio menu
-# for the PCM mixer that OpenSoar controls on the OpenVario.
+# OpenVario input configuration: the menu "Audio / MC".
 
 # -------------
-# Define VarioAudioMenu buttons for Audio app 
-# - the PCM mixer controlled by OpenSoar 
+# The menu "Audio / MC": the audio dialog and the MacCready value.
+# The volumes used to be stepped here with "Sounds quieter" and
+# "Sounds louder", which the program never implemented, so the
+# buttons did nothing.  The audio dialog (event Audio) shows the
+# master and the vario volume as bars, mutes the vario and switches
+# between the program's own vario sound and variod, and every change
+# is heard at once.
 # -------------
-
-mode=VarioAudioMenu
-type=key
-data=DOWN
-event=Sounds quieter
-label=VOL - (DOWN)$(CheckAudioQuiet)
-location=1
 
 mode=VarioAudioMenu
 type=key
 # data=M  # on RemoteStick
 data=F1
-event=Sounds toggle
-label=VOL On/Off\n(press M)
-location=2
-
-mode=VarioAudioMenu
-type=key
-data=UP
-event=Sounds louder
-label=VOL + (UP)$(CheckAudioLoud)
-location=3
-
-mode=VarioAudioMenu
-type=key
-data=RETURN
 event=Mode default
-label=Volume:\n$(AudioVolume)
-location=4
+event=Audio
+label=Audio\n(F1)
+location=2
 
 mode=VarioAudioMenu
 type=key
@@ -71,7 +55,8 @@ event=Mode VarioAudioMenu
 mode=QuickMenu
 type=key
 data=0
-event=Mode VarioAudioMenu 
-label=Audio Menu
+event=Mode default
+event=Audio
+label=Audio
 location=46
 

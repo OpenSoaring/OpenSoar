@@ -13918,3 +13918,15 @@ msgid ""
 msgstr ""
 "Der Vario-Dienst des OpenVario spielt den Vario-Ton mit der hier "
 "eingestellten Lautstärke; der eigene Vario-Ton des Programms ist aus."
+
+msgid "Master"
+msgstr "Gesamt"
+
+msgid "Vario: Program"
+msgstr "Vario: Programm"
+
+msgid "Vario: OpenVario"
+msgstr "Vario: OpenVario"
+
+msgid "Audio\n(F1)"
+msgstr "Audio\n(F1)"

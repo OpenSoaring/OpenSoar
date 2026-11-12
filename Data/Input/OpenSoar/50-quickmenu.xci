@@ -13,10 +13,15 @@
 # its place in the centre.  The FLARM radar and the thermal assistant
 # pages leave the quick menu; they stay in the menu bar and on their
 # keys, and the dialog switches their small gauges.
+#
+# The first of the places that become free gets the audio dialog
+# (event Audio), so the volumes can be changed in flight with one tap.
 mode=QuickMenu
 type=key
 data=0
-label=
+event=Audio
+event=Mode default
+label=Audio
 location=7
 
 mode=QuickMenu

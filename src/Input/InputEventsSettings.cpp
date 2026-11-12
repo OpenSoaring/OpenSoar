@@ -3,6 +3,7 @@
 
 #include "InputEvents.hpp"
 #include "VarioSound.hpp"
+#include "Dialogs/AudioDialog.hpp"
 #include "Dialogs/Error.hpp"
 #include "InfoBoxes/InfoBoxGeometryList.hpp"
 #include "InfoBoxes/InfoBoxSettings.hpp"
@@ -142,6 +143,16 @@ InputEvents::eventTerrainTopography(const char *misc)
   XCSoarInterface::SendMapSettings(true);
 }
 
+/**
+ * Opens the audio dialog: the volumes as bars, the vario mute and the
+ * source of the vario sound, all heard at once.
+ */
+void
+InputEvents::eventAudio([[maybe_unused]] const char *misc)
+{
+  ShowAudioDialog();
+}
+
 // Adjust audio deadband of internal vario sounds
 // +: increases deadband
 // -: decreases deadband
@@ -174,13 +185,14 @@ InputEvents::eventVarioVolume(const char *misc)
   auto &settings = CommonInterface::SetUISettings().sound.vario;
 
   if (StringIsEqual(misc, "mute")) {
-    if (settings.volume == 0)
-      settings.volume = last_unmuted_vario_volume;
-    else {
-      last_unmuted_vario_volume = settings.volume;
-      settings.volume = 0;
-    }
+    /* a mute that keeps the volume and is not stored (see
+       SetVarioMuted()), the same as the button of the audio dialog */
+    SetVarioMuted(!IsVarioMuted());
+    ApplyVarioSound(settings);
+    return;
   } else if (StringIsEqual(misc, "up") || StringIsEqual(misc, "+")) {
+    /* a pilot asking for "louder" wants to hear something */
+    SetVarioMuted(false);
     if (settings.volume == 0)
       settings.volume = last_unmuted_vario_volume;
 
@@ -188,6 +200,7 @@ InputEvents::eventVarioVolume(const char *misc)
        a value between two steps goes to the next one */
     settings.volume = std::min(100, (settings.volume / 10 + 1) * 10);
   } else if (StringIsEqual(misc, "down") || StringIsEqual(misc, "-")) {
+    SetVarioMuted(false);
     if (settings.volume == 0)
       settings.volume = last_unmuted_vario_volume;
 
