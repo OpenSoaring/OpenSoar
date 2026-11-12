@@ -105,6 +105,13 @@ public:
     Invalidate();
   }
 
+  /** the whole width for the whole range, without a band */
+  void SetFullScale() noexcept {
+    scale = 100;
+    band = false;
+    Invalidate();
+  }
+
   /**
    * @param _greyed draw the bar grey: nothing of it is heard
    * @param _locked ignore input as well, because the bar's own sound
@@ -511,24 +518,31 @@ AudioWindow::Update() noexcept
 {
   const auto &s = Settings();
 
+  /* the master volume is Android's media volume, or on Linux and
+     Windows the gain of the program's own mixer, which leaves the
+     volume of the system alone; variod plays past that mixer, so it
+     does not turn variod down */
+  const bool through_master =
+    have_master && s.source == VarioSoundSource::INTERNAL;
+
   bool master_silent = false;
   if (have_master) {
     const unsigned master = GetMasterVolume();
     const bool muted = IsMasterMuted();
-    master_silent = muted || master == 0;
+    master_silent = through_master && (muted || master == 0);
     master_bar.SetValue(master);
     master_bar.SetGreyed(muted, muted);
     master_mute.SetMuted(muted);
 
-    /* the master volume is the whole output: Android's media volume,
-       or on Linux the program's mixer and the mixer of the sound card,
-       which variod plays on as well.  The vario bar is drawn within the
-       length of the master bar, an approximation of what is heard; a
-       master volume of 0 would leave nothing to tap on, so the vario
-       keeps the full width then */
-    vario_bar.SetScale(master > 0
-                       ? master * 100 / GetMasterVolumeMax()
-                       : 100);
+    /* the vario bar is drawn within the length of the master bar, an
+       approximation of what is heard; a master volume of 0 would leave
+       nothing to tap on, so the vario keeps the full width then */
+    if (through_master)
+      vario_bar.SetScale(master > 0
+                         ? master * 100 / GetMasterVolumeMax()
+                         : 100);
+    else
+      vario_bar.SetFullScale();
   }
 
   vario_bar.SetValue(s.volume);

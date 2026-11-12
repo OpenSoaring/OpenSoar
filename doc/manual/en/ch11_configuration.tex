@@ -1077,6 +1077,13 @@ heard.  This is an approximation of the loudness.  When the master
 volume is muted or 0 the vario bar is grey as well.  The master volume goes up
 to 100 percent; above that the program's mixer would only clip.
 
+On Linux, Windows and the OpenVario the master volume is the gain of the
+program's own mixer: it turns the program's sounds down and leaves the
+volume of the system and its controls alone.  \texttt{variod} on the
+OpenVario plays past that mixer, so with \texttt{variod} as the source
+the master volume does not limit the vario, and its bar takes the whole
+width.  On Android the master volume is the media volume of the device.
+
 The button with the loudspeaker right of each bar mutes that volume: it
 stays pressed, the loudspeaker is crossed out and the bar is grey.  The
 master mute silences everything, spoken messages and warnings included;
