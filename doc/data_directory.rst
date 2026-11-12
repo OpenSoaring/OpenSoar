@@ -253,7 +253,8 @@ Some paths intentionally remain at the top level of the data root:
 - **Session** — :file:`flight-session.json` (:file:`Session/SessionFile.cpp`).
   In-flight ballast, crew weight, bugs, QNH, the maximum forecast
   temperature, the ATC radial, the current Goto, and checklist ticks,
-  stored as JSON grouped by topic.
+  stored as JSON grouped by topic.  It also records the takeoff of the
+  current flight (time, place, altitude) with pilot and aircraft.
   When that file says the aircraft was still flying, startup asks
   whether to restore them and does so after 5 seconds.  No leaves
   them unused.  This is not a profile: copying

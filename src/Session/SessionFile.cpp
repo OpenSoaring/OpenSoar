@@ -142,6 +142,20 @@ SessionState::ChecklistTicks(unsigned page, uint32_t sum,
   return true;
 }
 
+void
+SessionState::ClearTakeoff() noexcept
+{
+  have_takeoff = false;
+  takeoff_utc = BrokenDateTime::Invalid();
+  takeoff_location.SetInvalid();
+  have_takeoff_altitude = false;
+  takeoff_altitude = 0;
+  pilot_name.clear();
+  aircraft_registration.clear();
+  competition_id.clear();
+  aircraft_type.clear();
+}
+
 bool
 SessionState::NoteFlying(bool now_flying, double ballast, double crew,
                          double _bugs) noexcept
@@ -150,6 +164,13 @@ SessionState::NoteFlying(bool now_flying, double ballast, double crew,
     /* No wrote Flying=0 while still airborne.  Do not put it back. */
     if (restore_declined)
       return false;
+
+    /* The file said "not flying": this is a takeoff, and what is
+       recorded about an earlier flight no longer applies. */
+    if (!flying) {
+      ClearTakeoff();
+      takeoff_pending = true;
+    }
 
     const bool edge = !seen_flying || !flying;
     seen_flying = true;
@@ -373,6 +394,60 @@ ReadChecklist(const boost::json::object &checklist,
   }
 }
 
+/** ISO 8601 in UTC, e.g. "2026-11-12T10:23:45Z". */
+static std::string
+FormatUTC(const BrokenDateTime &t) noexcept
+{
+  char buffer[32];
+  snprintf(buffer, sizeof(buffer), "%04u-%02u-%02uT%02u:%02u:%02uZ",
+           t.year, t.month, t.day, t.hour, t.minute, t.second);
+  return buffer;
+}
+
+static bool
+ParseUTC(const std::string &s, BrokenDateTime &t) noexcept
+{
+  unsigned year, month, day, hour, minute, second;
+  char z;
+  if (sscanf(s.c_str(), "%4u-%2u-%2uT%2u:%2u:%2u%c",
+             &year, &month, &day, &hour, &minute, &second, &z) != 7 ||
+      z != 'Z')
+    return false;
+
+  const BrokenDateTime parsed(year, month, day, hour, minute, second);
+  if (!parsed.IsPlausible())
+    return false;
+
+  t = parsed;
+  return true;
+}
+
+static void
+ReadFlight(const boost::json::object &flight, SessionState &state) noexcept
+{
+  if (const auto *takeoff = GetObject(flight, "takeoff")) {
+    std::string time;
+    if (GetString(*takeoff, "time", time) &&
+        ParseUTC(time, state.takeoff_utc)) {
+      state.have_takeoff = true;
+      GetGeoPoint(*takeoff, "location", state.takeoff_location);
+
+      if (double altitude; GetNumber(*takeoff, "altitude", altitude)) {
+        state.takeoff_altitude = altitude;
+        state.have_takeoff_altitude = true;
+      }
+    }
+  }
+
+  GetString(flight, "pilot", state.pilot_name);
+
+  if (const auto *aircraft = GetObject(flight, "aircraft")) {
+    GetString(*aircraft, "registration", state.aircraft_registration);
+    GetString(*aircraft, "competition_id", state.competition_id);
+    GetString(*aircraft, "type", state.aircraft_type);
+  }
+}
+
 void
 LoadSession(SessionState &state, Path path)
 {
@@ -457,6 +532,9 @@ LoadSession(SessionState &state, Path path)
   if (const auto *checklist = GetObject(*root, "checklist"))
     ReadChecklist(*checklist, loaded);
 
+  if (const auto *flight = GetObject(*root, "flight"))
+    ReadFlight(*flight, loaded);
+
   state = std::move(loaded);
 }
 
@@ -531,6 +609,31 @@ SaveSession(const SessionState &state, Path path)
 
     checklist["pages"] = std::move(pages);
     root["checklist"] = std::move(checklist);
+  }
+
+  if (state.have_takeoff) {
+    boost::json::object takeoff;
+    takeoff["time"] = FormatUTC(state.takeoff_utc);
+    if (state.takeoff_location.IsValid())
+      takeoff["location"] = GeoPointValue(state.takeoff_location);
+    if (state.have_takeoff_altitude)
+      takeoff["altitude"] = state.takeoff_altitude;
+
+    boost::json::object aircraft;
+    if (!state.aircraft_registration.empty())
+      aircraft["registration"] = state.aircraft_registration;
+    if (!state.competition_id.empty())
+      aircraft["competition_id"] = state.competition_id;
+    if (!state.aircraft_type.empty())
+      aircraft["type"] = state.aircraft_type;
+
+    boost::json::object flight;
+    flight["takeoff"] = std::move(takeoff);
+    if (!state.pilot_name.empty())
+      flight["pilot"] = state.pilot_name;
+    if (!aircraft.empty())
+      flight["aircraft"] = std::move(aircraft);
+    root["flight"] = std::move(flight);
   }
 
   /* FileOutputStream writes a temporary file and renames it on
@@ -630,6 +733,8 @@ DeclineRestore() noexcept
 
   session_state.flying = false;
   session_state.restore_declined = true;
+  /* the declined flight is over as far as the session is concerned */
+  session_state.ClearTakeoff();
   session_state.modified = true;
   Flush();
 }
@@ -684,6 +789,32 @@ NoteAtcReference(const GeoPoint &reference) noexcept
 
   state.atc_reference = reference;
   state.have_atc_reference = true;
+  state.modified = true;
+  Flush();
+}
+
+void
+NoteTakeoff(const BrokenDateTime &utc, const GeoPoint &location,
+            bool has_altitude, double altitude,
+            std::string_view pilot_name,
+            std::string_view registration,
+            std::string_view competition_id,
+            std::string_view aircraft_type) noexcept
+{
+  auto &state = session_state;
+  if (!state.takeoff_pending || !state.flying || !utc.IsPlausible())
+    return;
+
+  state.takeoff_pending = false;
+  state.have_takeoff = true;
+  state.takeoff_utc = utc;
+  state.takeoff_location = location;
+  state.have_takeoff_altitude = has_altitude && IsFinite(altitude);
+  state.takeoff_altitude = state.have_takeoff_altitude ? altitude : 0;
+  state.pilot_name = pilot_name;
+  state.aircraft_registration = registration;
+  state.competition_id = competition_id;
+  state.aircraft_type = aircraft_type;
   state.modified = true;
   Flush();
 }

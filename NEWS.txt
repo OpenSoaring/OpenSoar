@@ -9,6 +9,8 @@ Version 7.47 - not yet released
   - store that state as flight-session.json instead of
     xcsoar-session.txt, which showed up in the airspace file list.
     An existing xcsoar-session.txt is taken over once
+  - record takeoff time, place and altitude with pilot and aircraft
+    in that file, and name the takeoff in the restore question
 * ui
   - add a ground-side shadow to the artificial horizon line so it
     stays visible on both sky and ground
