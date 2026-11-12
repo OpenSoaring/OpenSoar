@@ -6,6 +6,7 @@
 #include "PCMPlayerFactory.hpp"
 #include "VarioSynthesiser.hpp"
 #include "VarioSettings.hpp"
+#include "LogFile.hpp"
 
 #ifdef ANDROID
 #include "SLES/Init.hpp"
@@ -78,6 +79,16 @@ AudioVarioGlue::Configure(const VarioSoundSettings &settings)
   manual_mode = settings.manual_mode;
   switching_mode = settings.switching_mode;
 
+  /* Configure() runs for every change of a setting; the log tells only
+     when the vario starts or stops, and whether the audio device could
+     be opened, so that a silent vario can be traced from the log */
+  static bool was_enabled = false;
+  if (settings.enabled != was_enabled) {
+    was_enabled = settings.enabled;
+    LogFmt("Audio vario {}, volume {}%",
+           settings.enabled ? "on" : "off", settings.volume);
+  }
+
   if (settings.enabled) {
     synthesiser->SetVolume(settings.volume);
     synthesiser->SetDeadBand(settings.dead_band_enabled);
@@ -85,7 +96,8 @@ AudioVarioGlue::Configure(const VarioSoundSettings &settings)
                                 settings.max_frequency);
     synthesiser->SetPeriods(settings.min_period_ms, settings.max_period_ms);
     synthesiser->SetDeadBandRange(settings.min_dead, settings.max_dead);
-    player->Start(*synthesiser);
+    if (!player->Start(*synthesiser))
+      LogFmt("Audio vario: the sound output could not be started");
   } else
     player->Stop();
 }

@@ -37,6 +37,7 @@ PCMMixer::Start(PCMDataSource &source)
   }
 
   if (!player->Start(mixer_data_source)) {
+    LogFormat("PCMMixer: the audio device could not be started");
     mixer_data_source.RemoveSource(source);
     return false;
   }
