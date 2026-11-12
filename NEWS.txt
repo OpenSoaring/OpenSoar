@@ -13,6 +13,9 @@ Version 7.47 - not yet released
     the logo (red for a test version, green for a release) with
     "Continue" and a bar counting down to it, "Quit" and the version;
     loading then goes on on the same picture
+  - the vario volume goes in steps of 10 percent of 3 dB each, so that
+    50 percent sounds clearly softer than 100 percent instead of almost
+    as loud
   - profiles are shown by their names, without ".prf", on the start
     screen, in the profile list and in the system settings
   - System > System shows the profile in use; a tap saves the
@@ -74,6 +77,8 @@ Version 7.47 - not yet released
   - Larus: pass on the instantaneous wind of ``$PLARW`` (``I``) next
     to the average wind (``A``)
 * android
+  - Setup > Audio has a master volume on Android as well: it sets the
+    media and notification volume of the device
   - fix a crash after a restart: applying the settings started the
     audio vario a second time without stopping the first player, whose
     callback then used the player after it was deleted

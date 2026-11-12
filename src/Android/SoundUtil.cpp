@@ -14,6 +14,8 @@ static Java::TrivialClass cls;
 static jmethodID play_method;
 static jmethodID playExternal_method;
 static jmethodID playSequence_method;
+static jmethodID getMasterVolume_method;
+static jmethodID setMasterVolume_method;
 } // namespace SoundUtil
 
 void
@@ -32,6 +34,10 @@ SoundUtil::Initialise(JNIEnv *env)
   playSequence_method = env->GetStaticMethodID(cls, "playSequence",
                                                "(Landroid/content/Context;"
                                                "Ljava/lang/String;)Z");
+  getMasterVolume_method = env->GetStaticMethodID(cls, "getMasterVolume",
+                                                  "(Landroid/content/Context;)I");
+  setMasterVolume_method = env->GetStaticMethodID(cls, "setMasterVolume",
+                                                  "(Landroid/content/Context;I)V");
 }
 
 void
@@ -72,4 +78,17 @@ SoundUtil::PlaySequence(JNIEnv *env, jobject context,
   Java::String paramNames(env, joined.c_str());
   return env->CallStaticBooleanMethod(cls, playSequence_method, context,
                                       paramNames.Get());
+}
+
+int
+SoundUtil::GetMasterVolume(JNIEnv *env, jobject context)
+{
+  return env->CallStaticIntMethod(cls, getMasterVolume_method, context);
+}
+
+void
+SoundUtil::SetMasterVolume(JNIEnv *env, jobject context, unsigned percent)
+{
+  env->CallStaticVoidMethod(cls, setMasterVolume_method, context,
+                            (jint)percent);
 }

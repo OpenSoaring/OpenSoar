@@ -183,21 +183,17 @@ InputEvents::eventVarioVolume(const char *misc)
     if (settings.volume == 0)
       settings.volume = last_unmuted_vario_volume;
 
-    if (settings.volume < 95)
-      settings.volume += 5;
-    else
-      settings.volume = 100;
+    /* steps of 10 percent, 3 dB each (ToneSynthesiser::VolumeToGain());
+       a value between two steps goes to the next one */
+    settings.volume = std::min(100, (settings.volume / 10 + 1) * 10);
   } else if (StringIsEqual(misc, "down") || StringIsEqual(misc, "-")) {
     if (settings.volume == 0)
       settings.volume = last_unmuted_vario_volume;
 
-    if (settings.volume > 5)
-      settings.volume -= 5;
-    else
-      settings.volume = 0;
+    settings.volume = std::max(0, ((settings.volume + 9) / 10 - 1) * 10);
   } else if (StringIsEqual(misc, "show")) {
     char Temp[64];
-    StringFormatUnsafe(Temp, "%d", (int)settings.volume);
+    StringFormatUnsafe(Temp, "%d %%", (int)settings.volume);
     Message::AddMessage(_("Volume"), Temp);
     return;
   } else

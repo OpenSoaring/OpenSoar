@@ -22,4 +22,15 @@ bool PlayExternal(JNIEnv *env, jobject context, const char *path);
 bool PlaySequence(JNIEnv *env, jobject context,
                   std::span<const char *const> names);
 
+/**
+ * The Android media volume in percent of its maximum, or -1.
+ */
+int GetMasterVolume(JNIEnv *env, jobject context);
+
+/**
+ * Set the Android media and notification volume, in percent of their
+ * maximum.
+ */
+void SetMasterVolume(JNIEnv *env, jobject context, unsigned percent);
+
 } // namespace SoundUtil

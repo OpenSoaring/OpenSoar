@@ -11,7 +11,8 @@
  * This class generates tones with a sine wave.
  */
 class ToneSynthesiser : public PCMSynthesiser {
-  std::atomic<unsigned> volume{100};
+  /** the amplitude in 1/1024 of the full level, see SetVolume() */
+  std::atomic<unsigned> gain{1024};
   unsigned angle = 0, increment = 0;
 
 public:
@@ -23,13 +24,24 @@ public:
   }
 
   /**
+   * The amplitude in 1/1024 of the full level for a volume in percent.
+   * The ear hears the level in decibels, so a linear amplitude made
+   * 50 % sound almost as loud as 100 % (only 6 dB less) and crowded
+   * all the audible change into the lowest settings.  Every 10 % are
+   * 3 dB instead: 100 % is the full level, 50 % is 15 dB below it and
+   * clearly softer, 10 % is 27 dB below it, and 0 is silent.
+   */
+  [[gnu::const]]
+  static unsigned VolumeToGain(unsigned percent) noexcept;
+
+  /**
    * Set the (software) volume of the generated tone.
    *
    * @param _volume the new volume level, 0 indicating muted, 100
-   * means full volume
+   * means full volume; see VolumeToGain()
    */
-  void SetVolume(unsigned _volume) {
-    volume = _volume;
+  void SetVolume(unsigned _volume) noexcept {
+    gain = VolumeToGain(_volume);
   }
 
   void SetTone(unsigned tone_hz);

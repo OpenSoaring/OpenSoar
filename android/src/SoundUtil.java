@@ -60,6 +60,52 @@ public final class SoundUtil {
         names.split(" "));
   }
 
+  /**
+   * The volume of the media stream in percent of its maximum, which
+   * the audio vario plays on; -1 if it cannot be read.
+   */
+  public static int getMasterVolume(Context context) {
+    AudioManager am = (AudioManager)
+      context.getSystemService(Context.AUDIO_SERVICE);
+    if (am == null)
+      return -1;
+
+    return Math.round(VolumePolicy.normalized(am, AudioManager.STREAM_MUSIC)
+                      * 100f);
+  }
+
+  /**
+   * Set the media and the notification stream to the given percent of
+   * their maximum.  The audio vario plays on the media stream, the
+   * spoken messages, depending on the device, on one of the two, so
+   * both are set, like the louder of them is what OpenSoar reads as
+   * the audible volume.
+   */
+  public static void setMasterVolume(Context context, int percent) {
+    AudioManager am = (AudioManager)
+      context.getSystemService(Context.AUDIO_SERVICE);
+    if (am == null)
+      return;
+
+    setStreamPercent(am, AudioManager.STREAM_MUSIC, percent);
+    setStreamPercent(am, AudioManager.STREAM_NOTIFICATION, percent);
+  }
+
+  private static void setStreamPercent(AudioManager am, int streamType,
+                                       int percent) {
+    int max = am.getStreamMaxVolume(streamType);
+    if (max <= 0)
+      return;
+
+    int index = Math.round(Math.max(0, Math.min(100, percent)) * max / 100f);
+    try {
+      am.setStreamVolume(streamType, index, 0);
+    } catch (SecurityException e) {
+      /* "do not disturb" may forbid changing the notification stream */
+      Log.w(TAG, "Cannot set the volume of stream " + streamType, e);
+    }
+  }
+
   // --- volume (explicit scaling; sonification routing is OEM-dependent) ---
 
   private static final class VolumePolicy {
