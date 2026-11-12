@@ -23,6 +23,14 @@ AndroidPCMPlayer::~AndroidPCMPlayer()
 bool
 AndroidPCMPlayer::Start(PCMSynthesiser &_source)
 {
+  /* AudioVarioGlue::Configure() starts the player again whenever the
+     settings are applied.  Without stopping first, the OpenSL/ES
+     objects of the running playback were only overwritten, not
+     destroyed: their callback kept calling Enqueue() on this object,
+     into the queue of the new player, and after the player had been
+     deleted at the end of a run, on its destroyed mutex. */
+  Stop();
+
   /* why, oh why is OpenSL/ES so complicated? */
 
   SLObjectItf _object;

@@ -95,6 +95,9 @@ Version 7.47 - not yet released
   - Larus: pass on the instantaneous wind of ``$PLARW`` (``I``) next
     to the average wind (``A``)
 * android
+  - fix a crash after a restart: applying the settings started the
+    audio vario a second time without stopping the first player, whose
+    callback then used the player after it was deleted
   - display resolutions "140 dpi (5.7", 640x480 px)" and "180 dpi
     (7.0", 1024x600 px)" for devices such as the SteFlyNav, which
     report 213 dpi and so get fonts and buttons too large
