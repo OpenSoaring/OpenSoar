@@ -9,6 +9,8 @@
 #include "LogFile.hpp"
 #include "Profile/Keys.hpp"
 #include "Profile/Profile.hpp"
+#include "Profile/Current.hpp"
+#include "Profile/Map.hpp"
 
 #ifdef HAVE_VOLUME_CONTROLLER
 #include "Audio/GlobalVolumeController.hpp"
@@ -111,6 +113,13 @@ VarioSoundTick() noexcept
 #ifdef IS_OPENVARIO
   SendVariodVolume();
 #endif
+}
+
+void
+StoreVarioSoundMode(const VarioSoundSettings &settings) noexcept
+{
+  Profile::Set(ProfileKeys::SoundAudioVario, unsigned(settings.GetMode()));
+  Profile::map.Remove(ProfileKeys::VarioSoundSource);
 }
 
 void

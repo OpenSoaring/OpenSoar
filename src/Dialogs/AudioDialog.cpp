@@ -506,8 +506,8 @@ private:
     if (!muted && s.source == VarioSoundSource::INTERNAL && !s.enabled) {
       /* the program's vario sound was switched off in the settings;
          "unmute" means the pilot wants to hear it */
-      s.enabled = true;
-      Profile::Set(ProfileKeys::SoundAudioVario, true);
+      s.SetMode(VarioSoundMode::PROGRAM);
+      StoreVarioSoundMode(s);
       changed = true;
     }
 
@@ -517,10 +517,10 @@ private:
 
   void OnSource() noexcept {
     auto &s = Settings();
-    s.source = s.source == VarioSoundSource::INTERNAL
-      ? VarioSoundSource::OPENVARIO
-      : VarioSoundSource::INTERNAL;
-    Profile::Set(ProfileKeys::VarioSoundSource, (unsigned)s.source);
+    s.SetMode(s.source == VarioSoundSource::INTERNAL
+              ? VarioSoundMode::VARIOD
+              : VarioSoundMode::PROGRAM);
+    StoreVarioSoundMode(s);
     changed = true;
     ApplyVarioSound(s);
     Update();

@@ -101,14 +101,24 @@ Profile::Load(const ProfileMap &map, DialogSettings &settings)
 void
 Profile::Load(const ProfileMap &map, VarioSoundSettings &settings)
 {
-  map.Get(ProfileKeys::SoundAudioVario, settings.enabled);
+  /* "Audio Vario" holds the mode: 0 off, 1 the program's sound (the
+     "1" of the switch it used to be), 2 variod */
+  if (unsigned mode; map.Get(ProfileKeys::SoundAudioVario, mode) &&
+      mode <= unsigned(VarioSoundMode::VARIOD))
+    settings.SetMode(VarioSoundMode(mode));
   map.Get(ProfileKeys::SoundVolume, settings.volume);
   /* a profile from before the steps of 10 percent may hold any value;
      it starts on the nearest step, so that the setting, the volume
      events and the sound agree */
   settings.volume = VarioSoundSettings::RoundVolume(settings.volume);
   map.GetEnum(ProfileKeys::VarioSoundSwitchingMode, settings.switching_mode);
-  map.GetEnum(ProfileKeys::VarioSoundSource, settings.source);
+
+  /* earlier test versions stored variod as a source of its own, which
+     played regardless of the switch */
+  if (VarioSoundSource source;
+      map.GetEnum(ProfileKeys::VarioSoundSource, source) &&
+      source == VarioSoundSource::OPENVARIO)
+    settings.SetMode(VarioSoundMode::VARIOD);
   map.Get(ProfileKeys::VarioDeadBandEnabled, settings.dead_band_enabled);
 
   map.Get(ProfileKeys::VarioMinFrequency, settings.min_frequency);

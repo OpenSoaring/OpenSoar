@@ -23,10 +23,10 @@ Version 7.47 - not yet released
     the logo (red for a test version, green for a release) with
     "Continue" and a bar counting down to it, "Quit" and the version;
     loading then goes on on the same picture
-  - OpenVario: Setup > Audio chooses whether the program or variod plays
-    the vario sound; the chosen one gets the vario volume, the other is
-    set to 0, so the two tones no longer play at once. The program's own
-    sound is the default, variod a fallback chosen on purpose
+  - OpenVario: Audio Vario in Setup > Audio chooses Off, Program or
+    OpenVario (variod); the chosen one gets the vario volume, the other
+    is set to 0, so the two tones no longer play at once. The program's
+    own sound is the default, variod a fallback chosen on purpose
   - OpenVario: when sensord has no sensors and reports 99 m/s, that is
     no longer shown as a climb, and variod is muted until a valid vario
     arrives; the audio dialog offers the source switch also while a

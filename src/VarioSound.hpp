@@ -33,6 +33,14 @@ VarioSoundTick() noexcept;
 void
 SetVarioMuted(bool muted) noexcept;
 
+/**
+ * Store the mode of @a settings ("Audio Vario": off, program, variod)
+ * in the profile, and remove the separate source of earlier test
+ * versions, which would otherwise override it on the next start.
+ */
+void
+StoreVarioSoundMode(const VarioSoundSettings &settings) noexcept;
+
 [[gnu::pure]]
 bool
 IsVarioMuted() noexcept;

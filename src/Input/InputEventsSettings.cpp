@@ -49,14 +49,19 @@ InputEvents::eventSounds(const char *misc)
   SoundSettings &settings = CommonInterface::SetUISettings().sound;
  // bool OldEnableSoundVario = EnableSoundVario;
 
+  /* "on" keeps variod if it is chosen; from "off" the vario comes
+     back as the program's sound, the default */
+  const bool on = settings.vario.GetMode() != VarioSoundMode::OFF;
   if (StringIsEqual(misc, "toggle"))
-    settings.vario.enabled = !settings.vario.enabled;
-  else if (StringIsEqual(misc, "on"))
-    settings.vario.enabled = true;
-  else if (StringIsEqual(misc, "off"))
-    settings.vario.enabled = false;
+    settings.vario.SetMode(on ? VarioSoundMode::OFF
+                              : VarioSoundMode::PROGRAM);
+  else if (StringIsEqual(misc, "on")) {
+    if (!on)
+      settings.vario.SetMode(VarioSoundMode::PROGRAM);
+  } else if (StringIsEqual(misc, "off"))
+    settings.vario.SetMode(VarioSoundMode::OFF);
   else if (StringIsEqual(misc, "show")) {
-    if (settings.vario.enabled)
+    if (on)
       Message::AddMessage(_("Vario sounds on"));
     else
       Message::AddMessage(_("Vario sounds off"));
@@ -64,7 +69,7 @@ InputEvents::eventSounds(const char *misc)
   }
 
   ApplyVarioSound(settings.vario);
-  Profile::Set(ProfileKeys::SoundAudioVario, settings.vario.enabled);
+  StoreVarioSoundMode(settings.vario);
 }
 
 void
