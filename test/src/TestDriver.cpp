@@ -3347,6 +3347,49 @@ TestOpenVarioVolume()
   ok1(device->ParseNMEA("$POV*49", basic));
   device->OnCalculatedUpdate(more, calculated);
   ok1(CountLines(dump2, "POV,C,V") == 0);
+  ok1(CountLines(dump2, "POV,C,MUT") == 0);
+
+  /* sensord without sensors sends 99 m/s: no vario, and variod is
+     muted although the program never set its volume */
+  basic.Reset();
+  ok1(device->ParseNMEA("$POV,E,+99.0000*09", basic));
+  ok1(!basic.total_energy_vario_available);
+  device->OnCalculatedUpdate(more, calculated);
+  ok1(CountLines(dump2, "POV,C,MUT,1") == 1);
+  ok1(CountLines(dump2, "POV,C,VOL") == 0);
+
+  /* only once */
+  dump2.Clear();
+  ok1(device->ParseNMEA("$POV,E,+99.0000*09", basic));
+  device->OnCalculatedUpdate(more, calculated);
+  ok1(CountLines(dump2, "POV,C,MUT") == 0);
+
+  /* a valid vario: shown, and variod may play again */
+  ok1(device->ParseNMEA("$POV,E,+1.2500*3F", basic));
+  ok1(basic.total_energy_vario_available);
+  ok1(equals(basic.total_energy_vario, 1.25));
+  device->OnCalculatedUpdate(more, calculated);
+  ok1(CountLines(dump2, "POV,C,MUT,0") == 1);
+  delete device;
+
+  /* with a volume set, the missing sensors set variod to 0 */
+  DumpPort dump3;
+  device = open_vario_driver.CreateOnPort(dummy_config, dump3);
+  ok1(device->ParseNMEA("$POV,C,VOL,60*75", basic));
+  ok1(device->PutVolume(70, env));
+  ok1(CountLines(dump3, "POV,C,VOL,70") == 1);
+  dump3.Clear();
+  ok1(device->ParseNMEA("$POV,E,-99.0000*0F", basic));
+  device->OnCalculatedUpdate(more, calculated);
+  ok1(CountLines(dump3, "POV,C,VOL,0") == 1);
+  ok1(CountLines(dump3, "POV,C,MUT,1") == 1);
+
+  /* a pressure sensord could not read is no pressure */
+  basic.Reset();
+  ok1(device->ParseNMEA("$POV,P,+9999.0000,Q,+9999.00*48",
+                        basic));
+  ok1(!basic.static_pressure_available);
+  ok1(!basic.dyn_pressure_available);
   delete device;
 }
 
@@ -4922,7 +4965,7 @@ int main()
   SetSingleDataPath(data_path);
   CreateDataPath();
 
-  plan_tests(1103 /* drivers */ + 45 /* PFLAU extended */
+  plan_tests(1123 /* drivers */ + 45 /* PFLAU extended */
              + 40 /* PFLAA v7+ */ + 4 /* PFLAA high speed */
              + 12 /* PFLAE */ + 10 /* PFLAJ */
              + 16 /* PFLAQ */

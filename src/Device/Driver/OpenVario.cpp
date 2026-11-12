@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "Device/Driver/OpenVario.hpp"
+#include "LogFile.hpp"
 #include "Device/Driver.hpp"
 #include "Device/Util/NMEAWriter.hpp"
 #include "NMEA/Checksum.hpp"
@@ -87,6 +88,27 @@ private:
    * go nowhere: variod connects to the program only after its start.
    */
   std::atomic<bool> variod_seen{false};
+
+  /**
+   * Does sensord report that it has no sensors?  It sends a TE vario
+   * of 99 m/s (anything outside +-50 m/s) when it reads no valid
+   * pressure, e.g. on a device without the sensor board, and variod
+   * would play that as a constant climb tone.  variod is muted then,
+   * whatever the volume, until a valid vario arrives.
+   */
+  std::atomic<bool> sensors_missing{false};
+
+  /**
+   * The range of a valid TE vario; sensord sends 99 m/s outside of
+   * it, as its mark for "no value".
+   */
+  static constexpr double MAX_VALID_VARIO = 50;
+
+  /**
+   * sensord marks a static pressure it could not read with 9999 hPa
+   * (its valid range ends at 2000), a dynamic pressure with 9999 Pa.
+   */
+  static constexpr double INVALID_PRESSURE = 9998;
 
   // remember the settings to be able to repeat the most recent values upon request
   double _bugs = 1;
@@ -323,7 +345,15 @@ OpenVarioDevice::ParseNMEA(const char *_line, NMEAInfo &info)
 void
 OpenVarioDevice::SendVolume(OperationEnvironment &env)
 {
-  const unsigned value = volume.load();
+  if (!volume_known) {
+    /* the program does not set variod's volume, it only mutes it while
+       sensord has no sensors, and lets it play again after */
+    PortWriteNMEA(port, sensors_missing ? "POV,C,MUT,1" : "POV,C,MUT,0",
+                  env);
+    return;
+  }
+
+  const unsigned value = sensors_missing ? 0 : volume.load();
 
   if (!variod_absolute) {
     /* maybe an older variod: from wherever it stands down to 0 (it
@@ -522,11 +552,26 @@ OpenVarioDevice::POV(NMEAInputLine &line, NMEAInfo &info)
         break;
       }
       case 'E': {
-        info.ProvideTotalEnergyVario(value);
+        const bool valid = value >= -MAX_VALID_VARIO &&
+          value <= MAX_VALID_VARIO;
+        if (sensors_missing.exchange(!valid) != !valid) {
+          /* muted, or allowed to play again */
+          volume_pending = true;
+          if (!valid)
+            LogFmt("OpenVario: sensord reports no valid vario ({} m/s), "
+                   "variod is muted", value);
+          else
+            LogFmt("OpenVario: sensord reports a valid vario again");
+        }
+
+        /* the mark for "no value" is no climb rate */
+        if (valid)
+          info.ProvideTotalEnergyVario(value);
         break;
       }
       case 'e': {
-        info.ProvideNoncompVario(value);
+        if (value >= -MAX_VALID_VARIO && value <= MAX_VALID_VARIO)
+          info.ProvideNoncompVario(value);
         break;
       }
       case 'H': {
@@ -535,11 +580,15 @@ OpenVarioDevice::POV(NMEAInputLine &line, NMEAInfo &info)
           break;
       }
       case 'P': {
+        if (value > INVALID_PRESSURE)
+          break;
         AtmosphericPressure pressure = AtmosphericPressure::HectoPascal(value);
         info.ProvideStaticPressure(pressure);
         break;
       }
       case 'Q': {
+        if (value > INVALID_PRESSURE)
+          break;
         AtmosphericPressure pressure = AtmosphericPressure::Pascal(value);
         info.ProvideDynamicPressure(pressure);
         break;
