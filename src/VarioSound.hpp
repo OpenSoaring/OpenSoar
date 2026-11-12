@@ -54,7 +54,7 @@ IsVariodAvailable() noexcept;
 bool
 HasMasterVolume() noexcept;
 
-/** the highest master volume in percent; above 100 may clip */
+/** the highest master volume in percent */
 [[gnu::const]]
 unsigned
 GetMasterVolumeMax() noexcept;

@@ -135,11 +135,10 @@ HasMasterVolume() noexcept
 unsigned
 GetMasterVolumeMax() noexcept
 {
-#ifdef HAVE_VOLUME_CONTROLLER
-  return VolumeController::GetMaxValue();
-#else
+  /* VolumeController goes up to 150 percent, but above 100 the
+     program's mixer amplifies and clips; the loudness belongs to the
+     sound card and the speaker */
   return 100;
-#endif
 }
 
 unsigned
@@ -162,7 +161,7 @@ void
 SetMasterVolume(unsigned percent) noexcept
 {
 #ifdef HAVE_VOLUME_CONTROLLER
-  percent = std::min(percent, VolumeController::GetMaxValue());
+  percent = std::min(percent, GetMasterVolumeMax());
   CommonInterface::SetUISettings().sound.master_volume = percent;
   Profile::Set(ProfileKeys::MasterAudioVolume, percent);
 #endif
@@ -176,7 +175,7 @@ OutputMasterVolume([[maybe_unused]] unsigned percent) noexcept
 {
 #ifdef HAVE_VOLUME_CONTROLLER
   volume_controller->SetVolume(std::min(percent,
-                                        VolumeController::GetMaxValue()));
+                                        GetMasterVolumeMax()));
 #elif defined(ANDROID)
   SoundUtil::SetMasterVolume(Java::GetEnv(), context->Get(),
                              std::min(percent, 100u));

@@ -28,12 +28,10 @@
 /** volumes go in steps of 10 percent, 3 dB each for the vario */
 static constexpr unsigned STEP = 10;
 
-/* the colours of a bar: the part that is heard, the part of the set
-   volume that a lower master volume takes away, the part above 100
-   percent where the program's mixer may clip */
+/* the colours of a bar: the part that is heard, and the part of the
+   set volume that a lower master volume takes away */
 static constexpr Color HEARD_COLOR{0x2e, 0x7d, 0x32};
 static constexpr Color CUT_COLOR{0xa5, 0xd6, 0xa7};
-static constexpr Color LOUD_COLOR{0xc6, 0x28, 0x28};
 
 /**
  * A volume as a bar that fills from the left.  A tap or a drag sets the
@@ -53,6 +51,10 @@ class VolumeBar final : public PaintWindow {
   unsigned limit = 100;
 
   bool greyed = false;
+
+  /** does the bar ignore input?  Only while its own sound is muted */
+  bool locked = false;
+
   bool dragging = false;
 
 public:
@@ -79,14 +81,20 @@ public:
     Invalidate();
   }
 
-  void SetGreyed(bool _greyed) noexcept {
+  /**
+   * @param _greyed draw the bar grey: nothing of it is heard
+   * @param _locked ignore input as well, because the bar's own sound
+   * is muted
+   */
+  void SetGreyed(bool _greyed, bool _locked) noexcept {
     greyed = _greyed;
+    locked = _locked;
     Invalidate();
   }
 
 private:
   void Change(int new_value) noexcept {
-    if (greyed)
+    if (locked)
       return;
 
     const unsigned v = std::clamp(new_value, 0, (int)max_value);
@@ -141,7 +149,7 @@ protected:
 
   bool OnMouseDown(PixelPoint p) noexcept override {
     SetFocus();
-    if (greyed)
+    if (locked)
       return true;
 
     dragging = true;
@@ -200,9 +208,7 @@ VolumeBar::OnPaint(Canvas &canvas) noexcept
   const PixelRect track = GetTrack();
   canvas.DrawFilledRectangle(track, COLOR_WHITE);
 
-  const unsigned heard = std::min({value, limit, 100u});
-  const int heard_x = ToX(track, heard);
-  const int cut_x = ToX(track, std::min(value, 100u));
+  const int heard_x = ToX(track, std::min(value, limit));
   const int value_x = ToX(track, value);
 
   PixelRect part = track;
@@ -210,17 +216,13 @@ VolumeBar::OnPaint(Canvas &canvas) noexcept
   canvas.DrawFilledRectangle(part, greyed ? COLOR_GRAY : HEARD_COLOR);
 
   part.left = heard_x;
-  part.right = cut_x;
-  canvas.DrawFilledRectangle(part, greyed ? COLOR_LIGHT_GRAY : CUT_COLOR);
-
-  part.left = cut_x;
   part.right = value_x;
-  canvas.DrawFilledRectangle(part, greyed ? COLOR_GRAY : LOUD_COLOR);
+  canvas.DrawFilledRectangle(part, greyed ? COLOR_LIGHT_GRAY : CUT_COLOR);
 
   canvas.DrawOutlineRectangle(track, COLOR_GRAY);
 
   /* the percentage in the middle of the bar: dark everywhere, then
-     light again over the dark (heard or loud) part of the bar */
+     light again over the dark (heard) part of the bar */
   StaticString<16> text;
   text.Format("%u %%", value);
   canvas.Select(look.bold_font);
@@ -231,10 +233,9 @@ VolumeBar::OnPaint(Canvas &canvas) noexcept
   canvas.SetTextColor(COLOR_BLACK);
   canvas.DrawText(p, text.c_str());
 
-  const int dark_x = value > 100 ? value_x : heard_x;
-  if (dark_x > p.x) {
+  if (heard_x > p.x) {
     canvas.SetTextColor(COLOR_WHITE);
-    canvas.DrawClippedText(p, (unsigned)(dark_x - p.x), text.c_str());
+    canvas.DrawClippedText(p, (unsigned)(heard_x - p.x), text.c_str());
   }
 }
 
@@ -475,7 +476,7 @@ AudioWindow::Update() noexcept
     master = muted ? 0 : GetMasterVolume();
     master_bar.SetValue(GetMasterVolume());
     master_bar.SetLimit(GetMasterVolume());
-    master_bar.SetGreyed(muted);
+    master_bar.SetGreyed(muted, muted);
     master_mute.SetMuted(muted);
   }
 
@@ -486,8 +487,10 @@ AudioWindow::Update() noexcept
   vario_bar.SetValue(s.volume);
   vario_bar.SetLimit(s.volume * std::min(master, 100u) / 100);
 
+  /* a master volume of 0 silences the vario as well, although its own
+     button is not pressed; it stays adjustable then */
   const bool silent = IsVarioSilent();
-  vario_bar.SetGreyed(silent);
+  vario_bar.SetGreyed(silent || (have_master && master == 0), silent);
   vario_mute.SetMuted(silent);
 
   if (have_source)

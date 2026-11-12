@@ -266,7 +266,7 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
   AddInteger(_("Master Volume"),
              _("The overall audio output volume."),
              "%d %%", "%d",
-             0, VolumeController::GetMaxValue(), 1, sound.master_volume,
+             0, GetMasterVolumeMax(), 1, sound.master_volume,
              this);
 #elif defined(ANDROID)
   /* the volume of the device, read each time the page opens, so that
