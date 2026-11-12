@@ -244,9 +244,9 @@ SessionProcessTimer() noexcept
 
   const auto &settings = CommonInterface::GetComputerSettings();
   const auto &polar = settings.polar;
-  const bool flying = CommonInterface::Calculated().flight.flying;
+  const auto &flight = CommonInterface::Calculated().flight;
   if (Session::State().NoteFlying(
-        flying,
+        flight.flying, flight.on_ground,
         polar.glide_polar_task.GetBallastLitres(),
         polar.glide_polar_task.GetCrewMass(),
         polar.bugs))
