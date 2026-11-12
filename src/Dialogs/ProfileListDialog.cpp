@@ -371,6 +371,12 @@ ProfileListDialog(Path current_profile, Path preselect)
   dialog.AddButton(_("Close"), mrOK);
   dialog.EnableCursorSelection();
 
+  /* the cursor starts on the profile in use, not on the first one in
+     the list: that is the one the pilot looks for, and the one the
+     password or copy buttons are most likely meant for */
+  if (preselect == nullptr)
+    preselect = current_profile;
+
   if (preselect != nullptr) {
     dialog.PrepareWidget();
     dialog.GetWidget().SelectPath(preselect);

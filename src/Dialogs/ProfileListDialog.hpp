@@ -14,7 +14,8 @@
  *
  * @param current_profile the profile in use, which cannot be
  * activated again; may be nullptr
- * @param preselect the profile to put the cursor on; may be nullptr
+ * @param preselect the profile to put the cursor on; nullptr puts it
+ * on the current profile
  * @return the profile that was activated, or nullptr
  */
 AllocatedPath
