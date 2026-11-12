@@ -4,6 +4,7 @@
 #include "ProfileListDialog.hpp"
 #include "ProfilePasswordDialog.hpp"
 #include "Dialogs/Error.hpp"
+#include "Dialogs/PowerDialog.hpp"
 #include "Dialogs/Message.hpp"
 #include "Dialogs/TextEntry.hpp"
 #include "Dialogs/WidgetDialog.hpp"
@@ -383,6 +384,16 @@ ProfileListDialog(Path current_profile, Path preselect)
   return dialog.GetWidget().WasActivated()
     ? AllocatedPath(dialog.GetWidget().GetSelectedPath())
     : nullptr;
+}
+
+void
+ShowProfileList() noexcept
+{
+  AllocatedPath activated = nullptr;
+  do {
+    activated = ProfileListDialog(Profile::GetPath(), activated);
+  } while (activated != nullptr &&
+           !OfferRestart(_("Another profile was activated.")));
 }
 
 AllocatedPath

@@ -5,6 +5,8 @@
 #include "BackendComponents.hpp"
 #include "Components.hpp"
 #include "Dialogs/Device/DeviceListDialog.hpp"
+#include "ConfigPanel.hpp"
+#include "Profile/Profile.hpp"
 #include "DisplayConfigPanel.hpp"
 #include "Form/DataField/Enum.hpp"
 #include "Form/DataField/Listener.hpp"
@@ -37,6 +39,7 @@ class SystemConfigPanel final
     DEVICES_IN_PROFILE,
     CUSTOM_DPI,
     DEVICES,
+    PROFILE,
     TEST_VERSIONS,
   };
 
@@ -118,6 +121,20 @@ EditDevices([[maybe_unused]] const char *caption, DataField &df,
   return true;
 }
 
+/**
+ * Close the configuration and open the profile list (see
+ * ConfigPanel::RequestProfileList()).  Signature of
+ * WndProperty::EditCallback.
+ */
+static bool
+EditProfile([[maybe_unused]] const char *caption,
+            [[maybe_unused]] DataField &df,
+            [[maybe_unused]] const char *help_text) noexcept
+{
+  ConfigPanel::RequestProfileList();
+  return false;
+}
+
 void
 SystemConfigPanel::Prepare(ContainerWindow &parent,
                            const PixelRect &rc) noexcept
@@ -159,6 +176,16 @@ SystemConfigPanel::Prepare(ContainerWindow &parent,
             "open the device list."),
           DescribeDevices().c_str())
     ->SetEditCallback(EditDevices);
+
+  /* the profile in use, and the way to another one; the list is the
+     same as in the menu */
+  const Path profile_path = Profile::GetPath();
+  AddText(_("Profile"),
+          _("The profile in use.  Click to save the configuration and "
+            "open the profile list; activating another profile offers a "
+            "restart, which loads all of its settings."),
+          profile_path != nullptr ? profile_path.GetBase().c_str() : "")
+    ->SetEditCallback(EditProfile);
 
   AddBoolean(_("Test versions"),
              _("Also offer the OpenSoar test versions and OpenVario test "

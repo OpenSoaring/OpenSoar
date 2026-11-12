@@ -19,6 +19,15 @@ AllocatedPath
 ProfileListDialog(Path current_profile, Path preselect=nullptr);
 
 /**
+ * The profile list of the menu and of the system settings: when the
+ * user activates another profile, a restart is offered, because only
+ * a restart loads all of its settings; declined, the list comes back
+ * on the activated profile.
+ */
+void
+ShowProfileList() noexcept;
+
+/**
  * Let the user select a profile file.  Returns the absolute path of
  * the selected file or an empty string if the user has cancelled the
  * dialog.
