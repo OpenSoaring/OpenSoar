@@ -132,13 +132,36 @@ HasMasterVolume() noexcept
 #endif
 }
 
+bool
+IsMasterVolumeInSteps() noexcept
+{
+#ifdef ANDROID
+  return true;
+#else
+  return false;
+#endif
+}
+
 unsigned
 GetMasterVolumeMax() noexcept
 {
+#ifdef ANDROID
+  const int steps =
+    SoundUtil::GetMasterVolumeSteps(Java::GetEnv(), context->Get());
+  return steps > 0 ? steps : 15;
+#else
   /* VolumeController goes up to 150 percent, but above 100 the
      program's mixer amplifies and clips; the loudness belongs to the
      sound card and the speaker */
   return 100;
+#endif
+}
+
+unsigned
+GetMasterVolumeIncrement() noexcept
+{
+  /* the device's own steps, or percent in steps of 10 like the vario */
+  return IsMasterVolumeInSteps() ? 1 : 10;
 }
 
 unsigned
@@ -150,46 +173,42 @@ GetMasterVolume() noexcept
 #ifdef HAVE_VOLUME_CONTROLLER
   return CommonInterface::GetUISettings().sound.master_volume;
 #elif defined(ANDROID)
-  /* Android has its own steps, often 15: 30 percent is set as step
-     4.5, rounded to 5, which reads back as 33 percent.  Rounding to
-     the program's steps of 10 shows what was set. */
-  return VarioSoundSettings::RoundVolume(
-    std::max(SoundUtil::GetMasterVolume(Java::GetEnv(), context->Get()), 0));
+  return std::max(SoundUtil::GetMasterVolume(Java::GetEnv(), context->Get()),
+                  0);
 #else
   return 0;
 #endif
 }
 
 void
-SetMasterVolume(unsigned percent) noexcept
+SetMasterVolume(unsigned level) noexcept
 {
+  level = std::min(level, GetMasterVolumeMax());
 #ifdef HAVE_VOLUME_CONTROLLER
-  percent = std::min(percent, GetMasterVolumeMax());
-  CommonInterface::SetUISettings().sound.master_volume = percent;
-  Profile::Set(ProfileKeys::MasterAudioVolume, percent);
+  CommonInterface::SetUISettings().sound.master_volume = level;
+  Profile::Set(ProfileKeys::MasterAudioVolume, level);
 #endif
 
-  PlayMasterVolume(percent);
+  PlayMasterVolume(level);
 }
 
 /** set the output without looking at the mute */
 static void
-OutputMasterVolume([[maybe_unused]] unsigned percent) noexcept
+OutputMasterVolume([[maybe_unused]] unsigned level) noexcept
 {
 #ifdef HAVE_VOLUME_CONTROLLER
-  volume_controller->SetVolume(std::min(percent,
-                                        GetMasterVolumeMax()));
+  volume_controller->SetVolume(std::min(level, GetMasterVolumeMax()));
 #elif defined(ANDROID)
   SoundUtil::SetMasterVolume(Java::GetEnv(), context->Get(),
-                             std::min(percent, 100u));
+                             std::min(level, GetMasterVolumeMax()));
 #endif
 }
 
 void
-PlayMasterVolume(unsigned percent) noexcept
+PlayMasterVolume(unsigned level) noexcept
 {
   master_muted = false;
-  OutputMasterVolume(percent);
+  OutputMasterVolume(level);
 }
 
 void

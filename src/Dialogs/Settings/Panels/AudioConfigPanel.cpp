@@ -24,16 +24,12 @@
 #include "Dialogs/AudioDialog.hpp"
 #include "Profile/Profile.hpp"
 #include "Widget/RowFormWidget.hpp"
+#include "util/StaticString.hxx"
 
 #ifdef HAVE_VOLUME_CONTROLLER
 #include "Audio/VolumeController.hpp"
 #endif
 
-#ifdef ANDROID
-#include "Android/Main.hpp"
-#include "Android/SoundUtil.hpp"
-#include "Android/Context.hpp"
-#endif
 
 #if defined(HAVE_VOLUME_CONTROLLER) || defined(ANDROID)
 /* a master volume: the program's own mixer, or on Android the volume
@@ -137,8 +133,8 @@ public:
 
 private:
 #ifdef ANDROID
-  /** the Android volume when the page opened, or -1 */
-  int initial_android_volume = -1;
+  /** the step of the Android volume when the page opened */
+  unsigned initial_android_volume = 0;
 #endif
 
   void OnModified(DataField &df) noexcept override;
@@ -198,7 +194,7 @@ AudioConfigPanel::OpenAudioDialog() noexcept
             (int)CommonInterface::GetUISettings().sound.master_volume);
 #elif defined(ANDROID)
   initial_android_volume = GetMasterVolume();
-  LoadValue(MASTER_VOLUME, (int)RoundVolume(initial_android_volume));
+  LoadValue(MASTER_VOLUME, (int)initial_android_volume);
 #endif
 
   if (!AudioVarioGlue::HaveAudioVario())
@@ -272,15 +268,19 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
   /* the volume of the device, read each time the page opens, so that
      it also shows what the volume buttons have set; not stored in the
      profile, because Android keeps it */
-  initial_android_volume =
-    SoundUtil::GetMasterVolume(Java::GetEnv(), context->Get());
+  initial_android_volume = GetMasterVolume();
+
+  /* in the steps of the device ("5/15"): a percentage between two of
+     them would read back as another one */
+  StaticString<32> android_format;
+  android_format.Format("%%d/%u", GetMasterVolumeMax());
   AddInteger(_("Master Volume"),
              _("The volume of the device for media and notifications, "
                "which the audio vario and the spoken messages use.  The "
                "same as the volume buttons and the sound settings of "
-               "Android."),
-             "%d %%", "%d", 0, 100, VOLUME_STEP,
-             RoundVolume(std::max(initial_android_volume, 0)), this);
+               "Android, in their steps."),
+             android_format.c_str(), "%d", 0, GetMasterVolumeMax(), 1,
+             initial_android_volume, this);
 #endif
 
 #ifdef HAVE_MASTER_VOLUME_ROW
@@ -382,8 +382,8 @@ AudioConfigPanel::Save(bool &changed) noexcept
                               sound.master_volume);
 #elif defined(ANDROID)
   if (const unsigned volume = GetValueInteger(MASTER_VOLUME);
-      volume != RoundVolume(std::max(initial_android_volume, 0)))
-    SoundUtil::SetMasterVolume(Java::GetEnv(), context->Get(), volume);
+      volume != initial_android_volume)
+    SetMasterVolume(volume);
 #endif
 
   if (!AudioVarioGlue::HaveAudioVario())

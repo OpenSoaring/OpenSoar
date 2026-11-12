@@ -61,8 +61,26 @@ public final class SoundUtil {
   }
 
   /**
-   * The volume of the media stream in percent of its maximum, which
-   * the audio vario plays on; -1 if it cannot be read.
+   * The number of steps of the media stream, which the audio vario
+   * plays on; often 15, but it depends on the device.  -1 if it cannot
+   * be read.
+   */
+  public static int getMasterVolumeSteps(Context context) {
+    AudioManager am = (AudioManager)
+      context.getSystemService(Context.AUDIO_SERVICE);
+    if (am == null)
+      return -1;
+
+    int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+    return max > 0 ? max : -1;
+  }
+
+  /**
+   * The step of the media stream, between 0 and
+   * {@link #getMasterVolumeSteps}; -1 if it cannot be read.  Steps
+   * instead of percent, because a percentage between two steps reads
+   * back as another one (30 percent of 15 steps is 4.5, set as 5, read
+   * as 33 percent).
    */
   public static int getMasterVolume(Context context) {
     AudioManager am = (AudioManager)
@@ -70,34 +88,37 @@ public final class SoundUtil {
     if (am == null)
       return -1;
 
-    return Math.round(VolumePolicy.normalized(am, AudioManager.STREAM_MUSIC)
-                      * 100f);
+    return am.getStreamVolume(AudioManager.STREAM_MUSIC);
   }
 
   /**
-   * Set the media and the notification stream to the given percent of
-   * their maximum.  The audio vario plays on the media stream, the
-   * spoken messages, depending on the device, on one of the two, so
-   * both are set, like the louder of them is what OpenSoar reads as
-   * the audible volume.
+   * Set the media stream to the given step and the notification stream
+   * to the same share of its own steps.  The audio vario plays on the
+   * media stream, the spoken messages, depending on the device, on one
+   * of the two, so both are set.
    */
-  public static void setMasterVolume(Context context, int percent) {
+  public static void setMasterVolume(Context context, int step) {
     AudioManager am = (AudioManager)
       context.getSystemService(Context.AUDIO_SERVICE);
     if (am == null)
       return;
 
-    setStreamPercent(am, AudioManager.STREAM_MUSIC, percent);
-    setStreamPercent(am, AudioManager.STREAM_NOTIFICATION, percent);
+    int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+    if (max <= 0)
+      return;
+
+    float share = Math.max(0, Math.min(max, step)) / (float)max;
+    setStreamShare(am, AudioManager.STREAM_MUSIC, share);
+    setStreamShare(am, AudioManager.STREAM_NOTIFICATION, share);
   }
 
-  private static void setStreamPercent(AudioManager am, int streamType,
-                                       int percent) {
+  private static void setStreamShare(AudioManager am, int streamType,
+                                     float share) {
     int max = am.getStreamMaxVolume(streamType);
     if (max <= 0)
       return;
 
-    int index = Math.round(Math.max(0, Math.min(100, percent)) * max / 100f);
+    int index = Math.round(share * max);
     try {
       am.setStreamVolume(streamType, index, 0);
     } catch (SecurityException e) {

@@ -54,28 +54,46 @@ IsVariodAvailable() noexcept;
 bool
 HasMasterVolume() noexcept;
 
-/** the highest master volume in percent */
+/*
+ * The master volume is a level between 0 and GetMasterVolumeMax(): on
+ * Linux the percentage of the program's mixer, on Android the step of
+ * the media volume, of which a device has its own number, often 15.
+ * A percentage would not survive there: 30 percent of 15 steps is 4.5,
+ * set as 5 and read back as 33 percent.
+ */
+
+/** are the levels the steps of the device rather than percent? */
 [[gnu::const]]
+bool
+IsMasterVolumeInSteps() noexcept;
+
+/** the highest master volume level */
+[[gnu::pure]]
 unsigned
 GetMasterVolumeMax() noexcept;
+
+/** how much one tap or key changes the master volume level */
+[[gnu::pure]]
+unsigned
+GetMasterVolumeIncrement() noexcept;
 
 unsigned
 GetMasterVolume() noexcept;
 
 /**
- * Set the master volume at once.  The program's own mixer stores it in
- * the profile; Android keeps its media volume itself.
+ * Set the master volume level at once.  The program's own mixer stores
+ * it in the profile; Android keeps its media volume itself.
  */
 void
-SetMasterVolume(unsigned percent) noexcept;
+SetMasterVolume(unsigned level) noexcept;
 
 /**
- * Play at this master volume without storing it, so that a settings
- * page can let the pilot hear a value before it is saved.  It ends a
- * mute of the master volume.
+ * Play at this master volume level without storing it, so that a
+ * settings page can let the pilot hear a value before it is saved.  It
+ * ends a mute of the master volume.
  */
 void
-PlayMasterVolume(unsigned percent) noexcept;
+PlayMasterVolume(unsigned level) noexcept;
 
 /**
  * Silence the whole output, spoken messages and warnings included, or

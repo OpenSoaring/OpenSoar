@@ -25,8 +25,8 @@
 #include <cmath>
 #include <functional>
 
-/** volumes go in steps of 10 percent, 3 dB each for the vario */
-static constexpr unsigned STEP = 10;
+/** volumes in percent go in steps of 10, 3 dB each for the vario */
+static constexpr unsigned PERCENT_STEP = 10;
 
 /* the colours of a bar: the volume, and the range of the vario within
    the master volume */
@@ -50,6 +50,12 @@ class VolumeBar final : public PaintWindow {
 
   unsigned value = 0, max_value = 100;
 
+  /** how much a tap or a key changes #value */
+  unsigned increment = PERCENT_STEP;
+
+  /** show "5/15" instead of percent: the steps of the device */
+  bool in_steps = false;
+
   /** the share of the track in percent that #max_value covers */
   unsigned scale = 100;
 
@@ -68,8 +74,16 @@ public:
             std::function<void(unsigned)> _on_change) noexcept
     :look(_look), on_change(std::move(_on_change)) {}
 
-  void SetMax(unsigned _max_value) noexcept {
-    max_value = std::max(_max_value / STEP * STEP, STEP);
+  /**
+   * @param _increment the change by a tap step or a key
+   * @param _in_steps show the value as steps of @a _max_value instead
+   * of percent
+   */
+  void SetMax(unsigned _max_value, unsigned _increment,
+              bool _in_steps) noexcept {
+    increment = std::max(_increment, 1u);
+    max_value = std::max(_max_value / increment * increment, increment);
+    in_steps = _in_steps;
     Invalidate();
   }
 
@@ -137,9 +151,9 @@ private:
   unsigned ValueAt(int x) const noexcept {
     const PixelRect track = GetTrack();
     const int width = GetRangeWidth(track);
-    const int steps = max_value / STEP;
+    const int steps = max_value / increment;
     const int step = ((x - track.left) * steps + width / 2) / width;
-    return std::clamp(step, 0, steps) * STEP;
+    return std::clamp(step, 0, steps) * increment;
   }
 
 protected:
@@ -151,11 +165,11 @@ protected:
   bool OnKeyDown(unsigned key_code) noexcept override {
     switch (key_code) {
     case KEY_LEFT:
-      Change((int)value - (int)STEP);
+      Change((int)value - (int)increment);
       return true;
 
     case KEY_RIGHT:
-      Change(value + STEP);
+      Change(value + increment);
       return true;
     }
 
@@ -239,7 +253,10 @@ VolumeBar::OnPaint(Canvas &canvas) noexcept
   /* the percentage in the middle of the bar: dark everywhere, then
      light again over the dark (heard) part of the bar */
   StaticString<16> text;
-  text.Format("%u %%", value);
+  if (in_steps)
+    text.Format("%u/%u", value, max_value);
+  else
+    text.Format("%u %%", value);
   canvas.Select(look.bold_font);
   canvas.SetBackgroundTransparent();
   const PixelSize size = canvas.CalcTextSize(text.c_str());
@@ -500,7 +517,9 @@ AudioWindow::Update() noexcept
        length of the master bar, an approximation of what is heard; a
        master volume of 0 would leave nothing to tap on, so the vario
        keeps the full width then */
-    vario_bar.SetScale(master > 0 ? master : 100);
+    vario_bar.SetScale(master > 0
+                       ? master * 100 / GetMasterVolumeMax()
+                       : 100);
   }
 
   vario_bar.SetValue(s.volume);
@@ -529,7 +548,8 @@ AudioWindow::OnCreate()
 
   if (have_master) {
     master_bar.Create(*this, dummy, style);
-    master_bar.SetMax(GetMasterVolumeMax());
+    master_bar.SetMax(GetMasterVolumeMax(), GetMasterVolumeIncrement(),
+                      IsMasterVolumeInSteps());
     master_mute.Create(*this, dummy, style);
   }
 
