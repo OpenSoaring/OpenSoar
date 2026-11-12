@@ -5,6 +5,7 @@
 #include "BackendComponents.hpp"
 #include "Components.hpp"
 #include "Dialogs/Device/DeviceListDialog.hpp"
+#include "Dialogs/ProfileListDialog.hpp"
 #include "ConfigPanel.hpp"
 #include "Profile/Profile.hpp"
 #include "DisplayConfigPanel.hpp"
@@ -184,7 +185,9 @@ SystemConfigPanel::Prepare(ContainerWindow &parent,
           _("The profile in use.  Click to save the configuration and "
             "open the profile list; activating another profile offers a "
             "restart, which loads all of its settings."),
-          profile_path != nullptr ? profile_path.GetBase().c_str() : "")
+          profile_path != nullptr
+          ? ProfileDisplayName(profile_path).c_str()
+          : "")
     ->SetEditCallback(EditProfile);
 
   AddBoolean(_("Test versions"),

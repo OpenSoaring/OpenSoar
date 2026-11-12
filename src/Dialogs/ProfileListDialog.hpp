@@ -5,6 +5,8 @@
 
 #include "system/Path.hpp"
 
+#include <string>
+
 /**
  * Manage the profile files.  The user can also mark another profile
  * for use, which takes effect on the next start; the dialog closes
@@ -26,6 +28,15 @@ ProfileListDialog(Path current_profile, Path preselect=nullptr);
  */
 void
 ShowProfileList() noexcept;
+
+/**
+ * The name of a profile as the dialogs show it: the file name without
+ * the directory and without the suffix ".prf", which every profile
+ * has and which only made the names longer ("August" instead of
+ * "August.prf").
+ */
+std::string
+ProfileDisplayName(Path path);
 
 /**
  * Let the user select a profile file.  Returns the absolute path of
