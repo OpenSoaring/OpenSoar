@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstdio>
 
 using std::string_view_literals::operator""sv;
 
@@ -55,12 +56,21 @@ private:
   constexpr void Copy(PolarCoefficients &dest, const PolarCoefficients &src);
 
   /**
-   * The vario volume of variod in percent, in its steps of 10.  variod
-   * only knows "louder" and "softer" by 10 percent ($POV,C,VU and VD)
-   * and keeps its volume when the program restarts, so it is set by
-   * going down to 0 first and then up to the wanted step.
+   * The vario volume of variod in percent.  variod keeps its volume
+   * when the program restarts, so it is always set completely, not
+   * moved from where the program thinks it stands.
    */
   std::atomic<unsigned> volume{0};
+
+  /**
+   * Has variod answered "$POV,?,VOL"?  Then it knows the absolute
+   * commands VOL and MUT; an older variod only knows "louder" and
+   * "softer" by 10 percent (VU and VD) and ignores them.
+   */
+  std::atomic<bool> variod_absolute{false};
+
+  /** has "$POV,?,VOL" been sent on this connection? */
+  std::atomic<bool> volume_queried{false};
 
   /**
    * Has the program asked for a volume at all?  Only then it takes
@@ -313,14 +323,30 @@ OpenVarioDevice::ParseNMEA(const char *_line, NMEAInfo &info)
 void
 OpenVarioDevice::SendVolume(OperationEnvironment &env)
 {
-  /* from wherever variod stands down to 0 (it stops there), then up
-     by its steps of 10; every one of the commands also ends a mute of
-     variod, and 0 is silent without it */
-  for (unsigned i = 0; i < 10; ++i)
-    PortWriteNMEA(port, "POV,C,VD", env);
+  const unsigned value = volume.load();
 
-  for (unsigned i = 0, n = volume.load() / 10; i < n; ++i)
-    PortWriteNMEA(port, "POV,C,VU", env);
+  if (!variod_absolute) {
+    /* maybe an older variod: from wherever it stands down to 0 (it
+       stops there), then up by its steps of 10; a newer one ends on
+       the same value, and the answer to the query tells which one it
+       is for the next time */
+    for (unsigned i = 0; i < 10; ++i)
+      PortWriteNMEA(port, "POV,C,VD", env);
+
+    for (unsigned i = 0, n = value / 10; i < n; ++i)
+      PortWriteNMEA(port, "POV,C,VU", env);
+
+    if (!volume_queried.exchange(true))
+      PortWriteNMEA(port, "POV,?,VOL", env);
+  }
+
+  /* the absolute commands; an older variod ignores them.  VOL leaves
+     the mute state alone, and variod unmutes itself when it connects,
+     so MUT states explicitly whether it shall be heard. */
+  char buffer[32];
+  snprintf(buffer, sizeof(buffer), "POV,C,VOL,%u", value);
+  PortWriteNMEA(port, buffer, env);
+  PortWriteNMEA(port, value > 0 ? "POV,C,MUT,0" : "POV,C,MUT,1", env);
 }
 
 bool
@@ -342,6 +368,7 @@ OpenVarioDevice::LinkTimeout()
   /* variod may have been restarted, back at its default volume; set
      it again as soon as it is heard from */
   variod_seen = false;
+  volume_queried = false;
   if (volume_known)
     volume_pending = true;
 }
@@ -374,6 +401,14 @@ OpenVarioDevice::POV(NMEAInputLine &line, NMEAInfo &info)
     char type = line.ReadOneChar();
     if (type == '\0')
       break;
+
+    if (type == 'C') {
+      /* an answer of variod, e.g. "$POV,C,VOL,80" to "$POV,?,VOL":
+         this variod knows the absolute volume commands */
+      if (line.ReadView() == "VOL"sv)
+        variod_absolute = true;
+      return true;
+    }
 
     if (type == '?') {
       NullOperationEnvironment env;
