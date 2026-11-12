@@ -13,6 +13,9 @@ Version 7.47 - not yet released
     the logo (red for a test version, green for a release) with
     "Continue" and a bar counting down to it, "Quit" and the version;
     loading then goes on on the same picture
+  - OpenVario: Setup > Audio chooses whether the program or variod plays
+    the vario sound; the chosen one gets the vario volume, the other is
+    set to 0, so the two tones no longer play at once
   - the vario volume goes in steps of 10 percent of 3 dB each, so that
     50 percent sounds clearly softer than 100 percent instead of almost
     as loud

@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "InputEvents.hpp"
+#include "VarioSound.hpp"
 #include "Dialogs/Error.hpp"
 #include "InfoBoxes/InfoBoxGeometryList.hpp"
 #include "InfoBoxes/InfoBoxSettings.hpp"
@@ -61,7 +62,7 @@ InputEvents::eventSounds(const char *misc)
     return;
   }
 
-  AudioVarioGlue::Configure(settings.vario);
+  ApplyVarioSound(settings.vario);
   Profile::Set(ProfileKeys::SoundAudioVario, settings.vario.enabled);
 }
 
@@ -202,7 +203,7 @@ InputEvents::eventVarioVolume(const char *misc)
   if (settings.volume > 0)
     last_unmuted_vario_volume = settings.volume;
 
-  AudioVarioGlue::Configure(settings);
+  ApplyVarioSound(settings);
   Profile::Set(ProfileKeys::SoundVolume, settings.volume);
 }
 
@@ -233,7 +234,7 @@ InputEvents::eventVarioAudioMode(const char *misc)
     return;
   }
 
-  AudioVarioGlue::Configure(settings);
+  ApplyVarioSound(settings);
   Profile::Set(ProfileKeys::VarioSoundSwitchingMode,
                (unsigned)settings.switching_mode);
 }

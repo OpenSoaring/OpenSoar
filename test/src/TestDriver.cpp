@@ -3269,6 +3269,87 @@ TestVega()
   delete device;
 }
 
+/** how many lines in @p dump contain @p needle */
+static unsigned
+CountLines(const DumpPort &dump, std::string_view needle) noexcept
+{
+  unsigned n = 0;
+  for (const auto &line : dump.GetLines())
+    if (line.find(needle) != std::string::npos)
+      ++n;
+  return n;
+}
+
+static void
+TestOpenVarioVolume()
+{
+  DumpPort dump;
+  Device *device = open_vario_driver.CreateOnPort(dummy_config, dump);
+  NullOperationEnvironment env;
+
+  NMEAInfo basic;
+  basic.Reset();
+  MoreData more;
+  more.Reset();
+  DerivedInfo calculated{};
+
+  /* before variod is heard from, nothing is sent */
+  ok1(device->PutVolume(60, env));
+  device->OnCalculatedUpdate(more, calculated);
+  ok1(CountLines(dump, "POV,C,V") == 0);
+
+  /* once it is, down to 0 and up to the step */
+  ok1(device->ParseNMEA("$POV*49", basic));
+  device->OnCalculatedUpdate(more, calculated);
+  ok1(CountLines(dump, "POV,C,VD") == 10);
+  ok1(CountLines(dump, "POV,C,VU") == 6);
+  /* and the absolute commands, with the question whether variod
+     knows them */
+  ok1(CountLines(dump, "POV,C,VOL,60") == 1);
+  ok1(CountLines(dump, "POV,C,MUT,0") == 1);
+  ok1(CountLines(dump, "POV,?,VOL") == 1);
+
+  /* only once */
+  dump.Clear();
+  device->OnCalculatedUpdate(more, calculated);
+  ok1(CountLines(dump, "POV,C,V") == 0);
+
+  /* a new volume goes out at once, rounded down to the step */
+  ok1(device->PutVolume(35, env));
+  ok1(CountLines(dump, "POV,C,VD") == 10);
+  ok1(CountLines(dump, "POV,C,VU") == 3);
+  ok1(CountLines(dump, "POV,?,VOL") == 0);
+
+  /* after variod was gone, again when it is back */
+  device->LinkTimeout();
+  dump.Clear();
+  device->OnCalculatedUpdate(more, calculated);
+  ok1(CountLines(dump, "POV,C,V") == 0);
+  ok1(device->ParseNMEA("$POV*49", basic));
+  device->OnCalculatedUpdate(more, calculated);
+  ok1(CountLines(dump, "POV,C,VD") == 10);
+  ok1(CountLines(dump, "POV,C,VU") == 3);
+
+  /* variod answers the question: from now on only VOL and MUT */
+  ok1(device->ParseNMEA("$POV,C,VOL,60*75", basic));
+  dump.Clear();
+  ok1(device->PutVolume(0, env));
+  ok1(CountLines(dump, "POV,C,VD") == 0);
+  ok1(CountLines(dump, "POV,C,VU") == 0);
+  ok1(CountLines(dump, "POV,C,VOL,0") == 1);
+  ok1(CountLines(dump, "POV,C,MUT,1") == 1);
+  delete device;
+
+  /* never asked for a volume: variod keeps its own */
+  DumpPort dump2;
+  device = open_vario_driver.CreateOnPort(dummy_config, dump2);
+  device->LinkTimeout();
+  ok1(device->ParseNMEA("$POV*49", basic));
+  device->OnCalculatedUpdate(more, calculated);
+  ok1(CountLines(dump2, "POV,C,V") == 0);
+  delete device;
+}
+
 static void
 TestOpenVario()
 {
@@ -4870,7 +4951,7 @@ int main()
              + 17 /* LXNAVQNH */
              + 25 /* LXNAVQNHModel */
              + 6 /* LXNAVQNHEcho */
-             + 43 /* POV */);
+             + 43 /* POV */ + 25 /* OpenVarioVolume */);
   TestGeneric();
   TestTasman();
   TestLK8EX1();
@@ -4909,6 +4990,7 @@ int main()
   TestLXNavDeclare();
   TestILEC();
   TestOpenVario();
+  TestOpenVarioVolume();
   TestVega();
   TestWesterboer();
   TestZander();

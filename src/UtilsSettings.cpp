@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "UtilsSettings.hpp"
+#include "VarioSound.hpp"
 #include "Protection.hpp"
 #include "MainWindow.hpp"
 #include "Computer/Settings.hpp"
@@ -269,7 +270,7 @@ SettingsLeave(const UISettings &old_ui_settings)
   volume_controller->SetVolume(ui_settings.sound.master_volume);
 #endif
 
-  AudioVarioGlue::Configure(CommonInterface::GetUISettings().sound.vario);
+  ApplyVarioSound(CommonInterface::GetUISettings().sound.vario);
 
   operation.Hide();
   InfoBoxManager::SetDirty();

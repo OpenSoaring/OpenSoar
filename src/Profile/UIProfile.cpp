@@ -106,6 +106,7 @@ Profile::Load(const ProfileMap &map, VarioSoundSettings &settings)
      events and the sound agree */
   settings.volume = VarioSoundSettings::RoundVolume(settings.volume);
   map.GetEnum(ProfileKeys::VarioSoundSwitchingMode, settings.switching_mode);
+  map.GetEnum(ProfileKeys::VarioSoundSource, settings.source);
   map.Get(ProfileKeys::VarioDeadBandEnabled, settings.dead_band_enabled);
 
   map.Get(ProfileKeys::VarioMinFrequency, settings.min_frequency);

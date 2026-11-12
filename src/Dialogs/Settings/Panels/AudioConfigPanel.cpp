@@ -56,6 +56,9 @@ enum ControlIndex {
   MASTER_VOLUME,
   MASTER_VOLUME_SPACER,
 #endif
+#ifdef IS_OPENVARIO
+  SOURCE,
+#endif
   ENABLED,
   VOLUME,
   SWITCHING_MODE,
@@ -69,6 +72,17 @@ enum ControlIndex {
   DEAD_BAND_MAX,
 };
 
+#ifdef IS_OPENVARIO
+static constexpr StaticEnumChoice sources[] = {
+  { VarioSoundSource::INTERNAL, N_("Program"),
+    N_("The program plays the vario sound; variod is set to 0.") },
+  { VarioSoundSource::OPENVARIO, N_("OpenVario (variod)"),
+    N_("The vario daemon of the OpenVario plays the vario sound with the "
+       "volume set here; the program's own vario sound is off.") },
+  nullptr
+};
+#endif
+
 static constexpr StaticEnumChoice switching_modes[] = {
   { VarioSoundSwitchingMode::MANUAL, NC_("Setting", "Manual") },
   { VarioSoundSwitchingMode::AUTO, NC_("Setting", "Auto") },
@@ -81,8 +95,11 @@ public:
   AudioConfigPanel()
     :RowFormWidget(UIGlobals::GetDialogLook()) {}
 
-  void ShowAudioVarioControls(bool show) noexcept;
-  void ShowDeadBandThresholds(bool show) noexcept;
+  /**
+   * Show the rows that apply to the selected source: variod has only
+   * the volume, the program's own sound all of them.
+   */
+  void UpdateVisibility() noexcept;
 
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override;
   bool Save(bool &changed) noexcept override;
@@ -97,40 +114,41 @@ private:
 };
 
 void
-AudioConfigPanel::ShowAudioVarioControls(bool show) noexcept
+AudioConfigPanel::UpdateVisibility() noexcept
 {
-  SetRowAvailable(VOLUME, show);
-  SetRowAvailable(SWITCHING_MODE, show);
-  SetRowAvailable(DEAD_BAND_ENABLED, show);
-  SetRowAvailable(SPACER, show);
-  SetRowAvailable(MIN_FREQUENCY, show);
-  SetRowAvailable(ZERO_FREQUENCY, show);
-  SetRowAvailable(MAX_FREQUENCY, show);
-}
+#ifdef IS_OPENVARIO
+  const bool internal =
+    GetValueEnum(SOURCE) == (unsigned)VarioSoundSource::INTERNAL;
+#else
+  constexpr bool internal = true;
+#endif
 
-void
-AudioConfigPanel::ShowDeadBandThresholds(bool show) noexcept
-{
-  SetRowAvailable(SPACER2, show);
-  SetRowAvailable(DEAD_BAND_MIN, show);
-  SetRowAvailable(DEAD_BAND_MAX, show);
+  const bool enabled = GetValueBoolean(ENABLED);
+  const bool own_sound = internal && enabled;
+  const bool dead_band = GetValueBoolean(DEAD_BAND_ENABLED);
+
+  SetRowAvailable(ENABLED, internal);
+  SetRowAvailable(VOLUME, !internal || enabled);
+  SetRowAvailable(SWITCHING_MODE, own_sound);
+  SetRowAvailable(DEAD_BAND_ENABLED, own_sound);
+  SetRowAvailable(SPACER, own_sound);
+  SetRowAvailable(MIN_FREQUENCY, own_sound);
+  SetRowAvailable(ZERO_FREQUENCY, own_sound);
+  SetRowAvailable(MAX_FREQUENCY, own_sound);
+  SetRowAvailable(SPACER2, own_sound && dead_band);
+  SetRowAvailable(DEAD_BAND_MIN, own_sound && dead_band);
+  SetRowAvailable(DEAD_BAND_MAX, own_sound && dead_band);
 }
 
 void
 AudioConfigPanel::OnModified(DataField &df) noexcept
 {
-  if (IsDataField(ENABLED, df)) {
-    const DataFieldBoolean &enabled = (const DataFieldBoolean &)df;
-    ShowAudioVarioControls(enabled.GetValue());
-    const DataFieldBoolean &dead_band =
-      (const DataFieldBoolean &)GetDataField(DEAD_BAND_ENABLED);
-    ShowDeadBandThresholds(enabled.GetValue() && dead_band.GetValue());
-  } else if (IsDataField(DEAD_BAND_ENABLED, df)) {
-    const DataFieldBoolean &dead_band = (const DataFieldBoolean &)df;
-    const DataFieldBoolean &enabled =
-      (const DataFieldBoolean &)GetDataField(ENABLED);
-    ShowDeadBandThresholds(enabled.GetValue() && dead_band.GetValue());
-  }
+  if (IsDataField(ENABLED, df) || IsDataField(DEAD_BAND_ENABLED, df)
+#ifdef IS_OPENVARIO
+      || IsDataField(SOURCE, df)
+#endif
+      )
+    UpdateVisibility();
 }
 
 void
@@ -169,6 +187,15 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
 #endif
 
   const auto &settings = CommonInterface::GetUISettings().sound.vario;
+
+#ifdef IS_OPENVARIO
+  /* both play on the same audio output, and two vario tones at once
+     cannot be told apart */
+  AddEnum(_("Vario sound"),
+          _("Which program plays the vario sound.  Only one of them gets "
+            "the volume, the other is set to 0."),
+          sources, (unsigned)settings.source, this);
+#endif
 
   AddBoolean(_("Audio Vario"),
              _("Emulate the sound of an electronic vario."),
@@ -233,8 +260,7 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
   DataFieldFloat &db_max = (DataFieldFloat &)GetDataField(DEAD_BAND_MAX);
   db_max.SetFormat(GetUserVerticalSpeedFormat(false, true));
 
-  ShowAudioVarioControls(settings.enabled);
-  ShowDeadBandThresholds(settings.enabled && settings.dead_band_enabled);
+  UpdateVisibility();
 }
 
 bool
@@ -255,6 +281,11 @@ AudioConfigPanel::Save(bool &changed) noexcept
     return true;
 
   auto &settings = CommonInterface::SetUISettings().sound.vario;
+
+#ifdef IS_OPENVARIO
+  changed |= SaveValueEnum(SOURCE, ProfileKeys::VarioSoundSource,
+                           settings.source);
+#endif
 
   changed |= SaveValue(ENABLED, ProfileKeys::SoundAudioVario,
                        settings.enabled);

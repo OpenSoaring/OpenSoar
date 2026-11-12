@@ -52,6 +52,7 @@
 #include "Device/Factory.hpp"
 #include "Device/device.hpp"
 #include "Device/MultipleDevices.hpp"
+#include "VarioSound.hpp"
 #ifdef HAVE_REMOTE_STICK
 # include "Device/Features.hpp"  // the SteFly slots
 # include "Device/Driver/SteFly/Discovery.hpp"
@@ -888,7 +889,7 @@ Startup(UI::Display &display)
 #endif
 
   AudioVarioGlue::Initialise();
-  AudioVarioGlue::Configure(ui_settings.sound.vario);
+  ApplyVarioSound(ui_settings.sound.vario);
 
 #ifdef HAVE_REMOTE_STICK
   /* scan the USB bus once at startup for the SteFly devices (the

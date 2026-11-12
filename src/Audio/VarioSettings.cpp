@@ -10,6 +10,12 @@ VarioSoundSettings::SetDefaults()
   volume = 80;
   switching_mode = VarioSoundSwitchingMode::MANUAL;
   manual_mode = VarioSoundManualMode::VARIO;
+#ifdef IS_OPENVARIO
+  /* variod has been the vario of the OpenVario all along */
+  source = VarioSoundSource::OPENVARIO;
+#else
+  source = VarioSoundSource::INTERNAL;
+#endif
   dead_band_enabled = false;
 
   min_frequency = 200;

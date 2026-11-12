@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "ProcessTimer.hpp"
+#include "VarioSound.hpp"
 #include "Interface.hpp"
 #include "ActionInterface.hpp"
 #include "Input/InputQueue.hpp"
@@ -336,6 +337,7 @@ void
 ProcessTimer() noexcept
 {
   CommonProcessTimer();
+  VarioSoundTick();
 
   if (!is_simulator()) {
     // now check GPS status

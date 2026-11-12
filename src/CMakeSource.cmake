@@ -22,6 +22,7 @@ set(BASIC_SOURCES
     ${SRC}/LocalPath.cpp
     ${SRC}/MainWindow.cpp
     ${SRC}/ProcessTimer.cpp
+    ${SRC}/VarioSound.cpp
     ${SRC}/ProgressWindow.cpp
     ${SRC}/ProgressGlue.cpp
     ${SRC}/Protection.cpp
