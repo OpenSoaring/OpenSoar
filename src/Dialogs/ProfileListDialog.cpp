@@ -20,6 +20,7 @@
 #include "UIGlobals.hpp"
 #include "Language/Language.hpp"
 #include "util/StaticString.hxx"
+#include "util/StringAPI.hxx"
 
 #include <vector>
 #include <cassert>
@@ -46,8 +47,8 @@ class ProfileListWidget final
   public:
     ProfileFileVisitor(std::vector<ListItem> &_list):list(_list) {}
 
-    void Visit(Path path, Path filename) override {
-      list.emplace_back(filename.c_str(), path);
+    void Visit(Path path, [[maybe_unused]] Path filename) override {
+      list.emplace_back(ProfileDisplayName(path).c_str(), path);
     }
   };
 
@@ -294,13 +295,9 @@ ProfileListWidget::CopyClicked()
 static bool
 ConfirmDeleteProfile(const char *name)
 {
+  /* the list shows the name without ".prf" already */
   StaticString<256> tmp;
-  StaticString<256> tmp_name(name);
-  if (tmp_name.length() > 4)
-    tmp_name.Truncate(tmp_name.length() - 4);
-
-  tmp.Format(_("Delete \"%s\"?"),
-             tmp_name.c_str());
+  tmp.Format(_("Delete \"%s\"?"), name);
   return ShowMessageBox(tmp, C_("Button", "Delete"), MB_YESNO) == IDYES;
 }
 
@@ -384,6 +381,20 @@ ProfileListDialog(Path current_profile, Path preselect)
   return dialog.GetWidget().WasActivated()
     ? AllocatedPath(dialog.GetWidget().GetSelectedPath())
     : nullptr;
+}
+
+std::string
+ProfileDisplayName(Path path)
+{
+  Path base = path.GetBase();
+  if (base == nullptr)
+    base = path;
+
+  std::string name = base.c_str();
+  if (const char *suffix = base.GetSuffix();
+      suffix != nullptr && StringIsEqualIgnoreCase(suffix, ".prf"))
+    name.resize(suffix - base.c_str());
+  return name;
 }
 
 void

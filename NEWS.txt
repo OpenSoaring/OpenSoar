@@ -13,6 +13,8 @@ Version 7.47 - not yet released
     the logo (red for a test version, green for a release) with
     "Continue" and a bar counting down to it, "Quit" and the version;
     loading then goes on on the same picture
+  - profiles are shown by their names, without ".prf", on the start
+    screen, in the profile list and in the system settings
   - System > System shows the profile in use; a tap saves the
     configuration and opens the profile list, which offers a restart
     when another profile is activated

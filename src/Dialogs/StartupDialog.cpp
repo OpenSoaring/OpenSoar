@@ -81,7 +81,8 @@ public:
 
 private:
   void UpdateProfileCaption() noexcept {
-    profile_button.SetCaption(df.GetAsDisplayString());
+    profile_button.SetCaption(
+      ProfileDisplayName(Path(df.GetAsDisplayString())).c_str());
   }
 
   void UpdateCountdownBar() noexcept {
