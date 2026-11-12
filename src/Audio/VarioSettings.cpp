@@ -6,16 +6,20 @@
 void
 VarioSoundSettings::SetDefaults()
 {
+#ifdef IS_OPENVARIO
+  /* the OpenVario is a vario: it has always played one, until now by
+     variod, so the program's own sound is on from the start */
+  enabled = true;
+#else
   enabled = false;
+#endif
   volume = 80;
   switching_mode = VarioSoundSwitchingMode::MANUAL;
   manual_mode = VarioSoundManualMode::VARIO;
-#ifdef IS_OPENVARIO
-  /* variod has been the vario of the OpenVario all along */
-  source = VarioSoundSource::OPENVARIO;
-#else
+  /* the program's own sound follows the settings of the program
+     (dead band, speed to fly, frequencies) and the master volume;
+     variod is the fallback a pilot chooses on purpose */
   source = VarioSoundSource::INTERNAL;
-#endif
   dead_band_enabled = false;
 
   min_frequency = 200;

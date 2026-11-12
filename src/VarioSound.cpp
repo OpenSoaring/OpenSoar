@@ -6,8 +6,11 @@
 #include "Audio/VarioGlue.hpp"
 #include "Audio/VarioSettings.hpp"
 #include "Interface.hpp"
+#include "LogFile.hpp"
 #include "Profile/Keys.hpp"
 #include "Profile/Profile.hpp"
+#include "Profile/Current.hpp"
+#include "Profile/Map.hpp"
 
 #ifdef HAVE_VOLUME_CONTROLLER
 #include "Audio/GlobalVolumeController.hpp"
@@ -84,6 +87,23 @@ ApplyVarioSound(const VarioSoundSettings &settings) noexcept
   if (vario_muted)
     internal.enabled = false;
 
+  /* one line at the start and whenever the source or the switch
+     changes, so that a silent vario can be told from the log: off,
+     muted, or played by variod */
+  static int logged_state = -1;
+  const int state = int(settings.source) * 4 + settings.enabled * 2 +
+    vario_muted;
+  if (state != logged_state) {
+    logged_state = state;
+    LogFmt("Vario sound: {}, {}{}, volume {}%",
+           settings.source == VarioSoundSource::INTERNAL
+           ? "program" : "variod",
+           settings.enabled || settings.source != VarioSoundSource::INTERNAL
+           ? "on" : "off",
+           vario_muted ? ", muted" : "",
+           (unsigned)settings.volume);
+  }
+
   AudioVarioGlue::Configure(internal);
 }
 
@@ -93,6 +113,13 @@ VarioSoundTick() noexcept
 #ifdef IS_OPENVARIO
   SendVariodVolume();
 #endif
+}
+
+void
+StoreVarioSoundMode(const VarioSoundSettings &settings) noexcept
+{
+  Profile::Set(ProfileKeys::SoundAudioVario, unsigned(settings.GetMode()));
+  Profile::map.Remove(ProfileKeys::VarioSoundSource);
 }
 
 void
@@ -114,8 +141,13 @@ IsVariodAvailable() noexcept
   if (backend_components == nullptr || backend_components->devices == nullptr)
     return false;
 
+  /* alive is not enough: sensord without sensors (e.g. a test
+     installation without the sensor board) sends 99 m/s, which the
+     driver does not take as a vario; only a real vario shows that
+     variod has something to play */
   for (const DeviceDescriptor *device : *backend_components->devices)
-    if (device->IsDriver("OpenVario") && device->IsAlive())
+    if (device->IsDriver("OpenVario") && device->IsAlive() &&
+        device->GetData().total_energy_vario_available)
       return true;
 #endif
 

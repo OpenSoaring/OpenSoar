@@ -30,6 +30,17 @@ enum class VarioSoundSource : uint8_t {
   OPENVARIO,
 };
 
+/**
+ * The one setting "Audio Vario": off, the program's own sound, or
+ * variod.  It is stored in the profile as the number of this enum, so
+ * that the "1" of a profile from before means the program's sound.
+ */
+enum class VarioSoundMode : uint8_t {
+  OFF,
+  PROGRAM,
+  VARIOD,
+};
+
 struct VarioSoundSettings {
   bool enabled;
   uint8_t volume;
@@ -49,6 +60,25 @@ struct VarioSoundSettings {
   double max_dead;
 
   void SetDefaults();
+
+  /**
+   * The mode from #enabled and #source: with variod as the source,
+   * #enabled does not count, because only the program's own sound is
+   * switched by it.
+   */
+  [[gnu::pure]]
+  VarioSoundMode GetMode() const noexcept {
+    if (source == VarioSoundSource::OPENVARIO)
+      return VarioSoundMode::VARIOD;
+    return enabled ? VarioSoundMode::PROGRAM : VarioSoundMode::OFF;
+  }
+
+  void SetMode(VarioSoundMode mode) noexcept {
+    enabled = mode != VarioSoundMode::OFF;
+    source = mode == VarioSoundMode::VARIOD
+      ? VarioSoundSource::OPENVARIO
+      : VarioSoundSource::INTERNAL;
+  }
 
   /**
    * The vario volume goes in steps of 10 percent, 3 dB each (see

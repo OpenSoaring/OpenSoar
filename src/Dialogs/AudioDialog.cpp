@@ -408,11 +408,31 @@ MuteButton::OnPaint(Canvas &canvas) noexcept
  * the master volume and one for the vario, and, on the OpenVario with
  * variod running, the switch of the source.
  */
+/** is variod the chosen source of the vario sound? */
+[[gnu::pure]]
+static bool
+IsVariodChosen() noexcept
+{
+#ifdef IS_OPENVARIO
+  return CommonInterface::GetUISettings().sound.vario.source ==
+    VarioSoundSource::OPENVARIO;
+#else
+  return false;
+#endif
+}
+
 class AudioWindow final : public ContainerWindow {
   const DialogLook &look;
 
   const bool have_master = HasMasterVolume();
-  const bool have_source = IsVariodAvailable();
+  const bool variod_found = IsVariodAvailable();
+
+  /**
+   * The switch of the source: while variod is there, and also while it
+   * is chosen but missing, or the vario would stay silent without a
+   * way back to the program's own sound.
+   */
+  const bool have_source = variod_found || IsVariodChosen();
 
   VolumeBar master_bar{look, [this](unsigned v){ OnMaster(v); }};
   MuteButton master_mute{look, [this](bool m){ OnMasterMute(m); }};
@@ -441,7 +461,8 @@ public:
   static PixelSize GetSize() noexcept {
     const unsigned row = Layout::GetMaximumControlHeight();
     const unsigned padding = Layout::GetTextPadding() * 2;
-    const unsigned rows = 1 + HasMasterVolume() + IsVariodAvailable();
+    const unsigned rows = 1 + HasMasterVolume() +
+      (IsVariodAvailable() || IsVariodChosen());
     return {Layout::Scale(280u), rows * row + (rows + 1) * padding};
   }
 
@@ -494,8 +515,8 @@ private:
     if (!muted && s.source == VarioSoundSource::INTERNAL && !s.enabled) {
       /* the program's vario sound was switched off in the settings;
          "unmute" means the pilot wants to hear it */
-      s.enabled = true;
-      Profile::Set(ProfileKeys::SoundAudioVario, true);
+      s.SetMode(VarioSoundMode::PROGRAM);
+      StoreVarioSoundMode(s);
       changed = true;
     }
 
@@ -506,10 +527,10 @@ private:
   void OnSource() noexcept {
     on_activity();
     auto &s = Settings();
-    s.source = s.source == VarioSoundSource::INTERNAL
-      ? VarioSoundSource::OPENVARIO
-      : VarioSoundSource::INTERNAL;
-    Profile::Set(ProfileKeys::VarioSoundSource, (unsigned)s.source);
+    s.SetMode(s.source == VarioSoundSource::INTERNAL
+              ? VarioSoundMode::VARIOD
+              : VarioSoundMode::PROGRAM);
+    StoreVarioSoundMode(s);
     changed = true;
     ApplyVarioSound(s);
     Update();
@@ -560,13 +581,18 @@ AudioWindow::Update() noexcept
   /* a silent master silences the vario as well, although its own
      button is not pressed; it stays adjustable then */
   const bool silent = IsVarioSilent();
-  vario_bar.SetGreyed(silent || master_silent, silent);
+  /* a chosen variod that is not there plays nothing either */
+  const bool variod_missing =
+    s.source != VarioSoundSource::INTERNAL && !variod_found;
+  vario_bar.SetGreyed(silent || master_silent || variod_missing, silent);
   vario_mute.SetMuted(silent);
 
   if (have_source)
     source_button.SetCaption(s.source == VarioSoundSource::INTERNAL
                              ? _("Vario: Program")
-                             : _("Vario: OpenVario"));
+                             : (variod_found
+                                ? _("Vario: OpenVario")
+                                : _("Vario: OpenVario (not found)")));
 }
 
 void

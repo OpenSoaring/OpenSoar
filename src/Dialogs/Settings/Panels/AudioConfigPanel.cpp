@@ -55,10 +55,7 @@ enum ControlIndex {
   MASTER_VOLUME,
   MASTER_VOLUME_SPACER,
 #endif
-#ifdef IS_OPENVARIO
-  SOURCE,
-#endif
-  ENABLED,
+  MODE,
   VOLUME,
   SWITCHING_MODE,
   DEAD_BAND_ENABLED,
@@ -71,16 +68,22 @@ enum ControlIndex {
   DEAD_BAND_MAX,
 };
 
+/* "Audio Vario" chooses at once whether there is a vario sound and,
+   on the OpenVario, which program plays it: both play on the same
+   audio output, and two vario tones at once cannot be told apart */
+static constexpr StaticEnumChoice modes[] = {
+  { VarioSoundMode::OFF, N_("Off") },
 #ifdef IS_OPENVARIO
-static constexpr StaticEnumChoice sources[] = {
-  { VarioSoundSource::INTERNAL, N_("Program"),
+  { VarioSoundMode::PROGRAM, N_("Program"),
     N_("The program plays the vario sound; variod is set to 0.") },
-  { VarioSoundSource::OPENVARIO, N_("OpenVario (variod)"),
+  { VarioSoundMode::VARIOD, N_("OpenVario (variod)"),
     N_("The vario daemon of the OpenVario plays the vario sound with the "
        "volume set here; the program's own vario sound is off.") },
+#else
+  { VarioSoundMode::PROGRAM, N_("On") },
+#endif
   nullptr
 };
-#endif
 
 static constexpr StaticEnumChoice switching_modes[] = {
   { VarioSoundSwitchingMode::MANUAL, NC_("Setting", "Manual") },
@@ -143,19 +146,11 @@ private:
 void
 AudioConfigPanel::UpdateVisibility() noexcept
 {
-#ifdef IS_OPENVARIO
-  const bool internal =
-    GetValueEnum(SOURCE) == (unsigned)VarioSoundSource::INTERNAL;
-#else
-  constexpr bool internal = true;
-#endif
-
-  const bool enabled = GetValueBoolean(ENABLED);
-  const bool own_sound = internal && enabled;
+  const auto mode = (VarioSoundMode)GetValueEnum(MODE);
+  const bool own_sound = mode == VarioSoundMode::PROGRAM;
   const bool dead_band = GetValueBoolean(DEAD_BAND_ENABLED);
 
-  SetRowAvailable(ENABLED, internal);
-  SetRowAvailable(VOLUME, !internal || enabled);
+  SetRowAvailable(VOLUME, mode != VarioSoundMode::OFF);
   SetRowAvailable(SWITCHING_MODE, own_sound);
   SetRowAvailable(DEAD_BAND_ENABLED, own_sound);
   SetRowAvailable(SPACER, own_sound);
@@ -201,10 +196,7 @@ AudioConfigPanel::OpenAudioDialog() noexcept
     return;
 
   const auto &settings = CommonInterface::GetUISettings().sound.vario;
-#ifdef IS_OPENVARIO
-  LoadValueEnum(SOURCE, settings.source);
-#endif
-  LoadValue(ENABLED, settings.enabled);
+  LoadValueEnum(MODE, settings.GetMode());
   LoadValue(VOLUME, (int)settings.volume);
   UpdateVisibility();
 }
@@ -216,10 +208,7 @@ AudioConfigPanel::PlayPreview() noexcept
     return;
 
   VarioSoundSettings preview = CommonInterface::GetUISettings().sound.vario;
-#ifdef IS_OPENVARIO
-  preview.source = (VarioSoundSource)GetValueEnum(SOURCE);
-#endif
-  preview.enabled = GetValueBoolean(ENABLED);
+  preview.SetMode((VarioSoundMode)GetValueEnum(MODE));
   preview.volume = GetValueInteger(VOLUME);
   ApplyVarioSound(preview);
 }
@@ -234,18 +223,10 @@ AudioConfigPanel::OnModified(DataField &df) noexcept
   }
 #endif
 
-  if (IsDataField(ENABLED, df) || IsDataField(DEAD_BAND_ENABLED, df)
-#ifdef IS_OPENVARIO
-      || IsDataField(SOURCE, df)
-#endif
-      )
+  if (IsDataField(MODE, df) || IsDataField(DEAD_BAND_ENABLED, df))
     UpdateVisibility();
 
-  if (IsDataField(ENABLED, df) || IsDataField(VOLUME, df)
-#ifdef IS_OPENVARIO
-      || IsDataField(SOURCE, df)
-#endif
-      )
+  if (IsDataField(MODE, df) || IsDataField(VOLUME, df))
     PlayPreview();
 }
 
@@ -296,18 +277,9 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
 
   const auto &settings = CommonInterface::GetUISettings().sound.vario;
 
-#ifdef IS_OPENVARIO
-  /* both play on the same audio output, and two vario tones at once
-     cannot be told apart */
-  AddEnum(_("Vario sound"),
-          _("Which program plays the vario sound.  Only one of them gets "
-            "the volume, the other is set to 0."),
-          sources, (unsigned)settings.source, this);
-#endif
-
-  AddBoolean(_("Audio Vario"),
-             _("Emulate the sound of an electronic vario."),
-             settings.enabled, this);
+  AddEnum(_("Audio Vario"),
+          _("Emulate the sound of an electronic vario."),
+          modes, (unsigned)settings.GetMode(), this);
 
   AddInteger(_("Vario Volume"),
              _("The audio vario sound volume.  Each step of 10 percent is "
@@ -391,13 +363,12 @@ AudioConfigPanel::Save(bool &changed) noexcept
 
   auto &settings = CommonInterface::SetUISettings().sound.vario;
 
-#ifdef IS_OPENVARIO
-  changed |= SaveValueEnum(SOURCE, ProfileKeys::VarioSoundSource,
-                           settings.source);
-#endif
-
-  changed |= SaveValue(ENABLED, ProfileKeys::SoundAudioVario,
-                       settings.enabled);
+  if (const auto mode = (VarioSoundMode)GetValueEnum(MODE);
+      mode != settings.GetMode()) {
+    settings.SetMode(mode);
+    StoreVarioSoundMode(settings);
+    changed = true;
+  }
 
   changed |= SaveValueInteger(VOLUME, ProfileKeys::SoundVolume,
                               settings.volume);

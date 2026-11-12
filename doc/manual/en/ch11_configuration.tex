@@ -1040,8 +1040,11 @@ Master volume and the audio variometer. \label{conf:audiovariogauge}
 
 \begin{description}
 \item[Master Volume]  The overall audio output volume.
-\item[Audio Vario]  Enable/Disable the audio variometer. The other
-  audio vario settings on this page are hidden while it is off.
+\item[Audio Vario]  Off, or on (the program's own sound).  On the
+  OpenVario the choices are \emph{Off}, \emph{Program} and
+  \emph{OpenVario (variod)}: only one of the two plays and gets the
+  vario volume, the other is set to 0.  The other audio vario settings
+  on this page are hidden while they do not apply.
 \item[Vario Volume]  Set the volume of the variometer sounds.
 \item[Mode switching]  Stay in manual audio mode, or switch automatically
   between Vario in circling and speed-to-fly in cruise.
@@ -1092,11 +1095,16 @@ program begins with sound.  On Android the master mute sets the media
 volume of the device to 0, so a device on which the program ends while
 muted stays silent until its volume is raised again.  On the OpenVario
 a further button switches the vario sound between the program and
-\texttt{variod}; it is shown only while the OpenVario sensors and
-\texttt{variod} are connected.  The settings are written to the profile
-when the dialog is closed.  The dialog closes itself 10 seconds after
-the last change or key press, so that it does not stay over the map in
-flight.
+\texttt{variod}.  The program's own sound is the default; \texttt{variod}
+is a fallback.  The button is shown while the OpenVario sensors and
+\texttt{variod} deliver a vario, and also while \texttt{variod} is chosen
+but not found (``Vario: OpenVario (not found)''), so that the program's
+own sound can be chosen again.  When \texttt{sensord} has no sensors it
+reports a vario of 99~m/s; that is not taken as a vario, and
+\texttt{variod} is muted until a valid one arrives.  The settings are
+written to the profile when the dialog is closed.  The dialog closes
+itself 10 seconds after the last change or key press, so that it does
+not stay over the map in flight.
 
 
 %%%%%%%%%%%%%%%%%%
