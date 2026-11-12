@@ -18,7 +18,7 @@ Version 7.47 - not yet released
     set to 0, so the two tones no longer play at once
   - the audio dialog (quick menu "Audio", or a tap on a volume in
     Setup > Audio) shows the master and the vario volume as bars, which
-    a tap, a drag or the cursor keys set at once; the vario bar lies
+    a tap, a drag, the cursor keys or the mouse wheel set at once; the vario bar lies
     within the length of the master bar, as a share of it; on Android
     the master volume goes in the steps of the device ("5/15"). A button
     with a loudspeaker beside each bar mutes it until it is pressed again

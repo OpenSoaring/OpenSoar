@@ -35,7 +35,8 @@ static constexpr Color CUT_COLOR{0xa5, 0xd6, 0xa7};
 
 /**
  * A volume as a bar that fills from the left.  A tap or a drag sets the
- * volume, the cursor keys left and right change it by one step.  The bar
+ * volume, the cursor keys left and right and the mouse wheel change it
+ * by one step.  The bar
  * is grey and does not react while it is muted.  The percentage is
  * written into the bar, light on the filled part and dark on the empty
  * one, so that it can be read on both.
@@ -191,6 +192,14 @@ protected:
                    [[maybe_unused]] unsigned keys) noexcept override {
     if (dragging)
       Change(ValueAt(p.x));
+    return true;
+  }
+
+  /* a mouse wheel or a rotary encoder changes the volume like the
+     cursor keys, one step per notch, away from the user is louder */
+  bool OnMouseWheel([[maybe_unused]] PixelPoint p,
+                    int delta) noexcept override {
+    Change((int)value + delta * (int)increment);
     return true;
   }
 
