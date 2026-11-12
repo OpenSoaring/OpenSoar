@@ -2,6 +2,7 @@
 // Copyright The XCSoar Project
 
 #include "Audio/VarioSynthesiser.hpp"
+#include "Audio/VarioSettings.hpp"
 #include "TestUtil.hpp"
 
 #include <algorithm>
@@ -25,7 +26,7 @@ IsSilent(double vario, bool dead_band_enabled,
 int
 main()
 {
-  plan_tests(11);
+  plan_tests(15);
 
   ok1(!IsSilent(0, false));
   ok1(IsSilent(0, true));
@@ -40,6 +41,12 @@ main()
   ok1(ToneSynthesiser::VolumeToGain(50) == 182);  /* -15 dB */
   ok1(ToneSynthesiser::VolumeToGain(10) == 46);   /* -27 dB */
   ok1(ToneSynthesiser::VolumeToGain(1) > 0);
+
+  /* a stored volume goes to the nearest step of 10 percent */
+  ok1(VarioSoundSettings::RoundVolume(48) == 50);
+  ok1(VarioSoundSettings::RoundVolume(44) == 40);
+  ok1(VarioSoundSettings::RoundVolume(5) == 10);
+  ok1(VarioSoundSettings::RoundVolume(200) == 100);
 
   return exit_status();
 }

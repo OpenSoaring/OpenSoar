@@ -48,7 +48,7 @@ static constexpr unsigned VOLUME_STEP = 10;
 static constexpr unsigned
 RoundVolume(unsigned percent) noexcept
 {
-  return (percent + VOLUME_STEP / 2) / VOLUME_STEP * VOLUME_STEP;
+  return VarioSoundSettings::RoundVolume(percent);
 }
 
 enum ControlIndex {
@@ -178,8 +178,7 @@ AudioConfigPanel::Prepare(ContainerWindow &parent,
              _("The audio vario sound volume.  Each step of 10 percent is "
                "3 dB: 50 percent sounds clearly softer than 100 percent, "
                "10 percent is quiet but still audible."),
-             "%u %%", "%u", 0, 100, VOLUME_STEP,
-             RoundVolume(settings.volume));
+             "%u %%", "%u", 0, 100, VOLUME_STEP, settings.volume);
 
   AddEnum(C_("Setting", "Mode switching"),
       _("Choose whether the audio vario stays in manual mode or switches automatically between Vario in circling and STF in cruise. Manual mode starts in Vario after each restart and can be changed by external input events. In the built-in simulator, STF audio needs valid airspeed and total-energy vario input; without those, manual STF is silent and auto cruise falls back to vario."),
