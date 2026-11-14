@@ -265,3 +265,11 @@ It is not FLARM's own measurement: it depends on how much traffic
 there was and how far away, and the FLARM reports nothing beyond its
 ``Range setting''.  ``Reset'' clears the estimate, for example after a
 change to the antenna.
+
+The button ``Monitor'' shows the data the selected device sends, as
+it arrives.  For a device with a driver, ``Send'' in the monitor asks
+for one NMEA sentence and writes it to the device, so that a command
+of a FLARM, a Larus, a SteFly panel or a GPS module can be tried
+and its answer read in the monitor.  The leading ``\texttt{\$}'' and
+the checksum may be left out; they are added.  The last sentence is
+offered again, so that it can be changed and sent once more.

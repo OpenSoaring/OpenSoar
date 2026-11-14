@@ -130,6 +130,9 @@ Version 7.47 - not yet released
 * devices
   - Larus: pass on the instantaneous wind of ``$PLARW`` (``I``) next
     to the average wind (``A``)
+  - the port monitor sends a typed NMEA sentence to the device with
+    "Send", for example a FLARM, Larus or SteFly command, and shows
+    the answer; "$" and the checksum are added
 * android
   - a mouse wheel or a rotary encoder scrolls lists and zooms the map
     as it does on other systems; Android delivered its turns, but they

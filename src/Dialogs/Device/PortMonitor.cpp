@@ -3,17 +3,21 @@
 
 #include "PortMonitor.hpp"
 #include "Dialogs/Message.hpp"
+#include "Dialogs/TextEntry.hpp"
 #include "Look/Look.hpp"
 #include "ui/control/TerminalWindow.hpp"
 #include "Widget/WindowWidget.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Device/Descriptor.hpp"
 #include "util/StaticFifoBuffer.hxx"
+#include "util/StaticString.hxx"
 #include "Language/Language.hpp"
 #include "Operation/MessageOperationEnvironment.hpp"
 #include "ui/event/DelayedNotify.hpp"
 #include "thread/Mutex.hxx"
 #include "UIGlobals.hpp"
+
+#include <cstring>
 
 /**
  * A bridge between DataHandler and TerminalWindow: copy all data
@@ -93,6 +97,13 @@ public:
   void Reconnect();
   void TogglePause();
 
+  /**
+   * Ask for one NMEA sentence and write it to the port, so that a
+   * command can be tried on a device (a FLARM, a vario, a SteFly panel,
+   * a GPS module) while its answer shows in the monitor.
+   */
+  void Send();
+
   /* virtual methods from class Widget */
 
   void Prepare(ContainerWindow &parent, const PixelRect &rc) noexcept override {
@@ -119,6 +130,12 @@ PortMonitorWidget::CreateButtons(WidgetDialog &dialog)
   dialog.AddButton(_("Clear"), [this](){ Clear(); });
   dialog.AddButton(_("Reconnect"), [this](){ Reconnect(); });
   pause_button = dialog.AddButton(_("Pause"), [this](){ TogglePause(); });
+
+  /* any device with a driver speaks NMEA and may take a command,
+     whether or not its driver sends settings by itself; FLARM is the
+     most common example of one that does not */
+  if (device.GetConfig().UsesDriver())
+    dialog.AddButton(_("Send"), [this](){ Send(); });
 }
 
 void
@@ -148,6 +165,37 @@ PortMonitorWidget::TogglePause()
     pause_button->SetCaption(_("Pause"));
     device.SetMonitor(bridge.get());
   }
+}
+
+void
+PortMonitorWidget::Send()
+{
+  /* static, so that the last sentence is offered again: a command is
+     usually changed a little and sent once more */
+  static StaticString<128> sentence;
+
+  if (!TextEntryDialog(sentence, _("Send NMEA sentence")))
+    return;
+
+  /* WriteNMEA() adds the "$" and the checksum itself, so a sentence
+     copied from a log or a manual with both is accepted as well */
+  StaticString<128> body;
+  body = sentence.c_str() + (sentence.c_str()[0] == '$');
+  if (char *star = std::strchr(body.data(), '*'); star != nullptr)
+    *star = '\0';
+
+  if (body.empty())
+    return;
+
+  if (device.GetState() != PortState::READY) {
+    ShowMessageBox(_("Device is not connected"), _("Send"),
+                   MB_OK | MB_ICONERROR);
+    return;
+  }
+
+  /* a write error is shown by the environment itself */
+  MessageOperationEnvironment env;
+  device.WriteNMEA(body.c_str(), env);
 }
 
 void

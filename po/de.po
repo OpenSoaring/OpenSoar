@@ -1408,6 +1408,12 @@ msgstr "Vom Gerät übernehmen"
 msgid "Send to device"
 msgstr "An Gerät senden"
 
+msgid "Send"
+msgstr "Senden"
+
+msgid "Send NMEA sentence"
+msgstr "NMEA-Satz senden"
+
 msgid "Port"
 msgstr "Anschluss"
 
