@@ -200,6 +200,10 @@ Version 7.47 - not yet released
     without restarting. This covers the map, waypoints, airspace,
     RASP, FLARMNet, the checklist, and the input file #1115 #3092
 * airspace
+  - the airspace warning banner stays at the bottom edge of the screen
+    on the map, with the menu open and over a dialog, instead of
+    changing places; the InfoBoxes, the map and the menu move up above
+    it while it is shown
   - new fill mode "Thin lines": no fill, all outlines one pixel wide;
     on the OpenVario as wide as a border width of 1
   - new fill mode "Thin lines": no fill, all outlines as thin as a
