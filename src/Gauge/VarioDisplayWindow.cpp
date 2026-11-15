@@ -12,6 +12,9 @@
 #include "Look/FontDescription.hpp"
 #include "Look/Look.hpp"
 #include "Look/MapLook.hpp"
+#include "Look/IconLook.hpp"
+#include "Look/DialogLook.hpp"
+#include "Renderer/ButtonRenderer.hpp"
 #include "UIGlobals.hpp"
 #include "Language/Language.hpp"
 #include "Renderer/FinalGlideBarRenderer.hpp"
@@ -1207,24 +1210,29 @@ VarioDisplayWindow::OnMouseDown(PixelPoint p) noexcept
     dragging = true;
     SetCapture();
     gestures.Start(p, Layout::Scale(20));
+    SetSettingsPressed(settings_button.Contains(p));
   }
 
   return true;
 }
 
 bool
-VarioDisplayWindow::OnMouseUp([[maybe_unused]] PixelPoint p) noexcept
+VarioDisplayWindow::OnMouseUp(PixelPoint p) noexcept
 {
   if (dragging) {
+    const bool on_settings = settings_pressed;
     StopDragging();
 
     const char *gesture = gestures.Finish();
     if (gesture && InputEvents::processGesture(gesture))
       return true;
 
-    /* a plain tap opens the page's settings */
-    ShowVarioDisplayConfigDialog();
-    return true;
+    /* the settings are reached through the gear button only, which
+       says that there are any; a tap anywhere else does nothing */
+    if (gesture == nullptr && on_settings && settings_button.Contains(p)) {
+      ShowVarioDisplayConfigDialog();
+      return true;
+    }
   }
 
   return false;
@@ -1234,8 +1242,11 @@ bool
 VarioDisplayWindow::OnMouseMove(PixelPoint p,
                                 [[maybe_unused]] unsigned keys) noexcept
 {
-  if (dragging)
+  if (dragging) {
     gestures.Update(p);
+    if (settings_pressed && !settings_button.Contains(p))
+      SetSettingsPressed(false);
+  }
 
   return true;
 }
@@ -1305,4 +1316,29 @@ VarioDisplayWindow::OnPaintBuffer(Canvas &canvas) noexcept
   DrawNeedles(canvas, center, radius, degrees_per_unit);
 
   DrawMapOverlays(canvas, rc, status_height);
+  DrawSettingsButton(canvas, rc);
+}
+
+void
+VarioDisplayWindow::DrawSettingsButton(Canvas &canvas,
+                                       const PixelRect &rc) noexcept
+{
+  /* in the free upper right corner, as on the full-screen horizon:
+     the size, the place and the look of the menu buttons over the
+     map, which are not shown on this page, so that it is recognised as
+     a button */
+  const int size = int(Layout::GetMaximumControlHeight());
+  const int margin = int(Layout::GetTextPadding());
+  settings_button = {rc.right - margin - size, rc.top + margin,
+                     rc.right - margin, rc.top + margin + size};
+
+  const ButtonLook &button_look = UIGlobals::GetDialogLook().button;
+  ButtonFrameRenderer(button_look).DrawButton(canvas, settings_button,
+                                              settings_pressed
+                                              ? ButtonState::PRESSED
+                                              : ButtonState::ENABLED);
+  canvas.SetTextColor(button_look.standard.foreground_color);
+  UIGlobals::GetIconLook().hBmpTabSettings.Draw(
+    canvas, settings_button.GetCenter(),
+    settings_button.GetHeight() * 2 / 3);
 }

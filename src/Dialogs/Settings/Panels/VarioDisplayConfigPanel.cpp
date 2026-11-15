@@ -175,12 +175,6 @@ VarioDisplayConfigPanel::Save(bool &_changed) noexcept
   return true;
 }
 
-std::unique_ptr<Widget>
-CreateVarioDisplayConfigPanel()
-{
-  return std::make_unique<VarioDisplayConfigPanel>();
-}
-
 void
 ShowVarioDisplayConfigDialog()
 {

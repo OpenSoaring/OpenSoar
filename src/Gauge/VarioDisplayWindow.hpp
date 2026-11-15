@@ -177,6 +177,15 @@ class VarioDisplayWindow : public AntiFlickerWindow {
   GestureManager gestures;
   bool dragging = false;
 
+  /**
+   * The button that opens the settings of the page, in its upper
+   * right corner.
+   */
+  PixelRect settings_button{};
+
+  /** The gear is held: it is drawn pressed until the finger lifts. */
+  bool settings_pressed = false;
+
 public:
   VarioDisplayWindow() noexcept {
     data.Clear();
@@ -194,6 +203,8 @@ protected:
   /* virtual methods from AntiFlickerWindow */
   void OnPaintBuffer(Canvas &canvas) noexcept override;
 
+  void DrawSettingsButton(Canvas &canvas, const PixelRect &rc) noexcept;
+
   /* virtual methods from Window */
   bool OnMouseDown(PixelPoint p) noexcept override;
   bool OnMouseUp(PixelPoint p) noexcept override;
@@ -209,7 +220,16 @@ private:
 
     dragging = false;
     ReleaseCapture();
+    SetSettingsPressed(false);
   }
+  void SetSettingsPressed(bool pressed) noexcept {
+    if (pressed == settings_pressed)
+      return;
+
+    settings_pressed = pressed;
+    Invalidate();
+  }
+
 
   void UpdateFonts(unsigned radius) noexcept;
 

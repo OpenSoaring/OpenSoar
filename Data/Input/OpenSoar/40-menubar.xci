@@ -6,15 +6,6 @@
 # entry with the same mode and location (or the same mode and key)
 # replaces the XCSoar entry completely, including its key.
 
-# Config page 2: the vario display page has its own settings.
-mode=Config2
-type=key
-data=V
-event=Setup VarioDisplay
-event=Mode default
-label=Vario Display
-location=10
-
 # The Info pages get a fourth page for the frequency card, so the
 # page counters change and page 3 leads to page 4 instead of closing.
 mode=Info1

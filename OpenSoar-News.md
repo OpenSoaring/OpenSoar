@@ -79,9 +79,8 @@ code, migration-before-profile-load, CUPX binary mode).
   mode icon and GPS state known from the map.  All four views
   (centre, top row, bottom row, right margin) are configurable per
   flight state - circling and straight flight separately, stored in
-  the profile - under Config > Look > Vario Display, also reachable
-  through the quick menu button "Vario Display" and by a tap on the
-  page itself; the choices match the original's view lists
+  the profile - through the gear button in the upper right corner of
+  the page itself; the choices match the original's view lists
   (arrows, thermal assistants, and eighteen info line values from
   average climb to UTC time).  The design follows
   the display of the Larus frontend project
