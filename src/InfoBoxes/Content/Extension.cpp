@@ -120,12 +120,14 @@ static constexpr ExtensionMetaData opensoar_meta_data[] = {
     N_("The bugs setting: 100 % is a clean wing."),
     UpdateInfoBoxBugsSetting, NUM_TYPES },
 
-  // e_TrueHeading
+  // e_TrueHeading: superseded by XCSoar's Heading InfoBox, which says
+  // in its title whether the value comes from a compass or is
+  // estimated from the track; this one showed both as the same
   { Group::SPEED,
     N_("True heading"),
     N_("Heading"),
     N_("True heading from the attitude sensor of a connected device."),
-    UpdateInfoBoxTrueHeading, NUM_TYPES },
+    UpdateInfoBoxTrueHeading, e_Heading },
 
   // e_WaterBallast
   { Group::SETTING,
