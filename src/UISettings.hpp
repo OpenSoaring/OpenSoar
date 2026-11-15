@@ -9,6 +9,7 @@
 #include "Gauge/VarioSettings.hpp"
 #include "Gauge/VarioDisplaySettings.hpp"
 #include "Gauge/TrafficSettings.hpp"
+#include "Gauge/HorizonSettings.hpp"
 #include "PageSettings.hpp"
 #include "Dialogs/DialogSettings.hpp"
 #include "DisplaySettings.hpp"
@@ -127,6 +128,7 @@ struct UISettings {
 
   VarioDisplaySettings vario_display;
   TrafficSettings traffic;
+  HorizonSettings horizon;
   PageSettings pages;
   DialogSettings dialog;
   SoundSettings sound;

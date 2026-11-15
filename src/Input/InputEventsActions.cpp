@@ -39,6 +39,7 @@ https://xcsoar.readthedocs.io/en/latest/input_events.html
 #include "Dialogs/Task/TaskDialogs.hpp"
 #include "Dialogs/Traffic/TrafficDialogs.hpp"
 #include "Dialogs/Settings/Panels/VarioDisplayConfigPanel.hpp"
+#include "Dialogs/Settings/Panels/HorizonConfigPanel.hpp"
 #include "Dialogs/Waypoint/WaypointDialogs.hpp"
 #include "Dialogs/Weather/WeatherDialog.hpp"
 #include "Dialogs/Plane/PlaneDialogs.hpp"
@@ -671,6 +672,8 @@ InputEvents::eventSetup(const char *misc)
     dlgPlanesShowModal();
   else if (StringIsEqual(misc, "Profile"))
     ShowProfileList();
+  else if (StringIsEqual(misc, "Horizon"))
+    ShowHorizonConfigDialog();
   else if (StringIsEqual(misc, "Alternates")) {
     dlgAlternatesListShowModal(data_components->waypoints.get(),
                                AlternateInfoBoxSlot::FIRST);

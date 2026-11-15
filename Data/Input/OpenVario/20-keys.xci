@@ -44,6 +44,13 @@ type=key
 data=RETURN
 event=Traffic details
 
+# full-screen horizon: Enter opens the choice of the tapes, the same
+# dialog as the gear button
+mode=default.Horizon
+type=key
+data=RETURN
+event=Setup Horizon
+
 ###### pan mode
 
 mode=pan

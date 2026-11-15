@@ -98,6 +98,7 @@ set(_SOURCES
         Dialogs/Settings/Panels/SoaringScoringConfigPanel.cpp
         Dialogs/Settings/Panels/DisplayConfigPanel.cpp
         Dialogs/Settings/Panels/GaugesConfigPanel.cpp
+        Dialogs/Settings/Panels/HorizonConfigPanel.cpp
         Dialogs/Settings/Panels/VarioDisplayConfigPanel.cpp
         Dialogs/Settings/Panels/GlideComputerConfigPanel.cpp
         Dialogs/Settings/Panels/InfoBoxesConfigPanel.cpp
