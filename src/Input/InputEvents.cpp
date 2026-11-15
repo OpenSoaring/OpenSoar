@@ -398,6 +398,13 @@ InputEvents::ProcessKey(Mode mode, unsigned key_code) noexcept
 bool
 InputEvents::processKey(unsigned key_code) noexcept
 {
+  /* The map and the pages keep the focus and pass their keys here;
+     an airspace warning banner answers Left, Right and Enter first,
+     so that a keyboard or a remote stick reaches its buttons. */
+  if (CommonInterface::main_window != nullptr &&
+      CommonInterface::main_window->BottomBannerKeyPress(key_code))
+    return true;
+
   return ProcessKey(getModeID(), key_code);
 }
 

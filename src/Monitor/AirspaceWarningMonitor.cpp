@@ -265,6 +265,17 @@ public:
     UpdateButtonRows();
   }
 
+  /**
+   * The keys come from the map or the page, which keeps the focus:
+   * a button with the focus would swallow every other key, the
+   * function keys and the zoom among them.  Without EnableKeys() the
+   * panel takes none.
+   */
+  bool KeyPress(unsigned key_code) noexcept override {
+    auto &panel = ((ButtonPanelWidget &)GetWidget()).GetButtonPanel();
+    return panel.KeyPress(key_code);
+  }
+
   PixelSize GetMinimumSize() const noexcept override {
     /* QuestionWidget reserves one text line plus one button row.
        Each further row can grow to the maximum control height, and
@@ -282,6 +293,17 @@ public:
         size.height += rows_height - reserved;
     }
     return size;
+  }
+
+  /**
+   * Let a keyboard or a remote stick answer the warning: select ACK,
+   * so that KEY_LEFT and KEY_RIGHT move between the actions and
+   * KEY_RETURN triggers the selected one (see KeyPress()).
+   */
+  void EnableKeys() noexcept {
+    auto &panel = ((ButtonPanelWidget &)GetWidget()).GetButtonPanel();
+    panel.EnableCursorSelection();
+    panel.ReselectToFirstEnabled();
   }
 
   bool Update(const AbstractAirspace &_airspace,
@@ -442,6 +464,9 @@ AirspaceWarningMonitor::Check() noexcept
                                                  w->GetWarningState(),
                                                  w->GetSolution());
       CommonInterface::main_window->SetBottomBannerWidget(warning_widget);
+
+      if (warning_widget != nullptr && HasCursorKeys())
+        warning_widget->EnableKeys();
     }
 
     // un-blank the display, speak the warning

@@ -233,6 +233,11 @@ Version 7.47 - not yet released
     TMA, unless a waypoint is there
   - show when an OpenAir airspace is active from its activation
     times #2520
+  - answer the airspace warning banner with a keyboard or a remote
+    stick: ACK is selected when the banner appears, Left and Right
+    move between ACK, Ack Day, Clearance and More, and Enter
+    triggers the selected one; the other keys keep working on the
+    map
 * task
   - scan task QR codes with the camera on iOS, like on Android
 * development

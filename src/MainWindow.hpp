@@ -654,6 +654,14 @@ public:
    * feature, call this method with widget==nullptr.  Modal dialogs reserve
    * space for the banner at the bottom of the screen.
    */
+  /**
+   * Offer a key to the bottom banner, before the key bindings see it.
+   * An open dialog keeps its keys.
+   *
+   * @return true if the banner has handled the key
+   */
+  bool BottomBannerKeyPress(unsigned key_code) noexcept;
+
   void SetBottomBannerWidget(WindowWidget *widget) noexcept;
 
   /**

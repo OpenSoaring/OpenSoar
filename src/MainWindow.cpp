@@ -1523,9 +1523,7 @@ MainWindow::OnMouseMove(PixelPoint p, unsigned keys) noexcept
 bool
 MainWindow::OnKeyDown(unsigned key_code) noexcept
 {
-  return (HaveBottomBannerWidget() &&
-          bottom_banner_widget->GetWindow().IsVisible() &&
-          bottom_banner_widget->KeyPress(key_code)) ||
+  return BottomBannerKeyPress(key_code) ||
     (widget != nullptr && widget->KeyPress(key_code)) ||
     (HaveTopWidget() && top_widget->KeyPress(key_code)) ||
     (HaveBottomWidget() && bottom_widget->KeyPress(key_code)) ||
@@ -2068,6 +2066,14 @@ MainWindow::SetBottomWidget(Widget *_widget) noexcept
   map->FullRedraw();
 
   UpdateMapOverlayButtonLayout();
+}
+
+bool
+MainWindow::BottomBannerKeyPress(unsigned key_code) noexcept
+{
+  return HaveBottomBannerWidget() && !HasDialog() &&
+    bottom_banner_widget->GetWindow().IsVisible() &&
+    bottom_banner_widget->KeyPress(key_code);
 }
 
 void
