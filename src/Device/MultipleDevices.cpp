@@ -179,6 +179,14 @@ MultipleDevices::PutPilotEvent(OperationEnvironment &env) noexcept
 }
 
 void
+MultipleDevices::PutFlightMode(SwitchState::FlightMode mode,
+                               OperationEnvironment &env) noexcept
+{
+  for (DeviceDescriptor *i : devices)
+    i->PutFlightMode(mode, env);
+}
+
+void
 MultipleDevices::PutActiveFrequency(RadioFrequency frequency,
                                     const char *name,
                                     OperationEnvironment &env) noexcept

@@ -33,6 +33,7 @@
 #include "Device/Driver/LX/NanoLogger.hpp"
 #include "Device/Driver/LX_Eos.hpp"
 #include "Device/Driver/Larus.hpp"
+#include "Device/Driver/FreeVario.hpp"
 #include "Device/Driver/Leonardo.hpp"
 #include "Device/Driver/LevilAHRS_G.hpp"
 #include "Device/Driver/LoEFGREN.hpp"
@@ -4959,13 +4960,50 @@ TestLXNAVQNHEcho()
   delete device;
 }
 
+/**
+ * The STF switch: Larus and FreeVario get the mode as a command, and
+ * FreeVario keeps it instead of the mode of the circling computer.
+ */
+static void
+TestPutFlightMode()
+{
+  NullOperationEnvironment env;
+
+  DumpPort larus_port;
+  Device *device = larus_driver.CreateOnPort(dummy_config, larus_port);
+  ok1(device != nullptr);
+  ok1(device->PutFlightMode(SwitchState::FlightMode::CRUISE, env));
+  ok1(larus_port.FindContaining("PLARS,H,CIR,0") != nullptr);
+  larus_port.Clear();
+  ok1(device->PutFlightMode(SwitchState::FlightMode::CIRCLING, env));
+  ok1(larus_port.FindContaining("PLARS,H,CIR,1") != nullptr);
+  delete device;
+
+  DumpPort fv_port;
+  device = free_vario_driver.CreateOnPort(dummy_config, fv_port);
+  ok1(device != nullptr);
+  ok1(device->PutFlightMode(SwitchState::FlightMode::CRUISE, env));
+  ok1(fv_port.FindContaining("PFV,MOD,S") != nullptr);
+
+  /* circling according to the computer, but the pilot chose STF */
+  MoreData more;
+  more.Reset();
+  DerivedInfo calculated{};
+  calculated.circling = true;
+  fv_port.Clear();
+  device->OnCalculatedUpdate(more, calculated);
+  ok1(fv_port.FindContaining("PFV,MOD,S") != nullptr);
+  ok1(fv_port.FindContaining("PFV,MOD,C") == nullptr);
+  delete device;
+}
+
 int main()
 {
   const auto data_path = MakeTestDriverDataPath();
   SetSingleDataPath(data_path);
   CreateDataPath();
 
-  plan_tests(1123 /* drivers */ + 45 /* PFLAU extended */
+  plan_tests(1123 /* drivers */ + 10 /* PutFlightMode */ + 45 /* PFLAU extended */
              + 40 /* PFLAA v7+ */ + 4 /* PFLAA high speed */
              + 12 /* PFLAE */ + 10 /* PFLAJ */
              + 16 /* PFLAQ */
@@ -5084,6 +5122,7 @@ int main()
   TestLXNAVQNH();
   TestLXNAVQNHModel();
   TestLXNAVQNHEcho();
+  TestPutFlightMode();
 
   DeinitialiseDataPath();
   return exit_status();

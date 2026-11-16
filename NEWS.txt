@@ -141,6 +141,9 @@ Version 7.47 - not yet released
   - show the WeGlide task manager page only while WeGlide is enabled,
     and use one Upload Flight action for WeGlide and SoaringScoring
 * devices
+  - STF switch: the keys S (speed to fly), V (vario) and T (toggle)
+    of the remote stick set the audio vario to that mode and pass it
+    to a Larus or FreeVario; the text size moves to U and D
   - Larus: pass on the instantaneous wind of ``$PLARW`` (``I``) next
     to the average wind (``A``)
   - the port monitor sends a typed NMEA sentence to the device with

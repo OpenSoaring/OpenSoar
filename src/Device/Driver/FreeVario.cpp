@@ -49,6 +49,13 @@ using std::string_view_literals::operator""sv;
 class FreeVarioDevice : public AbstractDevice {
     Port &port;
 
+    /**
+     * The mode the pilot chose with the STF switch.  The device
+     * otherwise gets the mode of the circling computer with every
+     * calculation, which would undo the switch within a second.
+     */
+    SwitchState::FlightMode switched_mode = SwitchState::FlightMode::UNKNOWN;
+
 public:
   explicit FreeVarioDevice(Port &_port):port(_port){}
   bool ParseNMEA(const char *line,NMEAInfo &info) override;
@@ -59,6 +66,8 @@ public:
   bool PutBugs(double bugs, OperationEnvironment &env) override;
   bool PutQNH(const AtmosphericPressure &pres,
               OperationEnvironment &env) override;
+  bool PutFlightMode(SwitchState::FlightMode mode,
+                     OperationEnvironment &env) override;
   void OnCalculatedUpdate(const MoreData &basic,
               const DerivedInfo &calculated) override;
   void OnSensorUpdate(const MoreData &basic) override;
@@ -273,6 +282,28 @@ FreeVarioDevice::OnSensorUpdate(const MoreData &basic)
  * Always send the calculated updated values to the FreeVario to have a good
  * refresh rate on the external device
  */
+bool
+FreeVarioDevice::PutFlightMode(SwitchState::FlightMode mode,
+                               OperationEnvironment &env)
+{
+  switched_mode = mode;
+
+  switch (mode) {
+  case SwitchState::FlightMode::CIRCLING:
+    PortWriteNMEA(port, "PFV,MOD,C", env);
+    break;
+
+  case SwitchState::FlightMode::CRUISE:
+    PortWriteNMEA(port, "PFV,MOD,S", env);
+    break;
+
+  case SwitchState::FlightMode::UNKNOWN:
+    break;
+  }
+
+  return true;
+}
+
 void
 FreeVarioDevice::OnCalculatedUpdate(const MoreData &basic,
   const DerivedInfo &calculated)
@@ -321,7 +352,10 @@ FreeVarioDevice::OnCalculatedUpdate(const MoreData &basic,
   sprintf(nmeaOutbuffer,"PFV,STF,%f", stfKmh);
   PortWriteNMEA(port, nmeaOutbuffer, env);
 
-  if (calculated.circling){
+  const bool circling = switched_mode == SwitchState::FlightMode::UNKNOWN
+    ? calculated.circling
+    : switched_mode == SwitchState::FlightMode::CIRCLING;
+  if (circling){
     sprintf(nmeaOutbuffer,"PFV,MOD,%s", "C");
     PortWriteNMEA(port, nmeaOutbuffer, env);
   } else {

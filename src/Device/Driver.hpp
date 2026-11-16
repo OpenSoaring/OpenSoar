@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "NMEA/SwitchState.hpp"
+
 #include <cstddef>
 #include <optional>
 #include <span>
@@ -180,6 +182,17 @@ public:
   virtual bool PutPilotEvent(OperationEnvironment &env) = 0;
 
   /**
+   * Switch the device between vario (#SwitchState::FlightMode::CIRCLING)
+   * and speed to fly (#SwitchState::FlightMode::CRUISE), as the
+   * pilot's STF switch does.  A device without such a switch ignores
+   * it.
+   *
+   * @return true on success
+   */
+  virtual bool PutFlightMode(SwitchState::FlightMode mode,
+                             OperationEnvironment &env) = 0;
+
+  /**
    * Set a new radio frequency.
    *
    * @param frequency the new frequency
@@ -338,6 +351,8 @@ public:
   bool RequestElevation(OperationEnvironment &env) override;
   bool PutVolume(unsigned volume, OperationEnvironment &env) override;
   bool PutPilotEvent(OperationEnvironment &env) override;
+  bool PutFlightMode(SwitchState::FlightMode mode,
+                     OperationEnvironment &env) override;
   bool PutActiveFrequency(RadioFrequency frequency,
                           const char *name,
                           OperationEnvironment &env) override;

@@ -114,6 +114,13 @@ AbstractDevice::PutPilotEvent([[maybe_unused]] OperationEnvironment &env)
 }
 
 bool
+AbstractDevice::PutFlightMode([[maybe_unused]] SwitchState::FlightMode mode,
+                              [[maybe_unused]] OperationEnvironment &env)
+{
+  return true;
+}
+
+bool
 AbstractDevice::PutActiveFrequency([[maybe_unused]] RadioFrequency frequency,
                                    [[maybe_unused]] const char *name,
                                    [[maybe_unused]] OperationEnvironment &env)

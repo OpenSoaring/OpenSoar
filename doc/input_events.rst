@@ -544,6 +544,13 @@ Event list
      ``system``, ``aircraft``, ``task``.
  * - ``StatusMessage MSG``
    - Display the specified status message text.
+ * - ``STFSwitch M``
+   - The pilot's switch between vario and speed to fly, as on the stick
+     of a vario.  Possible arguments: ``STF`` or ``S``, ``Vario`` or
+     ``V``, ``toggle`` or ``T``, ``show``.  It sets the audio vario to
+     manual STF or Vario, like ``VarioAudioMode``, and passes the mode
+     to the connected devices that have such a switch (Larus,
+     FreeVario).  OpenSoar binds it to the keys S, V and T.
  * - ``TaskLoad PATH``
    - Loads a task from the specified file.
  * - ``TaskSave PATH``

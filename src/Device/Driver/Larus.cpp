@@ -38,6 +38,8 @@ public:
                   OperationEnvironment &env) override;
   bool PutQNH(const AtmosphericPressure &pres,
               OperationEnvironment &env) override;
+  bool PutFlightMode(SwitchState::FlightMode mode,
+                     OperationEnvironment &env) override;
 
 private:
   static bool PLARA(NMEAInputLine &line, NMEAInfo &info);
@@ -414,6 +416,27 @@ LarusDevice::PutBugs(double bugs, OperationEnvironment &env)
   char buffer[50];
   sprintf(buffer, "PLARS,H,BUGS,%0.0f", (1.0-bugs) * 100.0);
   PortWriteNMEA(port, buffer, env);
+  return true;
+}
+
+bool
+LarusDevice::PutFlightMode(SwitchState::FlightMode mode,
+                           OperationEnvironment &env)
+{
+  /* the "CIR" setting of $PLARS: 1 vario (circling), 0 speed to fly */
+  switch (mode) {
+  case SwitchState::FlightMode::CIRCLING:
+    PortWriteNMEA(port, "PLARS,H,CIR,1", env);
+    return true;
+
+  case SwitchState::FlightMode::CRUISE:
+    PortWriteNMEA(port, "PLARS,H,CIR,0", env);
+    return true;
+
+  case SwitchState::FlightMode::UNKNOWN:
+    break;
+  }
+
   return true;
 }
 

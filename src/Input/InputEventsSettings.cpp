@@ -23,6 +23,10 @@
 #include "Protection.hpp"
 #include "UtilsSettings.hpp"
 #include "Audio/VarioGlue.hpp"
+#include "Components.hpp"
+#include "BackendComponents.hpp"
+#include "Device/MultipleDevices.hpp"
+#include "Operation/PopupOperationEnvironment.hpp"
 #include "system/Path.hpp"
 #include "util/StringCompare.hxx"
 #include "util/StringFormat.hpp"
@@ -255,6 +259,56 @@ InputEvents::eventVarioAudioMode(const char *misc)
   ApplyVarioSound(settings);
   Profile::Set(ProfileKeys::VarioSoundSwitchingMode,
                (unsigned)settings.switching_mode);
+}
+
+// STFSwitch
+// The pilot's switch between vario and speed to fly, as on the stick
+// of a vario.  It sets the audio vario to that mode (the program's own
+// sound, and on the OpenVario the one it plays itself) and passes the
+// mode to every connected device that has such a switch (Larus,
+// FreeVario).
+//   STF or S:     speed to fly
+//   Vario or V:   vario
+//   toggle or T:  the other one of the two
+//   show:         say which one is on
+void
+InputEvents::eventSTFSwitch(const char *misc)
+{
+  auto &settings = CommonInterface::SetUISettings().sound.vario;
+  const bool stf_now = settings.switching_mode ==
+    VarioSoundSwitchingMode::MANUAL &&
+    settings.manual_mode == VarioSoundManualMode::STF;
+
+  bool stf;
+  if (StringIsEqual(misc, "STF") || StringIsEqual(misc, "S"))
+    stf = true;
+  else if (StringIsEqual(misc, "Vario") || StringIsEqual(misc, "V"))
+    stf = false;
+  else if (StringIsEqual(misc, "toggle") || StringIsEqual(misc, "T"))
+    stf = !stf_now;
+  else if (StringIsEqual(misc, "show")) {
+    Message::AddMessage(stf_now ? _("STF") : _("Vario"));
+    return;
+  } else
+    return;
+
+  settings.switching_mode = VarioSoundSwitchingMode::MANUAL;
+  settings.manual_mode = stf
+    ? VarioSoundManualMode::STF
+    : VarioSoundManualMode::VARIO;
+  ApplyVarioSound(settings);
+  Profile::Set(ProfileKeys::VarioSoundSwitchingMode,
+               (unsigned)settings.switching_mode);
+
+  if (backend_components != nullptr && backend_components->devices) {
+    PopupOperationEnvironment env;
+    backend_components->devices->PutFlightMode(stf
+                                               ? SwitchState::FlightMode::CRUISE
+                                               : SwitchState::FlightMode::CIRCLING,
+                                               env);
+  }
+
+  Message::AddMessage(stf ? _("STF") : _("Vario"));
 }
 
 // Bugs

@@ -1208,6 +1208,30 @@ DeviceDescriptor::PutPilotEvent(OperationEnvironment &env) noexcept
 }
 
 bool
+DeviceDescriptor::PutFlightMode(SwitchState::FlightMode mode,
+                                OperationEnvironment &env) noexcept
+{
+  assert(InMainThread());
+
+  if (device == nullptr || !config.sync_to_device)
+    return true;
+
+  if (!Borrow())
+    /* TODO: postpone until the borrowed device has been returned */
+    return false;
+
+  try {
+    ScopeReturnDevice restore(*this, env);
+    return device->PutFlightMode(mode, env);
+  } catch (OperationCancelled) {
+    return false;
+  } catch (...) {
+    LogError(std::current_exception(), "PutFlightMode() failed");
+    return false;
+  }
+}
+
+bool
 DeviceDescriptor::PutActiveFrequency(RadioFrequency frequency,
                                      const char *name,
                                      OperationEnvironment &env) noexcept

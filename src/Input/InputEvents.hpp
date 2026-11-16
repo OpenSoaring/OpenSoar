@@ -196,6 +196,7 @@ void eventAbortTask(const char *misc);
 void eventAdjustForecastTemperature(const char *misc);
 void eventAdjustVarioFilter(const char *misc);
 void eventVarioAudioMode(const char *misc);
+void eventSTFSwitch(const char *misc);
 void eventVarioVolume(const char *misc);
 void eventAdjustWaypoint(const char *misc);
 void eventAnalysis(const char *misc);

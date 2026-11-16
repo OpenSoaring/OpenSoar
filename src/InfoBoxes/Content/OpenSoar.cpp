@@ -91,9 +91,17 @@ UpdateInfoBoxInternalZigZagWind(InfoBoxData &data) noexcept
 void
 UpdateInfoBoxSTFSwitch(InfoBoxData &data) noexcept
 {
-  /* the switch state a connected vario reports (Vega and others);
-     until OpenSoar's own STF/vario flag (flaps, RemoteStick) is back,
-     this is the only source */
+  /* the pilot's STF switch (input event "STFSwitch", keys S, V and T),
+     which sets the audio vario to manual; without it, the switch state
+     a connected vario reports (Vega and others) */
+  const auto &sound = CommonInterface::GetUISettings().sound.vario;
+  if (sound.switching_mode == VarioSoundSwitchingMode::MANUAL) {
+    data.SetValue(sound.manual_mode == VarioSoundManualMode::STF
+                  ? _("STF") : _("Vario"));
+    data.SetCommentInvalid();
+    return;
+  }
+
   const auto &state = CommonInterface::Basic().switch_state;
 
   switch (state.flight_mode) {

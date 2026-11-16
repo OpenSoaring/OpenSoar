@@ -16,3 +16,33 @@ type=key
 data=X
 event=Exit shutdown
 event=Mode default
+
+# The STF switch of the remote stick and other instruments: S speed to
+# fly, V vario, T toggles.  It sets the audio vario to that mode and
+# passes it to the devices that have such a switch (Larus, FreeVario).
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Info3 Menu Vario1 Vario2
+type=key
+data=S
+event=STFSwitch STF
+
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Info3 Menu Vario1 Vario2
+type=key
+data=V
+event=STFSwitch Vario
+
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Info3 Menu Vario1 Vario2
+type=key
+data=T
+event=STFSwitch toggle
+
+# XCSoar has S and T for the text size; the switch keeps those letters,
+# the text size moves to U (larger) and D (smaller)
+mode=default
+type=key
+data=U
+event=TextSize up
+
+mode=default
+type=key
+data=D
+event=TextSize down

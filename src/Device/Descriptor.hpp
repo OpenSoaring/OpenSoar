@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "NMEA/SwitchState.hpp"
 #include "Features.hpp"
 #include "Config.hpp"
 #include "Util/LineSplitter.hpp"
@@ -623,6 +624,8 @@ public:
                  OperationEnvironment &env) noexcept;
   bool PutVolume(unsigned volume, OperationEnvironment &env) noexcept;
   bool PutPilotEvent(OperationEnvironment &env) noexcept;
+  bool PutFlightMode(SwitchState::FlightMode mode,
+                     OperationEnvironment &env) noexcept;
   bool PutActiveFrequency(RadioFrequency frequency,
                           const char *name,
                           OperationEnvironment &env) noexcept;

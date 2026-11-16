@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "NMEA/SwitchState.hpp"
 #include "Features.hpp"
 #include "Device/Port/Listener.hpp"
 #include "thread/Mutex.hxx"
@@ -131,6 +132,8 @@ public:
                  OperationEnvironment &env) noexcept;
   void PutVolume(unsigned volume, OperationEnvironment &env) noexcept;
   void PutPilotEvent(OperationEnvironment &env) noexcept;
+  void PutFlightMode(SwitchState::FlightMode mode,
+                     OperationEnvironment &env) noexcept;
   void PutActiveFrequency(RadioFrequency frequency, const char *name,
                           OperationEnvironment &env) noexcept;
   void PutStandbyFrequency(RadioFrequency frequency, const char *name,

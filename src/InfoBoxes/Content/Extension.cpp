@@ -109,8 +109,9 @@ static constexpr ExtensionMetaData opensoar_meta_data[] = {
   { Group::SETTING,
     N_("STF switch"),
     N_("STF"),
-    N_("State of the speed-to-fly / vario switch as reported by the "
-       "connected vario."),
+    N_("Speed to fly or vario: as switched with the STF switch (keys S, "
+       "V and T of the remote stick), otherwise as the connected vario "
+       "reports it."),
     UpdateInfoBoxSTFSwitch, NUM_TYPES },
 
   // e_BugsSetting

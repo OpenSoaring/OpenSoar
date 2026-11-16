@@ -266,3 +266,20 @@ type=key
 data=P
 event=Setup System
 
+# The STF switch of the remote stick and other instruments: S speed to
+# fly, V vario, T toggles.  It sets the audio vario to that mode and
+# passes it to the devices that have such a switch (Larus, FreeVario).
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
+type=key
+data=S
+event=STFSwitch STF
+
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
+type=key
+data=V
+event=STFSwitch Vario
+
+mode=default pan Nav1 Nav2 Display1 Display2 Config1 Config2 Config3 Info1 Info2 Menu Vario1 Vario2
+type=key
+data=T
+event=STFSwitch toggle
