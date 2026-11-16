@@ -29,6 +29,7 @@
 #include "net/client/SoaringScoring/Account.hpp"
 #endif
 #include "UIState.hpp"
+#include "Formatter/UserUnits.hpp"
 
 #include <stdlib.h>
 
@@ -444,6 +445,22 @@ LookupMacro(std::string_view name, bool &invalid) noexcept
     return gettext(labels[(i + 1) % n]);
   } else if (name == "MacCreadyToggleActionName") {
     return GetComputerSettings().task.auto_mc ? C_("Status", "Manual") : C_("Status", "Auto");
+  } else if (name == "MC_Value") {
+    /* the label is read before the next expansion replaces it, like
+       the one of NextPageName below */
+    static char mc[32];
+    FormatUserVerticalSpeed(GetComputerSettings().polar.glide_polar_task.GetMC(),
+                            mc, true, false);
+    return mc;
+  } else if (name == "STFSwitchToggleActionName" ||
+             /* the name OpenSoar 7.44 used; input files written for
+                it shall keep their label */
+             name == "CheckSTF") {
+    const auto &vario = CommonInterface::GetUISettings().sound.vario;
+    const bool stf =
+      vario.switching_mode == VarioSoundSwitchingMode::MANUAL &&
+      vario.manual_mode == VarioSoundManualMode::STF;
+    return stf ? _("Vario") : _("STF");
   } else if (name == "AuxInfoToggleActionName") {
     return GetUIState().auxiliary_enabled ? _("Off") : _("On");
   } else if (name == "DispModeClimbShortIndicator") {

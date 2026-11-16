@@ -13986,3 +13986,6 @@ msgstr "Was das Band rechts im Vollbild-Horizont zeigt."
 #, no-c-format
 msgid "Where the nose of the glider points.  The title is HDG when the heading comes from a compass of a connected device.  Without a compass it is estimated from the GPS track: HDG* is the track corrected for the wind, TRK* the track itself while the wind is not known yet, for example before the first climb.  The track differs from the heading by the drift angle."
 msgstr "Wohin die Nase des Segelflugzeugs zeigt.  Der Titel ist HDG, wenn der Steuerkurs vom Kompass eines angeschlossenen Geräts kommt.  Ohne Kompass wird er aus dem GPS-Track geschätzt: HDG* ist der um den Wind korrigierte Track, TRK* der Track selbst, solange der Wind noch nicht bekannt ist, zum Beispiel vor dem ersten Steigen.  Der Track weicht um den Vorhaltewinkel vom Steuerkurs ab."
+
+msgid "Switch to"
+msgstr "Umschalten auf"

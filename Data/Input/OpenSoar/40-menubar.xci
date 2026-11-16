@@ -54,3 +54,12 @@ event=Logbook
 event=Mode default
 label=Log book
 location=6
+
+# The STF switch, on the free button of the last configuration page:
+# the label names the mode the button switches to.
+mode=Config3
+type=key
+data=0
+event=STFSwitch toggle
+label=STF switch\n$(STFSwitchToggleActionName)
+location=9

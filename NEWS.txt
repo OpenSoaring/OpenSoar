@@ -144,6 +144,10 @@ Version 7.47 - not yet released
   - STF switch: the keys S (speed to fly), V (vario) and T (toggle)
     of the remote stick set the audio vario to that mode and pass it
     to a Larus or FreeVario; the text size moves to U and D
+  - STF switch: a button for it in the menu "Audio / MC" of the
+    OpenVario and on the last configuration page elsewhere, which
+    names the mode it switches to
+  - OpenVario: the menu "Audio / MC" shows the MacCready value again
   - Larus: pass on the instantaneous wind of ``$PLARW`` (``I``) next
     to the average wind (``A``)
   - the port monitor sends a typed NMEA sentence to the device with

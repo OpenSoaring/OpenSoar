@@ -1,7 +1,8 @@
 # OpenVario input configuration: the menu "Audio / MC".
 
 # -------------
-# The menu "Audio / MC": the audio dialog and the MacCready value.
+# The menu "Audio / MC": the audio dialog, the STF switch and the
+# MacCready value.
 # The volumes used to be stepped here with "Sounds quieter" and
 # "Sounds louder", which the program never implemented, so the
 # buttons did nothing.  The audio dialog (event Audio) shows the
@@ -18,6 +19,14 @@ event=Mode default
 event=Audio
 label=Audio\n(F1)
 location=2
+
+# The STF switch: the label names the mode the button switches to.
+mode=VarioAudioMenu
+type=key
+data=F2
+event=STFSwitch toggle
+label=Switch to\n$(STFSwitchToggleActionName)
+location=5
 
 mode=VarioAudioMenu
 type=key
