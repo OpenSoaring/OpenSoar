@@ -69,6 +69,10 @@ Profile::Load(const ProfileMap &map, AirspaceRendererSettings &settings)
   map.Get(ProfileKeys::ClipAlt, settings.clip_altitude);
 
   map.GetEnum(ProfileKeys::AirspaceFillMode, settings.fill_mode);
+  /* "Thin lines, fill warnings" is what "Thin lines" does now */
+  if (settings.fill_mode ==
+      AirspaceRendererSettings::FillMode::THIN_LINE_FILL_WARNINGS)
+    settings.fill_mode = AirspaceRendererSettings::FillMode::THIN_LINE;
 
   for (unsigned i = 0; i < AIRSPACECLASSCOUNT; i++)
     Load(map, i, settings.classes[i]);

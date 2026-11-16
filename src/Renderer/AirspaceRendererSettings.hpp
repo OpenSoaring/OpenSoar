@@ -85,28 +85,26 @@ struct AirspaceRendererSettings {
     NONE,
 
     /**
-     * Don't fill anything and draw the outlines one pixel wide (a
-     * little wider on the OpenVario), whatever the border width of the
-     * class: the map stays as clear
-     * as possible, and the airspaces still show where they are.
+     * Draw the outlines one pixel wide (a little wider on the
+     * OpenVario), whatever the border width of the class, and fill
+     * only the airspaces that cause a warning or that the glider is
+     * inside: the map stays as clear as possible without hiding what
+     * matters now.
      */
     THIN_LINE,
 
     /**
-     * Like #THIN_LINE, but airspaces that cause a warning or that the
-     * glider is inside are filled: the map stays light without losing
-     * what matters now.  Appended last, because the profile stores
-     * the numeric value.
+     * The former separate mode "Thin lines, fill warnings", which
+     * #THIN_LINE has become.  It stays only because the profile
+     * stores the numeric value and profiles of OpenSoar 7.45 and 7.46
+     * may contain it; Profile::Load() turns it into #THIN_LINE.
      */
     THIN_LINE_FILL_WARNINGS,
   } fill_mode;
 
   /**
-   * Does the fill mode fill the airspace area at all?
-   */
-  /**
    * Are all airspaces filled (according to the mode)?  False for
-   * #THIN_LINE_FILL_WARNINGS, which fills only some of them; see
+   * #THIN_LINE, which fills only some of them; see
    * FillsWarningsOnly().
    */
   constexpr bool HasFill() const noexcept {
@@ -127,7 +125,7 @@ struct AirspaceRendererSettings {
    * glider is inside?
    */
   constexpr bool FillsWarningsOnly() const noexcept {
-    return fill_mode == FillMode::THIN_LINE_FILL_WARNINGS;
+    return HasThinLines();
   }
 
   /** What type of airspace labels to render */

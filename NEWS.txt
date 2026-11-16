@@ -217,17 +217,15 @@ Version 7.47 - not yet released
     on the map, with the menu open and over a dialog, instead of
     changing places; the InfoBoxes, the map and the menu move up above
     it while it is shown
-  - new fill mode "Thin lines": no fill, all outlines one pixel wide;
-    on the OpenVario as wide as a border width of 1
-  - new fill mode "Thin lines": no fill, all outlines as thin as a
-    border width of 1, so that they stay visible on every display
+  - new fill mode "Thin lines": all outlines one pixel wide, on the
+    OpenVario as wide as a border width of 1, and only the airspaces
+    that cause a warning or that the glider is inside are filled
   - progress dialogs show their message and the percentage inside the
     bar, on one line, light on the part already done and dark on the
     rest; the line above the bar and the amount, speed and time
     remaining are gone
   - add a symbol page to the on-screen keyboard, so that passwords and
     file names can contain all printable ASCII characters
-  - new fill mode "Thin lines": no fill, outlines one pixel wide
   - open the list of map elements at a touched location on the
     airspace drawn there: the smallest one, such as the CTR inside a
     TMA, unless a waypoint is there
