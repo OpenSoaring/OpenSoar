@@ -107,7 +107,7 @@ TEST_NAMES = \
 	TestFlarmSpokenAlert \
 	TestSpokenAirspaceAlert \
 	TestColorRamp TestXCThermBandQuery TestGeoPoint TestDiffFilter \
-	TestFileUtil TestRepository TestFileType TestMarkdownCheckbox TestPath TestPolars TestCSVLine TestGlidePolar \
+	TestFileUtil TestRepository TestFileType TestMarkdownCheckbox TestPath TestPolars TestCSVLine TestPortName TestGlidePolar \
 	TestLXNAVPolarConversion \
 	test_replay_task TestProjection TestFlatPoint TestFlatLine TestFlatGeoPoint \
 	TestMacCready TestFinalGlide TestTerrainReach TestOrderedTask TestAATPoint TestTaskSave \
@@ -938,6 +938,12 @@ TEST_CSV_LINE_SOURCES = \
 	$(TEST_SRC_DIR)/TestCSVLine.cpp
 TEST_CSV_LINE_DEPENDS = MATH
 $(eval $(call link-program,TestCSVLine,TEST_CSV_LINE))
+
+TEST_PORT_NAME_SOURCES = \
+	$(SRC)/Device/Port/PortName.cpp \
+	$(TEST_SRC_DIR)/tap.c \
+	$(TEST_SRC_DIR)/TestPortName.cpp
+$(eval $(call link-program,TestPortName,TEST_PORT_NAME))
 
 TEST_GEO_BOUNDS_SOURCES = \
 	$(TEST_SRC_DIR)/tap.c \

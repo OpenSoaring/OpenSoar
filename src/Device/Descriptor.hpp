@@ -37,6 +37,7 @@
 #include <atomic>
 #include <chrono>
 #include <memory>
+#include <string_view>
 
 #include <cassert>
 #include <stdio.h>
@@ -486,6 +487,35 @@ public:
    * @param env a persistent object
    */
   void AutoReopen(OperationEnvironment &env);
+
+  /**
+   * Is this device configured for the serial port that the platform
+   * calls by this name?
+   *
+   * @param name a device node on Linux, "COMn" on Windows, the USB
+   * port id on Android
+   * @param removed true if the port with this name is gone; a device
+   * whose own path does not exist any more matches then, too (a
+   * symbolic link below /dev/serial/ that went with its port)
+   */
+  [[gnu::pure]]
+  bool IsOnPort(std::string_view name, bool removed) const noexcept;
+
+  /**
+   * The platform has announced that this serial port was plugged in:
+   * open the device at once if it is waiting for its port, instead of
+   * leaving it to AutoReopen().
+   *
+   * @param env a persistent object
+   */
+  void OnPortPluggedIn(std::string_view name, OperationEnvironment &env);
+
+  /**
+   * The platform has announced that this serial port was pulled out:
+   * close it, so that the device shows at once that it is gone and
+   * is opened anew when the port comes back.
+   */
+  void OnPortPulledOut(std::string_view name) noexcept;
 
   /**
    * Call this method after Declare(), ReadFlightList(),

@@ -62,6 +62,26 @@ MultipleDevices::AutoReopen(OperationEnvironment &env) noexcept
     i->AutoReopen(env);
 }
 
+void
+MultipleDevices::DetectedPort(std::string_view name,
+                              OperationEnvironment &env) noexcept
+{
+  for (DeviceDescriptor *i : devices) {
+    try {
+      i->OnPortPluggedIn(name, env);
+    } catch (...) {
+      /* AutoReopen() tries again */
+    }
+  }
+}
+
+void
+MultipleDevices::RemovedPort(std::string_view name) noexcept
+{
+  for (DeviceDescriptor *i : devices)
+    i->OnPortPulledOut(name);
+}
+
 bool
 MultipleDevices::HasVega() const noexcept
 {

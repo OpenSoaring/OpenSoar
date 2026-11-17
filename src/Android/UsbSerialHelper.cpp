@@ -5,6 +5,7 @@
 #include "Context.hpp"
 #include "NativeDetectDeviceListener.hpp"
 #include "PortBridge.hpp"
+#include "Device/PortHotplug.hpp"
 #include "java/Class.hxx"
 #include "java/Env.hxx"
 #include "java/Exception.hxx"
@@ -114,3 +115,41 @@ UsbSerialHelper::FindPortId(JNIEnv *env, unsigned vendor_id,
   Java::LocalRef<jstring> id{env, (jstring)result};
   return Java::String::ToString(env, id.Get());
 }
+
+/*
+ * Hotplug reports from android/src/UsbSerialHelper.java, which hears
+ * of every USB serial port that is attached or detached.  They arrive
+ * in a Java thread; PostPortHotplug() only queues the id (the same
+ * string the device configuration stores as its path) for the main
+ * thread.
+ */
+
+static void
+ForwardPortEvent(JNIEnv *env, jstring _id, bool added) noexcept
+{
+  if (_id == nullptr)
+    return;
+
+  const auto id = Java::String::GetUTFChars(env, _id);
+  PostPortHotplug(added, id.c_str());
+}
+
+extern "C" {
+
+JNIEXPORT void JNICALL
+Java_org_xcsoar_UsbSerialHelper_nativeOnPortDetected(JNIEnv *env,
+                                                     [[maybe_unused]] jclass cls,
+                                                     jstring id) noexcept
+{
+  ForwardPortEvent(env, id, true);
+}
+
+JNIEXPORT void JNICALL
+Java_org_xcsoar_UsbSerialHelper_nativeOnPortRemoved(JNIEnv *env,
+                                                    [[maybe_unused]] jclass cls,
+                                                    jstring id) noexcept
+{
+  ForwardPortEvent(env, id, false);
+}
+
+} // extern "C"

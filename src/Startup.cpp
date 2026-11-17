@@ -52,6 +52,7 @@
 #include "Device/Factory.hpp"
 #include "Device/device.hpp"
 #include "Device/MultipleDevices.hpp"
+#include "Device/PortHotplug.hpp"
 #include "VarioSound.hpp"
 #ifdef HAVE_REMOTE_STICK
 # include "Device/Features.hpp"  // the SteFly slots
@@ -747,6 +748,12 @@ Startup(UI::Display &display)
                                                                   backend_components->nmea_logger.get(),
                                                                   *device_factory);
 
+  /* from now on a serial port that is plugged in or pulled out is
+     reported to the devices at once */
+  backend_components->port_hotplug =
+    std::make_unique<PortHotplug>(*backend_components->devices,
+                                  asio_thread->GetEventLoop());
+
   // Initialize main blackboard data
   task_events = new GlideComputerTaskEvents();
   task_manager = new TaskManager(computer_settings.task,
@@ -1177,6 +1184,10 @@ Shutdown()
   SaveUserState();
 
   operation.SetText(_("Shutdown, please wait..."));
+
+  /* no more port reports: the devices are about to be closed */
+  if (backend_components != nullptr)
+    backend_components->port_hotplug.reset();
 
   // Close any device connections
   if (backend_components != nullptr && backend_components->devices != nullptr) {

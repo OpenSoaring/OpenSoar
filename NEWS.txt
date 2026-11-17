@@ -141,6 +141,11 @@ Version 7.47 - not yet released
   - show the WeGlide task manager page only while WeGlide is enabled,
     and use one Upload Flight action for WeGlide and SoaringScoring
 * devices
+  - a serial port that is plugged in is opened at once and one that
+    is pulled out is closed at once, instead of at the next periodic
+    attempt up to a minute later (Linux, OpenVario, Kobo, Windows,
+    Android USB); a SteFly RemoteStick or RotaryPanel plugged in
+    while the program runs is found the same way
   - STF switch: the keys S (speed to fly), V (vario) and T (toggle)
     of the remote stick set the audio vario to that mode and pass it
     to a Larus or FreeVario; the text size moves to U and D

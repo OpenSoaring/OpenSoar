@@ -127,6 +127,7 @@ set(TEST_LIST
   ${SRC_DIR}/TestCRC8.cpp
   ${SRC_DIR}/TestCRC16.cpp
   ${SRC_DIR}/TestCSVLine.cpp
+  ${SRC_DIR}/TestPortName.cpp
   ${SRC_DIR}/TestClimbAvCalc.cpp
   ${SRC_DIR}/TestColorRamp.cpp
   ${SRC_DIR}/TestDateTime.cpp
@@ -267,6 +268,7 @@ set(TEST_LIST
   ${SRC_DIR}/TestFileUtil.cpp
   ${SRC_DIR}/TestPolars.cpp
   ${SRC_DIR}/TestCSVLine.cpp
+  ${SRC_DIR}/TestPortName.cpp
   ${SRC_DIR}/TestGlidePolar.cpp
   # needs ParseArgs with getopt.h: ${SRC_DIR}/test_replay_task.cpp
   ${SRC_DIR}/TestProfile.cpp

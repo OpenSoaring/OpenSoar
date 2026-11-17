@@ -14,6 +14,7 @@
 #include "thread/Mutex.hxx"
 #include "Blackboard/DeviceBlackboard.hpp"
 
+#include <string_view>
 #include <optional>
 
 #include <array>
@@ -81,6 +82,21 @@ public:
   void Open(OperationEnvironment &env) noexcept;
   void Close() noexcept;
   void AutoReopen(OperationEnvironment &env) noexcept;
+
+  /**
+   * A serial port was plugged in (see #PortHotplug): open the device
+   * that is configured for it.  Main thread only.
+   *
+   * @param env a persistent object
+   */
+  void DetectedPort(std::string_view name,
+                    OperationEnvironment &env) noexcept;
+
+  /**
+   * A serial port was pulled out: close the device that is configured
+   * for it.  Main thread only.
+   */
+  void RemovedPort(std::string_view name) noexcept;
 
   [[gnu::pure]]
   bool HasVega() const noexcept;

@@ -642,6 +642,8 @@ XCSOAR_SOURCES := \
 	$(SRC)/Device/Factory.cpp \
 	$(SRC)/Device/Declaration.cpp \
 	$(SRC)/Device/MultipleDevices.cpp \
+	$(SRC)/Device/PortHotplug.cpp \
+	$(SRC)/Device/PortHotplugSource.cpp \
 	$(SRC)/Device/device.cpp \
 	$(SRC)/Device/Port/ConfiguredPort.cpp \
 	$(SRC)/Device/DataEditor.cpp \

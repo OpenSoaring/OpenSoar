@@ -12,6 +12,7 @@ class GlueFlightLogger;
 class GlueLogbook;
 class GlueRecorderDownload;
 class MultipleDevices;
+class PortHotplug;
 class DeviceBlackboard;
 class MergeThread;
 class ProtectedTaskManager;
@@ -35,6 +36,13 @@ struct BackendComponents {
 
   const std::unique_ptr<DeviceBlackboard> device_blackboard;
   std::unique_ptr<MultipleDevices> devices;
+
+  /**
+   * Tells #devices when a serial port is plugged in or pulled out.
+   * Declared after #devices, because it refers to them and has to go
+   * first.
+   */
+  std::unique_ptr<PortHotplug> port_hotplug;
   std::unique_ptr<MergeThread> merge_thread;
 
   std::unique_ptr<ProtectedTaskManager> protected_task_manager;

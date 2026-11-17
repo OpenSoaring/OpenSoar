@@ -116,10 +116,13 @@ set(_SOURCES
         Device/Driver/LX_EOS/LXEosParser.cpp
         Device/Driver/LX_EOS/LXEosRegister.cpp
         Device/MultipleDevices.cpp
+        Device/PortHotplug.cpp
+        Device/PortHotplugSource.cpp
         Device/Parser.cpp
         Device/Port/BufferedPort.cpp
         Device/Port/ConfiguredPort.cpp
         Device/Port/DumpPort.cpp
+        Device/Port/PortName.cpp
         Device/Port/K6BtPort.cpp
         Device/Port/NullPort.cpp
         Device/Port/Port.cpp
@@ -174,15 +177,6 @@ elseif(WIN32)
         Device/Port/WindowsSerialPorts.cpp
   )
 endif()
-
-# Per-platform USB / serial hotplug monitors. Each translation unit is
-# wrapped in its own platform #ifdef, so adding them unconditionally is
-# harmless on the other platforms. libudev (Linux) is linked separately
-# via top-level CMakeLists.txt; Windows needs no extra link library.
-list(APPEND _SOURCES
-      # Device/PortMonitorLinux.cpp  # [topic/device-misc] not in upstream XCSoar yet
-      # Device/PortMonitorWindows.cpp  # [topic/device-misc] not in upstream XCSoar yet
-)
 
 set(SCRIPT_FILES
     CMakeSource.cmake

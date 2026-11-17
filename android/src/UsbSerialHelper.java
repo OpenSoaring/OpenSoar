@@ -386,6 +386,11 @@ public final class UsbSerialHelper extends BroadcastReceiver {
         interfaces.add(deviface);
         DiagLog.log("USB serial port available: " + deviface.id);
         broadcastDetectedDeviceInterface(deviface);
+        nativeOnPortDetected(deviface.id);
+        if (!deviface.oldId.equals(deviface.id))
+          /* a device configured before the serial number became part
+             of the id */
+          nativeOnPortDetected(deviface.oldId);
       }
     }
   }
@@ -406,10 +411,27 @@ public final class UsbSerialHelper extends BroadcastReceiver {
         DiagLog.log("USB serial port gone: " + iface.id +
                     (iface.port != null ? " (it was open)" : ""));
         iface.onDisconnect();
+        nativeOnPortRemoved(iface.id);
+        if (!iface.oldId.equals(iface.id))
+          nativeOnPortRemoved(iface.oldId);
         iter.remove();
       }
     }
   }
+
+  /**
+   * Tell the native code that a serial port was plugged in, so that
+   * the device configured for it (by this id) is opened at once
+   * instead of at the next periodic attempt.  The native side only
+   * queues the id for its own main thread.
+   */
+  private static native void nativeOnPortDetected(String id);
+
+  /**
+   * Tell the native code that a serial port was pulled out, so that
+   * the device configured for it is closed.
+   */
+  private static native void nativeOnPortRemoved(String id);
 
   private UsbSerialHelper(Context context) throws IOException {
     this.context = context;

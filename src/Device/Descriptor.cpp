@@ -15,6 +15,7 @@
 #include "Blackboard/DeviceBlackboard.hpp"
 #include "Port/ConfiguredPort.hpp"
 #include "Port/DumpPort.hpp"
+#include "Port/PortName.hpp"
 #include "NMEA/Info.hpp"
 #include "thread/Mutex.hxx"
 #include "util/StringAPI.hxx"
@@ -41,6 +42,10 @@
 
 #ifdef __APPLE__
 #include "Apple/InternalSensors.hpp"
+#endif
+
+#ifdef HAVE_POSIX
+#include <unistd.h>
 #endif
 
 #include <cassert>
@@ -693,6 +698,111 @@ DeviceDescriptor::AutoReopen(OperationEnvironment &env)
 
   InputEvents::processGlideComputer(GCE_COMMPORT_RESTART);
   Reopen(env);
+}
+
+bool
+DeviceDescriptor::IsOnPort(std::string_view name,
+                           bool removed) const noexcept
+{
+  const std::string_view path{config.path.c_str()};
+  if (path.empty())
+    return false;
+
+  switch (config.port_type) {
+  case DeviceConfig::PortType::ANDROID_USB_SERIAL:
+    return path == name;
+
+  case DeviceConfig::PortType::SERIAL:
+    break;
+
+  default:
+    return false;
+  }
+
+  if (path == name)
+    return true;
+
+#ifdef _WIN32
+  /* "COM3", "COM3:" and "\\.\COM3" are the same port */
+  const unsigned number = ParseComPortNumber(name);
+  (void)removed;
+  return number != 0 && number == ParseComPortNumber(path);
+#elif defined(HAVE_POSIX)
+  /* the device may be configured with one of the lasting names udev
+     gives a port, a symbolic link below /dev/serial/ */
+  char target[256];
+  const ssize_t length = readlink(config.path.c_str(), target,
+                                  sizeof(target));
+  if (length > 0 && std::size_t(length) < sizeof(target)) {
+    /* the link is relative ("../../ttyUSB0"); the last part of it is
+       the name of the node in /dev */
+    std::string_view node{target, std::size_t(length)};
+    if (const auto slash = node.rfind('/'); slash != node.npos)
+      node.remove_prefix(slash + 1);
+
+    std::string_view announced = name;
+    if (const auto slash = announced.rfind('/'); slash != announced.npos)
+      announced.remove_prefix(slash + 1);
+
+    return node == announced;
+  }
+
+  /* udev has removed the link already */
+  return removed && access(config.path.c_str(), F_OK) != 0;
+#else
+  (void)removed;
+  return false;
+#endif
+}
+
+void
+DeviceDescriptor::OnPortPluggedIn(std::string_view name,
+                                  OperationEnvironment &env)
+{
+  assert(InMainThread());
+
+  if (!config.IsAvailable() ||
+      !IsOnPort(name, false) ||
+      /* an open port that works is left alone: the announcement may
+         be about a port that only shares its name */
+      !ShouldReopen() ||
+      /* don't reopen a device that is occupied; AutoReopen() looks
+         after it later */
+      IsOccupied())
+    return;
+
+  char buffer[64];
+  LogFormat("Port was plugged in, connecting to device: %s",
+            config.GetPortName(buffer, 64));
+
+  /* the device is here: back to the normal pace of AutoReopen() */
+  ResetFailureCounter();
+  ResetQuietReopen();
+  reopen_clock.Update();
+
+  InputEvents::processGlideComputer(GCE_COMMPORT_RESTART);
+  Reopen(env);
+}
+
+void
+DeviceDescriptor::OnPortPulledOut(std::string_view name) noexcept
+{
+  assert(InMainThread());
+
+  if (!config.IsAvailable() ||
+      !IsOnPort(name, true) ||
+      /* nothing is open, or the failure has been noticed already */
+      port == nullptr ||
+      IsOccupied())
+    return;
+
+  char buffer[64];
+  LogFormat("Port was pulled out, closing device: %s",
+            config.GetPortName(buffer, 64));
+
+  /* without a port, HasPortFailed() is true, and AutoReopen() tries
+     again should the announcement of the return get lost */
+  Close();
 }
 
 bool
